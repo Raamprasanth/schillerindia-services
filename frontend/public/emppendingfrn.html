@@ -1199,20 +1199,7 @@ function generateEstimationPDFData(s, mode='download'){
     setRgb('setFillColor',SCH_RED);
     doc.rect(8,12,194,1.6,'F');
     
-      setRgb('setFillColor',SCH_RED);
-      doc.rect(16,17,11,11,'F');
-      doc.setTextColor(255,255,255);
-      doc.setFont('helvetica','bold');
-      doc.setFontSize(9);
-      doc.text('S',21.5,24.7,{align:'center'});
-    setRgb('setTextColor',SCH_BLUE);
-    doc.setFontSize(22);
-    doc.text('SCHILLER',58,24);
-    setRgb('setTextColor',SCH_RED);
-    doc.setFontSize(7.5);
-    doc.setFont('helvetica','normal');
-    doc.text('',58,29);
-    setRgb('setTextColor',SCH_BLUE);
+      try { doc.addImage(SCHILLER_PDF_LOGO, 'PNG', 16, 17, 54, 10); } catch(e){}
     doc.setFont('helvetica','bold');
     doc.setFontSize(12);
     doc.text('REPAIR ESTIMATION',190,24,{align:'right'});

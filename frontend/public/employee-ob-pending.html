@@ -1525,11 +1525,6 @@ function generatePDFData(s, mode='download'){
     setRgb('setFillColor',SCH_RED);
     doc.rect(8,12,194,1.6,'F');
     
-      setRgb('setFillColor',SCH_RED);
-      doc.rect(16,17,11,11,'F');
-      doc.setTextColor(255,255,255);
-      doc.setFont('helvetica','bold');
-      doc.setFontSize(9);
       try { doc.addImage(SCHILLER_PDF_LOGO, 'PNG', 16, 17, 54, 10); } catch(e){}
     setRgb('setTextColor',SCH_BLUE);
     doc.setFont('helvetica','bold');
