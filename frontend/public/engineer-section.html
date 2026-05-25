@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light'); })();</script>
+
+<title>SchillerIndia - Engineer Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+ :root{
+      --bg:#f4f7fa;--surface:#ffffff;--surface2:#eaf1f6;--border:#d0e0ec;
+      --accent:#0077cc;--accent2:#007a8a;--green:#059669;--amber:#d97706;
+      --red:#cc0000;--text:#1a2a3a;--muted:#7a9ab0;--soft:#4a6a8a;--card:#ffffff;
+    }
+    [data-theme="dark"]{
+      --bg:#0f1621;--surface:#1a2333;--surface2:#1e293b;--border:#2a3a52;
+      --accent:#3b9eff;--accent2:#22d3ee;--green:#10b981;--amber:#f59e0b;
+      --red:#f87171;--text:#e2eaf4;--muted:#4a6a8a;--soft:#7a9ab0;--card:#1a2333;
+    }body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  transition:background 0.3s, color 0.3s; /* ADD THIS */
+}
+
+/* SIDEBAR */
+.sidebar{width:240px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 12px rgba(0,80,120,0.06);}
+.sidebar-header{padding:20px 20px 16px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#450a0a,#b91c1c);}
+.sidebar-logo{display:flex;align-items:center;gap:10px;}
+.sidebar-logo-icon{width:36px;height:36px;background:rgba(255,255,255,0.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:#fff;box-shadow:0 2px 8px rgba(204,0,0,0.2);}
+.sidebar-logo-text{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;}
+.sidebar-logo-text .sub{font-size:10px;color:rgba(255,255,255,0.6);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;}
+.role-badge{margin:10px 20px 0;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;display:inline-block;background:rgba(185,28,28,0.1);color:#b91c1c;border:1px solid rgba(185,28,28,0.25);}
+.sidebar-nav{flex:1;padding:12px 10px;}
+.nav-section{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;padding:10px 8px 5px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:500;cursor:pointer;transition:all 0.2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:rgba(185,28,28,0.1);color:#b91c1c;font-weight:600;}
+.nav-item .icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:#b91c1c;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;}
+.nav-group-toggle{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:600;cursor:pointer;transition:all 0.2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;}
+.nav-group-toggle:hover{background:var(--surface2);color:var(--text);}
+.nav-group-toggle .icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.caret{margin-left:auto;font-size:9px;transition:transform 0.25s;}
+.nav-group-toggle.open .caret{transform:rotate(90deg);}
+.nav-children{max-height:0;overflow:hidden;transition:max-height 0.35s ease;}
+.nav-children.open{max-height:400px;}
+.nav-sub .nav-item{padding:6px 10px 6px 28px;font-size:12px;color:var(--muted);}
+.nav-sub .nav-item:hover{color:var(--text);background:var(--surface2);}
+.sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);}
+.user-info{display:flex;align-items:center;gap:10px;}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#b91c1c,#ef4444);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
+.user-name{font-size:13px;font-weight:600;color:var(--text);}
+.user-role{font-size:11px;color:var(--muted);}
+.logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s;}
+.logout-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,80,120,0.05);}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:4px;}
+.breadcrumb a{color:var(--muted);text-decoration:none;transition:color 0.2s;cursor:pointer;}
+.breadcrumb a:hover{color:var(--accent);}
+.breadcrumb .sep{color:var(--border);}
+.breadcrumb .cur{color:var(--soft);}
+.topbar-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);}
+.topbar-date{font-size:12px;color:var(--muted);margin-top:2px;}
+.topbar-actions{display:flex;align-items:center;gap:10px;}
+
+/* BUTTONS */
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;border:1px solid var(--border);background:var(--surface2);color:var(--soft);font-family:'Plus Jakarta Sans',sans-serif;display:inline-flex;align-items:center;gap:6px;}
+.btn:hover{border-color:var(--accent);color:var(--accent);}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn.primary:hover{background:#005fa3;}
+.btn.success{background:var(--green);color:#fff;border-color:var(--green);}
+.btn.success:hover{background:#047857;}
+.btn.danger{background:transparent;color:var(--red);border-color:rgba(204,0,0,0.3);}
+.btn.danger:hover{background:rgba(204,0,0,0.06);border-color:var(--red);}
+.btn.sm{padding:6px 14px;font-size:12px;}
+.btn.xs{padding:4px 10px;font-size:11px;border-radius:6px;}
+
+/* CONTENT */
+.content{flex:1;padding:28px;overflow-y:auto;background:var(--bg);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.fade-up{animation:fadeUp 0.45s ease both;}
+
+/* SYNC INDICATOR */
+.sync-indicator{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:4px 10px;border-radius:20px;font-weight:600;}
+.sync-indicator.synced{background:rgba(5,150,105,0.1);color:var(--green);border:1px solid rgba(5,150,105,0.2);}
+.sync-indicator.syncing{background:rgba(0,119,204,0.1);color:var(--accent);border:1px solid rgba(0,119,204,0.2);}
+.sync-indicator.error{background:rgba(204,0,0,0.1);color:var(--red);border:1px solid rgba(204,0,0,0.2);}
+.sync-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.synced .sync-dot{background:var(--green);}
+.syncing .sync-dot{background:var(--accent);animation:pulse 1s infinite;}
+.error .sync-dot{background:var(--red);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px;}
+.mini-stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;display:flex;align-items:center;gap:12px;transition:border-color 0.2s,transform 0.2s,box-shadow 0.2s;box-shadow:0 2px 10px rgba(0,80,120,0.05);}
+.mini-stat:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,80,120,0.1);}
+.mini-stat-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.mini-stat-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;}
+.mini-stat-lbl{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-top:1px;}
+
+/* FILTER BAR */
+.filter-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+.filter-select{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--soft);font-family:'Plus Jakarta Sans',sans-serif;outline:none;cursor:pointer;transition:border-color 0.2s;}
+.filter-select:focus{border-color:var(--accent);}
+
+/* PANEL */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,80,120,0.05);}
+.panel-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:var(--surface);}
+.panel-title{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+.panel-title .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+.search-box{position:relative;}
+.search-box input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px 8px 34px;font-size:13px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;outline:none;width:240px;transition:border-color 0.2s;}
+.search-box input:focus{border-color:var(--accent);}
+.search-box input::placeholder{color:var(--muted);}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);}
+.show-select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;color:var(--soft);font-family:'Plus Jakarta Sans',sans-serif;outline:none;cursor:pointer;}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;}
+table.data-table{width:100%;border-collapse:collapse;}
+table.data-table thead th{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;padding:12px 14px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;}
+table.data-table thead th:hover{color:var(--soft);}
+table.data-table thead th.sorted{color:var(--accent);}
+table.data-table tbody td{padding:12px 14px;font-size:13px;border-bottom:1px solid rgba(0,80,120,0.07);vertical-align:middle;color:var(--text);}
+table.data-table tbody tr:last-child td{border-bottom:none;}
+table.data-table tbody tr{transition:background 0.15s;}
+table.data-table tbody tr:hover td{background:rgba(0,119,204,0.03);}
+.table-footer{padding:14px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted);}
+
+/* AVATAR */
+.emp-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;display:block;}
+.badge-active{background:rgba(5,150,105,0.12);color:var(--green);}.badge-active::before{background:var(--green);}
+.badge-inactive{background:rgba(122,154,176,0.15);color:var(--muted);}.badge-inactive::before{background:var(--muted);}
+.badge-blue{background:rgba(0,119,204,0.12);color:var(--accent);}.badge-blue::before{background:var(--accent);}
+.badge-purple{background:rgba(109,40,217,0.1);color:var(--purple);}.badge-purple::before{background:var(--purple);}
+.badge-amber{background:rgba(217,119,6,0.12);color:var(--amber);}.badge-amber::before{background:var(--amber);}
+.chip{display:inline-flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:11px;color:var(--soft);font-weight:500;}
+
+/* ROLE COLORS */
+.role-engineer{background:rgba(0,119,204,0.12);color:var(--accent);border:1px solid rgba(0,119,204,0.25);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.role-admin{background:rgba(204,0,0,0.1);color:var(--red);border:1px solid rgba(204,0,0,0.2);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.role-fqc{background:rgba(109,40,217,0.1);color:var(--purple);border:1px solid rgba(109,40,217,0.2);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.role-other{background:rgba(217,119,6,0.12);color:var(--amber);border:1px solid rgba(217,119,6,0.2);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.role-pt{background:rgba(0,122,138,0.1);color:var(--accent2);border:1px solid rgba(0,122,138,0.25);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+
+/* PAGINATION */
+.pagination{display:flex;align-items:center;gap:4px;}
+.page-btn{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--soft);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;display:flex;align-items:center;justify-content:center;}
+.page-btn:hover{border-color:var(--accent);color:var(--accent);}
+.page-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.page-btn:disabled{opacity:0.3;cursor:not-allowed;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,20,35,0.35);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;animation:fadeUp 0.3s ease;box-shadow:0 20px 60px rgba(0,0,0,0.12);}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1;}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);}
+.modal-close{background:none;border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.modal-close:hover{border-color:var(--red);color:var(--red);}
+.modal-body{padding:24px;}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;position:sticky;bottom:0;background:var(--surface);}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field.span2{grid-column:span 2;}
+.field label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
+.field input,.field select,.field textarea{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px 13px;font-size:13px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+.field select[multiple]{min-height:118px;}
+.field-hint{font-size:11px;color:var(--muted);line-height:1.4;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,119,204,0.1);}
+.field input::placeholder,.field textarea::placeholder{color:var(--muted);}
+.field select option{background:var(--surface);}
+.required-star{color:var(--red);}
+.pass-wrap{position:relative;}
+.pass-wrap input{width:100%;padding-right:40px;}
+.pass-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;}
+.form-section-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.form-section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* PROFILE */
+.profile-header{background:linear-gradient(135deg,rgba(0,119,204,0.08),rgba(0,122,138,0.06));border-radius:12px;padding:20px;display:flex;align-items:center;gap:16px;margin-bottom:20px;border:1px solid rgba(0,119,204,0.15);}
+.profile-big-avatar{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px;color:#fff;flex-shrink:0;}
+.profile-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);}
+.profile-sub{font-size:12px;color:var(--muted);margin-top:3px;}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.profile-field{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;}
+.profile-field-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;}
+.profile-field-val{font-size:13px;font-weight:500;color:var(--text);}
+
+/* CONFIRM */
+.confirm-box{background:var(--surface);border:1px solid rgba(204,0,0,0.25);border-radius:14px;width:100%;max-width:400px;padding:28px;text-align:center;animation:fadeUp 0.3s ease;box-shadow:0 20px 60px rgba(0,0,0,0.12);}
+.confirm-icon{font-size:40px;margin-bottom:14px;}
+.confirm-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:8px;color:var(--text);}
+.confirm-msg{font-size:13px;color:var(--soft);margin-bottom:22px;line-height:1.6;}
+.confirm-actions{display:flex;gap:10px;justify-content:center;}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;min-width:260px;animation:fadeUp 0.3s ease;box-shadow:0 8px 24px rgba(0,0,0,0.12);}
+.toast.success{border-color:rgba(5,150,105,0.4);}.toast.success .toast-dot{background:var(--green);}
+.toast.error{border-color:rgba(204,0,0,0.4);}.toast.error .toast-dot{background:var(--red);}
+.toast.info{border-color:rgba(0,119,204,0.3);}.toast.info .toast-dot{background:var(--accent);}
+.toast-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:60px 20px;}
+.empty-icon{font-size:48px;margin-bottom:14px;opacity:0.4;}
+.empty-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:6px;color:var(--text);}
+.empty-sub{font-size:13px;color:var(--muted);}
+.action-group{display:flex;align-items:center;gap:5px;}
+
+    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
+    </style>
+  <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="employee-theme.css">
+  <link rel="stylesheet" href="admin-sidebar.css">
+  <script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <script src="brand-logo.js" defer></script>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<!-- === SIDEBAR === -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="sidebar-logo-text">SchillerIndia<div class="sub">Services</div></div>
+    </div>
+  </div>
+  <div style="padding:10px 20px 0;"><span class="role-badge">Admin</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <button class="nav-item " onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
+    <button class="nav-item " onclick="window.location.href='company-section.html'"><span class="icon">&#127970;</span> Company</button>
+    <button class="nav-item " onclick="window.location.href='division-section.html'"><span class="icon">&#128309;</span> Division</button>
+    <button class="nav-item active" onclick="window.location.href='engineer-section.html'"><span class="icon">&#128119;</span> Engineers</button>
+    <button class="nav-item " onclick="window.location.href='dealer-section.html'"><span class="icon">&#129309;</span> Dealers</button>
+    <div class="nav-section">Operations</div>
+    <button class="nav-group-toggle " id="sf-toggle" onclick="toggleSF()">
+      <span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span>
+    </button>
+    <div class="nav-children " id="sf-children">
+      <div class="nav-sub">
+        <button class="nav-item " onclick="window.location.href='service-list.html'"><span class="icon">&#128225;</span> Services</button>
+        <button class="nav-item " onclick="window.location.href='pending-frn.html'"><span class="icon">&#128221;</span> Pending FRN</button>
+        <button class="nav-item " onclick="window.location.href='ob-pending.html'"><span class="icon">&#128194;</span> OB Pending</button>
+        <button class="nav-item " onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
+        <button class="nav-item " onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
+        <button class="nav-item " onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
+        <button class="nav-item " onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
+        <button class="nav-item " onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="ar-toggle" onclick="toggleAR()"><span class="icon">&#128196;</span> Activity Register <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="ar-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
+        <a class="nav-item " href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
+        <a class="nav-item " href="aprfob.html"><span class="icon">&#128203;</span> PRF/OB List</a>
+        <a class="nav-item " href="acr.html"><span class="icon">&#128209;</span> Closed PRF/OB</a>
+        <a class="nav-item " href="ans.html"><span class="icon">&#128230;</span> Non Saleable</a>
+        <a class="nav-item " href="as.html"><span class="icon">&#128176;</span> Saleable</a>
+        <a class="nav-item " href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
+        <a class="nav-item " href="acbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="rta-toggle" onclick="toggleRTA()"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="rta-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="atfrn.html"><span class="icon">&#128221;</span> Admin RT FRN</a>
+        <a class="nav-item " href="atob.html"><span class="icon">&#128230;</span> Admin RT OB</a>
+        <a class="nav-item " href="atur.html"><span class="icon">&#128736;&#65039;</span> Admin RT UR</a>
+        <a class="nav-item " href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
+      </div>
+    </div>
+    <div class="nav-section">Admin</div>
+    <button class="nav-item " onclick="window.location.href='usermanagement.html'"><span class="icon">&#128101;</span> User Management</button>
+    <button class="nav-item " onclick="window.location.href='Reports.html'"><span class="icon">&#128200;</span> Reports</button>
+    <button class="nav-item " onclick="window.location.href='settings.html'"><span class="icon">&#9881;&#65039;</span> Settings</button>
+    <button class="nav-item " onclick="window.location.href='notifications.html'"><span class="icon">&#128276;</span> Notifications</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="admin-avatar">A</div>
+      <div>
+        <div class="user-name" id="admin-name">Admin</div>
+        <div class="user-role">Administrator</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="admin-dashboard.html">Dashboard</a>
+        <span class="sep">&#8250;</span>
+        <span class="cur">Engineer Management</span>
+      </div>
+      <div class="topbar-title">Engineer Management</div>
+      <div class="topbar-date" id="page-date"></div>
+    </div>
+    <div class="topbar-actions">
+      <span class="sync-indicator synced" id="sync-badge"><span class="sync-dot"></span><span id="sync-text">Synced</span></span>
+      <button class="btn" onclick="exportCSV()">&#128228; Export CSV</button>
+      <button class="btn primary" onclick="openAddEngineer()">&#10133; Add New Engineer</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-row fade-up">
+      <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:rgba(0,119,204,0.1);">&#128119;</div>
+        <div><div class="mini-stat-val" style="color:var(--accent);" id="stat-total">0</div><div class="mini-stat-lbl">Total Engineers</div></div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:rgba(5,150,105,0.1);">&#9989;</div>
+        <div><div class="mini-stat-val" style="color:var(--green);" id="stat-active">0</div><div class="mini-stat-lbl">Active</div></div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:rgba(204,0,0,0.08);">&#128683;</div>
+        <div><div class="mini-stat-val" style="color:var(--red);" id="stat-inactive">0</div><div class="mini-stat-lbl">Inactive</div></div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:rgba(109,40,217,0.08);">&#128309;</div>
+        <div><div class="mini-stat-val" style="color:var(--purple);" id="stat-divisions">0</div><div class="mini-stat-lbl">Divisions Covered</div></div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:rgba(217,119,6,0.1);">&#127980;</div>
+        <div><div class="mini-stat-val" style="color:var(--amber);" id="stat-branches">0</div><div class="mini-stat-lbl">Branches Covered</div></div>
+      </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar fade-up">
+      <div class="search-box" style="flex:1;min-width:200px;">
+        <span class="search-icon">&#128269;</span>
+        <input type="text" id="eng-search" placeholder="Search by name, email, ID, division..." oninput="filterEngineers()" style="width:100%;"/>
+      </div>
+      <select class="filter-select" id="filter-division" onchange="filterEngineers()"><option value="">All Divisions</option></select>
+      <select class="filter-select" id="filter-location" onchange="filterEngineers()">
+        <option value="">All Locations</option>
+        <option>InHouse</option><option>Field</option><option>Remote</option>
+      </select>
+      <select class="filter-select" id="filter-role" onchange="filterEngineers()">
+        <option value="">All Roles</option>
+        <option>Engineer</option>
+        <option>Admin</option>
+        <option>Repair Team</option>
+        <option>Service Coordinator</option>
+        <option>Product Team</option>
+      </select>
+      <select class="filter-select" id="filter-active" onchange="filterEngineers()">
+        <option value="">All Status</option>
+        <option value="Yes">Active</option><option value="No">Inactive</option>
+      </select>
+      <select class="show-select" id="eng-per-page" onchange="renderEngineers()">
+        <option value="10">10 / page</option><option value="25">25 / page</option><option value="50">50 / page</option>
+      </select>
+    </div>
+
+    <!-- TABLE -->
+    <div class="panel fade-up">
+      <div class="panel-header">
+        <div class="panel-title"><span class="dot"></span> Engineer List</div>
+        <div style="font-size:12px;color:var(--muted);" id="filter-summary"></div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+
+              <th onclick="sortEngineers('name')">Name &#8597;</th>
+              <th onclick="sortEngineers('location')">Location &#8597;</th>
+              <th onclick="sortEngineers('branch')">Branch &#8597;</th>
+              <th onclick="sortEngineers('division')">Division &#8597;</th>
+              <th onclick="sortEngineers('role')">Role &#8597;</th>
+              <th onclick="sortEngineers('active')">Status &#8597;</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="eng-tbody"></tbody>
+        </table>
+      </div>
+      <div class="table-footer">
+        <span id="eng-count-text"></span>
+        <div class="pagination" id="eng-pagination"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ADD / EDIT ENGINEER MODAL -->
+<div class="modal-overlay" id="modal-engineer">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-eng-title">Add New Engineer</div>
+      <button class="modal-close" onclick="closeModal('modal-engineer')">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" style="margin-bottom:20px;">
+        <div class="field span2">
+          <label>Employee Name <span class="required-star">*</span></label>
+          <input type="text" id="e-name" placeholder="Enter full name"/>
+        </div>
+      </div>
+      <div class="form-section-title">Work Details</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Division</label>
+          <select id="e-division" multiple></select>
+          <span class="field-hint">Hold Ctrl to select multiple divisions. First selected division is the default.</span>
+        </div>
+        <div class="field">
+          <label>Location <span class="required-star">*</span></label>
+          <select id="e-location">
+            <option value="">Select Location...</option>
+            <option>InHouse</option><option>Field</option>
+          </select>
+        </div>
+        <!-- Branch dropdown updated with all 41 branches from company section -->
+        <div class="field">
+          <label>Branch <span class="required-star">*</span></label>
+          <select id="e-branch">
+            <option value="">Select Branch...</option>
+            <option>SHIPL Agartala</option>
+            <option>SHIPL Bhubaneshwar</option>
+            <option>SHIPL Guwahati</option>
+            <option>SHIPL Kolkata</option>
+            <option>SHIPL Patna</option>
+            <option>SHIPL Ranchi</option>
+            <option>SHIPL Siliguri</option>
+            <option>SHIPL Chandigar</option>
+            <option>SHIPL Jaipur</option>
+            <option>SHIPL Jodhpur</option>
+            <option>SHIPL Delhi</option>
+            <option>SHIPL Lucknow</option>
+            <option>SHIPL Mumbai</option>
+            <option>SHIPL Pune</option>
+            <option>SHIPL Ahmedabad</option>
+            <option>SHIPL Chennai</option>
+            <option>SHIPL Bengaluru</option>
+            <option>SHIPL Hyderabad</option>
+            <option>SHIPL Coimbatore</option>
+            <option>SHIPL Kochi</option>
+            <option>SHIPL Vijayawada</option>
+            <option>SHIPL Bhopal</option>
+            <option>SHIPL Nagpur</option>
+            <option>SHIPL Indore</option>
+            <option>SHIPL Raipur</option>
+            <option>SHIPL Surat</option>
+            <option>Puducherry SC</option>
+            <option>Puducherry FQC</option>
+            <option>Puducherry PS</option>
+            <option>SHIPL Nepal</option>
+            <option>SHIPL Trichy</option>
+            <option>SHIPL Nagercoil</option>
+            <option>SHIPL salem</option>
+            <option>SHIPL Aurangabad</option>
+            <option>SHIPL Madurai</option>
+            <option>SHIPL Kurnool</option>
+            <option>SHIPL Villupuram</option>
+            <option>SHIPL Kolhapur</option>
+            <option>SHIPL Nagpur</option>
+            <option>SHIPL Warangal</option>
+            <option>SHIPL Trivandram</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Role <span class="required-star">*</span></label>
+          <select id="e-role">
+            <option value="">Select Role...</option>
+            <option>Engineer</option>
+            <option>Admin</option>
+            <option>Repair Team</option>
+            <option>Service Coordinator</option>
+            <option>Product Team</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Active Status</label>
+          <select id="e-active">
+            <option value="Yes">Active (Yes)</option>
+            <option value="No">Inactive (No)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-engineer')">Cancel</button>
+      <button class="btn primary" id="save-eng-btn" onclick="saveEngineer()">&#128190; Save Engineer</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE VIEW MODAL -->
+<div class="modal-overlay" id="modal-profile">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <div class="modal-title">Engineer Profile</div>
+      <button class="modal-close" onclick="closeModal('modal-profile')">&#10005;</button>
+    </div>
+    <div class="modal-body" id="profile-body"></div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="confirm-box">
+    <div class="confirm-icon">&#9888;&#65039;</div>
+    <div class="confirm-title" id="confirm-title">Delete Engineer?</div>
+    <div class="confirm-msg" id="confirm-msg">This cannot be undone.</div>
+    <div class="confirm-actions">
+      <button class="btn" onclick="closeModal('modal-confirm')">Cancel</button>
+      <button class="btn danger" id="confirm-ok-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+const API_BASE = 'http://localhost:5000';
+
+let DIVISIONS_LIST = [];
+
+let engineers = [];
+let filteredEngineers = [];
+let engPage = 1;
+let engSortKey = 'empId', engSortDir = 1;
+let editingEngId = null;
+
+let sfOpen = false;
+function toggleSF(){
+  sfOpen = !sfOpen;
+  document.getElementById('sf-children').classList.toggle('open', sfOpen);
+  document.getElementById('sf-toggle').classList.toggle('open', sfOpen);
+}
+function toggleAR(){ var btn=document.getElementById('ar-toggle'); var panel=document.getElementById('ar-children'); if(!btn||!panel)return; btn.classList.toggle('open'); panel.classList.toggle('open'); }
+
+function setSyncStatus(status) {
+  const badge = document.getElementById('sync-badge');
+  const text  = document.getElementById('sync-text');
+  badge.className = 'sync-indicator ' + status;
+  const labels = { synced:'Synced', syncing:'Saving...', error:'Error' };
+  text.textContent = labels[status] || status;
+}
+
+async function apiFetch(method, path, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const res  = await fetch(API_BASE + path, opts);
+  const json = await res.json();
+  if (!json.success) throw new Error(json.error || 'API error');
+  return json.data;
+}
+
+async function loadData() {
+  setSyncStatus('syncing');
+  try {
+    engineers = await apiFetch('GET', '/api/engineers');
+    setSyncStatus('synced');
+  } catch(e) {
+    setSyncStatus('error');
+    showToast('Could not connect to database. Check API server.', 'error');
+    engineers = [];
+  }
+  updateStats();
+  filterEngineers();
+}
+
+(document.getElementById('page-date')||{}).textContent =
+  new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+(function initUser(){
+  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const name = u.name || 'Admin';
+  (document.getElementById('admin-name')||{}).textContent = name;
+  (document.getElementById('admin-avatar')||{}).textContent = name.charAt(0).toUpperCase();
+})();
+
+loadDivisions();
+loadData();
+
+async function loadDivisions(){
+  try {
+    const res = await fetch(API_BASE + '/api/divisions');
+    const json = await res.json();
+    const raw = Array.isArray(json) ? json : (Array.isArray(json?.data) ? json.data : []);
+    DIVISIONS_LIST = raw.map(d => String(d?.name || d?.displayName || '').trim()).filter(Boolean).sort((a,b)=>a.localeCompare(b));
+  } catch(e) {
+    DIVISIONS_LIST = [];
+  }
+  populateDivisionFilter();
+  populateDivisionDropdown();
+}
+
+function populateDivisionFilter(){
+  const sel = document.getElementById('filter-division');
+  sel.innerHTML = '<option value="">All Divisions</option>';
+  DIVISIONS_LIST.forEach(d => {
+    const o = document.createElement('option');
+    o.value = d; o.textContent = d; sel.appendChild(o);
+  });
+}
+function populateDivisionDropdown(){
+  const sel = document.getElementById('e-division');
+  sel.innerHTML = '';
+  DIVISIONS_LIST.forEach(d => {
+    const o = document.createElement('option');
+    o.value = d; o.textContent = d; sel.appendChild(o);
+  });
+}
+
+function getEngineerDivisions(e){
+  const values = Array.isArray(e?.divisions) ? e.divisions : [];
+  if(e?.division) values.unshift(e.division);
+  return [...new Set(values.map(v => String(v || '').trim()).filter(Boolean))];
+}
+
+function setSelectedDivisions(values){
+  const selected = new Set((values || []).map(v => String(v || '').trim()).filter(Boolean));
+  Array.from(document.getElementById('e-division').options).forEach(o => {
+    o.selected = selected.has(o.value);
+  });
+}
+
+function getSelectedDivisions(){
+  return Array.from(document.getElementById('e-division').selectedOptions)
+    .map(o => String(o.value || '').trim())
+    .filter(Boolean);
+}
+
+function renderDivisionBadges(e){
+  const divs = getEngineerDivisions(e);
+  if(!divs.length) return '<span style="color:var(--muted);font-size:12px;">-</span>';
+  return divs.map(d => `<span class="badge badge-purple">${d}</span>`).join(' ');
+}
+
+function updateStats(){
+  const total    = engineers.length;
+  const active   = engineers.filter(e => e.active === 'Yes').length;
+  const inactive = engineers.filter(e => e.active === 'No').length;
+  const divs     = [...new Set(engineers.flatMap(e => getEngineerDivisions(e)))].length;
+  const brnch    = [...new Set(engineers.map(e => e.branch).filter(Boolean))].length;
+  (document.getElementById('stat-total')||{}).textContent = total;
+  (document.getElementById('stat-active')||{}).textContent = active;
+  (document.getElementById('stat-inactive')||{}).textContent = inactive;
+  (document.getElementById('stat-divisions')||{}).textContent = divs;
+  (document.getElementById('stat-branches')||{}).textContent = brnch;
+  (document.getElementById('sidebar-count')||{}).textContent = total;
+}
+
+function filterEngineers(){
+  const q       = document.getElementById('eng-search').value.toLowerCase();
+  const divF    = document.getElementById('filter-division').value;
+  const locF    = document.getElementById('filter-location').value;
+  const roleF   = document.getElementById('filter-role').value;
+  const activeF = document.getElementById('filter-active').value;
+
+  filteredEngineers = engineers.filter(e => {
+    const id = String(e.empId || e._id || '');
+    const divs = getEngineerDivisions(e);
+    const haystack = [
+      e.name, e.email, e.empId, e._id, e.location, e.branch, e.role, e.active, e.division,
+      ...divs
+    ].map(v => String(v || '').toLowerCase()).join(' ');
+    const matchQ      = !q || haystack.includes(q) || id.toLowerCase().includes(q);
+    const matchDiv    = !divF || divs.includes(divF);
+    const matchLoc    = !locF    || e.location === locF;
+    const matchRole   = !roleF   || e.role === roleF;
+    const matchActive = !activeF || e.active === activeF;
+    return matchQ && matchDiv && matchLoc && matchRole && matchActive;
+  });
+
+  sortArr(filteredEngineers, engSortKey, engSortDir);
+  engPage = 1;
+
+  const filtersOn = [divF, locF, roleF, activeF, q].filter(Boolean).length;
+  (document.getElementById('filter-summary')||{}).textContent =
+    filtersOn ? `${filteredEngineers.length} result${filteredEngineers.length !== 1 ? 's' : ''} filtered` : '';
+
+  renderEngineers();
+}
+
+function sortEngineers(key){
+  if(engSortKey === key) engSortDir *= -1;
+  else { engSortKey = key; engSortDir = 1; }
+  filterEngineers();
+}
+
+function renderEngineers(){
+  const perPage = parseInt(document.getElementById('eng-per-page').value);
+  const total   = filteredEngineers.length;
+  const pages   = Math.max(1, Math.ceil(total / perPage));
+  if(engPage > pages) engPage = pages;
+  const slice   = filteredEngineers.slice((engPage-1)*perPage, engPage*perPage);
+  const tbody   = document.getElementById('eng-tbody');
+
+  if(!slice.length){
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">&#128119;</div><div class="empty-title">No engineers found</div><div class="empty-sub">Try adjusting filters or add a new engineer.</div></div></td></tr>`;
+  } else {
+    tbody.innerHTML = slice.map(e => {
+      const dbId     = String(e._id || e.id || '');
+      const empId    = e.empId ? `#${e.empId}` : `#${dbId.slice(-5)}`;
+      const initials = e.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+      const color    = avatarColor(dbId);
+      const roleClass = getRoleClass(e.role);
+      return `<tr>
+
+        <td>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="emp-avatar" style="background:${color};">${initials}</div>
+            <div style="font-weight:600;color:var(--text);">${e.name}</div>
+          </div>
+        </td>
+        <td><span class="badge ${e.location==='InHouse'?'badge-blue':e.location==='Field'?'badge-amber':'badge-purple'}">${e.location||'-'}</span></td>
+        <td style="font-size:12px;color:var(--soft);">${e.branch||'-'}</td>
+        <td>${renderDivisionBadges(e)}</td>
+        <td><span class="${roleClass}">${e.role}</span></td>
+        <td><span class="badge ${e.active==='Yes'?'badge-active':'badge-inactive'}">${e.active==='Yes'?'Active':'Inactive'}</span></td>
+        <td>
+          <div class="action-group">
+            <button class="btn xs" onclick="viewProfile('${dbId}')" title="View">&#128065;</button>
+            <button class="btn xs" onclick="openEditEngineer('${dbId}')" title="Edit">&#9998;</button>
+            <button class="btn xs danger" onclick="confirmDelete('${dbId}','${e.name.replace(/'/g,"\\'")}')">&#128465;</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  (document.getElementById('eng-count-text')||{}).textContent =
+    `Showing ${Math.min((engPage-1)*perPage+1, total)}-${Math.min(engPage*perPage, total)} of ${total} engineers`;
+  renderPagination('eng-pagination', engPage, pages, p => { engPage = p; renderEngineers(); });
+}
+
+function avatarColor(id){
+  const colors = ['#0077cc','#059669','#6d28d9','#d97706','#cc0000','#007a8a','#f97316','#ec4899'];
+  let sum = 0;
+  for(let i = 0; i < id.length; i++) sum += id.charCodeAt(i);
+  return colors[sum % colors.length];
+}
+
+function getRoleClass(role){
+  if(role === 'Engineer')            return 'role-engineer';
+  if(role === 'Admin')               return 'role-admin';
+  if(role === 'Repair Team')         return 'role-fqc';
+  if(role === 'Service Coordinator') return 'role-other';
+  if(role === 'Product Team')        return 'role-pt';
+  return 'role-other';
+}
+
+function viewProfile(id){
+  const e = engineers.find(x => String(x._id||x.id) === String(id));
+  if(!e) return;
+  const dbId     = String(e._id || e.id || '');
+  const empId    = e.empId ? `#${e.empId}` : `#${dbId.slice(-5)}`;
+  const initials = e.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+  const color    = avatarColor(dbId);
+  document.getElementById('profile-body').innerHTML = `
+    <div class="profile-header">
+      <div class="profile-big-avatar" style="background:${color};">${initials}</div>
+      <div>
+        <div class="profile-name">${e.name}</div>
+        <div class="profile-sub">${e.role} &middot; ${getEngineerDivisions(e).join(', ')||'No Division'}</div>
+        <div style="margin-top:6px;"><span class="badge ${e.active==='Yes'?'badge-active':'badge-inactive'}">${e.active==='Yes'?'Active':'Inactive'}</span></div>
+      </div>
+    </div>
+    <div class="profile-grid">
+      <div class="profile-field"><div class="profile-field-label">Employee ID</div><div class="profile-field-val">${empId}</div></div>
+      <div class="profile-field"><div class="profile-field-label">Role</div><div class="profile-field-val">${e.role}</div></div>
+      <div class="profile-field"><div class="profile-field-label">Location</div><div class="profile-field-val">${e.location||'-'}</div></div>
+      <div class="profile-field"><div class="profile-field-label">Branch</div><div class="profile-field-val">${e.branch||'-'}</div></div>
+      <div class="profile-field" style="grid-column:span 2;"><div class="profile-field-label">Division</div><div class="profile-field-val">${getEngineerDivisions(e).join(', ')||'-'}</div></div>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn sm" onclick="closeModal('modal-profile');openEditEngineer('${dbId}')">&#9998; Edit</button>
+      <button class="btn sm danger" onclick="closeModal('modal-profile');confirmDelete('${dbId}','${e.name.replace(/'/g,"\\'")}')">&#128465; Delete</button>
+    </div>
+  `;
+  openModal('modal-profile');
+}
+
+function openAddEngineer(){
+  editingEngId = null;
+  (document.getElementById('modal-eng-title')||{}).textContent = 'Add New Engineer';
+  (document.getElementById('save-eng-btn')||{}).innerHTML = '&#128190; Save Engineer';
+  document.getElementById('e-name').value = '';
+  setSelectedDivisions([]);
+  ['e-location','e-branch','e-role'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('e-active').value = 'Yes';
+  openModal('modal-engineer');
+}
+
+function openEditEngineer(id){
+  const e = engineers.find(x => String(x._id||x.id) === String(id));
+  if(!e) return;
+  editingEngId = String(e._id || e.id);
+  (document.getElementById('modal-eng-title')||{}).textContent = 'Edit Engineer - ' + e.name;
+  (document.getElementById('save-eng-btn')||{}).innerHTML = '&#128190; Update Engineer';
+  document.getElementById('e-name').value     = e.name     || '';
+  setSelectedDivisions(getEngineerDivisions(e));
+  document.getElementById('e-location').value = e.location || '';
+  document.getElementById('e-branch').value   = e.branch   || '';
+  document.getElementById('e-role').value     = e.role     || '';
+  document.getElementById('e-active').value   = e.active   || 'Yes';
+  openModal('modal-engineer');
+}
+
+async function saveEngineer(){
+  const name     = document.getElementById('e-name').value.trim();
+  const divisions = getSelectedDivisions();
+  const division = divisions[0] || '';
+  const location = document.getElementById('e-location').value;
+  const branch   = document.getElementById('e-branch').value;
+  const role     = document.getElementById('e-role').value;
+  const active   = document.getElementById('e-active').value;
+
+  if(!name || !location || !branch || !role){
+    showToast('Please fill all required fields.', 'error');
+    return;
+  }
+
+  const payload = { name, division, divisions, location, branch, role, active };
+
+  const btn = document.getElementById('save-eng-btn');
+  btn.disabled    = true;
+  btn.innerHTML = '&#9203; Saving...';
+  setSyncStatus('syncing');
+
+  try {
+    if(editingEngId){
+      const updated = await apiFetch('PUT', `/api/engineers/${editingEngId}`, payload);
+      const idx = engineers.findIndex(e => String(e._id||e.id) === String(editingEngId));
+      if(idx !== -1) engineers[idx] = updated;
+      showToast('Engineer updated and saved to database!', 'success');
+    } else {
+      const created = await apiFetch('POST', '/api/engineers', payload);
+      engineers.push(created);
+      showToast('Engineer added and saved to database!', 'success');
+    }
+    setSyncStatus('synced');
+    closeModal('modal-engineer');
+    updateStats();
+    filterEngineers();
+  } catch(err) {
+    setSyncStatus('error');
+    showToast('Failed to save: ' + err.message, 'error');
+  } finally {
+    btn.disabled    = false;
+    btn.innerHTML = editingEngId ? '&#128190; Update Engineer' : '&#128190; Save Engineer';
+  }
+}
+
+function confirmDelete(id, name){
+  (document.getElementById('confirm-title')||{}).textContent = 'Delete Engineer?';
+  (document.getElementById('confirm-msg')||{}).textContent = `"${name}" will be permanently removed and will lose portal access.`;
+  document.getElementById('confirm-ok-btn').onclick    = async () => {
+    setSyncStatus('syncing');
+    try {
+      await apiFetch('DELETE', `/api/engineers/${id}`);
+      engineers = engineers.filter(e => String(e._id||e.id) !== String(id));
+      setSyncStatus('synced');
+      showToast('Engineer deleted from database.', 'success');
+    } catch(err) {
+      setSyncStatus('error');
+      showToast('Failed to delete: ' + err.message, 'error');
+    }
+    closeModal('modal-confirm');
+    updateStats();
+    filterEngineers();
+  };
+  openModal('modal-confirm');
+}
+
+function exportCSV(){
+  const rows = [['Emp ID','Name','Location','Branch','Division','Role','Active']];
+  engineers.forEach(e => {
+    const empId = e.empId || String(e._id||e.id||'').slice(-5);
+    rows.push([empId, e.name, e.location, e.branch, getEngineerDivisions(e).join('; '), e.role, e.active]);
+  });
+  const csv = rows.map(r => r.map(v => `"${v||''}"`).join(',')).join('\n');
+  const a   = document.createElement('a');
+  a.href     = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'schillerindia-engineers.csv';
+  a.click();
+  showToast('CSV exported!', 'success');
+}
+
+function sortArr(arr, key, dir){
+  arr.sort((a, b) => {
+    const av = (key === 'division' ? getEngineerDivisions(a).join(', ') : (a[key]||'')).toString().toLowerCase();
+    const bv = (key === 'division' ? getEngineerDivisions(b).join(', ') : (b[key]||'')).toString().toLowerCase();
+    return av < bv ? -dir : av > bv ? dir : 0;
+  });
+}
+
+function renderPagination(containerId, current, total, onPage){
+  const el = document.getElementById(containerId);
+  if(total <= 1){ el.innerHTML = ''; return; }
+  let html = `<button class="page-btn" ${current===1?'disabled':''} onclick="(${onPage})(${current-1})">&#8249;</button>`;
+  getPageRange(current, total).forEach(p => {
+    if(p === '...') html += `<button class="page-btn" disabled>...</button>`;
+    else html += `<button class="page-btn ${p===current?'active':''}" onclick="(${onPage})(${p})">${p}</button>`;
+  });
+  html += `<button class="page-btn" ${current===total?'disabled':''} onclick="(${onPage})(${current+1})">&#8250;</button>`;
+  el.innerHTML = html;
+}
+
+function getPageRange(current, total){
+  if(total <= 7) return Array.from({length:total}, (_,i) => i+1);
+  if(current <= 4) return [1,2,3,4,5,'...',total];
+  if(current >= total-3) return [1,'...',total-4,total-3,total-2,total-1,total];
+  return [1,'...',current-1,current,current+1,'...',total];
+}
+
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if(e.target === o) o.classList.remove('open'); });
+});
+
+function showToast(msg, type='success'){
+  const wrap = document.getElementById('toast-wrap');
+  const el   = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span class="toast-dot"></span>${msg}`;
+  wrap.appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+function logout(){ localStorage.clear(); window.location.href = 'login.html'; }
+</script>
+</body>
+</html>
+
+
+
+
+
+

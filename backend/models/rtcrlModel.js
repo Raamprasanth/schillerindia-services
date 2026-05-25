@@ -1,0 +1,264 @@
+// models/rtcrlModel.js
+// ─────────────────────────────────────────────────────────────────────────────
+// Closed Repair List — Mongoose Schema
+// Stores ALL closed/completed repair records from PFRN · UR · OB
+//
+// A record lands here in ONE of two ways:
+//   1. Directly created here (status = 'completed' on creation)
+//   2. Copied here when a RTUR/RTOB/RTFRN record is marked completed
+//      (your route logic handles the copy — see rtcrlRoutes.js)
+//
+// Fields map 1-to-1 with rtcrl.html:
+//   Table columns   → entryDate, closedDate, division, scRefNo, defGirNo,
+//                      category, model, defBrdModName, noOfDays(virtual),
+//                      repairedBy, closedBy
+//   Detail modal    → all repair + dispatch + remarks fields
+//   Filters         → division, category, repairedBy, closedBy, date range
+// ─────────────────────────────────────────────────────────────────────────────
+
+const mongoose = require('mongoose');
+
+const rtcrlSchema = new mongoose.Schema(
+  {
+    // ════════════════════════════════════════════════════════════════════════
+    // CORE IDENTIFICATION  (same across PFRN · UR · OB)
+    // ════════════════════════════════════════════════════════════════════════
+
+    entryDate: {
+      type: Date,
+      required: [true, 'Entry date is required'],
+      index: true,
+    },
+
+    closedDate: {
+      type: Date,
+      default: Date.now,
+      index: true,
+    },
+
+    division: {
+      type: String,
+      required: [true, 'Division is required'],
+      trim: true,
+      index: true,
+    },
+
+    scRefNo: {
+      type: String,
+      required: [true, 'SC Ref No is required'],
+      trim: true,
+      uppercase: true,
+      index: true,
+    },
+
+    defGirNo: {
+      type: String,
+      required: [true, 'DEF GIR No is required'],
+      trim: true,
+      uppercase: true,
+      index: true,
+    },
+
+    // Category tab filter in rtcrl.html: All | PFRN | UR | OB
+    category: {
+      type: String,
+      enum: ['UR', 'PFRN', 'OB'],
+      required: [true, 'Category is required'],
+      index: true,
+    },
+
+    model: {
+      type: String,
+      required: [true, 'Model is required'],
+      trim: true,
+    },
+
+    defBrdModName: {
+      type: String,
+      required: [true, 'Def Brd/Mod Name is required'],
+      trim: true,
+    },
+
+    // Always 'completed' for closed records — kept for consistency
+    status: {
+      type: String,
+      default: 'completed',
+      enum: ['completed'],
+    },
+
+    // ════════════════════════════════════════════════════════════════════════
+    // REPAIR DETAILS  (from Update Modal of RTUR / RTOB / RTFRN)
+    // ════════════════════════════════════════════════════════════════════════
+
+    // "Repaired By" — fl-repairedby filter in rtcrl.html
+    repairedBy: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+
+    compUsedToRepair: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+
+    repBrdDate: {
+      type: Date,
+      default: null,
+    },
+
+    dcNo: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+
+    techRemarks: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+
+    finalRemarks: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+
+    addNotes: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+
+    // ════════════════════════════════════════════════════════════════════════
+    // DISPATCH & RETURN  (detail modal — Dispatch & Return section)
+    // ════════════════════════════════════════════════════════════════════════
+
+    returnDate: {
+      type: Date,
+      default: null,
+    },
+
+    returnDcNo: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+
+    destination: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+
+    // ════════════════════════════════════════════════════════════════════════
+    // AUDIT
+    // ════════════════════════════════════════════════════════════════════════
+
+    // Who originally submitted the repair record
+    submittedBy: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+
+    submittedAt: {
+      type: Date,
+      default: null,
+    },
+
+    // Who closed / marked the record as completed
+    // Used by fl-closedby filter in rtcrl.html
+    closedBy: {
+      type: String,
+      trim: true,
+      default: '',
+      index: true,
+    },
+
+    // Optional: reference back to the original RTUR / RTOB / RTFRN document
+    sourceId: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null,
+    },
+
+    // Which collection the record came from: 'rtur' | 'rtob' | 'rtfrn'
+    sourceCollection: {
+      type: String,
+      enum: ['rtur', 'rtob', 'rtfrn', ''],
+      default: '',
+    },
+  },
+  {
+    timestamps: true,       // createdAt + updatedAt from Mongoose
+    collection: 'rtcrls',
+  }
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VIRTUAL — noOfDays
+// Days from entryDate to closedDate (not to today, since the record is closed)
+// rtcrl.html calcDays(entry, closed) does the same on the client side.
+// ─────────────────────────────────────────────────────────────────────────────
+rtcrlSchema.virtual('noOfDays').get(function () {
+  if (!this.entryDate) return 0;
+  const end  = this.closedDate ? new Date(this.closedDate) : new Date();
+  const diff = Math.floor((end.getTime() - new Date(this.entryDate).getTime()) / 86400000);
+  return Math.max(0, isNaN(diff) ? 0 : diff);
+});
+
+rtcrlSchema.set('toJSON',   { virtuals: true });
+rtcrlSchema.set('toObject', { virtuals: true });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INDEXES — match the filter combos used in rtcrl.html applyFilters()
+//   fl-from / fl-to     → entryDate range
+//   fl-div              → division
+//   category tab        → category
+//   fl-repairedby       → repairedBy
+//   fl-closedby         → closedBy (text search)
+// ─────────────────────────────────────────────────────────────────────────────
+rtcrlSchema.index({ closedDate: -1,  category: 1 });
+rtcrlSchema.index({ entryDate:  -1,  division: 1 });
+rtcrlSchema.index({ category:   1,   division: 1 });
+rtcrlSchema.index({ scRefNo:    1,   defGirNo: 1 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATIC METHODS — consumed by GET /api/rtcrl/stats
+// Maps to the 4 stat cards in rtcrl.html:
+//   Total | PFRN | UR | OB
+// ─────────────────────────────────────────────────────────────────────────────
+rtcrlSchema.statics.getTotalCount = function () {
+  return this.countDocuments();
+};
+rtcrlSchema.statics.getPFRNCount = function () {
+  return this.countDocuments({ category: 'PFRN' });
+};
+rtcrlSchema.statics.getURCount = function () {
+  return this.countDocuments({ category: 'UR' });
+};
+rtcrlSchema.statics.getOBCount = function () {
+  return this.countDocuments({ category: 'OB' });
+};
+rtcrlSchema.statics.getAvgDays = async function () {
+  const result = await this.aggregate([
+    {
+      $project: {
+        days: {
+          $divide: [
+            { $subtract: [{ $ifNull: ['$closedDate', new Date()] }, '$entryDate'] },
+            86400000,
+          ],
+        },
+      },
+    },
+    { $group: { _id: null, avg: { $avg: '$days' } } },
+  ]);
+  return result.length ? Math.round(result[0].avg) : 0;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+const RTCRL = mongoose.model('RTCRL', rtcrlSchema);
+module.exports = RTCRL;

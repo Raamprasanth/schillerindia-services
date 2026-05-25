@@ -1,0 +1,63 @@
+.brand-logo-host {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0 !important;
+  min-width: 0 !important;
+  text-decoration: none !important;
+}
+
+.brand-logo-img {
+  display: block;
+  width: min(100%, 270px);
+  height: auto;
+  max-height: 58px;
+  object-fit: contain;
+  flex: 0 1 auto;
+  transform-origin: center;
+  animation: schillerLogoFloat 3.2s ease-in-out infinite;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.14));
+}
+
+.sidebar .brand-logo-host {
+  width: 100% !important;
+}
+
+.sidebar .brand-logo-img {
+  width: 100%;
+  max-width: 200px;
+  max-height: 54px;
+}
+
+nav .brand-logo-img,
+.topbar .brand-logo-img {
+  width: 270px;
+  max-width: 32vw;
+  max-height: 58px;
+}
+
+.card-top .brand-logo-img {
+  width: 310px;
+  max-width: 100%;
+  max-height: 76px;
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.24));
+}
+
+@keyframes schillerLogoFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-1px) scale(1.012); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-logo-img {
+    animation: none;
+  }
+}
+
+@media (max-width: 760px) {
+  nav .brand-logo-img,
+  .topbar .brand-logo-img {
+    max-width: 210px;
+    max-height: 48px;
+  }
+}

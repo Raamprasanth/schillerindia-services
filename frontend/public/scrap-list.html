@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light'); })();</script>
+<title>SchillerIndia - Scrap List</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<style>*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root,[data-theme="light"]{--bg:#f4f7fa;--surface:#ffffff;--surface2:#eaf1f6;--border:#d0e0ec;--accent:#0077cc;--accent2:#007a8a;--green:#059669;--amber:#d97706;--red:#cc0000;--text:#1a2a3a;--muted:#7a9ab0;--soft:#4a6a8a;--card:#ffffff;--shadow:rgba(0,80,120,0.08);}
+[data-theme="dark"]{--bg:#0f1621;--surface:#1a2333;--surface2:#1e293b;--border:#2a3a52;--accent:#3b9eff;--accent2:#22d3ee;--green:#10b981;--amber:#f59e0b;--red:#f87171;--text:#e2eaf4;--muted:#4a6a8a;--soft:#7a9ab0;--card:#1a2333;--shadow:rgba(0,0,0,0.3);}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;transition:background 0.3s,color 0.3s;}
+.sidebar{width:240px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 12px var(--shadow);transition:background 0.3s;}
+.sidebar-header{padding:20px 20px 16px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#450a0a,#b91c1c);}
+.sidebar-logo{display:flex;align-items:center;gap:10px;}
+.sidebar-logo-icon{width:36px;height:36px;background:rgba(255,255,255,0.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:#fff;}
+.sidebar-logo-text{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;}
+.sidebar-logo-text .sub{font-size:10px;color:rgba(255,255,255,0.6);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;}
+.role-badge{margin:10px 20px 0;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;display:inline-block;}
+.role-badge.admin{background:rgba(185,28,28,0.1);color:#b91c1c;border:1px solid rgba(185,28,28,0.25);}
+.role-badge.employee{background:rgba(5,150,105,0.12);color:var(--green);border:1px solid rgba(5,150,105,0.3);}
+.sidebar-nav{flex:1;padding:12px 10px;}
+.nav-section{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;padding:10px 8px 5px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:500;cursor:pointer;transition:all 0.2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:rgba(185,28,28,0.1);color:#b91c1c;font-weight:600;}
+[data-theme="dark"] .nav-item.active{background:rgba(185,28,28,0.15);}
+.nav-item .icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.nav-badge-count{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;}
+.nav-group-toggle{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:600;cursor:pointer;transition:all 0.2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;}
+.nav-group-toggle:hover{background:var(--surface2);color:var(--text);}
+.nav-group-toggle.active,.nav-group-toggle.open{color:var(--accent);}
+.caret{margin-left:auto;font-size:9px;transition:transform 0.25s;}
+.nav-group-toggle.open .caret{transform:rotate(90deg);}
+.nav-children{max-height:0;overflow:hidden;transition:max-height 0.35s ease;}
+.nav-children.open{max-height:400px;}
+.nav-sub .nav-item{padding:6px 10px 6px 28px;font-size:12px;color:var(--muted);}
+.nav-sub .nav-item:hover{color:var(--text);background:var(--surface2);}
+.nav-sub .nav-item.active{color:#b91c1c;background:rgba(185,28,28,0.07);font-weight:600;}
+.sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);}
+.user-info{display:flex;align-items:center;gap:10px;}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#b91c1c,#ef4444);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
+.user-name{font-size:13px;font-weight:600;color:var(--text);}
+.user-role-txt{font-size:11px;color:var(--muted);}
+.logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s;}
+.logout-btn:hover{border-color:var(--red);color:var(--red);}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:10;box-shadow:0 2px 8px var(--shadow);transition:background 0.3s;}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:4px;}
+.breadcrumb a{color:var(--muted);text-decoration:none;}
+.breadcrumb a:hover{color:var(--accent);}
+.breadcrumb .sep{color:var(--border);}
+.topbar-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);}
+.topbar-date{font-size:12px;color:var(--muted);margin-top:2px;}
+.content{flex:1;padding:28px;overflow-y:auto;background:var(--bg);transition:background 0.3s;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;border:1px solid var(--border);background:var(--surface2);color:var(--soft);font-family:'Plus Jakarta Sans',sans-serif;display:inline-flex;align-items:center;gap:6px;}
+.btn:hover{border-color:var(--accent);color:var(--accent);}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn.primary:hover{opacity:0.88;}
+.btn.success{background:var(--green);color:#fff;border-color:var(--green);}
+.btn.danger{color:var(--red);border-color:rgba(204,0,0,0.3);background:none;}
+.btn.danger:hover{background:rgba(204,0,0,0.07);}
+.btn.sm{padding:6px 14px;font-size:12px;}
+.btn.xs{padding:4px 10px;font-size:11px;border-radius:6px;}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px var(--shadow);transition:transform 0.2s,border-color 0.2s;}
+.stat-card:hover{transform:translateY(-1px);}
+.stat-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.stat-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;}
+.stat-lbl{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;}
+.filter-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+.search-box{position:relative;flex:1;min-width:200px;}
+.search-box input{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px 8px 34px;font-size:13px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:border-color 0.2s;}
+.search-box input:focus{border-color:var(--accent);}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);}
+.filter-sel{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--soft);font-family:'Plus Jakarta Sans',sans-serif;outline:none;cursor:pointer;}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px var(--shadow);transition:background 0.3s,border-color 0.3s;}
+.panel-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);transition:background 0.3s;}
+.panel-title{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+.panel-title .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+.table-wrap{overflow-x:auto;}
+table.dt{width:100%;border-collapse:collapse;}
+table.dt thead th{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;padding:12px 14px;text-align:left;border-bottom:1px solid var(--border);background:var(--surface);white-space:nowrap;}
+table.dt tbody td{padding:12px 14px;font-size:13px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;}
+table.dt tbody tr:last-child td{border-bottom:none;}
+table.dt tbody tr:hover td{background:var(--surface2);}
+.table-footer{padding:12px 16px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);display:flex;align-items:center;justify-content:space-between;background:var(--surface);}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;display:block;}
+.b-red{background:rgba(204,0,0,0.1);color:var(--red);}.b-red::before{background:var(--red);}
+.b-amber{background:rgba(217,119,6,0.12);color:var(--amber);}.b-amber::before{background:var(--amber);}
+.b-green{background:rgba(5,150,105,0.12);color:var(--green);}.b-green::before{background:var(--green);}
+.b-blue{background:rgba(0,119,204,0.12);color:var(--accent);}.b-blue::before{background:var(--accent);}
+.b-muted{background:var(--surface2);color:var(--muted);}.b-muted::before{background:var(--muted);}
+.chip{display:inline-block;padding:2px 9px;border-radius:6px;font-size:11px;font-weight:600;background:var(--surface2);color:var(--soft);border:1px solid var(--border);}
+.modal-overlay{position:fixed;inset:0;background:rgba(10,20,35,0.4);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;animation:fadeUp 0.3s ease;box-shadow:0 20px 60px rgba(0,0,0,0.18);}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1;}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);}
+.modal-close{background:none;border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.modal-close:hover{border-color:var(--red);color:var(--red);}
+.modal-body{padding:24px;}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;position:sticky;bottom:0;background:var(--surface);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field.span2{grid-column:span 2;}
+.field label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
+.field input,.field select,.field textarea{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px 13px;font-size:13px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:border-color 0.2s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);}
+.field textarea{resize:vertical;min-height:80px;}
+.form-err{font-size:12px;color:var(--red);margin-top:10px;display:none;}
+.form-err.show{display:block;}
+.confirm-box{background:var(--surface);border:1px solid rgba(204,0,0,0.2);border-radius:14px;width:100%;max-width:380px;padding:28px;text-align:center;animation:fadeUp 0.3s ease;}
+.confirm-icon{font-size:40px;margin-bottom:14px;}
+.confirm-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px;}
+.confirm-msg{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.6;}
+.confirm-actions{display:flex;gap:10px;justify-content:center;}
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;min-width:260px;animation:fadeUp 0.3s ease;box-shadow:0 8px 24px var(--shadow);}
+.toast.success{border-color:rgba(5,150,105,0.4);}.toast.success .tdot{background:var(--green);}
+.toast.error{border-color:rgba(204,0,0,0.4);}.toast.error .tdot{background:var(--red);}
+.toast.info{border-color:rgba(0,119,204,0.4);}.toast.info .tdot{background:var(--accent);}
+.tdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.empty-state{text-align:center;padding:60px 20px;}
+.empty-icon{font-size:48px;margin-bottom:14px;opacity:0.4;}
+.empty-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.empty-sub{font-size:13px;color:var(--muted);}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
+    </style>
+  <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="employee-theme.css">
+  <script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <script src="brand-logo.js" defer></script>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="sidebar-logo-text">SchillerIndia<div class="sub">Services</div></div>
+    </div>
+  </div>
+  <div style="padding:10px 20px 0;"><span class="role-badge">Admin</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <button class="nav-item active" onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
+    <button class="nav-item " onclick="window.location.href='company-section.html'"><span class="icon">&#127970;</span> Company</button>
+    <button class="nav-item " onclick="window.location.href='division-section.html'"><span class="icon">&#128309;</span> Division</button>
+    <button class="nav-item " onclick="window.location.href='engineer-section.html'"><span class="icon">&#128119;</span> Engineers</button>
+    <button class="nav-item " onclick="window.location.href='dealer-section.html'"><span class="icon">&#129309;</span> Dealers</button>
+    <div class="nav-section">Operations</div>
+    <button class="nav-group-toggle " id="sf-toggle" onclick="toggleSF()">
+      <span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span>
+    </button>
+    <div class="nav-children " id="sf-children">
+      <div class="nav-sub">
+        <button class="nav-item " onclick="window.location.href='service-list.html'"><span class="icon">&#128225;</span> Services</button>
+        <button class="nav-item " onclick="window.location.href='pending-frn.html'"><span class="icon">&#128221;</span> Pending FRN</button>
+        <button class="nav-item " onclick="window.location.href='ob-pending.html'"><span class="icon">&#128194;</span> OB Pending</button>
+        <button class="nav-item " onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
+        <button class="nav-item " onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
+        <button class="nav-item " onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
+        <button class="nav-item " onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
+        <button class="nav-item " onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="ar-toggle" onclick="toggleAR()"><span class="icon">&#128196;</span> Activity Register <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="ar-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
+        <a class="nav-item " href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
+        <a class="nav-item " href="aprfob.html"><span class="icon">&#128203;</span> PRF/OB List</a>
+        <a class="nav-item " href="acr.html"><span class="icon">&#128209;</span> Closed PRF/OB</a>
+        <a class="nav-item " href="ans.html"><span class="icon">&#128230;</span> Non Saleable</a>
+        <a class="nav-item " href="as.html"><span class="icon">&#128176;</span> Saleable</a>
+        <a class="nav-item " href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
+        <a class="nav-item " href="acbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="rta-toggle" onclick="toggleRTA()"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="rta-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="atfrn.html"><span class="icon">&#128221;</span> Admin RT FRN</a>
+        <a class="nav-item " href="atob.html"><span class="icon">&#128230;</span> Admin RT OB</a>
+        <a class="nav-item " href="atur.html"><span class="icon">&#128736;&#65039;</span> Admin RT UR</a>
+        <a class="nav-item " href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
+      </div>
+    </div>
+    <div class="nav-section">Admin</div>
+    <button class="nav-item " onclick="window.location.href='usermanagement.html'"><span class="icon">&#128101;</span> User Management</button>
+    <button class="nav-item " onclick="window.location.href='Reports.html'"><span class="icon">&#128200;</span> Reports</button>
+    <button class="nav-item " onclick="window.location.href='settings.html'"><span class="icon">&#9881;&#65039;</span> Settings</button>
+    <button class="nav-item " onclick="window.location.href='notifications.html'"><span class="icon">&#128276;</span> Notifications</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="admin-avatar">A</div>
+      <div>
+        <div class="user-name" id="admin-name">Admin</div>
+        <div class="user-role">Administrator</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="#" id="dash-link">Dashboard</a>
+        <span class="sep">&#8250;</span>
+        <span style="color:var(--soft);">Operations &#8250; Services &amp; Filter &#8250; Scrap List</span>
+      </div>
+      <div class="topbar-title">Scrap List</div>
+      <div class="topbar-date" id="page-date"></div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn sm" onclick="loadItems()">&#10227; Refresh</button>
+      <button class="btn primary" onclick="openAdd()">&#10133; Add to Scrap</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-icon" style="background:rgba(204,0,0,0.1);">&#128465;</div><div><div class="stat-val" style="color:var(--red);" id="st-total">-</div><div class="stat-lbl">Total Scrap</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:rgba(217,119,6,0.1);">&#9203;</div><div><div class="stat-val" style="color:var(--amber);" id="st-pending">-</div><div class="stat-lbl">Pending Approval</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:rgba(5,150,105,0.1);">&#9989;</div><div><div class="stat-val" style="color:var(--green);" id="st-approved">-</div><div class="stat-lbl">Approved</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:rgba(0,119,204,0.1);">&#128230;</div><div><div class="stat-val" style="color:var(--accent);" id="st-disposed">-</div><div class="stat-lbl">Disposed</div></div></div>
+      
+    </div>
+    <div class="filter-bar">
+      <div class="search-box">
+        <span class="search-icon">&#128269;</span>
+        <input type="text" id="pg-search" placeholder="Search..." oninput="filterItems()"/>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title"><span class="dot"></span> Scrap List</div>
+        <div style="font-size:12px;color:var(--muted);" id="pg-summary"></div>
+      </div>
+      <div class="table-wrap">
+        <table class="dt">
+          <thead><tr><th>Scrap ID</th><th>Device / Model</th><th>Serial No.</th><th>Division</th><th>Customer</th><th>Reason</th><th>Added By</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="pg-tbody">
+            <tr><td colspan="10" style="text-align:center;padding:40px;color:var(--muted);">&#9203; Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-footer">
+        <span id="pg-footer">-</span>
+        <span id="pg-sync" style="font-size:11px;color:var(--muted);">-</span>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-main">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Add to Scrap</div>
+      <button class="modal-close" onclick="closeModal('modal-main')">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+      <div class="field"><label>Device / Model *</label><input type="text" id="m-f1" placeholder=""/></div>
+      <div class="field"><label>Serial No.</label><input type="text" id="m-f2" placeholder=""/></div>
+      <div class="field"><label>Division</label><select id="m-f3"><option value="">Select...</option><option>SHIPL</option><option>VENTILATOR</option><option>INJECTOR</option><option>RADIOLOGY</option><option>GANSHORN</option><option>DEFIBRILLATOR</option><option>HOLTER</option><option>SPIROMETRY</option><option>ULTRASOUND</option><option>MONITORS</option><option>FQC</option><option>H &amp; F</option><option>REPAIR</option></select></div>
+      <div class="field"><label>Customer</label><input type="text" id="m-f4" placeholder="Customer name"/></div>
+      <div class="field span2"><label>Reason *</label><input type="text" id="m-f5" placeholder=""/></div>
+      <div class="field"><label>Status</label><select id="m-f6"><option>Pending Approval</option><option>Approved</option><option>Disposed</option></select></div></div>
+      <div class="form-err" id="m-err"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn sm" onclick="closeModal('modal-main')">Cancel</button>
+      <button class="btn primary sm" id="m-save-btn" onclick="saveItem()">&#128190; Save</button>
+    </div>
+  </div>
+</div>
+<!-- CONFIRM -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="confirm-box">
+    <div class="confirm-icon">&#9888;&#65039;</div>
+    <div class="confirm-title">Confirm Delete</div>
+    <div class="confirm-msg" id="confirm-msg">This cannot be undone.</div>
+    <div class="confirm-actions">
+      <button class="btn sm" onclick="closeModal('modal-confirm')">Cancel</button>
+      <button class="btn danger sm" id="confirm-ok">Delete</button>
+    </div>
+  </div>
+</div>
+<div class="toast-wrap" id="toast-wrap"></div>
+<script>
+
+const API_BASE='http://localhost:5000/api';
+let items=[],filtered=[],editingId=null,isAdmin=false,currentUser={};
+
+(function init(){
+  const token=localStorage.getItem('schiller_token');
+  if(!token){window.location.href='login.html';return;}
+  currentUser=JSON.parse(localStorage.getItem('schiller_user')||'{}');
+  const role=(localStorage.getItem('schiller_role')||currentUser.role||'').toLowerCase();
+  isAdmin=role==='admin'||role==='superadmin';
+  document.getElementById('dash-link').href=isAdmin?'admin-dashboard.html':'employee-dashboard.html';
+  injectSidebar(isAdmin);
+  const name=currentUser.name||'User';
+  (document.getElementById('sb-name')||{}).textContent =name;
+  (document.getElementById('sb-avatar')||{}).textContent =name.charAt(0).toUpperCase();
+  (document.getElementById('sb-role-txt')||{}).textContent =isAdmin?'Administrator':'Employee';
+  const badge=document.getElementById('sb-role-badge');
+  badge.textContent=isAdmin?'Admin':'Employee';
+  badge.className='role-badge '+(isAdmin?'admin':'employee');
+  (document.getElementById('page-date')||{}).textContent =new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  loadItems();
+})();
+
+function getToken(){return localStorage.getItem('schiller_token')||'';}
+function authHeaders(){return {'Content-Type':'application/json',Authorization:'Bearer '+getToken()};}
+
+let _sfOpen=false;
+function toggleSF(){
+  _sfOpen=!_sfOpen;
+  document.getElementById('sf-children').classList.toggle('open',_sfOpen);
+  document.getElementById('sf-toggle').classList.toggle('open',_sfOpen);
+}
+function toggleAR(){ var btn=document.getElementById('ar-toggle'); var panel=document.getElementById('ar-children'); if(!btn||!panel)return; btn.classList.toggle('open'); panel.classList.toggle('open'); }
+
+function formatDate(dt){if(!dt)return'-';const d=new Date(dt);return isNaN(d)?'-':d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+function showToast(msg,type='success'){const wrap=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="tdot"></span>'+msg;wrap.appendChild(el);setTimeout(()=>el.remove(),3200);}
+function logout(){localStorage.clear();window.location.href='login.html';}
+
+
+const ADMIN_NAV = `    <div class="nav-section">Main</div>
+    <a class="nav-item " href="admin-dashboard.html"><span class="icon">&#128202;</span> Dashboard</a>
+    <a class="nav-item " href="company-section.html"><span class="icon">&#127970;</span> Company</a>
+    <a class="nav-item " href="division-section.html"><span class="icon">&#128309;</span> Division</a>
+    <a class="nav-item " href="engineer-section.html"><span class="icon">&#128119;</span> Engineers</a>
+    <a class="nav-item " href="dealer-section.html"><span class="icon">&#129309;</span> Dealers</a>
+    <div class="nav-section">Operations</div>
+    <button class="nav-group-toggle open" id="sf-toggle" onclick="toggleSF()"><span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span></button>
+    <div class="nav-children open" id="sf-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="service-list.html"><span class="icon">&#128225;</span> Services</a>
+        <a class="nav-item " href="under-repair.html"><span class="icon">&#128736;&#65039;</span> Under Repair</a>
+        <a class="nav-item" href="closed-frn.html"><span class="icon">&#9989;</span> Closed FRN</a>
+        <a class="nav-item " href="pending-frn.html"><span class="icon">&#128221;</span> Pending FRN</a>
+        <a class="nav-item " href="ob-pending.html"><span class="icon">&#128194;</span> OB Pending</a>
+        <a class="nav-item " href="estimation-pending.html"><span class="icon">&#128203;</span> SO Pending</a>
+        <a class="nav-item active" href="scrap-list.html"><span class="icon">&#128465;</span> Scrap List</a>
+      </div>
+    </div>
+    <button class="nav-group-toggle" id="ar-toggle" onclick="toggleAR()"><span class="icon">&#128196;</span> Activity Register <span class="caret">&#9656;</span></button>
+    <div class="nav-children" id="ar-children">
+      <div class="nav-sub">
+        <a class="nav-item" href="call-register.html"><span class="icon">&#128222;</span> Call Register</a>
+        <a class="nav-item" href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
+        <a class="nav-item" href="aprfob.html"><span class="icon">&#128203;</span> PRF/OB List</a>
+        <a class="nav-item" href="ecr.html"><span class="icon">&#128209;</span> Closed PRF/OB</a>
+        <a class="nav-item" href="fns.html"><span class="icon">&#128230;</span> Non Saleable</a>
+        <a class="nav-item" href="as.html"><span class="icon">&#128176;</span> Saleable</a>
+        <a class="nav-item" href="ebir.html"><span class="icon">&#128202;</span> BIR List</a>
+        <a class="nav-item" href="ecbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
+      <a class="nav-item" href="elt.html"><span class="ico">&#128451;</span> Loan Items</a>
+      <a class="nav-item" href="ecli.html"><span class="ico">&#128193;</span> Closed Loan Item</a>
+      </div>
+    </div>
+    <div class="nav-section">Admin</div>
+    <a class="nav-item " href="usermanagement.html"><span class="icon">&#128101;</span> User Management</a>
+    <a class="nav-item" href="Reports.html"><span class="icon">&#128200;</span> Reports</a>
+    <a class="nav-item " href="settings.html"><span class="icon">&#9881;&#65039;</span> Settings</a>
+    <a class="nav-item " href="notifications.html"><span class="icon">&#128276;</span> Notifications</a>`;
+const EMP_NAV   = `    <div class="nav-section">Main</div>
+    <a class="nav-item " href="employee-dashboard.html"><span class="icon">&#127968;</span> My Dashboard</a>
+    <div class="nav-section">Operations</div>
+    <button class="nav-group-toggle open" id="sf-toggle" onclick="toggleSF()"><span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span></button>
+    <div class="nav-children open" id="sf-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="service-list.html"><span class="icon">&#128225;</span> Services</a>
+        <a class="nav-item" href="estimation-pending.html"><span class="icon">&#128203;</span> SO Pending</a>
+        <a class="nav-item " href="under-repair.html"><span class="icon">&#128736;&#65039;</span> Under Repair</a>
+        <a class="nav-item" href="closed-frn.html"><span class="icon">&#9989;</span> Closed FRN</a>
+        <a class="nav-item " href="pending-frn.html"><span class="icon">&#128221;</span> Pending FRN</a>
+        <a class="nav-item " href="ob-pending.html"><span class="icon">&#128194;</span> OB Pending</a>
+        <a class="nav-item active" href="scrap-list.html"><span class="icon">&#128465;</span> Scrap List</a>
+      </div>
+    </div>
+    <div class="nav-section">Account</div>
+    <a class="nav-item " href="settings.html"><span class="icon">&#9881;&#65039;</span> Settings</a>`;
+
+function injectSidebar(admin) {
+  document.getElementById('sidebar-nav').innerHTML = admin ? ADMIN_NAV : EMP_NAV;
+  // restore SF open state
+  const sfChildren = document.getElementById('sf-children');
+  const sfToggle   = document.getElementById('sf-toggle');
+  if(sfChildren && sfChildren.classList.contains('open')) _sfOpen = true;
+}
+
+async function loadItems() {
+  document.getElementById('pg-tbody').innerHTML='<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--muted);">&#9203; Loading...</td></tr>';
+  try {
+    const res  = await fetch(API_BASE+'/scrap', {headers:authHeaders(), signal:AbortSignal.timeout(6000)});
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.message||'HTTP '+res.status);
+    items = Array.isArray(data) ? data : [];
+    updateStats(); filterItems();
+    (document.getElementById('pg-sync')||{}).textContent = 'Synced: '+new Date().toLocaleTimeString('en-IN');
+  } catch(e) {
+    items = getMock(); updateStats(); filterItems();
+    showToast('Offline - '+e.message, 'error');
+  }
+}
+
+function getMock() { return [
+      {_id:'s1',scrapId:'SCR-001',device:'AT-2 Plus',serial:'AT2-2019-004',division:'SHIPL',customer:'City Hospital',reason:'Motherboard burnt',addedBy:'Ravi Shankar',date:new Date(Date.now()-15*864e5).toISOString(),status:'Approved'},
+      {_id:'s2',scrapId:'SCR-002',device:'Hamilton-C1',serial:'HC1-2018-011',division:'VENTILATOR',customer:'Apollo Clinic',reason:'Beyond economical repair',addedBy:'Priya Devi',date:new Date(Date.now()-18*864e5).toISOString(),status:'Pending Approval'},
+      {_id:'s3',scrapId:'SCR-003',device:'Stellant Injector',serial:'STL-2017-007',division:'INJECTOR',customer:'Sunrise Med',reason:'Pump failure',addedBy:'Deepa Thomas',date:new Date(Date.now()-20*864e5).toISOString(),status:'Disposed'},
+      {_id:'s4',scrapId:'SCR-004',device:'Logiq E10',serial:'LE10-2020-002',division:'RADIOLOGY',customer:'BlueStar Hosp',reason:'Transducer cracked',addedBy:'Meena Kumari',date:new Date(Date.now()-22*864e5).toISOString(),status:'Pending Approval'},
+      {_id:'s5',scrapId:'SCR-005',device:'PF-300',serial:'PF3-2016-009',division:'GANSHORN',customer:'Apex Medics',reason:'Calibration impossible',addedBy:'Rajesh Verma',date:new Date(Date.now()-25*864e5).toISOString(),status:'Approved'},
+    ]; }
+
+function updateStats() { 
+      (document.getElementById('st-total')||{}).textContent =items.length;
+      (document.getElementById('st-pending')||{}).textContent =items.filter(x=>x.status==='Pending Approval').length;
+      (document.getElementById('st-approved')||{}).textContent =items.filter(x=>x.status==='Approved').length;
+      (document.getElementById('st-disposed')||{}).textContent =items.filter(x=>x.status==='Disposed').length; }
+
+
+      function changeStatus(id,status){const item=items.find(x=>x._id===id);if(item){item.status=status;updateStats();filterItems();showToast('Status updated','success');}}
+
+function filterItems() {
+  const q = document.getElementById('pg-search').value.toLowerCase();
+  filtered = items.filter(d => JSON.stringify(d).toLowerCase().includes(q));
+  (document.getElementById('pg-summary')||{}).textContent = q ? filtered.length+' result'+(filtered.length!==1?'s':'')+' filtered' : '';
+  renderTable();
+}
+
+function renderRow(d){
+      const sc={'Approved':'b-green','Pending Approval':'b-amber','Disposed':'b-muted'}[d.status]||'b-muted';
+      return '<tr><td><code style="background:var(--surface2);padding:2px 7px;border-radius:5px;font-size:11px;">'+esc(d.scrapId||'-')+'</code></td>'
+        +'<td style="font-weight:600;">'+esc(d.device||'-')+'</td>'
+        +'<td style="font-size:11px;font-family:monospace;color:var(--muted);">'+esc(d.serial||'-')+'</td>'
+        +'<td><span class="chip">'+esc(d.division||'-')+'</span></td>'
+        +'<td style="font-size:12px;">'+esc(d.customer||'-')+'</td>'
+        +'<td style="font-size:12px;color:var(--soft);max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(d.reason||'-')+'</td>'
+        +'<td style="font-size:12px;">'+esc(d.addedBy||'-')+'</td>'
+        +'<td style="font-size:12px;color:var(--muted);">'+formatDate(d.date)+'</td>'
+        +'<td><span class="badge '+sc+'">'+esc(d.status||'-')+'</span></td>'
+        +'<td><div style="display:flex;gap:4px;">'
+        +(isAdmin?'<select class="filter-sel" style="padding:3px 8px;font-size:11px;" onchange="changeStatus(\''+String(d._id||'')+'\',this.value)"><option '+(d.status==='Pending Approval'?'selected':'')+'>Pending Approval</option><option '+(d.status==='Approved'?'selected':'')+'>Approved</option><option '+(d.status==='Disposed'?'selected':'')+'>Disposed</option></select>':'')
+        +(isAdmin?'<button class="btn xs danger" onclick="confirmDel(\''+String(d._id||'')+'\',\''+esc(String(d.device||'')).replace(/'/g,'&#39;')+'\')">&#128465;</button>':'')
+        +'</div></td></tr>';}
+
+function renderTable() {
+  (document.getElementById('pg-footer')||{}).textContent = 'Showing '+filtered.length+' of '+items.length+' record'+(items.length!==1?'s':'');
+  const tbody = document.getElementById('pg-tbody');
+  if(!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:50px;color:var(--muted);">No records found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtered.map(d => renderRow(d)).join('');
+}
+
+function openAdd() {
+  editingId = null;
+  (document.getElementById('modal-title')||{}).textContent = 'Add to Scrap';
+  (document.getElementById('m-save-btn')||{}).textContent = '&#128190; Save';
+  document.getElementById('m-err').classList.remove('show');
+  ['m-f1','m-f2','m-f4','m-f5'].forEach(id=>document.getElementById(id).value='');
+  openModal('modal-main');
+}
+
+function openEdit(id) {
+  const f = items.find(x => x._id===id); if(!f) return;
+  editingId = id;
+  (document.getElementById('modal-title')||{}).textContent = 'Edit Record';
+  (document.getElementById('m-save-btn')||{}).textContent = '&#128190; Update';
+  document.getElementById('m-err').classList.remove('show');
+  document.getElementById('m-f1').value=f.device||'';document.getElementById('m-f2').value=f.serial||'';document.getElementById('m-f3').value=f.division||'';document.getElementById('m-f4').value=f.customer||'';document.getElementById('m-f5').value=f.reason||'';document.getElementById('m-f6').value=f.status||'Pending Approval';
+  openModal('modal-main');
+}
+
+async function saveItem() {
+  const errEl = document.getElementById('m-err');
+  const btn   = document.getElementById('m-save-btn');
+  if(!document.getElementById('m-f1').value.trim()||!document.getElementById('m-f5').value.trim()) { errEl.textContent='Please fill all required fields.'; errEl.classList.add('show'); return; }
+  errEl.classList.remove('show');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Saving...';
+  const payload = {device:document.getElementById('m-f1').value.trim(),serial:document.getElementById('m-f2').value.trim(),division:document.getElementById('m-f3').value,customer:document.getElementById('m-f4').value.trim(),reason:document.getElementById('m-f5').value.trim(),addedBy:currentUser.name||'Admin',date:new Date().toISOString(),status:document.getElementById('m-f6').value,scrapId:'SCR-'+String(Date.now()).slice(-4)};
+  try {
+    let res, saved;
+    if(editingId) {
+      res   = await fetch(API_BASE+'/scrap/'+editingId, {method:'PUT', headers:authHeaders(), body:JSON.stringify(payload)});
+      saved = await res.json(); if(!res.ok) throw new Error(saved.message||'Failed');
+      const idx = items.findIndex(x=>x._id===editingId); if(idx!==-1) items[idx]=saved;
+      showToast('Updated!','success');
+    } else {
+      res   = await fetch(API_BASE+'/scrap', {method:'POST', headers:authHeaders(), body:JSON.stringify(payload)});
+      saved = await res.json(); if(!res.ok) throw new Error(saved.message||'Failed');
+      items.unshift(saved); showToast('Added!','success');
+    }
+    closeModal('modal-main'); updateStats(); filterItems();
+  } catch(e) {
+    const mock = {_id:'local_'+Date.now(),...payload};
+    if(editingId) { const idx=items.findIndex(x=>x._id===editingId); if(idx!==-1) items[idx]={...items[idx],...payload}; }
+    else { items.unshift(mock); }
+    closeModal('modal-main'); updateStats(); filterItems();
+    showToast('Saved locally (server offline)','info');
+  }
+  btn.disabled=false; btn.textContent=editingId?'&#128190; Update':'&#128190; Save';
+}
+
+function confirmDel(id, name) {
+  (document.getElementById('confirm-msg')||{}).textContent = '"'+name+'" will be permanently removed.';
+  document.getElementById('confirm-ok').onclick = async () => {
+    closeModal('modal-confirm');
+    try { await fetch(API_BASE+'/scrap/'+id, {method:'DELETE', headers:authHeaders()}); } catch(e) {}
+    items = items.filter(x=>x._id!==id); updateStats(); filterItems();
+    showToast('Deleted.','success');
+  };
+  openModal('modal-confirm');
+}
+</script>
+</body>
+</html>
+

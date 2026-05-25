@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+ <script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light'); })();</script>
+<title>SchillerIndia - Dealer Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f4f7fa;--surface:#ffffff;--surface2:#eaf1f6;--border:#d0e0ec;
+  --accent:#0077cc;--accent2:#007a8a;--green:#059669;--amber:#d97706;
+  --red:#cc0000;--text:#1a2a3a;--muted:#7a9ab0;--soft:#4a6a8a;--card:#ffffff;
+  --purple:#6d28d9;--orange:#c2550a;--teal:#007a8a;--shadow:rgba(0,80,120,0.08);
+
+}
+[data-theme="dark"]{
+  --bg:#0f1621;--surface:#1a2333;--surface2:#1e293b;--border:#2a3a52;
+  --accent:#3b9eff;--accent2:#22d3ee;--green:#10b981;--amber:#f59e0b;
+  --red:#f87171;--text:#e2eaf4;--muted:#4a6a8a;--soft:#7a9ab0;--card:#1a2333;
+  --purple:#a78bfa;--teal:#22d3ee;--shadow:rgba(0,0,0,0.3);
+}
+body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  transition:background 0.3s, color 0.3s; /* ADD THIS */
+}
+
+/* SIDEBAR */
+.sidebar{width:240px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 12px var(--shadow);transition:background 0.3s,border-color 0.3s;}
+.sidebar-header{padding:20px 20px 16px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#450a0a,#b91c1c);}
+.sidebar-logo{display:flex;align-items:center;gap:10px;}
+.sidebar-logo-icon{width:36px;height:36px;background:rgba(255,255,255,0.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:#fff;box-shadow:0 2px 8px rgba(204,0,0,0.2);}
+.sidebar-logo-text{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;}
+.sidebar-logo-text .sub{font-size:10px;color:rgba(255,255,255,0.6);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;}
+.role-badge{margin:10px 20px 0;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;display:inline-block;background:rgba(185,28,28,0.1);color:#b91c1c;border:1px solid rgba(185,28,28,0.25);}
+.sidebar-nav{flex:1;padding:12px 10px;}
+.nav-section{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;padding:10px 8px 5px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:500;cursor:pointer;transition:all 0.2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:rgba(0,119,204,0.12);color:var(--accent);font-weight:600;}
+[data-theme="dark"] .nav-item.active{background:rgba(59,158,255,0.15);}
+.nav-item .icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:#b91c1c;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;}
+.nav-group-toggle{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:600;cursor:pointer;transition:all 0.2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;}
+.nav-group-toggle:hover{background:var(--surface2);}
+.caret{margin-left:auto;font-size:9px;transition:transform 0.25s;}
+.nav-group-toggle.open .caret{transform:rotate(90deg);}
+.nav-children{max-height:0;overflow:hidden;transition:max-height 0.3s ease;}
+.nav-children.open{max-height:400px;}
+.nav-sub .nav-item{padding:6px 10px 6px 28px;font-size:12px;color:var(--muted);}
+.nav-sub .nav-item:hover{color:var(--text);}
+.sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);}
+.user-info{display:flex;align-items:center;gap:10px;}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#b91c1c,#ef4444);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
+.user-name{font-size:13px;font-weight:600;color:var(--text);}
+.user-role{font-size:11px;color:var(--muted);}
+.logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s;}
+.logout-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:10;box-shadow:0 2px 8px var(--shadow);transition:background 0.3s,border-color 0.3s;}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:4px;}
+.breadcrumb a{color:var(--muted);text-decoration:none;transition:color 0.2s;}
+.breadcrumb a:hover{color:var(--accent);}
+.breadcrumb .sep{color:var(--border);}
+.breadcrumb .cur{color:var(--soft);}
+.topbar-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);}
+.topbar-date{font-size:12px;color:var(--muted);margin-top:2px;}
+.topbar-actions{display:flex;align-items:center;gap:10px;}
+
+/* BUTTONS */
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;border:1px solid var(--border);background:var(--surface2);color:var(--soft);font-family:'Plus Jakarta Sans',sans-serif;display:inline-flex;align-items:center;gap:6px;}
+.btn:hover{border-color:var(--accent);color:var(--accent);}
+.btn.primary{background:var(--teal);color:#fff;border-color:var(--teal);}
+.btn.primary:hover{opacity:0.88;}
+.btn.danger{background:transparent;color:var(--red);border-color:rgba(204,0,0,0.3);}
+.btn.danger:hover{background:rgba(204,0,0,0.07);border-color:var(--red);}
+.btn.sm{padding:6px 14px;font-size:12px;}
+.btn.xs{padding:4px 10px;font-size:11px;border-radius:6px;}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+/* CONTENT */
+.content{flex:1;padding:28px;overflow-y:auto;background:var(--bg);transition:background 0.3s;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.fade-up{animation:fadeUp 0.45s ease both;}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.mini-stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:12px;transition:border-color 0.2s,transform 0.2s,box-shadow 0.2s;box-shadow:0 2px 8px var(--shadow);}
+.mini-stat:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 6px 16px var(--shadow);}
+.mini-stat-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.mini-stat-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;}
+.mini-stat-lbl{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-top:1px;}
+
+/* FILTER BAR */
+.filter-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+.search-box{position:relative;}
+.search-box input{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px 8px 34px;font-size:13px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;outline:none;width:260px;transition:border-color 0.2s;}
+.search-box input:focus{border-color:var(--accent);}
+.search-box input::placeholder{color:var(--muted);}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);}
+.filter-select{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--soft);font-family:'Plus Jakarta Sans',sans-serif;outline:none;cursor:pointer;transition:border-color 0.2s;}
+.filter-select:focus{border-color:var(--accent);}
+
+/* PANEL */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px;box-shadow:0 2px 10px var(--shadow);transition:background 0.3s,border-color 0.3s;}
+.panel-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:var(--surface);transition:background 0.3s,border-color 0.3s;}
+.panel-title{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+.panel-title .dot{width:8px;height:8px;border-radius:50%;background:var(--teal);}
+
+/* VIEW TABS */
+.view-tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:20px;width:fit-content;box-shadow:0 2px 6px var(--shadow);transition:background 0.3s,border-color 0.3s;}
+.view-tab{padding:7px 18px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:none;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;display:flex;align-items:center;gap:6px;}
+.view-tab.active{background:var(--teal);color:#fff;box-shadow:0 2px 8px rgba(0,122,138,0.25);}
+.view-tab:not(.active):hover{color:var(--text);background:var(--surface2);}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;}
+table.data-table{width:100%;border-collapse:collapse;}
+table.data-table thead th{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;padding:12px 14px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;background:var(--surface);transition:background 0.3s,border-color 0.3s;}
+table.data-table thead th:hover{color:var(--soft);}
+table.data-table thead th.sorted{color:var(--teal);}
+table.data-table tbody td{padding:12px 14px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text);transition:background 0.15s;}
+table.data-table tbody tr:last-child td{border-bottom:none;}
+table.data-table tbody tr:hover td{background:var(--surface2);}
+.table-footer{padding:14px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted);background:var(--surface);transition:background 0.3s,border-color 0.3s;}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;display:block;}
+.badge-teal{background:rgba(0,122,138,0.12);color:var(--teal);}.badge-teal::before{background:var(--teal);}
+.chip{display:inline-flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:11px;color:var(--soft);font-weight:500;}
+
+/* REGION PILL */
+.region-pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(0,122,138,0.1);color:var(--teal);border:1px solid rgba(0,122,138,0.2);}
+
+/* DEALER AVATAR */
+.dealer-avatar{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;flex-shrink:0;}
+
+/* PAGINATION */
+.pagination{display:flex;align-items:center;gap:4px;}
+.page-btn{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--soft);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;display:flex;align-items:center;justify-content:center;}
+.page-btn:hover{border-color:var(--teal);color:var(--teal);}
+.page-btn.active{background:var(--teal);border-color:var(--teal);color:#fff;}
+.page-btn:disabled{opacity:0.3;cursor:not-allowed;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,20,35,0.4);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;animation:fadeUp 0.3s ease;box-shadow:0 20px 60px rgba(0,0,0,0.18);transition:background 0.3s,border-color 0.3s;}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1;transition:background 0.3s,border-color 0.3s;}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);}
+.modal-close{background:none;border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.modal-close:hover{border-color:var(--red);color:var(--red);}
+.modal-body{padding:24px;}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;position:sticky;bottom:0;background:var(--surface);transition:background 0.3s,border-color 0.3s;}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field.span2{grid-column:span 2;}
+.field label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
+.field input,.field select{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px 13px;font-size:13px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+.field input:focus,.field select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,122,138,0.1);}
+.field input::placeholder{color:var(--muted);}
+.required-star{color:var(--red);}
+.form-section-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.form-section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.form-err{font-size:12px;color:var(--red);margin-top:10px;display:none;}
+.form-err.show{display:block;}
+
+/* PROFILE */
+.profile-header{background:linear-gradient(135deg,rgba(0,122,138,0.08),rgba(0,119,204,0.06));border-radius:12px;padding:20px;display:flex;align-items:center;gap:16px;margin-bottom:20px;border:1px solid rgba(0,122,138,0.18);}
+.profile-big-avatar{width:56px;height:56px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;color:#fff;flex-shrink:0;}
+.profile-name{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);}
+.profile-sub{font-size:12px;color:var(--muted);margin-top:3px;}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.profile-field{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;}
+.profile-field-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;}
+.profile-field-val{font-size:13px;font-weight:500;color:var(--text);}
+
+/* CONFIRM */
+.confirm-box{background:var(--surface);border:1px solid rgba(204,0,0,0.2);border-radius:14px;width:100%;max-width:400px;padding:28px;text-align:center;animation:fadeUp 0.3s ease;box-shadow:0 16px 48px rgba(0,0,0,0.15);}
+.confirm-icon{font-size:40px;margin-bottom:14px;}
+.confirm-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:8px;color:var(--text);}
+.confirm-msg{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.6;}
+.confirm-actions{display:flex;gap:10px;justify-content:center;}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;min-width:260px;animation:fadeUp 0.3s ease;box-shadow:0 8px 24px var(--shadow);}
+.toast.success{border-color:rgba(5,150,105,0.4);}.toast.success .toast-dot{background:var(--green);}
+.toast.error{border-color:rgba(204,0,0,0.4);}.toast.error .toast-dot{background:var(--red);}
+.toast.info{border-color:rgba(0,119,204,0.4);}.toast.info .toast-dot{background:var(--accent);}
+.toast-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* EMPTY / LOADING */
+.empty-state{text-align:center;padding:60px 20px;}
+.empty-icon{font-size:48px;margin-bottom:14px;opacity:0.4;}
+.empty-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:6px;color:var(--text);}
+.empty-sub{font-size:13px;color:var(--muted);}
+.action-group{display:flex;align-items:center;gap:5px;}
+.loading-cell{text-align:center;padding:40px;color:var(--muted);font-size:13px;}
+
+/* REGION CARDS */
+.region-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;padding:20px;}
+.region-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;transition:all 0.2s;cursor:pointer;}
+.region-card:hover{border-color:var(--teal);transform:translateY(-1px);box-shadow:0 4px 14px var(--shadow);}
+.region-card-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:6px;color:var(--text);}
+.region-card-count{font-size:12px;color:var(--muted);}
+.region-card-bar{height:4px;background:var(--border);border-radius:2px;margin-top:10px;overflow:hidden;}
+.region-card-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--teal),var(--accent));}
+
+/* SPINNER */
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
+    </style>
+  <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="employee-theme.css">
+  <link rel="stylesheet" href="admin-sidebar.css">
+  <script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <script src="brand-logo.js" defer></script>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<!-- === SIDEBAR === -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="sidebar-logo-text">SchillerIndia<div class="sub">Services</div></div>
+    </div>
+  </div>
+  <div style="padding:10px 20px 0;"><span class="role-badge">Admin</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <button class="nav-item " onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
+    <button class="nav-item " onclick="window.location.href='company-section.html'"><span class="icon">&#127970;</span> Company</button>
+    <button class="nav-item " onclick="window.location.href='division-section.html'"><span class="icon">&#128309;</span> Division</button>
+    <button class="nav-item " onclick="window.location.href='engineer-section.html'"><span class="icon">&#128119;</span> Engineers</button>
+    <button class="nav-item active" onclick="window.location.href='dealer-section.html'"><span class="icon">&#129309;</span> Dealers</button>
+    <div class="nav-section">Operations</div>
+    <button class="nav-group-toggle " id="sf-toggle" onclick="toggleSF()">
+      <span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span>
+    </button>
+    <div class="nav-children " id="sf-children">
+      <div class="nav-sub">
+        <button class="nav-item " onclick="window.location.href='service-list.html'"><span class="icon">&#128225;</span> Services</button>
+        <button class="nav-item " onclick="window.location.href='pending-frn.html'"><span class="icon">&#128221;</span> Pending FRN</button>
+        <button class="nav-item " onclick="window.location.href='ob-pending.html'"><span class="icon">&#128194;</span> OB Pending</button>
+        <button class="nav-item " onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
+        <button class="nav-item " onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
+        <button class="nav-item " onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
+        <button class="nav-item " onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
+        <button class="nav-item " onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="ar-toggle" onclick="toggleAR()"><span class="icon">&#128196;</span> Activity Register <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="ar-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
+        <a class="nav-item " href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
+        <a class="nav-item " href="aprfob.html"><span class="icon">&#128203;</span> PRF/OB List</a>
+        <a class="nav-item " href="acr.html"><span class="icon">&#128209;</span> Closed PRF/OB</a>
+        <a class="nav-item " href="ans.html"><span class="icon">&#128230;</span> Non Saleable</a>
+        <a class="nav-item " href="as.html"><span class="icon">&#128176;</span> Saleable</a>
+        <a class="nav-item " href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
+        <a class="nav-item " href="acbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="rta-toggle" onclick="toggleRTA()"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="rta-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="atfrn.html"><span class="icon">&#128221;</span> Admin RT FRN</a>
+        <a class="nav-item " href="atob.html"><span class="icon">&#128230;</span> Admin RT OB</a>
+        <a class="nav-item " href="atur.html"><span class="icon">&#128736;&#65039;</span> Admin RT UR</a>
+        <a class="nav-item " href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
+      </div>
+    </div>
+    <div class="nav-section">Admin</div>
+    <button class="nav-item " onclick="window.location.href='usermanagement.html'"><span class="icon">&#128101;</span> User Management</button>
+    <button class="nav-item " onclick="window.location.href='Reports.html'"><span class="icon">&#128200;</span> Reports</button>
+    <button class="nav-item " onclick="window.location.href='settings.html'"><span class="icon">&#9881;&#65039;</span> Settings</button>
+    <button class="nav-item " onclick="window.location.href='notifications.html'"><span class="icon">&#128276;</span> Notifications</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="admin-avatar">A</div>
+      <div>
+        <div class="user-name" id="admin-name">Admin</div>
+        <div class="user-role">Administrator</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="admin-dashboard.html">Dashboard</a>
+        <span class="sep">&#8250;</span>
+        <span class="cur">Dealer Management</span>
+      </div>
+      <div class="topbar-title">Dealer Management</div>
+      <div class="topbar-date" id="page-date"></div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn" onclick="loadDealers()">&#10227; Refresh</button>
+      <button class="btn" onclick="exportCSV()">&#128228; Export CSV</button>
+      <button class="btn primary" onclick="openAddDealer()">&#10133; Add New Dealer</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-row fade-up">
+      <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:rgba(0,122,138,0.1);">&#129309;</div>
+        <div><div class="mini-stat-val" style="color:var(--teal);" id="stat-total">-</div><div class="mini-stat-lbl">Total Dealers</div></div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:rgba(0,119,204,0.1);">&#128205;</div>
+        <div><div class="mini-stat-val" style="color:var(--accent);" id="stat-regions">-</div><div class="mini-stat-lbl">Regions</div></div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:rgba(5,150,105,0.1);">&#128202;</div>
+        <div><div class="mini-stat-val" style="color:var(--green);" id="stat-avg">-</div><div class="mini-stat-lbl">Avg / Region</div></div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:rgba(217,119,6,0.1);">&#128336;</div>
+        <div><div class="mini-stat-val" style="color:var(--amber);font-size:13px;font-weight:600;" id="stat-latest">-</div><div class="mini-stat-lbl">Latest Added</div></div>
+      </div>
+    </div>
+
+    <!-- VIEW TABS -->
+    <div class="view-tabs fade-up">
+      <button class="view-tab active" id="tab-list" onclick="switchView('list')">&#128203; Dealer List</button>
+      <button class="view-tab" id="tab-region" onclick="switchView('region')">&#127980; By Region</button>
+    </div>
+
+    <!-- LIST VIEW -->
+    <div id="view-list" class="fade-up">
+      <div class="filter-bar">
+        <div class="search-box" style="flex:1;min-width:200px;">
+          <span class="search-icon">&#128269;</span>
+          <input type="text" id="dealer-search" placeholder="Search by name or region..." oninput="filterDealers()" style="width:100%;"/>
+        </div>
+        <select class="filter-select" id="filter-region" onchange="filterDealers()">
+          <option value="">All Regions</option>
+        </select>
+        <select class="filter-select" id="dealer-per-page" onchange="renderDealers()">
+          <option value="10">10 / page</option>
+          <option value="25">25 / page</option>
+          <option value="50">50 / page</option>
+        </select>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="dot"></span> Dealer Directory</div>
+          <div style="font-size:12px;color:var(--muted);" id="filter-summary"></div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th onclick="sortDealers('_id')" style="width:50px;">#</th>
+                <th onclick="sortDealers('name')" class="sorted">Name &#8597;</th>
+                <th onclick="sortDealers('region')">Region &#8597;</th>
+                <th onclick="sortDealers('createdAt')">Added &#8597;</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="dealer-tbody">
+              <tr><td colspan="5" class="loading-cell">&#9203; Loading dealers...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="dealer-count-text">-</span>
+          <div class="pagination" id="dealer-pagination"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGION VIEW -->
+    <div id="view-region" style="display:none;" class="fade-up">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="dot"></span> Dealers by Region</div>
+          <div style="font-size:12px;color:var(--muted);">Click a region to filter the list</div>
+        </div>
+        <div class="region-grid" id="region-grid"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ADD / EDIT DEALER MODAL -->
+<div class="modal-overlay" id="modal-dealer">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-dealer-title">Add New Dealer</div>
+      <button class="modal-close" onclick="closeModal('modal-dealer')">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-section-title">Dealer Information</div>
+      <div class="form-grid">
+        <div class="field span2">
+          <label>Dealer Name <span class="required-star">*</span></label>
+          <input type="text" id="d-name" placeholder=""/>
+        </div>
+        <div class="field span2">
+          <label>Region <span class="required-star">*</span></label>
+          <select id="d-region">
+            <option value="">Select Region...</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-err" id="modal-err">Please fill all required fields.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-dealer')">Cancel</button>
+      <button class="btn primary" id="save-dealer-btn" onclick="saveDealer()">&#128190; Save Dealer</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE VIEW MODAL -->
+<div class="modal-overlay" id="modal-profile">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <div class="modal-title">Dealer Profile</div>
+      <button class="modal-close" onclick="closeModal('modal-profile')">&#10005;</button>
+    </div>
+    <div class="modal-body" id="profile-body"></div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="confirm-box">
+    <div class="confirm-icon">&#9888;&#65039;</div>
+    <div class="confirm-title">Delete Dealer?</div>
+    <div class="confirm-msg" id="confirm-msg">This cannot be undone.</div>
+    <div class="confirm-actions">
+      <button class="btn" onclick="closeModal('modal-confirm')">Cancel</button>
+      <button class="btn danger" id="confirm-ok-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+// ?"??"? APPLY SAVED THEME ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light'); })();
+
+// ?"??"? CONFIG ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+const API_BASE = '/api';
+const REGIONS  = ['North','East','West 1','West 2','South 1 TN','South 1 KL','South 2 KA','South 2 AP/TL','Puducherry','CG'];
+
+let dealers        = [];
+let filteredDealers= [];
+let dealerPage     = 1;
+let dealerSortKey  = 'name';
+let dealerSortDir  = 1;
+let currentView    = 'list';
+let editingId      = null;
+
+// ?"??"? INIT ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+(document.getElementById('page-date')||{}).textContent =
+  new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+(function initUser(){
+  const u = JSON.parse(localStorage.getItem('schiller_user')||'{}');
+  const name = u.name||'Admin';
+  (document.getElementById('admin-name')||{}).textContent = name;
+  (document.getElementById('admin-avatar')||{}).textContent = name.charAt(0).toUpperCase();
+})();
+
+populateRegionSelects();
+loadDealers();
+
+// ?"??"? AUTH HELPERS ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+function getToken(){ return localStorage.getItem('schiller_token')||''; }
+function authHeaders(){ return { 'Content-Type':'application/json', Authorization:'Bearer '+getToken() }; }
+
+// ?"??"? LOAD FROM MONGODB ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+async function loadDealers(){
+  document.getElementById('dealer-tbody').innerHTML =
+    '<tr><td colspan="5" class="loading-cell">&#9203; Loading dealers from database...</td></tr>';
+  try {
+    const res  = await fetch(API_BASE+'/dealers', { headers: authHeaders() });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    dealers = await res.json();
+    filterDealers();
+    updateStats();
+    renderRegionCards();
+    showToast('Dealers loaded from database','info');
+  } catch(e) {
+    document.getElementById('dealer-tbody').innerHTML =
+      '<tr><td colspan="5" class="loading-cell" style="color:var(--red);">&#9888; Could not reach server. Check your backend is running.</td></tr>';
+    showToast('Could not connect to server','error');
+  }
+}
+
+// ?"??"? STATS ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+function updateStats(){
+  const total   = dealers.length;
+  const regions = [...new Set(dealers.map(d=>d.region).filter(Boolean))].length;
+  const avg     = regions ? Math.round(total/regions) : 0;
+  const latest  = dealers.length
+    ? dealers.slice().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))[0]?.name || '-'
+    : '-';
+  (document.getElementById('stat-total')||{}).textContent = total;
+  (document.getElementById('stat-regions')||{}).textContent = regions;
+  (document.getElementById('stat-avg')||{}).textContent = avg;
+  (document.getElementById('stat-latest')||{}).textContent = latest.length>14 ? latest.substring(0,13)+'...' : latest;
+  (document.getElementById('sidebar-count')||{}).textContent = total;
+}
+
+// ?"??"? POPULATE REGION SELECTS ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+function populateRegionSelects(){
+  ['filter-region','d-region'].forEach(sid=>{
+    const sel = document.getElementById(sid);
+    REGIONS.forEach(r=>{
+      const o = document.createElement('option');
+      o.value = r; o.textContent = r;
+      sel.appendChild(o);
+    });
+  });
+}
+
+// ?"??"? VIEW SWITCH ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+function switchView(v){
+  currentView=v;
+  document.getElementById('view-list').style.display   = v==='list'   ? 'block':'none';
+  document.getElementById('view-region').style.display = v==='region' ? 'block':'none';
+  document.getElementById('tab-list').className   = 'view-tab'+(v==='list'   ?' active':'');
+  document.getElementById('tab-region').className = 'view-tab'+(v==='region' ?' active':'');
+  if(v==='region') renderRegionCards();
+}
+
+// ?"??"? REGION CARDS ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+function renderRegionCards(){
+  const grid = document.getElementById('region-grid');
+  const max  = Math.max(1,...REGIONS.map(r=>dealers.filter(d=>d.region===r).length));
+  grid.innerHTML = REGIONS.map(r=>{
+    const count = dealers.filter(d=>d.region===r).length;
+    const pct   = Math.round(count/max*100);
+    return `<div class="region-card" onclick="filterByRegion('${r}')">
+      <div class="region-card-name">${r}</div>
+      <div class="region-card-count">${count} dealer${count!==1?'s':''}</div>
+      <div class="region-card-bar"><div class="region-card-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function filterByRegion(r){
+  switchView('list');
+  document.getElementById('filter-region').value = r;
+  filterDealers();
+}
+
+// ?"??"? FILTER & SORT ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+function filterDealers(){
+  const q    = document.getElementById('dealer-search').value.toLowerCase();
+  const regF = document.getElementById('filter-region').value;
+  filteredDealers = dealers.filter(d=>{
+    const mQ = !q    || (d.name||'').toLowerCase().includes(q) || (d.region||'').toLowerCase().includes(q);
+    const mR = !regF || d.region===regF;
+    return mQ && mR;
+  });
+  sortArr(filteredDealers, dealerSortKey, dealerSortDir);
+  dealerPage=1;
+  (document.getElementById('filter-summary')||{}).textContent =
+    (q||regF) ? `${filteredDealers.length} result${filteredDealers.length!==1?'s':''} filtered` : '';
+  renderDealers();
+}
+
+function sortDealers(key){
+  if(dealerSortKey===key) dealerSortDir*=-1; else { dealerSortKey=key; dealerSortDir=1; }
+  filterDealers();
+}
+
+// ?"??"? RENDER TABLE ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+function renderDealers(){
+  const perPage = parseInt(document.getElementById('dealer-per-page').value)||10;
+  const total   = filteredDealers.length;
+  const pages   = Math.max(1, Math.ceil(total/perPage));
+  if(dealerPage>pages) dealerPage=pages;
+  const slice   = filteredDealers.slice((dealerPage-1)*perPage, dealerPage*perPage);
+  const tbody   = document.getElementById('dealer-tbody');
+
+  if(!slice.length){
+    tbody.innerHTML=`<tr><td colspan="5"><div class="empty-state">
+      <div class="empty-icon">&#129309;</div>
+      <div class="empty-title">No dealers found</div>
+      <div class="empty-sub">Try adjusting your search or add a new dealer.</div>
+    </div></td></tr>`;
+  } else {
+    tbody.innerHTML = slice.map((d,i)=>{
+      const initials = (d.name||'?')==='DIRECT' ? 'DR'
+        : (d.name||'?').split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+      const color = avatarColor(d._id||i);
+      return `<tr>
+        <td style="color:var(--muted);font-size:12px;">${(dealerPage-1)*perPage+i+1}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="dealer-avatar" style="background:${color};">${initials}</div>
+            <span style="font-weight:600;">${esc(d.name||'-')}</span>
+          </div>
+        </td>
+        <td><span class="region-pill">${esc(d.region||'-')}</span></td>
+        <td style="color:var(--muted);font-size:12px;">${formatDate(d.createdAt)}</td>
+        <td>
+          <div class="action-group">
+            <button class="btn xs" onclick="viewProfile('${d._id}')">&#128065;</button>
+            <button class="btn xs" onclick="openEditDealer('${d._id}')">&#9998;</button>
+            <button class="btn xs danger" onclick="confirmDelete('${d._id}','${esc(d.name||'')}')">&#128465;</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  (document.getElementById('dealer-count-text')||{}).textContent =
+    total ? `Showing ${Math.min((dealerPage-1)*perPage+1,total)}-${Math.min(dealerPage*perPage,total)} of ${total} dealers` : '0 dealers';
+  renderPagination('dealer-pagination', dealerPage, pages, p=>{ dealerPage=p; renderDealers(); });
+}
+
+// ?"??"? PROFILE ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+function viewProfile(id){
+  const d = dealers.find(x=>x._id===id);
+  if(!d) return;
+  const initials = (d.name||'?')==='DIRECT' ? 'DR'
+    : (d.name||'?').split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+  document.getElementById('profile-body').innerHTML=`
+    <div class="profile-header">
+      <div class="profile-big-avatar" style="background:${avatarColor(d._id)};">${initials}</div>
+      <div>
+        <div class="profile-name">${esc(d.name)}</div>
+        <div class="profile-sub">${esc(d.region||'-')}</div>
+        <div style="margin-top:6px;"><span class="region-pill">${esc(d.region||'-')}</span></div>
+      </div>
+    </div>
+    <div class="profile-grid">
+      <div class="profile-field"><div class="profile-field-label">Region</div><div class="profile-field-val">${esc(d.region||'-')}</div></div>
+      <div class="profile-field"><div class="profile-field-label">Added On</div><div class="profile-field-val">${formatDate(d.createdAt)}</div></div>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn sm" onclick="closeModal('modal-profile');openEditDealer('${d._id}')">&#9998; Edit</button>
+      <button class="btn sm danger" onclick="closeModal('modal-profile');confirmDelete('${d._id}','${esc(d.name||'')}')">&#128465; Delete</button>
+    </div>`;
+  openModal('modal-profile');
+}
+
+// ?"??"? ADD / EDIT MODAL ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+function openAddDealer(){
+  editingId = null;
+  (document.getElementById('modal-dealer-title')||{}).textContent = 'Add New Dealer';
+  (document.getElementById('save-dealer-btn')||{}).innerHTML = '&#128190; Save Dealer';
+  document.getElementById('d-name').value   = '';
+  document.getElementById('d-region').value = '';
+  document.getElementById('modal-err').classList.remove('show');
+  openModal('modal-dealer');
+  setTimeout(()=>document.getElementById('d-name').focus(),100);
+}
+
+function openEditDealer(id){
+  const d = dealers.find(x=>x._id===id);
+  if(!d) return;
+  editingId = id;
+  (document.getElementById('modal-dealer-title')||{}).textContent = 'Edit Dealer - '+d.name;
+  (document.getElementById('save-dealer-btn')||{}).innerHTML = '&#128190; Update Dealer';
+  document.getElementById('d-name').value   = d.name   || '';
+  document.getElementById('d-region').value = d.region || '';
+  document.getElementById('modal-err').classList.remove('show');
+  openModal('modal-dealer');
+}
+
+async function saveDealer(){
+  const name   = document.getElementById('d-name').value.trim();
+  const region = document.getElementById('d-region').value;
+  const errEl  = document.getElementById('modal-err');
+  const btn    = document.getElementById('save-dealer-btn');
+
+  if(!name || !region){
+    errEl.textContent = 'Please fill all required fields.';
+    errEl.classList.add('show');
+    return;
+  }
+  errEl.classList.remove('show');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Saving...';
+
+  const payload = { name, region };
+
+  try {
+    let res, saved;
+    if(editingId){
+      res   = await fetch(API_BASE+'/dealers/'+editingId, { method:'PUT', headers:authHeaders(), body:JSON.stringify(payload) });
+      saved = await res.json();
+      if(!res.ok) throw new Error(saved.message||'Update failed');
+      const idx = dealers.findIndex(d=>d._id===editingId);
+      if(idx!==-1) dealers[idx] = saved;
+      showToast('Dealer updated!','success');
+    } else {
+      res   = await fetch(API_BASE+'/dealers', { method:'POST', headers:authHeaders(), body:JSON.stringify(payload) });
+      saved = await res.json();
+      if(!res.ok) throw new Error(saved.message||'Create failed');
+      dealers.unshift(saved);
+      showToast('Dealer added to database!','success');
+    }
+    closeModal('modal-dealer');
+    filterDealers();
+    updateStats();
+    renderRegionCards();
+  } catch(e) {
+    errEl.textContent = e.message || 'Server error. Please try again.';
+    errEl.classList.add('show');
+    showToast('Error: '+e.message,'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = editingId ? '&#128190; Update Dealer' : '&#128190; Save Dealer';
+}
+
+// ?"??"? DELETE ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+function confirmDelete(id, name){
+  (document.getElementById('confirm-msg')||{}).textContent = `"${name}" will be permanently removed from the database.`;
+  document.getElementById('confirm-ok-btn').onclick  = ()=>doDelete(id, name);
+  openModal('modal-confirm');
+}
+
+async function doDelete(id, name){
+  closeModal('modal-confirm');
+  try {
+    const res = await fetch(API_BASE+'/dealers/'+id, { method:'DELETE', headers:authHeaders() });
+    if(!res.ok){ const d=await res.json(); throw new Error(d.message||'Delete failed'); }
+    dealers = dealers.filter(d=>d._id!==id);
+    filterDealers();
+    updateStats();
+    renderRegionCards();
+    showToast(`"${name}" deleted.`,'success');
+  } catch(e){
+    showToast('Delete failed: '+e.message,'error');
+  }
+}
+
+// ?"??"? EXPORT CSV ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+function exportCSV(){
+  const rows=[['Name','Region','Added On']];
+  dealers.forEach(d=>rows.push([d.name, d.region, formatDate(d.createdAt)]));
+  const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='schillerindia-dealers.csv';
+  a.click();
+  showToast('CSV exported!','success');
+}
+
+// ?"??"? HELPERS ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+function avatarColor(id){
+  const colors=['#14b8a6','#0077cc','#6d28d9','#d97706','#059669','#007a8a','#c2550a','#b91c6a'];
+  const n = typeof id==='string' ? id.split('').reduce((a,c)=>a+c.charCodeAt(0),0) : id;
+  return colors[n % colors.length];
+}
+
+function formatDate(dt){
+  if(!dt) return '-';
+  const d = new Date(dt);
+  return isNaN(d) ? String(dt) : d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+function esc(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function sortArr(arr,key,dir){
+  arr.sort((a,b)=>{
+    const av=(a[key]||'').toString().toLowerCase();
+    const bv=(b[key]||'').toString().toLowerCase();
+    return av<bv?-dir:av>bv?dir:0;
+  });
+}
+
+function renderPagination(cid,current,total,onPage){
+  const el=document.getElementById(cid);
+  if(total<=1){el.innerHTML='';return;}
+  let h=`<button class="page-btn" ${current===1?'disabled':''} onclick="(${onPage})(${current-1})">&#8249;</button>`;
+  getPageRange(current,total).forEach(p=>{
+    if(p==='...') h+=`<button class="page-btn" disabled>...</button>`;
+    else h+=`<button class="page-btn ${p===current?'active':''}" onclick="(${onPage})(${p})">${p}</button>`;
+  });
+  h+=`<button class="page-btn" ${current===total?'disabled':''} onclick="(${onPage})(${current+1})">&#8250;</button>`;
+  el.innerHTML=h;
+}
+
+function getPageRange(c,t){
+  if(t<=7) return Array.from({length:t},(_,i)=>i+1);
+  if(c<=4) return [1,2,3,4,5,'...',t];
+  if(c>=t-3) return [1,'...',t-4,t-3,t-2,t-1,t];
+  return [1,'...',c-1,c,c+1,'...',t];
+}
+
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  o.addEventListener('click', e=>{ if(e.target===o) o.classList.remove('open'); });
+});
+
+function showToast(msg, type='success'){
+  const wrap=document.getElementById('toast-wrap');
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.innerHTML=`<span class="toast-dot"></span>${msg}`;
+  wrap.appendChild(el);
+  setTimeout(()=>el.remove(), 3200);
+}
+
+function logout(){ localStorage.clear(); window.location.href='login.html'; }
+
+let sfOpen=false;
+function toggleSF(){
+  sfOpen=!sfOpen;
+  document.getElementById('sf-children').classList.toggle('open',sfOpen);
+  document.getElementById('sf-toggle').classList.toggle('open',sfOpen);
+}
+function toggleAR(){ var btn=document.getElementById('ar-toggle'); var panel=document.getElementById('ar-children'); if(!btn||!panel)return; btn.classList.toggle('open'); panel.classList.toggle('open'); }
+</script>
+</body>
+</html>
+
+
+
+
+
+

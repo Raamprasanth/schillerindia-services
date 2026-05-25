@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SchillerIndia Services</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red:    #cc0000;
+      --teal:   #007a8a;
+      --dark:   #1a2a3a;
+      --card:   #ffffff;
+      --border: rgba(0,120,140,0.18);
+      --text:   #3a4a5a;
+      --white:  #ffffff;
+      --bg:     #f4f7fa;
+      --bg2:    #eaf1f6;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      height: 72px;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 2px 16px rgba(0,80,100,0.07);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+    }
+
+    .logo-img {
+      height: 48px;
+      width: auto;
+      object-fit: contain;
+      background: #f0f4f8;
+      border: 1px dashed #c0d0e0;
+      border-radius: 4px;
+      padding: 4px 8px;
+    }
+
+    .logo-text { line-height: 1; }
+    .logo-text .name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--red);
+      letter-spacing: 0.06em;
+    }
+    .logo-text .sub {
+      font-size: 10px;
+      color: var(--teal);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    /* ── ANIMATED ORGAN LOGO ── */
+    .organ-logo {
+      display: flex;
+      gap: 3px;
+      border-radius: 10px;
+      overflow: hidden;
+      height: 52px;
+      flex-shrink: 0;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.18);
+    }
+    .organ-panel {
+      width: 48px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .op-yellow { background: #F5C518; }
+    .op-orange { background: #F4845F; }
+    .op-red    { background: #C0392B; }
+
+    @keyframes heartpulse {
+      0%, 65%, 100% { transform: scale(1); }
+      15%           { transform: scale(1.30); }
+      35%           { transform: scale(1.10); }
+      50%           { transform: scale(1.22); }
+    }
+    @keyframes lungbreathe {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scaleX(1.10) scaleY(1.08); }
+    }
+    @keyframes anabeat {
+      0%, 60%, 100% { transform: scale(1) rotate(-4deg); }
+      18%           { transform: scale(1.26) rotate(-4deg); }
+      38%           { transform: scale(1.08) rotate(-4deg); }
+    }
+    .anim-heart { animation: heartpulse 1.4s ease-in-out infinite; transform-origin: center; }
+    .anim-lungs { animation: lungbreathe 2.8s ease-in-out infinite; transform-origin: center bottom; }
+    .anim-ana   { animation: anabeat 1.4s ease-in-out infinite 0.2s; transform-origin: center; }
+
+    .nav-links { display: flex; gap: 36px; list-style: none; }
+    .nav-links a {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: 0.06em;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--teal); }
+    .nav-links a.active { color: var(--teal); }
+
+    .nav-cta {
+      padding: 9px 22px;
+      background: var(--red);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      letter-spacing: 0.06em;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .nav-cta:hover { background: #e60000; transform: translateY(-1px); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      background: linear-gradient(135deg, #ddeef8 0%, #c8e0f0 50%, #eaf4fb 100%);
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      opacity: 0.25;
+      z-index: 0;
+      background: linear-gradient(135deg, #cce0f0 0%, #b8d4e8 50%, #d8ecf8 100%);
+    }
+
+    /* Gradient overlay on hero */
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(220,235,248,0.92) 40%, rgba(220,235,248,0.4) 100%);
+      z-index: 1;
+    }
+
+    /* Animated teal grid lines */
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background-image:
+        linear-gradient(rgba(0,120,140,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,120,140,0.06) 1px, transparent 1px);
+      background-size: 60px 60px;
+      animation: gridpan 20s linear infinite;
+    }
+
+    @keyframes gridpan {
+      from { background-position: 0 0; }
+      to   { background-position: 60px 60px; }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      padding: 120px 80px 80px;
+      max-width: 680px;
+      animation: herorise 1s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    @keyframes herorise {
+      from { opacity: 0; transform: translateY(32px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border: 1px solid var(--teal);
+      border-radius: 2px;
+      font-size: 11px;
+      color: var(--teal);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      background: rgba(0,120,140,0.06);
+    }
+
+    .hero-badge .dot {
+      width: 6px; height: 6px;
+      background: var(--teal);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    .hero h1 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: clamp(38px, 6vw, 68px);
+      font-weight: 700;
+      color: var(--dark);
+      line-height: 1.05;
+      letter-spacing: 0.02em;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 span { color: var(--teal); }
+
+    .hero p {
+      font-size: 16px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: #4a6a8a;
+      max-width: 520px;
+      margin-bottom: 36px;
+    }
+
+    .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+
+    .btn-primary {
+      padding: 14px 32px;
+      background: var(--red);
+      color: #fff;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.25s, transform 0.15s, box-shadow 0.25s;
+      box-shadow: 0 4px 24px rgba(204,0,0,0.2);
+    }
+
+    .btn-primary:hover {
+      background: #e60000;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(204,0,0,0.32);
+    }
+
+    .btn-outline {
+      padding: 13px 28px;
+      background: transparent;
+      color: var(--teal);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: 1.5px solid var(--teal);
+      border-radius: 3px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.25s, color 0.25s;
+    }
+
+    .btn-outline:hover { background: rgba(0,120,140,0.08); }
+
+    /* ── STATS STRIP ── */
+    .stats-strip {
+      position: relative;
+      z-index: 3;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      background: #ffffff;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 2px 16px rgba(0,80,100,0.06);
+    }
+
+    .stat-item {
+      padding: 32px 28px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+      transition: background 0.3s;
+    }
+
+    .stat-item:last-child { border-right: none; }
+    .stat-item:hover { background: rgba(0,120,140,0.04); }
+
+    .stat-number {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 42px;
+      font-weight: 700;
+      color: var(--teal);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #7a9ab0;
+    }
+
+    /* ── SECTIONS COMMON ── */
+    section {
+      padding: 96px 80px;
+    }
+
+    .section-tag {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 700;
+      color: var(--dark);
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    .section-desc {
+      font-size: 15px;
+      font-weight: 300;
+      color: #6a8aaa;
+      line-height: 1.75;
+      max-width: 560px;
+      margin-bottom: 56px;
+    }
+
+    /* ── ABOUT SECTION ── */
+    .about {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .about-img-wrap {
+      position: relative;
+    }
+
+    .about-img-wrap img {
+      width: 100%;
+      border-radius: 4px;
+      object-fit: cover;
+      aspect-ratio: 4/3;
+      display: block;
+    }
+
+    .about-img-wrap .img-ph {
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: #e8f0f8;
+      border: 1.5px dashed #b0c8e0;
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: #7a9ab0;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+    }
+
+    .about-img-wrap .img-ph span { font-size: 32px; }
+
+    .about-img-wrap::before {
+      content: '';
+      position: absolute;
+      top: -12px; left: -12px;
+      right: 12px; bottom: 12px;
+      border: 1px solid rgba(0,120,140,0.2);
+      border-radius: 4px;
+      z-index: -1;
+    }
+
+    .about-img-wrap::after {
+      content: '';
+      position: absolute;
+      bottom: -12px; right: -12px;
+      width: 80px; height: 80px;
+      background: var(--red);
+      border-radius: 3px;
+      z-index: -1;
+    }
+
+    .about-text .bullets {
+      margin-top: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .bullet {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .bullet::before {
+      content: '▸';
+      color: var(--teal);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ── SERVICES SECTION ── */
+    #services { background: var(--bg2); }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .service-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 36px 28px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+      cursor: default;
+      box-shadow: 0 2px 12px rgba(0,80,100,0.05);
+    }
+
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--teal);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s;
+    }
+
+    .service-card:hover {
+      border-color: rgba(0,120,140,0.35);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(0,80,100,0.12);
+    }
+
+    .service-card:hover::before { transform: scaleX(1); }
+
+    .service-icon {
+      width: 52px;
+      height: 52px;
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,120,140,0.07);
+      border: 1px solid rgba(0,120,140,0.18);
+      border-radius: 8px;
+      font-size: 24px;
+    }
+
+    .service-card h3 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 10px;
+      letter-spacing: 0.03em;
+    }
+
+    .service-card p {
+      font-size: 13.5px;
+      color: #7a9ab0;
+      line-height: 1.7;
+    }
+
+    /* ── ACHIEVEMENTS ── */
+    #achievements { background: var(--bg); }
+
+    .achieve-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .achieve-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 36px 32px;
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      transition: border-color 0.3s, background 0.3s;
+      box-shadow: 0 2px 12px rgba(0,80,100,0.05);
+    }
+
+    .achieve-card:hover {
+      border-color: rgba(204,0,0,0.3);
+      background: rgba(204,0,0,0.02);
+    }
+
+    .achieve-badge {
+      flex-shrink: 0;
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(204,0,0,0.06);
+      border: 1px solid rgba(204,0,0,0.15);
+      border-radius: 50%;
+      font-size: 24px;
+    }
+
+    .achieve-content h4 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 6px;
+      letter-spacing: 0.03em;
+    }
+
+    .achieve-content p {
+      font-size: 13.5px;
+      color: #7a9ab0;
+      line-height: 1.65;
+    }
+
+    .achieve-year {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: var(--red);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    /* ── TEAM / GALLERY SECTION ── */
+    #gallery { background: var(--bg2); }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .gallery-item {
+      position: relative;
+      overflow: hidden;
+      border-radius: 3px;
+      border: 1px solid var(--border);
+      aspect-ratio: 3/4;
+      background: #dce8f2;
+      cursor: pointer;
+    }
+
+    .gallery-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s, opacity 0.3s;
+      opacity: 0.85;
+    }
+
+    .gallery-item:hover img { transform: scale(1.06); opacity: 1; }
+
+    .gallery-item .ph {
+      width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: #7a9ab0;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      text-align: center;
+      padding: 16px;
+    }
+
+    .gallery-item .ph span { font-size: 28px; }
+
+    .gallery-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(20,50,80,0.75) 0%, transparent 60%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 18px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .gallery-item:hover .gallery-overlay { opacity: 1; }
+
+    .gallery-overlay .name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .gallery-overlay .role {
+      font-size: 11px;
+      color: #7fd8e8;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    /* ── CTA BANNER ── */
+    .cta-banner {
+      margin: 0 80px 80px;
+      background: linear-gradient(135deg, #fbeaea 0%, #ddeef8 100%);
+      border: 1px solid rgba(204,0,0,0.18);
+      border-radius: 6px;
+      padding: 64px 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 40px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,80,100,0.08);
+    }
+
+    .cta-banner::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(204,0,0,0.08) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .cta-banner h2 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 34px;
+      font-weight: 700;
+      color: var(--dark);
+      line-height: 1.15;
+    }
+
+    .cta-banner h2 span { color: var(--teal); }
+
+    .cta-banner p {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #5a7a9a;
+      max-width: 420px;
+    }
+
+    .cta-actions { display: flex; gap: 14px; flex-shrink: 0; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #ffffff;
+      border-top: 1px solid var(--border);
+      padding: 40px 80px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 -2px 12px rgba(0,80,100,0.04);
+    }
+
+    footer .copy {
+      font-size: 12px;
+      color: #8aaabb;
+      letter-spacing: 0.05em;
+    }
+
+    footer .copy span { color: var(--red); }
+
+    footer .foot-links { display: flex; gap: 28px; }
+    footer .foot-links a {
+      font-size: 12px;
+      color: #8aaabb;
+      text-decoration: none;
+      letter-spacing: 0.06em;
+      transition: color 0.2s;
+    }
+    footer .foot-links a:hover { color: var(--teal); }
+
+    /* ── SCROLL ANIMATION ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s, transform 0.7s;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      nav { padding: 0 24px; }
+      .nav-links { display: none; }
+      .hero-content { padding: 100px 32px 60px; }
+      section { padding: 64px 32px; }
+      .about { grid-template-columns: 1fr; gap: 48px; }
+      .services-grid { grid-template-columns: 1fr 1fr; }
+      .achieve-grid { grid-template-columns: 1fr; }
+      .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+      .stats-strip { grid-template-columns: repeat(2, 1fr); }
+      .cta-banner { margin: 0 32px 64px; padding: 48px 36px; flex-direction: column; }
+      footer { flex-direction: column; gap: 20px; text-align: center; }
+    }
+
+    @media (max-width: 560px) {
+      .services-grid { grid-template-columns: 1fr; }
+      .gallery-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+  <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="employee-theme.css">
+  <script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="brand-logo.css">
+  <script src="brand-logo.js" defer></script>
+</head>
+<body>
+
+<!-- ════════════ NAVBAR ════════════ -->
+<nav>
+  <a class="logo" href="#">
+    <!-- Animated organ logo -->
+    <div class="organ-logo">
+      <!-- Panel 1: Cartoon heart (yellow) -->
+      <div class="organ-panel op-yellow">
+        <svg class="anim-heart" viewBox="0 0 40 38" width="30" height="28" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z"
+                fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/>
+          <!-- highlight -->
+          <ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/>
+        </svg>
+      </div>
+      <!-- Panel 2: Lungs (orange) -->
+      <div class="organ-panel op-orange">
+        <svg class="anim-lungs" viewBox="0 0 40 38" width="30" height="28" xmlns="http://www.w3.org/2000/svg">
+          <!-- trachea -->
+          <rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/>
+          <!-- left bronchus -->
+          <path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          <!-- right bronchus -->
+          <path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          <!-- left lung -->
+          <ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/>
+          <!-- right lung -->
+          <ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/>
+          <!-- inner shading -->
+          <ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/>
+          <ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/>
+        </svg>
+      </div>
+      <!-- Panel 3: Anatomical heart (red) -->
+      <div class="organ-panel op-red">
+        <svg class="anim-ana" viewBox="0 0 40 38" width="30" height="28" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/>
+          <path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/>
+          <ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/>
+        </svg>
+      </div>
+    </div>
+    <div class="logo-text">
+      <div class="name">SCHILLER</div>
+      <div class="sub">The Art of Diagnostics</div>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#achievements">Achievements</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+  <a href="login.html" class="nav-cta">Login</a>
+</nav>
+
+<!-- ════════════ HERO ════════════ -->
+<section class="hero" id="home">
+
+  <img class="hero-bg" src="" alt="" aria-hidden="true"
+       onerror="this.style.background='linear-gradient(135deg,#cce0f0 0%,#b8d4e8 50%,#d8ecf8 100%)'; this.src='';" />
+
+  <div class="hero-grid"></div>
+
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      Advanced Diagnostic Solutions
+    </div>
+    <h1>
+      SchillerIndia<br/>
+      <span>Services</span>
+    </h1>
+    <p>
+      Delivering world-class diagnostic technology and healthcare solutions across India.
+      Trusted by leading hospitals, clinics, and healthcare professionals nationwide.
+    </p>
+    <div class="hero-actions">
+      <a href="#services" class="btn-primary">Explore Services</a>
+      <a href="#about" class="btn-outline">About Us</a>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════ STATS STRIP ════════════ -->
+<div class="stats-strip">
+  <div class="stat-item reveal">
+    <div class="stat-number">25+</div>
+    <div class="stat-label">Years of Excellence</div>
+  </div>
+  <div class="stat-item reveal">
+    <div class="stat-number">500+</div>
+    <div class="stat-label">Hospital Partners</div>
+  </div>
+  <div class="stat-item reveal">
+    <div class="stat-number">50K+</div>
+    <div class="stat-label">Devices Deployed</div>
+  </div>
+  <div class="stat-item reveal">
+    <div class="stat-number">28</div>
+    <div class="stat-label">States Covered</div>
+  </div>
+</div>
+
+<!-- ════════════ ABOUT ════════════ -->
+<section id="about">
+    <div class="about-text reveal">
+      <p class="section-tag">Who We Are</p>
+      <h2 class="section-title">Pioneers in Diagnostic Excellence</h2>
+      <p class="section-desc">
+        SchillerIndia Services is a leading provider of cutting-edge diagnostic equipment
+        and healthcare technology. We partner with Switzerland-based Schiller AG to bring
+        globally trusted solutions to every corner of India.
+      </p>
+      <div class="bullets">
+        <div class="bullet">ISO-certified service centers across all major cities in India</div>
+        <div class="bullet">Authorized distributor of SCHILLER cardiac diagnostics, patient monitoring, and defibrillators</div>
+        <div class="bullet">24/7 technical support and preventive maintenance programs</div>
+        <div class="bullet">Training programs for medical professionals on latest diagnostic technology</div>
+        <div class="bullet">Comprehensive warranty and after-sales service support</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════ SERVICES ════════════ -->
+<section id="services">
+  <p class="section-tag reveal">What We Offer</p>
+  <h2 class="section-title reveal">Our Core Services</h2>
+  <p class="section-desc reveal">
+    End-to-end diagnostic solutions designed for modern healthcare facilities,
+    from equipment supply to technical training and ongoing support.
+  </p>
+
+  <div class="services-grid">
+
+    <div class="service-card reveal">
+      <div class="service-icon">🫀</div>
+      <h3>Cardiac Diagnostics</h3>
+      <p>ECG machines, Holter monitors, stress testing systems, and spirometers from SCHILLER's world-leading portfolio.</p>
+    </div>
+
+    <div class="service-card reveal">
+      <div class="service-icon">&#128225;</div>
+      <h3>Patient Monitoring</h3>
+      <p>Multi-parameter patient monitors for ICU, OT, and general ward applications with central monitoring capabilities.</p>
+    </div>
+
+    <div class="service-card reveal">
+      <div class="service-icon">⚡</div>
+      <h3>Defibrillators & AEDs</h3>
+      <p>Automated external defibrillators and advanced defibrillators for emergency and pre-hospital care.</p>
+    </div>
+
+    <div class="service-card reveal">
+      <div class="service-icon">&#128295;</div>
+      <h3>AMC & Service</h3>
+      <p>Annual maintenance contracts, preventive maintenance schedules, and rapid on-site repair by certified engineers.</p>
+    </div>
+
+    <div class="service-card reveal">
+      <div class="service-icon">🎓</div>
+      <h3>Training & Education</h3>
+      <p>Clinical training programs and workshops for hospital staff on operating diagnostic equipment effectively and safely.</p>
+    </div>
+
+    <div class="service-card reveal">
+      <div class="service-icon">🏥</div>
+      <h3>Hospital Setup</h3>
+      <p>End-to-end consultation and supply for new hospital diagnostic infrastructure setup and technology upgrades.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════════ ACHIEVEMENTS ════════════ -->
+<section id="achievements">
+  <p class="section-tag reveal">Our Milestones</p>
+  <h2 class="section-title reveal">Achievements & Recognition</h2>
+  <p class="section-desc reveal">
+    Decades of commitment to healthcare excellence recognized by industry bodies,
+    partners, and the communities we serve.
+  </p>
+
+  <div class="achieve-grid">
+
+    <div class="achieve-card reveal">
+      <div class="achieve-badge">🏆</div>
+      <div class="achieve-content">
+        <div class="achieve-year">2023</div>
+        <h4>Best Diagnostic Solutions Provider</h4>
+        <p>Recognized by the Indian Medical Device Industry Association for outstanding service delivery and product quality across South India.</p>
+      </div>
+    </div>
+
+    <div class="achieve-card reveal">
+      <div class="achieve-badge">🌟</div>
+      <div class="achieve-content">
+        <div class="achieve-year">2022</div>
+        <h4>SCHILLER Global Excellence Award</h4>
+        <p>Awarded by SCHILLER AG Switzerland for achieving the highest sales growth and customer satisfaction rating among all India partners.</p>
+      </div>
+    </div>
+
+    <div class="achieve-card reveal">
+      <div class="achieve-badge">&#129309;</div>
+      <div class="achieve-content">
+        <div class="achieve-year">2020</div>
+        <h4>COVID-19 Emergency Response</h4>
+        <p>Supplied over 1,000 patient monitors and defibrillators to government hospitals during the pandemic at reduced cost to support national healthcare.</p>
+      </div>
+    </div>
+
+    <div class="achieve-card reveal">
+      <div class="achieve-badge">🎖️</div>
+      <div class="achieve-content">
+        <div class="achieve-year">2018</div>
+        <h4>ISO 9001:2015 Certification</h4>
+        <p>Achieved ISO 9001:2015 certification for our service operations, affirming our commitment to international quality management standards.</p>
+      </div>
+    </div>
+
+    <div class="achieve-card reveal">
+      <div class="achieve-badge">&#128200;</div>
+      <div class="achieve-content">
+        <div class="achieve-year">2015</div>
+        <h4>Pan-India Expansion</h4>
+        <p>Established service centers in all 28 states, becoming the most geographically extensive SCHILLER service partner in Asia.</p>
+      </div>
+    </div>
+
+    <div class="achieve-card reveal">
+      <div class="achieve-badge">🧠</div>
+      <div class="achieve-content">
+        <div class="achieve-year">2010</div>
+        <h4>10,000 Installations Milestone</h4>
+        <p>Reached the milestone of 10,000 successfully installed and operational diagnostic devices across hospitals and clinics in India.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="cta-banner reveal">
+  <div>
+    <h2>Ready to Upgrade Your<br/><span>Diagnostic Infrastructure?</span></h2>
+    <p>Connect with our team for a free consultation and product demonstration at your facility.</p>
+  </div>
+  <div class="cta-actions">
+    <a href="tel:+91XXXXXXXXXX" class="btn-primary">Call Us Now</a>
+    <a href="mailto:info@schillerindia.com" class="btn-outline">Email Us</a>
+  </div>
+</div>
+
+<!-- ════════════ FOOTER ════════════ -->
+<footer>
+  <div class="copy">
+    © 2024 <span>SchillerIndia Services</span>. All rights reserved. · The Art of Diagnostics
+  </div>
+  <div class="foot-links">
+    <a href="#">Privacy Policy</a>
+    <a href="#">Terms of Use</a>
+    <a href="#">Sitemap</a>
+  </div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 60);
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Animate stat numbers
+  function animateCounter(el, target, suffix) {
+    let current = 0;
+    const step = Math.ceil(target / 60);
+    const timer = setInterval(() => {
+      current = Math.min(current + step, target);
+      el.textContent = current + suffix;
+      if (current >= target) clearInterval(timer);
+    }, 24);
+  }
+
+  const statsObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        document.querySelectorAll('.stat-number').forEach(el => {
+          const raw = el.textContent;
+          const num = parseInt(raw.replace(/\D/g, ''));
+          const suffix = raw.replace(/[0-9]/g, '');
+          animateCounter(el, num, suffix);
+        });
+        statsObserver.disconnect();
+      }
+    });
+  }, { threshold: 0.5 });
+
+  const strip = document.querySelector('.stats-strip');
+  if (strip) statsObserver.observe(strip);
+</script>
+
+</body>
+</html>

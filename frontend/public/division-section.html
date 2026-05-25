@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light'); })();</script>
+
+<title>SchillerIndia - Division Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+ :root{
+      --bg:#f4f7fa;--surface:#ffffff;--surface2:#eaf1f6;--border:#d0e0ec;
+      --accent:#0077cc;--accent2:#007a8a;--green:#059669;--amber:#d97706;
+      --red:#cc0000;--text:#1a2a3a;--muted:#7a9ab0;--soft:#4a6a8a;--card:#ffffff;
+    }
+    [data-theme="dark"]{
+      --bg:#0f1621;--surface:#1a2333;--surface2:#1e293b;--border:#2a3a52;
+      --accent:#3b9eff;--accent2:#22d3ee;--green:#10b981;--amber:#f59e0b;
+      --red:#f87171;--text:#e2eaf4;--muted:#4a6a8a;--soft:#7a9ab0;--card:#1a2333;
+    }
+body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  transition:background 0.3s, color 0.3s; /* ADD THIS */
+}
+
+/* ?"??"? SIDEBAR ?"??"? */
+.sidebar{width:240px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 12px rgba(0,80,120,0.06);}
+.sidebar-header{padding:20px 20px 16px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#450a0a,#b91c1c);}
+.sidebar-logo{display:flex;align-items:center;gap:10px;}
+.sidebar-logo-icon{width:36px;height:36px;background:rgba(255,255,255,0.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:#fff;box-shadow:0 2px 8px rgba(204,0,0,0.2);}
+.sidebar-logo-text{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;}
+.sidebar-logo-text .sub{font-size:10px;color:rgba(255,255,255,0.6);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;}
+.role-badge{margin:10px 20px 0;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;display:inline-block;background:rgba(185,28,28,0.1);color:#b91c1c;border:1px solid rgba(185,28,28,0.25);}
+.sidebar-nav{flex:1;padding:12px 10px;}
+.nav-section{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;padding:10px 8px 5px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:500;cursor:pointer;transition:all 0.2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:rgba(185,28,28,0.1);color:#b91c1c;font-weight:600;}
+.nav-item .icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:#b91c1c;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;}
+.nav-group-toggle{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:600;cursor:pointer;transition:all 0.2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;}
+.nav-group-toggle:hover{background:var(--surface2);color:var(--text);}
+.nav-group-toggle .icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.caret{margin-left:auto;font-size:9px;transition:transform 0.25s;}
+.nav-group-toggle.open .caret{transform:rotate(90deg);}
+.nav-children{max-height:0;overflow:hidden;transition:max-height 0.3s ease;}
+.nav-children.open{max-height:400px;}
+.nav-sub .nav-item{padding:6px 10px 6px 28px;font-size:12px;color:var(--muted);}
+.nav-sub .nav-item:hover{color:var(--text);}
+.nav-sub .nav-item.active{color:#b91c1c;background:rgba(185,28,28,0.07);}
+.sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);}
+.user-info{display:flex;align-items:center;gap:10px;}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#b91c1c,#ef4444);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
+.user-name{font-size:13px;font-weight:600;color:var(--text);}
+.user-role{font-size:11px;color:var(--muted);}
+.logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s;}
+.logout-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* ?"??"? MAIN ?"??"? */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,80,120,0.05);}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-bottom:4px;}
+.breadcrumb a{color:var(--muted);text-decoration:none;transition:color 0.2s;}
+.breadcrumb a:hover{color:var(--accent);}
+.breadcrumb .sep{color:var(--border);}
+.breadcrumb .cur{color:var(--soft);}
+.topbar-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);}
+.topbar-date{font-size:12px;color:var(--muted);margin-top:2px;}
+.topbar-actions{display:flex;align-items:center;gap:10px;}
+
+/* ?"??"? BUTTONS ?"??"? */
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;border:1px solid var(--border);background:var(--surface2);color:var(--soft);font-family:'Plus Jakarta Sans',sans-serif;display:inline-flex;align-items:center;gap:6px;}
+.btn:hover{border-color:var(--accent);color:var(--accent);}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn.primary:hover{background:#005fa3;}
+.btn.success{background:var(--green);color:#fff;border-color:var(--green);}
+.btn.success:hover{background:#047857;}
+.btn.danger{background:transparent;color:var(--red);border-color:rgba(204,0,0,0.3);}
+.btn.danger:hover{background:rgba(204,0,0,0.06);border-color:var(--red);}
+.btn.sm{padding:6px 14px;font-size:12px;}
+.btn.xs{padding:4px 10px;font-size:11px;border-radius:6px;}
+
+/* ?"??"? CONTENT ?"??"? */
+.content{flex:1;padding:28px;overflow-y:auto;background:var(--bg);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.fade-up{animation:fadeUp 0.45s ease both;}
+
+/* ?"??"? STATS ?"??"? */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.mini-stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:14px;transition:border-color 0.2s,transform 0.2s,box-shadow 0.2s;box-shadow:0 2px 10px rgba(0,80,120,0.05);}
+.mini-stat:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,80,120,0.1);}
+.mini-stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.mini-stat-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;}
+.mini-stat-lbl{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-top:1px;}
+
+/* ?"??"? PANEL ?"??"? */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,80,120,0.05);}
+.panel-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:var(--surface);}
+.panel-title{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+.panel-title .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+.panel-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.search-box{position:relative;}
+.search-box input{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:7px 12px 7px 34px;font-size:13px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;outline:none;width:220px;transition:border-color 0.2s;}
+.search-box input:focus{border-color:var(--accent);}
+.search-box input::placeholder{color:var(--muted);}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);}
+.show-select{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;color:var(--soft);font-family:'Plus Jakarta Sans',sans-serif;outline:none;cursor:pointer;}
+
+/* ?"??"? TABLE ?"??"? */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;padding:12px 16px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;}
+thead th:hover{color:var(--soft);}
+thead th.sorted{color:var(--accent);}
+tbody td{padding:13px 16px;font-size:13px;border-bottom:1px solid rgba(0,80,120,0.07);vertical-align:middle;color:var(--text);}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr{transition:background 0.15s;}
+tbody tr:hover td{background:rgba(0,119,204,0.03);}
+.table-footer{padding:14px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted);}
+
+/* ?"??"? BADGES ?"??"? */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;display:block;}
+.badge-active{background:none;color:var(--text);padding:0;border:none;display:inline;font-size:12px;font-weight:500;}.badge-active::before{display:none;}
+.badge-blue{background:rgba(0,119,204,0.12);color:var(--accent);}.badge-blue::before{background:var(--accent);}
+.badge-purple{background:rgba(109,40,217,0.12);color:var(--purple);}.badge-purple::before{background:var(--purple);}
+.badge-orange{background:rgba(194,65,12,0.12);color:var(--orange);}.badge-orange::before{background:var(--orange);}
+.chip{display:inline-flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:11px;color:var(--soft);font-weight:500;}
+
+/* ?"??"? PAGINATION ?"??"? */
+.pagination{display:flex;align-items:center;gap:4px;}
+.page-btn{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--soft);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;display:flex;align-items:center;justify-content:center;}
+.page-btn:hover{border-color:var(--accent);color:var(--accent);}
+.page-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.page-btn:disabled{opacity:0.3;cursor:not-allowed;}
+
+/* ?"??"? MODAL ?"??"? */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,20,35,0.35);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;animation:fadeUp 0.3s ease;box-shadow:0 20px 60px rgba(0,0,0,0.12);}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1;}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);}
+.modal-close{background:none;border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.modal-close:hover{border-color:var(--red);color:var(--red);}
+.modal-body{padding:24px;}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;position:sticky;bottom:0;background:var(--surface);}
+
+/* ?"??"? FORM ?"??"? */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field.span2{grid-column:span 2;}
+.field label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
+.field input,.field select,.field textarea{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px 13px;font-size:13px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,119,204,0.1);}
+.field input::placeholder,.field textarea::placeholder{color:var(--muted);}
+.field textarea{resize:vertical;min-height:70px;}
+.required-star{color:var(--red);}
+
+/* ?"??"? MODEL EDITOR ?"??"? */
+.model-editor{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:4px;}
+.model-editor-head{background:var(--surface2);padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.model-editor-head span{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
+.model-editor table{width:100%;}
+.model-editor thead th{background:var(--surface2);font-size:10px;padding:9px 12px;border-bottom:1px solid var(--border);}
+.model-editor tbody td{padding:6px 8px;border-bottom:1px solid rgba(0,80,120,0.07);}
+.model-editor tbody tr:last-child td{border-bottom:none;}
+.model-editor tbody td input{background:var(--surface);border:1.5px solid var(--border);border-radius:6px;padding:7px 9px;font-size:12px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;outline:none;width:100%;transition:border-color 0.2s;}
+.model-editor tbody td input:focus{border-color:var(--accent);}
+.model-editor-footer{padding:10px 12px;border-top:1px solid var(--border);background:var(--surface2);}
+.add-row-btn{background:none;border:1px dashed var(--border);color:var(--muted);border-radius:7px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;width:100%;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;}
+.add-row-btn:hover{border-color:var(--accent);color:var(--accent);}
+.del-row-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:4px 6px;border-radius:5px;transition:all 0.2s;}
+.del-row-btn:hover{color:var(--red);background:rgba(204,0,0,0.08);}
+
+/* ?"??"? MODEL TAGS ?"??"? */
+.model-tag{display:inline;background:none;border:none;border-radius:0;padding:0;font-size:12px;color:var(--text);font-weight:500;margin:0;}
+
+/* ?"??"? EXPAND ROW ?"??"? */
+.expand-btn{background:none;border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:11px;padding:3px 8px;border-radius:5px;transition:all 0.2s;font-weight:600;}
+.expand-btn:hover{border-color:var(--accent);color:var(--accent);}
+.sub-panel{background:rgba(234,241,246,0.8);border-top:1px solid var(--border);}
+.sub-panel td{padding:14px 16px 14px 48px !important;font-size:12px;color:var(--soft);}
+
+/* ?"??"? CONFIRM ?"??"? */
+.confirm-box{background:var(--surface);border:1px solid rgba(204,0,0,0.3);border-radius:14px;width:100%;max-width:400px;padding:28px;text-align:center;animation:fadeUp 0.3s ease;box-shadow:0 20px 60px rgba(0,0,0,0.12);}
+.confirm-icon{font-size:40px;margin-bottom:14px;}
+.confirm-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:8px;color:var(--text);}
+.confirm-msg{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.6;}
+.confirm-actions{display:flex;gap:10px;justify-content:center;}
+
+/* ?"??"? TOAST ?"??"? */
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;min-width:260px;animation:fadeUp 0.3s ease;box-shadow:0 8px 24px rgba(0,0,0,0.12);}
+.toast.success{border-color:rgba(5,150,105,0.4);}.toast.success .toast-dot{background:var(--green);}
+.toast.error{border-color:rgba(204,0,0,0.4);}.toast.error .toast-dot{background:var(--red);}
+.toast-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* ?"??"? LOADING OVERLAY ?"??"? */
+.loading-row td{text-align:center;padding:40px;color:var(--muted);font-size:13px;}
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;margin-right:8px;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ?"??"? EMPTY STATE ?"??"? */
+.empty-state{text-align:center;padding:60px 20px;}
+.empty-icon{font-size:48px;margin-bottom:14px;opacity:0.4;}
+.empty-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:6px;color:var(--text);}
+.empty-sub{font-size:13px;color:var(--muted);}
+
+/* ?"??"? ACTION GROUP ?"??"? */
+.action-group{display:flex;align-items:center;gap:6px;}
+
+/* ?"??"? SERVICE PAGES ?"??"? */
+.svc-filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+.svc-search{flex:1;min-width:200px;padding:9px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s;}
+.svc-search:focus{border-color:var(--accent);}
+.svc-select{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--soft);background:var(--surface);outline:none;cursor:pointer;}
+.badge-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge-pill::before{content:'';width:5px;height:5px;border-radius:50%;display:block;}
+.bp-red{background:rgba(204,0,0,0.1);color:var(--red);}.bp-red::before{background:var(--red);}
+.bp-amber{background:rgba(217,119,6,0.12);color:var(--amber);}.bp-amber::before{background:var(--amber);}
+.bp-green{background:rgba(5,150,105,0.12);color:var(--green);}.bp-green::before{background:var(--green);}
+.bp-blue{background:rgba(0,119,204,0.12);color:var(--accent);}.bp-blue::before{background:var(--accent);}
+.bp-muted{background:rgba(122,154,176,0.15);color:var(--muted);}.bp-muted::before{background:var(--muted);}
+.chip-sm{display:inline-flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-size:11px;color:var(--soft);font-weight:500;}
+.action-xs{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:none;color:var(--soft);font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;}
+.action-xs:hover{border-color:var(--accent);color:var(--accent);}
+.action-xs.danger{color:var(--red);border-color:rgba(204,0,0,0.3);}
+.action-xs.danger:hover{background:rgba(204,0,0,0.06);}
+.table-footer-bar{padding:12px 16px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);}
+.data-table{width:100%;border-collapse:collapse;}
+.data-table th{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;padding:0 12px 12px;text-align:left;border-bottom:1px solid var(--border);}
+.data-table td{padding:12px;font-size:13px;border-bottom:1px solid rgba(0,80,120,0.07);color:var(--text);}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:hover td{background:rgba(0,119,204,0.03);}
+.btn-primary-sm{background:var(--accent);color:#fff;border:none;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary-sm:hover{background:#005fa3;}
+.btn-danger-sm{background:var(--red);color:#fff;border:none;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;}
+.btn-danger-sm:hover{background:#aa0000;}
+
+/* ?"??"? PAGE SYSTEM ?"??"? */
+.page{display:none;animation:fadeUp 0.35s ease both;}
+.page.active{display:block;}
+
+/* ?"??"? STAT CARDS (for scrap) ?"??"? */
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;transition:transform 0.2s,border-color 0.2s,box-shadow 0.2s;box-shadow:0 2px 10px rgba(0,80,120,0.05);}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,80,120,0.1);}
+.stat-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;}
+.stat-value{font-family:'Syne',sans-serif;font-size:24px;font-weight:700;margin-bottom:4px;}
+.stat-amber .stat-value{color:var(--amber);}.stat-amber:hover{border-color:var(--amber);}
+.stat-red .stat-value{color:var(--red);}.stat-red:hover{border-color:var(--red);}
+.stat-teal .stat-value{color:var(--accent2);}.stat-teal:hover{border-color:var(--accent2);}
+.stat-green .stat-value{color:var(--green);}.stat-green:hover{border-color:var(--green);}
+
+/* ?"??"? SCRAP MODAL ?"??"? */
+.scrap-modal-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;max-width:560px;width:95%;box-shadow:0 20px 60px rgba(0,0,0,0.12);}
+.scrap-modal-box h3{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);margin-bottom:8px;}
+.form-group{display:flex;flex-direction:column;gap:6px;}
+.form-group label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
+.form-group input,.form-group select{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s;}
+.form-group input:focus,.form-group select:focus{border-color:var(--accent);}
+.form-msg{font-size:12px;font-weight:600;padding:8px 14px;border-radius:6px;margin-top:10px;display:none;}
+.form-msg.ok{display:block;background:rgba(5,150,105,0.1);color:var(--green);border:1px solid rgba(5,150,105,0.25);}
+.form-msg.err-msg{display:block;background:rgba(204,0,0,0.08);color:var(--red);border:1px solid rgba(204,0,0,0.2);}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;}
+.btn-outline-sm{background:none;border:1.5px solid var(--border);color:var(--soft);padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;}
+.btn-outline-sm:hover{border-color:var(--accent);color:var(--accent);}
+
+    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
+    </style>
+  <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="employee-theme.css">
+  <link rel="stylesheet" href="admin-sidebar.css">
+  <script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <script src="brand-logo.js" defer></script>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<!-- === SIDEBAR === -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="sidebar-logo-text">SchillerIndia<div class="sub">Services</div></div>
+    </div>
+  </div>
+  <div style="padding:10px 20px 0;"><span class="role-badge">Admin</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <button class="nav-item " onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
+    <button class="nav-item " onclick="window.location.href='company-section.html'"><span class="icon">&#127970;</span> Company</button>
+    <button class="nav-item active" onclick="window.location.href='division-section.html'"><span class="icon">&#128309;</span> Division</button>
+    <button class="nav-item " onclick="window.location.href='engineer-section.html'"><span class="icon">&#128119;</span> Engineers</button>
+    <button class="nav-item " onclick="window.location.href='dealer-section.html'"><span class="icon">&#129309;</span> Dealers</button>
+    <div class="nav-section">Operations</div>
+    <button class="nav-group-toggle " id="sf-toggle" onclick="toggleSF()">
+      <span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span>
+    </button>
+    <div class="nav-children " id="sf-children">
+      <div class="nav-sub">
+        <button class="nav-item " onclick="window.location.href='service-list.html'"><span class="icon">&#128225;</span> Services</button>
+        <button class="nav-item " onclick="window.location.href='pending-frn.html'"><span class="icon">&#128221;</span> Pending FRN</button>
+        <button class="nav-item " onclick="window.location.href='ob-pending.html'"><span class="icon">&#128194;</span> OB Pending</button>
+        <button class="nav-item " onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
+        <button class="nav-item " onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
+        <button class="nav-item " onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
+        <button class="nav-item " onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
+        <button class="nav-item " onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="ar-toggle" onclick="toggleAR()"><span class="icon">&#128196;</span> Activity Register <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="ar-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
+        <a class="nav-item " href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
+        <a class="nav-item " href="aprfob.html"><span class="icon">&#128203;</span> PRF/OB List</a>
+        <a class="nav-item " href="acr.html"><span class="icon">&#128209;</span> Closed PRF/OB</a>
+        <a class="nav-item " href="ans.html"><span class="icon">&#128230;</span> Non Saleable</a>
+        <a class="nav-item " href="as.html"><span class="icon">&#128176;</span> Saleable</a>
+        <a class="nav-item " href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
+        <a class="nav-item " href="acbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="rta-toggle" onclick="toggleRTA()"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="rta-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="atfrn.html"><span class="icon">&#128221;</span> Admin RT FRN</a>
+        <a class="nav-item " href="atob.html"><span class="icon">&#128230;</span> Admin RT OB</a>
+        <a class="nav-item " href="atur.html"><span class="icon">&#128736;&#65039;</span> Admin RT UR</a>
+        <a class="nav-item " href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
+      </div>
+    </div>
+    <div class="nav-section">Admin</div>
+    <button class="nav-item " onclick="window.location.href='usermanagement.html'"><span class="icon">&#128101;</span> User Management</button>
+    <button class="nav-item " onclick="window.location.href='Reports.html'"><span class="icon">&#128200;</span> Reports</button>
+    <button class="nav-item " onclick="window.location.href='settings.html'"><span class="icon">&#9881;&#65039;</span> Settings</button>
+    <button class="nav-item " onclick="window.location.href='notifications.html'"><span class="icon">&#128276;</span> Notifications</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="admin-avatar">A</div>
+      <div>
+        <div class="user-name" id="admin-name">Admin</div>
+        <div class="user-role">Administrator</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="admin-dashboard.html">Dashboard</a>
+        <span class="sep">&#8250;</span>
+        <span class="cur" id="topbar-breadcrumb">Division Management</span>
+      </div>
+      <div class="topbar-title" id="topbar-title">Division Management</div>
+      <div class="topbar-date" id="page-date"></div>
+    </div>
+    <div class="topbar-actions" id="topbar-actions">
+      <button class="btn" onclick="exportCSV()">&#128228; Export</button>
+      <button class="btn primary" onclick="openAddDivision()">&#10133; Add Division</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- == DIVISION PAGE == -->
+    <div class="page active" id="page-division">
+      <div class="stats-row fade-up">
+        <div class="mini-stat">
+          <div class="mini-stat-icon" style="background:rgba(0,119,204,0.12);">&#128309;</div>
+          <div>
+            <div class="mini-stat-val" style="color:var(--accent);" id="stat-divisions">-</div>
+            <div class="mini-stat-lbl">Total Divisions</div>
+          </div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-icon" style="background:rgba(109,40,217,0.1);">&#128230;</div>
+          <div>
+            <div class="mini-stat-val" style="color:var(--purple);" id="stat-models">-</div>
+            <div class="mini-stat-lbl">Total Models</div>
+          </div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-icon" style="background:rgba(5,150,105,0.1);">&#127981;</div>
+          <div>
+            <div class="mini-stat-val" style="color:var(--green);" id="stat-suppliers">-</div>
+            <div class="mini-stat-lbl">Unique Suppliers</div>
+          </div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-icon" style="background:rgba(194,65,12,0.1);">&#128203;</div>
+          <div>
+            <div class="mini-stat-val" style="color:var(--orange);" id="stat-avg">-</div>
+            <div class="mini-stat-lbl">Avg Models/Division</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel fade-up">
+        <div class="panel-header">
+          <div class="panel-title"><span class="dot"></span> Division List</div>
+          <div class="panel-controls">
+            <div class="search-box">
+              <span class="search-icon">&#128269;</span>
+              <input type="text" id="div-search" placeholder="Search divisions or models..." oninput="filterDivisions()"/>
+            </div>
+            <select class="show-select" id="div-per-page" onchange="renderDivisions()">
+              <option value="10">10 / page</option>
+              <option value="25">25 / page</option>
+              <option value="50">50 / page</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:40px;"></th>
+                <th onclick="sortDivisions('name')" class="sorted">Division Name &#8597;</th>
+                <th>Models</th>
+                <th>Suppliers</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="div-tbody">
+              <tr class="loading-row"><td colspan="5"><span class="spinner"></span>Loading divisions...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="div-count-text"></span>
+          <div class="pagination" id="div-pagination"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- == PENDING FRN == -->
+    <div class="page" id="page-svc-pendingfrn">
+      <div class="svc-filter-bar"><input class="svc-search" placeholder="&#128269; Search FRN..." oninput="filterSvcTable(this,'frn-tbody')"/></div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Pending Field Report Notes</div><button class="btn-primary-sm" onclick="addSvcRow('frn-tbody')">&#10133; Add</button></div>
+        <div style="overflow-x:auto;"><table class="data-table">
+          <thead><tr><th>FRN ID</th><th>Customer</th><th>Device</th><th>Engineer</th><th>Visit Date</th><th>Days Pending</th><th>Action</th></tr></thead>
+          <tbody id="frn-tbody">
+            <tr><td><span class="chip-sm">#FRN-301</span></td><td>Green Cross Hospital</td><td>AT-10 Plus</td><td>Ravi Shankar</td><td>28 Mar 2026</td><td><span class="badge-pill bp-amber">3 days</span></td><td><button class="action-xs danger" onclick="delRow(this)">&#128465;</button></td></tr>
+            <tr><td><span class="chip-sm">#FRN-299</span></td><td>Blue Star Med</td><td>Logiq E10</td><td>Meena Kumari</td><td>25 Mar 2026</td><td><span class="badge-pill bp-red">6 days</span></td><td><button class="action-xs danger" onclick="delRow(this)">&#128465;</button></td></tr>
+            <tr><td><span class="chip-sm">#FRN-297</span></td><td>Sunrise Clinic</td><td>SP-10</td><td>Deepa Thomas</td><td>24 Mar 2026</td><td><span class="badge-pill bp-red">7 days</span></td><td><button class="action-xs danger" onclick="delRow(this)">&#128465;</button></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- == OB PENDING == -->
+    <div class="page" id="page-svc-obpending">
+      <div class="svc-filter-bar"><input class="svc-search" placeholder="&#128269; Search OB..." oninput="filterSvcTable(this,'ob-tbody')"/></div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">OB Pending</div><button class="btn-primary-sm" onclick="addSvcRow('ob-tbody')">&#10133; Add</button></div>
+        <div style="overflow-x:auto;"><table class="data-table">
+          <thead><tr><th>OB ID</th><th>Customer</th><th>Amount</th><th>Engineer</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="ob-tbody">
+            <tr><td><span class="chip-sm">#OB-201</span></td><td>Narmada Corp</td><td>?18,500</td><td>Priya Devi</td><td>29 Mar 2026</td><td><span class="badge-pill bp-amber">Pending</span></td><td><button class="action-xs danger" onclick="delRow(this)">&#128465;</button></td></tr>
+            <tr><td><span class="chip-sm">#OB-200</span></td><td>City Hospital</td><td>?32,000</td><td>Binod Kumar</td><td>27 Mar 2026</td><td><span class="badge-pill bp-amber">Pending</span></td><td><button class="action-xs danger" onclick="delRow(this)">&#128465;</button></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- == SC CLOSED == -->
+    <div class="page" id="page-svc-scclosed">
+      <div class="svc-filter-bar"><input class="svc-search" placeholder="&#128269; Search SC Closed..." oninput="filterSvcTable(this,'scc-tbody')"/></div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">SC Closed Services</div></div>
+        <div style="overflow-x:auto;"><table class="data-table">
+          <thead><tr><th>Service ID</th><th>Customer</th><th>Device</th><th>Engineer</th><th>Closed On</th><th>Action</th></tr></thead>
+          <tbody id="scc-tbody">
+            <tr><td><span class="chip-sm">#SVC-1036</span></td><td>Apollo Clinic</td><td>uMEC 10</td><td>Ashok Kumar</td><td>26 Mar 2026</td><td><button class="action-xs danger" onclick="delRow(this)">&#128465;</button></td></tr>
+            <tr><td><span class="chip-sm">#SVC-1033</span></td><td>Sunrise Med</td><td>CS-200</td><td>Ravi Shankar</td><td>23 Mar 2026</td><td><button class="action-xs danger" onclick="delRow(this)">&#128465;</button></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ?????? SCRAP LIST ?????? -->
+    <div class="page" id="page-svc-scraplist">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);">Scrap List</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">Devices marked for scrapping / write-off</div>
+        </div>
+        <button class="btn-danger-sm" onclick="openScrapModal()">&#10133; Add to Scrap List</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
+        <div class="stat-card stat-red" style="padding:16px 18px;"><div class="stat-label">Total Scrap</div><div class="stat-value" id="scrap-total">0</div></div>
+        <div class="stat-card stat-amber" style="padding:16px 18px;"><div class="stat-label">Pending Approval</div><div class="stat-value" id="scrap-pending">0</div></div>
+        <div class="stat-card stat-green" style="padding:16px 18px;"><div class="stat-label">Approved</div><div class="stat-value" id="scrap-approved">0</div></div>
+        <div class="stat-card stat-teal" style="padding:16px 18px;"><div class="stat-label">Disposed</div><div class="stat-value" id="scrap-disposed">0</div></div>
+      </div>
+      <div class="svc-filter-bar">
+        <input class="svc-search" placeholder="&#128269; Search scrap items..." oninput="filterSvcTable(this,'scrap-tbody')"/>
+        <select class="svc-select" id="scrap-status-filter" onchange="renderScrap()">
+          <option value="">All Status</option>
+          <option value="Pending Approval">Pending Approval</option>
+          <option value="Approved">Approved</option>
+          <option value="Disposed">Disposed</option>
+        </select>
+        <select class="svc-select" id="scrap-div-filter" onchange="renderScrap()">
+          <option value="">All Divisions</option>
+          <option>SHIPL</option><option>VENTILATOR</option><option>INJECTOR</option><option>RADIOLOGY</option>
+          <option>GANSHORN</option><option>DEFIBRILLATOR</option><option>HOLTER</option><option>SPIROMETRY</option>
+          <option>ULTRASOUND</option><option>MONITORS</option><option>FQC</option><option>H &amp; F</option>
+        </select>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Scrap Items</div>
+          <div style="font-size:12px;color:var(--muted);" id="scrap-count-label">Loading...</div>
+        </div>
+        <div style="overflow-x:auto;"><table class="data-table">
+          <thead><tr><th>Scrap ID</th><th>Device / Model</th><th>Serial No.</th><th>Division</th><th>Customer</th><th>Reason</th><th>Added By</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="scrap-tbody"></tbody>
+        </table></div>
+        <div class="table-footer-bar" id="scrap-footer">-</div>
+      </div>
+    </div>
+
+    <!-- == PLACEHOLDER PAGES == -->
+    <div class="page" id="page-reports"><div style="padding:60px 40px;text-align:center;color:var(--muted);"><div style="font-size:48px;margin-bottom:16px;">&#128200;</div><div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:8px;">Reports</div><p style="font-size:14px;">Generate and view reports.</p></div></div>
+    <div class="page" id="page-usermgmt"><div style="padding:60px 40px;text-align:center;color:var(--muted);"><div style="font-size:48px;margin-bottom:16px;">&#128101;</div><div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:8px;">User Management</div><p style="font-size:14px;">Manage users here.</p></div></div>
+    <div class="page" id="page-settings"><div style="padding:60px 40px;text-align:center;color:var(--muted);"><div style="font-size:48px;margin-bottom:16px;">&#9881;&#65039;</div><div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:8px;">Settings</div><p style="font-size:14px;">System settings.</p></div></div>
+    <div class="page" id="page-notifications"><div style="padding:60px 40px;text-align:center;color:var(--muted);"><div style="font-size:48px;margin-bottom:16px;">&#128276;</div><div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:8px;">Notifications</div><p style="font-size:14px;">System notifications.</p></div></div>
+
+  </div>
+</div>
+
+<!-- == ADD / EDIT DIVISION MODAL == -->
+<div class="modal-overlay" id="modal-division">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-div-title">Add Division</div>
+      <button class="modal-close" onclick="closeModal('modal-division')">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <!-- Description field removed; only Division Name remains -->
+      <div style="margin-bottom:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="field">
+          <label>Division Name (Code) <span class="required-star">*</span></label>
+          <input type="text" id="d-name" placeholder=""/>
+        </div>
+        <div class="field">
+          <label>Display Name <span style="font-size:10px;color:var(--muted);">(optional ? shown in dropdowns)</span></label>
+          <input type="text" id="d-displayname" placeholder=""/>
+        </div>
+      </div>
+      <div class="field span2">
+        <label style="margin-bottom:8px;display:block;">Models for this Division</label>
+        <div class="model-editor">
+          <div class="model-editor-head">
+            <span>Enter the models for this division</span>
+            <button class="btn xs primary" onclick="addModelRow()">&#10133; Add Row</button>
+          </div>
+          <table>
+            <thead><tr><th>Supplier Name</th><th>Model Name</th><th>Model Description</th><th></th></tr></thead>
+            <tbody id="model-rows"></tbody>
+          </table>
+          <div class="model-editor-footer">
+            <button class="add-row-btn" onclick="addModelRow()">&#10133; Add another model</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-division')">Cancel</button>
+      <button class="btn primary" id="save-div-btn" onclick="saveDivision()">&#128190; Save Division</button>
+    </div>
+  </div>
+</div>
+
+<!-- == CONFIRM DELETE == -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="confirm-box">
+    <div class="confirm-icon">&#9888;&#65039;</div>
+    <div class="confirm-title" id="confirm-title">Delete Division?</div>
+    <div class="confirm-msg" id="confirm-msg">This action cannot be undone.</div>
+    <div class="confirm-actions">
+      <button class="btn" onclick="closeModal('modal-confirm')">Cancel</button>
+      <button class="btn danger" id="confirm-ok-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- == SCRAP MODAL == -->
+<div class="modal-overlay" id="scrap-modal">
+  <div class="scrap-modal-box">
+    <h3>&#128465; Add to Scrap List</h3>
+    <div class="form-grid" style="margin-top:16px;">
+      <div class="form-group"><label>Device / Model *</label><input type="text" id="sc-device" placeholder=""/></div>
+      <div class="form-group"><label>Serial No.</label><input type="text" id="sc-serial" placeholder=""/></div>
+      <div class="form-group"><label>Division *</label>
+        <select id="sc-div"><option value="">Select...</option><option>SHIPL</option><option>VENTILATOR</option><option>INJECTOR</option><option>RADIOLOGY</option><option>GANSHORN</option><option>DEFIBRILLATOR</option><option>HOLTER</option><option>SPIROMETRY</option><option>ULTRASOUND</option><option>MONITORS</option><option>FQC</option><option>H &amp; F</option><option>REPAIR</option></select>
+      </div>
+      <div class="form-group"><label>Customer</label><input type="text" id="sc-customer" placeholder="Customer name"/></div>
+      <div class="form-group" style="grid-column:span 2;"><label>Reason *</label><input type="text" id="sc-reason" placeholder=""/></div>
+      <div class="form-group"><label>Added By</label><input type="text" id="sc-addedby" placeholder="Engineer name"/></div>
+      <div class="form-group"><label>Status</label>
+        <select id="sc-status"><option>Pending Approval</option><option>Approved</option><option>Disposed</option></select>
+      </div>
+    </div>
+    <div id="scrap-form-msg" class="form-msg"></div>
+    <div class="modal-actions">
+      <button class="btn-outline-sm" onclick="closeScrapModal()">Cancel</button>
+      <button class="btn-danger-sm" onclick="saveScrapItem()">&#128465; Add to Scrap</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+const API_BASE = '/api/divisions';
+
+const pageTitles = {
+  division:'Division Management',
+  'svc-pendingfrn':'Pending FRN','svc-obpending':'OB Pending',
+  'svc-scclosed':'SC Closed','svc-scraplist':'Scrap List',
+  usermgmt:'User Management',settings:'Settings',notifications:'Notifications'
+};
+
+let divisions         = [];
+let filteredDivisions = [];
+let divPage           = 1;
+let divSortKey        = 'name';
+let divSortDir        = 1;
+let expandedRows      = new Set();
+let editingDivId      = null;
+
+async function apiFetch(path, options = {}) {
+  const res  = await fetch(API_BASE + path, {
+    headers: { 'Content-Type': 'application/json' },
+    ...options,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+async function loadDivisions() {
+  document.getElementById('div-tbody').innerHTML =
+    `<tr class="loading-row"><td colspan="5"><span class="spinner"></span>Loading divisions...</td></tr>`;
+  try {
+    divisions = await apiFetch('/');
+    updateStats();
+    filterDivisions();
+  } catch (err) {
+    document.getElementById('div-tbody').innerHTML =
+      `<tr class="loading-row"><td colspan="5" style="color:var(--red);">&#9888;&#65039; Could not load divisions: ${err.message}</td></tr>`;
+  }
+}
+
+(document.getElementById('page-date')||{}).textContent = new Date().toLocaleDateString(
+  'en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' }
+);
+(function initUser() {
+  const u    = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const name = u.name || 'Admin';
+  (document.getElementById('admin-name')||{}).textContent = name;
+  (document.getElementById('admin-avatar')||{}).textContent = name.charAt(0).toUpperCase();
+})();
+
+document.querySelectorAll('.nav-item[data-page]').forEach(btn => {
+  btn.addEventListener('click', () => goTo(btn.dataset.page));
+});
+
+loadDivisions();
+
+function goTo(page) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll(`.nav-item[data-page="${page}"]`).forEach(n => n.classList.add('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const t = document.getElementById('page-' + page);
+  if (t) t.classList.add('active');
+  const title = pageTitles[page] || page;
+  (document.getElementById('topbar-title')||{}).textContent = title;
+  (document.getElementById('topbar-breadcrumb')||{}).textContent = title;
+  const actions = document.getElementById('topbar-actions');
+  if (page === 'division') {
+    actions.innerHTML = `<button class="btn" onclick="exportCSV()">&#128228; Export</button>
+      <button class="btn primary" onclick="openAddDivision()">&#10133; Add Division</button>`;
+  } else {
+    actions.innerHTML = '';
+  }
+  if (page.startsWith('svc-')) openSF();
+  if (page === 'svc-scraplist') renderScrap();
+}
+
+let sfOpen = false;
+function toggleSF() { sfOpen = !sfOpen; applySF(); }
+function toggleAR(){ var btn=document.getElementById('ar-toggle'); var panel=document.getElementById('ar-children'); if(!btn||!panel)return; btn.classList.toggle('open'); panel.classList.toggle('open'); }
+function openSF()   { sfOpen = true;    applySF(); }
+function applySF()  {
+  document.getElementById('sf-children').classList.toggle('open', sfOpen);
+  document.getElementById('sf-toggle').classList.toggle('open', sfOpen);
+}
+
+function updateStats() {
+  const totalModels  = divisions.reduce((s, d) => s + (d.models || []).length, 0);
+  const allSuppliers = [...new Set(
+    divisions.flatMap(d => (d.models || []).map(m => m.supplier)).filter(Boolean)
+  )];
+  const avg = divisions.length ? Math.round(totalModels / divisions.length) : 0;
+  (document.getElementById('stat-divisions')||{}).textContent = divisions.length;
+  (document.getElementById('stat-models')||{}).textContent = totalModels;
+  (document.getElementById('stat-suppliers')||{}).textContent = allSuppliers.length;
+  (document.getElementById('stat-avg')||{}).textContent = avg;
+}
+
+function filterDivisions() {
+  const q = document.getElementById('div-search').value.toLowerCase();
+  filteredDivisions = divisions.filter(d =>
+    (d.name || '').toLowerCase().includes(q) ||
+    (d.models || []).some(m =>
+      (m.model || '').toLowerCase().includes(q) ||
+      (m.supplier || '').toLowerCase().includes(q)
+    )
+  );
+  sortArr(filteredDivisions, divSortKey, divSortDir);
+  divPage = 1;
+  renderDivisions();
+}
+
+function sortDivisions(key) {
+  if (divSortKey === key) divSortDir *= -1; else { divSortKey = key; divSortDir = 1; }
+  filterDivisions();
+}
+
+function renderDivisions() {
+  const perPage = parseInt(document.getElementById('div-per-page').value);
+  const total   = filteredDivisions.length;
+  const pages   = Math.max(1, Math.ceil(total / perPage));
+  if (divPage > pages) divPage = pages;
+  const slice   = filteredDivisions.slice((divPage - 1) * perPage, divPage * perPage);
+  const tbody   = document.getElementById('div-tbody');
+
+  if (!slice.length) {
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">
+      <div class="empty-icon">&#128309;</div>
+      <div class="empty-title">No divisions found</div>
+      <div class="empty-sub">Try adjusting your search or add a new division.</div>
+    </div></td></tr>`;
+  } else {
+    tbody.innerHTML = slice.map(d => {
+      const models     = d.models || [];
+      const suppliers  = [...new Set(models.map(m => m.supplier).filter(Boolean))];
+      const isExpanded = expandedRows.has(d._id);
+
+      let rows = `<tr id="row-${d._id}">
+        <td>${models.length > 0
+          ? `<button class="expand-btn" onclick="toggleExpand('${d._id}')">${isExpanded ? '?-?' : '?-?'} ${models.length}</button>`
+          : `<span style="color:var(--muted);font-size:11px;">-</span>`
+        }</td>
+        <td><div style="font-weight:700;font-size:13px;color:var(--text);">${d.name}</div></td>
+        <td><div style="max-width:220px;font-size:13px;font-weight:700;color:var(--text);line-height:1.55;">
+          ${models.length
+            ? `${models.slice(0, 3).map(m => m.model).join(', ')}${models.length > 3 ? `, +${models.length - 3} more` : ''}`
+            : `<span style="color:var(--muted);font-size:12px;">No models</span>`
+          }
+        </div></td>
+        <td><div style="font-size:13px;font-weight:700;color:var(--text);line-height:1.55;">
+          ${suppliers.length ? suppliers.join(', ') : `<span style="color:var(--muted);font-size:12px;">-</span>`}
+        </div></td>
+        <td><div class="action-group">
+          <button class="btn xs" onclick="openEditDivision('${d._id}')">&#9998; Edit</button>
+          <button class="btn xs" onclick="openAddModelQuick('${d._id}')">&#10133; Model</button>
+          <button class="btn xs danger" onclick="confirmDelete('${d._id}','${d.name}')">&#128465;</button>
+        </div></td>
+      </tr>`;
+
+      if (isExpanded && models.length > 0) {
+        rows += `<tr class="sub-panel"><td colspan="5">
+          <div style="padding:4px 0 8px;">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">&#128230; All Models in ${d.name}</div>
+            <table style="width:100%;border-collapse:collapse;">
+              <thead><tr>
+                <th style="font-size:10px;color:var(--muted);padding:6px 10px;text-align:left;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:0.06em;">Supplier</th>
+                <th style="font-size:10px;color:var(--muted);padding:6px 10px;text-align:left;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:0.06em;">Model Name</th>
+                <th style="font-size:10px;color:var(--muted);padding:6px 10px;text-align:left;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:0.06em;">Description</th>
+                <th style="font-size:10px;color:var(--muted);padding:6px 10px;border-bottom:1px solid var(--border);"></th>
+              </tr></thead>
+              <tbody>${models.map((m, mi) => `<tr>
+                <td style="padding:7px 10px;font-size:13px;font-weight:700;border-bottom:1px solid rgba(0,80,120,0.07);color:var(--text);">${m.supplier || '-'}</td>
+                <td style="padding:7px 10px;font-size:12px;font-weight:600;border-bottom:1px solid rgba(0,80,120,0.07);color:var(--text);">${m.model}</td>
+                <td style="padding:7px 10px;font-size:12px;color:var(--soft);border-bottom:1px solid rgba(0,80,120,0.07);">${m.desc || '-'}</td>
+                <td style="padding:7px 10px;border-bottom:1px solid rgba(0,80,120,0.07);">
+                  <button class="btn xs danger" onclick="deleteModel('${d._id}', ${mi})">&#128465;</button>
+                </td>
+              </tr>`).join('')}</tbody>
+            </table>
+          </div>
+        </td></tr>`;
+      }
+      return rows;
+    }).join('');
+  }
+
+  (document.getElementById('div-count-text')||{}).textContent =
+    total === 0 ? 'No divisions' :
+    `Showing ${(divPage - 1) * perPage + 1}-${Math.min(divPage * perPage, total)} of ${total} divisions`;
+  document.querySelectorAll('#div-tbody .expand-btn').forEach(btn => {
+    const row = btn.closest('tr');
+    const id = row ? row.id.replace('row-', '') : '';
+    const countMatch = btn.textContent.match(/(\d+)/);
+    const count = countMatch ? countMatch[1] : '';
+    btn.textContent = `${expandedRows.has(id) ? 'Hide' : 'Show'}${count ? ' ' + count : ''}`;
+  });
+  renderPagination('div-pagination', divPage, pages, p => { divPage = p; renderDivisions(); });
+}
+
+function toggleExpand(id) {
+  if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id);
+  renderDivisions();
+}
+
+async function deleteModel(divId, modelIdx) {
+  try {
+    const updated = await apiFetch(`/${divId}/models/${modelIdx}`, { method: 'DELETE' });
+    const idx = divisions.findIndex(d => d._id === divId);
+    if (idx !== -1) divisions[idx] = updated;
+    updateStats(); filterDivisions();
+    showToast('Model removed.', 'success');
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  }
+}
+
+function openAddDivision() {
+  editingDivId = null;
+  (document.getElementById('modal-div-title')||{}).textContent = 'Add New Division';
+  document.getElementById('d-name').value = '';
+  document.getElementById('d-displayname').value = '';
+  document.getElementById('model-rows').innerHTML = '';
+  addModelRow();
+  openModal('modal-division');
+}
+
+function openEditDivision(id) {
+  const d = divisions.find(x => x._id === id);
+  if (!d) return;
+  editingDivId = id;
+  (document.getElementById('modal-div-title')||{}).textContent = 'Edit Division - ' + d.name;
+  document.getElementById('d-name').value = d.name;
+  document.getElementById('d-displayname').value = d.displayName || '';
+  document.getElementById('model-rows').innerHTML = '';
+  (d.models || []).forEach(m => addModelRow(m));
+  if (!(d.models || []).length) addModelRow();
+  openModal('modal-division');
+}
+
+function openAddModelQuick(divId) { openEditDivision(divId); setTimeout(addModelRow, 300); }
+
+function addModelRow(data = {}) {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" placeholder="" value="${data.supplier || ''}"/></td>
+    <td><input type="text" placeholder="" value="${data.model || ''}"/></td>
+    <td><input type="text" placeholder="" value="${data.desc || ''}"/></td>
+    <td><button class="del-row-btn" onclick="this.closest('tr').remove()">&#10005;</button></td>`;
+  document.getElementById('model-rows').appendChild(tr);
+}
+
+async function saveDivision() {
+  const name        = document.getElementById('d-name').value.trim();
+  const displayName = document.getElementById('d-displayname').value.trim();
+  if (!name) { showToast('Division name is required.', 'error'); return; }
+
+  const modelRows = document.getElementById('model-rows').querySelectorAll('tr');
+  const models    = [];
+  modelRows.forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    const model  = inputs[1]?.value.trim();
+    if (model) models.push({ supplier: inputs[0].value.trim(), model, desc: inputs[2].value.trim() });
+  });
+
+  const btn = document.getElementById('save-div-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  try {
+    if (editingDivId) {
+      const updated = await apiFetch(`/${editingDivId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ name, displayName, models }),
+      });
+      const idx = divisions.findIndex(d => d._id === editingDivId);
+      if (idx !== -1) divisions[idx] = updated;
+      showToast('Division updated successfully!', 'success');
+    } else {
+      const created = await apiFetch('/', {
+        method: 'POST',
+        body: JSON.stringify({ name, displayName, models }),
+      });
+      divisions.push(created);
+      showToast('Division added successfully!', 'success');
+    }
+    closeModal('modal-division');
+    updateStats(); filterDivisions();
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '&#128190; Save Division';
+  }
+}
+
+function confirmDelete(id, name) {
+  (document.getElementById('confirm-title')||{}).textContent = 'Delete Division?';
+  (document.getElementById('confirm-msg')||{}).textContent = `"${name}" and all its models will be permanently removed.`;
+  document.getElementById('confirm-ok-btn').onclick    = async () => {
+    try {
+      await apiFetch(`/${id}`, { method: 'DELETE' });
+      divisions = divisions.filter(d => d._id !== id);
+      expandedRows.delete(id);
+      updateStats(); filterDivisions();
+      closeModal('modal-confirm');
+      showToast('Division deleted.', 'success');
+    } catch (err) {
+      showToast('Error: ' + err.message, 'error');
+      closeModal('modal-confirm');
+    }
+  };
+  openModal('modal-confirm');
+}
+
+function exportCSV() {
+  const rows = [['Division Name', 'Supplier', 'Model Name', 'Model Description']];
+  divisions.forEach(d => {
+    if ((d.models || []).length)
+      d.models.forEach(m => rows.push([d.name, m.supplier || '', m.model, m.desc || '']));
+    else
+      rows.push([d.name, '', '', '']);
+  });
+  const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const a   = document.createElement('a');
+  a.href     = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'schillerindia-divisions.csv';
+  a.click();
+  showToast('CSV exported!', 'success');
+}
+
+function filterSvcTable(input, tbodyId) {
+  const q = input.value.toLowerCase();
+  document.querySelectorAll('#' + tbodyId + ' tr').forEach(tr => {
+    tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+function delRow(btn) {
+  if (confirm('Remove this record?')) { btn.closest('tr').remove(); showToast('Record removed.', 'success'); }
+}
+function addSvcRow(tbodyId) {
+  const tbody = document.getElementById(tbodyId);
+  const tr    = document.createElement('tr');
+  tr.innerHTML = `<td colspan="8" style="padding:10px 12px;">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <input style="flex:1;min-width:120px;padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;" placeholder="Enter details..."/>
+      <button class="btn-primary-sm" onclick="confirmAddRow(this,'${tbodyId}')">Add</button>
+      <button class="btn-outline-sm" style="font-size:12px;padding:5px 12px;" onclick="this.closest('tr').remove()">Cancel</button>
+    </div>
+  </td>`;
+  tbody.appendChild(tr);
+  tr.querySelector('input').focus();
+}
+function confirmAddRow(btn, tbodyId) {
+  const inp = btn.closest('td').querySelector('input');
+  const val = inp?.value?.trim();
+  if (!val) { showToast('Enter some value first.', 'error'); return; }
+  btn.closest('tr').innerHTML = `<td colspan="7">${val}</td><td><button class="action-xs danger" onclick="delRow(this)">&#128465;</button></td>`;
+  showToast('Row added.', 'success');
+}
+
+let scrapItems = [
+  {id:'SCR-001',device:'AT-2 Plus',serial:'AT2-2019-004',division:'SHIPL',customer:'City Hospital',reason:'Motherboard burnt',addedBy:'Ravi Shankar',date:'15 Mar 2026',status:'Approved'},
+  {id:'SCR-002',device:'Hamilton-C1',serial:'HC1-2018-011',division:'VENTILATOR',customer:'Apollo Clinic',reason:'Beyond economical repair',addedBy:'Priya Devi',date:'18 Mar 2026',status:'Pending Approval'},
+  {id:'SCR-003',device:'Stellant Injector',serial:'STL-2017-007',division:'INJECTOR',customer:'Sunrise Med',reason:'Pump failure, spare unavailable',addedBy:'Deepa Thomas',date:'20 Mar 2026',status:'Disposed'},
+  {id:'SCR-004',device:'Logiq E10',serial:'LE10-2020-002',division:'RADIOLOGY',customer:'BlueStar Hosp',reason:'Transducer cracked',addedBy:'Meena Kumari',date:'22 Mar 2026',status:'Pending Approval'},
+  {id:'SCR-005',device:'PF-300',serial:'PF3-2016-009',division:'GANSHORN',customer:'Apex Medics',reason:'Calibration impossible',addedBy:'Rajesh Verma',date:'25 Mar 2026',status:'Approved'},
+  {id:'SCR-006',device:'MT-200',serial:'MT2-2015-022',division:'HOLTER',customer:'Med City',reason:'Display shattered, PCB water damage',addedBy:'Ashok Kumar',date:'27 Mar 2026',status:'Disposed'},
+  {id:'SCR-007',device:'uMEC 10',serial:'UM10-2021-031',division:'MONITORS',customer:'Green Cross',reason:'Power supply failure',addedBy:'Binod Kumar',date:'28 Mar 2026',status:'Pending Approval'},
+];
+let nextScrapId = 8;
+
+function renderScrap() {
+  const statusF  = document.getElementById('scrap-status-filter').value;
+  const divF     = document.getElementById('scrap-div-filter').value;
+  const filtered = scrapItems.filter(s => (!statusF || s.status === statusF) && (!divF || s.division === divF));
+  (document.getElementById('scrap-total')||{}).textContent = scrapItems.length;
+  (document.getElementById('scrap-pending')||{}).textContent = scrapItems.filter(s => s.status === 'Pending Approval').length;
+  (document.getElementById('scrap-approved')||{}).textContent = scrapItems.filter(s => s.status === 'Approved').length;
+  (document.getElementById('scrap-disposed')||{}).textContent = scrapItems.filter(s => s.status === 'Disposed').length;
+  (document.getElementById('scrap-count-label')||{}).textContent = filtered.length + ' item' + (filtered.length !== 1 ? 's' : '');
+  (document.getElementById('scrap-footer')||{}).textContent = 'Showing ' + filtered.length + ' of ' + scrapItems.length + ' scrap items';
+  document.getElementById('scrap-tbody').innerHTML = filtered.map(s => `<tr>
+    <td><span class="chip-sm">#${s.id}</span></td>
+    <td style="font-weight:600;">${s.device}</td>
+    <td style="font-size:12px;color:var(--soft);font-family:monospace;">${s.serial}</td>
+    <td><span class="badge-pill bp-blue">${s.division}</span></td>
+    <td style="font-size:12px;">${s.customer}</td>
+    <td style="font-size:12px;color:var(--soft);max-width:160px;">${s.reason}</td>
+    <td style="font-size:12px;">${s.addedBy}</td>
+    <td style="font-size:12px;color:var(--muted);">${s.date}</td>
+    <td><span class="badge-pill ${s.status==='Approved'?'bp-green':s.status==='Disposed'?'bp-muted':'bp-amber'}">${s.status}</span></td>
+    <td>
+      <select class="svc-select" style="padding:3px 8px;font-size:11px;" onchange="changeScrapStatus('${s.id}',this.value)">
+        <option ${s.status==='Pending Approval'?'selected':''}>Pending Approval</option>
+        <option ${s.status==='Approved'?'selected':''}>Approved</option>
+        <option ${s.status==='Disposed'?'selected':''}>Disposed</option>
+      </select>
+      <button class="action-xs danger" style="margin-left:4px;" onclick="deleteScrap('${s.id}')">&#128465;</button>
+    </td>
+  </tr>`).join('');
+}
+function changeScrapStatus(id, status) {
+  const item = scrapItems.find(s => s.id === id);
+  if (item) { item.status = status; renderScrap(); showToast('Status updated.', 'success'); }
+}
+function deleteScrap(id) {
+  if (confirm('Remove from scrap list?')) {
+    scrapItems = scrapItems.filter(s => s.id !== id); renderScrap(); showToast('Scrap item removed.', 'success');
+  }
+}
+function openScrapModal()  { document.getElementById('scrap-modal').classList.add('open'); }
+function closeScrapModal() { document.getElementById('scrap-modal').classList.remove('open'); }
+function saveScrapItem() {
+  const device  = document.getElementById('sc-device').value.trim();
+  const div     = document.getElementById('sc-div').value;
+  const reason  = document.getElementById('sc-reason').value.trim();
+  const msg     = document.getElementById('scrap-form-msg');
+  if (!device || !div || !reason) { msg.className = 'form-msg err-msg'; msg.textContent = 'Please fill Device, Division and Reason.'; return; }
+  scrapItems.push({
+    id: 'SCR-00' + nextScrapId++, device,
+    serial:   document.getElementById('sc-serial').value.trim()   || '-',
+    division: div,
+    customer: document.getElementById('sc-customer').value.trim() || '-',
+    reason,
+    addedBy:  document.getElementById('sc-addedby').value.trim()  || 'Admin',
+    date:     new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }),
+    status:   document.getElementById('sc-status').value,
+  });
+  msg.className = 'form-msg ok'; msg.textContent = 'Added successfully!';
+  setTimeout(() => { closeScrapModal(); renderScrap(); msg.className = 'form-msg'; }, 800);
+  showToast('Item added to Scrap List.', 'success');
+  ['sc-device','sc-serial','sc-customer','sc-reason','sc-addedby'].forEach(id => document.getElementById(id).value = '');
+}
+document.getElementById('scrap-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('scrap-modal')) closeScrapModal();
+});
+
+function sortArr(arr, key, dir) {
+  arr.sort((a, b) => {
+    const av = (a[key] || '').toString().toLowerCase();
+    const bv = (b[key] || '').toString().toLowerCase();
+    return av < bv ? -dir : av > bv ? dir : 0;
+  });
+}
+function renderPagination(containerId, current, total, onPage) {
+  const el = document.getElementById(containerId);
+  if (total <= 1) { el.innerHTML = ''; return; }
+  let html = `<button class="page-btn" ${current === 1 ? 'disabled' : ''} onclick="(${onPage})(${current - 1})">&#8249;</button>`;
+  getPageRange(current, total).forEach(p => {
+    if (p === '...') html += `<button class="page-btn" disabled>...</button>`;
+    else html += `<button class="page-btn ${p === current ? 'active' : ''}" onclick="(${onPage})(${p})">${p}</button>`;
+  });
+  html += `<button class="page-btn" ${current === total ? 'disabled' : ''} onclick="(${onPage})(${current + 1})">&#8250;</button>`;
+  el.innerHTML = html;
+}
+function getPageRange(current, total) {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
+  if (current >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+  return [1, '...', current - 1, current, current + 1, '...', total];
+}
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+function showToast(msg, type = 'success') {
+  const wrap = document.getElementById('toast-wrap');
+  const el   = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span class="toast-dot"></span>${msg}`;
+  wrap.appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+</script>
+</body>
+</html>
+
+
+
+
+
+

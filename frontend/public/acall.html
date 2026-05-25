@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light'); const token = localStorage.getItem('schiller_token'); if (!token) window.location.href = 'login.html'; })();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<script>(function(){const t=localStorage.getItem('schiller_token');if(!t)window.location.href='login.html';})();</script>
+<title>SchillerIndia - Admin Call Register</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f4f7fa;--surface:#ffffff;--surface2:#eaf1f6;--border:#d0e0ec;
+  --accent:#0077cc;--accent2:#007a8a;--green:#059669;--amber:#d97706;
+  --red:#cc0000;--text:#1a2a3a;--muted:#7a9ab0;--soft:#4a6a8a;--card:#ffffff;
+}
+[data-theme="dark"]{
+  --bg:#0f1621;--surface:#1a2333;--surface2:#1e293b;--border:#2a3a52;
+  --accent:#3b9eff;--accent2:#22d3ee;--green:#10b981;--amber:#f59e0b;
+  --red:#f87171;--text:#e2eaf4;--muted:#4a6a8a;--soft:#7a9ab0;--card:#1a2333;
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;transition:background 0.3s,color 0.3s;}
+.sidebar{width:240px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 12px rgba(0,80,120,.06);}
+.sidebar-header{padding:20px 20px 16px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#450a0a,#b91c1c);}
+.sidebar-logo{display:flex;align-items:center;gap:10px;}
+.sidebar-logo-icon{width:36px;height:36px;background:rgba(255,255,255,0.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:#fff;box-shadow:0 2px 8px rgba(204,0,0,.2);}
+.sidebar-logo-text{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;}
+.sidebar-logo-text .sub{font-size:10px;color:rgba(255,255,255,0.6);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;}
+.role-badge{margin:10px 20px 0;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;display:inline-block;background:rgba(185,28,28,0.1);color:#b91c1c;border:1px solid rgba(185,28,28,0.25);}
+.sidebar-nav{flex:1;padding:12px 10px;}
+.nav-section{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;padding:10px 8px 5px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:500;cursor:pointer;transition:all .2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:rgba(185,28,28,0.1);color:#b91c1c;font-weight:600;}
+.nav-item .icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.nav-group-toggle{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:600;cursor:pointer;transition:all .2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;}
+.nav-group-toggle:hover{background:var(--surface2);color:var(--text);}
+.nav-group-toggle .icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.caret{margin-left:auto;font-size:9px;transition:transform .25s;}
+.nav-group-toggle.open .caret{transform:rotate(90deg);}
+.nav-children{max-height:0;overflow:hidden;transition:max-height .3s ease;}
+.nav-children.open{max-height:400px;}
+.nav-sub .nav-item{padding:6px 10px 6px 28px;font-size:12px;color:var(--muted);}
+.nav-sub .nav-item:hover{color:var(--text);}
+.nav-sub .nav-item.active{color:#b91c1c;background:rgba(185,28,28,0.07);}
+.sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);}
+.user-info{display:flex;align-items:center;gap:10px;}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#b91c1c,#ef4444);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
+.user-name{font-size:13px;font-weight:600;color:var(--text);}
+.user-role{font-size:11px;color:var(--muted);}
+.logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:11px;font-weight:600;transition:all .2s;}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;}.topbar{padding:13px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:var(--shadow);}.breadcrumb{display:flex;align-items:center;gap:5px;font-size:10.5px;margin-bottom:2px;}.breadcrumb a{color:var(--muted);text-decoration:none;}.breadcrumb .sep{color:var(--border);}.page-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);}.content{flex:1;padding:20px 24px;overflow-y:auto;}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;box-shadow:var(--shadow);position:relative;overflow:hidden;display:grid;grid-template-columns:24px 1fr auto;column-gap:8px;align-items:center;}.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:11px 11px 0 0;}.sc-blue::before{background:linear-gradient(90deg,#0068b5,#0ea5e9);}.sc-green::before{background:linear-gradient(90deg,#047857,#059669);}.sc-amber::before{background:linear-gradient(90deg,#b45309,#d97706);}.sc-red::before{background:linear-gradient(90deg,#b91c1c,#dc2626);}
+.stat-icon{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;}.si-blue{background:rgba(0,104,181,.1);}.si-green{background:rgba(4,120,87,.1);}.si-amber{background:rgba(180,83,9,.1);}.si-red{background:rgba(185,28,28,.1);}.stat-label{font-size:8.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;line-height:1.15;}.stat-value{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);line-height:1;text-align:right;}
+.btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all .2s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}.btn-primary{background:var(--accent);color:#fff;}.btn-primary:hover{background:var(--accent2);}.btn-success{background:var(--green);color:#fff;}.btn-outline{background:none;border:1.5px solid var(--border);color:var(--soft);}.btn-outline:hover{border-color:var(--accent);color:var(--accent);}.btn-sm{padding:6px 13px;font-size:11.5px;}
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);}.table-top{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--surface3);}.table-title{font-family:'Syne',sans-serif;font-size:13.5px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}.count-chip{background:#e8f3fb;color:var(--accent);font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:10px;border:1px solid rgba(0,104,181,.15);}.toolbar-r{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}.f-input,.f-select{padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;}.srch-wrap{position:relative;}.srch-wrap input{padding-left:30px;width:230px;}.srch-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);}
+.filter-strip{padding:11px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fafcfe;}.filter-strip label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;}
+.table-wrap{overflow-x:auto;}table.call-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:1400px;}table.call-table th{padding:9px 10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;text-align:left;border-bottom:2px solid var(--border);background:var(--surface3);white-space:nowrap;cursor:pointer;}table.call-table td{padding:9px 10px;border-bottom:1px solid rgba(0,60,120,.05);vertical-align:middle;white-space:nowrap;}table.call-table tr:hover td{background:rgba(0,104,181,.03);}.table-foot{padding:11px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--muted);background:var(--surface3);}
+.source-pill,.status-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;}.src-employee{background:rgba(0,104,181,.1);color:var(--accent);}.src-pt{background:rgba(91,33,182,.1);color:var(--purple);}.src-admin{background:rgba(14,116,144,.1);color:var(--teal);}.sp-open{background:rgba(4,120,87,.1);color:var(--green);}.sp-closed{background:var(--surface2);color:var(--muted);}.sp-pending{background:rgba(180,83,9,.1);color:var(--amber);}.sp-escalated{background:rgba(185,28,28,.08);color:var(--red);}.mono{font-family:monospace;font-size:10.5px;}.empty-st{text-align:center;padding:50px 20px;}.et{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:5px;}.es{font-size:12px;color:var(--muted);}
+.overlay{position:fixed;inset:0;background:rgba(5,18,38,.55);backdrop-filter:blur(4px);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;}.overlay.open{display:flex;}.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:min(760px,96vw);box-shadow:0 18px 50px rgba(0,20,60,.18);overflow:hidden;}.modal-head,.modal-foot{padding:14px 18px;background:var(--surface3);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}.modal-foot{border-top:1px solid var(--border);border-bottom:none;justify-content:flex-end;gap:10px;}.modal-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;}.modal-body{padding:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}.ff{display:flex;flex-direction:column;gap:5px;}.ff.span3{grid-column:span 3;}.ff label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}.ff input,.ff select,.ff textarea{padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface);color:var(--text);outline:none;}.ff textarea{height:72px;resize:none;}.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:700;display:flex;flex-direction:column;gap:7px;}.toast{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:11px 15px;font-size:12.5px;font-weight:500;box-shadow:0 8px 22px rgba(0,0,0,.1);}
+@media (max-width:900px){.stats-row{grid-template-columns:repeat(2,1fr);}.sidebar{display:none;}.modal-body{grid-template-columns:1fr;}.ff.span3{grid-column:span 1;}}
+</style>
+<link rel="stylesheet" href="global-typography.css">
+<link rel="stylesheet" href="employee-theme.css">
+<link rel="stylesheet" href="admin-sidebar.css">
+<script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <script src="brand-logo.js" defer></script>
+</head>
+<body>
+<!-- === SIDEBAR === -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="sidebar-logo-text">SchillerIndia<div class="sub">Services</div></div>
+    </div>
+  </div>
+  <div style="padding:10px 20px 0;"><span class="role-badge">Admin</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <button class="nav-item " onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
+    <button class="nav-item " onclick="window.location.href='company-section.html'"><span class="icon">&#127970;</span> Company</button>
+    <button class="nav-item " onclick="window.location.href='division-section.html'"><span class="icon">&#128309;</span> Division</button>
+    <button class="nav-item " onclick="window.location.href='engineer-section.html'"><span class="icon">&#128119;</span> Engineers</button>
+    <button class="nav-item " onclick="window.location.href='dealer-section.html'"><span class="icon">&#129309;</span> Dealers</button>
+    <div class="nav-section">Operations</div>
+    <button class="nav-group-toggle " id="sf-toggle" onclick="toggleSF()">
+      <span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span>
+    </button>
+    <div class="nav-children " id="sf-children">
+      <div class="nav-sub">
+        <button class="nav-item " onclick="window.location.href='service-list.html'"><span class="icon">&#128225;</span> Services</button>
+        <button class="nav-item " onclick="window.location.href='pending-frn.html'"><span class="icon">&#128221;</span> Pending FRN</button>
+        <button class="nav-item " onclick="window.location.href='ob-pending.html'"><span class="icon">&#128194;</span> OB Pending</button>
+        <button class="nav-item " onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
+        <button class="nav-item " onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
+        <button class="nav-item " onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
+        <button class="nav-item " onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
+        <button class="nav-item " onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
+      </div>
+    </div>
+    <button class="nav-group-toggle open" id="ar-toggle" onclick="toggleAR()"><span class="icon">&#128196;</span> Activity Register <span class="caret">&#9656;</span></button>
+    <div class="nav-children open" id="ar-children">
+      <div class="nav-sub">
+        <a class="nav-item active" href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
+        <a class="nav-item " href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
+        <a class="nav-item " href="aprfob.html"><span class="icon">&#128203;</span> PRF/OB List</a>
+        <a class="nav-item " href="acr.html"><span class="icon">&#128209;</span> Closed PRF/OB</a>
+        <a class="nav-item " href="ans.html"><span class="icon">&#128230;</span> Non Saleable</a>
+        <a class="nav-item " href="as.html"><span class="icon">&#128176;</span> Saleable</a>
+        <a class="nav-item " href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
+        <a class="nav-item " href="acbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="rta-toggle" onclick="toggleRTA()"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="rta-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="atfrn.html"><span class="icon">&#128221;</span> Admin RT FRN</a>
+        <a class="nav-item " href="atob.html"><span class="icon">&#128230;</span> Admin RT OB</a>
+        <a class="nav-item " href="atur.html"><span class="icon">&#128736;&#65039;</span> Admin RT UR</a>
+        <a class="nav-item " href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
+      </div>
+    </div>
+    <div class="nav-section">Admin</div>
+    <button class="nav-item " onclick="window.location.href='usermanagement.html'"><span class="icon">&#128101;</span> User Management</button>
+    <button class="nav-item " onclick="window.location.href='Reports.html'"><span class="icon">&#128200;</span> Reports</button>
+    <button class="nav-item " onclick="window.location.href='settings.html'"><span class="icon">&#9881;&#65039;</span> Settings</button>
+    <button class="nav-item " onclick="window.location.href='notifications.html'"><span class="icon">&#128276;</span> Notifications</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="admin-avatar">A</div>
+      <div>
+        <div class="user-name" id="admin-name">Admin</div>
+        <div class="user-role">Administrator</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="breadcrumb"><a href="admin-dashboard.html">Dashboard</a><span class="sep">&#8250;</span><span>Activity Register</span><span class="sep">&#8250;</span><span>Call Register</span></div>
+      <div class="page-title">Admin Call Register</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+      <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
+      <button class="btn btn-outline btn-sm" onclick="loadData()">&#8635; Refresh</button>
+      <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Admin Call</button>
+      <button class="btn btn-success btn-sm" onclick="exportCSV()">&#128228; Export</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="stats-row">
+      <div class="stat-card sc-blue"><div class="stat-icon si-blue">&#128202;</div><div class="stat-label">Total Calls</div><div class="stat-value" id="s-total">-</div></div>
+      <div class="stat-card sc-green"><div class="stat-icon si-green">&#128100;</div><div class="stat-label">Employee</div><div class="stat-value" id="s-employee">-</div></div>
+      <div class="stat-card sc-amber"><div class="stat-icon si-amber">&#9733;</div><div class="stat-label">Product Team</div><div class="stat-value" id="s-pt">-</div></div>
+      <div class="stat-card sc-red"><div class="stat-icon si-red">&#9888;</div><div class="stat-label">Pending / Escalated</div><div class="stat-value" id="s-attn">-</div></div>
+    </div>
+    <div class="table-card">
+      <div class="table-top">
+        <div class="table-title">All Call Register Entries <span class="count-chip" id="count-chip">- entries</span></div>
+        <div class="toolbar-r">
+          <div class="srch-wrap"><span class="srch-ico">&#128269;</span><input class="f-input" type="text" id="tbl-search" placeholder="Search division, engineer, model..." oninput="applyFilters()"/></div>
+        </div>
+      </div>
+      <div class="filter-strip">
+        <label>From</label><input type="date" class="f-input" id="fl-from" onchange="applyFilters()"/>
+        <label>To</label><input type="date" class="f-input" id="fl-to" onchange="applyFilters()"/>
+        <label>Source</label><select class="f-select" id="fl-source" onchange="applyFilters()"><option value="">All Sources</option><option value="employee">Employee</option><option value="pt">Product Team</option><option value="admin">Admin</option></select>
+        <label>Status</label><select class="f-select" id="fl-status" onchange="applyFilters()"><option value="">All Status</option><option>Open</option><option>Closed</option><option>Pending</option><option>Escalated</option></select>
+        <button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="clearFilters()">Clear</button>
+      </div>
+      <div class="table-wrap">
+        <table class="call-table">
+          <thead><tr><th>#</th><th>Source</th><th>Call Date</th><th>Division</th><th>Region</th><th>SC Eng</th><th>Engineer</th><th>Customer</th><th>Model</th><th>Call Type</th><th>Comm</th><th>Duration</th><th>Remarks</th><th>Status</th></tr></thead>
+          <tbody id="call-tbody"><tr><td colspan="14" style="text-align:center;padding:40px;color:var(--muted);">Loading...</td></tr></tbody>
+        </table>
+      </div>
+      <div class="table-foot"><span id="tbl-info">-</span><span id="sync-info">-</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="add-modal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title">Add Admin Call Entry</div><button class="btn btn-outline btn-sm" onclick="closeAddModal()">Close</button></div>
+    <div class="modal-body">
+      <div class="ff"><label>Call Date *</label><input type="date" id="m-callDate"/></div>
+      <div class="ff"><label>Division</label><input type="text" id="m-division"/></div>
+      <div class="ff"><label>Region / Branch</label><input type="text" id="m-region"/></div>
+      <div class="ff"><label>SC Eng</label><input type="text" id="m-scEng"/></div>
+      <div class="ff"><label>Engineer</label><input type="text" id="m-engineer"/></div>
+      <div class="ff"><label>Customer</label><input type="text" id="m-customer"/></div>
+      <div class="ff"><label>Model</label><input type="text" id="m-model"/></div>
+      <div class="ff"><label>Call Type</label><input type="text" id="m-callType"/></div>
+      <div class="ff"><label>Comm Type</label><input type="text" id="m-commType"/></div>
+      <div class="ff"><label>Duration</label><input type="text" id="m-duration" placeholder="00:15:30"/></div>
+      <div class="ff"><label>Status</label><select id="m-status"><option>Open</option><option>Closed</option><option>Pending</option><option>Escalated</option></select></div>
+      <div class="ff span3"><label>Remarks</label><textarea id="m-remarks"></textarea></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-outline btn-sm" onclick="closeAddModal()">Cancel</button><button class="btn btn-primary btn-sm" id="save-btn" onclick="saveAdminCall()">Save</button></div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+<script>
+const API='';
+let allCalls=[], filtered=[];
+(function init(){
+  const role=(localStorage.getItem('schiller_role')||'').toLowerCase();
+  if(role && role!=='admin' && role!=='superadmin'){window.location.href='login.html';return;}
+  const u=JSON.parse(localStorage.getItem('schiller_user')||'{}');
+  if(u.name){document.getElementById('admin-name').textContent=u.name;document.getElementById('admin-avatar').textContent=u.name.charAt(0).toUpperCase();}
+  document.getElementById('topbar-date').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  loadData();
+})();
+function getToken(){return localStorage.getItem('schiller_token')||'';}
+function authHeaders(){return {'Content-Type':'application/json',Authorization:'Bearer '+getToken()};}
+function handleUnauth(res){if(res.status===401){localStorage.clear();window.location.href='login.html';throw new Error('Unauthorized');}}
+async function loadData(){
+  document.getElementById('call-tbody').innerHTML='<tr><td colspan="14" style="text-align:center;padding:40px;color:var(--muted);">Loading...</td></tr>';
+  try{
+    const res=await fetch(`${API}/api/admin/calls`,{headers:authHeaders()});
+    handleUnauth(res);
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'HTTP '+res.status);
+    allCalls=Array.isArray(data)?data:[];
+    applyFilters();
+    updateStats();
+    document.getElementById('sync-info').textContent='Synced '+new Date().toLocaleTimeString('en-IN');
+  }catch(e){
+    if(e.message!=='Unauthorized') showToast('Load failed: '+e.message);
+    allCalls=[];applyFilters();updateStats();
+  }
+}
+function updateStats(){
+  document.getElementById('s-total').textContent=allCalls.length;
+  document.getElementById('s-employee').textContent=allCalls.filter(x=>x.source==='employee').length;
+  document.getElementById('s-pt').textContent=allCalls.filter(x=>x.source==='pt').length;
+  document.getElementById('s-attn').textContent=allCalls.filter(x=>['Pending','Escalated'].includes(x.status)).length;
+}
+function applyFilters(){
+  const q=document.getElementById('tbl-search').value.toLowerCase();
+  const source=document.getElementById('fl-source').value;
+  const status=document.getElementById('fl-status').value;
+  const from=document.getElementById('fl-from').value;
+  const to=document.getElementById('fl-to').value;
+  filtered=allCalls.filter(d=>{
+    const cd=String(d.callDate||'').slice(0,10);
+    return (!q||Object.values(d).some(v=>String(v||'').toLowerCase().includes(q)))&&(!source||d.source===source)&&(!status||d.status===status)&&(!from||cd>=from)&&(!to||cd<=to);
+  });
+  renderTable();
+}
+function clearFilters(){['tbl-search','fl-source','fl-status','fl-from','fl-to'].forEach(id=>document.getElementById(id).value='');applyFilters();}
+function sourceCls(s){return s==='pt'?'src-pt':s==='admin'?'src-admin':'src-employee';}
+function statusCls(s){return s==='Closed'?'sp-closed':s==='Pending'?'sp-pending':s==='Escalated'?'sp-escalated':'sp-open';}
+function renderTable(){
+  document.getElementById('count-chip').textContent=filtered.length+' entr'+(filtered.length===1?'y':'ies');
+  document.getElementById('tbl-info').textContent='Showing '+filtered.length+' of '+allCalls.length+' records';
+  const tbody=document.getElementById('call-tbody');
+  if(!filtered.length){tbody.innerHTML='<tr><td colspan="14"><div class="empty-st"><div class="et">No call entries found</div><div class="es">Entries from employee and product team call registers will appear here.</div></div></td></tr>';return;}
+  tbody.innerHTML=filtered.map((d,i)=>`<tr>
+    <td class="mono">${i+1}</td>
+    <td><span class="source-pill ${sourceCls(d.source)}">${esc(d.sourceLabel||d.source||'-')}</span></td>
+    <td>${fmtDate(d.callDate)}</td>
+    <td>${esc(d.division||'-')}</td>
+    <td>${esc(d.region||d.branch||'-')}</td>
+    <td>${esc(d.scEng||'-')}</td>
+    <td>${esc(d.engineer||'-')}</td>
+    <td>${esc(d.customer||'-')}</td>
+    <td>${esc(d.model||'-')}</td>
+    <td>${esc(d.callType||'-')}</td>
+    <td>${esc(d.commType||'-')}</td>
+    <td>${esc(d.duration||'-')}</td>
+    <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.remarks||'')}">${esc(d.remarks||'-')}</td>
+    <td><span class="status-pill ${statusCls(d.status)}">${esc(d.status||'Open')}</span></td>
+  </tr>`).join('');
+}
+function openAddModal(){document.getElementById('m-callDate').value=new Date().toISOString().slice(0,10);document.getElementById('add-modal').classList.add('open');}
+function closeAddModal(){document.getElementById('add-modal').classList.remove('open');}
+async function saveAdminCall(){
+  if(!document.getElementById('m-callDate').value){showToast('Call date is required.');return;}
+  const payload={entryDate:new Date().toISOString().slice(0,10),callDate:v('m-callDate'),division:v('m-division'),region:v('m-region'),branch:v('m-region'),scEng:v('m-scEng'),engineer:v('m-engineer'),customer:v('m-customer'),model:v('m-model'),callType:v('m-callType'),commType:v('m-commType'),duration:v('m-duration'),status:v('m-status'),remarks:v('m-remarks')};
+  const btn=document.getElementById('save-btn');btn.disabled=true;btn.textContent='Saving...';
+  try{
+    const res=await fetch(`${API}/api/admin/calls`,{method:'POST',headers:authHeaders(),body:JSON.stringify(payload)});
+    handleUnauth(res);
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'Save failed');
+    allCalls.unshift(data);closeAddModal();applyFilters();updateStats();showToast('Admin call entry saved.');
+  }catch(e){if(e.message!=='Unauthorized')showToast('Save failed: '+e.message);}
+  btn.disabled=false;btn.textContent='Save';
+}
+function v(id){return document.getElementById(id).value.trim();}
+function fmtDate(d){if(!d)return'-';const p=String(d).slice(0,10).split('-');return p.length===3?p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Number(p[1])-1]+' '+p[0]:String(d);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function exportCSV(){const headers=['Source','Call Date','Division','Region','SC Eng','Engineer','Customer','Model','Call Type','Comm Type','Duration','Status','Remarks'];const rows=filtered.map(d=>[d.sourceLabel,d.callDate,d.division,d.region||d.branch,d.scEng,d.engineer,d.customer,d.model,d.callType,d.commType,d.duration,d.status,d.remarks]);const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='admin-call-register-'+new Date().toISOString().slice(0,10)+'.csv';a.click();}
+function showToast(msg){const wrap=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast';el.textContent=msg;wrap.appendChild(el);setTimeout(()=>el.remove(),3200);}
+function toggleSF(){const btn=document.getElementById('sf-toggle');const panel=document.getElementById('sf-children');if(!btn||!panel)return;btn.classList.toggle('open');panel.classList.toggle('open');}
+function toggleAR(){const btn=document.getElementById('ar-toggle');const panel=document.getElementById('ar-children');if(!btn||!panel)return;btn.classList.toggle('open');panel.classList.toggle('open');}
+function logout(){localStorage.clear();window.location.href='login.html';}
+</script>
+</body>
+</html>
+

@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<script>(function(){
+  const token = localStorage.getItem('schiller_token');
+  const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
+  if (!token || !['service_coordinator','admin','superadmin'].includes(role)) window.location.href = 'login.html';
+})();</script>
+<title>SchillerIndia - Service Coordinator</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f0f4f8;--surface:#ffffff;--surface2:#e8f0f7;--surface3:#f5f9fc;
+  --border:#ccdde8;--border2:#ddeaf4;
+  --accent:#0068b5;--accent2:#005a9e;--accent3:#e8f3fb;
+  --green:#047857;--green-bg:rgba(4,120,87,0.08);--green-light:#ecfdf5;
+  --amber:#b45309;--amber-bg:rgba(180,83,9,0.08);--amber-light:#fffbeb;
+  --red:#b91c1c;--red-bg:rgba(185,28,28,0.07);--red-light:#fef2f2;
+  --purple:#5b21b6;--purple-bg:rgba(91,33,182,0.08);
+  --teal:#0e7490;--teal-bg:rgba(14,116,144,0.08);
+  --cyan:#0891b2;--indigo:#3730a3;
+  --text:#0f2236;--muted:#6b8ca8;--soft:#3d6480;--card:#ffffff;
+  --shadow:0 1px 8px rgba(0,60,120,0.07);
+  --shadow-md:0 4px 20px rgba(0,60,120,0.10);
+  --shadow-lg:0 12px 40px rgba(0,60,120,0.13);
+}
+
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
+/* -- SIDEBAR -- */
+.sidebar{width:230px;min-height:100vh;background:#ffffff;border-right:1px solid #ccdde8;display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 16px rgba(0,60,120,0.08);}
+.sidebar-header{padding:18px 16px 14px;border-bottom:1px solid #ccdde8;background:linear-gradient(145deg,#002d5c,#0068b5);}
+.logo-wrap{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:36px;height:36px;background:rgba(255,255,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#fff;border:1.5px solid rgba(255,255,255,0.25);}
+.logo-text{font-family:'Syne',sans-serif;font-size:13.5px;font-weight:700;color:#fff;line-height:1.25;}
+.logo-text span{display:block;font-size:10px;color:rgba(255,255,255,0.55);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;}
+.sc-badge{margin:8px 12px 0;padding:4px 11px;border-radius:20px;font-size:9.5px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;display:inline-block;background:rgba(14,116,144,0.18);color:#22d3ee;border:1px solid rgba(14,116,144,0.35);}
+.sidebar-nav{flex:1;padding:10px 8px;}
+.nav-sec{font-size:9px;font-weight:700;color:#6b8ca8;letter-spacing:0.12em;text-transform:uppercase;padding:10px 9px 4px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:8px;color:#3d6480;font-size:12.5px;font-weight:500;cursor:pointer;transition:all 0.18s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;}
+.nav-item:hover{background:#e8f0f7;color:#0f2236;}
+.nav-item.active{background:#e8f3fb;color:#0068b5;font-weight:700;border-left:3px solid #0068b5;padding-left:9px;}
+.nav-item .ico{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:#b91c1c;color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;}
+.nav-badge.green{background:#047857;}
+.nav-badge.amber{background:#b45309;}
+.sidebar-footer{padding:12px 13px;border-top:1px solid #ccdde8;background:#f5f9fc;}
+.user-row{display:flex;align-items:center;gap:9px;}
+.user-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0e7490,#0068b5);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
+.user-nm{font-size:12.5px;font-weight:600;color:#0f2236;}
+.user-rl{font-size:10px;color:#6b8ca8;}
+.logout-btn{margin-left:auto;background:none;border:1px solid #ccdde8;color:#6b8ca8;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:10.5px;font-weight:600;transition:all 0.2s;}
+.logout-btn:hover{border-color:#b91c1c;color:#b91c1c;}
+
+/* -- MAIN -- */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{padding:14px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:var(--shadow);}
+.topbar-left{}
+.breadcrumb{display:flex;align-items:center;gap:5px;font-size:10.5px;margin-bottom:2px;}
+.breadcrumb a{color:var(--muted);text-decoration:none;}
+.breadcrumb a:hover{color:var(--accent);}
+.breadcrumb .sep{color:var(--border2);}
+.topbar-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.topbar-date{font-size:11.5px;color:var(--muted);}
+.btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:5px;}
+.btn-outline{background:none;border:1.5px solid var(--border);color:var(--soft);}.btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+.btn-primary{background:var(--accent);color:#fff;}.btn-primary:hover{background:var(--accent2);}
+.btn-sm{padding:5px 12px;font-size:11.5px;}
+.notif-btn{position:relative;width:34px;height:34px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:all 0.2s;}
+.notif-btn:hover{border-color:var(--accent);}
+.notif-dot{position:absolute;top:5px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--red);border:2px solid var(--surface);}
+
+.content{flex:1;padding:22px 28px;overflow-y:auto;}
+
+/* -- WELCOME BANNER -- */
+.welcome-banner{background:linear-gradient(135deg,#002d5c 0%,#0068b5 55%,#0e7490 100%);border-radius:16px;padding:24px 28px;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;overflow:hidden;position:relative;box-shadow:0 6px 24px rgba(0,60,120,0.2);}
+.welcome-banner::before{content:'';position:absolute;top:-30px;right:-30px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.05);}
+.welcome-banner::after{content:'';position:absolute;bottom:-50px;right:100px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.04);}
+.wb-left{}
+.wb-greeting{font-size:12px;color:rgba(255,255,255,0.65);font-weight:500;margin-bottom:4px;letter-spacing:0.04em;}
+.wb-name{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;margin-bottom:7px;}
+.wb-sub{font-size:12px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:6px;}
+.wb-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.4);}
+.wb-right{display:flex;gap:14px;position:relative;z-index:1;}
+.wb-stat{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:12px 18px;text-align:center;min-width:90px;backdrop-filter:blur(4px);}
+.wb-stat-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:#fff;}
+.wb-stat-lbl{font-size:10px;color:rgba(255,255,255,0.6);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-top:2px;}
+
+/* -- STATS GRID -- */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;box-shadow:var(--shadow);transition:transform 0.2s,box-shadow 0.2s;cursor:default;}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0;}
+.sc-blue::before{background:linear-gradient(90deg,#0068b5,#0ea5e9);}
+.sc-teal::before{background:linear-gradient(90deg,#0e7490,#06b6d4);}
+.sc-green::before{background:linear-gradient(90deg,#047857,#059669);}
+.sc-amber::before{background:linear-gradient(90deg,#b45309,#d97706);}
+.sc-red::before{background:linear-gradient(90deg,#b91c1c,#dc2626);}
+.sc-purple::before{background:linear-gradient(90deg,#5b21b6,#7c3aed);}
+.stat-icon-wrap{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px;}
+.si-blue{background:rgba(0,104,181,0.1);}
+.si-teal{background:rgba(14,116,144,0.1);}
+.si-green{background:rgba(4,120,87,0.1);}
+.si-amber{background:rgba(180,83,9,0.1);}
+.si-red{background:rgba(185,28,28,0.1);}
+.si-purple{background:rgba(91,33,182,0.1);}
+.stat-lbl{font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px;}
+.stat-val{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:var(--text);line-height:1;}
+.stat-sub{font-size:10.5px;color:var(--muted);margin-top:4px;display:flex;align-items:center;gap:4px;}
+.stat-trend{font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;}
+.trend-up{background:var(--green-bg);color:var(--green);}
+.trend-dn{background:var(--red-bg);color:var(--red);}
+
+/* -- TWO-COLUMN LAYOUT -- */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px;}
+.three-col{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:22px;}
+
+/* -- PANEL -- */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);}
+.panel-head{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface3);}
+.panel-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+.panel-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--accent3);color:var(--accent);border:1px solid rgba(0,104,181,0.15);}
+.panel-body{padding:16px 18px;}
+
+/* -- ACTIVITY FEED -- */
+.activity-feed{display:flex;flex-direction:column;gap:0;}
+.activity-item{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid rgba(0,60,120,0.06);}
+.activity-item:last-child{border-bottom:none;}
+.activity-ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.ai-blue{background:rgba(0,104,181,0.1);}
+.ai-green{background:rgba(4,120,87,0.1);}
+.ai-amber{background:rgba(180,83,9,0.1);}
+.ai-red{background:rgba(185,28,28,0.1);}
+.ai-teal{background:rgba(14,116,144,0.1);}
+.ai-purple{background:rgba(91,33,182,0.1);}
+.activity-info{flex:1;min-width:0;}
+.activity-title{font-size:12.5px;font-weight:600;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.activity-sub{font-size:11px;color:var(--muted);}
+.activity-time{font-size:10.5px;color:var(--muted);white-space:nowrap;flex-shrink:0;}
+
+/* -- QUICK ACTION CARDS -- */
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.quick-card{background:var(--surface2);border:1.5px solid var(--border);border-radius:11px;padding:14px 16px;cursor:pointer;transition:all 0.2s;text-decoration:none;display:block;}
+.quick-card:hover{border-color:var(--accent);background:var(--accent3);transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.qc-ico{font-size:20px;margin-bottom:8px;}
+.qc-title{font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.qc-sub{font-size:10.5px;color:var(--muted);}
+.qc-badge{display:inline-flex;align-items:center;padding:1px 7px;border-radius:8px;font-size:10px;font-weight:700;margin-top:6px;}
+
+/* -- PROGRESS BARS -- */
+.progress-list{display:flex;flex-direction:column;gap:12px;}
+.prog-item{}
+.prog-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+.prog-label{font-size:12px;font-weight:600;color:var(--text);}
+.prog-val{font-size:11px;font-weight:700;color:var(--muted);}
+.prog-bar{height:6px;background:var(--surface2);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:4px;transition:width 0.8s cubic-bezier(.4,0,.2,1);}
+.pf-blue{background:linear-gradient(90deg,#0068b5,#0ea5e9);}
+.pf-green{background:linear-gradient(90deg,#047857,#059669);}
+.pf-amber{background:linear-gradient(90deg,#b45309,#d97706);}
+.pf-red{background:linear-gradient(90deg,#b91c1c,#dc2626);}
+.pf-teal{background:linear-gradient(90deg,#0e7490,#06b6d4);}
+.pf-purple{background:linear-gradient(90deg,#5b21b6,#7c3aed);}
+
+/* -- MINI TABLE -- */
+table.mini-table{width:100%;border-collapse:collapse;font-size:12px;}
+table.mini-table thead th{padding:8px 10px;font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;text-align:left;border-bottom:2px solid var(--border);background:var(--surface3);white-space:nowrap;}
+table.mini-table tbody td{padding:9px 10px;border-bottom:1px solid rgba(0,60,120,0.05);vertical-align:middle;color:var(--text);}
+table.mini-table tbody tr:last-child td{border-bottom:none;}
+table.mini-table tbody tr{transition:background 0.13s;}
+table.mini-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
+
+/* -- STATUS PILLS -- */
+.s-pill{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;}
+.s-pill::before{content:'';width:5px;height:5px;border-radius:50%;display:block;}
+.region-tag{background:var(--accent3);color:var(--accent);padding:2px 7px;border-radius:9px;font-size:9.5px;font-weight:700;}
+.chip{display:inline-flex;align-items:center;background:var(--accent3);border:1px solid rgba(0,104,181,0.15);border-radius:5px;padding:2px 7px;font-size:10px;color:var(--accent);font-weight:600;}
+.mono{font-family:monospace;font-size:10.5px;}
+.sp-open{background:rgba(14,116,144,0.1);color:var(--teal);}.sp-open::before{background:var(--teal);}
+.sp-pending{background:var(--amber-bg);color:var(--amber);}.sp-pending::before{background:var(--amber);}
+.sp-closed{background:var(--green-bg);color:var(--green);}.sp-closed::before{background:var(--green);}
+.sp-urgent{background:var(--red-bg);color:var(--red);}.sp-urgent::before{background:var(--red);}
+.sp-review{background:rgba(91,33,182,0.1);color:var(--purple);}.sp-review::before{background:var(--purple);}
+
+/* -- DONUT CHART (CSS) -- */
+.donut-wrap{display:flex;align-items:center;gap:20px;padding:4px 0;}
+.donut{position:relative;width:110px;height:110px;flex-shrink:0;}
+.donut svg{transform:rotate(-90deg);}
+.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.donut-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);}
+.donut-lbl{font-size:9.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;}
+.donut-legend{display:flex;flex-direction:column;gap:8px;flex:1;}
+.legend-item{display:flex;align-items:center;gap:8px;}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.legend-lbl{font-size:11.5px;color:var(--text);font-weight:500;flex:1;}
+.legend-pct{font-size:11.5px;font-weight:700;color:var(--muted);}
+
+/* -- CALENDAR / WEEK STRIP -- */
+.week-strip{display:flex;gap:6px;padding:14px 18px 16px;}
+.day-box{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;transition:all 0.18s;}
+.day-box:hover{border-color:var(--accent);background:var(--accent3);}
+.day-box.today{background:var(--accent);border-color:var(--accent);}
+.day-name{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);}
+.day-box.today .day-name{color:rgba(255,255,255,0.75);}
+.day-num{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);}
+.day-box.today .day-num{color:#fff;}
+.day-dot{width:5px;height:5px;border-radius:50%;background:var(--green);}
+.day-box.today .day-dot{background:rgba(255,255,255,0.7);}
+.day-box.no-event .day-dot{opacity:0;}
+
+/* -- ALERT BANNER -- */
+.alert-strip{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
+.alert-item{display:flex;align-items:center;gap:10px;padding:11px 16px;border-radius:10px;font-size:12.5px;font-weight:500;}
+.alert-red{background:var(--red-bg);border:1px solid rgba(185,28,28,0.2);color:var(--red);}
+.alert-amber{background:var(--amber-bg);border:1px solid rgba(180,83,9,0.2);color:var(--amber);}
+.alert-green{background:var(--green-bg);border:1px solid rgba(4,120,87,0.2);color:var(--green);}
+.alert-item strong{font-weight:700;}
+.alert-close{margin-left:auto;background:none;border:none;font-size:14px;cursor:pointer;color:inherit;opacity:0.6;transition:opacity 0.2s;}
+.alert-close:hover{opacity:1;}
+
+/* -- LOADING -- */
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-bar{position:fixed;top:0;left:0;right:0;height:3px;background:var(--accent);z-index:9999;transform:scaleX(0);transform-origin:left;border-radius:0 2px 2px 0;}
+.loading-bar.active{animation:lb 1.2s ease infinite;}
+@keyframes lb{0%{transform:scaleX(0);opacity:1;}80%{transform:scaleX(0.8);}100%{transform:scaleX(1);opacity:0;}}
+
+/* -- TOAST -- */
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:700;display:flex;flex-direction:column;gap:7px;}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:11px 15px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:9px;min-width:230px;animation:fadeUp 0.25s ease;box-shadow:var(--shadow-md);}
+.toast.ok{border-color:rgba(4,120,87,0.35);}.toast.ok .td{background:var(--green);}
+.toast.err{border-color:rgba(185,28,28,0.35);}.toast.err .td{background:var(--red);}
+.toast.info{border-color:rgba(0,104,181,0.35);}.toast.info .td{background:var(--accent);}
+.td{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+::-webkit-scrollbar{width:7px;height:7px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+.msg-workspace{display:none;grid-template-columns:310px 1fr;gap:16px;min-height:calc(100vh - 130px);}
+.msg-workspace.open{display:grid;}
+.msg-panel{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);}
+.msg-head{padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface3);display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.msg-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);}
+.msg-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.msg-compose{padding:14px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--border);}
+.msg-field{display:flex;flex-direction:column;gap:5px;}
+.msg-field label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);}
+.msg-field select,.msg-field textarea{width:100%;border:1.5px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;padding:9px 11px;outline:none;}
+.msg-field textarea{min-height:72px;resize:vertical;}
+.msg-thread-list{max-height:calc(100vh - 465px);overflow:auto;}
+.msg-thread{padding:12px 14px;border-bottom:1px solid rgba(0,60,120,0.06);cursor:pointer;transition:background 0.15s;}
+.msg-thread:hover,.msg-thread.active{background:var(--accent3);}
+.msg-thread-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.msg-thread-name{font-size:12.5px;font-weight:700;color:var(--text);}
+.msg-thread-time{font-size:10px;color:var(--muted);white-space:nowrap;}
+.msg-thread-last{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px;}
+.msg-unread{background:var(--red);color:#fff;border-radius:999px;padding:1px 6px;font-size:9px;font-weight:800;margin-left:6px;}
+.msg-chat{display:flex;flex-direction:column;min-height:calc(100vh - 130px);}
+.msg-chat-body{flex:1;padding:18px;overflow:auto;background:linear-gradient(180deg,#f7fbff,#eef6fb);}
+.msg-empty{text-align:center;color:var(--muted);font-size:12.5px;padding:40px 16px;}
+.msg-bubble-row{display:flex;margin-bottom:10px;}
+.msg-bubble-row.mine{justify-content:flex-end;}
+.msg-bubble{max-width:70%;padding:9px 12px;border-radius:14px;background:#fff;border:1px solid var(--border);box-shadow:0 1px 5px rgba(0,60,120,0.06);}
+.msg-bubble-row.mine .msg-bubble{background:#dcf8c6;border-color:#bde7a8;}
+.msg-meta{font-size:9.5px;color:var(--muted);margin-bottom:3px;font-weight:700;}
+.msg-text{font-size:13px;color:var(--text);line-height:1.45;white-space:pre-wrap;word-break:break-word;}
+.msg-chat-foot{display:flex;gap:10px;padding:12px;border-top:1px solid var(--border);background:var(--surface);}
+.msg-chat-foot textarea{flex:1;min-height:42px;max-height:110px;resize:vertical;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;outline:none;}
+
+    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
+    </style>
+  <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="employee-theme.css">
+  <script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <link rel="stylesheet" href="dashboard-topbar-actions.css">
+  <script src="dashboard-topbar-actions.js" defer></script>
+  <script src="brand-logo.js" defer></script>
+</head>
+<body>
+<div class="loading-bar" id="loading-bar"></div>
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- -- SIDEBAR -- -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-wrap">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="logo-text">SchillerIndia<span>Services Portal</span></div>
+    </div>
+  </div>
+  <div style="padding:7px 13px 0;"><span class="sc-badge">Service Coordinator</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-sec">Main</div>
+    <a class="nav-item active" href="sc-dashboard.html"><span class="ico">&#128202;</span> Dashboard</a>
+    <a class="nav-item" id="sc-msg-nav" href="#messages" onclick="showScMessages(event)"><span class="ico">&#128172;</span> Messaging <span class="nav-badge" id="sc-msg-badge" style="display:none;">0</span></a>
+
+    <div class="nav-sec">Work Orders</div>
+    <a class="nav-item" href="scprfob.html"><span class="ico">&#128203;</span> PRF/OB Register</a>
+    <a class="nav-item" href="sccr.html"><span class="ico">&#128274;</span> Closed PRF/OB Register</a>
+    <a class="nav-item" href="lt.html"><span class="ico">&#128230;</span> Loan Item</a>
+    <a class="nav-item" href="cli.html"><span class="ico">&#128274;</span> Closed Loan</a>
+
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="user-av" id="sc-avatar">S</div>
+      <div>
+        <div class="user-nm" id="sc-name">Coordinator</div>
+        <div class="user-rl">Service Coordinator</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<!-- -- MAIN -- -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="breadcrumb">
+        <span>SchillerIndia</span><span class="sep">&#8250;</span><span>Dashboard</span>
+      </div>
+      <div class="topbar-title">Service Coordinator Dashboard</div>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-date" id="topbar-date"></span>
+      
+      <button class="btn btn-outline btn-sm" onclick="refreshAll()">&#10227; Refresh</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="msg-workspace" id="sc-msg-workspace">
+      <div class="msg-panel">
+        <div class="msg-head">
+          <div>
+            <div class="msg-title">Service Messages</div>
+            <div class="msg-sub">Select a division and employee</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="loadScMessageThreads()">Refresh</button>
+        </div>
+        <div class="msg-compose">
+          <div class="msg-field">
+            <label>Division</label>
+            <select id="sc-msg-division" onchange="loadScMessageEmployees()">
+              <option value="">All divisions</option>
+            </select>
+          </div>
+          <div class="msg-field">
+            <label>Employee</label>
+            <select id="sc-msg-employee">
+              <option value="">Select employee</option>
+            </select>
+          </div>
+          <div class="msg-field">
+            <label>Message</label>
+            <textarea id="sc-msg-new" placeholder="Type message to service team..."></textarea>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="sendScNewMessage()">Send Message</button>
+        </div>
+        <div class="msg-thread-list" id="sc-msg-thread-list">
+          <div class="msg-empty">No conversations loaded.</div>
+        </div>
+      </div>
+      <div class="msg-panel msg-chat">
+        <div class="msg-head">
+          <div>
+            <div class="msg-title" id="sc-chat-title">Select a conversation</div>
+            <div class="msg-sub" id="sc-chat-sub">Messages with service team</div>
+          </div>
+        </div>
+        <div class="msg-chat-body" id="sc-chat-body">
+          <div class="msg-empty">Choose an employee thread or send a new message.</div>
+        </div>
+        <div class="msg-chat-foot">
+          <textarea id="sc-msg-reply" placeholder="Type reply..." disabled></textarea>
+          <button class="btn btn-primary" id="sc-msg-reply-btn" onclick="sendScReply()" disabled>Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- -- ALERTS -- -->
+    <div class="alert-strip" id="alert-strip">
+      <div class="alert-item alert-red">
+        &#128680; <span><strong id="overdue-count">0</strong> PRF/OB entries are overdue (&gt;30 days). Immediate action required.</span>
+        <button class="alert-close" onclick="this.parentElement.remove()">&#10005;</button>
+      </div>
+
+    </div>
+
+    <!-- -- WELCOME BANNER -- -->
+    <div class="welcome-banner">
+      <div class="wb-left">
+        <div class="wb-greeting">Good <span id="greeting-time">Morning</span> &#10024;</div>
+        <div class="wb-name" id="wb-name">Welcome back, Coordinator</div>
+        <div class="wb-sub">
+          <span id="wb-date">Loading...</span>
+          <span class="wb-dot"></span>
+          <span>SchillerIndia Services Portal</span>
+          <span class="wb-dot"></span>
+          <span style="color:rgba(255,255,255,0.75);font-weight:600;">Service Coordinator</span>
+        </div>
+      </div>
+      <div class="wb-right">
+        <div class="wb-stat">
+          <div class="wb-stat-val" id="wb-open">-</div>
+          <div class="wb-stat-lbl">Open PRF</div>
+        </div>
+
+        <div class="wb-stat">
+          <div class="wb-stat-val" id="wb-closed-today">-</div>
+          <div class="wb-stat-lbl">Closed Today</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- -- STATS GRID -- -->
+    <div class="stats-grid">
+      <div class="stat-card sc-blue">
+        <div class="stat-icon-wrap si-blue">&#128203;</div>
+        <div class="stat-lbl">Total PRF/OB</div>
+        <div class="stat-val" id="st-total-prf">-</div>
+        <div class="stat-sub"><span class="stat-trend trend-up" id="st-trend-prf">+0</span> this week</div>
+      </div>
+      <div class="stat-card sc-amber">
+        <div class="stat-icon-wrap si-amber">&#9203;</div>
+        <div class="stat-lbl">Open / Pending</div>
+        <div class="stat-val" id="st-open-prf">-</div>
+        <div class="stat-sub"><span class="stat-trend trend-dn" id="st-overdue-badge">0 overdue</span></div>
+      </div>
+      <div class="stat-card sc-green">
+        <div class="stat-icon-wrap si-green">&#9989;</div>
+        <div class="stat-lbl">Closed PRF/OB</div>
+        <div class="stat-val" id="st-closed-prf">-</div>
+        <div class="stat-sub"><span class="stat-trend trend-up" id="st-closed-today">+0 today</span></div>
+      </div>
+      <div class="stat-card sc-red">
+        <div class="stat-icon-wrap si-red">&#128308;</div>
+        <div class="stat-lbl">Overdue Items</div>
+        <div class="stat-val" id="st-overdue">-</div>
+        <div class="stat-sub" style="color:var(--red);">Require immediate action</div>
+      </div>
+      <div class="stat-card sc-blue" style="grid-column:span 2;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div class="stat-icon-wrap si-blue" style="margin-bottom:6px;">&#9889;</div>
+            <div class="stat-lbl">Avg. Resolution Time</div>
+            <div class="stat-val" id="st-avg-days">-<span style="font-size:14px;font-weight:500;color:var(--muted);margin-left:4px;">days</span></div>
+          </div>
+          <div class="progress-list" style="width:55%;min-width:180px;">
+            <div class="prog-item">
+              <div class="prog-header"><span class="prog-label">PRF Closed &le;7d</span><span class="prog-val" id="prog-7d">-%</span></div>
+              <div class="prog-bar"><div class="prog-fill pf-green" id="bar-7d" style="width:0%"></div></div>
+            </div>
+            <div class="prog-item">
+              <div class="prog-header"><span class="prog-label">PRF Closed &le;30d</span><span class="prog-val" id="prog-30d">-%</span></div>
+              <div class="prog-bar"><div class="prog-fill pf-blue" id="bar-30d" style="width:0%"></div></div>
+            </div>
+            <div class="prog-item">
+              <div class="prog-header"><span class="prog-label">Overdue &gt;30d</span><span class="prog-val" id="prog-od">-%</span></div>
+              <div class="prog-bar"><div class="prog-fill pf-red" id="bar-od" style="width:0%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- -- WEEK STRIP -- -->
+    <div class="panel" style="margin-bottom:22px;">
+      <div class="panel-head">
+        <div class="panel-title">&#128197; This Week</div>
+        <span id="week-label" style="font-size:11.5px;color:var(--muted);"></span>
+      </div>
+      <div class="week-strip" id="week-strip"></div>
+    </div>
+
+    <!-- -- ROW 2: PRF TABLE + ACTIVITY -- -->
+    <div class="three-col">
+
+      <!-- Recent PRF/OB -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">&#128203; Recent PRF/OB Entries <span class="panel-badge" id="prf-table-count">-</span></div>
+          <a href="sc-prf-ob.html" style="font-size:11.5px;color:var(--accent);text-decoration:none;font-weight:600;">View All &rarr;</a>
+        </div>
+        <div class="table-wrap" style="overflow-x:auto;">
+          <table class="mini-table" style="min-width:560px;">
+            <thead><tr>
+              <th onclick="sortPRF('prfNo')">PRF No &#8597;</th>
+              <th onclick="sortPRF('custName')">Customer &#8597;</th>
+              <th onclick="sortPRF('model')">Model &#8597;</th>
+              <th onclick="sortPRF('entryDate')">Date &#8597;</th>
+              <th onclick="sortPRF('pendingDays')">Days &#8597;</th>
+              <th>Status</th>
+            </tr></thead>
+            <tbody id="prf-tbody">
+              <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Right column -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- Donut: PRF Status -->
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">&#129391; PRF Status Split</div>
+          </div>
+          <div class="panel-body">
+            <div class="donut-wrap">
+              <div class="donut">
+                <svg viewBox="0 0 110 110" width="110" height="110">
+                  <circle cx="55" cy="55" r="40" fill="none" stroke="var(--surface2)" stroke-width="14"/>
+                  <circle cx="55" cy="55" r="40" fill="none" stroke="#0068b5" stroke-width="14" stroke-dasharray="251.2" stroke-dashoffset="251.2" id="donut-open" style="transition:stroke-dashoffset 1s ease;"/>
+                  <circle cx="55" cy="55" r="40" fill="none" stroke="#047857" stroke-width="14" stroke-dasharray="251.2" stroke-dashoffset="251.2" id="donut-closed" style="transition:stroke-dashoffset 1s ease 0.2s;"/>
+                  <circle cx="55" cy="55" r="40" fill="none" stroke="#b91c1c"  stroke-width="14" stroke-dasharray="251.2" stroke-dashoffset="251.2" id="donut-overdue" style="transition:stroke-dashoffset 1s ease 0.4s;"/>
+                </svg>
+                <div class="donut-center">
+                  <div class="donut-val" id="donut-total">-</div>
+                  <div class="donut-lbl">Total</div>
+                </div>
+              </div>
+              <div class="donut-legend">
+                <div class="legend-item"><div class="legend-dot" style="background:#0068b5;"></div><span class="legend-lbl">Open</span><span class="legend-pct" id="lgd-open">-</span></div>
+                <div class="legend-item"><div class="legend-dot" style="background:#047857;"></div><span class="legend-lbl">Closed</span><span class="legend-pct" id="lgd-closed">-</span></div>
+                <div class="legend-item"><div class="legend-dot" style="background:#b91c1c;"></div><span class="legend-lbl">Overdue</span><span class="legend-pct" id="lgd-overdue">-</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">&#9889; Quick Actions</div></div>
+          <div class="panel-body" style="padding:12px;">
+            <div class="quick-grid">
+              <a class="quick-card" href="sc-prf-ob.html">
+                <div class="qc-ico">&#128203;</div>
+                <div class="qc-title">PRF/OB Register</div>
+                <div class="qc-sub">Open & active entries</div>
+                <span class="qc-badge" style="background:var(--amber-bg);color:var(--amber);">Open: <span id="qa-open">-</span></span>
+              </a>
+              <a class="quick-card" href="sc-closed-prf.html">
+                <div class="qc-ico">&#128274;</div>
+                <div class="qc-title">Closed PRF/OB</div>
+                <div class="qc-sub">Completed records</div>
+                <span class="qc-badge" style="background:var(--green-bg);color:var(--green);">Closed: <span id="qa-closed">-</span></span>
+              </a>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- -- ROW 3: ACTIVITY FEED -- -->
+    <div class="two-col" style="grid-template-columns:1fr;">
+
+      <!-- Activity Feed -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">&#128336; Recent Activity</div>
+          <span style="font-size:11px;color:var(--muted);">Live updates</span>
+        </div>
+        <div class="panel-body" style="padding:4px 0;">
+          <div class="activity-feed" id="activity-feed">
+            <div style="text-align:center;padding:32px;color:var(--muted);font-size:12.5px;"><span class="spin"></span>Loading activity...</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- -- DIVISION BREAKDOWN -- -->
+    <div class="panel" style="margin-bottom:22px;">
+      <div class="panel-head">
+        <div class="panel-title">&#128309; PRF/OB by Division</div>
+        <span style="font-size:11px;color:var(--muted);">Active open records</span>
+      </div>
+      <div class="panel-body">
+        <div class="progress-list" id="division-bars">
+          <div style="color:var(--muted);font-size:12.5px;"><span class="spin"></span>Loading...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API      = '';
+const LUSER    = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+const SC_NAME  = LUSER.name || 'Coordinator';
+let scMsgThreads = [];
+let scMsgActiveId = '';
+let scMsgUnreadLast = 0;
+
+// -- INIT --------------------------------------------------
+(function init(){
+  (document.getElementById('sc-name')||{}).textContent = SC_NAME;
+  (document.getElementById('sc-avatar')||{}).textContent = SC_NAME.charAt(0).toUpperCase();
+  (document.getElementById('wb-name')||{}).textContent = 'Welcome back, ' + SC_NAME;
+  const now = new Date();
+  const h   = now.getHours();
+  (document.getElementById('greeting-time')||{}).textContent = h<12?'Morning':h<17?'Afternoon':'Evening';
+  (document.getElementById('topbar-date')||{}).textContent = now.toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  (document.getElementById('wb-date')||{}).textContent = now.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  buildWeekStrip();
+  refreshAll();
+  initScMessages();
+})();
+
+function getToken()     { return localStorage.getItem('schiller_token')||''; }
+function authHeaders()  { return {'Content-Type':'application/json','Authorization':'Bearer '+getToken()}; }
+function setLoading(on) { document.getElementById('loading-bar').className = on ? 'loading-bar active' : 'loading-bar'; }
+
+async function refreshAll(){
+  setLoading(true);
+  try{
+    await Promise.allSettled([loadPRF(), loadScMessageThreads()]);
+  }finally{ setLoading(false); }
+}
+
+function initScMessages(){
+  loadScMessageDivisions();
+  loadScMessageEmployees();
+  if (location.hash === '#messages') showScMessages();
+  setInterval(loadScMessageThreads, 30000);
+  window.addEventListener('hashchange', () => {
+    if (location.hash === '#messages') showScMessages();
+    else showScDashboard();
+  });
+}
+
+function showScMessages(event){
+  if (event) event.preventDefault();
+  location.hash = 'messages';
+  const workspace = document.getElementById('sc-msg-workspace');
+  document.querySelectorAll('.content > *').forEach(el => {
+    if (el !== workspace) el.style.display = 'none';
+  });
+  workspace.classList.add('open');
+  document.querySelectorAll('.sidebar .nav-item').forEach(a => a.classList.remove('active'));
+  (document.getElementById('sc-msg-nav')||{}).classList.add('active');
+  loadScMessageThreads();
+}
+
+function showScDashboard(){
+  const workspace = document.getElementById('sc-msg-workspace');
+  if (workspace) workspace.classList.remove('open');
+  document.querySelectorAll('.content > *').forEach(el => {
+    if (el !== workspace) el.style.display = '';
+  });
+  document.querySelectorAll('.sidebar .nav-item').forEach(a => a.classList.remove('active'));
+  const dash = document.querySelector('.sidebar .nav-item[href="sc-dashboard.html"]');
+  if (dash) dash.classList.add('active');
+}
+
+async function loadScMessageDivisions(){
+  const sel = document.getElementById('sc-msg-division');
+  if (!sel) return;
+  try{
+    const res = await fetch('/api/divisions', { headers: authHeaders() });
+    const data = await res.json().catch(()=>[]);
+    const list = Array.isArray(data) ? data : (data.data || []);
+    const names = [...new Set(list.map(d => d.name || d.division || d.divisionName || d).filter(Boolean).map(String))].sort();
+    sel.innerHTML = '<option value="">All divisions</option>' + names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
+  }catch(_){}
+}
+
+async function loadScMessageEmployees(){
+  const division = document.getElementById('sc-msg-division')?.value || '';
+  const empSel = document.getElementById('sc-msg-employee');
+  if (!empSel) return;
+  empSel.innerHTML = '<option value="">Loading...</option>';
+  try{
+    const res = await fetch('/api/service-messages/employees?division=' + encodeURIComponent(division), { headers: authHeaders() });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    const list = json.data || [];
+    empSel.innerHTML = '<option value="">Select employee</option>' + list.map(emp => {
+      const value = `${emp.source}:${emp.id}`;
+      const label = `${emp.name}${emp.division ? ' - ' + emp.division : ''}`;
+      return `<option value="${esc(value)}">${esc(label)}</option>`;
+    }).join('');
+  }catch(e){
+    empSel.innerHTML = '<option value="">Could not load employees</option>';
+    showToast('Employee load failed: ' + e.message, 'err');
+  }
+}
+
+async function loadScMessageThreads(){
+  try{
+    const res = await fetch('/api/service-messages/threads', { headers: authHeaders() });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    scMsgThreads = json.data || [];
+    renderScMessageThreads();
+    updateScMessageNotification();
+  }catch(e){
+    const list = document.getElementById('sc-msg-thread-list');
+    if (list) list.innerHTML = '<div class="msg-empty">Could not load conversations.</div>';
+  }
+}
+
+function updateScMessageNotification(){
+  const count = scMsgThreads.reduce((sum, t) => sum + Number(t.unreadCount || 0), 0);
+  const badge = document.getElementById('sc-msg-badge');
+  if (badge) {
+    badge.textContent = count;
+    badge.style.display = count ? 'inline-flex' : 'none';
+  }
+  if (count > scMsgUnreadLast && location.hash !== '#messages') {
+    showToast('New service message received.', 'info');
+  }
+  scMsgUnreadLast = count;
+}
+
+function renderScMessageThreads(){
+  const list = document.getElementById('sc-msg-thread-list');
+  if (!list) return;
+  if (!scMsgThreads.length) {
+    list.innerHTML = '<div class="msg-empty">No conversations yet.</div>';
+    return;
+  }
+  list.innerHTML = scMsgThreads.map(t => `
+    <div class="msg-thread ${t._id === scMsgActiveId ? 'active' : ''}" onclick="openScThread('${t._id}')">
+      <div class="msg-thread-top">
+        <div class="msg-thread-name">${esc(t.peerName || t.employeeName || 'Employee')}${t.unreadCount ? `<span class="msg-unread">${t.unreadCount}</span>` : ''}</div>
+        <div class="msg-thread-time">${fmtMsgTime(t.lastMessageAt)}</div>
+      </div>
+      <div class="msg-thread-last">${esc(t.lastMessage || '')}</div>
+    </div>
+  `).join('');
+}
+
+async function openScThread(id){
+  scMsgActiveId = id;
+  renderScMessageThreads();
+  try{
+    const res = await fetch('/api/service-messages/threads/' + id, { headers: authHeaders() });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    renderScChat(json.data);
+    loadScMessageThreads();
+  }catch(e){ showToast('Conversation load failed: ' + e.message, 'err'); }
+}
+
+function renderScChat(thread){
+  const currentId = String(LUSER._id || LUSER.id || '');
+  (document.getElementById('sc-chat-title')||{}).textContent = String(thread.coordinatorId) === currentId ? (thread.employeeName || 'Employee') : (thread.coordinatorName || 'Service Team');
+  (document.getElementById('sc-chat-sub')||{}).textContent = thread.division || thread.employeeEmail || 'Service team';
+  const body = document.getElementById('sc-chat-body');
+  body.innerHTML = (thread.messages || []).map(m => {
+    const mine = String(m.senderId) === currentId;
+    return `<div class="msg-bubble-row ${mine ? 'mine' : ''}">
+      <div class="msg-bubble">
+        <div class="msg-meta">${esc(m.senderName || '')} - ${fmtMsgTime(m.createdAt)}</div>
+        <div class="msg-text">${esc(m.text || '')}</div>
+      </div>
+    </div>`;
+  }).join('') || '<div class="msg-empty">No messages yet.</div>';
+  body.scrollTop = body.scrollHeight;
+  document.getElementById('sc-msg-reply').disabled = false;
+  document.getElementById('sc-msg-reply-btn').disabled = false;
+}
+
+async function sendScNewMessage(){
+  const empVal = document.getElementById('sc-msg-employee')?.value || '';
+  const msgEl = document.getElementById('sc-msg-new');
+  const message = msgEl?.value.trim() || '';
+  if (!empVal || !message) return showToast('Select employee and type message.', 'err');
+  const [employeeModel, employeeId] = empVal.split(':');
+  try{
+    const res = await fetch('/api/service-messages/threads', {
+      method:'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ employeeId, employeeModel, division: document.getElementById('sc-msg-division')?.value || '', message })
+    });
+    const json = await res.json().catch(()=>({}));
+    if (!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
+    msgEl.value = '';
+    await loadScMessageThreads();
+    await openScThread(json.data._id);
+    showToast('Message sent.', 'ok');
+  }catch(e){ showToast('Send failed: ' + e.message, 'err'); }
+}
+
+async function sendScReply(){
+  const msgEl = document.getElementById('sc-msg-reply');
+  const message = msgEl?.value.trim() || '';
+  if (!scMsgActiveId || !message) return;
+  try{
+    const res = await fetch('/api/service-messages/threads/' + scMsgActiveId + '/messages', {
+      method:'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ message })
+    });
+    const json = await res.json().catch(()=>({}));
+    if (!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
+    msgEl.value = '';
+    renderScChat(json.data);
+    loadScMessageThreads();
+  }catch(e){ showToast('Reply failed: ' + e.message, 'err'); }
+}
+
+function fmtMsgTime(value){
+  if (!value) return '';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+}
+
+// -- WEEK STRIP --------------------------------------------
+function buildWeekStrip(){
+  const now = new Date();
+  const day = now.getDay();
+  const monday = new Date(now); monday.setDate(now.getDate() - (day===0?6:day-1));
+  const names = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  let html='';
+  const todayStr = now.toDateString();
+  for(let i=0;i<7;i++){
+    const d = new Date(monday); d.setDate(monday.getDate()+i);
+    const isToday = d.toDateString()===todayStr;
+    const hasEvent = [0,1,3,5].includes(i); // fake markers
+    html+=`<div class="day-box ${isToday?'today':''} ${!hasEvent?'no-event':''}">
+      <div class="day-name">${names[i]}</div>
+      <div class="day-num">${d.getDate()}</div>
+      <div class="day-dot"></div>
+    </div>`;
+  }
+  const fri = new Date(monday); fri.setDate(monday.getDate()+4);
+  document.getElementById('week-strip').innerHTML = html;
+  (document.getElementById('week-label')||{}).textContent =
+    monday.toLocaleDateString('en-IN',{day:'numeric',month:'short'})+' - '+
+    fri.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+}
+
+// -- LOAD PRF DATA -----------------------------------------
+let prfData=[], prfSort='entryDate', prfDir=-1;
+
+async function loadPRF(){
+  try{
+    // Try PRF endpoint; fall back to demo data if unavailable
+    const res = await fetch(API+'/api/sc/prf', {headers:authHeaders()});
+    if(res.ok){
+      prfData = await res.json();
+    }else{
+      prfData = getDemoPRF();
+    }
+  }catch(e){ prfData = getDemoPRF(); }
+
+  // Compute pending days
+  prfData = prfData.map(r=>({...r, pendingDays: calcDays(r.entryDate||r.createdAt)}));
+
+  updatePRFStats();
+  renderPRFTable();
+  renderDonut();
+  renderActivityFeed();
+  renderDivisionBars();
+}
+
+function calcDays(d){
+  if(!d) return 0;
+  return Math.max(0,Math.floor((Date.now()-new Date(d).getTime())/86400000));
+}
+
+// -- STATS -------------------------------------------------
+function updatePRFStats(){
+  const total   = prfData.length;
+  const open    = prfData.filter(r=>r.status!=='closed'&&r.status!=='completed').length;
+  const closed  = prfData.filter(r=>r.status==='closed'||r.status==='completed').length;
+  const overdue = prfData.filter(r=>r.pendingDays>30&&r.status!=='closed'&&r.status!=='completed').length;
+  const todayClosed = prfData.filter(r=>{
+    if(!r.closedDate&&r.status!=='closed') return false;
+    return calcDays(r.closedDate||r.updatedAt)===0;
+  }).length;
+  const avgDays = open>0 ? Math.round(prfData.filter(r=>r.status!=='closed').reduce((s,r)=>s+r.pendingDays,0)/open) : 0;
+  const p7  = total>0?Math.round(prfData.filter(r=>r.pendingDays<=7&&(r.status==='closed'||r.status==='completed')).length/Math.max(1,closed)*100):0;
+  const p30 = total>0?Math.round(prfData.filter(r=>r.pendingDays<=30&&(r.status==='closed'||r.status==='completed')).length/Math.max(1,closed)*100):0;
+  const pod  = total>0?Math.round(overdue/Math.max(1,total)*100):0;
+
+  setEl('st-total-prf', total);
+  setEl('st-open-prf',  open);
+  setEl('st-closed-prf',closed);
+  setEl('st-overdue',   overdue);
+  setEl('st-avg-days',  avgDays);
+  setEl('wb-open',      open);
+  setEl('wb-closed-today', todayClosed);
+  setEl('st-overdue-badge', overdue+' overdue');
+  setEl('st-closed-today',  '+'+todayClosed+' today');
+  setEl('overdue-count', overdue);
+  setEl('nav-prf-count', open);
+  setEl('qa-open',   open);
+  setEl('qa-closed', closed);
+  setEl('donut-total', total);
+  setEl('lgd-open',    open);
+  setEl('lgd-closed',  closed);
+  setEl('lgd-overdue', overdue);
+  setEl('prf-table-count', total);
+  setEl('prog-7d',  p7+'%'); setEl('bar-7d','');  document.getElementById('bar-7d').style.width=p7+'%';
+  setEl('prog-30d', p30+'%'); document.getElementById('bar-30d').style.width=p30+'%';
+  setEl('prog-od',  pod+'%'); document.getElementById('bar-od').style.width=pod+'%';
+  animateDonut(open, closed, overdue, total);
+}
+
+function setEl(id, val){ const el=document.getElementById(id); if(el) el.textContent=val; }
+
+// -- DONUT ANIMATION ---------------------------------------
+function animateDonut(open, closed, overdue, total){
+  const C = 251.2;
+  if(!total){ return; }
+  const pOpen   = open/total;
+  const pClosed = closed/total;
+  const pOver   = overdue/total;
+  // Stacked: open first, then closed offset by open arc, then overdue
+  const dOpen   = C*(1-pOpen);
+  const dClosed = C*(1-pClosed);
+  const dOver   = C*(1-pOver);
+  setTimeout(()=>{
+    const eO = document.getElementById('donut-open');
+    const eC = document.getElementById('donut-closed');
+    const eR = document.getElementById('donut-overdue');
+    if(eO){ eO.style.strokeDashoffset=dOpen; eO.style.strokeDasharray=C*(pOpen)+' '+(C*(1-pOpen)); }
+    if(eC){ eC.style.strokeDashoffset=dClosed; eC.style.strokeDasharray=C*(pClosed)+' '+(C*(1-pClosed)); eC.style.transform='rotate('+360*pOpen+'deg)'; eC.style.transformOrigin='55px 55px'; }
+    if(eR){ eR.style.strokeDashoffset=dOver; eR.style.strokeDasharray=C*(pOver)+' '+(C*(1-pOver)); eR.style.transform='rotate('+360*(pOpen+pClosed)+'deg)'; eR.style.transformOrigin='55px 55px'; }
+  }, 200);
+}
+
+// -- PRF TABLE ---------------------------------------------
+function sortPRF(k){ if(prfSort===k) prfDir*=-1; else{prfSort=k;prfDir=1;} renderPRFTable(); }
+
+function renderPRFTable(){
+  const sorted = [...prfData].sort((a,b)=>{
+    const av=a[prfSort]??'', bv=b[prfSort]??'';
+    if(typeof av==='number'&&typeof bv==='number') return (av-bv)*prfDir;
+    return String(av).toLowerCase()<String(bv).toLowerCase()?-prfDir:String(av).toLowerCase()>String(bv).toLowerCase()?prfDir:0;
+  });
+  const slice = sorted.slice(0,8);
+  const tbody = document.getElementById('prf-tbody');
+  if(!slice.length){ tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--muted);">No PRF/OB records.</td></tr>'; return; }
+  tbody.innerHTML = slice.map(r=>{
+    const st  = r.status==='closed'||r.status==='completed'?'sp-closed':r.pendingDays>30?'sp-urgent':r.status==='pending'?'sp-pending':'sp-open';
+    const lbl = r.status==='closed'||r.status==='completed'?'Closed':r.pendingDays>30?'Overdue':r.status==='pending'?'Pending':'Open';
+    const daysCls = r.pendingDays>30?'color:var(--red);font-weight:700;':r.pendingDays>14?'color:var(--amber);font-weight:700;':'color:var(--green);font-weight:700;';
+    return `<tr>
+      <td><span class="chip">${esc(r.prfNo||r.scReNo||r.id||'-')}</span></td>
+      <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(r.custName||r.customer||'-')}</td>
+      <td style="font-weight:600;">${esc(r.model||'-')}</td>
+      <td style="font-size:11px;color:var(--muted);">${fmtDate(r.entryDate||r.createdAt)}</td>
+      <td style="font-weight:600;">${r.pendingDays}d</td>
+      <td><span class="s-pill ${st}">${lbl}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+
+
+// -- ACTIVITY FEED -----------------------------------------
+function renderActivityFeed(){
+  const recent = [...prfData].sort((a,b)=>(b.updatedAt||b.entryDate||'').localeCompare(a.updatedAt||a.entryDate||'')).slice(0,8);
+  const feed=document.getElementById('activity-feed');
+  if(!recent.length){feed.innerHTML='<div style="text-align:center;padding:28px;color:var(--muted);font-size:12.5px;">No recent activity.</div>';return;}
+  const icons=[{cls:'ai-blue',ico:'&#128203;'},{cls:'ai-green',ico:'&#9989;'},{cls:'ai-amber',ico:'&#9889;'},{cls:'ai-teal',ico:'&#128297;'},{cls:'ai-purple',ico:'&#128230;'},{cls:'ai-red',ico:'&#128680;'}];
+  feed.innerHTML=recent.map((r,i)=>{
+    const ic=icons[i%icons.length];
+    const action=r.status==='closed'||r.status==='completed'?'Closed PRF/OB':r.pendingDays>30?'Overdue PRF':'Updated PRF/OB';
+    const ago=calcDays(r.updatedAt||r.entryDate);
+    return`<div class="activity-item" style="padding:11px 18px;">
+      <div class="activity-ico ${ic.cls}">${ic.ico}</div>
+      <div class="activity-info">
+        <div class="activity-title">${action} - ${esc(r.prfNo||r.scReNo||'Record')}</div>
+        <div class="activity-sub">${esc(r.custName||r.customer||'Customer')} &middot; ${esc(r.model||'-')}</div>
+      </div>
+      <div class="activity-time">${ago===0?'Today':ago===1?'Yesterday':ago+'d ago'}</div>
+    </div>`;
+  }).join('');
+}
+
+// -- DIVISION BARS -----------------------------------------
+const DIV_COLORS=['pf-blue','pf-teal','pf-green','pf-amber','pf-red','pf-purple'];
+function renderDivisionBars(){
+  const divMap={};
+  prfData.filter(r=>r.status!=='closed'&&r.status!=='completed').forEach(r=>{
+    const d=r.division||r.divisionName||'Other';
+    divMap[d]=(divMap[d]||0)+1;
+  });
+  const sorted=Object.entries(divMap).sort((a,b)=>b[1]-a[1]);
+  const max=sorted.length?sorted[0][1]:1;
+  const container=document.getElementById('division-bars');
+  if(!sorted.length){container.innerHTML='<div style="color:var(--muted);font-size:12.5px;">No open PRF/OB records.</div>';return;}
+  container.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">
+    ${sorted.map(([div,cnt],i)=>`
+      <div class="prog-item">
+        <div class="prog-header">
+          <span class="prog-label">${esc(div)}</span>
+          <span class="prog-val">${cnt} open</span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill ${DIV_COLORS[i%DIV_COLORS.length]}" style="width:${Math.round(cnt/max*100)}%"></div></div>
+      </div>
+    `).join('')}
+  </div>`;
+}
+
+// -- DONUT RENDER -----------------------------------------
+function renderDonut(){
+  const total   = prfData.length;
+  const open    = prfData.filter(r=>r.status!=='closed'&&r.status!=='completed').length;
+  const closed  = prfData.filter(r=>r.status==='closed'||r.status==='completed').length;
+  const overdue = prfData.filter(r=>r.pendingDays>30&&r.status!=='closed'&&r.status!=='completed').length;
+  animateDonut(open,closed,overdue,total||1);
+}
+
+// -- DEMO DATA ---------------------------------------------
+function getDemoPRF(){
+  const statuses=['open','pending','closed','open','open','pending','closed','overdue','open','pending'];
+  const models=['TS II','AT-102 G2','TS III','BR-102 Plus','DEFIGARD 5000','Hamilton-C1','TS_ULTRA Q7','SV300','AT-10 Plus','CS-200'];
+  const custs=['GMCH Theni','Apollo Chennai','AIIMS Delhi','Fortis Mumbai','Narayana Hrudayalaya','Manipal Hospital','JIPMER Pondicherry','KGMU Lucknow','Safdarjung Hospital','ESI Hospital'];
+  const divs=['PATIENT MONITORS','SAG','VENTILATOR','DEFIBRILLATOR','ECG','SYRINGE PUMP','PATIENT MONITORS','SAG','VENTILATOR','DEFIBRILLATOR'];
+  const now=Date.now();
+  return Array.from({length:18},(_,i)=>{
+    const days=[2,5,14,35,8,45,1,22,9,3,60,7,18,4,31,12,25,6][i]||Math.floor(Math.random()*40);
+    const st=days>30?'open':statuses[i%statuses.length];
+    const entryDate=new Date(now-days*86400000).toISOString().split('T')[0];
+    return{id:'PRF-'+String(300+i).padStart(4,'0'),prfNo:'PRF-'+String(300+i).padStart(4,'0'),scReNo:'OEM-0'+String(300+i),custName:custs[i%custs.length],model:models[i%models.length],division:divs[i%divs.length],entryDate,status:st,pendingDays:days,updatedAt:new Date(now-Math.floor(days/2)*86400000).toISOString()};
+  });
+}
+
+
+
+// -- UTILS -------------------------------------------------
+function fmtDate(d){if(!d)return'-';const p=String(d).split('T')[0].split('-');if(p.length<3)return String(d);return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0];}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function showToast(msg,type='ok'){const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="td"></span>'+msg;w.appengdChild(el);setTimeout(()=>el.remove(),3500);}
+function logout(){localStorage.clear();window.location.href='login.html';}
+</script>
+</body>
+</html>

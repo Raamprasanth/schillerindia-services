@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light'); const token = localStorage.getItem('schiller_token'); if (!token) window.location.href = 'login.html'; })();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SchillerIndia - Admin Closed Calls</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f4f7fa;--surface:#ffffff;--surface2:#eaf1f6;--border:#d0e0ec;
+  --accent:#0077cc;--accent2:#007a8a;--green:#059669;--amber:#d97706;
+  --red:#cc0000;--text:#1a2a3a;--muted:#7a9ab0;--soft:#4a6a8a;--card:#ffffff;
+}
+[data-theme="dark"]{
+  --bg:#0f1621;--surface:#1a2333;--surface2:#1e293b;--border:#2a3a52;
+  --accent:#3b9eff;--accent2:#22d3ee;--green:#10b981;--amber:#f59e0b;
+  --red:#f87171;--text:#e2eaf4;--muted:#4a6a8a;--soft:#7a9ab0;--card:#1a2333;
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
+/* --- SIDEBAR ----------------------------------------------------------- */
+.sidebar{width:240px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 14px rgba(0,60,120,0.07);}
+.sidebar-header{padding:16px 16px 12px;border-bottom:1px solid var(--border);background:var(--surface);}
+.logo-wrap{display:flex;align-items:center;gap:9px;}
+.logo-icon{width:34px;height:34px;background:rgba(255,255,255,0.14);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#fff;border:1.5px solid rgba(255,255,255,0.22);}
+.logo-text{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#fff;line-height:1.2;}
+.logo-text span{display:block;font-size:10px;color:rgba(255,255,255,0.55);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;}
+.role-badge{margin:8px 12px 0;padding:3px 10px;border-radius:20px;font-size:9.5px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;display:inline-block;background:rgba(0,104,181,0.12);color:var(--accent);border:1px solid rgba(0,104,181,0.2);}
+.sidebar-nav{flex:1;padding:8px 6px;}
+.nav-sec{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;padding:9px 8px 4px;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;color:var(--soft);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.18s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:var(--accent3);color:var(--accent);font-weight:700;border-left:3px solid var(--accent);padding-left:8px;}
+.nav-item .ico{font-size:12px;width:17px;text-align:center;flex-shrink:0;}
+.nav-group-toggle{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;color:var(--soft);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.18s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;}
+.nav-group-toggle:hover{background:var(--surface2);color:var(--text);}
+.caret{margin-left:auto;font-size:9px;transition:transform 0.25s;}
+.nav-group-toggle.open .caret{transform:rotate(90deg);}
+.nav-children{max-height:0;overflow:hidden;transition:max-height 0.3s ease;}
+.nav-children.open{max-height:400px;}
+.nav-sub .nav-item{padding-left:28px;font-size:11.5px;}
+
+.sidebar-footer{padding:11px 12px;border-top:1px solid var(--border);background:var(--surface3);}
+.user-row{display:flex;align-items:center;gap:8px;}
+.user-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#0ea5e9);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;flex-shrink:0;}
+.user-nm{font-size:12px;font-weight:600;color:var(--text);}
+.user-rl{font-size:10px;color:var(--muted);}
+.logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:10.5px;font-weight:600;transition:all 0.2s;}
+.logout-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* --- MAIN ---------------------------------------------------------------- */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;}
+.topbar{padding:13px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:var(--shadow);}
+.breadcrumb{display:flex;align-items:center;gap:5px;font-size:10.5px;margin-bottom:2px;}
+.breadcrumb a{color:var(--muted);text-decoration:none;}
+.breadcrumb a:hover{color:var(--accent);}
+.breadcrumb .sep{color:var(--border2);}
+.page-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);}
+.content{flex:1;padding:20px 24px;overflow-y:auto;}
+
+/* --- STATS --------------------------------------------------------------- */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;box-shadow:var(--shadow);transition:all 0.2s;position:relative;overflow:hidden;display:grid;grid-template-columns:24px 1fr;column-gap:8px;align-items:start;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:11px 11px 0 0;}
+.sc-blue::before{background:linear-gradient(90deg,#0068b5,#0ea5e9);}
+.sc-amber::before{background:linear-gradient(90deg,#b45309,#d97706);}
+.sc-red::before{background:linear-gradient(90deg,#b91c1c,#dc2626);}
+.sc-green::before{background:linear-gradient(90deg,#047857,#059669);}
+.sc-purple::before{background:linear-gradient(90deg,#5b21b6,#7c3aed);}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.stat-icon{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;grid-column:1;grid-row:1;}
+.si-blue{background:rgba(0,104,181,0.1);}
+.si-amber{background:rgba(180,83,9,0.1);}
+.si-red{background:rgba(185,28,28,0.1);}
+.si-green{background:rgba(4,120,87,0.1);}
+.si-purple{background:rgba(91,33,182,0.1);}
+.stat-label{font-size:8.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;grid-column:2;grid-row:1;align-self:center;}
+.stat-value{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);line-height:1;grid-column:1 / span 2;grid-row:2;margin-top:6px;}
+.stat-sub{font-size:9px;color:var(--muted);margin-top:2px;grid-column:1 / span 2;grid-row:3;}
+
+/* --- DATE FILTER STRIP ---------------------------------------------------- */
+.date-filter-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 16px;box-shadow:var(--shadow);margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.date-filter-card label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap;}
+.date-input{padding:7px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s;}
+.date-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,104,181,0.07);}
+.f-divider{width:1px;height:24px;background:var(--border);flex-shrink:0;}
+
+/* --- TABLE CARD ----------------------------------------------------------- */
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);}
+.table-top{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--surface3);}
+.table-title{font-family:'Syne',sans-serif;font-size:13.5px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+.count-chip{background:var(--green-bg);color:var(--green);font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:10px;border:1px solid rgba(4,120,87,0.18);}
+.toolbar-r{display:flex;align-items:center;gap:9px;}
+.show-row{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted);}
+.f-select{padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--soft);background:var(--surface);outline:none;cursor:pointer;transition:border-color 0.2s;}
+.f-select:focus{border-color:var(--accent);}
+.srch-wrap{position:relative;}
+.srch-wrap input{padding:7px 12px 7px 30px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;width:220px;transition:border-color 0.2s,box-shadow 0.2s;}
+.srch-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,104,181,0.07);}
+.srch-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);}
+
+/* --- TABLE ---------------------------------------------------------------- */
+.table-wrap{overflow-x:auto;}
+table.call-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:1300px;}
+table.call-table thead th{padding:9px 10px;font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;text-align:left;border-bottom:2px solid var(--border);background:var(--surface3);white-space:nowrap;cursor:pointer;user-select:none;transition:color 0.2s;}
+table.call-table thead th:hover{color:var(--accent);}
+table.call-table thead th.sorted{color:var(--accent);}
+table.call-table thead th .si{font-size:8px;margin-left:2px;opacity:0.45;}
+table.call-table thead th.sorted .si{opacity:1;}
+table.call-table thead th.no-sort{cursor:default;}
+table.call-table thead th.no-sort:hover{color:var(--muted);}
+table.call-table tbody td{padding:9px 10px;border-bottom:1px solid rgba(0,60,120,0.05);vertical-align:middle;white-space:nowrap;}
+table.call-table tbody tr{transition:background 0.13s;}
+table.call-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
+table.call-table tbody tr:last-child td{border-bottom:none;}
+
+/* --- TABLE FOOTER --------------------------------------------------------- */
+.table-foot{padding:11px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--muted);flex-wrap:wrap;gap:8px;background:var(--surface3);}
+.pager-row{display:flex;align-items:center;gap:3px;}
+.pager{min-width:28px;height:28px;padding:0 7px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--soft);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.18s;font-family:'Plus Jakarta Sans',sans-serif;}
+.pager:hover{border-color:var(--accent);color:var(--accent);}
+.pager.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.pager:disabled{opacity:0.3;cursor:not-allowed;}
+
+/* --- BADGES / PILLS ------------------------------------------------------- */
+.s-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;}
+.s-pill::before{content:'';width:5px;height:5px;border-radius:50%;display:block;}
+.sp-open{background:rgba(14,116,144,0.09);color:var(--teal);}.sp-open::before{background:var(--teal);}
+.sp-closed{background:var(--green-bg);color:var(--green);}.sp-closed::before{background:var(--green);}
+.sp-pending{background:var(--amber-bg);color:var(--amber);}.sp-pending::before{background:var(--amber);}
+.sp-cancel{background:rgba(107,140,168,0.12);color:var(--muted);}.sp-cancel::before{background:var(--muted);}
+.div-tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:9px;font-size:9.5px;font-weight:700;background:var(--accent3);color:var(--accent);border:1px solid rgba(0,104,181,0.15);}
+.src-tag{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;text-transform:uppercase;}
+.src-admin{background:rgba(0,104,181,0.1);color:var(--accent);}
+.src-employee{background:rgba(4,120,87,0.1);color:var(--green);}
+.src-pt{background:rgba(180,83,9,0.1);color:var(--amber);}
+.mono{font-family:monospace;font-size:10.5px;}
+
+/* --- BUTTONS -------------------------------------------------------------- */
+.btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(0,104,181,0.22);}.btn-primary:hover{background:var(--accent2);}
+.btn-outline{background:none;border:1.5px solid var(--border);color:var(--soft);}.btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+.btn-danger{background:var(--red);color:#fff;}.btn-danger:hover{background:#a11818;}
+.btn-sm{padding:6px 13px;font-size:12px;}
+.btn-xs{padding:4px 10px;font-size:11px;border-radius:6px;border:1.5px solid var(--border);background:none;color:var(--soft);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;font-weight:600;white-space:nowrap;}
+.btn-xs:hover{border-color:var(--accent);color:var(--accent);background:var(--accent3);}
+.btn-xs.view{color:var(--accent);border-color:rgba(0,104,181,0.3);background:var(--accent3);}
+.btn-xs.delete{color:var(--red);border-color:rgba(185,28,28,0.25);}
+.btn-xs.delete:hover{background:var(--red-bg);}
+
+/* --- DETAIL MODAL --------------------------------------------------------- */
+.overlay{position:fixed;top:0;left:240px;right:0;bottom:0;background:rgba(5,18,38,0.55);backdrop-filter:blur(4px);z-index:500;display:none;align-items:center;justify-content:center;}
+.overlay.open{display:flex;animation:fadeIn 0.18s ease;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.detail-modal{background:var(--surface);border-radius:14px;width:100%;max-width:780px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,20,60,0.22);overflow:hidden;}
+.modal-header{padding:16px 24px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#f0f7ff,var(--surface));display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.modal-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+.modal-close{width:34px;height:34px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:16px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{background:var(--red-bg);color:var(--red);}
+.modal-scroll{flex:1;overflow-y:auto;}
+.modal-body{padding:22px 24px;}
+.detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+.detail-item{background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:10px 13px;}
+.detail-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:4px;}
+.detail-val{font-size:12.5px;font-weight:700;color:var(--text);word-break:break-word;}
+.detail-val.accent{color:var(--accent);}
+.detail-section-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--muted);margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid var(--border);}
+.remarks-box{background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;font-size:12.5px;color:var(--text);line-height:1.65;min-height:44px;}
+.modal-footer{padding:13px 24px;border-top:1px solid var(--border);background:var(--surface3);display:flex;justify-content:flex-end;gap:10px;flex-shrink:0;}
+
+/* --- TOAST / LOADING ------------------------------------------------------ */
+.loading-row td{text-align:center;padding:50px 20px;color:var(--muted);font-size:13px;}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:8px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:700;display:flex;flex-direction:column;gap:7px;}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:11px 15px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:9px;min-width:230px;box-shadow:0 8px 22px rgba(0,0,0,0.1);}
+.toast.ok{border-color:rgba(4,120,87,0.35);}
+.toast.err{border-color:rgba(185,28,28,0.35);}
+.td{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+
+.organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
+</style>
+<link rel="stylesheet" href="global-typography.css">
+<link rel="stylesheet" href="employee-theme.css">
+<link rel="stylesheet" href="admin-sidebar.css">
+<script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <script src="brand-logo.js" defer></script>
+</head>
+<body>
+
+<!-- --- DETAIL VIEW MODAL --------------------------------------------------- -->
+<div class="overlay" id="detail-overlay">
+  <div class="detail-modal">
+    <div class="modal-header">
+      <div class="modal-title">&#128196; Closed Call Details</div>
+      <button class="modal-close" onclick="closeDetailModal()">&#10005;</button>
+    </div>
+    <div class="modal-scroll">
+      <div class="modal-body">
+        <div class="detail-section-title">Record Source &amp; Status</div>
+        <div class="detail-grid">
+          <div class="detail-item"><div class="detail-label">Source</div><div class="detail-val" id="d-source">-</div></div>
+          <div class="detail-item"><div class="detail-label">Status</div><div class="detail-val" id="d-status">-</div></div>
+          <div class="detail-item"><div class="detail-label">Division</div><div class="detail-val accent" id="d-division">-</div></div>
+        </div>
+        <div class="detail-section-title">Dates &amp; People</div>
+        <div class="detail-grid">
+          <div class="detail-item"><div class="detail-label">Entry Date</div><div class="detail-val" id="d-entrydate">-</div></div>
+          <div class="detail-item"><div class="detail-label">Call Date</div><div class="detail-val" id="d-calldate">-</div></div>
+          <div class="detail-item"><div class="detail-label">Close Date</div><div class="detail-val accent" id="d-closedate">-</div></div>
+          <div class="detail-item"><div class="detail-label">SC Engineer</div><div class="detail-val" id="d-scengg">-</div></div>
+          <div class="detail-item"><div class="detail-label">Field Engineer</div><div class="detail-val" id="d-engineer">-</div></div>
+          <div class="detail-item"><div class="detail-label">Branch/Region</div><div class="detail-val" id="d-branch">-</div></div>
+        </div>
+        <div class="detail-section-title">Customer &amp; Device</div>
+        <div class="detail-grid">
+          <div class="detail-item"><div class="detail-label">Customer</div><div class="detail-val" id="d-customer">-</div></div>
+          <div class="detail-item"><div class="detail-label">Model</div><div class="detail-val accent" id="d-model">-</div></div>
+          <div class="detail-item"><div class="detail-label">Serial / GIR No</div><div class="detail-val" id="d-girsno">-</div></div>
+          <div class="detail-item"><div class="detail-label">Type of Call</div><div class="detail-val" id="d-typecall">-</div></div>
+        </div>
+        <div class="detail-section-title">Remarks</div>
+        <div class="remarks-box" id="d-remarks">-</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeDetailModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- --- SIDEBAR --- -->
+<!-- === SIDEBAR === -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="sidebar-logo-text">SchillerIndia<div class="sub">Services</div></div>
+    </div>
+  </div>
+  <div style="padding:10px 20px 0;"><span class="role-badge">Admin</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <button class="nav-item " onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
+    <button class="nav-item " onclick="window.location.href='company-section.html'"><span class="icon">&#127970;</span> Company</button>
+    <button class="nav-item " onclick="window.location.href='division-section.html'"><span class="icon">&#128309;</span> Division</button>
+    <button class="nav-item " onclick="window.location.href='engineer-section.html'"><span class="icon">&#128119;</span> Engineers</button>
+    <button class="nav-item " onclick="window.location.href='dealer-section.html'"><span class="icon">&#129309;</span> Dealers</button>
+    <div class="nav-section">Operations</div>
+    <button class="nav-group-toggle " id="sf-toggle" onclick="toggleSF()">
+      <span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span>
+    </button>
+    <div class="nav-children " id="sf-children">
+      <div class="nav-sub">
+        <button class="nav-item " onclick="window.location.href='service-list.html'"><span class="icon">&#128225;</span> Services</button>
+        <button class="nav-item " onclick="window.location.href='pending-frn.html'"><span class="icon">&#128221;</span> Pending FRN</button>
+        <button class="nav-item " onclick="window.location.href='ob-pending.html'"><span class="icon">&#128194;</span> OB Pending</button>
+        <button class="nav-item " onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
+        <button class="nav-item " onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
+        <button class="nav-item " onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
+        <button class="nav-item " onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
+        <button class="nav-item " onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
+      </div>
+    </div>
+    <button class="nav-group-toggle open" id="ar-toggle" onclick="toggleAR()"><span class="icon">&#128196;</span> Activity Register <span class="caret">&#9656;</span></button>
+    <div class="nav-children open" id="ar-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
+        <a class="nav-item active" href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
+        <a class="nav-item " href="aprfob.html"><span class="icon">&#128203;</span> PRF/OB List</a>
+        <a class="nav-item " href="acr.html"><span class="icon">&#128209;</span> Closed PRF/OB</a>
+        <a class="nav-item " href="ans.html"><span class="icon">&#128230;</span> Non Saleable</a>
+        <a class="nav-item " href="as.html"><span class="icon">&#128176;</span> Saleable</a>
+        <a class="nav-item " href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
+        <a class="nav-item " href="acbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="rta-toggle" onclick="toggleRTA()"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="rta-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="atfrn.html"><span class="icon">&#128221;</span> Admin RT FRN</a>
+        <a class="nav-item " href="atob.html"><span class="icon">&#128230;</span> Admin RT OB</a>
+        <a class="nav-item " href="atur.html"><span class="icon">&#128736;&#65039;</span> Admin RT UR</a>
+        <a class="nav-item " href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
+      </div>
+    </div>
+    <div class="nav-section">Admin</div>
+    <button class="nav-item " onclick="window.location.href='usermanagement.html'"><span class="icon">&#128101;</span> User Management</button>
+    <button class="nav-item " onclick="window.location.href='Reports.html'"><span class="icon">&#128200;</span> Reports</button>
+    <button class="nav-item " onclick="window.location.href='settings.html'"><span class="icon">&#9881;&#65039;</span> Settings</button>
+    <button class="nav-item " onclick="window.location.href='notifications.html'"><span class="icon">&#128276;</span> Notifications</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="admin-avatar">A</div>
+      <div>
+        <div class="user-name" id="admin-name">Admin</div>
+        <div class="user-role">Administrator</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<!-- --- MAIN --- -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="admin-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
+        <span>Records</span><span class="sep">&#8250;</span>
+        <span>Closed Calls</span>
+      </div>
+      <div class="page-title">Unified Closed Calls</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px;">
+      <button class="btn btn-outline btn-sm" onclick="loadData()">&#8635; Refresh</button>
+      <button class="btn btn-primary btn-sm" onclick="exportCSV()">&#128228; Export</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="stats-row">
+      <div class="stat-card sc-green"><div class="stat-icon si-green">&#9989;</div><div class="stat-label">Total Closed</div><div class="stat-value" id="s-total">-</div><div class="stat-sub">All unified records</div></div>
+      <div class="stat-card sc-blue"><div class="stat-icon si-blue">&#128119;</div><div class="stat-label">Employee Records</div><div class="stat-value" id="s-emp">-</div><div class="stat-sub">Entries from Engineers</div></div>
+      <div class="stat-card sc-amber"><div class="stat-icon si-amber">&#127970;</div><div class="stat-label">PT Records</div><div class="stat-value" id="s-pt">-</div><div class="stat-sub">Entries from Puducherry</div></div>
+      <div class="stat-card sc-purple"><div class="stat-icon si-purple">&#128202;</div><div class="stat-label">Admin Records</div><div class="stat-value" id="s-admin">-</div><div class="stat-sub">Entries made by Admin</div></div>
+    </div>
+
+    <div class="date-filter-card">
+      <label>From</label><input type="date" class="date-input" id="filter-from" onchange="applyFilters()"/>
+      <div class="f-divider"></div>
+      <label>To</label><input type="date" class="date-input" id="filter-to" onchange="applyFilters()"/>
+      <button class="btn btn-outline btn-sm" onclick="clearDates()">Clear</button>
+    </div>
+
+    <div class="table-card">
+      <div class="table-top">
+        <div class="table-title">Closed Call List <span class="count-chip" id="count-chip">- entries</span></div>
+        <div class="toolbar-r">
+          <select class="f-select" id="per-page" onchange="renderTable()"><option>25</option><option>50</option><option>100</option></select>
+          <div class="srch-wrap"><span class="srch-ico">&#128269;</span><input type="text" id="tbl-search" placeholder="Search customer, model, engg..." oninput="applyFilters()"/></div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="call-table">
+          <thead><tr>
+            <th style="width:40px;">#</th>
+            <th onclick="sortBy('source')">Source <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('closeDate')">Close Date <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('customer')">Customer <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('engineer')">Field Engineer <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('scEngg')">SC Engg <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('typeCall')">Type <span class="si">&#8693;</span></th>
+            <th>Remarks</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody id="call-tbody">
+            <tr class="loading-row"><td colspan="11"><span class="spin"></span>Fetching unified records...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-foot">
+        <span id="tbl-info">-</span>
+        <div class="pager-row" id="tbl-pagination"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let CALL_DATA = [], filtered = [], sortKey = 'closeDate', sortDir = -1, currentPage = 1;
+
+(function init(){
+  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  if (u.name) {
+    document.getElementById('admin-name').textContent = u.name;
+    document.getElementById('admin-avatar').textContent = u.name.charAt(0).toUpperCase();
+  }
+  loadData();
+})();
+
+async function loadData(){
+  try {
+    const res = await fetch('/api/admin/calls/closed', {
+      headers: { Authorization: 'Bearer ' + localStorage.getItem('schiller_token') }
+    });
+    if(!res.ok) throw new Error('Status ' + res.status);
+    CALL_DATA = await res.json();
+    updateStats();
+    applyFilters();
+  } catch(e) {
+    console.error(e);
+    document.getElementById('call-tbody').innerHTML = `<tr><td colspan="11" style="text-align:center;padding:40px;color:var(--red);">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function updateStats(){
+  document.getElementById('s-total').textContent = CALL_DATA.length;
+  document.getElementById('s-emp').textContent = CALL_DATA.filter(d => d.source === 'Employee').length;
+  document.getElementById('s-pt').textContent = CALL_DATA.filter(d => d.source === 'Puducherry').length;
+  document.getElementById('s-admin').textContent = CALL_DATA.filter(d => d.source === 'Admin').length;
+}
+
+function applyFilters(){
+  const q = document.getElementById('tbl-search').value.toLowerCase();
+  const from = document.getElementById('filter-from').value;
+  const to = document.getElementById('filter-to').value;
+  
+  filtered = CALL_DATA.filter(d => {
+    const matchQ = !q || [d.customer, d.model, d.engineer, d.division, d.remarks, d.source].join(' ').toLowerCase().includes(q);
+    if (!matchQ) return false;
+    if (from || to) {
+      const cd = d.closeDate || d.callDate;
+      if (!cd) return false;
+      if (from && cd < from) return false;
+      if (to && cd > to) return false;
+    }
+    return true;
+  });
+  sortArr();
+  currentPage = 1;
+  renderTable();
+}
+
+function sortBy(k){ if(sortKey===k) sortDir*=-1; else {sortKey=k; sortDir=-1;} sortArr(); renderTable(); }
+function sortArr(){
+  filtered.sort((a,b)=>{
+    const av = a[sortKey]??'', bv = b[sortKey]??'';
+    return String(av).toLowerCase() < String(bv).toLowerCase() ? -sortDir : sortDir;
+  });
+}
+
+function renderTable(){
+  const per = parseInt(document.getElementById('per-page').value);
+  const total = filtered.length;
+  const pages = Math.ceil(total/per) || 1;
+  const slice = filtered.slice((currentPage-1)*per, currentPage*per);
+  
+  document.getElementById('count-chip').textContent = total + ' entries';
+  const tbody = document.getElementById('call-tbody');
+  
+  if(!total){
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:50px;color:var(--muted);">No records found</td></tr>';
+  } else {
+    tbody.innerHTML = slice.map((d,i)=>`
+      <tr>
+        <td class="mono">${(currentPage-1)*per+i+1}</td>
+        <td><span class="src-tag src-${(d.source||'Admin').toLowerCase()}">${d.source||'Admin'}</span></td>
+        <td><span class="div-tag">${d.division||'-'}</span></td>
+        <td style="font-weight:600;">${fmtDate(d.closeDate)}</td>
+        <td style="font-weight:500;">${d.customer||'-'}</td>
+        <td style="color:var(--accent); font-weight:600;">${d.model||'-'}</td>
+        <td>${d.engineer||'-'}</td>
+        <td>${d.scEngg||'-'}</td>
+        <td>${d.typeCall||'-'}</td>
+        <td style="font-size:11px; color:var(--soft); max-width:150px; overflow:hidden; text-overflow:ellipsis;">${d.remarks||'-'}</td>
+        <td>
+          <button class="btn-xs view" onclick="openDetailModal('${d._id}')">View</button>
+          ${d.source==='Admin' ? `<button class="btn-xs delete" onclick="deleteRecord('${d._id}')">Del</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
+  }
+  
+  document.getElementById('tbl-info').textContent = `Showing ${total? (currentPage-1)*per+1 : 0} to ${Math.min(currentPage*per, total)} of ${total}`;
+  renderPager(pages);
+}
+
+function renderPager(pages){
+  const el = document.getElementById('tbl-pagination');
+  if(pages<=1){el.innerHTML=''; return;}
+  let h = `<button class="pager" ${currentPage===1?'disabled':''} onclick="gp(${currentPage-1})">Prev</button>`;
+  for(let i=1; i<=pages; i++) {
+    if(i===1 || i===pages || (i>=currentPage-1 && i<=currentPage+1))
+      h += `<button class="pager ${i===currentPage?'active':''}" onclick="gp(${i})">${i}</button>`;
+    else if(i===currentPage-2 || i===currentPage+2) h += `<span style="margin:0 4px; color:var(--muted);">...</span>`;
+  }
+  h += `<button class="pager" ${currentPage===pages?'disabled':''} onclick="gp(${currentPage+1})">Next</button>`;
+  el.innerHTML = h;
+}
+function gp(p){currentPage=p; renderTable();}
+
+function openDetailModal(id){
+  const d = CALL_DATA.find(x => x._id === id);
+  if(!d) return;
+  document.getElementById('d-source').textContent = d.source || 'Admin';
+  document.getElementById('d-status').textContent = d.status || 'Closed';
+  document.getElementById('d-division').textContent = d.division || '-';
+  document.getElementById('d-entrydate').textContent = fmtDate(d.entryDate);
+  document.getElementById('d-calldate').textContent = fmtDate(d.callDate);
+  document.getElementById('d-closedate').textContent = fmtDate(d.closeDate);
+  document.getElementById('d-scengg').textContent = d.scEngg || '-';
+  document.getElementById('d-engineer').textContent = d.engineer || '-';
+  document.getElementById('d-branch').textContent = d.branch || d.region || '-';
+  document.getElementById('d-customer').textContent = d.customer || '-';
+  document.getElementById('d-model').textContent = d.model || '-';
+  document.getElementById('d-girsno').textContent = d.girSno || d.serialNo || '-';
+  document.getElementById('d-typecall').textContent = d.typeCall || '-';
+  document.getElementById('d-remarks').textContent = d.remarks || '-';
+  document.getElementById('detail-overlay').classList.add('open');
+}
+function closeDetailModal(){ document.getElementById('detail-overlay').classList.remove('open'); }
+
+async function deleteRecord(id){
+  if(!confirm('Are you sure you want to delete this Admin record?')) return;
+  try {
+    const res = await fetch('/api/admin/calls/closed/' + id, {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer ' + localStorage.getItem('schiller_token') }
+    });
+    if(res.ok){
+      showToast('Record deleted');
+      loadData();
+    } else {
+      const err = await res.json();
+      showToast(err.message || 'Delete failed', 'err');
+    }
+  } catch(e) { showToast(e.message, 'err'); }
+}
+
+function clearDates(){
+  document.getElementById('filter-from').value = '';
+  document.getElementById('filter-to').value = '';
+  applyFilters();
+}
+
+function fmtDate(d){
+  if(!d) return '-';
+  const s = d.split('T')[0].split('-');
+  return s.length===3 ? `${s[2]}/${s[1]}/${s[0]}` : d;
+}
+
+function showToast(m, t='ok'){
+  const w = document.getElementById('toast-wrap');
+  const el = document.createElement('div');
+  el.className = 'toast ' + t;
+  el.innerHTML = `<span class="td" style="background:${t==='ok'?'var(--green)':'var(--red)'}"></span>${m}`;
+  w.appendChild(el);
+  setTimeout(()=>el.remove(), 3000);
+}
+
+function logout(){ localStorage.clear(); window.location.href='login.html'; }
+function exportCSV(){
+  const headers = ['#','Source','Division','Close Date','Customer','Model','Engineer','SC Engg','Type','Remarks'];
+  const rows = filtered.map((d,i)=>[i+1, d.source, d.division, d.closeDate, d.customer, d.model, d.engineer, d.scEngg, d.typeCall, d.remarks]);
+  const csv = [headers, ...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'unified-closed-calls.csv';
+  a.click();
+}
+</script>
+<script>
+function toggleSF(){var btn=document.getElementById('sf-toggle');var panel=document.getElementById('sf-children');if(!btn||!panel)return;btn.classList.toggle('open');panel.classList.toggle('open');}
+function toggleAR(){var btn=document.getElementById('ar-toggle');var panel=document.getElementById('ar-children');if(!btn||!panel)return;btn.classList.toggle('open');panel.classList.toggle('open');}</script>
+</body>
+</html>
+

@@ -1,0 +1,1598 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SchillerIndia - Settings</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+    :root,[data-theme="light"]{
+      --bg:#f4f7fa;--surface:#ffffff;--surface2:#eaf1f6;--surface3:#f0f6fb;
+      --border:#d0e0ec;--border2:#c8d8e8;
+      --accent:#0077cc;--accent2:#007a8a;--accent3:rgba(0,119,204,0.08);
+      --green:#059669;--green-bg:rgba(5,150,105,0.08);
+      --amber:#d97706;--amber-bg:rgba(217,119,6,0.08);
+      --red:#cc0000;--red-bg:rgba(204,0,0,0.07);
+      --purple:#6d28d9;--purple-bg:rgba(109,40,217,0.08);
+      --teal:#007a8a;--teal-bg:rgba(0,122,138,0.08);
+      --text:#1a2a3a;--muted:#7a9ab0;--soft:#4a6a8a;--card:#ffffff;
+      --shadow:rgba(0,80,120,0.08);--shadow-md:rgba(0,80,120,0.12);
+    }
+
+    [data-theme="dark"]{
+      --bg:#0f1621;--surface:#1a2333;--surface2:#1e293b;--surface3:#182030;
+      --border:#2a3a52;--border2:#243448;
+      --accent:#3b9eff;--accent2:#22d3ee;--accent3:rgba(59,158,255,0.1);
+      --green:#10b981;--green-bg:rgba(16,185,129,0.1);
+      --amber:#f59e0b;--amber-bg:rgba(245,158,11,0.1);
+      --red:#f87171;--red-bg:rgba(248,113,113,0.1);
+      --purple:#a78bfa;--purple-bg:rgba(167,139,250,0.1);
+      --teal:#22d3ee;--teal-bg:rgba(34,211,238,0.1);
+      --text:#e2eaf4;--muted:#4a6a8a;--soft:#7a9ab0;--card:#1a2333;
+      --shadow:rgba(0,0,0,0.3);--shadow-md:rgba(0,0,0,0.4);
+    }
+
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;transition:background 0.4s,color 0.4s;}
+
+    /* ?"??"? SIDEBAR ?"??"? */
+    .sidebar{width:240px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 12px var(--shadow);transition:background 0.4s,border-color 0.4s;}
+    .sidebar-header{padding:20px 20px 16px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#450a0a,#b91c1c);}
+    .sidebar-logo{display:flex;align-items:center;gap:10px;}
+    .sidebar-logo-icon{width:36px;height:36px;background:rgba(255,255,255,0.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:#fff;}
+    .sidebar-logo-text{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;}
+    .sidebar-logo-text .sub{font-size:10px;color:rgba(255,255,255,0.6);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;}
+    .role-badge{margin:10px 20px 0;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;display:inline-block;background:rgba(185,28,28,0.1);color:#b91c1c;border:1px solid rgba(185,28,28,0.25);}
+    .sidebar-nav{flex:1;padding:12px 10px;}
+    .nav-section{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;padding:10px 8px 5px;}
+    .nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:500;cursor:pointer;transition:all 0.2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;}
+    .nav-item:hover{background:var(--surface2);color:var(--text);}
+    .nav-item.active{background:var(--accent3);color:var(--accent);font-weight:600;}
+    .nav-item .icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+    .nav-group-toggle{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:600;cursor:pointer;transition:all 0.2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;}
+    .nav-group-toggle:hover{background:var(--surface2);}
+    .caret{margin-left:auto;font-size:9px;transition:transform 0.25s;}
+    .nav-group-toggle.open .caret{transform:rotate(90deg);}
+    .nav-children{max-height:0;overflow:hidden;transition:max-height 0.3s ease;}
+    .nav-children.open{max-height:400px;}
+    .nav-sub .nav-item{padding:6px 10px 6px 28px;font-size:12px;color:var(--muted);}
+    .nav-sub .nav-item:hover{color:var(--text);}
+    .sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);}
+    .user-info{display:flex;align-items:center;gap:10px;}
+    .user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#b91c1c,#ef4444);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
+    .user-name{font-size:13px;font-weight:600;color:var(--text);}
+    .user-role{font-size:11px;color:var(--muted);}
+    .logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s;}
+    .logout-btn:hover{border-color:var(--red);color:var(--red);}
+
+    /* ?"??"? MAIN ?"??"? */
+    .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .topbar{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:10;box-shadow:0 2px 8px var(--shadow);transition:background 0.4s,border-color 0.4s;}
+    .topbar-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);}
+    .topbar-date{font-size:12px;color:var(--muted);margin-top:2px;}
+    .content{flex:1;padding:28px 32px;overflow-y:auto;background:var(--bg);transition:background 0.4s;}
+
+    /* ?"??"? PAGE HEADER ?"??"? */
+    .page-hdr{margin-bottom:28px;}
+    .page-hdr h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px;}
+    .page-hdr p{font-size:13px;color:var(--muted);}
+
+    /* ?"??"? SECTION CARD ?"??"? */
+    .sec-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:24px;box-shadow:0 2px 12px var(--shadow);transition:background 0.4s,border-color 0.4s;}
+    .sec-card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);padding:14px 22px;border-bottom:1px solid var(--border);background:var(--surface2);transition:background 0.4s,color 0.4s,border-color 0.4s;display:flex;align-items:center;gap:9px;}
+    .sec-card-title .sec-ico{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;}
+
+    /* ?"??"? THEME GRID ?"??"? */
+    .theme-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:24px;}
+    .theme-card{border:2px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;position:relative;transition:border-color 0.3s,transform 0.2s,box-shadow 0.3s;}
+    .theme-card:hover{transform:translateY(-3px);box-shadow:0 10px 30px var(--shadow);}
+    .theme-card.selected{border-color:var(--accent);box-shadow:0 0 0 4px rgba(0,119,204,0.15);}
+    [data-theme="dark"] .theme-card.selected{box-shadow:0 0 0 4px rgba(59,158,255,0.2);}
+    .preview-light{background:#f4f7fa;height:130px;position:relative;padding:13px;}
+    .preview-light .p-sidebar{width:52px;height:100%;background:#fff;border-radius:7px;border:1px solid #d0e0ec;position:absolute;left:13px;top:13px;bottom:13px;display:flex;flex-direction:column;gap:6px;padding:8px 6px;}
+    .preview-light .p-dot{width:26px;height:5px;border-radius:3px;background:#d0e0ec;}
+    .preview-light .p-dot.accent{background:#0077cc;width:18px;}
+    .preview-light .p-main{position:absolute;left:76px;top:13px;right:13px;bottom:13px;display:flex;flex-direction:column;gap:7px;}
+    .preview-light .p-topbar{height:20px;background:#fff;border-radius:5px;border:1px solid #d0e0ec;}
+    .preview-light .p-cards{display:flex;gap:6px;flex:1;}
+    .preview-light .p-card{flex:1;background:#fff;border-radius:5px;border:1px solid #d0e0ec;}
+    .preview-dark{background:#0f1621;height:130px;position:relative;padding:13px;}
+    .preview-dark .p-sidebar{width:52px;height:100%;background:#1a2333;border-radius:7px;border:1px solid #2a3a52;position:absolute;left:13px;top:13px;bottom:13px;display:flex;flex-direction:column;gap:6px;padding:8px 6px;}
+    .preview-dark .p-dot{width:26px;height:5px;border-radius:3px;background:#2a3a52;}
+    .preview-dark .p-dot.accent{background:#3b9eff;width:18px;}
+    .preview-dark .p-main{position:absolute;left:76px;top:13px;right:13px;bottom:13px;display:flex;flex-direction:column;gap:7px;}
+    .preview-dark .p-topbar{height:20px;background:#1a2333;border-radius:5px;border:1px solid #2a3a52;}
+    .preview-dark .p-cards{display:flex;gap:6px;flex:1;}
+    .preview-dark .p-card{flex:1;background:#1a2333;border-radius:5px;border:1px solid #2a3a52;}
+    .theme-card-footer{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;background:var(--surface);border-top:1px solid var(--border);transition:background 0.4s,border-color 0.4s;}
+    .theme-card-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;}
+    .selected-badge{font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 9px;border-radius:20px;background:var(--accent3);color:var(--accent);border:1px solid rgba(0,119,204,0.25);opacity:0;transform:scale(0.8);transition:opacity 0.3s,transform 0.3s;}
+    .theme-card.selected .selected-badge{opacity:1;transform:scale(1);}
+    .checkmark{position:absolute;top:9px;right:9px;width:22px;height:22px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;opacity:0;transform:scale(0);transition:opacity 0.3s,transform 0.3s;box-shadow:0 2px 8px rgba(0,119,204,0.4);}
+    .theme-card.selected .checkmark{opacity:1;transform:scale(1);}
+
+    /* ?"??"? QUICK TOGGLE ?"??"? */
+    .quick-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:20px 22px;}
+    .quick-toggle-info strong{font-size:14px;font-weight:600;color:var(--text);display:block;margin-bottom:3px;}
+    .quick-toggle-info span{font-size:12px;color:var(--muted);}
+    .toggle-switch{position:relative;width:52px;height:28px;flex-shrink:0;}
+    .toggle-switch input{opacity:0;width:0;height:0;position:absolute;}
+    .toggle-track{position:absolute;inset:0;border-radius:28px;background:var(--surface2);border:1.5px solid var(--border);cursor:pointer;transition:all 0.35s;}
+    .toggle-switch input:checked + .toggle-track{background:var(--accent);border-color:var(--accent);}
+    .toggle-thumb{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.18);transition:transform 0.35s cubic-bezier(.34,1.56,.64,1);pointer-events:none;display:flex;align-items:center;justify-content:center;font-size:10px;}
+    .toggle-switch input:checked ~ .toggle-thumb{transform:translateX(24px);}
+
+    /* ?"??"? MAIL ID SECTION ?"??"? */
+    .mail-toolbar{padding:14px 18px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;background:var(--surface3);transition:background 0.4s,border-color 0.4s;}
+    .mail-toolbar-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+    .mail-toolbar-right{display:flex;align-items:center;gap:9px;}
+
+    /* Search box */
+    .srch-box{position:relative;}
+    .srch-box input{padding:8px 12px 8px 32px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;width:210px;transition:border-color 0.2s,box-shadow 0.2s;}
+    .srch-box input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,119,204,0.08);}
+    .srch-box input::placeholder{color:var(--muted);}
+    .srch-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);}
+
+    /* Filter select */
+    .f-sel{padding:8px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--soft);background:var(--surface);outline:none;cursor:pointer;transition:border-color 0.2s;}
+    .f-sel:focus{border-color:var(--accent);}
+
+    /* Buttons */
+    .btn{padding:8px 16px;border-radius:9px;font-size:12.5px;font-weight:700;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+    .btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(0,119,204,0.25);}.btn-primary:hover{background:#005fa3;}
+    .btn-outline{background:none;border:1.5px solid var(--border);color:var(--soft);}.btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+    .btn-danger-xs{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;font-weight:700;padding:4px 7px;border-radius:6px;transition:all 0.18s;font-family:'Plus Jakarta Sans',sans-serif;}
+    .btn-danger-xs:hover{color:var(--red);background:var(--red-bg);}
+    .btn-edit-xs{background:none;border:1px solid rgba(0,119,204,0.25);color:var(--accent);cursor:pointer;font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px;transition:all 0.18s;font-family:'Plus Jakarta Sans',sans-serif;}
+    .btn-edit-xs:hover{background:var(--accent3);}
+    .btn-del-xs{background:none;border:1px solid rgba(204,0,0,0.25);color:var(--red);cursor:pointer;font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px;transition:all 0.18s;font-family:'Plus Jakarta Sans',sans-serif;}
+    .btn-del-xs:hover{background:var(--red-bg);}
+    .btn:disabled,.btn-primary:disabled{opacity:0.5;cursor:not-allowed;}
+
+    /* Show entries */
+    .show-row{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);}
+
+    /* Table */
+    .table-wrap{overflow-x:auto;}
+    table.mail-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+    table.mail-table thead th{padding:11px 16px;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;text-align:left;border-bottom:2px solid var(--border);background:var(--surface3);white-space:nowrap;cursor:pointer;user-select:none;transition:color 0.2s,background 0.4s;}
+    table.mail-table thead th:hover{color:var(--accent);}
+    table.mail-table thead th.sorted{color:var(--accent);}
+    table.mail-table tbody td{padding:12px 16px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text);transition:background 0.13s,border-color 0.4s;}
+    table.mail-table tbody tr:last-child td{border-bottom:none;}
+    table.mail-table tbody tr:hover td{background:var(--surface2);}
+
+    .id-chip{display:inline-flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-size:11px;color:var(--muted);font-weight:600;font-family:monospace;}
+
+    /* Report type tags */
+    .rt-tag{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:700;white-space:nowrap;}
+    .rt-all{background:rgba(0,119,204,0.1);color:var(--accent);border:1px solid rgba(0,119,204,0.2);}
+    .rt-dispatch{background:var(--teal-bg);color:var(--teal);border:1px solid rgba(0,122,138,0.2);}
+    .rt-scrap{background:var(--red-bg);color:var(--red);border:1px solid rgba(204,0,0,0.2);}
+    .rt-stock{background:var(--green-bg);color:var(--green);border:1px solid rgba(5,150,105,0.2);}
+    .rt-prf{background:var(--purple-bg);color:var(--purple);border:1px solid rgba(109,40,217,0.2);}
+    .rt-other{background:var(--surface2);color:var(--soft);border:1px solid var(--border);}
+
+    /* Division tag */
+    .div-tag{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:700;background:var(--amber-bg);color:var(--amber);border:1px solid rgba(217,119,6,0.2);}
+    .div-all{background:var(--accent3);color:var(--accent);border:1px solid rgba(0,119,204,0.2);}
+
+    /* Table footer */
+    .table-foot{padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted);flex-wrap:wrap;gap:8px;background:var(--surface3);transition:background 0.4s,border-color 0.4s;}
+    .pager-row{display:flex;align-items:center;gap:3px;}
+    .pager{min-width:30px;height:30px;padding:0 7px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--soft);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.18s;font-family:'Plus Jakarta Sans',sans-serif;}
+    .pager:hover{border-color:var(--accent);color:var(--accent);}
+    .pager.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+    .pager:disabled{opacity:0.3;cursor:not-allowed;}
+
+    /* ?"??"? ADD / EDIT PANEL ?"??"? */
+    .add-panel{background:var(--surface);border:1.5px solid var(--accent);border-radius:14px;padding:0;margin:20px;overflow:hidden;display:none;animation:slideDown 0.25s cubic-bezier(.4,0,.2,1);}
+    .add-panel.show{display:block;}
+    @keyframes slideDown{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+    .add-panel-head{padding:14px 20px;background:linear-gradient(135deg,rgba(0,119,204,0.08),rgba(0,122,138,0.06));border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+    .add-panel-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+    .add-panel-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--accent3);color:var(--accent);border:1px solid rgba(0,119,204,0.2);}
+    .close-panel{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 7px;border-radius:6px;transition:all 0.18s;}
+    .close-panel:hover{background:var(--red-bg);color:var(--red);}
+    .add-panel-body{padding:20px;}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+    .form-grid .span2{grid-column:span 2;}
+    .ff{display:flex;flex-direction:column;gap:5px;}
+    .ff label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.09em;}
+    .ff label .req{color:var(--red);}
+    .ff input,.ff select{padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface2);outline:none;transition:border-color 0.2s,box-shadow 0.2s,background 0.4s;width:100%;}
+    .ff input:focus,.ff select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,119,204,0.09);background:var(--surface);}
+    .ff input.err,.ff select.err{border-color:var(--red)!important;}
+    .ff input::placeholder{color:var(--muted);font-size:12px;}
+    .form-err-bar{font-size:12px;color:var(--red);padding:9px 13px;border-radius:8px;background:var(--red-bg);border:1px solid rgba(204,0,0,0.2);display:none;margin-bottom:12px;}
+    .form-err-bar.show{display:block;}
+    .form-ok-bar{font-size:12px;color:var(--green);padding:9px 13px;border-radius:8px;background:var(--green-bg);border:1px solid rgba(5,150,105,0.2);display:none;margin-bottom:12px;}
+    .form-ok-bar.show{display:block;}
+    .add-panel-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;justify-content:flex-end;background:var(--surface3);}
+
+    /* Empty state */
+    .empty-st{text-align:center;padding:56px 20px;}
+    .ei{font-size:42px;margin-bottom:12px;opacity:0.25;}
+    .et{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:5px;}
+    .es{font-size:12px;color:var(--muted);}
+
+    /* Spin */
+    .spin{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:7px;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+
+    /* ?"??"? TOAST ?"??"? */
+    .toast-wrap{position:fixed;bottom:22px;right:22px;z-index:700;display:flex;flex-direction:column;gap:8px;}
+    .toast{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;min-width:220px;animation:slideToast 0.3s ease;box-shadow:0 8px 24px var(--shadow);transition:background 0.4s,border-color 0.4s;}
+    .toast.ok{border-color:rgba(5,150,105,0.4);}.toast.ok .tdot{background:var(--green);}
+    .toast.err{border-color:rgba(204,0,0,0.4);}.toast.err .tdot{background:var(--red);}
+    .toast.info{border-color:rgba(0,119,204,0.4);}.toast.info .tdot{background:var(--accent);}
+    .tdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+    @keyframes slideToast{from{opacity:0;transform:translateX(16px);}to{opacity:1;transform:translateX(0);}}
+
+    @media(max-width:700px){.sidebar{display:none;}.theme-grid{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}.form-grid .span2{grid-column:span 1;}}
+  
+    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
+    </style>
+  <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="employee-theme.css">
+  <link rel="stylesheet" href="admin-sidebar.css">
+  <script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <script src="brand-logo.js" defer></script>
+</head>
+<body>
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- SIDEBAR -->
+<!-- === SIDEBAR === -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="sidebar-logo-text">SchillerIndia<div class="sub">Services</div></div>
+    </div>
+  </div>
+  <div style="padding:10px 20px 0;"><span class="role-badge">Admin</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <button class="nav-item " onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
+    <button class="nav-item " onclick="window.location.href='company-section.html'"><span class="icon">&#127970;</span> Company</button>
+    <button class="nav-item " onclick="window.location.href='division-section.html'"><span class="icon">&#128309;</span> Division</button>
+    <button class="nav-item " onclick="window.location.href='engineer-section.html'"><span class="icon">&#128119;</span> Engineers</button>
+    <button class="nav-item " onclick="window.location.href='dealer-section.html'"><span class="icon">&#129309;</span> Dealers</button>
+    <div class="nav-section">Operations</div>
+    <button class="nav-group-toggle " id="sf-toggle" onclick="toggleSF()">
+      <span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span>
+    </button>
+    <div class="nav-children " id="sf-children">
+      <div class="nav-sub">
+        <button class="nav-item " onclick="window.location.href='service-list.html'"><span class="icon">&#128225;</span> Services</button>
+        <button class="nav-item " onclick="window.location.href='pending-frn.html'"><span class="icon">&#128221;</span> Pending FRN</button>
+        <button class="nav-item " onclick="window.location.href='ob-pending.html'"><span class="icon">&#128194;</span> OB Pending</button>
+        <button class="nav-item " onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
+        <button class="nav-item " onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
+        <button class="nav-item " onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
+        <button class="nav-item " onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
+        <button class="nav-item " onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="ar-toggle" onclick="toggleAR()"><span class="icon">&#128196;</span> Activity Register <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="ar-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
+        <a class="nav-item " href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
+        <a class="nav-item " href="aprfob.html"><span class="icon">&#128203;</span> PRF/OB List</a>
+        <a class="nav-item " href="acr.html"><span class="icon">&#128209;</span> Closed PRF/OB</a>
+        <a class="nav-item " href="ans.html"><span class="icon">&#128230;</span> Non Saleable</a>
+        <a class="nav-item " href="as.html"><span class="icon">&#128176;</span> Saleable</a>
+        <a class="nav-item " href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
+        <a class="nav-item " href="acbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="rta-toggle" onclick="toggleRTA()"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="rta-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="atfrn.html"><span class="icon">&#128221;</span> Admin RT FRN</a>
+        <a class="nav-item " href="atob.html"><span class="icon">&#128230;</span> Admin RT OB</a>
+        <a class="nav-item " href="atur.html"><span class="icon">&#128736;&#65039;</span> Admin RT UR</a>
+        <a class="nav-item " href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
+      </div>
+    </div>
+    <div class="nav-section">Admin</div>
+    <button class="nav-item " onclick="window.location.href='usermanagement.html'"><span class="icon">&#128101;</span> User Management</button>
+    <button class="nav-item " onclick="window.location.href='Reports.html'"><span class="icon">&#128200;</span> Reports</button>
+    <button class="nav-item active" onclick="window.location.href='settings.html'"><span class="icon">&#9881;&#65039;</span> Settings</button>
+    <button class="nav-item " onclick="window.location.href='notifications.html'"><span class="icon">&#128276;</span> Notifications</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="admin-avatar">A</div>
+      <div>
+        <div class="user-name" id="admin-name">Admin</div>
+        <div class="user-role">Administrator</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Settings</div>
+      <div class="topbar-date" id="admin-date"></div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ?"??"? APPEARANCE ?"??"? -->
+    <div class="page-hdr">
+      <h2>&#9881;&#65039; Settings</h2>
+      <p>Manage appearance, mail configurations and system preferences.</p>
+    </div>
+
+    <!-- THEME CARDS -->
+    <div class="sec-card">
+      <div class="sec-card-title"><span class="sec-ico" style="background:rgba(0,119,204,0.1);">&#127912;</span> Appearance - Theme</div>
+      <div class="theme-grid">
+        <div class="theme-card" id="card-light" onclick="setTheme('light')">
+          <div class="checkmark">&#10004;</div>
+          <div class="preview-light">
+            <div class="p-sidebar"><div class="p-dot accent"></div><div class="p-dot"></div><div class="p-dot"></div><div class="p-dot"></div></div>
+            <div class="p-main"><div class="p-topbar"></div><div class="p-cards"><div class="p-card"></div><div class="p-card"></div><div class="p-card"></div></div></div>
+          </div>
+          <div class="theme-card-footer">
+            <div class="theme-card-name"><span>&#9728;&#65039;</span> Light Mode</div>
+            <span class="selected-badge">Active</span>
+          </div>
+        </div>
+        <div class="theme-card" id="card-dark" onclick="setTheme('dark')">
+          <div class="checkmark">&#10004;</div>
+          <div class="preview-dark">
+            <div class="p-sidebar"><div class="p-dot accent"></div><div class="p-dot"></div><div class="p-dot"></div><div class="p-dot"></div></div>
+            <div class="p-main"><div class="p-topbar"></div><div class="p-cards"><div class="p-card"></div><div class="p-card"></div><div class="p-card"></div></div></div>
+          </div>
+          <div class="theme-card-footer">
+            <div class="theme-card-name"><span>&#127769;</span> Dark Mode</div>
+            <span class="selected-badge">Active</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK TOGGLE -->
+    <div class="sec-card">
+      <div class="sec-card-title"><span class="sec-ico" style="background:rgba(217,119,6,0.1);">&#9889;</span> Quick Toggle</div>
+      <div class="quick-toggle-row">
+        <div class="quick-toggle-info">
+          <strong id="toggle-label">Dark Mode</strong>
+          <span id="toggle-desc">Switch between light and dark appearance</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="dark-toggle" onchange="onToggleSwitch()"/>
+          <div class="toggle-track"></div>
+          <div class="toggle-thumb" id="toggle-thumb">&#9728;&#65039;</div>
+        </label>
+      </div>
+    </div>
+
+    <!-- == MAIL ID MANAGEMENT == -->
+    <div class="page-hdr" style="margin-top:12px;">
+      <h2>&#128231; Mail ID Management</h2>
+      <p>Configure email IDs for automatic escalation reports by report type and division.</p>
+    </div>
+
+    <div class="sec-card">
+      <div class="sec-card-title"><span class="sec-ico" style="background:rgba(0,122,138,0.1);">&#128231;</span> Automatic Escalation Mail IDs</div>
+
+      <!-- ADD / EDIT PANEL -->
+      <div class="add-panel" id="add-panel">
+        <div class="add-panel-head">
+          <div class="add-panel-title">
+            <span id="panel-icon">&#10133;</span>
+            <span id="panel-title">Add New Mail ID</span>
+            <span class="add-panel-badge" id="panel-badge">New Entry</span>
+          </div>
+          <button class="close-panel" onclick="closePanel()">&#10005;</button>
+        </div>
+        <div class="add-panel-body">
+          <div class="form-err-bar" id="panel-err"></div>
+          <div class="form-ok-bar" id="panel-ok"></div>
+          <input type="hidden" id="editing-id"/>
+          <div class="form-grid">
+            <div class="ff span2">
+              <label>Email Address <span class="req">*</span></label>
+              <input type="email" id="f-email" placeholder=""/>
+            </div>
+            <div class="ff">
+              <label>Type of Report <span class="req">*</span></label>
+              <select id="f-reporttype">
+                <option value="">Select type...</option>
+                <option value="all">ALL</option>
+                <option value="dispatchlist">Dispatch List</option>
+                <option value="scraplist">Scrap List</option>
+                <option value="stocklist">Stock List</option>
+                <option value="prf/ob_completed">PRF / OB Completed</option>
+                <option value="pending_frn">Pending FRN</option>
+                <option value="under_repair">Under Repair</option>
+                <option value="ob_pending">OB Pending</option>
+                <option value="estimation_pending">Estimation Pending</option>
+              </select>
+            </div>
+            <div class="ff">
+              <label>Division</label>
+              <select id="f-division">
+                <option value="all">ALL</option>
+              </select>
+            </div>
+            <div class="ff">
+              <label>Region</label>
+              <select id="f-region">
+                <option value="all">ALL</option>
+                <option>North</option>
+                <option>East</option>
+                <option>West 1</option>
+                <option>West 2</option>
+                <option>South 1 TN</option>
+                <option>South 1 KL</option>
+                <option>South 2 KA</option>
+                <option>South 2 AP/TL</option>
+                <option>Puducherry</option>
+                <option>CG</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="add-panel-foot">
+          <button class="btn btn-outline" onclick="closePanel()">Cancel</button>
+          <button class="btn btn-primary" id="panel-save-btn" onclick="saveMailId()">&#128190; Save Mail ID</button>
+        </div>
+      </div>
+
+      <!-- TOOLBAR -->
+      <div class="mail-toolbar">
+        <div class="mail-toolbar-left">
+          <div class="show-row">Show
+            <select class="f-sel" id="per-page" style="padding:5px 8px;min-width:58px;" onchange="renderTable()">
+              <option>10</option><option>25</option><option>50</option>
+            </select>
+            entries
+          </div>
+          <div style="width:1px;height:22px;background:var(--border);"></div>
+          <select class="f-sel" id="fl-rtype" onchange="applyFilters()" style="min-width:140px;">
+            <option value="">All Report Types</option>
+            <option value="all">ALL</option>
+            <option value="dispatchlist">Dispatch List</option>
+            <option value="scraplist">Scrap List</option>
+            <option value="stocklist">Stock List</option>
+            <option value="prf/ob_completed">PRF / OB Completed</option>
+            <option value="pending_frn">Pending FRN</option>
+            <option value="under_repair">Under Repair</option>
+            <option value="ob_pending">OB Pending</option>
+          </select>
+          <select class="f-sel" id="fl-div" onchange="applyFilters()" style="min-width:140px;">
+            <option value="">All Divisions</option>
+            <option value="all">ALL</option>
+          </select>
+        </div>
+        <div class="mail-toolbar-right">
+          <div class="srch-box">
+            <span class="srch-ico">&#128269;</span>
+            <input type="text" id="tbl-search" placeholder="Search email, type..." oninput="applyFilters()"/>
+          </div>
+          <button class="btn btn-primary" onclick="openAddPanel()">&#10133; Add New Mail ID</button>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-wrap">
+        <table class="mail-table">
+          <thead><tr>
+            <th onclick="sortBy('id')" class="sorted">ID &#8597;</th>
+            <th onclick="sortBy('email')">Email &#8597;</th>
+            <th onclick="sortBy('reportType')">Report Type &#8597;</th>
+            <th onclick="sortBy('division')">Division &#8597;</th>
+            <th onclick="sortBy('region')">Region &#8597;</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody id="mail-tbody">
+            <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-foot">
+        <span id="tbl-info">-</span>
+        <div class="pager-row" id="tbl-pagination"></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ?"??"? INIT ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+(document.getElementById('admin-date')||{}).textContent =
+  new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+(function initUser(){
+  const u=JSON.parse(localStorage.getItem('schiller_user')||'{}');
+  const name=u.name||'Admin'; const role=u.role||'admin';
+  (document.getElementById('admin-name')||{}).textContent =name;
+  (document.getElementById('admin-avatar')||{}).textContent =name.charAt(0).toUpperCase();
+  (document.getElementById('sb-role-badge')||{}).textContent =role.charAt(0).toUpperCase()+role.slice(1);
+})();
+
+const API=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'http://127.0.0.1:5000':'';
+function getToken(){return localStorage.getItem('schiller_token')||'';}
+function authHeaders(){return{'Content-Type':'application/json',Authorization:'Bearer '+getToken()};}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ?"??"? THEME ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+function setTheme(theme){
+  document.documentElement.setAttribute('data-theme',theme);
+  localStorage.setItem('si_theme',theme);
+  document.getElementById('card-light').classList.toggle('selected',theme==='light');
+  document.getElementById('card-dark').classList.toggle('selected',theme==='dark');
+  const toggle=document.getElementById('dark-toggle');
+  toggle.checked=theme==='dark';
+  (document.getElementById('toggle-thumb')||{}).textContent =theme==='dark'?'&#127769;':'&#9728;&#65039;';
+  (document.getElementById('toggle-label')||{}).textContent =theme==='dark'?'Dark Mode':'Light Mode';
+  (document.getElementById('toggle-desc')||{}).textContent =theme==='dark'?'Currently using dark appearance':'Currently using light appearance';
+  showToast(theme==='dark'?'&#127769; Dark mode applied':'&#9728;&#65039; Light mode applied','ok');
+}
+function onToggleSwitch(){setTheme(document.getElementById('dark-toggle').checked?'dark':'light');}
+(function loadTheme(){
+  const saved=localStorage.getItem('si_theme')||'light';
+  document.documentElement.setAttribute('data-theme',saved);
+  document.getElementById('card-light').classList.toggle('selected',saved==='light');
+  document.getElementById('card-dark').classList.toggle('selected',saved==='dark');
+  const toggle=document.getElementById('dark-toggle');
+  toggle.checked=saved==='dark';
+  (document.getElementById('toggle-thumb')||{}).textContent =saved==='dark'?'&#127769;':'&#9728;&#65039;';
+  (document.getElementById('toggle-label')||{}).textContent =saved==='dark'?'Dark Mode':'Light Mode';
+  (document.getElementById('toggle-desc')||{}).textContent =saved==='dark'?'Currently using dark appearance':'Currently using light appearance';
+})();
+
+// ?"??"? MAIL ID TABLE ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+let allMails=[], filtered=[], currentPage=1, sortKey='id', sortDir=1, editingId=null;
+
+async function loadMails(){
+  setTableLoading();
+  try{
+    const res=await fetch(`${API}/api/settings/escalation-emails`,{headers:authHeaders()});
+    if(res.status===401){logout();return;}
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'Failed to load');
+    // Normalise - API may return array of strings OR array of objects
+    allMails=Array.isArray(data.emails||data)
+      ?(data.emails||data).map((item,i)=>typeof item==='string'
+          ?{id:i+1,_id:null,email:item,reportType:'all',division:'all',region:'all'}
+          :{id:item.id||item._id||i+1,_id:item._id||item.id||null,email:item.email||item,reportType:item.reportType||item.report_type||'all',division:item.division||'all',region:item.region||'all'})
+      :[];
+    applyFilters();
+    showToast('Loaded '+allMails.length+' mail ID'+(allMails.length!==1?'s':''),'info');
+  }catch(e){
+    document.getElementById('mail-tbody').innerHTML=`<tr><td colspan="6"><div class="empty-st"><div class="ei">&#9888;&#65039;</div><div class="et">Could not load</div><div class="es">${esc(e.message)}</div></div></td></tr>`;
+    showToast('Load failed: '+e.message,'err');
+  }
+}
+
+function applyFilters(){
+  const q=document.getElementById('tbl-search').value.toLowerCase();
+  const rt=document.getElementById('fl-rtype').value;
+  const dv=document.getElementById('fl-div').value;
+  filtered=allMails.filter(m=>{
+    const mQ=!q||m.email.toLowerCase().includes(q)||(m.reportType||'').toLowerCase().includes(q)||(m.division||'').toLowerCase().includes(q);
+    const mR=!rt||m.reportType===rt;
+    const mD=!dv||m.division===dv;
+    return mQ&&mR&&mD;
+  });
+  sortArr(); currentPage=1; renderTable();
+}
+
+function sortBy(k){if(sortKey===k) sortDir*=-1; else{sortKey=k;sortDir=1;} sortArr(); renderTable();}
+function sortArr(){filtered.sort((a,b)=>{const av=String(a[sortKey]||'').toLowerCase(),bv=String(b[sortKey]||'').toLowerCase();return av<bv?-sortDir:av>bv?sortDir:0;});}
+
+const RT_CLASS={all:'rt-all',dispatchlist:'rt-dispatch',scraplist:'rt-scrap',stocklist:'rt-stock','prf/ob_completed':'rt-prf'};
+const RT_LABEL={all:'ALL',dispatchlist:'Dispatch List',scraplist:'Scrap List',stocklist:'Stock List','prf/ob_completed':'PRF/OB Completed',all_escalation:'All Escalation',pending_frn:'Pending FRN',under_repair:'Under Repair',ob_pending:'OB Pending',estimation_pending:'Estimation Pending',sr_escalation:'SR Escalation'};
+
+function renderTable(){
+  const perPage=parseInt(document.getElementById('per-page').value)||10;
+  const total=filtered.length, pages=Math.max(1,Math.ceil(total/perPage));
+  if(currentPage>pages) currentPage=pages;
+  const slice=filtered.slice((currentPage-1)*perPage,currentPage*perPage);
+  const tbody=document.getElementById('mail-tbody');
+  if(!slice.length){
+    tbody.innerHTML=`<tr><td colspan="6"><div class="empty-st">
+      <div class="ei">&#9888;&#65039;</div>
+      <div class="et">${allMails.length?'No results match filters':'No Mail IDs configured yet'}</div>
+      <div class="es">${allMails.length?'Try clearing the filters.':'Click + Add New Mail ID to get started.'}</div>
+    </div></td></tr>`;
+  }else{
+    tbody.innerHTML=slice.map(m=>{
+      const id=m._id||m.id;
+      const rtCls=RT_CLASS[m.reportType]||'rt-other';
+      const rtLbl=RT_LABEL[m.reportType]||(m.reportType||'ALL').toUpperCase();
+      const divCls=m.division==='all'||!m.division?'div-tag div-all':'div-tag';
+      const divLbl=(m.division||'ALL').toUpperCase();
+      const regLbl=(m.region||'ALL').toUpperCase();
+      return`<tr>
+        <td><span class="id-chip">#${esc(String(m.id||id||'-'))}</span></td>
+        <td><span style="font-weight:600;">${esc(m.email||'-')}</span></td>
+        <td><span class="rt-tag ${rtCls}">${esc(rtLbl)}</span></td>
+        <td><span class="${divCls}">${esc(divLbl)}</span></td>
+        <td style="font-size:11.5px;color:var(--muted);">${esc(regLbl)}</td>
+        <td>
+          <div style="display:flex;gap:6px;">
+            <button class="btn-edit-xs" onclick="openEditPanel('${esc(String(id))}')">? Edit</button>
+            <button class="btn-del-xs" onclick="deleteMail('${esc(String(id))}','${esc(m.email)}')">&#128465; Delete</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+  const fr=total?(currentPage-1)*perPage+1:0;
+  (document.getElementById('tbl-info')||{}).textContent =total
+    ?`Showing ${fr}-${Math.min(currentPage*perPage,total)} of ${total} entr${total===1?'y':'ies'}`
+    :'0 entries';
+  renderPagination(pages);
+}
+
+// ?"??"? ADD / EDIT PANEL ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+function openAddPanel(){
+  editingId=null;
+  (document.getElementById('panel-title')||{}).textContent ='Add New Mail ID';
+  (document.getElementById('panel-icon')||{}).textContent ='&#10133;';
+  (document.getElementById('panel-badge')||{}).textContent ='New Entry';
+  (document.getElementById('panel-save-btn')||{}).textContent ='&#128190; Save Mail ID';
+  document.getElementById('editing-id').value='';
+  document.getElementById('f-email').value='';
+  document.getElementById('f-reporttype').value='';
+  document.getElementById('f-division').value='all';
+  document.getElementById('f-region').value='all';
+  document.getElementById('panel-err').classList.remove('show');
+  document.getElementById('panel-ok').classList.remove('show');
+  document.getElementById('add-panel').classList.add('show');
+  document.getElementById('f-email').focus();
+  document.getElementById('add-panel').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function openEditPanel(id){
+  const m=allMails.find(x=>String(x._id||x.id)===String(id));
+  if(!m) return;
+  editingId=id;
+  (document.getElementById('panel-title')||{}).textContent ='Edit Mail ID';
+  (document.getElementById('panel-icon')||{}).textContent ='&#9998;';
+  (document.getElementById('panel-badge')||{}).textContent ='Editing';
+  (document.getElementById('panel-save-btn')||{}).textContent ='&#128190; Update Mail ID';
+  document.getElementById('editing-id').value=id;
+  document.getElementById('f-email').value=m.email||'';
+  document.getElementById('f-reporttype').value=m.reportType||'all';
+  document.getElementById('f-division').value=m.division||'all';
+  document.getElementById('f-region').value=m.region||'all';
+  document.getElementById('panel-err').classList.remove('show');
+  document.getElementById('panel-ok').classList.remove('show');
+  document.getElementById('add-panel').classList.add('show');
+  document.getElementById('add-panel').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function closePanel(){
+  document.getElementById('add-panel').classList.remove('show');
+  editingId=null;
+}
+
+async function saveMailId(){
+  const errEl=document.getElementById('panel-err');
+  const okEl=document.getElementById('panel-ok');
+  errEl.classList.remove('show'); okEl.classList.remove('show');
+  const email=document.getElementById('f-email').value.trim().toLowerCase();
+  const reportType=document.getElementById('f-reporttype').value;
+  const division=document.getElementById('f-division').value;
+  const region=document.getElementById('f-region').value;
+  if(!email){errEl.textContent='&#9888; Email address is required.';errEl.classList.add('show');document.getElementById('f-email').focus();return;}
+  if(!reportType){errEl.textContent='&#9888; Please select a Report Type.';errEl.classList.add('show');return;}
+  const btn=document.getElementById('panel-save-btn');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span> Saving...';
+  const payload={email,reportType,division,region};
+  try{
+    let res;
+    if(editingId){
+      res=await fetch(`${API}/api/settings/escalation-emails/${editingId}`,{method:'PUT',headers:authHeaders(),body:JSON.stringify(payload)});
+    }else{
+      res=await fetch(`${API}/api/settings/escalation-emails`,{method:'POST',headers:authHeaders(),body:JSON.stringify(payload)});
+    }
+    if(res.status===401){logout();return;}
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'Save failed');
+    okEl.textContent=editingId?'?" Mail ID updated successfully!':'?" Mail ID added successfully!';
+    okEl.classList.add('show');
+    showToast(editingId?'Mail ID updated.':'Mail ID added.','ok');
+    await loadMails();
+    setTimeout(closePanel,900);
+  }catch(e){
+    errEl.textContent='?- '+e.message;errEl.classList.add('show');
+    showToast('Save failed: '+e.message,'err');
+  }finally{btn.disabled=false;btn.textContent=editingId?'&#128190; Update Mail ID':'&#128190; Save Mail ID';}
+}
+
+async function deleteMail(id,email){
+  if(!confirm(`Delete mail ID "${email}"? This cannot be undone.`)) return;
+  try{
+    const res=await fetch(`${API}/api/settings/escalation-emails/${id}`,{method:'DELETE',headers:authHeaders()});
+    if(res.status===401){logout();return;}
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'Delete failed');
+    showToast(`"${email}" deleted.`,'ok');
+    await loadMails();
+  }catch(e){showToast('Delete failed: '+e.message,'err');}
+}
+
+function renderPagination(pages){
+  const el=document.getElementById('tbl-pagination');
+  if(pages<=1){el.innerHTML='';return;}
+  let h=`<button class="pager" ${currentPage===1?'disabled':''} onclick="gp(${currentPage-1})">&#8249;</button>`;
+  getRange(currentPage,pages).forEach(p=>{if(p==='...')h+=`<button class="pager" disabled>...</button>`;else h+=`<button class="pager ${p===currentPage?'active':''}" onclick="gp(${p})">${p}</button>`;});
+  h+=`<button class="pager" ${currentPage===pages?'disabled':''} onclick="gp(${currentPage+1})">&#8250;</button>`;
+  el.innerHTML=h;
+}
+function getRange(c,t){if(t<=7)return Array.from({length:t},(_,i)=>i+1);if(c<=4)return[1,2,3,4,5,'...',t];if(c>=t-3)return[1,'...',t-4,t-3,t-2,t-1,t];return[1,'...',c-1,c,c+1,'...',t];}
+function gp(p){currentPage=p;renderTable();}
+function setTableLoading(){document.getElementById('mail-tbody').innerHTML='<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted);"><span class="spin"></span>Loading mail IDs...</td></tr>';}
+
+// ?"??"? SIDEBAR ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+function logout(){localStorage.clear();window.location.href='login.html';}
+let sfOpen=false;
+function toggleSF(){sfOpen=!sfOpen;document.getElementById('sf-children').classList.toggle('open',sfOpen);document.getElementById('sf-toggle').classList.toggle('open',sfOpen);}
+function toggleAR(){ var btn=document.getElementById('ar-toggle'); var panel=document.getElementById('ar-children'); if(!btn||!panel)return; btn.classList.toggle('open'); panel.classList.toggle('open'); }
+
+// ? TOAST ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+function showToast(msg,type='ok'){
+  const w=document.getElementById('toast-wrap');
+  const el=document.createElement('div');
+  el.className='toast '+type;
+  el.innerHTML='<span class="tdot"></span>'+msg;
+  w.appendChild(el); setTimeout(()=>el.remove(),3200);
+}
+
+// ?"??"? START ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+function configureEscalationMailUi(){
+  const reportFilter=document.getElementById('fl-rtype');
+  const divisionFilter=document.getElementById('fl-div');
+  if(reportFilter && reportFilter.parentElement) reportFilter.parentElement.style.display='none';
+  if(divisionFilter && divisionFilter.parentElement) divisionFilter.parentElement.style.display='none';
+  const search=document.getElementById('tbl-search');
+  if(search) search.placeholder='Search email...';
+  const headers=document.querySelectorAll('.mail-table thead th');
+  if(headers[0]) headers[0].textContent='ID';
+  if(headers[1]) headers[1].textContent='Email';
+  if(headers[2]) headers[2].textContent='Status';
+  if(headers[3]) headers[3].textContent='Source';
+  if(headers[4]) headers[4].textContent='Updated';
+  const addBtn=document.querySelector('.mail-toolbar-right .btn-primary');
+  if(addBtn) addBtn.textContent='&#10133; Add Escalation Email';
+  ['f-reporttype','f-division','f-region'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el && el.closest('.ff')) el.closest('.ff').style.display='none';
+  });
+}
+
+allMails=[]; filtered=[]; currentPage=1; sortKey='email'; sortDir=1;
+
+loadMails = async function(){
+  setTableLoading();
+  try{
+    const res=await fetch(`${API}/api/settings/escalation-emails`,{headers:authHeaders()});
+    if(res.status===401){logout();return;}
+    if(res.status===403) throw new Error('Admin access required');
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'Failed to load');
+    const emails=Array.isArray(data.emails)?data.emails:[];
+    allMails=emails.map((email,i)=>({id:i+1,email:String(email||'').trim(),status:'Active',source:'Escalation',updated:'Configured'}));
+    applyFilters();
+  }catch(e){
+    document.getElementById('mail-tbody').innerHTML=`<tr><td colspan="6"><div class="empty-st"><div class="ei">&#9888;&#65039;</div><div class="et">Could not load</div><div class="es">${esc(e.message)}</div></div></td></tr>`;
+    showToast('Load failed: '+e.message,'err');
+  }
+};
+
+applyFilters = function(){
+  const q=document.getElementById('tbl-search').value.toLowerCase();
+  filtered=allMails.filter(m=>!q || (m.email||'').toLowerCase().includes(q));
+  sortArr();
+  currentPage=1;
+  renderTable();
+};
+
+sortBy = function(k){
+  if(!['id','email','status','source','updated'].includes(k)) return;
+  if(sortKey===k) sortDir*=-1; else { sortKey=k; sortDir=1; }
+  sortArr();
+  renderTable();
+};
+
+sortArr = function(){
+  filtered.sort((a,b)=>{
+    const av=String(a[sortKey]??'').toLowerCase();
+    const bv=String(b[sortKey]??'').toLowerCase();
+    return av<bv?-sortDir:av>bv?sortDir:0;
+  });
+};
+
+renderTable = function(){
+  const perPage=parseInt(document.getElementById('per-page').value,10)||10;
+  const total=filtered.length;
+  const pages=Math.max(1,Math.ceil(total/perPage));
+  if(currentPage>pages) currentPage=pages;
+  const slice=filtered.slice((currentPage-1)*perPage,currentPage*perPage);
+  const tbody=document.getElementById('mail-tbody');
+  if(!slice.length){
+    tbody.innerHTML=`<tr><td colspan="6"><div class="empty-st"><div class="ei">&#128196;</div><div class="et">${allMails.length?'No results match the search':'No escalation emails configured yet'}</div><div class="es">${allMails.length?'Try clearing the search.':'Click Add Escalation Email to get started.'}</div></div></td></tr>`;
+  }else{
+    tbody.innerHTML=slice.map(m=>`<tr><td><span class="id-chip">#${esc(String(m.id))}</span></td><td><span style="font-weight:600;">${esc(m.email)}</span></td><td><span class="rt-tag rt-all">${esc(m.status)}</span></td><td><span class="div-tag div-all">${esc(m.source)}</span></td><td style="font-size:11.5px;color:var(--muted);">${esc(m.updated)}</td><td><div style="display:flex;gap:6px;"><button class="btn-del-xs" onclick="deleteMail('${encodeURIComponent(m.email)}')">&#128465; Delete</button></div></td></tr>`).join('');
+  }
+  const fr=total?(currentPage-1)*perPage+1:0;
+  (document.getElementById('tbl-info')||{}).textContent =total?`Showing ${fr}-${Math.min(currentPage*perPage,total)} of ${total} entr${total===1?'y':'ies'}`:'0 entries';
+  renderPagination(pages);
+};
+
+openAddPanel = function(){
+  (document.getElementById('panel-title')||{}).textContent ='Add Escalation Email';
+  (document.getElementById('panel-icon')||{}).textContent ='+';
+  (document.getElementById('panel-badge')||{}).textContent ='Recipients';
+  (document.getElementById('panel-save-btn')||{}).textContent ='Save Email';
+  document.getElementById('editing-id').value='';
+  document.getElementById('f-email').value='';
+  document.getElementById('panel-err').classList.remove('show');
+  document.getElementById('panel-ok').classList.remove('show');
+  document.getElementById('add-panel').classList.add('show');
+  document.getElementById('f-email').focus();
+  document.getElementById('add-panel').scrollIntoView({behavior:'smooth',block:'nearest'});
+};
+
+closePanel = function(){
+  document.getElementById('add-panel').classList.remove('show');
+};
+
+saveMailId = async function(){
+  const errEl=document.getElementById('panel-err');
+  const okEl=document.getElementById('panel-ok');
+  errEl.classList.remove('show');
+  okEl.classList.remove('show');
+  const email=document.getElementById('f-email').value.trim().toLowerCase();
+  if(!email){
+    errEl.textContent='&#9888;&#65039; Email address is required.';
+    errEl.classList.add('show');
+    document.getElementById('f-email').focus();
+    return;
+  }
+  const btn=document.getElementById('panel-save-btn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin"></span> Saving...';
+  try{
+    const res=await fetch(`${API}/api/settings/escalation-emails`,{method:'POST',headers:authHeaders(),body:JSON.stringify({email})});
+    if(res.status===401){logout();return;}
+    if(res.status===403) throw new Error('Admin access required');
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'Save failed');
+    okEl.textContent='Escalation email added successfully!';
+    okEl.classList.add('show');
+    showToast('Escalation email added.','ok');
+    await loadMails();
+    setTimeout(closePanel,900);
+  }catch(e){
+    errEl.textContent='Save failed: '+e.message;
+    errEl.classList.add('show');
+    showToast('Save failed: '+e.message,'err');
+  }finally{
+    btn.disabled=false;
+    btn.textContent='Save Email';
+  }
+};
+
+deleteMail = async function(encodedEmail){
+  const email=decodeURIComponent(encodedEmail||'');
+  if(!email) return;
+  if(!confirm(`Delete escalation email "${email}"? This cannot be undone.`)) return;
+  try{
+    const res=await fetch(`${API}/api/settings/escalation-emails`,{method:'DELETE',headers:authHeaders(),body:JSON.stringify({email})});
+    if(res.status===401){logout();return;}
+    if(res.status===403) throw new Error('Admin access required');
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'Delete failed');
+    showToast(`"${email}" deleted.`,'ok');
+    await loadMails();
+  }catch(e){
+    showToast('Delete failed: '+e.message,'err');
+  }
+};
+
+configureEscalationMailUi = function(){
+  const search=document.getElementById('tbl-search');
+  if(search) search.placeholder='Search email or report type...';
+  const headers=document.querySelectorAll('.mail-table thead th');
+  if(headers[0]) headers[0].textContent='ID';
+  if(headers[1]) headers[1].textContent='Email';
+  if(headers[2]) headers[2].textContent='Type of Report';
+  if(headers[3]) headers[3].textContent='Division';
+  if(headers[4]) headers[4].textContent='Region';
+  const addBtn=document.querySelector('.mail-toolbar-right .btn-primary');
+  if(addBtn) addBtn.textContent='Add Escalation Email';
+  ['f-reporttype','f-division'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el && el.closest('.ff')) el.closest('.ff').style.display='';
+  });
+};
+
+loadMails = async function(){
+  setTableLoading();
+  try{
+    const res=await fetch(`${API}/api/settings/escalation-emails`,{headers:authHeaders()});
+    if(res.status===401){logout();return;}
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'Failed to load');
+    const entries=Array.isArray(data.entries)?data.entries:[];
+    allMails=entries.map((item,i)=>({
+      id:item.id||String(i+1),
+      email:String(item.email||'').trim(),
+      reportType:String(item.reportType||'all'),
+      division:String(item.division||'all'),
+      region:String(item.region||'all')
+    }));
+    applyFilters();
+  }catch(e){
+    document.getElementById('mail-tbody').innerHTML=`<tr><td colspan="6"><div class="empty-st"><div class="ei">-</div><div class="et">Could not load</div><div class="es">${esc(e.message)}</div></div></td></tr>`;
+    showToast('Load failed: '+e.message,'err');
+  }
+};
+
+applyFilters = function(){
+  const q=document.getElementById('tbl-search').value.toLowerCase();
+  const rt=document.getElementById('fl-rtype').value;
+  const dv=document.getElementById('fl-div').value;
+  filtered=allMails.filter(m=>{
+    const matchQ=!q || (m.email||'').toLowerCase().includes(q) || (m.reportType||'').toLowerCase().includes(q) || (m.division||'').toLowerCase().includes(q);
+    const matchRt=!rt || m.reportType===rt;
+    const matchDv=!dv || m.division===dv;
+    return matchQ && matchRt && matchDv;
+  });
+  sortArr();
+  currentPage=1;
+  renderTable();
+};
+
+sortBy = function(k){
+  if(!['id','email','reportType','division','region'].includes(k)) return;
+  if(sortKey===k) sortDir*=-1; else { sortKey=k; sortDir=1; }
+  sortArr();
+  renderTable();
+};
+
+sortArr = function(){
+  filtered.sort((a,b)=>{
+    const av=String(a[sortKey]??'').toLowerCase();
+    const bv=String(b[sortKey]??'').toLowerCase();
+    return av<bv?-sortDir:av>bv?sortDir:0;
+  });
+};
+
+renderTable = function(){
+  const perPage=parseInt(document.getElementById('per-page').value,10)||10;
+  const total=filtered.length;
+  const pages=Math.max(1,Math.ceil(total/perPage));
+  if(currentPage>pages) currentPage=pages;
+  const slice=filtered.slice((currentPage-1)*perPage,currentPage*perPage);
+  const tbody=document.getElementById('mail-tbody');
+  if(!slice.length){
+    tbody.innerHTML=`<tr><td colspan="6"><div class="empty-st"><div class="ei">-</div><div class="et">${allMails.length?'No results match the search':'No escalation emails configured yet'}</div><div class="es">${allMails.length?'Try clearing the search.':'Click Add Escalation Email to get started.'}</div></div></td></tr>`;
+  }else{
+    tbody.innerHTML=slice.map(m=>`<tr><td><span class="id-chip">#${esc(String(m.id))}</span></td><td><span style="font-weight:600;">${esc(m.email)}</span></td><td><span class="rt-tag ${RT_CLASS[m.reportType]||'rt-other'}">${esc(RT_LABEL[m.reportType]||(m.reportType||'ALL').toUpperCase())}</span></td><td><span class="${m.division==='all'||!m.division?'div-tag div-all':'div-tag'}">${esc((m.division||'ALL').toUpperCase())}</span></td><td style="font-size:11.5px;color:var(--muted);">${esc((m.region||'ALL').toUpperCase())}</td><td><div style="display:flex;gap:6px;"><button class="btn-edit-xs" onclick="openEditPanel('${encodeURIComponent(m.id)}')">Edit</button><button class="btn-del-xs" onclick="deleteMail('${encodeURIComponent(m.id)}')">Delete</button></div></td></tr>`).join('');
+  }
+  const fr=total?(currentPage-1)*perPage+1:0;
+  (document.getElementById('tbl-info')||{}).textContent =total?`Showing ${fr} to ${Math.min(currentPage*perPage,total)} of ${total} entr${total===1?'y':'ies'}`:'0 entries';
+  renderPagination(pages);
+};
+
+openAddPanel = function(){
+  editingId=null;
+  (document.getElementById('panel-title')||{}).textContent ='Add Escalation Email';
+  (document.getElementById('panel-icon')||{}).textContent ='+';
+  (document.getElementById('panel-badge')||{}).textContent ='Recipients';
+  (document.getElementById('panel-save-btn')||{}).textContent ='Save Email';
+  document.getElementById('editing-id').value='';
+  document.getElementById('f-email').value='';
+  document.getElementById('f-reporttype').value='';
+  document.getElementById('f-division').value='all';
+  document.getElementById('f-region').value='all';
+  document.getElementById('panel-err').classList.remove('show');
+  document.getElementById('panel-ok').classList.remove('show');
+  document.getElementById('add-panel').classList.add('show');
+  document.getElementById('f-email').focus();
+};
+
+openEditPanel = function(encodedId){
+  const id=decodeURIComponent(encodedId||'');
+  const record=allMails.find(x=>String(x.id)===String(id));
+  if(!record) return;
+  editingId=id;
+  (document.getElementById('panel-title')||{}).textContent ='Edit Escalation Email';
+  (document.getElementById('panel-icon')||{}).textContent ='E';
+  (document.getElementById('panel-badge')||{}).textContent ='Editing';
+  (document.getElementById('panel-save-btn')||{}).textContent ='Update Email';
+  document.getElementById('editing-id').value=id;
+  document.getElementById('f-email').value=record.email||'';
+  document.getElementById('f-reporttype').value=record.reportType||'all';
+  document.getElementById('f-division').value=record.division||'all';
+  document.getElementById('f-region').value=record.region||'all';
+  document.getElementById('panel-err').classList.remove('show');
+  document.getElementById('panel-ok').classList.remove('show');
+  document.getElementById('add-panel').classList.add('show');
+  document.getElementById('f-email').focus();
+};
+
+saveMailId = async function(){
+  const errEl=document.getElementById('panel-err');
+  const okEl=document.getElementById('panel-ok');
+  errEl.classList.remove('show');
+  okEl.classList.remove('show');
+  const email=document.getElementById('f-email').value.trim().toLowerCase();
+  const reportType=document.getElementById('f-reporttype').value;
+  const division=document.getElementById('f-division').value;
+  const region=document.getElementById('f-region').value;
+  if(!email){
+    errEl.textContent='Email address is required.';
+    errEl.classList.add('show');
+    document.getElementById('f-email').focus();
+    return;
+  }
+  if(!reportType){
+    errEl.textContent='Type of Report is required.';
+    errEl.classList.add('show');
+    return;
+  }
+  const btn=document.getElementById('panel-save-btn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin"></span> Saving...';
+  const payload={email,reportType,division,region};
+  try{
+    const res=await fetch(`${API}/api/settings/escalation-emails${editingId?`/${encodeURIComponent(editingId)}`:''}`,{
+      method:editingId?'PUT':'POST',
+      headers:authHeaders(),
+      body:JSON.stringify(payload)
+    });
+    if(res.status===401){logout();return;}
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'Save failed');
+    okEl.textContent=editingId?'Escalation email updated successfully!':'Escalation email added successfully!';
+    okEl.classList.add('show');
+    showToast(editingId?'Escalation email updated.':'Escalation email added.','ok');
+    await loadMails();
+    setTimeout(closePanel,900);
+  }catch(e){
+    errEl.textContent='Error: '+e.message;
+    errEl.classList.add('show');
+    showToast('Save failed: '+e.message,'err');
+  }finally{
+    btn.disabled=false;
+    btn.textContent=editingId?'Update Email':'Save Email';
+  }
+};
+
+deleteMail = async function(encodedId){
+  const id=decodeURIComponent(encodedId||'');
+  const record=allMails.find(x=>String(x.id)===String(id));
+  if(!id || !record) return;
+  if(!confirm(`Delete escalation email "${record.email}"? This cannot be undone.`)) return;
+  try{
+    const res=await fetch(`${API}/api/settings/escalation-emails/${encodeURIComponent(id)}`,{
+      method:'DELETE',
+      headers:authHeaders()
+    });
+    if(res.status===401){logout();return;}
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'Delete failed');
+    showToast(`"${record.email}" deleted.`,'ok');
+    await loadMails();
+  }catch(e){
+    showToast('Delete failed: '+e.message,'err');
+  }
+};
+
+async function loadDivisions(){
+  try{
+    const res=await fetch(`${API}/api/divisions`,{headers:authHeaders()});
+    if(!res.ok) return;
+    const json=await res.json();
+    const raw=Array.isArray(json)?json:(Array.isArray(json?.data)?json.data:[]);
+    const names=raw.map(d=>String(d?.name||d?.displayName||'').trim()).filter(Boolean).sort((a,b)=>a.localeCompare(b));
+    const formSel=document.getElementById('f-division');
+    const filterSel=document.getElementById('fl-div');
+    names.forEach(n=>{
+      if(formSel){ const o=document.createElement('option'); o.value=n; o.textContent=n; formSel.appendChild(o); }
+      if(filterSel){ const o=document.createElement('option'); o.value=n; o.textContent=n; filterSel.appendChild(o); }
+    });
+  }catch(e){}
+}
+
+configureEscalationMailUi();
+loadDivisions();
+loadMails();
+
+setTableLoading = function(){
+  document.getElementById('mail-tbody').innerHTML='<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted);"><span class="spin"></span>Loading escalation emails...</td></tr>';
+};
+
+configureEscalationMailUi();
+const __addBtnSettings=document.querySelector('.mail-toolbar-right .btn-primary');
+if(__addBtnSettings) __addBtnSettings.textContent='Add Escalation Email';
+loadMails();
+
+editingId = null;
+
+renderTable = function(){
+  const perPage=parseInt(document.getElementById('per-page').value,10)||10;
+  const total=filtered.length;
+  const pages=Math.max(1,Math.ceil(total/perPage));
+  if(currentPage>pages) currentPage=pages;
+  const slice=filtered.slice((currentPage-1)*perPage,currentPage*perPage);
+  const tbody=document.getElementById('mail-tbody');
+  if(!slice.length){
+    tbody.innerHTML=`<tr><td colspan="6"><div class="empty-st"><div class="ei">-</div><div class="et">${allMails.length?'No results match the search':'No escalation emails configured yet'}</div><div class="es">${allMails.length?'Try clearing the search.':'Click Add Escalation Email to get started.'}</div></div></td></tr>`;
+  }else{
+    tbody.innerHTML=slice.map(m=>`<tr><td><span class="id-chip">#${esc(String(m.id))}</span></td><td><span style="font-weight:600;">${esc(m.email)}</span></td><td><span class="rt-tag rt-all">${esc(m.status)}</span></td><td><span class="div-tag div-all">${esc(m.source)}</span></td><td style="font-size:11.5px;color:var(--muted);">${esc(m.updated)}</td><td><div style="display:flex;gap:6px;"><button class="btn-edit-xs" onclick="openEditPanel('${encodeURIComponent(m.email)}')">Edit</button><button class="btn-del-xs" onclick="deleteMail('${encodeURIComponent(m.email)}')">Delete</button></div></td></tr>`).join('');
+  }
+  const fr=total?(currentPage-1)*perPage+1:0;
+  (document.getElementById('tbl-info')||{}).textContent =total?`Showing ${fr} to ${Math.min(currentPage*perPage,total)} of ${total} entr${total===1?'y':'ies'}`:'0 entries';
+  renderPagination(pages);
+};
+
+openAddPanel = function(){
+  editingId=null;
+  (document.getElementById('panel-title')||{}).textContent ='Add Escalation Email';
+  (document.getElementById('panel-icon')||{}).textContent ='+';
+  (document.getElementById('panel-badge')||{}).textContent ='Recipients';
+  (document.getElementById('panel-save-btn')||{}).textContent ='Save Email';
+  document.getElementById('editing-id').value='';
+  document.getElementById('f-email').value='';
+  document.getElementById('panel-err').classList.remove('show');
+  document.getElementById('panel-ok').classList.remove('show');
+  document.getElementById('add-panel').classList.add('show');
+  document.getElementById('f-email').focus();
+};
+
+openEditPanel = function(encodedEmail){
+  const email=decodeURIComponent(encodedEmail||'');
+  if(!email) return;
+  editingId=email;
+  (document.getElementById('panel-title')||{}).textContent ='Edit Escalation Email';
+  (document.getElementById('panel-icon')||{}).textContent ='E';
+  (document.getElementById('panel-badge')||{}).textContent ='Editing';
+  (document.getElementById('panel-save-btn')||{}).textContent ='Update Email';
+  document.getElementById('editing-id').value=email;
+  document.getElementById('f-email').value=email;
+  document.getElementById('panel-err').classList.remove('show');
+  document.getElementById('panel-ok').classList.remove('show');
+  document.getElementById('add-panel').classList.add('show');
+  document.getElementById('f-email').focus();
+};
+
+closePanel = function(){
+  document.getElementById('add-panel').classList.remove('show');
+  editingId=null;
+};
+
+saveMailId = async function(){
+  const errEl=document.getElementById('panel-err');
+  const okEl=document.getElementById('panel-ok');
+  errEl.classList.remove('show');
+  okEl.classList.remove('show');
+  const email=document.getElementById('f-email').value.trim().toLowerCase();
+  if(!email){
+    errEl.textContent='Email address is required.';
+    errEl.classList.add('show');
+    document.getElementById('f-email').focus();
+    return;
+  }
+  const btn=document.getElementById('panel-save-btn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin"></span> Saving...';
+  try{
+    const res=await fetch(`${API}/api/settings/escalation-emails`,{
+      method:editingId?'PUT':'POST',
+      headers:authHeaders(),
+      body:JSON.stringify(editingId?{oldEmail:editingId,email}:{email})
+    });
+    if(res.status===401){logout();return;}
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'Save failed');
+    okEl.textContent=editingId?'Escalation email updated successfully!':'Escalation email added successfully!';
+    okEl.classList.add('show');
+    showToast(editingId?'Escalation email updated.':'Escalation email added.','ok');
+    await loadMails();
+    setTimeout(closePanel,900);
+  }catch(e){
+    errEl.textContent='Error: '+e.message;
+    errEl.classList.add('show');
+    showToast('Save failed: '+e.message,'err');
+  }finally{
+    btn.disabled=false;
+    btn.textContent=editingId?'Update Email':'Save Email';
+  }
+};
+
+deleteMail = async function(encodedEmail){
+  const email=decodeURIComponent(encodedEmail||'');
+  if(!email) return;
+  if(!confirm(`Delete escalation email "${email}"? This cannot be undone.`)) return;
+  try{
+    const res=await fetch(`${API}/api/settings/escalation-emails`,{
+      method:'DELETE',
+      headers:authHeaders(),
+      body:JSON.stringify({email})
+    });
+    if(res.status===401){logout();return;}
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'Delete failed');
+    showToast(`"${email}" deleted.`,'ok');
+    await loadMails();
+  }catch(e){
+    showToast('Delete failed: '+e.message,'err');
+  }
+};
+
+const DEFAULT_ESCALATION_TYPES = [
+  { value:'all_escalation', label:'All Escalation' },
+  { value:'main_combined', label:'Main Combined Escalation' },
+  { value:'pending_frn', label:'Pending FRN Escalation' },
+  { value:'estimation_pending', label:'Estimation Pending Escalation' },
+  { value:'sr_escalation', label:'SR Escalation' },
+  { value:'ur_followup', label:'Under Repair Stock / Follow-up Escalation' },
+  { value:'ur_scrap', label:'Under Repair Scrap Escalation' }
+];
+
+function populateEscalationTypeOptions(types){
+  const list=Array.isArray(types)&&types.length ? types : DEFAULT_ESCALATION_TYPES;
+  const formSel=document.getElementById('f-reporttype');
+  const filterSel=document.getElementById('fl-rtype');
+  if(formSel){
+    formSel.innerHTML='<option value="">Select escalation...</option>'+list.map(t=>`<option value="${esc(t.value)}">${esc(t.label)}</option>`).join('');
+  }
+  if(filterSel){
+    filterSel.innerHTML='<option value="">All Escalation Types</option>'+list.map(t=>`<option value="${esc(t.value)}">${esc(t.label)}</option>`).join('');
+  }
+}
+
+configureEscalationMailUi = function(){
+  const search=document.getElementById('tbl-search');
+  if(search) search.placeholder='Search email or escalation type...';
+  const reportLabel=document.getElementById('f-reporttype')?.closest('.ff')?.querySelector('label');
+  if(reportLabel) reportLabel.innerHTML='Type of Escalation <span class="req">*</span>';
+  const headers=document.querySelectorAll('.mail-table thead th');
+  if(headers[0]) headers[0].textContent='ID';
+  if(headers[1]) headers[1].textContent='Email';
+  if(headers[2]) headers[2].textContent='Type of Escalation';
+  if(headers[3]) headers[3].textContent='Division';
+  if(headers[4]) headers[4].textContent='Region';
+  const addBtn=document.querySelector('.mail-toolbar-right .btn-primary');
+  if(addBtn) addBtn.textContent='Add Escalation Email';
+  ['f-reporttype','f-division','f-region'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el && el.closest('.ff')) el.closest('.ff').style.display='';
+  });
+  const typeFilterFirst=document.querySelector('#fl-rtype option[value=""]');
+  if(typeFilterFirst) typeFilterFirst.textContent='All Escalation Types';
+};
+
+loadMails = async function(){
+  setTableLoading();
+  try{
+    const res=await fetch(`${API}/api/settings/escalation-emails`,{headers:authHeaders()});
+    if(res.status===401){logout();return;}
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'Failed to load');
+    populateEscalationTypeOptions(data.escalationTypes||[]);
+    const entries=Array.isArray(data.entries)?data.entries:[];
+    allMails=entries.map((item,i)=>({
+      id:item.id||String(i+1),
+      email:String(item.email||'').trim(),
+      reportType:String(item.reportType||'main_combined'),
+      division:String(item.division||'all'),
+      region:String(item.region||'all')
+    }));
+    applyFilters();
+  }catch(e){
+    document.getElementById('mail-tbody').innerHTML=`<tr><td colspan="6"><div class="empty-st"><div class="ei">-</div><div class="et">Could not load</div><div class="es">${esc(e.message)}</div></div></td></tr>`;
+    showToast('Load failed: '+e.message,'err');
+  }
+};
+
+applyFilters = function(){
+  const q=document.getElementById('tbl-search').value.toLowerCase();
+  const rt=document.getElementById('fl-rtype').value;
+  const dv=document.getElementById('fl-div').value;
+  filtered=allMails.filter(m=>{
+    const matchQ=!q || (m.email||'').toLowerCase().includes(q) || (m.reportType||'').toLowerCase().includes(q) || (m.division||'').toLowerCase().includes(q);
+    const matchRt=!rt || m.reportType===rt;
+    const matchDv=!dv || m.division===dv;
+    return matchQ && matchRt && matchDv;
+  });
+  sortArr();
+  currentPage=1;
+  renderTable();
+};
+
+sortBy = function(k){
+  if(!['id','email','reportType','division','region'].includes(k)) return;
+  if(sortKey===k) sortDir*=-1; else { sortKey=k; sortDir=1; }
+  sortArr();
+  renderTable();
+};
+
+renderTable = function(){
+  const perPage=parseInt(document.getElementById('per-page').value,10)||10;
+  const total=filtered.length;
+  const pages=Math.max(1,Math.ceil(total/perPage));
+  if(currentPage>pages) currentPage=pages;
+  const slice=filtered.slice((currentPage-1)*perPage,currentPage*perPage);
+  const tbody=document.getElementById('mail-tbody');
+  if(!slice.length){
+    tbody.innerHTML=`<tr><td colspan="6"><div class="empty-st"><div class="ei">-</div><div class="et">${allMails.length?'No results match the search':'No escalation emails configured yet'}</div><div class="es">${allMails.length?'Try clearing the search.':'Click Add Escalation Email to get started.'}</div></div></td></tr>`;
+  }else{
+    tbody.innerHTML=slice.map(m=>`<tr><td><span class="id-chip">#${esc(String(m.id))}</span></td><td><span style="font-weight:600;">${esc(m.email)}</span></td><td><span class="rt-tag ${RT_CLASS[m.reportType]||'rt-other'}">${esc(RT_LABEL[m.reportType]||(m.reportType||'ALL').toUpperCase())}</span></td><td><span class="${m.division==='all'||!m.division?'div-tag div-all':'div-tag'}">${esc((m.division||'ALL').toUpperCase())}</span></td><td style="font-size:11.5px;color:var(--muted);">${esc((m.region||'ALL').toUpperCase())}</td><td><div style="display:flex;gap:6px;"><button class="btn-edit-xs" onclick="openEditPanel('${encodeURIComponent(m.id)}')">Edit</button><button class="btn-del-xs" onclick="deleteMail('${encodeURIComponent(m.id)}')">Delete</button></div></td></tr>`).join('');
+  }
+  const fr=total?(currentPage-1)*perPage+1:0;
+  (document.getElementById('tbl-info')||{}).textContent =total?`Showing ${fr} to ${Math.min(currentPage*perPage,total)} of ${total} entr${total===1?'y':'ies'}`:'0 entries';
+  renderPagination(pages);
+};
+
+saveMailId = async function(){
+  const errEl=document.getElementById('panel-err');
+  const okEl=document.getElementById('panel-ok');
+  errEl.classList.remove('show');
+  okEl.classList.remove('show');
+  const email=document.getElementById('f-email').value.trim().toLowerCase();
+  const reportType=document.getElementById('f-reporttype').value;
+  const division=document.getElementById('f-division').value;
+  const region=document.getElementById('f-region').value;
+  if(!email){
+    errEl.textContent='Email address is required.';
+    errEl.classList.add('show');
+    document.getElementById('f-email').focus();
+    return;
+  }
+  if(!reportType){
+    errEl.textContent='Type of Escalation is required.';
+    errEl.classList.add('show');
+    return;
+  }
+  const btn=document.getElementById('panel-save-btn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin"></span> Saving...';
+  const payload={email,reportType,division,region};
+  try{
+    const res=await fetch(`${API}/api/settings/escalation-emails${editingId?`/${encodeURIComponent(editingId)}`:''}`,{
+      method:editingId?'PUT':'POST',
+      headers:authHeaders(),
+      body:JSON.stringify(payload)
+    });
+    if(res.status===401){logout();return;}
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'Save failed');
+    okEl.textContent=editingId?'Escalation email updated successfully!':'Escalation email added successfully!';
+    okEl.classList.add('show');
+    showToast(editingId?'Escalation email updated.':'Escalation email added.','ok');
+    await loadMails();
+    setTimeout(closePanel,900);
+  }catch(e){
+    errEl.textContent='Error: '+e.message;
+    errEl.classList.add('show');
+    showToast('Save failed: '+e.message,'err');
+  }finally{
+    btn.disabled=false;
+    btn.textContent=editingId?'Update Email':'Save Email';
+  }
+};
+
+deleteMail = async function(encodedId){
+  const id=decodeURIComponent(encodedId||'');
+  const record=allMails.find(x=>String(x.id)===String(id));
+  if(!id || !record) return;
+  if(!confirm(`Delete escalation email "${record.email}"? This cannot be undone.`)) return;
+  try{
+    const res=await fetch(`${API}/api/settings/escalation-emails/${encodeURIComponent(id)}`,{ method:'DELETE', headers:authHeaders() });
+    if(res.status===401){logout();return;}
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'Delete failed');
+    showToast(`"${record.email}" deleted.`,'ok');
+    await loadMails();
+  }catch(e){
+    showToast('Delete failed: '+e.message,'err');
+  }
+};
+
+configureEscalationMailUi();
+loadMails();
+
+function ensureSenderSettingsCard(){
+  if(document.getElementById('sender-settings-card')) return;
+  const content=document.querySelector('.content');
+  if(!content) return;
+  const pageHeader=content.querySelector('.page-hdr');
+  const card=document.createElement('section');
+  card.className='sec-card';
+  card.id='sender-settings-card';
+  card.innerHTML=`
+    <div class="sec-card-title"><span class="sec-ico" style="background:var(--accent3);color:var(--accent);">S</span>Escalation Sender Settings</div>
+    <div style="padding:18px 20px 20px;">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Configure the sender account used to mail all employee escalations. Receiver email IDs will still be managed in the section below.</div>
+      <div id="sender-ok" class="form-ok-bar" style="margin-bottom:12px;"></div>
+      <div id="sender-err" class="form-err-bar" style="margin-bottom:12px;"></div>
+      <div class="form-grid">
+        <div class="ff">
+          <label>Sender Email <span class="req">*</span></label>
+          <input id="sender-from-email" type="email" placeholder="sender@example.com"/>
+        </div>
+        <div class="ff">
+          <label>SMTP Host <span class="req">*</span></label>
+          <input id="sender-smtp-host" type="text" placeholder="smtp.gmail.com"/>
+        </div>
+        <div class="ff">
+          <label>SMTP Port <span class="req">*</span></label>
+          <input id="sender-smtp-port" type="number" min="1" step="1" placeholder="587"/>
+        </div>
+        <div class="ff">
+          <label>SMTP User <span class="req">*</span></label>
+          <input id="sender-smtp-user" type="email" placeholder="sender@example.com"/>
+        </div>
+        <div class="ff">
+          <label>SMTP Password <span class="req">*</span></label>
+          <input id="sender-smtp-pass" type="password" placeholder="Saved password hidden"/>
+        </div>
+        <div class="ff">
+          <label>STARTTLS</label>
+          <select id="sender-starttls">
+            <option value="true">Enabled</option>
+            <option value="false">Disabled</option>
+          </select>
+        </div>
+        <div class="ff">
+          <label>SSL</label>
+          <select id="sender-ssl">
+            <option value="false">Disabled</option>
+            <option value="true">Enabled</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div id="sender-summary" style="font-size:12px;color:var(--muted);">Loading sender configuration...</div>
+        <button id="sender-save-btn" class="btn btn-primary" onclick="saveSenderSettings()">Save Sender</button>
+      </div>
+    </div>
+  `;
+  if(pageHeader && pageHeader.nextSibling){
+    content.insertBefore(card,pageHeader.nextSibling);
+  }else{
+    content.prepend(card);
+  }
+}
+
+function setSenderSummary(text, tone){
+  const el=document.getElementById('sender-summary');
+  if(!el) return;
+  el.textContent=text||'';
+  el.style.color=tone==='ok' ? 'var(--green)' : tone==='err' ? 'var(--red)' : 'var(--muted)';
+}
+
+function setSenderFieldValues(sender){
+  document.getElementById('sender-from-email').value=sender?.fromEmail||'';
+  document.getElementById('sender-smtp-host').value=sender?.smtpHost||'';
+  document.getElementById('sender-smtp-port').value=sender?.smtpPort||'587';
+  document.getElementById('sender-smtp-user').value=sender?.smtpUser||'';
+  document.getElementById('sender-smtp-pass').value='';
+  document.getElementById('sender-smtp-pass').placeholder=sender?.hasPassword?'Saved password hidden':'Enter SMTP password';
+  document.getElementById('sender-starttls').value=String(sender?.startTls!==false);
+  document.getElementById('sender-ssl').value=String(!!sender?.ssl);
+}
+
+loadSenderSettings = async function(){
+  ensureSenderSettingsCard();
+  const okEl=document.getElementById('sender-ok');
+  const errEl=document.getElementById('sender-err');
+  if(okEl) okEl.classList.remove('show');
+  if(errEl) errEl.classList.remove('show');
+  setSenderSummary('Loading sender configuration...');
+  try{
+    const res=await fetch(`${API}/api/settings/escalation-sender`,{headers:authHeaders()});
+    if(res.status===401){logout();return;}
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'Failed to load sender settings');
+    const sender=data.sender||{};
+    setSenderFieldValues(sender);
+    const summaryBits=[];
+    if(sender.fromEmail) summaryBits.push(`Sender: ${sender.fromEmail}`);
+    if(sender.smtpHost) summaryBits.push(`Host: ${sender.smtpHost}:${sender.smtpPort||'587'}`);
+    summaryBits.push(sender.hasPassword?'Password saved':'Password not saved');
+    setSenderSummary(summaryBits.join(' | '),'ok');
+  }catch(e){
+    setSenderSummary(e.message||'Could not load sender settings','err');
+    if(errEl){
+      errEl.textContent='Error: '+(e.message||'Could not load sender settings');
+      errEl.classList.add('show');
+    }
+  }
+};
+
+saveSenderSettings = async function(){
+  ensureSenderSettingsCard();
+  const okEl=document.getElementById('sender-ok');
+  const errEl=document.getElementById('sender-err');
+  if(okEl) okEl.classList.remove('show');
+  if(errEl) errEl.classList.remove('show');
+
+  const payload={
+    fromEmail:document.getElementById('sender-from-email').value.trim().toLowerCase(),
+    smtpHost:document.getElementById('sender-smtp-host').value.trim(),
+    smtpPort:document.getElementById('sender-smtp-port').value.trim(),
+    smtpUser:document.getElementById('sender-smtp-user').value.trim().toLowerCase(),
+    smtpPass:document.getElementById('sender-smtp-pass').value,
+    startTls:document.getElementById('sender-starttls').value==='true',
+    ssl:document.getElementById('sender-ssl').value==='true',
+  };
+
+  if(!payload.fromEmail || !payload.smtpHost || !payload.smtpPort || !payload.smtpUser){
+    if(errEl){
+      errEl.textContent='Sender email, SMTP host, port, and SMTP user are required.';
+      errEl.classList.add('show');
+    }
+    setSenderSummary('Sender settings are incomplete.','err');
+    return;
+  }
+
+  const btn=document.getElementById('sender-save-btn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin"></span> Saving...';
+  try{
+    const res=await fetch(`${API}/api/settings/escalation-sender`,{
+      method:'PUT',
+      headers:authHeaders(),
+      body:JSON.stringify(payload)
+    });
+    if(res.status===401){logout();return;}
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'Save failed');
+    const sender=data.sender||{};
+    setSenderFieldValues(sender);
+    if(okEl){
+      okEl.textContent='Sender settings saved successfully.';
+      okEl.classList.add('show');
+    }
+    setSenderSummary(`Sender: ${sender.fromEmail||''} | Host: ${sender.smtpHost||''}:${sender.smtpPort||'587'} | Password saved`,'ok');
+    showToast('Sender settings saved.','ok');
+  }catch(e){
+    if(errEl){
+      errEl.textContent='Error: '+e.message;
+      errEl.classList.add('show');
+    }
+    setSenderSummary(e.message||'Save failed','err');
+    showToast('Sender save failed: '+e.message,'err');
+  }finally{
+    btn.disabled=false;
+    btn.textContent='Save Sender';
+  }
+};
+
+ensureSenderSettingsCard();
+loadSenderSettings();
+</script>
+</body>
+</html>
+
+
+
+
+
+

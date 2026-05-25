@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script>
+    (function(){
+      document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme') || 'light');
+      const token = localStorage.getItem('schiller_token');
+      const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
+      if (!token || !['admin','superadmin'].includes(role)) window.location.href = 'login.html';
+    })();
+  </script>
+  <title>SchillerIndia - Notifications</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="employee-theme.css">
+  <link rel="stylesheet" href="admin-sidebar.css">
+  <script src="employee-theme.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#f4f7fa;--surface:#fff;--surface2:#eaf1f6;--surface3:#f7f9fb;--border:#d0e0ec;--accent:#0077cc;--accent2:#007a8a;--green:#059669;--amber:#d97706;--red:#cc0000;--text:#1a2a3a;--muted:#7a9ab0;--soft:#4a6a8a;--card:#fff}
+    [data-theme="dark"]{--bg:#0f1621;--surface:#1a2333;--surface2:#1e293b;--surface3:#172030;--border:#2a3a52;--accent:#3b9eff;--accent2:#22d3ee;--green:#10b981;--amber:#f59e0b;--red:#f87171;--text:#e2eaf4;--muted:#7a9ab0;--soft:#9bb4c9;--card:#1a2333}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+    .main{flex:1;display:flex;flex-direction:column;min-width:0}
+    .topbar{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,80,120,.05)}
+    .topbar-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text)}
+    .topbar-date{font-size:12px;color:var(--muted);margin-top:2px}
+    .topbar-actions{display:flex;align-items:center;gap:10px}
+    .topbar-btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;border:1px solid var(--border);background:var(--surface2);color:var(--soft);font-family:'Plus Jakarta Sans',sans-serif}
+    .topbar-btn:hover{border-color:var(--accent);color:var(--accent)}
+    .topbar-btn.primary{background:var(--red);border-color:var(--red);color:#fff}
+    .role-badge{margin:0;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;display:inline-block;background:rgba(185,28,28,.1);color:#b91c1c;border:1px solid rgba(185,28,28,.25)}
+    .user-info{display:flex;align-items:center;gap:10px}
+    .user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#b91c1c,#ef4444);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;flex-shrink:0}
+    .user-name{font-size:13px;font-weight:700;color:var(--text)}
+    .user-role{font-size:11px;color:var(--muted)}
+    .logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:11px;font-weight:800;transition:all .2s}
+    .logout-btn:hover{border-color:var(--red);color:var(--red)}
+    .content{flex:1;padding:28px;overflow-y:auto}
+    .stats-grid{display:grid;grid-template-columns:repeat(4,minmax(160px,1fr));gap:16px;margin-bottom:22px}
+    .stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;box-shadow:0 2px 10px rgba(0,80,120,.05);transition:transform .2s,box-shadow .2s,border-color .2s}
+    .stat-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,80,120,.1)}
+    .stat-label{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+    .stat-value{font-family:'Syne',sans-serif;font-size:30px;font-weight:700;line-height:1}
+    .stat-sub{font-size:11px;color:var(--muted);margin-top:5px}
+    .stat-icon{float:right;font-size:24px;opacity:.45;margin-top:-30px}
+    .stat-blue .stat-value{color:var(--accent)}.stat-green .stat-value{color:var(--green)}.stat-amber .stat-value{color:var(--amber)}.stat-red .stat-value{color:var(--red)}
+    .panel{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:0 2px 10px rgba(0,80,120,.05);overflow:hidden;margin-bottom:20px}
+    .panel-header{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);gap:12px}
+    .panel-title{font-size:14px;font-weight:800;color:var(--text)}
+    .panel-sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+    .filter-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 2fr;gap:12px;padding:18px 20px}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+    input,select,textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color .2s,box-shadow .2s}
+    textarea{min-height:100px;resize:vertical;line-height:1.5}
+    input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,119,204,.08)}
+    .table-wrap{overflow-x:auto}
+    table{width:100%;border-collapse:collapse;min-width:940px}
+    th{font-size:10.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;text-align:left;padding:12px 14px;border-bottom:1px solid var(--border);background:var(--surface3)}
+    td{padding:14px;border-bottom:1px solid rgba(0,80,120,.08);font-size:12.5px;vertical-align:middle}
+    tbody tr:hover td{background:rgba(0,119,204,.03)}
+    .title-cell{font-weight:800;color:var(--text);font-size:13px;margin-bottom:4px}
+    .msg-cell{color:var(--muted);max-width:330px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .date-main{font-weight:700;color:var(--text);white-space:nowrap}
+    .date-sub{font-size:10.5px;color:var(--muted);margin-top:2px;white-space:nowrap}
+    .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:10.5px;font-weight:800;white-space:nowrap;text-transform:capitalize}
+    .b-info{background:rgba(0,119,204,.1);color:var(--accent);border:1px solid rgba(0,119,204,.16)}
+    .b-warning{background:rgba(217,119,6,.1);color:var(--amber);border:1px solid rgba(217,119,6,.18)}
+    .b-success{background:rgba(5,150,105,.1);color:var(--green);border:1px solid rgba(5,150,105,.18)}
+    .b-error,.b-urgent{background:rgba(204,0,0,.1);color:var(--red);border:1px solid rgba(204,0,0,.18)}
+    .b-announcement{background:rgba(124,58,237,.1);color:#7c3aed;border:1px solid rgba(124,58,237,.18)}
+    .b-medium{background:rgba(217,119,6,.1);color:var(--amber);border:1px solid rgba(217,119,6,.18)}
+    .b-high{background:rgba(204,0,0,.08);color:var(--red);border:1px solid rgba(204,0,0,.16)}
+    .b-low{background:rgba(5,150,105,.1);color:var(--green);border:1px solid rgba(5,150,105,.18)}
+    .b-active{background:rgba(5,150,105,.1);color:var(--green);border:1px solid rgba(5,150,105,.18)}
+    .b-inactive{background:rgba(122,154,176,.12);color:var(--muted);border:1px solid rgba(122,154,176,.18)}
+    .b-target{background:rgba(0,119,204,.08);color:var(--accent);border:1px solid rgba(0,119,204,.14)}
+    .actions{display:flex;gap:7px;align-items:center}
+    .btn-xs{padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--soft);font-size:11px;font-weight:800;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif}
+    .btn-xs:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,119,204,.05)}
+    .btn-xs.del{border-color:rgba(204,0,0,.25);color:var(--red)}
+    .empty{padding:44px 20px;text-align:center;color:var(--muted)}
+    .empty-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px}
+    .overlay{position:fixed;inset:0;background:rgba(3,7,18,.55);backdrop-filter:blur(5px);z-index:600;display:none;align-items:center;justify-content:center;padding:20px}
+    .overlay.open{display:flex}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:min(640px,96vw);max-height:92vh;display:flex;flex-direction:column;box-shadow:0 24px 70px rgba(0,0,0,.22);overflow:hidden}
+    .modal-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface)}
+    .modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700}
+    .modal-close{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;color:var(--muted)}
+    .modal-body{padding:20px 22px;overflow:auto;display:grid;gap:16px}
+    .modal-foot{padding:15px 22px;border-top:1px solid var(--border);background:var(--surface3);display:flex;justify-content:flex-end;gap:10px}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .toast-wrap{position:fixed;bottom:24px;right:24px;z-index:900;display:flex;flex-direction:column;gap:8px}
+    .toast{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:9px;min-width:240px;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+    .toast.ok{border-color:rgba(5,150,105,.4)}.toast.err{border-color:rgba(204,0,0,.4)}
+    @media(max-width:1100px){.stats-grid{grid-template-columns:repeat(2,1fr)}.filter-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:760px){.topbar{align-items:flex-start;flex-direction:column;gap:12px}.stats-grid,.filter-grid,.form-row{grid-template-columns:1fr}.content{padding:18px}}
+  </style>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <script src="brand-logo.js" defer></script>
+</head>
+<body>
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="sidebar-logo-text">SchillerIndia<div class="sub">Services</div></div>
+    </div>
+  </div>
+  <div style="padding:10px 20px 0;"><span class="role-badge">Admin</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <button class="nav-item " onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
+    <button class="nav-item " onclick="window.location.href='company-section.html'"><span class="icon">&#127970;</span> Company</button>
+    <button class="nav-item " onclick="window.location.href='division-section.html'"><span class="icon">&#128309;</span> Division</button>
+    <button class="nav-item " onclick="window.location.href='engineer-section.html'"><span class="icon">&#128119;</span> Engineers</button>
+    <button class="nav-item " onclick="window.location.href='dealer-section.html'"><span class="icon">&#129309;</span> Dealers</button>
+    <div class="nav-section">Operations</div>
+    <button class="nav-group-toggle " id="sf-toggle" onclick="toggleSF()">
+      <span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span>
+    </button>
+    <div class="nav-children " id="sf-children">
+      <div class="nav-sub">
+        <button class="nav-item " onclick="window.location.href='service-list.html'"><span class="icon">&#128225;</span> Services</button>
+        <button class="nav-item " onclick="window.location.href='pending-frn.html'"><span class="icon">&#128221;</span> Pending FRN</button>
+        <button class="nav-item " onclick="window.location.href='ob-pending.html'"><span class="icon">&#128194;</span> OB Pending</button>
+        <button class="nav-item " onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
+        <button class="nav-item " onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
+        <button class="nav-item " onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
+        <button class="nav-item " onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
+        <button class="nav-item " onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="ar-toggle" onclick="toggleAR()"><span class="icon">&#128196;</span> Activity Register <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="ar-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
+        <a class="nav-item " href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
+        <a class="nav-item " href="aprfob.html"><span class="icon">&#128203;</span> PRF/OB List</a>
+        <a class="nav-item " href="acr.html"><span class="icon">&#128209;</span> Closed PRF/OB</a>
+        <a class="nav-item " href="ans.html"><span class="icon">&#128230;</span> Non Saleable</a>
+        <a class="nav-item " href="as.html"><span class="icon">&#128176;</span> Saleable</a>
+        <a class="nav-item " href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
+        <a class="nav-item " href="acbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="rta-toggle" onclick="toggleRTA()"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="rta-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="atfrn.html"><span class="icon">&#128221;</span> Admin RT FRN</a>
+        <a class="nav-item " href="atob.html"><span class="icon">&#128230;</span> Admin RT OB</a>
+        <a class="nav-item " href="atur.html"><span class="icon">&#128736;&#65039;</span> Admin RT UR</a>
+        <a class="nav-item " href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
+      </div>
+    </div>
+    <div class="nav-section">Admin</div>
+    <button class="nav-item " onclick="window.location.href='usermanagement.html'"><span class="icon">&#128101;</span> User Management</button>
+    <button class="nav-item " onclick="window.location.href='Reports.html'"><span class="icon">&#128200;</span> Reports</button>
+    <button class="nav-item " onclick="window.location.href='settings.html'"><span class="icon">&#9881;&#65039;</span> Settings</button>
+    <button class="nav-item active" onclick="window.location.href='notifications.html'"><span class="icon">&#128276;</span> Notifications</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="admin-avatar">A</div>
+      <div>
+        <div class="user-name" id="admin-name">Admin</div>
+        <div class="user-role">Administrator</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Notifications</div>
+      <div class="topbar-date" id="topbar-date">Manage team announcements and alerts</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="topbar-btn primary" onclick="openModal()" id="new-notif-btn" style="display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:var(--accent);">&#128276; New Notification</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="stats-grid">
+      <div class="stat-card stat-blue"><div class="stat-label">Total</div><div class="stat-icon">&#128276;</div><div class="stat-value" id="st-total">0</div><div class="stat-sub">All notifications</div></div>
+      <div class="stat-card stat-green"><div class="stat-label">Active</div><div class="stat-icon">&#9989;</div><div class="stat-value" id="st-active">0</div><div class="stat-sub">Visible to users</div></div>
+      <div class="stat-card stat-amber"><div class="stat-label">High Priority</div><div class="stat-icon">&#9888;</div><div class="stat-value" id="st-high">0</div><div class="stat-sub">High and urgent</div></div>
+      <div class="stat-card stat-red"><div class="stat-label">Expired</div><div class="stat-icon">&#128197;</div><div class="stat-value" id="st-expired">0</div><div class="stat-sub">Past expiry date</div></div>
+    </div>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div><div class="panel-title">Notification Filters</div><div class="panel-sub">Search and narrow by type, role, priority, and status</div></div>
+        <button class="btn-xs" onclick="clearFilters()">Clear</button>
+      </div>
+      <div class="filter-grid">
+        <div class="field"><label>Type</label><select id="f-type" onchange="applyFilters()"><option value="">All Types</option><option value="announcement">Announcement</option><option value="info">Info</option><option value="warning">Warning</option><option value="success">Success</option><option value="error">Error</option></select></div>
+        <div class="field"><label>Target</label><select id="f-target" onchange="applyFilters()"><option value="">All Targets</option><option value="all">All</option><option value="admin">Admin</option><option value="employee">Employee</option><option value="pt">Product Team</option><option value="repair_team">Repair Team</option><option value="service_coordinator">Service Coordinator</option><option value="fqc">FQC</option></select></div>
+        <div class="field"><label>Priority</label><select id="f-priority" onchange="applyFilters()"><option value="">All Priorities</option><option value="urgent">Urgent</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></div>
+        <div class="field"><label>Status</label><select id="f-status" onchange="applyFilters()"><option value="">All Status</option><option value="true">Active</option><option value="false">Inactive</option></select></div>
+        <div class="field"><label>Search</label><input id="f-search" type="search" placeholder="Search title or message..." oninput="applyFilters()"/></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div><div class="panel-title">Notification List <span class="badge b-target" id="count-pill">0</span></div><div class="panel-sub" id="table-info">Loading...</div></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Notification</th><th>Type</th><th>Priority</th><th>Target</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="tbody"><tr><td colspan="7"><div class="empty"><div class="empty-title">Loading notifications...</div></div></td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</main>
+
+<div class="overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title" id="modal-title">New Notification</div><button class="modal-close" onclick="closeModal()">&#10005;</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="n-id"/>
+      <div class="field"><label>Title</label><input id="n-title" maxlength="120" placeholder="Short notification title"/></div>
+      <div class="field"><label>Message</label><textarea id="n-message" maxlength="1000" placeholder="Write the message users should see"></textarea><div class="panel-sub" id="char-count">0 / 1000 characters</div></div>
+      <div class="form-row">
+        <div class="field"><label>Type</label><select id="n-type"><option value="announcement">Announcement</option><option value="info">Info</option><option value="warning">Warning</option><option value="success">Success</option><option value="error">Error</option></select></div>
+        <div class="field"><label>Priority</label><select id="n-priority"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option><option value="urgent">Urgent</option></select></div>
+      </div>
+      <div class="field"><label>Target Audience</label><select id="n-target"><option value="all">All</option><option value="admin">Admin</option><option value="employee">Employee</option><option value="pt">Product Team</option><option value="repair_team">Repair Team</option><option value="service_coordinator">Service Coordinator</option><option value="fqc">FQC</option></select></div>
+      <div class="form-row">
+        <div class="field"><label>Expiry Date</label><input type="date" id="n-expires"/></div>
+        <div class="field"><label>Status</label><select id="n-active"><option value="true">Active</option><option value="false">Inactive</option></select></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn-xs" onclick="closeModal()" style="padding:9px 20px;">Cancel</button><button class="topbar-btn primary" onclick="saveNotif()" style="display:inline-flex;align-items:center;gap:6px;">&#128276; Send Notification</button></div>
+  </div>
+</div>
+
+<script>
+const API = '';
+let allData = [];
+
+function authH(){return {'Content-Type':'application/json',Authorization:'Bearer '+localStorage.getItem('schiller_token')}}
+function go(url){window.location.href=url}
+function logout(){localStorage.clear();window.location.href='login.html'}
+function toggleNav(key){document.getElementById(key+'-children').classList.toggle('open');document.getElementById(key+'-toggle').classList.toggle('open')}
+function esc(v){const d=document.createElement('div');d.textContent=String(v??'');return d.innerHTML}
+function toast(msg,type='ok'){const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="tdot"></span>'+esc(msg);w.appendChild(el);setTimeout(()=>el.remove(),3400)}
+function fmtDate(v){if(!v)return '<span class="date-sub">-</span>';const d=new Date(v);return `<div class="date-main">${d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</div><div class="date-sub">${d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div>`}
+function targetLabel(v){return ({all:'All',admin:'Admin',employee:'Employee',pt:'Product Team',repair_team:'Repair Team',service_coordinator:'Service Coordinator',fqc:'FQC'}[v]||v||'-')}
+function isExpired(d){return d.expiresAt && new Date(d.expiresAt).getTime() < Date.now()}
+
+async function loadData(){
+  document.getElementById('table-info').textContent='Loading...';
+  try{
+    const res=await fetch(API+'/api/admin/notifications',{headers:authH()});
+    if(res.status===401){logout();return}
+    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'HTTP '+res.status)}
+    allData=await res.json();
+    renderStats();
+    applyFilters();
+  }catch(e){
+    document.getElementById('table-info').textContent='Failed to load';
+    document.getElementById('tbody').innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-title">Could not load notifications</div><div>${esc(e.message)}</div></div></td></tr>`;
+    toast('Load failed: '+e.message,'err');
+  }
+}
+
+function renderStats(){
+  document.getElementById('st-total').textContent=allData.length;
+  document.getElementById('st-active').textContent=allData.filter(d=>d.isActive&&!isExpired(d)).length;
+  document.getElementById('st-high').textContent=allData.filter(d=>['high','urgent'].includes(d.priority)).length;
+  document.getElementById('st-expired').textContent=allData.filter(isExpired).length;
+}
+
+function applyFilters(){
+  const type=document.getElementById('f-type').value;
+  const target=document.getElementById('f-target').value;
+  const priority=document.getElementById('f-priority').value;
+  const status=document.getElementById('f-status').value;
+  const q=document.getElementById('f-search').value.trim().toLowerCase();
+  const rows=allData.filter(d=>{
+    if(type&&d.type!==type)return false;
+    if(target&&d.targetRole!==target)return false;
+    if(priority&&d.priority!==priority)return false;
+    if(status&&String(!!d.isActive)!==status)return false;
+    if(q&&!String(d.title||'').toLowerCase().includes(q)&&!String(d.message||'').toLowerCase().includes(q))return false;
+    return true;
+  });
+  renderTable(rows);
+}
+
+function clearFilters(){['f-type','f-target','f-priority','f-status'].forEach(id=>document.getElementById(id).value='');document.getElementById('f-search').value='';applyFilters()}
+
+function renderTable(rows){
+  document.getElementById('count-pill').textContent=rows.length;
+  document.getElementById('table-info').textContent=rows.length===allData.length?`${allData.length} total`:`Showing ${rows.length} of ${allData.length}`;
+  const tbody=document.getElementById('tbody');
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-title">No notifications found</div><div>Create a notification or clear the filters.</div></div></td></tr>';return}
+  tbody.innerHTML=rows.map(d=>`
+    <tr>
+      <td>${fmtDate(d.createdAt)}</td>
+      <td><div class="title-cell">${esc(d.title)}</div><div class="msg-cell">${esc(d.message)}</div></td>
+      <td><span class="badge b-${esc(d.type||'info')}">${esc(d.type||'info')}</span></td>
+      <td><span class="badge b-${esc(d.priority||'medium')}">${esc(d.priority||'medium')}</span></td>
+      <td><span class="badge b-target">${esc(targetLabel(d.targetRole))}</span></td>
+      <td>${d.isActive&&!isExpired(d)?'<span class="badge b-active">Active</span>':`<span class="badge b-inactive">${isExpired(d)?'Expired':'Inactive'}</span>`}</td>
+      <td><div class="actions"><button class="btn-xs" onclick="editRow('${esc(d._id)}')">Edit</button><button class="btn-xs del" onclick="delRow('${esc(d._id)}')">Delete</button></div></td>
+    </tr>`).join('');
+}
+
+document.getElementById('n-message').addEventListener('input',function(){document.getElementById('char-count').textContent=`${this.value.length} / 1000 characters`});
+
+function openModal(){
+  document.getElementById('modal-title').textContent='New Notification';
+  document.getElementById('n-id').value='';
+  document.getElementById('n-title').value='';
+  document.getElementById('n-message').value='';
+  document.getElementById('n-type').value='announcement';
+  document.getElementById('n-priority').value='medium';
+  document.getElementById('n-expires').value='';
+  document.getElementById('n-active').value='true';
+  document.getElementById('n-target').value='all';
+  document.getElementById('char-count').textContent='0 / 1000 characters';
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open')}
+function editRow(id){
+  const d=allData.find(x=>String(x._id)===String(id)); if(!d)return;
+  document.getElementById('modal-title').textContent='Edit Notification';
+  document.getElementById('n-id').value=d._id;
+  document.getElementById('n-title').value=d.title||'';
+  document.getElementById('n-message').value=d.message||'';
+  document.getElementById('n-type').value=d.type||'info';
+  document.getElementById('n-priority').value=d.priority||'medium';
+  document.getElementById('n-expires').value=d.expiresAt?String(d.expiresAt).slice(0,10):'';
+  document.getElementById('n-active').value=String(!!d.isActive);
+  document.getElementById('n-target').value=d.targetRole||'all';
+  document.getElementById('char-count').textContent=`${String(d.message||'').length} / 1000 characters`;
+  document.getElementById('modal').classList.add('open');
+}
+
+async function saveNotif(){
+  const id=document.getElementById('n-id').value;
+  const title=document.getElementById('n-title').value.trim();
+  const message=document.getElementById('n-message').value.trim();
+  if(!title)return toast('Title is required','err');
+  if(!message)return toast('Message is required','err');
+  const expiresAt=document.getElementById('n-expires').value;
+  const payload={title,message,type:document.getElementById('n-type').value,priority:document.getElementById('n-priority').value,targetRole:document.getElementById('n-target').value,isActive:document.getElementById('n-active').value==='true'};
+  if(expiresAt)payload.expiresAt=expiresAt; else payload.expiresAt=null;
+  try{
+    const res=await fetch(API+'/api/admin/notifications'+(id?'/'+encodeURIComponent(id):''),{method:id?'PUT':'POST',headers:authH(),body:JSON.stringify(payload)});
+    if(res.status===401){logout();return}
+    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Save failed')}
+    toast(id?'Notification updated.':'Notification created.');
+    closeModal();
+    loadData();
+  }catch(e){toast(e.message,'err')}
+}
+
+async function delRow(id){
+  if(!confirm('Delete this notification?'))return;
+  try{
+    const res=await fetch(API+'/api/admin/notifications/'+encodeURIComponent(id),{method:'DELETE',headers:authH()});
+    if(res.status===401){logout();return}
+    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Delete failed')}
+    toast('Notification deleted.');
+    loadData();
+  }catch(e){toast(e.message,'err')}
+}
+
+(async function init(){
+  let name = 'Admin';
+  try {
+    const token = localStorage.getItem('schiller_token');
+    const res = await fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } });
+    if (res.ok) { const d = await res.json(); if (d.name) name = d.name; }
+    else { const u = JSON.parse(localStorage.getItem('schiller_user')||'{}'); if (u.name) name = u.name; }
+  } catch(e) { const u = JSON.parse(localStorage.getItem('schiller_user')||'{}'); if (u.name) name = u.name; }
+  document.getElementById('admin-name').textContent = name;
+  document.getElementById('admin-avatar').textContent = name.charAt(0).toUpperCase();
+  document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  loadData();
+})();
+</script>
+</body>
+</html>

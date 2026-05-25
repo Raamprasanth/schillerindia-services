@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script>(function(){
+    const token = localStorage.getItem('schiller_token');
+    const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
+    if (!token || !['fqc','admin','superadmin'].includes(role)) window.location.href = 'login.html';
+  })();</script>
+  <title>SchillerIndia |- Closed BIR List</title>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    :root{
+      --bg:#f4f7fa;--surface:#ffffff;--surface2:#eaf1f6;--border:#d0e0ec;
+      --accent:#0077cc;--accent2:#007a8a;--green:#059669;--amber:#d97706;
+      --red:#cc0000;--text:#1a2a3a;--muted:#7a9ab0;--soft:#4a6a8a;--card:#ffffff;
+      --purple:#7c3aed;--cyan:#0891b2;--glow-accent:rgba(0,119,204,0.15);
+    }
+    body{font-family:Calibri, Arial, sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
+    /* SIDEBAR */
+    .sidebar{width:240px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 12px rgba(0,80,120,0.06);}
+    .sidebar-header{padding:16px 18px 14px;border-bottom:1px solid rgba(255,255,255,0.16);background:linear-gradient(145deg,#450a0a,#b91c1c);}
+    .sidebar-logo{display:flex;align-items:center;gap:10px;}
+    .sidebar-logo-icon{width:34px;height:34px;background:rgba(255,255,255,0.16);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:Calibri, Arial, sans-serif;font-weight:800;font-size:13px;color:#fff;box-shadow:0 2px 8px rgba(76,29,149,0.25);border:1px solid rgba(255,255,255,0.22);}
+    .sidebar-logo-text{font-family:Calibri, Arial, sans-serif;font-size:13px;font-weight:700;color:#fff;}
+    .sidebar-logo-text .sub{font-size:10px;color:rgba(255,255,255,0.68);font-family:Calibri, Arial, sans-serif;font-weight:400;}
+    .sidebar-nav{flex:1;padding:10px 8px;}
+    .nav-item{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:7px;color:var(--soft);font-size:13px;font-weight:500;cursor:pointer;transition:all 0.18s;margin-bottom:3px;border:none;background:none;width:100%;text-align:left;font-family:Calibri, Arial, sans-serif;text-decoration:none;}
+    .nav-item:hover{background:var(--surface2);color:var(--text);}
+    .nav-item.active{background:rgba(185,28,28,0.1);color:#b91c1c;font-weight:700;border-left:3px solid #b91c1c;padding-left:9px;}
+    .nav-item .icon{font-size:13px;width:17px;text-align:center;flex-shrink:0;}
+    .nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;}
+    .nav-badge-amber{margin-left:auto;background:var(--amber);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;}
+    .sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);}
+    .user-info{display:flex;align-items:center;gap:10px;}
+    .user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#b91c1c,#ef4444);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
+    .user-name{font-size:12px;font-weight:600;color:var(--text);}
+    .user-role{font-size:10px;color:var(--muted);}
+    .logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s;}
+    .logout-btn:hover{border-color:var(--red);color:var(--red);}
+    .role-badge{margin:10px 20px 0;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;display:inline-block;background:rgba(185,28,28,0.1);color:#b91c1c;border:1px solid rgba(185,28,28,0.25);}
+    .nav-section{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;padding:10px 8px 5px;}
+    .theme-toggle{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all 0.2s;}
+    .theme-toggle:hover{border-color:var(--red);}
+
+    /* MAIN */
+    .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .topbar{padding:14px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:0 2px 8px rgba(0,80,120,0.05);}
+    .topbar-left .page-title{font-family:Calibri, Arial, sans-serif;font-size:20px;font-weight:700;color:var(--text);}
+    .topbar-left .topbar-date{font-size:12px;color:var(--muted);margin-top:2px;}
+    .topbar-actions{display:flex;align-items:center;gap:10px;}
+    .topbar-btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;border:1px solid var(--border);background:var(--surface2);color:var(--soft);font-family:Calibri, Arial, sans-serif;}
+    .topbar-btn:hover{border-color:var(--red);color:var(--red);}
+    .topbar-btn.primary{background:var(--purple);color:#fff;border-color:var(--purple);box-shadow:0 2px 8px rgba(124,58,237,0.24);}
+    .topbar-btn.primary:hover{background:#5b21b6;}
+    .content{flex:1;padding:24px 28px;overflow-y:auto;background:var(--bg);}
+
+
+    /* ANIMATIONS */
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(1.4);}}
+
+    /* HERO */
+    .hero,.kpi-ticker{display:none;}
+
+    /* STATS */
+    .stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;animation:fadeUp 0.5s ease both 0.05s;}
+    .stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 2px 8px rgba(0,80,120,0.04);position:relative;overflow:hidden;display:flex;align-items:center;gap:10px;}
+    .stat-card::before{content:'';width:4px;position:absolute;left:0;top:0;bottom:0;border-radius:10px 0 0 10px;}
+    .stat-card.s-green::before{background:var(--green);}
+    .stat-card.s-blue::before{background:var(--accent);}
+    .stat-card.s-purple::before{background:var(--purple);}
+    .stat-card.s-cyan::before{background:var(--cyan);}
+    .stat-card.s-amber::before{background:var(--amber);}
+    .stat-card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,80,120,0.09);}
+    .stat-icon{font-size:22px;opacity:0.55;flex-shrink:0;}
+    .stat-body{flex:1;min-width:0;}
+    .stat-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px;}
+    .stat-value{font-family:Calibri, Arial, sans-serif;font-size:20px;font-weight:800;line-height:1;}
+    .stat-sub{font-size:10px;color:var(--muted);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .s-green .stat-value{color:var(--green);}
+    .s-blue .stat-value{color:var(--accent);}
+    .s-purple .stat-value{color:var(--purple);}
+    .s-cyan .stat-value{color:var(--cyan);}
+    .s-amber .stat-value{color:var(--amber);}
+
+/* -- FILTER STRIP --------------------------------------------------------- */
+.filter-strip{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 2px 8px rgba(0,80,120,0.04);}
+.filter-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;white-space:nowrap;}
+.f-input{padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:Calibri, Arial, sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s;}
+.f-input:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(204,0,0,0.07);}
+.f-select{padding:8px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:Calibri, Arial, sans-serif;color:var(--soft);background:var(--surface);outline:none;cursor:pointer;transition:border-color 0.2s;}
+.f-select:focus{border-color:var(--red);}
+.f-divider{width:1px;height:24px;background:var(--border);flex-shrink:0;}
+
+/* -- TABLE CARD ----------------------------------------------------------- */
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,80,120,0.05);}
+.table-card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:var(--surface);border-left:4px solid var(--red);}
+.table-card-title{font-family:Calibri, Arial, sans-serif;font-size:15px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+.count-badge{background:rgba(204,0,0,0.1);color:var(--red);border:1px solid rgba(204,0,0,0.2);font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px;}
+.table-toolbar{display:flex;align-items:center;gap:10px;}
+.show-row{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);}
+.srch-wrap{position:relative;}
+.srch-wrap input{padding:7px 12px 7px 29px;border:1.5px solid var(--border);border-radius:7px;font-size:12.5px;font-family:Calibri, Arial, sans-serif;color:var(--text);background:var(--surface);outline:none;width:210px;transition:border-color 0.2s;}
+.srch-wrap input:focus{border-color:var(--red);}
+.srch-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);}
+.table-wrap{overflow-x:auto;}
+table.ns-table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1300px;}
+table.ns-table thead th{padding:10px 12px;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;text-align:left;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap;cursor:pointer;user-select:none;transition:color 0.2s;}
+table.ns-table thead th:hover{color:var(--red);}
+table.ns-table thead th.sorted{color:var(--red);}
+table.ns-table thead th .si{font-size:8px;margin-left:2px;opacity:0.4;}
+table.ns-table thead th.sorted .si{opacity:1;}
+table.ns-table thead th.no-sort{cursor:default;}
+table.ns-table thead th.no-sort:hover{color:var(--muted);}
+table.ns-table tbody td{padding:10px 12px;border-bottom:1px solid rgba(0,80,120,0.06);vertical-align:middle;white-space:nowrap;}
+table.ns-table tbody tr{transition:background 0.12s;}
+table.ns-table tbody tr:hover td{background:var(--glow-accent);}
+table.ns-table tbody tr:last-child td{border-bottom:none;}
+.table-foot{padding:11px 18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted);flex-wrap:wrap;gap:8px;background:var(--surface2);}
+.pager-row{display:flex;align-items:center;gap:3px;}
+.pager{min-width:28px;height:28px;padding:0 7px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--soft);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.18s;font-family:Calibri, Arial, sans-serif;}
+.pager:hover{border-color:var(--red);color:var(--red);}
+.pager.active{background:var(--red);border-color:var(--red);color:#fff;}
+.pager:disabled{opacity:0.3;cursor:not-allowed;}
+
+    /* BADGES */
+    .chip-sm{display:inline-flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-size:11px;color:var(--soft);font-weight:500;font-family:Calibri, Arial, sans-serif;}
+    .badge-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+    .badge-pill::before{content:'';width:5px;height:5px;border-radius:50%;display:block;}
+    .bp-green{background:rgba(5,150,105,0.12);color:var(--green);}.bp-green::before{background:var(--green);}
+    .bp-cyan{background:rgba(8,145,178,0.12);color:var(--cyan);}.bp-cyan::before{background:var(--cyan);}
+    .bp-purple{background:rgba(124,58,237,0.12);color:var(--purple);}.bp-purple::before{background:var(--purple);}
+    .bp-blue{background:rgba(0,119,204,0.1);color:var(--accent);}.bp-blue::before{background:var(--accent);}
+    .bp-amber{background:rgba(217,119,6,0.12);color:var(--amber);}.bp-amber::before{background:var(--amber);}
+    .st-closed{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(5,150,105,0.12);color:var(--green);}
+    .st-closed::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);display:block;}
+    .st-approved{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(5,150,105,0.12);color:var(--green);}
+    .st-approved::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);display:block;}
+
+    /* BUTTONS */
+    .btn{padding:9px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:Calibri, Arial, sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;}
+    .btn-green{background:var(--purple);color:#fff;box-shadow:0 2px 8px rgba(124,58,237,0.24);}
+    .btn-green:hover{background:#a80000;}
+    .btn-outline{background:none;border:1.5px solid var(--border);color:var(--soft);}
+    .btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+    .btn-sm{padding:6px 14px;font-size:12px;}
+    .btn-xs{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:none;color:var(--soft);font-family:Calibri, Arial, sans-serif;transition:all 0.2s;}
+    .btn-xs:hover{border-color:var(--accent);color:var(--accent);}
+
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(10,20,35,0.45);z-index:500;display:none;align-items:flex-start;justify-content:center;backdrop-filter:blur(6px);overflow-y:auto;padding:24px 12px;}
+    .modal-overlay.show{display:flex;animation:fadeUp 0.2s ease both;}
+    .modal-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:820px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,0.18);margin:auto;}
+    .modal-box h3{font-family:Calibri, Arial, sans-serif;font-size:18px;font-weight:800;color:var(--text);margin-bottom:4px;}
+    .modal-subtitle{font-size:12px;color:var(--muted);margin-bottom:22px;}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);}
+
+    /* DETAIL GRID */
+    .detail-section{margin-bottom:20px;}
+    .detail-section-title{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;}
+    .detail-section-title .dot{width:6px;height:6px;border-radius:50%;}
+    .detail-grid{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+    .detail-cell{padding:10px 14px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);}
+    .detail-cell:nth-child(3n){border-right:none;}
+    .detail-cell:nth-last-child(-n+3){border-bottom:none;}
+    .detail-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px;}
+    .detail-val{font-size:13px;color:var(--text);font-weight:500;}
+    .detail-val.mono{font-family:Calibri, Arial, sans-serif;font-size:12px;}
+
+    /* TOAST */
+    .toast-wrap{position:fixed;bottom:24px;right:24px;z-index:600;display:flex;flex-direction:column;gap:8px;}
+    .toast{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;min-width:240px;animation:fadeUp 0.3s ease;box-shadow:0 8px 24px rgba(0,0,0,0.12);}
+    .toast.ok{border-color:rgba(5,150,105,0.4);}.toast.ok .tdot{background:var(--green);}
+    .toast.err{border-color:rgba(204,0,0,0.4);}.toast.err .tdot{background:var(--red);}
+    .tdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+    /* KPI */
+    .kpi-ticker{display:flex;gap:20px;padding:12px 20px;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow-x:auto;margin-bottom:20px;align-items:center;animation:fadeUp 0.45s ease both 0.08s;}
+    .kpi-ticker::-webkit-scrollbar{display:none;}
+    .kpi-item{display:flex;align-items:center;gap:8px;flex-shrink:0;padding-right:20px;border-right:1px solid var(--border);}
+    .kpi-item:last-child{border-right:none;padding-right:0;}
+    .kpi-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;}
+    .kpi-val{font-family:Calibri, Arial, sans-serif;font-size:14px;font-weight:600;color:var(--text);}
+
+    /* PAGINATION */
+    .pagination{display:flex;align-items:center;gap:6px;}
+    .pg-btn{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--soft);font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+    .pg-btn:hover,.pg-btn.active{background:var(--green);color:#fff;border-color:var(--green);}
+    .pg-btn:disabled{opacity:0.4;cursor:not-allowed;}
+
+    /* EMPTY */
+    .empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+    .empty-icon{font-size:42px;margin-bottom:12px;opacity:0.4;}
+
+    /* PROGRESS */
+    .progress-wrap{background:var(--surface2);border-radius:6px;height:5px;overflow:hidden;margin-top:5px;}
+    .progress-bar{height:5px;border-radius:6px;background:linear-gradient(90deg,var(--green),#34d399);transition:width 1s ease;}
+
+    @media(max-width:1100px){.stats-grid{grid-template-columns:repeat(3,1fr);}}
+    @media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr);} .detail-grid{grid-template-columns:1fr 1fr;}}
+    @media(max-width:600px){.sidebar{display:none;}.stats-grid{grid-template-columns:1fr;} .detail-grid{grid-template-columns:1fr;}}
+  
+    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
+    </style>
+  <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="employee-theme.css">
+  <style>
+  .sidebar{width:240px !important;background:var(--surface) !important;border-right:1px solid var(--border) !important;box-shadow:2px 0 12px rgba(0,80,120,0.06) !important;}
+  .sidebar-header{padding:16px 18px 14px !important;border-bottom:1px solid rgba(255,255,255,0.16) !important;background:linear-gradient(145deg,#450a0a,#b91c1c) !important;}
+  .sidebar-logo{display:flex !important;align-items:center !important;gap:10px !important;}
+  .sidebar-logo-text{font-family:Calibri, Arial, sans-serif !important;font-size:15px !important;font-weight:800 !important;color:#fff !important;line-height:1.2 !important;}
+  .sidebar-logo-text .sub{font-family:Calibri, Arial, sans-serif !important;font-size:12px !important;font-weight:600 !important;color:rgba(255,255,255,0.68) !important;}
+  .sidebar-nav{flex:1 !important;padding:10px 8px !important;}
+  .nav-section{font-size:12px !important;font-weight:800 !important;color:var(--muted) !important;letter-spacing:.1em !important;text-transform:uppercase !important;padding:10px 8px 5px !important;}
+  .nav-item{display:flex !important;align-items:center !important;gap:9px !important;padding:10px 12px !important;border-radius:7px !important;color:var(--soft) !important;font-size:15px !important;font-weight:700 !important;margin-bottom:3px !important;border:none !important;background:none !important;width:100% !important;text-align:left !important;font-family:Calibri, Arial, sans-serif !important;text-decoration:none !important;line-height:1.2 !important;}
+  .nav-item:hover{background:var(--surface2) !important;color:var(--text) !important;}
+  .nav-item.active{background:rgba(124,58,237,0.11) !important;color:var(--purple) !important;font-weight:700 !important;border-left:3px solid var(--purple) !important;padding-left:9px !important;}
+  .nav-item .icon{font-size:15px !important;width:20px !important;min-width:20px !important;display:inline-flex !important;align-items:center !important;justify-content:center !important;text-align:center !important;line-height:1 !important;flex-shrink:0 !important;}
+  .role-badge{margin:10px 20px 0 !important;padding:4px 12px !important;border-radius:20px !important;font-size:11px !important;font-weight:700 !important;letter-spacing:.06em !important;}
+  .sidebar-footer{padding:14px 18px !important;border-top:1px solid var(--border) !important;}
+  .user-name{font-size:12px !important;font-weight:600 !important;color:var(--text) !important;}
+  .user-role{font-size:10px !important;font-weight:400 !important;color:var(--muted) !important;}
+  </style>
+  <link rel="stylesheet" href="fqc-page-theme.css">
+  <script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <script src="brand-logo.js" defer></script>
+</head>
+<body>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- VIEW MODAL -->
+<div class="modal-overlay" id="view-modal">
+  <div class="modal-box">
+    <h3 id="view-title">&#128193; Closed BIR Detail</h3>
+    <div class="modal-subtitle" id="view-sub">Full closed batch inspection record</div>
+    <div id="view-content"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline btn-sm" onclick="closeView()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="sidebar-logo-text">SchillerIndia<div class="sub">Services</div></div>
+    </div>
+  </div>
+  <div style="padding:10px 20px 0;"><span class="role-badge">FQC</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">FQC</div>
+    <a class="nav-item" href="fqc-dashboard.html"><span class="icon">&#128202;</span> Dashboard</a>
+    <a class="nav-item" href="fqc-dashboard.html?page=pending-activity"><span class="icon">&#9203;</span> Pending Activity</a>
+    <a class="nav-item" href="fqc-dashboard.html?page=closed-activity"><span class="icon">&#9989;</span> Closed Activity</a>
+    <a class="nav-item" href="fns.html"><span class="icon">&#128230;</span> Non Saleable</a>
+    <a class="nav-item" href="fs.html"><span class="icon">&#128176;</span> Saleables</a>
+    <a class="nav-item" href="fbir.html"><span class="icon">&#128203;</span> BIR LIST</a>
+    <a class="nav-item active" href="fcbir.html"><span class="icon">&#128193;</span> Closed BIR LIST</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="admin-avatar">A</div>
+      <div>
+        <div class="user-name" id="admin-name">FQC</div>
+        <div class="user-role">FQC Inspector</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="page-title">Closed BIR List</div>
+      <div class="topbar-date" id="admin-date"></div>
+    </div>
+    <div class="topbar-actions">
+      <button class="topbar-btn" onclick="exportCSV()">&#128228; Export</button>
+      <button class="topbar-btn primary" onclick="window.location.href='fbir.html'">+ New BIR</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="hero-left">
+          <h1>Closed BIR Registry</h1>
+          <p>All approved &amp; closed Batch Inspection Reports - read-only archive</p>
+          <div class="hero-badge"><span class="dot"></span> Archive Active</div>
+        </div>
+        <div class="hero-meta">
+          <div class="meta-item"><div class="val" id="hero-total" style="color:var(--green);">0</div><div class="lbl">Total Closed</div></div>
+          <div class="meta-item"><div class="val" id="hero-divs" style="color:var(--cyan);">0</div><div class="lbl">Divisions</div></div>
+          <div class="meta-item"><div class="val" id="hero-this-month" style="color:var(--purple);">0</div><div class="lbl">This Month</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card s-green"><span class="stat-icon">&#9989;</span><div class="stat-body"><div class="stat-label">Total Closed</div><div class="stat-value" id="sc-total">0</div><div class="stat-sub">All archived BIRs</div></div></div>
+      <div class="stat-card s-cyan"><span class="stat-icon">&#128202;</span><div class="stat-body"><div class="stat-label">Divisions Active</div><div class="stat-value" id="sc-divs">0</div><div class="stat-sub">Unique divisions</div></div></div>
+      <div class="stat-card s-purple"><span class="stat-icon">&#128736;&#65039;</span><div class="stat-body"><div class="stat-label">HW Changes</div><div class="stat-value" id="sc-hw">0</div><div class="stat-sub">Hardware updated</div></div></div>
+      <div class="stat-card s-blue"><span class="stat-icon">&#128187;</span><div class="stat-body"><div class="stat-label">SW Updated</div><div class="stat-value" id="sc-sw">0</div><div class="stat-sub">Software changed</div></div></div>
+      <div class="stat-card s-amber"><span class="stat-icon">&#128197;</span><div class="stat-body"><div class="stat-label">This Month</div><div class="stat-value" id="sc-month">0</div><div class="stat-sub">Closed this month</div></div></div>
+    </div>
+
+    <!-- Date & Division Filter -->
+    <div class="filter-strip">
+      <span class="filter-label">From Date</span>
+      <input type="date" class="f-input" id="date-from" onchange="applyFilters()"/>
+      <div class="f-divider"></div>
+      <span class="filter-label">To Date</span>
+      <input type="date" class="f-input" id="date-to" onchange="applyFilters()"/>
+      <div class="f-divider"></div>
+      <span class="filter-label">Division</span>
+      <select class="f-select" id="div-filter" onchange="applyFilters()">
+        <option value="">All Divisions</option>
+        <option>GANSHORN</option><option>VENTILATOR</option><option>PATIENT MONITORS</option>
+        <option>SHIPL</option><option>INJECTOR</option><option>RADIOLOGY</option><option>HOLTER</option>
+      </select>
+      <button class="btn btn-outline btn-sm" onclick="clearFilters()" style="margin-left:auto;">&#10005; Clear</button>
+    </div>
+
+    <!-- BIR TABLE -->
+    <div class="table-card">
+      <div class="table-card-header">
+        <div class="table-card-title">
+          &#128193; Closed BIR Details
+          <span class="count-badge" id="bir-count">- entries</span>
+        </div>
+        <div class="table-toolbar">
+          <div class="show-row">
+            Show
+            <select class="f-select" id="rows-select" style="padding:5px 8px;" onchange="applyFilters()">
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+            entries
+          </div>
+          <div class="srch-wrap">
+            <span class="srch-ico">&#128269;</span>
+            <input type="text" id="search-input" placeholder="Search model, ref, serial..." oninput="applyFilters()"/>
+          </div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="ns-table">
+          <thead>
+            <tr>
+              <th class="sortable" data-col="birRef">BIR Ref No.<span class="si">&#8693;</span></th>
+              <th class="sortable" data-col="unitInwardDate">Inward Date<span class="si">&#8693;</span></th>
+              <th class="sortable" data-col="division">Division<span class="si">&#8693;</span></th>
+              <th class="sortable" data-col="model">Model<span class="si">&#8693;</span></th>
+              <th class="no-sort">Configuration</th>
+              <th class="sortable" data-col="receivedQty">Qty<span class="si">&#8693;</span></th>
+              <th class="no-sort">Prev SW</th>
+              <th class="no-sort">HW Changes</th>
+              <th class="no-sort">Accessory Details</th>
+              <th class="no-sort">CNR/Technews</th>
+              <th class="sortable" data-col="status">Status<span class="si">&#8693;</span></th>
+              <th class="no-sort">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="bir-tbody">
+            <tr class="loading-row"><td colspan="12"><span class="spin"></span>Loading from database-</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-foot">
+        <span id="bir-footer">Showing 0 of 0 entries</span>
+        <div class="pager-row" id="pagination"></div>
+      </div>
+    </div>
+
+    <!-- DIVISION BREAKDOWN BELOW TABLE -->
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">&#128202; Division Breakdown</div></div>
+      <div class="panel-body" id="div-breakdown" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// -- STATE ---------------------------------------------------------------------
+let allData = [];
+let filtered = [];
+let sortCol = 'unitInwardDate';
+let sortDir = 'desc';
+let currentPage = 1;
+
+// -- HELPERS -------------------------------------------------------------------
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function getToken(){return localStorage.getItem('schiller_token')||'';}
+function authHeaders(){return{'Content-Type':'application/json',Authorization:'Bearer '+getToken()};}
+function handleUnauth(r){if(r.status===401){showToast('Session expired.','err');setTimeout(()=>window.location.href='login.html',1500);throw new Error('Unauthorized');}}
+function showToast(msg,type='ok'){const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="tdot"></span>'+msg;w.appendChild(el);setTimeout(()=>el.remove(),3200);}
+function fmtDate(d){if(!d)return'-';try{const dt=new Date(d);return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}catch{return d;}}
+function thisMonth(d){if(!d)return false;const dt=new Date(d);const now=new Date();return dt.getMonth()===now.getMonth()&&dt.getFullYear()===now.getFullYear();}
+function divPillClass(d){const m={'GANSHORN':'bp-blue','VENTILATOR':'bp-purple','PATIENT MONITORS':'bp-cyan','SHIPL':'bp-green','INJECTOR':'bp-amber','RADIOLOGY':'bp-blue','HOLTER':'bp-cyan'};return m[d]||'bp-blue';}
+function normalizeClosed(doc){if(!doc)return null;const out={...doc};if(out.status==='Completed')out.status='Closed';return out;}
+function mergeClosedLists(primary, secondary){
+  const seen=new Set();
+  const merged=[];
+  [...(primary||[]), ...(secondary||[])].forEach(item=>{
+    const normalized=normalizeClosed(item);
+    if(!normalized)return;
+    if(!['Approved','Closed'].includes(String(normalized.status||'')))return;
+    const key=normalized._id||normalized.id||normalized.birRef;
+    if(!key||seen.has(key))return;
+    seen.add(key);
+    merged.push(normalized);
+  });
+  return merged;
+}
+
+// -- LOAD DATA -----------------------------------------------------------------
+async function loadData(){
+  const localClosed = JSON.parse(localStorage.getItem('si_closed_bir_data')||'[]');
+  try{
+    // Try closed BIR API first
+    let res = await fetch('/api/bir/closed',{headers:authHeaders()}).catch(()=>null);
+    if(res&&res.ok){allData=mergeClosedLists(await res.json(), localClosed);}
+    else{
+      // Fallback: filter approved from full BIR data or localStorage
+      res = await fetch('/api/bir',{headers:authHeaders()}).catch(()=>null);
+      if(res&&res.ok){
+        const all = await res.json();
+        allData = mergeClosedLists(all.filter(x=>['Approved','Closed'].includes(x.status)), localClosed);
+      } else {
+        const stored = JSON.parse(localStorage.getItem('si_bir_data')||'[]');
+        allData = mergeClosedLists(stored.filter(x=>['Approved','Closed'].includes(x.status)), localClosed);
+        if(allData.length===0) allData = demoData();
+      }
+    }
+  }catch(e){
+    const stored = JSON.parse(localStorage.getItem('si_bir_data')||'[]');
+    allData = mergeClosedLists(stored.filter(x=>['Approved','Closed'].includes(x.status)), localClosed);
+    if(allData.length===0) allData = demoData();
+  }
+  updateStats();
+  applyFilters();
+}
+
+function demoData(){
+  return[
+    {_id:'cbir001',birRef:'VENT/170426/31',unitInwardDate:'2026-04-17',fqcInwardDate:'2026-04-17',division:'VENTILATOR',model:'GRAPHNET TS',configuration:'ADL, PED',receivedQty:'25',prevSwVersion:'N11-TS-01.15',presSwVersion:'N11-TS-01.16',hwChanges:'NA',hwChangeRemarks:'',swChangeRemarks:'Firmware updated to latest stable build',accChanges:'No Change',accDetails:'standard accessories received',accChangeRemarks:'',userManualUpdate:'Yes',serviceManualUpdate:'No',fqcRemarks:'All checks passed',scEngineer:'Rajesh Kumar',psEngineer:'Amit Singh',techRemarks:'Calibration verified',tsVerificationDate:'2026-04-19',psVerificationDate:'2026-04-20',cnrCirculation:'Yes',cnrRefNo:'CNR-2026-041',cnrReleaseDate:'2026-04-21',approvedDate:'2026-04-22',invoiceNo:'INV/2026/0041',invoiceDate:'2026-04-16',serial:'GNET-2026-025',supplier:'Getinge AB',status:'Approved'},
+    {_id:'cbir002',birRef:'SAG/150426/25',unitInwardDate:'2026-04-15',fqcInwardDate:'2026-04-15',division:'GANSHORN',model:'Body Plus',configuration:'Spirometry+SBD+Body plethysmography+Provocation',receivedQty:'2nos',prevSwVersion:'1.10.2.54',presSwVersion:'1.10.2.54',hwChanges:'NA',hwChangeRemarks:'',swChangeRemarks:'',accChanges:'No Change',accDetails:'std acc recd',accChangeRemarks:'',userManualUpdate:'No',serviceManualUpdate:'No',fqcRemarks:'Satisfactory',scEngineer:'Priya Nair',psEngineer:'Suresh Babu',techRemarks:'',tsVerificationDate:'2026-04-17',psVerificationDate:'2026-04-18',cnrCirculation:'No',cnrRefNo:'',cnrReleaseDate:'',approvedDate:'2026-04-19',invoiceNo:'INV/2026/0039',invoiceDate:'2026-04-14',serial:'BP-2026-002',supplier:'Ganshorn GmbH',status:'Approved'},
+    {_id:'cbir003',birRef:'SHIPL/10042026/07',unitInwardDate:'2026-04-10',fqcInwardDate:'2026-04-11',division:'SHIPL',model:'CS-200',configuration:'12-Lead ECG, Spirometry',receivedQty:'3',prevSwVersion:'V3.1',presSwVersion:'V3.2',hwChanges:'Battery module replaced',hwChangeRemarks:'Li-Ion upgraded to higher capacity',swChangeRemarks:'v3.2 includes ECG algorithm improvements',accChanges:'Added',accDetails:'USB Cable added',accChangeRemarks:'Standard USB-C cable added per new policy',userManualUpdate:'Yes',serviceManualUpdate:'Yes',fqcRemarks:'All pass',scEngineer:'Vikram Menon',psEngineer:'Deepa Rao',techRemarks:'Battery calibration done',tsVerificationDate:'2026-04-12',psVerificationDate:'2026-04-13',cnrCirculation:'Yes',cnrRefNo:'CNR-2026-038',cnrReleaseDate:'2026-04-14',approvedDate:'2026-04-15',invoiceNo:'INV/2026/0035',invoiceDate:'2026-04-09',serial:'CS200-2026-003',supplier:'Schiller AG',status:'Approved'},
+    {_id:'cbir004',birRef:'VENT/050426/28',unitInwardDate:'2026-04-05',fqcInwardDate:'2026-04-05',division:'VENTILATOR',model:'ELISA 800',configuration:'ICU Ventilator Full',receivedQty:'10',prevSwVersion:'8.20.1',presSwVersion:'8.21.0',hwChanges:'NA',hwChangeRemarks:'',swChangeRemarks:'Critical patch for alarm thresholds',accChanges:'No Change',accDetails:'standard accessories received',accChangeRemarks:'',userManualUpdate:'Yes',serviceManualUpdate:'No',fqcRemarks:'Critical update applied',scEngineer:'Anand Krishnan',psEngineer:'Meena Pillai',techRemarks:'Alarm system tested',tsVerificationDate:'2026-04-07',psVerificationDate:'2026-04-08',cnrCirculation:'Yes',cnrRefNo:'CNR-2026-031',cnrReleaseDate:'2026-04-09',approvedDate:'2026-04-10',invoiceNo:'INV/2026/0028',invoiceDate:'2026-04-04',serial:'',supplier:'Skanray',status:'Approved'},
+    {_id:'cbir005',birRef:'SAG/280326/22',unitInwardDate:'2026-03-28',fqcInwardDate:'2026-03-28',division:'GANSHORN',model:'DLCO',configuration:'Spirometry, SBD, Provocation, ROCC',receivedQty:'1no',prevSwVersion:'1.10.2.50',presSwVersion:'1.10.2.54',hwChanges:'NA',hwChangeRemarks:'',swChangeRemarks:'Performance improvements',accChanges:'No Change',accDetails:'std acc recd',accChangeRemarks:'',userManualUpdate:'No',serviceManualUpdate:'No',fqcRemarks:'OK',scEngineer:'Rajesh Kumar',psEngineer:'Suresh Babu',techRemarks:'',tsVerificationDate:'2026-03-30',psVerificationDate:'2026-03-31',cnrCirculation:'No',cnrRefNo:'',cnrReleaseDate:'',approvedDate:'2026-04-01',invoiceNo:'INV/2026/0019',invoiceDate:'2026-03-27',serial:'DLCO-2026-001',supplier:'Ganshorn GmbH',status:'Approved'},
+    {_id:'cbir006',birRef:'MONIT/200326/18',unitInwardDate:'2026-03-20',fqcInwardDate:'2026-03-20',division:'PATIENT MONITORS',model:'BLT S12',configuration:'Multi-Param',receivedQty:'8',prevSwVersion:'V01.05.00',presSwVersion:'V01.06.00',hwChanges:'SpO2 sensor updated',hwChangeRemarks:'Masimo module replaced with newer revision',swChangeRemarks:'SpO2 algorithm v2',accChanges:'Replaced',accDetails:'SpO2 probe - new model',accChangeRemarks:'Nellcor probe replaced',userManualUpdate:'Yes',serviceManualUpdate:'Yes',fqcRemarks:'All functional',scEngineer:'Priya Nair',psEngineer:'Amit Singh',techRemarks:'SpO2 accuracy verified',tsVerificationDate:'2026-03-22',psVerificationDate:'2026-03-23',cnrCirculation:'Yes',cnrRefNo:'CNR-2026-022',cnrReleaseDate:'2026-03-24',approvedDate:'2026-03-25',invoiceNo:'INV/2026/0014',invoiceDate:'2026-03-19',serial:'',supplier:'BLT Medical',status:'Approved'},
+    {_id:'cbir007',birRef:'INJEC/150326/15',unitInwardDate:'2026-03-15',fqcInwardDate:'2026-03-15',division:'INJECTOR',model:'CT Expr-s',configuration:'Single Head',receivedQty:'2',prevSwVersion:'4.0.1',presSwVersion:'4.0.1',hwChanges:'NA',hwChangeRemarks:'',swChangeRemarks:'',accChanges:'No Change',accDetails:'standard accessories received',accChangeRemarks:'',userManualUpdate:'No',serviceManualUpdate:'No',fqcRemarks:'Passed',scEngineer:'Vikram Menon',psEngineer:'Deepa Rao',techRemarks:'',tsVerificationDate:'2026-03-17',psVerificationDate:'2026-03-18',cnrCirculation:'No',cnrRefNo:'',cnrReleaseDate:'',approvedDate:'2026-03-19',invoiceNo:'INV/2026/0010',invoiceDate:'2026-03-14',serial:'CTEX-2026-002',supplier:'Guerbet',status:'Approved'},
+  ];
+}
+
+// -- STATS ---------------------------------------------------------------------
+function updateStats(){
+  const total=allData.length;
+  const approved=allData.filter(x=>x.status==='Approved'||x.status==='Closed').length;
+  const divs=[...new Set(allData.map(x=>x.division))];
+  const thisM=allData.filter(x=>thisMonth(x.approvedDate||x.unitInwardDate)).length;
+  const hw=allData.filter(x=>x.hwChanges&&x.hwChanges.toLowerCase()!=='na'&&x.hwChanges.trim()!=='').length;
+  const sw=allData.filter(x=>x.presSwVersion&&x.prevSwVersion&&x.presSwVersion!==x.prevSwVersion).length;
+
+  (document.getElementById('sc-total')||{}).textContent =total;
+  (document.getElementById('sc-divs')||{}).textContent =divs.length;
+  (document.getElementById('sc-hw')||{}).textContent =hw;
+  (document.getElementById('sc-sw')||{}).textContent =sw;
+  (document.getElementById('sc-month')||{}).textContent =thisM;
+
+  // Division breakdown
+  const dm={};
+  allData.forEach(e=>{if(!dm[e.division])dm[e.division]=0;dm[e.division]++;});
+  const maxVal=Math.max(...Object.values(dm),1);
+  document.getElementById('div-breakdown').innerHTML=Object.keys(dm).length
+    ?Object.entries(dm).sort((a,b)=>b[1]-a[1]).map(([d,c])=>{
+        const pct=Math.round((c/total)*100);
+        const barPct=Math.round((c/maxVal)*100);
+        return`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:6px;">
+            <span>${esc(d)}</span>
+            <span style="color:var(--green);">${c} <span style="color:var(--muted);font-weight:400;">(${pct}%)</span></span>
+          </div>
+          <div class="progress-wrap"><div class="progress-bar" style="width:${barPct}%"></div></div>
+        </div>`;
+      }).join('')
+    :'<p style="color:var(--muted);text-align:center;padding:20px;grid-column:1/-1;">No data.</p>';
+}
+
+// -- SORT ----------------------------------------------------------------------
+document.querySelectorAll('.ns-table th.sortable').forEach(th=>{
+  th.addEventListener('click',()=>{
+    const col=th.dataset.col;
+    if(sortCol===col)sortDir=sortDir==='asc'?'desc':'asc';
+    else{sortCol=col;sortDir='asc';}
+    document.querySelectorAll('.ns-table th').forEach(t=>{t.classList.remove('sorted');});
+    th.classList.add('sorted');
+    currentPage=1;applyFilters();
+  });
+});
+
+// -- FILTERS -------------------------------------------------------------------
+function applyFilters(){
+  const q=(document.getElementById('search-input').value||'').toLowerCase();
+  const divF=document.getElementById('div-filter').value;
+  const dateFrom=document.getElementById('date-from').value;
+  const dateTo=document.getElementById('date-to').value;
+
+  filtered=[...allData];
+  if(q)filtered=filtered.filter(x=>[x.birRef,x.division,x.model,x.configuration,x.serial,x.supplier,x.accDetails,x.scEngineer].join(' ').toLowerCase().includes(q));
+  if(divF)filtered=filtered.filter(x=>x.division===divF);
+  if(dateFrom)filtered=filtered.filter(x=>x.unitInwardDate>=dateFrom);
+  if(dateTo)filtered=filtered.filter(x=>x.unitInwardDate<=dateTo);
+
+  filtered.sort((a,b)=>{
+    const av=String(a[sortCol]||''),bv=String(b[sortCol]||'');
+    return sortDir==='asc'?av.localeCompare(bv,undefined,{numeric:true}):bv.localeCompare(av,undefined,{numeric:true});
+  });
+
+  currentPage=1;
+  renderTable();
+}
+
+function clearFilters(){
+  document.getElementById('search-input').value='';
+  document.getElementById('div-filter').value='';
+  document.getElementById('date-from').value='';
+  document.getElementById('date-to').value='';
+  applyFilters();
+}
+
+// -- RENDER TABLE --------------------------------------------------------------
+function renderTable(){
+  const pageSize=parseInt(document.getElementById('rows-select').value)||10;
+  const total=filtered.length;
+  const pages=Math.ceil(total/pageSize)||1;
+  if(currentPage>pages)currentPage=1;
+  const start=(currentPage-1)*pageSize;
+  const paged=filtered.slice(start,start+pageSize);
+
+  (document.getElementById('bir-footer')||{}).textContent =`Showing ${Math.min(start+1,total)}-${Math.min(start+paged.length,total)} of ${total} entries`;
+
+  document.getElementById('bir-tbody').innerHTML=paged.length?paged.map(e=>`
+    <tr>
+      <td><span class="chip-sm">${esc(e.birRef||e._id)}</span></td>
+      <td style="color:var(--muted);font-size:12px;white-space:nowrap;">${fmtDate(e.unitInwardDate)}</td>
+      <td><span class="badge-pill ${divPillClass(e.division)}">${esc(e.division)}</span></td>
+      <td style="font-weight:600;">${esc(e.model)}</td>
+      <td style="font-size:12px;color:var(--soft);max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(e.configuration)}">${esc(e.configuration||'-')}</td>
+      <td style="font-family:Calibri, Arial, sans-serif;font-weight:600;">${esc(e.receivedQty||'-')}</td>
+      <td style="font-family:Calibri, Arial, sans-serif;font-size:11px;color:var(--soft);">${esc(e.prevSwVersion||'-')}</td>
+      <td>${e.hwChanges&&e.hwChanges!=='NA'&&e.hwChanges.trim()?`<span style="color:var(--amber);font-size:11px;font-weight:600;">&#9888;&#65039; ${esc(e.hwChanges)}</span>`:`<span style="color:var(--muted);font-size:11px;">NA</span>`}</td>
+      <td style="font-size:12px;color:var(--soft);max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(e.accDetails)}">${esc(e.accDetails||'-')}</td>
+      <td style="font-size:12px;">${e.cnrCirculation==='Yes'?`<span style="color:var(--purple);font-weight:600;">&#9888;&#65039; Yes</span>`:`<span style="color:var(--muted);">-</span>`}</td>
+      <td><span class="${e.status==='Approved'?'st-approved':'st-closed'}">${esc(e.status)}</span></td>
+      <td>
+        <button class="action-xs view" onclick="viewRecord('${e._id}')">View</button>
+      </td>
+    </tr>`).join(''):`
+    <tr><td colspan="12" style="text-align:center;padding:40px;color:var(--muted);">No closed records found.</td></tr>`;
+
+  renderPagination(pages);
+}
+
+function renderPagination(pages){
+  const pg=document.getElementById('pagination');
+  if(pages<=1){pg.innerHTML='';return;}
+  let html=`<button class="pager" onclick="goPage(${currentPage-1})" ${currentPage<=1?'disabled':''}>&lt;</button>`;
+  for(let i=1;i<=pages;i++){
+    if(pages>7&&i>2&&i<pages-1&&Math.abs(i-currentPage)>1){if(i===3||i===pages-2)html+='<span style="color:var(--muted);padding:0 4px;">...</span>';continue;}
+    html+=`<button class="pager ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  html+=`<button class="pager" onclick="goPage(${currentPage+1})" ${currentPage>=pages?'disabled':''}>&gt;</button>`;
+  pg.innerHTML=html;
+}
+function goPage(p){currentPage=p;renderTable();}
+
+// -- VIEW DETAIL ---------------------------------------------------------------
+function viewRecord(id){
+  const e=allData.find(x=>x._id===id);if(!e)return;
+  (document.getElementById('view-title')||{}).textContent ='BIR '+esc(e.birRef||id);
+  (document.getElementById('view-sub')||{}).textContent =`${esc(e.division)} - ${esc(e.model)} - Approved: ${fmtDate(e.approvedDate)}`;
+
+  const sections=[
+    {title:'Unit & Division Details',color:'var(--green)',fields:[
+      ['BIR Ref No.',e.birRef,'mono'],['Division',e.division],['Model',e.model],
+      ['Configuration',e.configuration],['Received Qty',e.receivedQty],['Serial No.',e.serial],
+      ['Supplier',e.supplier],['Unit Inward Date',fmtDate(e.unitInwardDate)],['FQC Inward Date',fmtDate(e.fqcInwardDate)],
+      ['Invoice No.',e.invoiceNo],['Invoice Date',fmtDate(e.invoiceDate)],['Status',e.status],
+    ]},
+    {title:'Software & Hardware',color:'var(--purple)',fields:[
+      ['Prev SW Version',e.prevSwVersion,'mono'],['Present SW Version',e.presSwVersion,'mono'],['HW Changes',e.hwChanges],
+      ['HW Change Remarks',e.hwChangeRemarks],['SW Change Remarks',e.swChangeRemarks],['Accessory Changes',e.accChanges],
+      ['Accessory Details',e.accDetails],['User Manual Update',e.userManualUpdate],['Service Manual Update',e.serviceManualUpdate],
+      ['Accessory Remarks',e.accChangeRemarks],
+    ]},
+    {title:'Engineering & Approval',color:'var(--cyan)',fields:[
+      ['SC Engineer',e.scEngineer],['PS Engineer',e.psEngineer],['FQC Remarks',e.fqcRemarks],
+      ['Technical Remarks',e.techRemarks],['TS Verification Date',fmtDate(e.tsVerificationDate)],['PS Verification Date',fmtDate(e.psVerificationDate)],
+      ['CNR/Technews Circulation',e.cnrCirculation],['CNR Ref No.',e.cnrRefNo],['CNR Release Date',fmtDate(e.cnrReleaseDate)],
+      ['Approved Date',fmtDate(e.approvedDate)],
+    ]},
+  ];
+
+  document.getElementById('view-content').innerHTML=sections.map(s=>`
+    <div class="detail-section">
+      <div class="detail-section-title"><span class="dot" style="background:${s.color}"></span>${s.title}</div>
+      <div class="detail-grid">${s.fields.map(([l,v,cls])=>`
+        <div class="detail-cell">
+          <div class="detail-label">${esc(l)}</div>
+          <div class="detail-val ${cls||''}">${esc(v||'-')}</div>
+        </div>`).join('')}
+      </div>
+    </div>`).join('');
+
+  document.getElementById('view-modal').classList.add('show');
+}
+function closeView(){document.getElementById('view-modal').classList.remove('show');}
+document.getElementById('view-modal').addEventListener('click',e=>{if(e.target===document.getElementById('view-modal'))closeView();});
+
+// -- EXPORT --------------------------------------------------------------------
+function exportCSV(){
+  const headers=['BIR Ref','Division','Model','Configuration','Inward Date','Received Qty','Serial','Prev SW','Pres SW','HW Changes','Accessory Details','CNR Circulation','Approved Date','Status'];
+  const rows=filtered.map(e=>[e.birRef,e.division,e.model,e.configuration,e.unitInwardDate,e.receivedQty,e.serial,e.prevSwVersion,e.presSwVersion,e.hwChanges,e.accDetails,e.cnrCirculation,e.approvedDate,e.status].map(v=>'"'+(String(v||'').replace(/"/g,'""'))+'"').join(','));
+  const csv=[headers.join(','),...rows].join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='closed-bir-'+Date.now()+'.csv';a.click();
+  showToast('Closed BIR exported as CSV.','ok');
+}
+
+// -- THEME / USER --------------------------------------------------------------
+(document.getElementById('admin-date')||{}).textContent =new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+(function(){const u=JSON.parse(localStorage.getItem('schiller_user')||'{}');const n=u.name||'Admin';(document.getElementById('admin-name')||{}).textContent =n;(document.getElementById('admin-avatar')||{}).textContent =n.charAt(0).toUpperCase();})();
+
+function logout(){localStorage.clear();window.location.href='login.html';}
+
+// -- INIT ----------------------------------------------------------------------
+loadData();
+</script>
+<script src="tab-fix.js"></script>
+</body>
+</html>

@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<script>(function(){
+  const token = localStorage.getItem('schiller_token');
+  if (!token) window.location.href = 'login.html';
+})();</script>
+<title>SchillerIndia - OB Pending</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f0f4f8;--surface:#ffffff;--surface2:#e8f0f7;--surface3:#f5f9fc;
+  --border:#ccdde8;--border2:#ddeaf4;
+  --accent:#0068b5;--accent2:#005a9e;--accent3:#e8f3fb;
+  --green:#047857;--green-bg:rgba(4,120,87,0.08);
+  --amber:#b45309;--amber-bg:rgba(180,83,9,0.08);
+  --red:#b91c1c;--red-bg:rgba(185,28,28,0.07);
+  --purple:#5b21b6;--purple-bg:rgba(91,33,182,0.08);
+  --teal:#0e7490;--teal-bg:rgba(14,116,144,0.08);
+  --text:#0f2236;--muted:#6b8ca8;--soft:#3d6480;--card:#ffffff;
+  --shadow:0 1px 8px rgba(0,60,120,0.07);
+  --shadow-md:0 4px 20px rgba(0,60,120,0.1);
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+.sidebar{width:225px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 14px rgba(0,60,120,0.07);}
+.sidebar-header{padding:16px 16px 12px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#002d5c,#0068b5);}
+.logo-wrap{display:flex;align-items:center;gap:9px;}
+.logo-icon{width:34px;height:34px;background:rgba(255,255,255,0.14);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#fff;border:1.5px solid rgba(255,255,255,0.22);}
+.logo-text{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#fff;line-height:1.2;}
+.logo-text span{display:block;font-size:10px;color:rgba(255,255,255,0.55);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;}
+.emp-badge{margin:8px 12px 0;padding:3px 10px;border-radius:20px;font-size:9.5px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;display:inline-block;background:rgba(4,120,87,0.12);color:#059669;border:1px solid rgba(4,120,87,0.2);}
+.sidebar-nav{flex:1;padding:8px 6px;}
+.nav-sec{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;padding:9px 8px 4px;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;color:var(--soft);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.18s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:var(--accent3);color:var(--accent);font-weight:700;border-left:3px solid var(--accent);padding-left:8px;}
+.nav-item .ico,.nav-item .icon{font-size:12px;width:17px;text-align:center;flex-shrink:0;}
+.sidebar-footer{padding:11px 12px;border-top:1px solid var(--border);background:var(--surface3);}
+.user-row{display:flex;align-items:center;gap:8px;}
+.user-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#0ea5e9);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;flex-shrink:0;}
+.user-nm{font-size:12px;font-weight:600;color:var(--text);}
+.user-rl{font-size:10px;color:var(--muted);}
+.logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:10.5px;font-weight:600;transition:all 0.2s;}
+.logout-btn:hover{border-color:var(--red);color:var(--red);}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;}
+.topbar{padding:13px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:var(--shadow);}
+.breadcrumb{display:flex;align-items:center;gap:5px;font-size:10.5px;margin-bottom:2px;}
+.breadcrumb a{color:var(--muted);text-decoration:none;}
+.breadcrumb a:hover{color:var(--accent);}
+.breadcrumb .sep{color:var(--border2);}
+.page-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);}
+.content{flex:1;padding:20px 24px;overflow-y:auto;}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;box-shadow:var(--shadow);transition:all 0.2s;position:relative;overflow:hidden;display:grid;grid-template-columns:24px 1fr;column-gap:8px;align-items:start;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:11px 11px 0 0;}
+.sc-blue::before{background:linear-gradient(90deg,#0068b5,#0ea5e9);}
+.sc-amber::before{background:linear-gradient(90deg,#b45309,#d97706);}
+.sc-red::before{background:linear-gradient(90deg,#b91c1c,#dc2626);}
+.sc-green::before{background:linear-gradient(90deg,#047857,#059669);}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.stat-card{cursor:pointer;}
+.stat-card.card-active{outline:2.5px solid var(--accent);outline-offset:2px;transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.stat-icon{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;margin-bottom:0;grid-column:1;grid-row:1;}
+.si-blue{background:rgba(0,104,181,0.1);}.si-amber{background:rgba(180,83,9,0.1);}.si-red{background:rgba(185,28,28,0.1);}.si-green{background:rgba(4,120,87,0.1);}
+.stat-label{font-size:8.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;grid-column:2;grid-row:1;align-self:center;}
+.stat-value{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);line-height:1;grid-column:1 / span 2;grid-row:2;margin-top:6px;}
+.stat-sub{font-size:9px;color:var(--muted);margin-top:2px;grid-column:1 / span 2;grid-row:3;}
+.filter-bar{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:14px 18px;margin-bottom:16px;box-shadow:var(--shadow);display:none;align-items:flex-end;gap:12px;flex-wrap:wrap;}
+.fgroup{display:flex;flex-direction:column;gap:5px;}
+.fgroup label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
+.f-input{padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s;}
+.f-input:focus{border-color:var(--accent);}
+.f-select{padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--soft);background:var(--surface);outline:none;cursor:pointer;transition:border-color 0.2s;}
+.f-select:focus{border-color:var(--accent);}
+.f-divider{width:1px;height:24px;background:var(--border);flex-shrink:0;}
+.btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(0,104,181,0.22);}.btn-primary:hover{background:var(--accent2);}
+.btn-outline{background:none;border:1.5px solid var(--border);color:var(--soft);}.btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+.btn-amber{background:var(--amber);color:#fff;}.btn-amber:hover{background:#92400e;}
+.btn-teal{background:var(--teal);color:#fff;}.btn-teal:hover{background:#0b6178;}
+.btn-sm{padding:6px 13px;font-size:11px;}
+.btn-xs{padding:4px 10px;font-size:11px;border-radius:6px;border:1.5px solid var(--border);background:none;color:var(--soft);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;font-weight:600;white-space:nowrap;}
+.btn-xs:hover{border-color:var(--accent);color:var(--accent);background:var(--accent3);}
+.btn-xs.est{color:var(--amber);border-color:rgba(180,83,9,0.35);background:rgba(180,83,9,0.06);}.btn-xs.est:hover{background:rgba(180,83,9,0.12);}
+.btn-xs.pdf{color:var(--red);border-color:rgba(185,28,28,0.3);background:var(--red-bg);}.btn-xs.pdf:hover{background:rgba(185,28,28,0.12);}
+.btn-xs.repair-state{min-width:34px;padding:4px 8px;font-weight:800;}
+.repair-pending{color:var(--amber)!important;border-color:rgba(180,83,9,0.35)!important;background:var(--amber-bg)!important;}
+.repair-sent{color:var(--accent)!important;border-color:rgba(0,104,181,0.3)!important;background:var(--accent3)!important;}
+.repair-complete{color:var(--green)!important;border-color:rgba(4,120,87,0.3)!important;background:var(--green-bg)!important;}
+.rp-over{position:fixed;inset:0;background:rgba(5,18,38,0.62);backdrop-filter:blur(5px);z-index:900;display:none;align-items:center;justify-content:center;}
+.rp-over.open{display:flex;animation:fadeIn 0.18s ease;}
+.rp-card{background:#fff;width:460px;max-width:96vw;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.24);}
+.rp-head{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.rp-htitle{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);}
+.rp-body{padding:20px 22px;}
+.rp-lbl{display:block;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;}
+.rp-body textarea{width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface2);outline:none;resize:vertical;min-height:90px;transition:border-color 0.2s;}
+.rp-body textarea:focus{border-color:var(--accent);}
+.rp-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;background:var(--surface3);}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);}
+.table-top{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--surface3);}
+.table-title{font-family:'Syne',sans-serif;font-size:13.5px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+.count-chip{background:var(--accent3);color:var(--accent);font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:10px;border:1px solid rgba(0,104,181,0.15);}
+.toolbar-r{display:flex;align-items:center;gap:9px;}
+.show-row{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted);}
+.srch-wrap{position:relative;}
+.srch-wrap input{padding:7px 12px 7px 30px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;width:210px;transition:border-color 0.2s,box-shadow 0.2s;}
+.srch-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,104,181,0.07);}
+.srch-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);}
+.table-wrap{overflow-x:auto;}
+table.ob-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:1600px;}
+table.ob-table thead th{padding:9px 10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;text-align:left;border-bottom:2px solid var(--border);background:var(--surface3);white-space:nowrap;cursor:pointer;user-select:none;transition:color 0.2s;}
+table.ob-table thead th:hover{color:var(--accent);}
+table.ob-table thead th.sorted{color:var(--accent);}
+table.ob-table thead th.sorted .si{opacity:1;}
+table.ob-table thead th.check-col,table.ob-table tbody td.check-col{text-align:center;width:44px;min-width:44px;padding-left:6px;padding-right:6px;}
+table.ob-table thead th.check-col:hover{color:var(--muted);}
+table.ob-table tbody td{padding:9px 10px;border-bottom:1px solid rgba(0,60,120,0.05);vertical-align:middle;white-space:nowrap;color:var(--text);}
+table.ob-table tbody tr{transition:background 0.13s;}
+table.ob-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
+table.ob-table tbody tr.row-selected td{background:rgba(0,104,181,0.06)!important;}
+table.ob-table tbody tr:last-child td{border-bottom:none;}
+.table-foot{padding:11px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--muted);flex-wrap:wrap;gap:8px;background:var(--surface3);}
+.pager-row{display:flex;align-items:center;gap:3px;}
+.pager{min-width:28px;height:28px;padding:0 7px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--soft);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.18s;font-family:'Plus Jakarta Sans',sans-serif;}
+.pager:hover{border-color:var(--accent);color:var(--accent);}
+.pager.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.pager:disabled{opacity:0.3;cursor:not-allowed;}
+.s-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;}
+.s-pill::before{content:'';width:5px;height:5px;border-radius:50%;display:block;}
+.sp-pending{background:rgba(100,116,139,0.1);color:#475569;}.sp-pending::before{background:#475569;}
+.sp-done{background:var(--green-bg);color:var(--green);}.sp-done::before{background:var(--green);}
+.sp-ur{background:var(--teal-bg);color:var(--teal);}.sp-ur::before{background:var(--teal);}
+.sp-ow{background:var(--purple-bg);color:var(--purple);}.sp-ow::before{background:var(--purple);}
+.sp-lamc{background:rgba(194,85,10,0.08);color:#9a3412;}.sp-lamc::before{background:#9a3412;}
+.region-tag{background:var(--teal-bg);color:var(--teal);padding:2px 7px;border-radius:9px;font-size:9.5px;font-weight:700;}
+.pday-pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;}
+.pday-high{background:var(--red-bg);color:var(--red);}.pday-mid{background:var(--amber-bg);color:var(--amber);}.pday-ok{background:var(--green-bg);color:var(--green);}
+.chip{display:inline-flex;align-items:center;background:var(--accent3);border:1px solid rgba(0,104,181,0.15);border-radius:5px;padding:2px 7px;font-size:10px;color:var(--accent);font-weight:600;}
+.mono{font-family:monospace;font-size:10.5px;}
+.loading-row td{text-align:center;padding:50px 20px;color:var(--muted);font-size:13px;}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:8px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty-st{text-align:center;padding:50px 20px;}
+.ei{font-size:38px;margin-bottom:10px;opacity:0.28;}
+.et{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:5px;}
+.es{font-size:12px;color:var(--muted);}
+.overlay{position:fixed;top:0;left:225px;right:0;bottom:0;background:rgba(5,18,38,0.55);backdrop-filter:blur(4px);z-index:500;display:none;align-items:stretch;}
+.overlay.open{display:flex;animation:fadeIn 0.18s ease;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.modal{background:var(--surface);width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;}
+.modal-header{padding:16px 28px;border-bottom:1px solid var(--border);background:var(--surface);z-index:2;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:10px;}
+.modal-title-badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:10px;background:rgba(180,83,9,0.1);color:var(--amber);border:1px solid rgba(180,83,9,0.25);}
+.modal-close{width:34px;height:34px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:16px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.modal-close:hover{background:var(--red-bg);color:var(--red);border-color:rgba(185,28,28,0.3);}
+.modal-scroll{flex:1;overflow-y:auto;}
+.pdf-preview-overlay{position:fixed;inset:0;background:rgba(5,18,38,0.48);backdrop-filter:blur(3px);z-index:900;display:none;align-items:center;justify-content:center;padding:24px;}
+.pdf-preview-overlay.open{display:flex;}
+.pdf-preview-modal{width:min(960px,calc(100vw - 60px));height:min(90vh,860px);background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:0 24px 60px rgba(0,20,60,0.22);display:flex;flex-direction:column;overflow:hidden;}
+.pdf-preview-head{padding:14px 18px;border-bottom:1px solid var(--border);background:var(--surface3);display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.pdf-preview-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);}
+.pdf-preview-frame{flex:1;width:100%;border:none;background:#525659;}
+.rec-info{display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface3);}
+.rec-info-item{padding:11px 18px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
+.rec-info-item:nth-child(5n){border-right:none;}
+.rec-info-item:nth-child(6),.rec-info-item:nth-child(7),.rec-info-item:nth-child(8),.rec-info-item:nth-child(9),.rec-info-item:nth-child(10){border-bottom:none;}
+.rec-info-label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:3px;}
+.rec-info-val{font-size:12.5px;font-weight:700;color:var(--accent);}
+.rec-info-val.normal{color:var(--text);font-weight:600;}
+.modal-body{padding:24px 28px;}
+.form-section{margin-bottom:24px;}
+.form-section-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--amber);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid rgba(180,83,9,0.2);}
+.fg-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.fg-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.span2{grid-column:span 2;}.span3{grid-column:span 3;}.span4{grid-column:span 4;}
+.ff{display:flex;flex-direction:column;gap:5px;}
+.ff label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
+.ff label .req{color:var(--red);}
+.ff input,.ff select,.ff textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s,box-shadow 0.2s;width:100%;}
+.ff input:focus,.ff select:focus,.ff textarea:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(180,83,9,0.08);}
+.ff input.err,.ff select.err,.ff textarea.err{border-color:var(--red)!important;}
+.ff textarea{resize:none;height:38px;overflow-y:auto;}
+.ff input::placeholder,.ff textarea::placeholder{color:var(--muted);font-size:11.5px;}
+.locked-field{background:var(--surface3) !important;color:var(--muted) !important;cursor:not-allowed !important;border-color:var(--border2) !important;opacity:0.78;}
+.form-err{font-size:12px;color:var(--red);padding:8px 12px;border-radius:7px;background:var(--red-bg);border:1px solid rgba(185,28,28,0.2);display:none;margin-bottom:10px;}
+.form-err.show{display:block;}
+.modal-footer{padding:16px 28px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;justify-content:flex-end;background:var(--surface3);flex-shrink:0;}
+.form-ok{font-size:11.5px;font-weight:600;padding:7px 13px;border-radius:7px;margin-right:auto;display:none;background:var(--green-bg);color:var(--green);border:1px solid rgba(4,120,87,0.2);}
+.form-ok.show{display:block;}
+.line-items-wrap{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--surface3);}
+.line-items-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:760px;}
+.line-items-table th,.line-items-table td{padding:8px 10px;border-bottom:1px solid rgba(0,60,120,0.08);text-align:left;}
+.line-items-table th{font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;background:#eef4f9;}
+.line-items-table tr:last-child td{border-bottom:none;}
+.line-items-table input{padding:7px 9px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;width:100%;background:var(--surface);}
+.line-items-table input:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 3px rgba(180,83,9,0.08);}
+.line-items-summary{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 12px;background:#fff7ed;border-top:1px solid rgba(180,83,9,0.18);font-size:11px;color:var(--soft);}
+.line-items-charge{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:var(--text);}
+.line-items-charge input{width:130px;padding:7px 9px;border:1px solid rgba(180,83,9,0.22);border-radius:8px;background:#fff;}
+.line-items-meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.line-items-total{font-weight:700;color:var(--amber);}
+.row-check{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;}
+.sel-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:var(--accent3);color:var(--accent);font-size:10.5px;font-weight:700;border:1px solid rgba(0,104,181,0.15);}
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:700;display:flex;flex-direction:column;gap:7px;}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:11px 15px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:9px;min-width:230px;animation:fadeUp 0.28s ease;box-shadow:0 8px 22px rgba(0,0,0,0.1);}
+.toast.ok{border-color:rgba(4,120,87,0.35);}.toast.ok .td{background:var(--green);}
+.toast.err{border-color:rgba(185,28,28,0.35);}.toast.err .td{background:var(--red);}
+.toast.info{border-color:rgba(0,104,181,0.35);}.toast.info .td{background:var(--accent);}
+.td{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+::-webkit-scrollbar{width:7px;height:7px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
+    .nav-group-toggle{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;color:var(--soft,#3d6480);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;margin-bottom:3px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;}
+.nav-group-toggle:hover{background:var(--surface2,#e8f0f7);color:var(--text,#0f2236);}
+.nav-group-toggle .ico{font-size:12px;width:17px;text-align:center;flex-shrink:0;}
+.nav-group-toggle .caret{margin-left:auto;font-size:10px;transition:transform .22s ease;}
+.nav-group-toggle.open .caret{transform:rotate(90deg);}
+.nav-children{max-height:0;overflow:hidden;transition:max-height .28s ease;margin-bottom:3px;}
+.nav-children.open{max-height:400px;}
+.nav-sub .nav-item{padding-left:28px;font-size:11.5px;}
+</style>
+  <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="employee-theme.css">
+  <script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <script src="brand-logo.js" defer></script>
+</head>
+<body>
+
+<!-- -- ESTIMATION MODAL -- -->
+<div class="overlay" id="modal-est">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">
+          &#128221; Estimation Details
+          <span class="modal-title-badge" id="modal-scref">-</span>
+        </div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:3px;">Fill in the estimation details below, then click Save.</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()" title="Close (Esc)">&#10005;</button>
+    </div>
+
+    <div class="rec-info">
+      <div class="rec-info-item"><div class="rec-info-label">SC Ref No</div><div class="rec-info-val" id="ri-screfno">-</div></div>
+      <div class="rec-info-item"><div class="rec-info-label">Customer</div><div class="rec-info-val normal" id="ri-customer">-</div></div>
+      <div class="rec-info-item"><div class="rec-info-label">Unit SL No</div><div class="rec-info-val" id="ri-defgir">-</div></div>
+      <div class="rec-info-item"><div class="rec-info-label">SC Engineer</div><div class="rec-info-val normal" id="ri-sceng">-</div></div>
+      <div class="rec-info-item"><div class="rec-info-label">Model</div><div class="rec-info-val normal" id="ri-model">-</div></div>
+      <div class="rec-info-item"><div class="rec-info-label">Def Mod / Brd</div><div class="rec-info-val normal" id="ri-defmod">-</div></div>
+      <div class="rec-info-item"><div class="rec-info-label">FRN No</div><div class="rec-info-val normal" id="ri-frnno">-</div></div>
+      <div class="rec-info-item"><div class="rec-info-label">FRN Date</div><div class="rec-info-val normal" id="ri-frndate">-</div></div>
+      <div class="rec-info-item"><div class="rec-info-label">Unit Status</div><div class="rec-info-val" id="ri-unitsts">-</div></div>
+      <div class="rec-info-item"><div class="rec-info-label">Branch</div><div class="rec-info-val normal" id="ri-branch">-</div></div>
+    </div>
+
+    <div class="modal-scroll">
+      <div class="modal-body">
+        <div class="form-err" id="modal-err"></div>
+        <input type="hidden" id="est-id"/>
+
+        <div class="form-section">
+          <div class="form-section-title">&#128221; Estimation Details</div>
+          <div class="fg-4">
+            <div class="ff"><label>Estimation No <span class="req">*</span></label><input type="text" id="u-estno" class="locked-field" readonly tabindex="-1" title="Auto generated from FRN No and SC Ref No" placeholder=""/></div>
+            <div class="ff"><label>Estimation Date <span class="req">*</span></label><input type="date" id="u-estdate" oninput="calcValidDate(this.value)"/></div>
+            <div class="ff"><label>Valid Date <span style="font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px;background:rgba(4,120,87,0.1);color:var(--green);text-transform:uppercase;margin-left:4px;">Auto</span></label><input type="date" id="u-validdate" readonly style="background:var(--surface3);color:var(--muted);cursor:not-allowed;"/></div>
+            <div class="ff">
+              <label>Order Type <span class="req">*</span></label>
+              <select id="u-eststatus">
+                <option value="">Select...</option>
+                <option value="New">New</option>
+                <option value="Repair">Repair</option>
+                <option value="Exchange">Exchange</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">&#128196; Assignment, Repair &amp; Device Details</div>
+          <div class="fg-4">
+            <div class="ff">
+              <label>RA Engineer <span class="req">*</span></label>
+              <select id="u-raeng">
+                <option value="">Select Engineer-</option>
+                <option>HIMANSHU</option><option>RANJITH</option><option>MANISH KUMAR</option>
+                <option>ANIL SHARMA</option><option>SANDEEP GUPTA</option><option>DIBYENDU ROY</option>
+                <option>SOUMITRA DAS</option><option>BINOD KUMAR</option><option>HARSH PRAJAPTI</option>
+                <option>AMIT DESAI</option><option>PRIYA MEHTA</option><option>NIKHIL JOSHI</option>
+                <option>VIVEK TIWARI</option><option>RAJESH PATEL</option>
+                <option>SABARIKANNAN</option><option>MURALI T</option><option>KARTHIK S</option>
+                <option>RAJKUMAR</option><option>PRASAD K</option><option>SREEJITH</option>
+                <option>ANOOP KRISHNAN</option><option>VISHNU P</option><option>KEERTHANA</option>
+                <option>NAGARAJ B</option><option>DEEPA S</option><option>RAVI SHANKAR</option>
+                <option>HEMACHANDREN</option><option>SRINIVASULU</option><option>MADHAVI P</option>
+                <option>SURESH R</option><option>JEEVAPRAKASH</option><option>ANBU S</option>
+                <option>ASHOK KUMAR</option><option>DEEPAK C</option><option>PREETHA</option>
+                <option>PRAVIN WAYAL</option><option>PRAVIN BURUTE</option>
+              </select>
+            </div>
+            <div class="ff"><label>DEF Unit GIR No</label><input type="text" id="u-defunitgir" placeholder=""/></div>
+            <div class="ff"><label>Model</label><input type="text" id="u-model-display" readonly style="background:var(--surface3);color:var(--accent);font-weight:700;cursor:default;" tabindex="-1"/></div>
+            <div class="ff"><label>Def Mod / Brd Name</label><input type="text" id="u-defmod-display" readonly style="background:var(--surface3);color:var(--text);cursor:default;" tabindex="-1"/></div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">&#128203; Line Items For Same SC Ref No</div>
+          <div class="line-items-wrap">
+            <div style="overflow-x:auto;">
+              <table class="line-items-table">
+                <thead>
+                  <tr>
+                    <th style="width:50px;">#</th>
+                    <th style="width:130px;">Part Number</th>
+                    <th style="width:130px;">Est.P/N</th>
+                    <th>Item Description</th>
+                    <th style="width:90px;">Qty</th>
+                    <th style="width:140px;">Price / Unit (Rs.)</th>
+                    <th style="width:140px;">Amount (Rs.)</th>
+                    <th style="width:82px;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="est-lineitems-body">
+                  <tr><td colspan="8" style="text-align:center;color:var(--muted);">No grouped line items loaded.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="line-items-summary">
+              <div class="line-items-meta">
+                <span id="est-lineitems-note">The combined PDF will include every row shown here.</span>
+                <button class="btn btn-outline btn-sm" type="button" onclick="addEstimateLineRow()">+ Add Row</button>
+                <label class="line-items-charge">Service Charge (Rs.)
+                  <input type="number" min="0" step="0.01" id="u-servicecharge" value="0" onchange="renderEstimateLineItems()"/>
+                </label>
+              </div>
+              <span class="line-items-total">Total: <span id="est-lineitems-total">Rs. 0</span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">&#128221; Technical Remarks</div>
+          <div class="fg-4">
+            <div class="ff span4"><label>Technical Remarks</label><textarea id="u-techremarks" rows="2" placeholder="Technical findings, diagnosis, fault description"></textarea></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <div class="form-ok" id="modal-ok"></div>
+      <button class="btn btn-outline btn-sm" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-outline btn-sm" onclick="previewEstimatePDF()">&#128196; Preview PDF</button>
+      <button class="btn btn-amber" id="est-save-btn" onclick="submitEstimation()">&#128190; Save &amp; Generate PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="pdf-preview-overlay" id="pdf-preview-overlay">
+  <div class="pdf-preview-modal">
+    <div class="pdf-preview-head">
+      <div class="pdf-preview-title">&#128196; PDF Preview</div>
+      <button class="modal-close" type="button" onclick="closeEstimatePdfPreview()" title="Close Preview">&#10005;</button>
+    </div>
+    <iframe id="pdf-preview-frame" class="pdf-preview-frame" title="PDF Preview"></iframe>
+  </div>
+</div>
+
+<div class="rp-over" id="rp-overlay">
+  <div class="rp-card">
+    <div class="rp-head">
+      <div class="rp-htitle">&#128295; Send to Repair Team</div>
+      <button class="modal-close" type="button" onclick="closeRpModal()">&#10005;</button>
+    </div>
+    <div class="rp-body">
+      <span class="rp-lbl">Technical Remarks</span>
+      <textarea id="rp-tech-remarks" placeholder="Enter technical diagnosis, fault description, observed problem..."></textarea>
+    </div>
+    <div class="rp-foot">
+      <button class="btn btn-outline btn-sm" type="button" onclick="closeRpModal()">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="rp-confirm-btn" type="button" onclick="confirmSendToRtOb()">Confirm &amp; Send to RT OB</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- --- SIDEBAR --- -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-wrap">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="logo-text">SchillerIndia<span>Services Portal</span></div>
+    </div>
+  </div>
+  <div style="padding:7px 12px 0;"><span class="emp-badge">Employee</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-sec">Operations</div>
+    <a class="nav-item" href="employee-dashboard.html"><span class="ico">&#128202;</span> Dashboard</a>
+    <a class="nav-item" href="employee-service-list.html"><span class="ico">&#128225;</span> Services</a>
+    <a class="nav-item" href="emppendingfrn.html"><span class="ico">&#128221;</span> Pending FRN</a>
+    <a class="nav-item active" href="employee-ob-pending.html"><span class="ico">&#128230;</span> Estimation Pending</a>
+    <a class="nav-item" href="empestpend.html"><span class="ico">&#128203;</span> SO Pending</a>
+    <a class="nav-item" href="empunderep.html"><span class="ico">&#128736;&#65039;</span> Under Repair</a>
+    <a class="nav-item" href="completed-frn.html"><span class="ico">&#9989;</span> Completed FRN</a>
+     <a class="nav-item" href="Emp-scrap-list.html"><span class="ico">&#9888;&#65039;</span> Supplier Warranty</a>
+     <a class="nav-item" href="sc-completed-frn.html"><span class="ico">&#128257;</span> External Repair</a>
+    <button class="nav-group-toggle" type="button" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');"><span class="ico">&#128193;</span><span>Records</span><span class="caret">&#9656;</span></button>
+    <div class="nav-children nav-sub">
+    <a class="nav-item" href="ecall.html"><span class="ico">&#128222;</span> Call Register</a>
+    <a class="nav-item" href="eclose.html"><span class="ico">&#9989;</span> Closed Calls</a>
+    <a class="nav-item" href="eprfob.html"><span class="ico">&#128203;</span> PRF/OB Register</a>
+    <a class="nav-item" href="ecr.html"><span class="ico">&#128274;</span> Closed PRF/OB Register</a>
+    <a class="nav-item" href="tours.html"><span class="ico">&#128205;</span> Tour Summary</a>
+      <a class="nav-item" href="dailyw.html"><span class="ico">&#128197;</span> Daily Work</a>
+    </div>
+    <button class="nav-group-toggle" type="button" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');"><span class="ico">&#128230;</span><span>Inventory</span><span class="caret">&#9656;</span></button>
+    <div class="nav-children nav-sub">
+    <a class="nav-item" href="emp-non-saleable.html"><span class="ico">&#128230;</span> Non Saleable</a>
+    <a class="nav-item" href="emp-saleables.html"><span class="ico">&#128176;</span> Saleables</a>
+    <a class="nav-item" href="ebir.html"><span class="ico">&#128203;</span> BIR LIST</a>
+    <a class="nav-item" href="ecbir.html"><span class="ico">&#128193;</span> Closed BIR</a>
+      <a class="nav-item" href="elt.html"><span class="ico">&#128451;</span> Loan Items</a>
+      <a class="nav-item" href="ecli.html"><span class="ico">&#128193;</span> Closed Loan Item</a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="user-av" id="emp-avatar">E</div>
+      <div>
+        <div class="user-nm" id="emp-name">Employee</div>
+        <div class="user-rl" id="emp-desig">Field Engineer</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<!-- --- MAIN --- -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="employee-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
+        <span>Operations</span><span class="sep">&#8250;</span>
+        <span>OB Pending</span>
+      </div>
+      <div class="page-title">Estimation</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px;">
+      <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
+      <button class="btn btn-outline btn-sm" onclick="loadOBPending()">&#8635; Refresh</button>
+      <button class="btn btn-primary btn-sm" onclick="exportCSV()">&#128228; Export</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="stats-row">
+      <div class="stat-card sc-blue"><div class="stat-icon si-blue">&#128202;</div><div class="stat-label">Total OB Pending</div><div class="stat-value" id="stat-total">-</div><div class="stat-sub">Active records</div></div>
+      <div class="stat-card sc-red"><div class="stat-icon si-red">&#128308;</div><div class="stat-label">High (&gt;90 days)</div><div class="stat-value" id="stat-high">-</div><div class="stat-sub">Needs immediate action</div></div>
+      <div class="stat-card sc-amber"><div class="stat-icon si-amber">&#9888;</div><div class="stat-label">Medium (30-90 days)</div><div class="stat-value" id="stat-mid">-</div><div class="stat-sub">Monitor closely</div></div>
+      <div class="stat-card sc-green"><div class="stat-icon si-green">&#9989;</div><div class="stat-label">Low (&lt;30 days)</div><div class="stat-value" id="stat-low">-</div><div class="stat-sub">Within acceptable range</div></div>
+    </div>
+
+    <div class="filter-bar">
+      <div class="fgroup"><label>From</label><input type="date" class="f-input" id="fl-from" style="width:135px;" onchange="applyFilters()"/></div>
+      <div class="fgroup"><label>To</label><input type="date" class="f-input" id="fl-to" style="width:135px;" onchange="applyFilters()"/></div>
+      <button class="btn btn-outline btn-sm" style="align-self:flex-end;" onclick="clearDates()">Clear</button>
+      <div class="f-divider" style="align-self:center;"></div>
+      <div class="fgroup">
+        <label>Branch</label>
+        <select class="f-select" id="fl-region" onchange="applyFilters()">
+          <option value="">All Branches</option>
+          <option>NORTH</option><option>EAST</option><option>WEST 1</option><option>WEST 2</option>
+          <option>SOUTH 1 TN</option><option>SOUTH 2 KL</option><option>SOUTH 3 KA</option>
+          <option>SOUTH 4 AP/TL</option><option>PUDUCHERRY</option><option>CG</option>
+        </select>
+      </div>
+      <div class="fgroup">
+        <label>Unit Status</label>
+        <select class="f-select" id="fl-unitsts" onchange="applyFilters()">
+          <option value="">All</option>
+          <option value="OW">OW</option>
+          <option value="LAMC">LAMC</option>
+        </select>
+      </div>
+      <div class="fgroup">
+        <label>Pend Days</label>
+        <select class="f-select" id="fl-pdays" onchange="applyFilters()">
+          <option value="">All</option>
+          <option value="high">&gt;90 days</option>
+          <option value="mid">30-90 days</option>
+          <option value="low">&lt;30 days</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-top">
+        <div class="table-title">Estimation Records <span class="count-chip" id="count-chip">- entries</span></div>
+        <div class="toolbar-r">
+          <span class="sel-chip" id="selected-chip">0 selected</span>
+          <button class="btn btn-teal btn-sm" id="header-est-btn" onclick="openSelectedEstimation()" disabled>&#128221; Estimation</button>
+          <div class="show-row">Show
+            <select class="f-select" id="per-page" style="padding:5px 8px;min-width:60px;" onchange="renderTable()">
+              <option>10</option><option>25</option><option>50</option><option>100</option>
+            </select>entries
+          </div>
+          <div class="srch-wrap">
+            <span class="srch-ico">&#128269;</span>
+            <input type="text" id="tbl-search" placeholder="Search records" oninput="applyFilters()"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="ob-table">
+          <thead><tr>
+            <th class="check-col"><input type="checkbox" class="row-check" id="select-all-ob" onchange="toggleSelectAll(this.checked)" title="Select all visible"/></th>
+            <th onclick="sortBy('entryDate')">Entry Date <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('scReNo')">SC Ref No <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('scEng')">SC Eng <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('frnNo')">FRN No <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('branch')">Branch <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('eng')">Engineer <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('custName')">Customer <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('unitSts')">Unit Sts <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('defMod')">Def Mod / Brd <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('defGir')">Def GIR No <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('typeWork')">Type of Work <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('pdOb')">Pend Days <span class="si">&#8693;</span></th>
+            <th>OB Status</th>
+          </tr></thead>
+          <tbody id="ob-tbody">
+            <tr class="loading-row"><td colspan="15"><span class="spin"></span>Loading from database...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-foot">
+        <span id="tbl-info">-</span>
+        <div class="pager-row" id="tbl-pagination"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE    = '';
+const LOGGED_USER = JSON.parse(localStorage.getItem('schiller_user')||'{}');
+const EMP_NAME    = LOGGED_USER.name || '';
+const SCHILLER_PDF_LOGO = new Image();
+SCHILLER_PDF_LOGO.src = 'shc.webp';
+
+let allRecords = [], filtered = [], currentPage = 1;
+let sortKey = 'entryDate', sortDir = -1;
+let editingId = null;
+let currentEstimateRows = [];
+let selectedIds = new Set();
+let ALL_ENGINEERS = [];
+
+function getDivisionName(value) {
+  return String(value?.name || value?.divisionName || value?.division || value || '').trim();
+}
+
+function normalizeDivisionName(value) {
+  return getDivisionName(value).toUpperCase().replace(/\s+/g, ' ');
+}
+
+function getLoggedDivision() {
+  return getDivisionName(
+    localStorage.getItem('schiller_active_division') ||
+    LOGGED_USER.division ||
+    LOGGED_USER.divisionName ||
+    LOGGED_USER.Division ||
+    ''
+  );
+}
+
+function getEngineerDivisions(engineer) {
+  const values = [];
+  if (Array.isArray(engineer?.divisions)) values.push(...engineer.divisions);
+  if (engineer?.division) values.push(engineer.division);
+  if (engineer?.divisionName) values.push(engineer.divisionName);
+  return values.map(normalizeDivisionName).filter(Boolean);
+}
+
+function engineerMatchesDivision(engineer, division) {
+  const div = normalizeDivisionName(division);
+  return div && getEngineerDivisions(engineer).includes(div);
+}
+
+async function fetchAllEngineers() {
+  try {
+    const res = await fetch(API_BASE + '/api/engineers', { headers: authHeaders() });
+    if (res.ok) {
+      const data = await res.json();
+      ALL_ENGINEERS = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : []);
+    }
+  } catch(_) {}
+}
+
+function fillEngSelect(selId, division, selected) {
+  const sel = document.getElementById(selId);
+  if (!sel) return;
+  const div = normalizeDivisionName(getLoggedDivision() || division);
+  const engs = ALL_ENGINEERS.filter(e => engineerMatchesDivision(e, div));
+  sel.innerHTML = div
+    ? '<option value="">Select Engineer...</option>'
+    : '<option value="">No login division found</option>';
+  engs.forEach(e => {
+    const name = e.name || e.engineerName || '';
+    if (!name) return;
+    const o = document.createElement('option');
+    o.value = name;
+    o.textContent = name;
+    sel.appendChild(o);
+  });
+  if (selected && !Array.from(sel.options).some(o => o.value === selected)) {
+    const o = document.createElement('option');
+    o.value = selected;
+    o.textContent = selected;
+    sel.appendChild(o);
+  }
+  if (div && !engs.length && !selected) sel.innerHTML = '<option value="">No engineers found for your division</option>';
+  if (selected && Array.from(sel.options).some(o => o.value === selected)) sel.value = selected;
+}
+
+(function init(){
+  const u = JSON.parse(localStorage.getItem('schiller_user')||'{}');
+  if (u.name) {
+    (document.getElementById('emp-name')||{}).textContent = u.name;
+    (document.getElementById('emp-avatar')||{}).textContent = u.name.charAt(0).toUpperCase();
+    (document.getElementById('emp-desig')||{}).textContent = u.designation || 'Field Engineer';
+  }
+  (document.getElementById('topbar-date')||{}).textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  fetchAllEngineers();
+  loadOBPending();
+})();
+
+function logout(){ localStorage.clear(); window.location.href='login.html'; }
+function getToken(){ return localStorage.getItem('schiller_token')||''; }
+function authHeaders(){ return {'Content-Type':'application/json','Authorization':'Bearer '+getToken()}; }
+
+// ? KEY FIX: Use the dedicated /ob-pending endpoint which filters
+//    movedToEstimation !== true server-side - no client-side guessing needed.
+async function loadOBPending() {
+  setLoading();
+  try {
+    const res = await fetch(API_BASE + '/api/emp/services/ob-pending', { headers: authHeaders() });
+    if (res.status===401){ localStorage.clear(); window.location.href='login.html'; return; }
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    allRecords = data.map(s => ({...s, id: s._id||s.id, pdOb: s.pdOb || calcPendingDays(s.rcvdDate || s.entryDate)}));
+    selectedIds = new Set([...selectedIds].filter(id => allRecords.some(row => String(row._id||row.id) === String(id))));
+    applyFilters();
+    updateStats();
+    showToast('Loaded '+allRecords.length+' record'+(allRecords.length!==1?'s':''),'info');
+  } catch(e) {
+    document.getElementById('ob-tbody').innerHTML=`<tr class="loading-row"><td colspan="15" style="color:var(--red);">&#9888; Could not load: ${esc(e.message)}</td></tr>`;
+    showToast('Load failed: '+e.message,'err');
+  }
+}
+
+function calcPendingDays(d){
+  if(!d)return 0;
+  const diff=Math.floor((new Date()-new Date(d))/(1000*60*60*24));
+  return isNaN(diff)?0:Math.max(0,diff);
+}
+function updateStats(){
+  (document.getElementById('stat-total')||{}).textContent = allRecords.length;
+  (document.getElementById('stat-high')||{}).textContent = allRecords.filter(s=>s.pdOb>7).length;
+  (document.getElementById('stat-mid')||{}).textContent = allRecords.filter(s=>s.pdOb>=3&&s.pdOb<=7).length;
+  (document.getElementById('stat-low')||{}).textContent = allRecords.filter(s=>s.pdOb<3).length;
+}
+function clearDates(){ document.getElementById('fl-from').value=''; document.getElementById('fl-to').value=''; applyFilters(); }
+
+let _activeCardFilter = 'all';
+function filterByCard(type) {
+  _activeCardFilter = type;
+  document.querySelectorAll('.stats-row .stat-card').forEach(c => c.classList.remove('card-active'));
+  const idx = {all:0,normal:1,warning:2,critical:3}[type];
+  if(idx !== undefined) {
+    const cards = document.querySelectorAll('.stats-row .stat-card');
+    if(cards[idx]) cards[idx].classList.add('card-active');
+  }
+  applyFilters();
+  window.scrollTo({top: document.querySelector('.table-card') ? document.querySelector('.table-card').offsetTop - 10 : 0, behavior:'smooth'});
+}
+function applyFilters(){
+  const q=document.getElementById('tbl-search').value.toLowerCase();
+  const from=document.getElementById('fl-from').value;
+  const to=document.getElementById('fl-to').value;
+  const region=document.getElementById('fl-region').value;
+  const unitsts=document.getElementById('fl-unitsts').value;
+  const pdays=document.getElementById('fl-pdays').value;
+  filtered=allRecords.filter(s=>{
+    if(_activeCardFilter==='normal' && !(s.pdOb<30)) return false;
+    if(_activeCardFilter==='warning' && !(s.pdOb>=30&&s.pdOb<=90)) return false;
+    if(_activeCardFilter==='critical' && !(s.pdOb>90)) return false;
+    const mQ=!q||Object.values(s).some(v=>String(v||'').toLowerCase().includes(q));
+    const mF=!from||(s.entryDate&&s.entryDate>=from);
+    const mT=!to||(s.entryDate&&s.entryDate<=to);
+    const mR=!region||s.branch===region||s.reg===region;
+    const mU=!unitsts||s.unitSts===unitsts;
+    let mP=true;
+    if(pdays==='high') mP=s.pdOb>90;
+    if(pdays==='mid')  mP=s.pdOb>=30&&s.pdOb<=90;
+    if(pdays==='low')  mP=s.pdOb<30;
+    return mQ&&mF&&mT&&mR&&mU&&mP;
+  });
+  sortArr(); currentPage=1; renderTable();
+}
+function sortBy(k){ if(sortKey===k) sortDir*=-1; else{sortKey=k;sortDir=-1;} sortArr(); renderTable(); }
+function sortArr(){
+  filtered.sort((a,b)=>{
+    if(sortKey==='pdOb') return (a.pdOb-b.pdOb)*sortDir;
+    const av=String(a[sortKey]||'').toLowerCase(),bv=String(b[sortKey]||'').toLowerCase();
+    return av<bv?-sortDir:av>bv?sortDir:0;
+  });
+}
+
+function getSelectedRecords(){
+  return allRecords.filter(row => selectedIds.has(String(row._id||row.id)));
+}
+
+function updateSelectionUI(){
+  const selectedCount = selectedIds.size;
+  const chip = document.getElementById('selected-chip');
+  const btn = document.getElementById('header-est-btn');
+  const selectAll = document.getElementById('select-all-ob');
+  if(chip) chip.textContent = selectedCount + ' selected';
+  if(btn) btn.disabled = selectedCount === 0;
+  if(selectAll){
+    const visibleIds = filtered.map(row => String(row._id||row.id));
+    const visibleSelected = visibleIds.filter(id => selectedIds.has(id));
+    selectAll.checked = visibleIds.length > 0 && visibleSelected.length === visibleIds.length;
+    selectAll.indeterminate = visibleSelected.length > 0 && visibleSelected.length < visibleIds.length;
+  }
+}
+
+function toggleRowSelection(id, checked){
+  const key = String(id);
+  if(checked) selectedIds.add(key);
+  else selectedIds.delete(key);
+  updateSelectionUI();
+}
+
+function toggleSelectAll(checked){
+  filtered.forEach(row => {
+    const key = String(row._id || row.id);
+    if(checked) selectedIds.add(key);
+    else selectedIds.delete(key);
+  });
+  renderTable();
+}
+
+function renderTable(){
+  const perPage=parseInt(document.getElementById('per-page').value)||10;
+  const total=filtered.length;
+  const pages=Math.max(1,Math.ceil(total/perPage));
+  if(currentPage>pages) currentPage=pages;
+  const slice=filtered.slice((currentPage-1)*perPage,currentPage*perPage);
+  (document.getElementById('count-chip')||{}).textContent =total+' entr'+(total===1?'y':'ies');
+  const tbody=document.getElementById('ob-tbody');
+  if(!slice.length){
+    tbody.innerHTML=`<tr><td colspan="15"><div class="empty-st">
+      <div class="ei">&#128196;</div>
+      <div class="et">${allRecords.length?'No records match the current filters':'No OB Pending Records'}</div>
+      <div class="es">${allRecords.length?'Try clearing the filters.':'Service records with Unit Status OW or LAMC will appear here.'}</div>
+    </div></td></tr>`;
+  } else {
+    tbody.innerHTML=slice.map(s=>{
+      const rowId=s._id||s.id;
+      const pdClass=s.pdOb>90?'pday-high':s.pdOb>=30?'pday-mid':'pday-ok';
+      const unitClass=s.unitSts==='OW'?'sp-ow':s.unitSts==='LAMC'?'sp-lamc':'sp-pending';
+      return`<tr>
+        <td class="check-col"><input type="checkbox" class="row-check" ${selectedIds.has(String(rowId))?'checked':''} onchange="toggleRowSelection('${rowId}',this.checked)"/></td>
+        <td style="font-size:11px;color:var(--soft);">${fmtDate(s.entryDate)}</td>
+        <td style="font-weight:600;color:var(--accent2);">${esc(s.scReNo||'-')}</td>
+        <td>${esc(s.scEng||'-')}</td>
+        <td class="mono" style="color:var(--accent);">${esc(s.frnNo||'-')}</td>
+        <td><span class="region-tag">${esc(s.branch||s.reg||'-')}</span></td>
+        <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;">${esc(s.eng||'-')}</td>
+        <td style="max-width:170px;overflow:hidden;text-overflow:ellipsis;font-weight:500;">${esc(s.custName||s.customer||'-')}</td>
+        <td style="font-weight:600;color:var(--accent2);">${esc(s.model||'-')}</td>
+        <td><span class="s-pill ${unitClass}">${esc(s.unitSts||'-')}</span></td>
+        <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;font-size:11px;">${esc(s.defMod||'-')}</td>
+        <td><span class="gir-badge">${esc(s.defGir||'-')}</span></td>
+        <td style="font-size:11px;">${esc(s.typeWork||s.type||'-')}</td>
+        <td style="font-weight:600;color:var(--accent2);">${s.pdOb} days</td>
+        <td><span class="s-pill ${stsClass}">${esc(obSts)}</span></td>
+      </tr>`;
+    }).join('');
+  }
+  const fr=total?(currentPage-1)*perPage+1:0;
+  (document.getElementById('tbl-info')||{}).textContent =total
+    ?`Showing ${fr} to ${Math.min(currentPage*perPage,total)} of ${total} entr${total===1?'y':'ies'}`
+    :'0 entries';
+  updateSelectionUI();
+  renderPagination(pages);
+}
+
+function getGroupedEstimateRows(seed){
+  const scRef = String(seed?.scReNo || '').trim();
+  if(!scRef) return [];
+  return allRecords
+    .filter(r => String(r.scReNo || '').trim() === scRef)
+    .sort((a,b)=>{
+      const av = String(a.partNo || a.defMod || a.defGir || '');
+      const bv = String(b.partNo || b.defMod || b.defGir || '');
+      return av.localeCompare(bv);
+    })
+    .map((row, index) => ({
+      id: row._id || row.id,
+      serviceId: row._id || row.id,
+      scReNo: row.scReNo || '',
+      model: row.model || '',
+      defGir: row.defGir || '',
+      unitSl: row.unitSl || '',
+      partNo: row.partNo || '',
+      estPartNo: row.estPartNo || '',
+      itemDescription: row.defMod || '',
+      qty: parseInt(row.qty, 10) > 0 ? parseInt(row.qty, 10) : 1,
+      pricePerUnit: (parseInt(row.qty, 10) > 0 ? Number(row.estAmount || 0) / parseInt(row.qty, 10) : Number(row.estAmount || 0)),
+      lineAmount: Number(row.estAmount || 0),
+      lineNo: index + 1,
+    }));
+}
+
+function getSingleEstimateRows(seed){
+  if(!seed) return [];
+  const qty = parseInt(seed.qty, 10) > 0 ? parseInt(seed.qty, 10) : 1;
+  const totalAmount = Number(seed.estAmount || 0);
+  return [{
+    id: seed._id || seed.id,
+    serviceId: seed._id || seed.id,
+    scReNo: seed.scReNo || '',
+    model: seed.model || '',
+    defGir: seed.defGir || '',
+    unitSl: seed.unitSl || '',
+    partNo: seed.partNo || '',
+    estPartNo: seed.estPartNo || '',
+    itemDescription: seed.defMod || '',
+    qty,
+    pricePerUnit: qty > 0 ? totalAmount / qty : totalAmount,
+    lineAmount: totalAmount,
+    lineNo: 1,
+  }];
+}
+function getUniqueEstimateValues(records, pickers){
+  const getterList = Array.isArray(pickers) ? pickers : [pickers];
+  const values = [];
+  records.forEach(record => {
+    for (const picker of getterList) {
+      const raw = typeof picker === 'function' ? picker(record) : record?.[picker];
+      const text = String(raw || '').trim();
+      if (text) {
+        values.push(text);
+        break;
+      }
+    }
+  });
+  return [...new Set(values)];
+}
+function formatEstimateSummary(records, pickers, fallback='-'){
+  const values = getUniqueEstimateValues(records, pickers);
+  return values.length ? values.join(', ') : fallback;
+}
+
+function buildAutoEstimationNo(record){
+  const frn = String(record?.frnNo || '').trim();
+  const scRef = String(record?.scReNo || record?.scRno || '').trim();
+  return [frn, scRef].filter(Boolean).join(' / ');
+}
+function buildAutoEstimationNoForRecords(records){
+  const values = (records || []).map(buildAutoEstimationNo).filter(Boolean);
+  return [...new Set(values)].join(', ');
+}
+function setLockedEstimationNo(inputId, records){
+  const el = document.getElementById(inputId);
+  if(!el) return;
+  const list = Array.isArray(records) ? records : [records];
+  el.value = buildAutoEstimationNoForRecords(list);
+  el.readOnly = true;
+  el.classList.add('locked-field');
+  el.setAttribute('tabindex','-1');
+  el.title = 'Auto generated from FRN No and SC Ref No';
+}
+
+function openEstimationForRecords(records){
+  if(!records || !records.length) return;
+  const first = records[0];
+  const isMulti = records.length > 1;
+  editingId = String(first._id || first.id);
+  currentEstimateRows = isMulti
+    ? records.map((row, index) => ({
+        id: row._id || row.id,
+        serviceId: row._id || row.id,
+        scReNo: row.scReNo || '',
+        model: row.model || '',
+        defGir: row.defGir || '',
+        unitSl: row.unitSl || '',
+        partNo: row.partNo || '',
+        estPartNo: row.estPartNo || '',
+        itemDescription: row.defMod || '',
+        qty: parseInt(row.qty, 10) > 0 ? parseInt(row.qty, 10) : 1,
+        pricePerUnit: (parseInt(row.qty, 10) > 0 ? Number(row.estAmount || 0) / parseInt(row.qty, 10) : Number(row.estAmount || 0)),
+        lineAmount: Number(row.estAmount || 0),
+        lineNo: index + 1,
+      }))
+    : getSingleEstimateRows(first);
+
+  (document.getElementById('modal-scref')||{}).textContent = isMulti ? (records.length + ' Selected') : (first.scReNo||'-');
+  (document.getElementById('ri-screfno')||{}).textContent = formatEstimateSummary(records, 'scReNo');
+  (document.getElementById('ri-customer')||{}).textContent = formatEstimateSummary(records, [record => record.custName, record => record.customer]);
+  (document.getElementById('ri-defgir')||{}).textContent = formatEstimateSummary(records, 'unitSl');
+  (document.getElementById('ri-sceng')||{}).textContent = formatEstimateSummary(records, 'scEng');
+  (document.getElementById('ri-model')||{}).textContent = formatEstimateSummary(records, 'model');
+  (document.getElementById('ri-defmod')||{}).textContent = formatEstimateSummary(records, 'defMod');
+  (document.getElementById('ri-frnno')||{}).textContent = formatEstimateSummary(records, 'frnNo');
+  (document.getElementById('ri-frndate')||{}).textContent = formatEstimateSummary(records, record => record.frnDate ? fmtDate(record.frnDate) : '');
+  (document.getElementById('ri-unitsts')||{}).textContent = formatEstimateSummary(records, 'unitSts');
+  (document.getElementById('ri-branch')||{}).textContent = formatEstimateSummary(records, [record => record.branch, record => record.reg]);
+  document.getElementById('est-id').value = editingId;
+
+  const mDisp=document.getElementById('u-model-display');
+  const dDisp=document.getElementById('u-defmod-display');
+  if(mDisp) mDisp.value = formatEstimateSummary(records, 'model', '');
+  if(dDisp) dDisp.value = formatEstimateSummary(records, 'defMod', '');
+
+  const set=(elId,val)=>{const el=document.getElementById(elId);if(el)el.value=val||'';};
+  setLockedEstimationNo('u-estno', records);
+  set('u-estdate', first.estDate||'');
+  if(first.estDate) calcValidDate(first.estDate);
+  else document.getElementById('u-validdate').value='';
+  set('u-eststatus', first.orderType||first.estStatus||'');
+  // Auto-default RA Engineer to SC Engineer if not already set
+  fillEngSelect('u-raeng', first.division || first.divisionName || first.branch || first.reg, first.estRaEng || first.scEng || first.eng || '');
+  set('u-defunitgir', first.defUnitGir||first.defGir||'');
+  set('u-techremarks', first.techRemarks||'');
+  renderEstimateLineItems();
+  document.getElementById('modal-err').classList.remove('show');
+  document.getElementById('modal-ok').classList.remove('show');
+  document.getElementById('modal-est').classList.add('open');
+  const ms=document.querySelector('.modal-scroll'); if(ms) ms.scrollTop=0;
+}
+
+function openSelectedEstimation(){
+  const records = getSelectedRecords();
+  if(!records.length){
+    showToast('Select at least one entry.','err');
+    return;
+  }
+  openEstimationForRecords(records);
+}
+
+function sanitizePartNo(value){
+  return String(value || '').trim();
+}
+
+function calculateLineAmount(row){
+  const qty = Math.max(1, parseInt(row.qty, 10) || 1);
+  const pricePerUnit = Math.max(0, Number(row.pricePerUnit) || 0);
+  row.qty = qty;
+  row.pricePerUnit = pricePerUnit;
+  row.lineAmount = qty * pricePerUnit;
+}
+
+function createManualEstimateLine(){
+  return {
+    id: '',
+    serviceId: '',
+    scReNo: '',
+    model: '',
+    defGir: '',
+    partNo: '',
+    estPartNo: '',
+    itemDescription: '',
+    qty: 1,
+    pricePerUnit: 0,
+    lineAmount: 0,
+    lineNo: currentEstimateRows.length + 1,
+    isManual: true,
+  };
+}
+
+function addEstimateLineRow(){
+  currentEstimateRows.push(createManualEstimateLine());
+  renderEstimateLineItems();
+}
+
+function renderEstimateLineItems(){
+  const tbody = document.getElementById('est-lineitems-body');
+  const totalEl = document.getElementById('est-lineitems-total');
+  const noteEl = document.getElementById('est-lineitems-note');
+  if(!tbody || !totalEl || !noteEl) return;
+  if(!currentEstimateRows.length){
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);">No grouped line items loaded.</td></tr>';
+    totalEl.textContent = 'Rs. 0';
+    noteEl.textContent = 'The combined PDF will include every row shown here.';
+    return;
+  }
+  currentEstimateRows.forEach(calculateLineAmount);
+  tbody.innerHTML = currentEstimateRows.map((row, index) => `
+    <tr>
+      <td>${index + 1}</td>
+      <td><input type="text" value="${esc(row.partNo)}" onchange="updateEstimateLine(${index},'partNo',this.value)" placeholder="Part number"${row.isManual ? '' : ' readonly tabindex="-1" style="background:var(--surface3);color:var(--soft);border-color:transparent;cursor:default;"'}/></td>
+      <td><input type="text" value="${esc(row.estPartNo||'')}" onchange="updateEstimateLine(${index},'estPartNo',this.value)" placeholder=""/></td>
+      <td><input type="text" value="${esc(row.itemDescription)}" onchange="updateEstimateLine(${index},'itemDescription',this.value)" placeholder="Item description"${row.isManual ? '' : ' readonly tabindex="-1" style="background:var(--surface3);color:var(--soft);border-color:transparent;cursor:default;"'}/></td>
+      <td><input type="number" min="1" step="1" value="${row.qty || 1}" onchange="updateEstimateLine(${index},'qty',this.value)"/></td>
+      <td><input type="number" min="0" step="0.01" value="${row.pricePerUnit || 0}" onchange="updateEstimateLine(${index},'pricePerUnit',this.value)"/></td>
+      <td><input type="number" min="0" value="${row.lineAmount || 0}" readonly style="background:var(--surface3);color:var(--muted);cursor:not-allowed;"/></td>
+      <td><button type="button" class="btn-xs" onclick="removeEstimateLine(${index})" title="Remove row">&#10005;</button></td>
+    </tr>
+  `).join('');
+  const itemsTotal = currentEstimateRows.reduce((sum, row) => sum + (Number(row.lineAmount) || 0), 0);
+  const total = itemsTotal + getEstimateServiceCharge();
+  totalEl.textContent = 'Rs. ' + total.toLocaleString('en-IN');
+  noteEl.textContent = currentEstimateRows.length + ' item' + (currentEstimateRows.length === 1 ? '' : 's') + ' will be saved separately in Estimation Pending.';
+}
+
+function updateEstimateLine(index, field, value){
+  if(!currentEstimateRows[index]) return;
+  if(field === 'partNo'){
+    currentEstimateRows[index][field] = sanitizePartNo(value);
+  } else if(field === 'qty'){
+    currentEstimateRows[index][field] = Math.max(1, parseInt(value, 10) || 1);
+  } else if(field === 'pricePerUnit'){
+    currentEstimateRows[index][field] = Math.max(0, Number(value) || 0);
+  } else {
+    currentEstimateRows[index][field] = value;
+  }
+  calculateLineAmount(currentEstimateRows[index]);
+  renderEstimateLineItems();
+}
+
+function normalizeEstimateLine(index){
+  if(!currentEstimateRows[index]) return;
+  currentEstimateRows[index].partNo = sanitizePartNo(currentEstimateRows[index].partNo);
+  calculateLineAmount(currentEstimateRows[index]);
+  renderEstimateLineItems();
+}
+
+function removeEstimateLine(index){
+  if(index < 0 || index >= currentEstimateRows.length) return;
+  currentEstimateRows.splice(index, 1);
+  renderEstimateLineItems();
+}
+
+function getEstimateServiceCharge(){
+  const input = document.getElementById('u-servicecharge');
+  return Math.max(0, Number(input?.value) || 0);
+}
+
+function openEstModal(id){
+  const s=allRecords.find(x=>(x._id||x.id)===id);
+  if(!s) return;
+  openEstimationForRecords([s]);
+}
+
+function calcValidDate(dateStr){
+  if(!dateStr){document.getElementById('u-validdate').value='';return;}
+  const d=new Date(dateStr);
+  if(isNaN(d)){document.getElementById('u-validdate').value='';return;}
+  d.setMonth(d.getMonth()+3);
+  document.getElementById('u-validdate').value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function closeModal(){
+  document.getElementById('modal-est').classList.remove('open');
+  editingId=null;
+  currentEstimateRows=[];
+  const chargeInput=document.getElementById('u-servicecharge');
+  if(chargeInput) chargeInput.value='0';
+}
+
+function buildEstimateLineRows(seed){
+  const fallbackRow = seed || {};
+  return (currentEstimateRows.length ? currentEstimateRows : getGroupedEstimateRows(fallbackRow)).map((row, index) => ({
+    ...row,
+    serviceId: row.serviceId || row.id || '',
+    partNo: sanitizePartNo(row.partNo),
+    itemDescription: (row.itemDescription || row.defMod || '').trim(),
+    qty: Math.max(1, parseInt(row.qty, 10) || 1),
+    pricePerUnit: Math.max(0, Number(row.pricePerUnit) || 0),
+    lineAmount: Math.max(1, parseInt(row.qty, 10) || 1) * Math.max(0, Number(row.pricePerUnit) || 0),
+    lineNo: index + 1,
+  }));
+}
+
+function buildEstimateHeader(seed){
+  const estDate = document.getElementById('u-estdate').value;
+  const lineItems = buildEstimateLineRows(seed);
+  const itemsTotal = lineItems.reduce((sum, row) => sum + (Number(row.lineAmount) || 0), 0);
+  const serviceCharge = getEstimateServiceCharge();
+  const estTotal = itemsTotal + serviceCharge;
+  const validDateEl = document.getElementById('u-validdate');
+  if(estDate && validDateEl && !validDateEl.value) calcValidDate(estDate);
+  return {
+    estNo: document.getElementById('u-estno').value.trim(),
+    estDate,
+    estValidDate: validDateEl ? validDateEl.value : '',
+    estAmount: estTotal,
+    estStatus: document.getElementById('u-eststatus').value,
+    orderType: document.getElementById('u-eststatus').value,
+    estRaEng: document.getElementById('u-raeng').value.trim(),
+    defUnitGir: document.getElementById('u-defunitgir').value.trim(),
+    serviceCharge,
+    itemsTotal,
+    techRemarks: document.getElementById('u-techremarks').value.trim(),
+    lineItems,
+  };
+}
+
+function buildPreviewEstimatePayload(seed){
+  const source = seed || {};
+  const header = buildEstimateHeader(source);
+  return {
+    ...source,
+    ...header,
+    customer: source.custName || source.customer || '',
+    custName: source.custName || source.customer || '',
+    lineItems: header.lineItems,
+    serviceCharge: header.serviceCharge,
+    itemsTotal: header.itemsTotal,
+    estGroupTotal: header.estAmount,
+  };
+}
+
+let currentEstimatePreviewUrl = '';
+
+function closeEstimatePdfPreview(){
+  const overlay = document.getElementById('pdf-preview-overlay');
+  const frame = document.getElementById('pdf-preview-frame');
+  if(frame) frame.src = 'about:blank';
+  if(overlay) overlay.classList.remove('open');
+  if(currentEstimatePreviewUrl){
+    try{ URL.revokeObjectURL(currentEstimatePreviewUrl); }catch(_err){}
+    currentEstimatePreviewUrl = '';
+  }
+}
+
+function handleEstimatePdfOutput(doc, fname, mode){
+  if(mode === 'preview'){
+    closeEstimatePdfPreview();
+    const blob = doc.output('blob');
+    currentEstimatePreviewUrl = URL.createObjectURL(blob);
+    const frame = document.getElementById('pdf-preview-frame');
+    const overlay = document.getElementById('pdf-preview-overlay');
+    if(frame) frame.src = currentEstimatePreviewUrl;
+    if(overlay) overlay.classList.add('open');
+    showToast('PDF preview opened.','ok');
+    return;
+  }
+  doc.save(fname);
+  showToast('PDF downloaded: '+fname,'ok');
+}
+
+function previewEstimatePDF(){
+  const seed = allRecords.find(x => (x._id||x.id)===editingId);
+  if(!seed){ showToast('Record not found','err'); return; }
+  try {
+    generatePDFData(buildPreviewEstimatePayload(seed), 'preview');
+  } catch(pdfErr) {
+    console.warn('[PDF preview]', pdfErr);
+    showToast('PDF preview failed: '+(pdfErr.message||pdfErr),'err');
+  }
+}
+
+// ? FIXED submitEstimation:
+//    Step 1 - PUT /api/emp/services/:id  with movedToEstimation:true
+//    Step 2 - POST /api/emp/estimation   to create the EstimationPending record
+//    Step 3 - Remove from local array ONLY after both succeed
+async function submitEstimation(){
+  const errEl=document.getElementById('modal-err');
+  const okEl=document.getElementById('modal-ok');
+  errEl.classList.remove('show'); okEl.classList.remove('show');
+
+  const estno     =document.getElementById('u-estno').value.trim();
+  const estdate   =document.getElementById('u-estdate').value;
+  const estamount =document.getElementById('u-estamount').value;
+  const eststatus =document.getElementById('u-eststatus').value;
+  const raeng     =document.getElementById('u-raeng').value;
+  const missing=[];
+  if(!estno)      missing.push('Estimation No');
+  if(!estdate)    missing.push('Estimation Date');
+  if(!estamount)  missing.push('Estimation Amount');
+  if(!eststatus)  missing.push('Order Type');
+  if(!raeng)      missing.push('RA Engineer');
+  if(missing.length){errEl.textContent='Required: '+missing.join(', ');errEl.classList.add('show');return;}
+
+  const btn=document.getElementById('est-save-btn');
+  btn.disabled=true; btn.textContent='\uD83D\uDCBE Saving...';
+
+  try {
+    const existing=allRecords.find(x=>(x._id||x.id)===editingId);
+    const techRem  =document.getElementById('u-techremarks').value.trim();
+    const partNo   =document.getElementById('u-partno').value.trim();
+    const qty      =parseInt(document.getElementById('u-qty').value)||1;
+    const validDate=document.getElementById('u-validdate').value;
+
+    // -- STEP 1: Mark service as moved to estimation --------------------
+    const svcPayload={
+      estNo:             estno,
+      estDate:           estdate,
+      estValidDate:      validDate,
+      estAmount:         parseFloat(estamount)||0,
+      estStatus:         eststatus,
+      orderType:         eststatus,
+      estRaEng:          raeng,
+      defUnitGir:        document.getElementById('u-defunitgir').value.trim(),
+      techRemarks:       techRem,
+      partNo,
+      qty,
+      estUpdatedBy:      EMP_NAME,
+      estUpdatedAt:      new Date().toISOString(),
+      movedToEstimation: true,    // ? THIS is what keeps it off OB Pending on refresh
+      obStatus:          'Estimation',
+    };
+
+    const svcRes=await fetch(API_BASE+'/api/emp/services/'+editingId,{method:'PUT',headers:authHeaders(),body:JSON.stringify(svcPayload)});
+    if(svcRes.status===401){localStorage.clear();window.location.href='login.html';return;}
+    if(!svcRes.ok){const e=await svcRes.json().catch(()=>({}));throw new Error('Service update failed: '+(e.message||svcRes.status));}
+
+    // -- STEP 2: Create EstimationPending record ------------------------
+    const estPayload={
+      serviceId:    editingId,
+      entryDate:    existing.entryDate   || '',
+      scReNo:       existing.scReNo      || '',
+      scEng:        existing.scEng       || '',
+      frnNo:        existing.frnNo       || '',
+      frnDate:      existing.frnDate     || '',
+      reg:          existing.reg         || '',
+      branch:       existing.branch      || '',
+      eng:          existing.eng         || '',
+      dealer:       existing.dealer      || '',
+      custName:     existing.custName    || existing.customer || '',
+      customer:     existing.custName    || existing.customer || '',
+      model:        existing.model       || '',
+      unitSts:      existing.unitSts     || '',
+      defMod:       existing.defMod      || '',
+      defGir:       existing.defGir      || '',
+      typeWork:     existing.typeWork    || existing.type || '',
+      estNo:        estno,
+      estDate:      estdate,
+      estValidDate: validDate,
+      estAmount:    parseFloat(estamount)||0,
+      estStatus:    eststatus,
+      orderType:    eststatus,
+      estRaEng:     raeng,
+      defUnitGir:   document.getElementById('u-defunitgir').value.trim(),
+      techRemarks:  techRem,
+      partNo,
+      qty,
+      submittedBy:  EMP_NAME,
+      submittedAt:  new Date().toISOString(),
+    };
+
+    const estRes=await fetch(API_BASE+'/api/emp/estimation',{method:'POST',headers:authHeaders(),body:JSON.stringify(estPayload)});
+    if(estRes.status===401){localStorage.clear();window.location.href='login.html';return;}
+    if(!estRes.ok){const e=await estRes.json().catch(()=>({}));throw new Error('Estimation save failed: '+(e.message||estRes.status));}
+
+    // -- STEP 3: Both saves confirmed - remove from local list ----------
+    allRecords=allRecords.filter(x=>(x._id||x.id)!==editingId);
+    updateStats(); applyFilters();
+
+    okEl.textContent='Saved & moved to Estimation Pending!'; okEl.classList.add('show');
+    showToast('Moved to Estimation Pending.','ok');
+
+    try { generatePDFData({...existing,...svcPayload}); } catch(pdfErr){ console.warn('[PDF]',pdfErr.message); }
+
+    setTimeout(closeModal,1400);
+
+  } catch(e){
+    errEl.textContent=e.message; errEl.classList.add('show');
+    showToast('Save failed: '+e.message,'err');
+  } finally {
+    btn.disabled=false; btn.innerHTML ='&#128190; Save Estimation';
+  }
+}
+
+function generatePDFData(s, mode='download'){
+  const jsPDFLib=(window.jspdf&&window.jspdf.jsPDF)||window.jsPDF;
+  if(!jsPDFLib){showToast('PDF library not loaded','err');return;}
+  const doc=new jsPDFLib('p','mm','a4');
+  const W=210,H=297,L=14,R=196,CW=(R-L)/2;let y=0;
+  doc.setFillColor(0,104,181);doc.rect(0,0,W,20,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(13);doc.setFont('helvetica','bold');
+  doc.text('SchillerIndia - Estimation Record',L,13);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text(new Date().toLocaleDateString('en-IN'),R,13,{align:'right'});y=26;
+  doc.setFillColor(254,243,199);doc.rect(L,y,R-L,10,'F');
+  doc.setTextColor(146,64,14);doc.setFontSize(9);doc.setFont('helvetica','bold');
+  doc.text('SC Ref: '+(s.scReNo||'-')+'   |   FRN: '+(s.frnNo||'-')+'   |   Customer: '+(s.custName||s.customer||'-'),L+2,y+6.5);y+=16;
+  const bar=(title,r,g,b)=>{doc.setFillColor(r,g,b);doc.rect(L,y,R-L,6,'F');doc.setTextColor(255,255,255);doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.text(title,L+2,y+4.2);y+=9;doc.setTextColor(30,30,30);};
+  const row2=(la,va,lb,vb)=>{doc.setFontSize(7);doc.setFont('helvetica','bold');doc.setTextColor(120,140,160);doc.text((la||'').toUpperCase(),L,y);doc.text((lb||'').toUpperCase(),L+CW,y);doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(15,34,54);doc.text(String(va||'-'),L,y+4.5);doc.text(String(vb||'-'),L+CW,y+4.5);y+=12;};
+  const rupee=amt=>amt?'Rs. '+Number(amt).toLocaleString('en-IN'):'-';
+  bar('Estimation Details',180,83,9);
+  row2('Estimation No',s.estNo||'-','Estimation Date',fmtDate(s.estDate));
+  row2('Valid Date',fmtDate(s.estValidDate),'Order Type',s.estStatus||s.orderType||'-');
+  row2('Amount',rupee(s.estAmount),'RA Engineer',s.estRaEng||'-');
+  bar('Device Details',0,104,181);
+  row2('Model',s.model||'-','Def Mod / Brd',s.defMod||'-');
+  row2('Unit Status',s.unitSts||'-','DEF GIR No',s.defGir||'-');
+  row2('Part Number',s.partNo||'-','Quantity',String(s.qty||1));
+  bar('Service Details',14,116,144);
+  row2('SC Engineer',s.scEng||'-','Branch',s.branch||s.reg||'-');
+  row2('FRN No',s.frnNo||'-','FRN Date',fmtDate(s.frnDate));
+  row2('Pending Days',(s.pdOb||0)+' days','Order Type',s.estStatus||s.orderType||'-');
+  doc.setDrawColor(200,215,225);doc.line(L,H-14,R,H-14);
+  doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(150,160,175);
+  doc.text('SchillerIndia Services Portal  |  Confidential',W/2,H-9,{align:'center'});
+  const fname='estimation-'+(s.scReNo||editingId||'rec')+'-'+new Date().toISOString().slice(0,10)+'.pdf';
+  doc.save(fname);
+  showToast('&#128196; PDF downloaded: '+fname,'ok');
+}
+
+function generatePDF(id){const s=allRecords.find(x=>(x._id||x.id)===id);if(!s){showToast('Record not found','err');return;}generatePDFData(s);}
+
+async function submitEstimation(){
+  const errEl=document.getElementById('modal-err');
+  const okEl=document.getElementById('modal-ok');
+  errEl.classList.remove('show');
+  okEl.classList.remove('show');
+
+  const existing=allRecords.find(x=>(x._id||x.id)===editingId);
+  if(!existing){
+    errEl.textContent='Record not found';
+    errEl.classList.add('show');
+    return;
+  }
+
+  const header=buildEstimateHeader(existing);
+  const estno=header.estNo;
+  const estdate=header.estDate;
+  const estamount=header.estAmount;
+  const eststatus=header.estStatus;
+  const raeng=header.estRaEng;
+  const missing=[];
+  if(!estno) missing.push('Estimation No');
+  if(!estdate) missing.push('Estimation Date');
+  if(!estamount) missing.push('Estimation Amount');
+  if(!eststatus) missing.push('Order Type');
+  if(!raeng) missing.push('RA Engineer');
+  if(!header.lineItems.length) missing.push('Line Items');
+  if(missing.length){
+    errEl.textContent='Required: '+missing.join(', ');
+    errEl.classList.add('show');
+    return;
+  }
+
+  const btn=document.getElementById('est-save-btn');
+  btn.disabled=true;
+  btn.textContent='Saving...';
+
+  try {
+    const savedAt = new Date().toISOString();
+    const groupId = 'ESTGRP-' + Date.now() + '-' + Math.random().toString(36).slice(2,6).toUpperCase();
+    const affectedIds = new Set();
+
+    for(const line of header.lineItems){
+      const source = allRecords.find(x => (x._id||x.id) === line.serviceId) || existing;
+      const lineAmount = Math.max(0, Number(line.lineAmount) || 0);
+      const lineEstNo = buildAutoEstimationNo(source) || estno;
+      const basePayload = {
+        entryDate: source.entryDate || '',
+        scReNo: source.scReNo || existing.scReNo || '',
+        scEng: source.scEng || existing.scEng || '',
+        frnNo: source.frnNo || existing.frnNo || '',
+        frnDate: source.frnDate || existing.frnDate || '',
+        reg: source.reg || existing.reg || '',
+        branch: source.branch || existing.branch || '',
+        eng: source.eng || existing.eng || '',
+        dealer: source.dealer || existing.dealer || '',
+        custName: source.custName || source.customer || existing.custName || existing.customer || '',
+        customer: source.custName || source.customer || existing.custName || existing.customer || '',
+        model: source.model || existing.model || '',
+        unitSts: source.unitSts || existing.unitSts || '',
+        defMod: line.itemDescription,
+        defGir: source.defGir || existing.defGir || '',
+        typeWork: source.typeWork || source.type || existing.typeWork || existing.type || '',
+        estNo: lineEstNo,
+        estDate: estdate,
+        estValidDate: header.estValidDate,
+        estAmount: lineAmount,
+        serviceCharge: header.serviceCharge,
+        itemsTotal: header.itemsTotal,
+        estStatus: eststatus,
+        orderType: eststatus,
+        estRaEng: raeng,
+        defUnitGir: header.defUnitGir,
+        techRemarks: header.techRemarks,
+        partNo: line.partNo,
+        qty: line.qty,
+        estGroupId: groupId,
+        estLineNo: line.lineNo,
+        estGroupTotal: estamount,
+        submittedBy: EMP_NAME,
+        submittedAt: savedAt,
+        estUpdatedBy: EMP_NAME,
+        estUpdatedAt: savedAt,
+      };
+
+      const estRes=await fetch(API_BASE+'/api/emp/estimation',{
+        method:'POST',
+        headers:authHeaders(),
+        body:JSON.stringify({
+          ...basePayload,
+          serviceId: line.serviceId,
+          source: 'ob',
+          rtobSent: !!(source.rtobSent || existing.rtobSent),
+          rtobSentAt: source.rtobSentAt || existing.rtobSentAt || '',
+          rtobCompleted: !!(source.rtobCompleted || existing.rtobCompleted),
+          rtobCompletedAt: source.rtobCompletedAt || existing.rtobCompletedAt || '',
+        })
+      });
+      if(estRes.status===401){localStorage.clear();window.location.href='login.html';return;}
+      if(!estRes.ok){
+        const e=await estRes.json().catch(()=>({}));
+        throw new Error('Estimation save failed: '+(e.message||estRes.status));
+      }
+
+      if(line.serviceId){
+        const svcRes=await fetch(API_BASE+'/api/emp/services/'+line.serviceId,{
+          method:'PUT',
+          headers:authHeaders(),
+          body:JSON.stringify({
+            ...basePayload,
+            movedToEstimation: true,
+            obStatus: 'Estimation',
+          })
+        });
+        if(svcRes.status===401){localStorage.clear();window.location.href='login.html';return;}
+        if(!svcRes.ok){
+          const e=await svcRes.json().catch(()=>({}));
+          throw new Error('Service update failed: '+(e.message||svcRes.status));
+        }
+        affectedIds.add(String(line.serviceId));
+      }
+    }
+
+    affectedIds.forEach(id => selectedIds.delete(String(id)));
+    allRecords=allRecords.filter(x=>!affectedIds.has(String(x._id||x.id)));
+    updateStats();
+    applyFilters();
+
+    okEl.textContent='Saved and moved to Estimation Pending';
+    okEl.classList.add('show');
+    showToast('Saved grouped estimation and generated PDF.','ok');
+
+    try {
+      generatePDFData({
+        ...existing,
+        ...header,
+        customer: existing.custName || existing.customer || '',
+        custName: existing.custName || existing.customer || '',
+        dealer: existing.dealer || '',
+        estGroupId: groupId,
+        estGroupTotal: estamount,
+        lineItems: header.lineItems,
+      });
+    } catch(pdfErr){
+      console.warn('[PDF]',pdfErr);
+      showToast('Estimation saved, but PDF generation failed: '+(pdfErr.message||pdfErr),'err');
+    }
+
+    setTimeout(closeModal,1400);
+  } catch(e){
+    errEl.textContent='Save failed: '+e.message;
+    errEl.classList.add('show');
+    showToast('Save failed: '+e.message,'err');
+  } finally {
+    btn.disabled=false;
+    btn.textContent='Save & Generate PDF';
+  }
+}
+
+function generatePDFData(s, mode='download'){
+  const jsPDFLib=(window.jspdf&&window.jspdf.jsPDF)||window.jsPDF;
+  if(!jsPDFLib){showToast('PDF library not loaded','err');return;}
+  const doc=new jsPDFLib('p','mm','a4');
+  const W=210,H=297,L=14,R=196;
+  let y=12;
+  const lineItems=(Array.isArray(s.lineItems)&&s.lineItems.length?s.lineItems:[{
+    partNo:s.partNo||'',
+    itemDescription:s.defMod||'',
+    qty:Math.max(1, parseInt(s.qty,10) || 1),
+    pricePerUnit:(Math.max(1, parseInt(s.qty,10) || 1) > 0 ? Math.max(0, Number(s.estAmount) || 0) / Math.max(1, parseInt(s.qty,10) || 1) : Math.max(0, Number(s.estAmount) || 0)),
+    lineAmount:Math.max(0, Number(s.estAmount) || 0),
+    lineNo:1,
+  }]).map((row,index)=>({
+    partNo:row.partNo||'',
+    itemDescription:row.itemDescription||row.defMod||'',
+    qty:Math.max(1, parseInt(row.qty,10) || 1),
+    pricePerUnit:Math.max(0, Number(row.pricePerUnit) || 0),
+    lineAmount:Math.max(0, Number(row.lineAmount ?? row.estAmount) || 0),
+    lineNo:row.lineNo || index + 1,
+  }));
+  const itemsTotal=lineItems.reduce((sum,row)=>sum + row.lineAmount,0);
+  const serviceCharge=Math.max(0, Number(s.serviceCharge) || 0);
+  const groupTotal=itemsTotal + serviceCharge;
+  const money=amt=>Number(amt||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const drawBox=(x,top,w,h)=>{doc.setDrawColor(110,110,110);doc.rect(x,top,w,h);};
+  const SCH_BLUE=[0,93,170], SCH_RED=[227,6,19];
+  const setRgb=(method,rgb)=>doc[method](rgb[0],rgb[1],rgb[2]);
+  const drawSchillerHeader=()=>{
+    doc.setLineWidth(0.45);
+    setRgb('setDrawColor',SCH_BLUE);
+    doc.rect(8,8,194,281);
+    setRgb('setFillColor',SCH_BLUE);
+    doc.rect(8,8,194,4,'F');
+    setRgb('setFillColor',SCH_RED);
+    doc.rect(8,12,194,1.6,'F');
+    if(SCHILLER_PDF_LOGO.complete && SCHILLER_PDF_LOGO.naturalWidth){
+      doc.addImage(SCHILLER_PDF_LOGO, 'WEBP', 16, 16, 38, 15);
+    } else {
+      setRgb('setFillColor',SCH_RED);
+      doc.rect(16,17,11,11,'F');
+      doc.setTextColor(255,255,255);
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(9);
+      doc.text('S',21.5,24.7,{align:'center'});
+    }
+    setRgb('setTextColor',SCH_BLUE);
+    doc.setFontSize(22);
+    doc.text('SCHILLER',58,24);
+    setRgb('setTextColor',SCH_RED);
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica','normal');
+    doc.text('The Art of Diagnostics',58,29);
+    setRgb('setTextColor',SCH_BLUE);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(12);
+    doc.text('REPAIR ESTIMATION',190,24,{align:'right'});
+    setRgb('setDrawColor',SCH_BLUE);
+    doc.line(14,34,196,34);
+  };
+  const labelValue=(x,top,label,value,labelW=32)=>{
+    doc.setFontSize(8);
+    doc.setFont('helvetica','normal');
+    doc.text(String(label||''),x,top);
+    doc.text(String(value||'-'),x+labelW,top);
+  };
+  const writeWrapped=(text,x,top,width,lineHeight=4.7)=>{
+    const lines=doc.splitTextToSize(String(text||'-'),width);
+    doc.text(lines,x,top);
+    return lines.length*lineHeight;
+  };
+
+  drawSchillerHeader();
+
+  const leftBoxX=L;
+  const rightBoxX=102;
+  const topBoxY=39;
+  doc.setFillColor(240,247,253);
+  doc.rect(leftBoxX, topBoxY, 68, 32, 'F');
+  doc.rect(rightBoxX, topBoxY, 80, 32, 'F');
+  drawBox(leftBoxX, topBoxY, 68, 32);
+  drawBox(rightBoxX, topBoxY, 80, 32);
+  labelValue(leftBoxX+2, topBoxY+7, 'Estimate Reference', s.estNo || '-');
+  labelValue(leftBoxX+2, topBoxY+15, 'Date', fmtDate(s.estDate));
+  labelValue(leftBoxX+2, topBoxY+23, 'Quote Valid Until', fmtDate(s.estValidDate));
+  labelValue(leftBoxX+2, topBoxY+31, 'Order Type', s.estStatus||s.orderType||'-');
+  labelValue(rightBoxX+2, topBoxY+7, 'Customer Name', s.custName||s.customer||'-', 34);
+  labelValue(rightBoxX+2, topBoxY+15, 'Dealer Name', s.dealer||'-', 34);
+
+  y=80;
+  doc.setFillColor(255,246,246);
+  doc.rect(L, y, R-L, 24, 'F');
+  drawBox(L, y, R-L, 24);
+  labelValue(L+2, y+7, 'Engineer Name and Contact', s.estRaEng || s.eng || '-', 45);
+  labelValue(104, y+7, 'FRN', s.frnNo || '-', 20);
+  labelValue(104, y+14, 'DATE', fmtDate(s.frnDate), 20);
+  labelValue(104, y+21, 'Service Centre Rcvd Date', fmtDate(s.rcvdDate || s.entryDate), 45);
+
+  y=111;
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8.8);
+  doc.text('Received Item:',L,y);
+  doc.setFont('helvetica','normal');
+  y+=8;
+  labelValue(L, y, '', (s.model||'-') + '    Unit', 0);
+  labelValue(104, y, 'Unit S/N', s.defUnitGir||s.defGir||'-', 22);
+
+  y+=13;
+  doc.setFont('helvetica','bold');
+  doc.text('Problem Observed:',L,y);
+  y+=7;
+  doc.setFont('helvetica','normal');
+  y += writeWrapped(s.techRemarks || s.defMod || 'NA', L, y, 170);
+
+  y+=10;
+  doc.setFont('helvetica','bold');
+  doc.text('Estimated Cost for Repair:',L,y);
+  y+=4;
+
+  const tableX=L;
+  const cols=[36,46,16,34,28,22];
+  const headers=['Ref No./Part No.','Item Description','Unit Qty','Price/unit','Currency','Amount'];
+  let tableY=y;
+  let x=tableX;
+  doc.setFontSize(8);
+  doc.setFont('helvetica','normal');
+  headers.forEach((head,idx)=>{
+    doc.rect(x,tableY,cols[idx],8);
+    doc.text(head,x+1.5,tableY+5.2);
+    x+=cols[idx];
+  });
+  tableY+=8;
+
+  lineItems.forEach((row)=>{
+    const rowHeight = Math.max(10, Math.ceil(doc.splitTextToSize(String(row.itemDescription||'-'), cols[1]-2).length) * 4.5 + 2);
+    let cellX=tableX;
+    const values=[
+      row.partNo || '-',
+      String(row.itemDescription || '-'),
+      String(row.qty || 1),
+      money(row.pricePerUnit),
+      'INR',
+      money(row.lineAmount),
+    ];
+    values.forEach((value,idx)=>{
+      doc.rect(cellX,tableY,cols[idx],rowHeight);
+      if(idx===1){
+        const lines=doc.splitTextToSize(value, cols[idx]-2);
+        doc.text(lines,cellX+1.5,tableY+5);
+      } else {
+        const alignRight = idx >= 3 && idx !== 4;
+        doc.text(String(value), alignRight ? cellX + cols[idx] - 1.5 : cellX + 1.5, tableY+5, alignRight ? {align:'right'} : undefined);
+      }
+      cellX+=cols[idx];
+    });
+    tableY+=rowHeight;
+  });
+
+  if(serviceCharge > 0){
+    let cellX=tableX;
+    const chargeValues=['-','Service Charges','1',money(serviceCharge),'INR',money(serviceCharge)];
+    chargeValues.forEach((value,idx)=>{
+      doc.rect(cellX,tableY,cols[idx],10);
+      const alignRight = idx >= 3 && idx !== 4;
+      doc.text(String(value), alignRight ? cellX + cols[idx] - 1.5 : cellX + 1.5, tableY+5.8, alignRight ? {align:'right'} : undefined);
+      cellX+=cols[idx];
+    });
+    tableY+=10;
+  }
+
+  doc.rect(tableX,tableY,R-L,8);
+  doc.text('Total INR',tableX + 128,tableY+5,{align:'right'});
+  doc.text(money(groupTotal),R-2,tableY+5,{align:'right'});
+  tableY+=8;
+
+  doc.rect(tableX,tableY,R-L,8);
+  doc.text('If the quotation rejected, then please suggest to dispose of goods or send it back unrepaired in the return mail',tableX+1.5,tableY+5.2);
+  tableY+=18;
+
+  doc.setFont('helvetica','bold');
+  doc.text('Term & Condition:',L,tableY);
+  tableY+=8;
+  doc.setFont('helvetica','normal');
+  const terms = [
+    'Above mentioned prices are without tax.',
+    'Estimate cost Rs.1000. This amount is charged if the estimate is not accepted.',
+    'Please state our Estimation number on all correspondence.',
+    'If the OB is not received within 30 days from the date of estimation, the items will be returned to branch without prior notice.'
+  ];
+  terms.forEach(term=>{
+    tableY += writeWrapped(term, L, tableY, 182);
+    tableY += 3;
+  });
+
+  tableY+=12;
+  doc.text('With best regards',L,tableY);
+  tableY+=10;
+  doc.text('Schiller Healthcare India Pvt. Ltd.',L,tableY);
+
+  const fname='estimation-'+(s.scReNo||editingId||'rec')+'-'+new Date().toISOString().slice(0,10)+'.pdf';
+  handleEstimatePdfOutput(doc, fname, mode);
+}
+
+function generatePDF(id){
+  const s=allRecords.find(x=>(x._id||x.id)===id);
+  if(!s){showToast('Record not found','err');return;}
+  generatePDFData({
+    ...s,
+    lineItems: getGroupedEstimateRows(s),
+  });
+}
+
+function exportCSV(){
+  const h=['Entry Date','SC Ref No','SC Eng','FRN No','Branch','Engineer','Customer','Model','Unit Sts','Def Mod/Brd','Def GIR No','Type of Work','Pend Days','OB Status'];
+  const rows=filtered.map(s=>[s.entryDate,s.scReNo,s.scEng,s.frnNo,s.branch||s.reg,s.eng,s.custName||s.customer,s.model,s.unitSts,s.defMod,s.defGir,s.typeWork||s.type,s.pdOb,s.obStatus||'OB Pending']);
+  const csv=[h,...rows].map(r=>r.map(v=>`"${v||''}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='ob-pending-'+new Date().toISOString().split('T')[0]+'.csv';a.click();
+  showToast('Exported '+filtered.length+' records.','ok');
+}
+
+function renderPagination(pages){const el=document.getElementById('tbl-pagination');if(pages<=1){el.innerHTML='';return;}let h=`<button class="pager" ${currentPage===1?'disabled':''} onclick="gp(${currentPage-1})">&#8249; Prev</button>`;getRange(currentPage,pages).forEach(p=>{if(p==='-')h+=`<button class="pager" disabled>-</button>`;else h+=`<button class="pager ${p===currentPage?'active':''}" onclick="gp(${p})">${p}</button>`;});h+=`<button class="pager" ${currentPage===pages?'disabled':''} onclick="gp(${currentPage+1})">Next &#8250;</button>`;el.innerHTML=h;}
+function getRange(c,t){if(t<=7)return Array.from({length:t},(_,i)=>i+1);if(c<=4)return[1,2,3,4,5,'-',t];if(c>=t-3)return[1,'-',t-4,t-3,t-2,t-1,t];return[1,'-',c-1,c,c+1,'-',t];}
+function gp(p){currentPage=p;renderTable();}
+function setLoading(){document.getElementById('ob-tbody').innerHTML='<tr class="loading-row"><td colspan="15"><span class="spin"></span>Loading from database...</td></tr>';['stat-total','stat-high','stat-mid','stat-low'].forEach(id=>document.getElementById(id).textContent='-');}
+function fmtDate(d){if(!d)return'-';const p=String(d).split('T')[0].split('-');if(p.length<3)return String(d);return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0];}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function showToast(msg,type='ok'){const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="td"></span>'+msg;w.appendChild(el);setTimeout(()=>el.remove(),3400);}
+function configureObStatCards(){
+  const cards=document.querySelectorAll('.stats-row .stat-card');
+  if(cards.length<4) return;
+  cards[0].setAttribute('onclick',"filterByCard('all')");cards[0].innerHTML='<div class="stat-icon si-blue">&#128202;</div><div class="stat-label">Total Estimation</div><div class="stat-value" id="stat-total">-</div><div class="stat-sub">Active records</div>';
+  cards[1].className='stat-card sc-green';
+  cards[1].setAttribute('onclick',"filterByCard('normal')");cards[1].innerHTML='<div class="stat-icon si-green">&#9989;</div><div class="stat-label">Normal (&lt;3 days)</div><div class="stat-value" id="stat-low">-</div><div class="stat-sub">Fresh estimation entries</div>';
+  cards[2].className='stat-card sc-amber';
+  cards[2].setAttribute('onclick',"filterByCard('warning')");cards[2].innerHTML='<div class="stat-icon si-amber">&#9888;</div><div class="stat-label">Warning (3-7 days)</div><div class="stat-value" id="stat-mid">-</div><div class="stat-sub">Needs follow-up</div>';
+  cards[3].className='stat-card sc-red';
+  cards[3].setAttribute('onclick',"filterByCard('critical')");cards[3].innerHTML='<div class="stat-icon si-red">&#128308;</div><div class="stat-label">Critical (&gt;7 days)</div><div class="stat-value" id="stat-high">-</div><div class="stat-sub">Needs immediate action</div>';
+}
+configureObStatCards();
+
+function configureObTableColumns(){
+  const headerRow=document.querySelector('.ob-table thead tr');
+  if(!headerRow) return;
+  const headers=Array.from(headerRow.children);
+  if(headers.length<15) return;
+  const unitHeader=headers[9];
+  const modelHeader=headers[8];
+  const typeHeader=headers[12];
+  const statusHeader=headers[14];
+  if(unitHeader && modelHeader) headerRow.insertBefore(unitHeader, modelHeader);
+  if(typeHeader) typeHeader.remove();
+  if(statusHeader) statusHeader.remove();
+  if(!headerRow.querySelector('[data-col="repair"]')){
+    const repairHeader=document.createElement('th');
+    repairHeader.textContent='Repair';
+    repairHeader.setAttribute('data-col','repair');
+    headerRow.appendChild(repairHeader);
+  }
+}
+
+function normalizeRtDivision(record){
+  const raw=String(record?.division?.name||record?.divisionName||record?.division||record?.branch||record?.reg||'').trim().toUpperCase();
+  const map={
+    'PATIENT MONITOR':'PATIENT MONITORS',
+    'PATIENT MONITORS':'PATIENT MONITORS',
+    'SAG':'SAG',
+    'VENTILATOR':'VENTILATOR',
+    'DEFIBRILLATOR':'DEFIBRILLATOR',
+    'ECG':'ECG',
+    'SYRINGE PUMP':'SYRINGE PUMP',
+    'INFUSION PUMP':'INFUSION PUMP',
+    'ULTRASOUND':'ULTRASOUND',
+    'ANAESTHESIA':'ANAESTHESIA'
+  };
+  return map[raw]||'OTHER';
+}
+function renderRepairStateButton(id,isSent,isCompleted,titlePrefix='RT OB'){
+  const stateClass=isCompleted?'repair-complete':isSent?'repair-sent':'repair-pending';
+  const stateLabel=isCompleted?'RC':isSent?'RS':'RP';
+  const stateTitle=isCompleted?'Repair completed':isSent?`Sent to ${titlePrefix}`:`Send to ${titlePrefix}`;
+  return `<button class="btn-xs repair-state ${stateClass}" onclick="openRepairModal('${id}')" title="${stateTitle}">${stateLabel}</button>`;
+}
+
+let _rpCurrentId=null;
+function openRepairModal(id){
+  const current=allRecords.find(x=>(x._id||x.id)===id);
+  if(!current) return;
+  if(current.rtobCompleted){
+    showToast('Repair completed.','info');
+    return;
+  }
+  if(current.rtobSent){
+    showToast('Already sent to RT OB.','info');
+    return;
+  }
+  _rpCurrentId=id;
+  const remarks=document.getElementById('rp-tech-remarks');
+  if(remarks) remarks.value=current.techRemarks||current.fieldRemarks||'';
+  const btn=document.getElementById('rp-confirm-btn');
+  if(btn){btn.disabled=false;btn.textContent='Confirm & Send to RT OB';}
+  document.getElementById('rp-overlay').classList.add('open');
+}
+function closeRpModal(){
+  document.getElementById('rp-overlay').classList.remove('open');
+  _rpCurrentId=null;
+}
+async function confirmSendToRtOb(){
+  const id=_rpCurrentId;
+  if(!id) return;
+  const current=allRecords.find(x=>(x._id||x.id)===id);
+  if(!current){showToast('Record not found.','err');closeRpModal();return;}
+  const techRemarks=document.getElementById('rp-tech-remarks').value.trim();
+  const btn=document.getElementById('rp-confirm-btn');
+  btn.disabled=true;
+  btn.textContent='Sending...';
+  const sentAt=new Date().toISOString();
+  const rtPayload={
+    entryDate:current.entryDate||sentAt.split('T')[0],
+    division:normalizeRtDivision(current),
+    scRefNo:current.scReNo||'',
+    defGirNo:current.defGir||'',
+    obType:current.unitSts==='LAMC'?'LAMC':current.unitSts==='OW'?'OW':'Other',
+    model:current.model||'',
+    defBrdModName:current.defMod||'',
+    status:'pending',
+    techRemarks:techRemarks,
+    submittedBy:EMP_NAME||LOGGED_USER.name||'',
+    submittedAt:sentAt,
+    sourceId:id,
+    sourceCollection:'services',
+    doi:current.doi||'',
+      fieldRemarks:current.fieldRemarks||''
+  };
+  try{
+    const createRes=await fetch(API_BASE+'/api/rtob',{method:'POST',headers:authHeaders(),body:JSON.stringify(rtPayload)});
+    if(createRes.status===401){localStorage.clear();window.location.href='login.html';return;}
+    if(!createRes.ok){const e=await createRes.json().catch(()=>({}));throw new Error(e.message||'HTTP '+createRes.status);}
+    const idx=allRecords.findIndex(x=>(x._id||x.id)===id);
+    if(idx!==-1) allRecords[idx]={...allRecords[idx],rtobSent:true,rtobSentAt:sentAt,techRemarks};
+    applyFilters();
+    updateStats();
+    closeRpModal();
+    showToast('Sent to RT OB successfully.','ok');
+  }catch(e){
+    showToast('Repair send failed: '+e.message,'err');
+    btn.disabled=false;
+    btn.textContent='Confirm & Send to RT OB';
+  }
+}
+
+function renderTable(){
+  const perPage=parseInt(document.getElementById('per-page').value)||10;
+  const total=filtered.length;
+  const pages=Math.max(1,Math.ceil(total/perPage));
+  if(currentPage>pages) currentPage=pages;
+  const slice=filtered.slice((currentPage-1)*perPage,currentPage*perPage);
+  (document.getElementById('count-chip')||{}).textContent =total+' entr'+(total===1?'y':'ies');
+  const tbody=document.getElementById('ob-tbody');
+  if(!slice.length){
+    tbody.innerHTML=`<tr><td colspan="14"><div class="empty-st">
+      <div class="ei">&#128196;</div>
+      <div class="et">${allRecords.length?'No records match the current filters':'No OB Pending Records'}</div>
+      <div class="es">${allRecords.length?'Try clearing the filters.':'Service records with Unit Status OW or LAMC will appear here.'}</div>
+    </div></td></tr>`;
+  } else {
+    tbody.innerHTML=slice.map(s=>{
+      const rowId=s._id||s.id;
+      const pdClass=s.pdOb>90?'pday-high':s.pdOb>=30?'pday-mid':'pday-ok';
+      const unitClass=s.unitSts==='OW'?'sp-ow':s.unitSts==='LAMC'?'sp-lamc':'sp-pending';
+      return`<tr>
+        <td class="check-col"><input type="checkbox" class="row-check" ${selectedIds.has(String(rowId))?'checked':''} onchange="toggleRowSelection('${rowId}',this.checked)"/></td>
+        <td style="font-size:11px;color:var(--soft);">${fmtDate(s.entryDate)}</td>
+        <td style="font-weight:600;color:var(--accent2);">${esc(s.scReNo||'-')}</td>
+        <td>${esc(s.scEng||'-')}</td>
+        <td class="mono" style="color:var(--accent);">${esc(s.frnNo||'-')}</td>
+        <td><span class="region-tag">${esc(s.branch||s.reg||'-')}</span></td>
+        <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;">${esc(s.eng||'-')}</td>
+        <td style="max-width:170px;overflow:hidden;text-overflow:ellipsis;font-weight:500;">${esc(s.custName||s.customer||'-')}</td>
+        <td><span class="s-pill ${unitClass}">${esc(s.unitSts||'-')}</span></td>
+        <td style="font-weight:600;color:var(--accent2);">${esc(s.model||'-')}</td>
+        <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;font-size:11px;">${esc(s.defMod||'-')}</td>
+        <td><span class="gir-badge">${esc(s.defGir||'-')}</span></td>
+        <td style="font-weight:600;color:var(--accent2);">${s.pdOb} days</td>
+        <td>${renderRepairStateButton(rowId,!!s.rtobSent,!!s.rtobCompleted,'RT OB')}</td>
+      </tr>`;
+    }).join('');
+  }
+  const fr=total?(currentPage-1)*perPage+1:0;
+  (document.getElementById('tbl-info')||{}).textContent =total
+    ?`Showing ${fr} to ${Math.min(currentPage*perPage,total)} of ${total} entr${total===1?'y':'ies'}`
+    :'0 entries';
+  updateSelectionUI();
+  renderPagination(pages);
+}
+
+configureObTableColumns();
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+</script>
+<script src="tab-fix.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+

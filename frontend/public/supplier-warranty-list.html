@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SchillerIndia - Supplier Warranty</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f0f4f8;--surface:#ffffff;--surface2:#e8f0f7;--surface3:#f5f9fc;
+  --border:#ccdde8;--border2:#ddeaf4;
+  --accent:#0068b5;--accent2:#005a9e;--accent3:#e8f3fb;
+  --green:#047857;--green-bg:rgba(4,120,87,0.08);
+  --amber:#b45309;--amber-bg:rgba(180,83,9,0.08);
+  --red:#b91c1c;--red-bg:rgba(185,28,28,0.07);
+  --purple:#5b21b6;--purple-bg:rgba(91,33,182,0.08);
+  --teal:#0e7490;--teal-bg:rgba(14,116,144,0.08);
+  --text:#0f2236;--muted:#6b8ca8;--soft:#3d6480;--card:#ffffff;
+  --shadow:0 1px 8px rgba(0,60,120,0.07);
+  --shadow-md:0 4px 20px rgba(0,60,120,0.1);
+  --shadow-lg:0 12px 40px rgba(0,60,120,0.13);
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
+/* -- SIDEBAR -- */
+.sidebar{width:240px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 12px rgba(0,80,120,0.06);}
+.sidebar-header{padding:20px 20px 16px;border-bottom:1px solid var(--border);background:var(--surface);}
+.sidebar-logo{display:flex;align-items:center;gap:10px;}
+.sidebar-logo-icon{width:36px;height:36px;background:rgba(255,255,255,0.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:#fff;box-shadow:0 2px 8px rgba(204,0,0,0.2);}
+.sidebar-logo-text{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;line-height:1.2;}
+.sidebar-logo-text .sub{display:block;font-size:10px;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;}
+.role-badge{margin:10px 20px 0;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;display:inline-block;background:rgba(185,28,28,0.1);color:#b91c1c;border:1px solid rgba(185,28,28,0.25);}
+.sidebar-nav{flex:1;padding:12px 10px;}
+.nav-section{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;padding:10px 8px 5px;}
+.nav-item,.nav-group-toggle{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:500;cursor:pointer;transition:all 0.2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;}
+.nav-item:hover,.nav-group-toggle:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:rgba(185,28,28,0.1);color:#b91c1c;font-weight:600;}
+.nav-item .icon,.nav-group-toggle .icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:#b91c1c;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;}
+.nav-group-toggle{font-weight:600;}
+.caret{margin-left:auto;font-size:9px;transition:transform 0.25s;}
+.nav-group-toggle.open .caret{transform:rotate(90deg);}
+.nav-children{max-height:0;overflow:hidden;transition:max-height 0.3s ease;}
+.nav-children.open{max-height:400px;}
+.nav-sub .nav-item{padding:6px 10px 6px 28px;font-size:12px;color:var(--muted);}
+.nav-sub .nav-item:hover{color:var(--text);}
+.nav-sub .nav-item.active{color:#b91c1c;background:rgba(185,28,28,0.07);}
+.sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);background:var(--surface);}
+.user-info{display:flex;align-items:center;gap:10px;}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#b91c1c,#ef4444);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
+.user-name{font-size:13px;font-weight:600;color:var(--text);}
+.user-role{font-size:11px;color:var(--muted);}
+.logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s;}
+.logout-btn:hover{border-color:#b91c1c;color:#b91c1c;}
+
+/* -- MAIN -- */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;}
+.loading-bar{position:fixed;top:0;left:0;right:0;height:3px;background:var(--accent);z-index:9999;transform:scaleX(0);transform-origin:left;transition:transform 0.3s ease;border-radius:0 2px 2px 0;}
+.loading-bar.active{animation:loadingAnim 1.2s ease infinite;}
+@keyframes loadingAnim{0%{transform:scaleX(0);transform-origin:left;}50%{transform:scaleX(0.7);transform-origin:left;}100%{transform:scaleX(1);transform-origin:left;opacity:0;}}
+.topbar{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:0 2px 8px rgba(0,80,120,0.05);}
+.breadcrumb{display:flex;align-items:center;gap:5px;font-size:10.5px;margin-bottom:2px;}
+.breadcrumb a{color:var(--muted);text-decoration:none;}
+.breadcrumb a:hover{color:var(--accent);}
+.breadcrumb .sep{color:var(--border2);}
+.topbar-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);}
+.content{flex:1;padding:20px 24px;overflow-y:auto;}
+
+/* -- STATS -- */
+.stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px;}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:14px 16px;box-shadow:var(--shadow);transition:all 0.2s;position:relative;overflow:hidden;}
+.sc::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:11px 11px 0 0;}
+.sc-blue::after{background:linear-gradient(90deg,#0068b5,#0ea5e9);}
+.sc-red::after{background:linear-gradient(90deg,#b91c1c,#ef4444);}
+.sc-amber::after{background:linear-gradient(90deg,#b45309,#f59e0b);}
+.sc-green::after{background:linear-gradient(90deg,#047857,#10b981);}
+.sc-purple::after{background:linear-gradient(90deg,#5b21b6,#8b5cf6);}
+.sc:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.sc-ico{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;margin-bottom:8px;}
+.ic-blue{background:rgba(0,104,181,0.1);}
+.ic-red{background:rgba(185,28,28,0.1);}
+.ic-amber{background:rgba(180,83,9,0.1);}
+.ic-green{background:rgba(4,120,87,0.1);}
+.ic-purple{background:rgba(91,33,182,0.1);}
+.sc-lbl{font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:3px;}
+.sc-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text);line-height:1;}
+.sc-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+
+
+/* -- BUTTONS -- */
+.btn{padding:8px 16px;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(0,104,181,0.25);}
+.btn-primary:hover{background:var(--accent2);box-shadow:0 4px 14px rgba(0,104,181,0.32);}
+.btn-success{background:var(--green);color:#fff;box-shadow:0 2px 8px rgba(4,120,87,0.22);}
+.btn-success:hover{background:#036644;}
+.btn-outline{background:none;border:1.5px solid var(--border);color:var(--soft);}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+.btn-sm{padding:6px 14px;font-size:12px;}
+.btn-xs{padding:4px 10px;font-size:11px;border-radius:6px;border:1.5px solid var(--border);background:none;color:var(--soft);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;font-weight:600;white-space:nowrap;}
+.btn-xs:hover{border-color:var(--accent);color:var(--accent);background:var(--accent3);}
+.btn-xs.jobsheet{color:var(--accent);border-color:rgba(0,104,181,0.3);background:var(--accent3);}
+.btn-xs.jobsheet:hover{background:rgba(0,104,181,0.1);}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+/* -- TABLE CARD -- */
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);}
+.table-top{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--surface3);}
+.table-title{font-family:'Syne',sans-serif;font-size:13.5px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+.count-chip{background:var(--accent3);color:var(--accent);font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:10px;border:1px solid rgba(0,104,181,0.15);}
+.toolbar-r{display:flex;align-items:center;gap:9px;}
+.show-row{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted);}
+.srch-wrap{position:relative;}
+.srch-wrap input{padding:7px 12px 7px 30px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;width:210px;transition:border-color 0.2s,box-shadow 0.2s;}
+.srch-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,104,181,0.07);}
+.srch-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;}
+table.sc-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:1700px;}
+table.sc-table thead th{padding:9px 10px;font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;text-align:left;border-bottom:2px solid var(--border);background:var(--surface3);white-space:nowrap;cursor:pointer;user-select:none;transition:color 0.2s;}
+table.sc-table thead th:hover{color:var(--accent);}
+table.sc-table thead th.sorted{color:var(--accent);}
+table.sc-table thead th .si{font-size:8px;margin-left:2px;opacity:0.45;}
+table.sc-table thead th.sorted .si{opacity:1;}
+table.sc-table tbody td{padding:9px 10px;border-bottom:1px solid rgba(0,60,120,0.05);vertical-align:middle;white-space:nowrap;}
+table.sc-table tbody tr{transition:background 0.13s;}
+table.sc-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
+table.sc-table tbody tr:last-child td{border-bottom:none;}
+.table-foot{padding:11px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--muted);flex-wrap:wrap;gap:8px;background:var(--surface3);}
+.pager-row{display:flex;align-items:center;gap:3px;}
+.pager{min-width:28px;height:28px;padding:0 7px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--soft);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.18s;font-family:'Plus Jakarta Sans',sans-serif;}
+.pager:hover{border-color:var(--accent);color:var(--accent);}
+.pager.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.pager:disabled{opacity:0.3;cursor:not-allowed;}
+
+/* STATUS / PILLS */
+.s-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;}
+.s-pill::before{content:'';width:5px;height:5px;border-radius:50%;display:block;}
+.sp-pending{background:var(--amber-bg);color:var(--amber);}.sp-pending::before{background:var(--amber);}
+.sp-scrapped{background:var(--red-bg);color:var(--red);}.sp-scrapped::before{background:var(--red);}
+.sp-approved{background:var(--green-bg);color:var(--green);}.sp-approved::before{background:var(--green);}
+.sp-ow{background:var(--purple-bg);color:var(--purple);}.sp-ow::before{background:var(--purple);}
+.sp-camc{background:var(--accent3);color:var(--accent);}.sp-camc::before{background:var(--accent);}
+.sp-lamc{background:rgba(194,85,10,0.08);color:#9a3412;}.sp-lamc::before{background:#9a3412;}
+.sp-ew{background:var(--teal-bg);color:var(--teal);}.sp-ew::before{background:var(--teal);}
+.sp-repeat{background:rgba(91,33,182,0.08);color:var(--purple);}.sp-repeat::before{background:var(--purple);}
+.region-tag{background:var(--teal-bg);color:var(--teal);padding:2px 7px;border-radius:9px;font-size:9.5px;font-weight:700;}
+.pdays-ok{color:var(--green);font-weight:700;}
+.pdays-warn{color:var(--amber);font-weight:700;}
+.pdays-crit{color:var(--red);font-weight:700;}
+.mono{font-family:monospace;font-size:10.5px;}
+
+/* PD CELL */
+.pd-cell{font-weight:600;font-size:11px;}
+.pd-cell .pd-unit{font-size:9px;color:var(--muted);font-weight:500;margin-left:1px;}
+
+/* LOADING */
+.loading-row td{text-align:center;padding:50px 20px;color:var(--muted);font-size:13px;}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:8px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty-st{text-align:center;padding:50px 20px;}
+.ei{font-size:38px;margin-bottom:10px;opacity:0.28;}
+.et{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:5px;}
+.es{font-size:12px;color:var(--muted);}
+
+/* -- JOB SHEET MODAL -- */
+.overlay{position:fixed;inset:0;background:rgba(5,18,38,0.48);backdrop-filter:blur(5px);z-index:500;display:none;place-items:center;}
+.overlay.open{display:grid;animation:fadeIn 0.2s ease;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:15px;width:960px;max-width:96vw;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:slideUp 0.26s cubic-bezier(.4,0,.2,1);}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.modal-header{padding:18px 22px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:2;display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);}
+.modal-close{width:30px;height:30px;border-radius:7px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:15px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.modal-close:hover{background:var(--red-bg);color:var(--red);border-color:rgba(185,28,28,0.3);}
+
+/* RECORD INFO STRIP */
+.rec-strip{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border);background:var(--surface3);}
+.rec-cell{padding:12px 18px;border-right:1px solid var(--border);}
+.rec-cell:last-child{border-right:none;}
+.rec-lbl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:3px;}
+.rec-val{font-size:12.5px;font-weight:700;color:var(--accent);}
+.rec-val.dark{color:var(--text);font-weight:600;}
+
+/* JOB SHEET BODY */
+.js-body{padding:20px 22px;}
+.js-section-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--muted);margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid var(--border);}
+
+/* JOB SHEET TABLE (the 5-row entry grid) */
+.js-grid-wrap{overflow-x:auto;margin-bottom:18px;}
+table.js-grid{width:100%;border-collapse:collapse;font-size:12px;min-width:800px;}
+table.js-grid thead th{padding:9px 10px;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;text-align:left;border-bottom:2px solid var(--border);background:var(--surface3);white-space:nowrap;}
+table.js-grid tbody td{padding:6px 6px;border-bottom:1px solid var(--border2);vertical-align:middle;}
+table.js-grid tbody tr:last-child td{border-bottom:none;}
+table.js-grid tbody td input,table.js-grid tbody td select{width:100%;padding:7px 9px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+table.js-grid tbody td input:focus,table.js-grid tbody td select:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(0,104,181,0.08);}
+table.js-grid tbody td input::placeholder{color:var(--muted);font-size:11px;}
+
+/* STATUS + FOOTER */
+.js-status-row{display:flex;align-items:center;gap:14px;margin-top:6px;}
+.js-status-row label{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;}
+.js-status-row select{padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;min-width:180px;transition:border-color 0.2s;}
+.js-status-row select:focus{border-color:var(--accent);}
+.modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;justify-content:flex-end;position:sticky;bottom:0;background:var(--surface);}
+.fm-msg{font-size:11.5px;font-weight:600;padding:7px 13px;border-radius:7px;margin-right:auto;display:none;}
+.fm-msg.ok{display:block;background:var(--green-bg);color:var(--green);border:1px solid rgba(4,120,87,0.2);}
+.fm-msg.err{display:block;background:var(--red-bg);color:var(--red);border:1px solid rgba(185,28,28,0.18);}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:700;display:flex;flex-direction:column;gap:7px;}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:11px 15px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:9px;min-width:230px;animation:fadeUp 0.28s ease;box-shadow:0 8px 22px rgba(0,0,0,0.1);}
+.toast.ok{border-color:rgba(4,120,87,0.35);}.toast.ok .td{background:var(--green);}
+.toast.err{border-color:rgba(185,28,28,0.35);}.toast.err .td{background:var(--red);}
+.toast.info{border-color:rgba(0,104,181,0.35);}.toast.info .td{background:var(--accent);}
+.td{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+::-webkit-scrollbar{width:7px;height:7px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
+    </style>
+  <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="employee-theme.css">
+  <link rel="stylesheet" href="admin-sidebar.css">
+  <script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <script src="brand-logo.js" defer></script>
+</head>
+<body>
+
+<div class="loading-bar" id="loading-bar"></div>
+
+<!-- JOB SHEET MODAL -->
+<div class="overlay" id="js-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Job Sheet Update</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">Fill repair activity details for this service record</div>
+      </div>
+      <button class="modal-close" onclick="closeJS()">&#10005;</button>
+    </div>
+
+    <!-- RECORD INFO -->
+    <div class="rec-strip">
+      <div class="rec-cell"><div class="rec-lbl">FRN No</div><div class="rec-val" id="js-frnno">-</div></div>
+      <div class="rec-cell"><div class="rec-lbl">Reference No</div><div class="rec-val" id="js-screfno">-</div></div>
+      <div class="rec-cell"><div class="rec-lbl">Model</div><div class="rec-val dark" id="js-model">-</div></div>
+      <div class="rec-cell"><div class="rec-lbl">Defective GIR No</div><div class="rec-val" id="js-defgir">-</div></div>
+      <div class="rec-cell"><div class="rec-lbl">Defective Model Brand Name</div><div class="rec-val dark" id="js-defmod">-</div></div>
+      <div class="rec-cell"><div class="rec-lbl">Received Date at Service Centre</div><div class="rec-val dark" id="js-rcvd">-</div></div>
+    </div>
+
+    <div class="js-body">
+      <input type="hidden" id="js-record-id"/>
+      <div class="js-section-title">Repair Activity Log - Enter up to 5 activity rows</div>
+
+      <div class="js-grid-wrap">
+        <table class="js-grid">
+          <thead>
+            <tr>
+              <th style="width:150px;">Repair Date</th>
+              <th style="width:180px;">Engineer Name</th>
+              <th style="width:220px;">Observation</th>
+              <th style="width:220px;">Repair Activity</th>
+              <th style="width:130px;">Time Spent</th>
+              <th>Remark</th>
+            </tr>
+          </thead>
+          <tbody id="js-rows"></tbody>
+        </table>
+      </div>
+
+      <div class="js-status-row">
+        <label>Status</label>
+        <select id="js-status">
+          <option value="Pending">Pending</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Completed">Completed</option>
+          <option value="Scrapped">Scrapped</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <div class="fm-msg" id="js-msg"></div>
+      <button class="btn btn-outline btn-sm" onclick="closeJS()">Cancel</button>
+      <button class="btn btn-success" id="js-save-btn" onclick="saveJobSheet()">&#128190; Save Job Sheet</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- --- SIDEBAR --- -->
+<!-- === SIDEBAR === -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="sidebar-logo-text">SchillerIndia<div class="sub">Services</div></div>
+    </div>
+  </div>
+  <div style="padding:10px 20px 0;"><span class="role-badge">Admin</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <button class="nav-item " onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
+    <button class="nav-item " onclick="window.location.href='company-section.html'"><span class="icon">&#127970;</span> Company</button>
+    <button class="nav-item " onclick="window.location.href='division-section.html'"><span class="icon">&#128309;</span> Division</button>
+    <button class="nav-item " onclick="window.location.href='engineer-section.html'"><span class="icon">&#128119;</span> Engineers</button>
+    <button class="nav-item " onclick="window.location.href='dealer-section.html'"><span class="icon">&#129309;</span> Dealers</button>
+    <div class="nav-section">Operations</div>
+    <button class="nav-group-toggle open" id="sf-toggle" onclick="toggleSF()">
+      <span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span>
+    </button>
+    <div class="nav-children open" id="sf-children">
+      <div class="nav-sub">
+        <button class="nav-item " onclick="window.location.href='service-list.html'"><span class="icon">&#128225;</span> Services</button>
+        <button class="nav-item " onclick="window.location.href='pending-frn.html'"><span class="icon">&#128221;</span> Pending FRN</button>
+        <button class="nav-item " onclick="window.location.href='ob-pending.html'"><span class="icon">&#128194;</span> OB Pending</button>
+        <button class="nav-item " onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
+        <button class="nav-item " onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
+        <button class="nav-item " onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
+        <button class="nav-item active" onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
+        <button class="nav-item " onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="ar-toggle" onclick="toggleAR()"><span class="icon">&#128196;</span> Activity Register <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="ar-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
+        <a class="nav-item " href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
+        <a class="nav-item " href="aprfob.html"><span class="icon">&#128203;</span> PRF/OB List</a>
+        <a class="nav-item " href="acr.html"><span class="icon">&#128209;</span> Closed PRF/OB</a>
+        <a class="nav-item " href="ans.html"><span class="icon">&#128230;</span> Non Saleable</a>
+        <a class="nav-item " href="as.html"><span class="icon">&#128176;</span> Saleable</a>
+        <a class="nav-item " href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
+        <a class="nav-item " href="acbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="rta-toggle" onclick="toggleRTA()"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="rta-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="atfrn.html"><span class="icon">&#128221;</span> Admin RT FRN</a>
+        <a class="nav-item " href="atob.html"><span class="icon">&#128230;</span> Admin RT OB</a>
+        <a class="nav-item " href="atur.html"><span class="icon">&#128736;&#65039;</span> Admin RT UR</a>
+        <a class="nav-item " href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
+      </div>
+    </div>
+    <div class="nav-section">Admin</div>
+    <button class="nav-item " onclick="window.location.href='usermanagement.html'"><span class="icon">&#128101;</span> User Management</button>
+    <button class="nav-item " onclick="window.location.href='Reports.html'"><span class="icon">&#128200;</span> Reports</button>
+    <button class="nav-item " onclick="window.location.href='settings.html'"><span class="icon">&#9881;&#65039;</span> Settings</button>
+    <button class="nav-item " onclick="window.location.href='notifications.html'"><span class="icon">&#128276;</span> Notifications</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="admin-avatar">A</div>
+      <div>
+        <div class="user-name" id="admin-name">Admin</div>
+        <div class="user-role">Administrator</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<!-- --- MAIN --- -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="admin-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
+        <span>Services &amp; Filter</span><span class="sep">&#8250;</span>
+        <span>Supplier Warranty</span>
+      </div>
+      <div class="topbar-title">Supplier Warranty</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px;">
+      <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
+      <button class="btn btn-outline btn-sm" onclick="loadData()">&#8635; Refresh</button>
+      <button class="btn btn-success btn-sm" onclick="exportCSV()">&#128228; Export</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="sc sc-blue"><div class="sc-ico ic-blue">&#128202;</div><div class="sc-lbl">Total Records</div><div class="sc-val" id="s-total">-</div><div class="sc-sub">All supplier warranty entries</div></div>
+      <div class="sc sc-red"><div class="sc-ico ic-red">&#9888;&#65039;</div><div class="sc-lbl">Supplier Warranty</div><div class="sc-val" id="s-scrapped">-</div><div class="sc-sub">Warranty-handled entries</div></div>
+      <div class="sc sc-amber"><div class="sc-ico ic-amber">&#9888;</div><div class="sc-lbl">Pending</div><div class="sc-val" id="s-pending">-</div><div class="sc-sub">Awaiting approval</div></div>
+      <div class="sc sc-green"><div class="sc-ico ic-green">&#9989;</div><div class="sc-lbl">Avg Pend Days</div><div class="sc-val" id="s-avg">-</div><div class="sc-sub">PFRN average</div></div>
+      <div class="sc sc-purple"><div class="sc-ico ic-purple">&#128221;</div><div class="sc-lbl">Job Sheets</div><div class="sc-val" id="s-js">-</div><div class="sc-sub">Updated records</div></div>
+    </div>
+
+
+    <!-- TABLE CARD -->
+    <div class="table-card">
+      <div class="table-top">
+        <div class="table-title">
+          Supplier Warranty List <span class="count-chip" id="count-chip">- entries</span>
+        </div>
+        <div class="toolbar-r">
+          <div class="show-row">
+            Show
+            <select class="fsel" id="per-page" style="padding:5px 8px;min-width:60px;" onchange="renderTable()">
+              <option>10</option><option>25</option><option>50</option><option>100</option>
+            </select>
+            entries
+          </div>
+          <div class="srch-wrap">
+            <span class="srch-ico">&#128269;</span>
+            <input type="text" id="tbl-search" placeholder="Search SC No, customer, model..." oninput="applyFilters()"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="sc-table">
+          <thead>
+            <tr>
+              <th onclick="sortBy('status')">Status <span class="si">&#8693;</span></th>
+              <th onclick="sortBy('entryDate')" class="sorted">Entry Date <span class="si">&#8693;</span></th>
+              <th onclick="sortBy('scRno')">Sc RNo <span class="si">&#8693;</span></th>
+              <th onclick="sortBy('scEng')">Sc Eng <span class="si">&#8693;</span></th>
+              <th onclick="sortBy('frnNo')">Frn No <span class="si">&#8693;</span></th>
+              <th onclick="sortBy('region')">Region <span class="si">&#8693;</span></th>
+              <th onclick="sortBy('engineer')">Engineer <span class="si">&#8693;</span></th>
+              <th onclick="sortBy('customer')">Cust Name <span class="si">&#8693;</span></th>
+              <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
+              <th onclick="sortBy('unitStatus')">Unit Status <span class="si">&#8693;</span></th>
+              <th onclick="sortBy('defMod')">Def Mod / brd name <span class="si">&#8693;</span></th>
+              <th onclick="sortBy('defGir')">Def Gir No <span class="si">&#8693;</span></th>
+              <th onclick="sortBy('typeWork')">Type of work <span class="si">&#8693;</span></th>
+              <th onclick="sortBy('pdPfrn')" class="sorted">Pend. Days (PFRN) <span class="si">&#8693;</span></th>
+              <th onclick="sortBy('pdObp')">Pend. Days (OBP) <span class="si">&#8693;</span></th>
+              <th onclick="sortBy('pdUrp')">Pend. Days (URP) <span class="si">&#8693;</span></th>
+              <th onclick="sortBy('pdScc')">Pend. Days (SCC) <span class="si">&#8693;</span></th>
+              <th>Job Sheet</th>
+            </tr>
+          </thead>
+          <tbody id="sc-tbody">
+            <tr class="loading-row"><td colspan="18"><span class="spin"></span>Loading from database...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-foot">
+        <span id="tbl-info">-</span>
+        <div class="pager-row" id="tbl-pagination"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API = '';
+let SCRAP = [], filtered = [], sortKey = 'entryDate', sortDir = -1, currentPage = 1;
+
+// -- INIT --------------------------------------------------
+(function init() {
+  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  if (u.name) {
+    (document.getElementById('admin-name')||{}).textContent = u.name;
+    (document.getElementById('admin-avatar')||{}).textContent = u.name.charAt(0).toUpperCase();
+  }
+  (document.getElementById('topbar-date')||{}).textContent = new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  populateYears();
+  loadData();
+})();
+
+function toggleSF() {
+  const toggle = document.getElementById('sf-toggle');
+  const children = document.getElementById('sf-children');
+  toggle.classList.toggle('open');
+  children.classList.toggle('open');
+}
+function toggleAR(){ var btn=document.getElementById('ar-toggle'); var panel=document.getElementById('ar-children'); if(!btn||!panel)return; btn.classList.toggle('open'); panel.classList.toggle('open'); }
+
+function populateYears() {
+  const sel = document.getElementById('fl-year');
+  if (!sel) return;
+  const cur = new Date().getFullYear();
+  for (let y = cur; y >= 2020; y--) {
+    const o = document.createElement('option');
+    o.value = y; o.textContent = y; sel.appendChild(o);
+  }
+}
+
+function getToken() { return localStorage.getItem('schiller_token') || ''; }
+function authHeaders() { return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getToken() }; }
+function handleUnauth(res) {
+  if (res.status === 401) {
+    showToast('Session expired - please log in again.', 'err');
+    setTimeout(() => window.location.href = 'login.html', 1500);
+    throw new Error('Unauthorized');
+  }
+}
+
+// -- LOAD --------------------------------------------------
+async function loadData() {
+  setLoading();
+  try {
+    const res = await fetch(`${API}/api/scrap`, { headers: authHeaders() });
+    handleUnauth(res);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    SCRAP = await res.json();
+    populateSCEngFilter();
+    applyFilters();
+    updateStats();
+    showToast('Loaded ' + SCRAP.length + ' record' + (SCRAP.length !== 1 ? 's' : ''), 'info');
+  } catch (e) {
+    if (e.message === 'Unauthorized') return;
+    setError('Could not connect to server. Ensure the backend is running on port 5000.');
+    showToast('Load failed: ' + e.message, 'err');
+  }
+}
+
+function populateSCEngFilter() {
+  const engs = [...new Set(SCRAP.map(d => d.scEng).filter(Boolean))].sort();
+  const sel = document.getElementById('fl-sceng');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">All Engineers</option>';
+  engs.forEach(e => { const o = document.createElement('option'); o.value = e; o.textContent = e; sel.appendChild(o); });
+}
+
+function updateStats() {
+  (document.getElementById('s-total')||{}).textContent = SCRAP.length;
+  (document.getElementById('s-scrapped')||{}).textContent = SCRAP.filter(d => (d.typeWork||'').toUpperCase().includes('SUPPLIER')).length;
+  (document.getElementById('s-pending')||{}).textContent = SCRAP.filter(d => d.jobSheetStatus === 'Pending' || !d.jobSheetStatus).length;
+  const avgPd = SCRAP.length ? Math.round(SCRAP.reduce((s,d)=>s+(d.pdPfrn||0),0)/SCRAP.length) : 0;
+  (document.getElementById('s-avg')||{}).textContent = avgPd;
+  (document.getElementById('s-js')||{}).textContent = SCRAP.filter(d => d.jobSheetUpdated).length;
+}
+
+// -- FILTERS -----------------------------------------------
+function clearFilters() {
+  ['fl-month','fl-year','fl-region','fl-unitsts','fl-sceng'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const search = document.getElementById('tbl-search');
+  if (search) search.value = '';
+  applyFilters();
+}
+
+function applyFilters() {
+  const q     = (document.getElementById('tbl-search')?.value || '').toLowerCase();
+  const month = document.getElementById('fl-month')?.value || '';
+  const year  = document.getElementById('fl-year')?.value || '';
+  const reg   = document.getElementById('fl-region')?.value || '';
+  const sts   = document.getElementById('fl-unitsts')?.value || '';
+  const sceng = document.getElementById('fl-sceng')?.value || '';
+
+  filtered = SCRAP.filter(d => {
+    const edate = d.entryDate || '';
+    const matchMonth = !month || edate.slice(5, 7) === month;
+    const matchYear  = !year  || edate.slice(0, 4) === String(year);
+    return (
+      matchMonth && matchYear &&
+      (!q     || Object.values(d).some(v => String(v).toLowerCase().includes(q))) &&
+      (!reg   || d.region === reg) &&
+      (!sts   || d.unitStatus === sts) &&
+      (!sceng || d.scEng === sceng)
+    );
+  });
+  sortArr(); currentPage = 1; renderTable();
+}
+
+function sortBy(k) {
+  if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = -1; }
+  sortArr(); renderTable();
+}
+function sortArr() {
+  filtered.sort((a, b) => {
+    const av = a[sortKey] ?? '', bv = b[sortKey] ?? '';
+    if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * sortDir;
+    return String(av).toLowerCase() < String(bv).toLowerCase() ? -sortDir : String(av).toLowerCase() > String(bv).toLowerCase() ? sortDir : 0;
+  });
+}
+
+// -- RENDER ------------------------------------------------
+function renderTable() {
+  const perPage = parseInt(document.getElementById('per-page').value) || 10;
+  const total   = filtered.length;
+  const pages   = Math.max(1, Math.ceil(total / perPage));
+  if (currentPage > pages) currentPage = pages;
+  const slice = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
+
+  (document.getElementById('count-chip')||{}).textContent = total + ' entr' + (total === 1 ? 'y' : 'ies');
+  const tbody = document.getElementById('sc-tbody');
+
+  if (!total) {
+    tbody.innerHTML = `<tr><td colspan="18"><div class="empty-st">
+      <div class="ei">&#128196;</div>
+      <div class="et">${SCRAP.length ? 'No records match the current filters' : 'No Supplier Warranty records'}</div>
+      <div class="es">${SCRAP.length ? 'Try clearing the filters or changing the month/year.' : 'Supplier Warranty records will appear here when added.'}</div>
+    </div></td></tr>`;
+  } else {
+    tbody.innerHTML = slice.map((d, i) => {
+      const rid = d._id || d.id;
+      const pdClass = (v) => v > 100 ? 'pdays-crit' : v > 50 ? 'pdays-warn' : 'pdays-ok';
+      const jsUpdated = d.jobSheetUpdated;
+      return `<tr>
+        <td>${statusPill(d.typeWork, d.jobSheetStatus)}</td>
+        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
+        <td><span class="chip">${esc(d.scRno||'-')}</span></td>
+        <td>${esc(d.scEng||'-')}</td>
+        <td class="mono">${esc(String(d.frnNo||'-'))}</td>
+        <td><span class="region-tag">${esc(d.region||'-')}</span></td>
+        <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.engineer||'')}">${esc(d.engineer||'-')}</td>
+        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;font-weight:500;" title="${esc(d.customer||'')}">${esc(d.customer||'-')}</td>
+        <td style="font-weight:600;">${esc(d.model||'-')}</td>
+        <td>${unitPill(d.unitStatus)}</td>
+        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.defMod||'')}">${esc(d.defMod||'-')}</td>
+        <td><span style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;background:rgba(109,40,217,0.1);color:var(--purple);border:1px solid rgba(109,40,217,0.2);font-family:monospace;">${esc(d.defGir||'-')}</span></td>
+        <td style="font-size:11px;color:var(--soft);">${esc(d.typeWork||'-')}</td>
+        <td style="font-weight:600;">${d.pdPfrn||0}</td>
+        <td style="font-weight:600;">${d.pdObp||0}</td>
+        <td style="font-weight:600;">${d.pdUrp||0}</td>
+        <td style="font-weight:600;">${d.pdScc||0}</td>
+        <td>
+          <button class="btn-xs jobsheet" onclick="openJS('${rid}')">
+            ${jsUpdated ? '&#128221; JobSheet' : '&#128221; JobSheet'}
+          </button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  const fr = total ? (currentPage - 1) * perPage + 1 : 0;
+  (document.getElementById('tbl-info')||{}).textContent = total
+    ? `Showing ${fr} to ${Math.min(currentPage * perPage, total)} of ${total} entr${total === 1 ? 'y' : 'ies'}`
+    : '0 entries';
+  renderPagination(pages);
+}
+
+function statusPill(typeWork, jsStatus) {
+  const tw = (typeWork || '').toUpperCase();
+  if (tw.includes('SCRAP')) return `<span class="s-pill sp-scrapped">Scrapped</span>`;
+  if (jsStatus === 'Completed') return `<span class="s-pill sp-approved">Completed</span>`;
+  return `<span class="s-pill sp-pending">Pending</span>`;
+}
+function unitPill(s) {
+  const m = { OW:'sp-ow', LAMC:'sp-lamc', CAMC:'sp-camc', EW:'sp-ew', REPEAT:'sp-repeat' };
+  return `<span class="s-pill ${m[s]||'sp-pending'}">${esc(s||'-')}</span>`;
+}
+
+// -- JOB SHEET MODAL ---------------------------------------
+function openJS(id) {
+  const d = SCRAP.find(x => (x._id||x.id) === id);
+  if (!d) return;
+
+  document.getElementById('js-record-id').value = id;
+  (document.getElementById('js-frnno')||{}).textContent = d.frnNo    || '-';
+  (document.getElementById('js-screfno')||{}).textContent = d.scRno   || '-';
+  (document.getElementById('js-model')||{}).textContent = d.model    || '-';
+  (document.getElementById('js-defgir')||{}).textContent = d.defGir   || '-';
+  (document.getElementById('js-defmod')||{}).textContent = d.defMod   || '-';
+  (document.getElementById('js-rcvd')||{}).textContent = fmtDate(d.rcvdDate || d.entryDate);
+
+  // Build 5 editable rows
+  const rows = d.jobSheetRows || [];
+  const tbody = document.getElementById('js-rows');
+  tbody.innerHTML = Array.from({ length: 5 }, (_, i) => {
+    const row = rows[i] || {};
+    return `<tr>
+      <td><input type="date" class="js-repdate" value="${esc(row.repairDate||'')}" placeholder="nil"/></td>
+      <td><input type="text" class="js-eng" value="${esc(row.engineerName||'')}" placeholder="Engineer name"/></td>
+      <td><input type="text" class="js-obs" value="${esc(row.observation||'')}" placeholder="Observation..."/></td>
+      <td><input type="text" class="js-act" value="${esc(row.repairActivity||'')}" placeholder="Repair activity..."/></td>
+      <td><input type="text" class="js-time" value="${esc(row.timeSpent||'')}" placeholder=""/></td>
+      <td><input type="text" class="js-rem" value="${esc(row.remark||'')}" placeholder="Remark..."/></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('js-status').value = d.jobSheetStatus || 'Pending';
+  clearJSMsg();
+  document.getElementById('js-overlay').classList.add('open');
+}
+
+function closeJS() {
+  document.getElementById('js-overlay').classList.remove('open');
+}
+
+async function saveJobSheet() {
+  const id = document.getElementById('js-record-id').value;
+  const status = document.getElementById('js-status').value;
+
+  // Collect 5 rows
+  const repDates = [...document.querySelectorAll('.js-repdate')].map(el => el.value);
+  const engs     = [...document.querySelectorAll('.js-eng')].map(el => el.value.trim());
+  const obs      = [...document.querySelectorAll('.js-obs')].map(el => el.value.trim());
+  const acts     = [...document.querySelectorAll('.js-act')].map(el => el.value.trim());
+  const times    = [...document.querySelectorAll('.js-time')].map(el => el.value.trim());
+  const rems     = [...document.querySelectorAll('.js-rem')].map(el => el.value.trim());
+
+  const jobSheetRows = Array.from({ length: 5 }, (_, i) => ({
+    repairDate:     repDates[i] || '',
+    engineerName:   engs[i]    || '',
+    observation:    obs[i]     || '',
+    repairActivity: acts[i]    || '',
+    timeSpent:      times[i]   || '',
+    remark:         rems[i]    || '',
+  }));
+
+  const btn = document.getElementById('js-save-btn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+
+  try {
+    const res = await fetch(`${API}/api/scrap/${id}/jobsheet`, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify({ jobSheetRows, jobSheetStatus: status, jobSheetUpdated: true }),
+    });
+    handleUnauth(res);
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.message || 'HTTP ' + res.status);
+    }
+    // Patch local cache
+    const idx = SCRAP.findIndex(x => (x._id||x.id) === id);
+    if (idx !== -1) { SCRAP[idx].jobSheetRows = jobSheetRows; SCRAP[idx].jobSheetStatus = status; SCRAP[idx].jobSheetUpdated = true; }
+    renderTable(); updateStats();
+    showJSMsg('Job Sheet saved successfully!', 'ok');
+    showToast('Job Sheet updated.', 'ok');
+    setTimeout(closeJS, 1100);
+  } catch (e) {
+    if (e.message !== 'Unauthorized') {
+      showJSMsg('Save failed: ' + e.message, 'err');
+      showToast('Save failed: ' + e.message, 'err');
+    }
+  } finally {
+    btn.disabled = false; btn.innerHTML = '&#128190; Save Job Sheet';
+  }
+}
+
+// -- EXPORT CSV --------------------------------------------
+function exportCSV() {
+  const h = ['Status','Entry Date','SC RNo','SC Eng','FRN No','Region','Engineer','Customer','Model','Unit Status','Def Mod','Def Gir No','Type of Work','PD(PFRN)','PD(OBP)','PD(URP)','PD(SCC)'];
+  const rows = filtered.map(d => [
+    d.typeWork?.toUpperCase().includes('SCRAP') ? 'Scrapped' : (d.jobSheetStatus||'Pending'),
+    d.entryDate, d.scRno, d.scEng, d.frnNo, d.region, d.engineer, d.customer,
+    d.model, d.unitStatus, d.defMod, d.defGir, d.typeWork,
+    d.pdPfrn, d.pdObp, d.pdUrp, d.pdScc,
+  ]);
+  const csv = [h,...rows].map(r => r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'supplier-warranty-list-' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+  showToast('Exported ' + filtered.length + ' records.', 'ok');
+}
+
+// -- PAGINATION --------------------------------------------
+function renderPagination(pages) {
+  const el = document.getElementById('tbl-pagination');
+  if (pages <= 1) { el.innerHTML = ''; return; }
+  let h = `<button class="pager" ${currentPage===1?'disabled':''} onclick="gp(${currentPage-1})">&#8249; Prev</button>`;
+  getRange(currentPage, pages).forEach(p => {
+    if (p === '?') h += `<button class="pager" disabled>...</button>`;
+    else h += `<button class="pager ${p===currentPage?'active':''}" onclick="gp(${p})">${p}</button>`;
+  });
+  h += `<button class="pager" ${currentPage===pages?'disabled':''} onclick="gp(${currentPage+1})">Next &#8250;</button>`;
+  el.innerHTML = h;
+}
+function getRange(c,t){if(t<=7)return Array.from({length:t},(_,i)=>i+1);if(c<=4)return[1,2,3,4,5,'?',t];if(c>=t-3)return[1,'?',t-4,t-3,t-2,t-1,t];return[1,'?',c-1,c,c+1,'?',t];}
+function gp(p){currentPage=p;renderTable();}
+
+// -- HELPERS -----------------------------------------------
+function setLoading(){document.getElementById('sc-tbody').innerHTML='<tr class="loading-row"><td colspan="18"><span class="spin"></span>Loading from database...</td></tr>';['s-total','s-scrapped','s-pending','s-avg','s-js'].forEach(id=>document.getElementById(id).textContent='-');}
+function setError(msg){document.getElementById('sc-tbody').innerHTML=`<tr class="loading-row"><td colspan="18" style="color:var(--red);">&#9888; ${esc(msg)}</td></tr>`;}
+function fmtDate(d){if(!d)return'-';const p=String(d).split('T')[0].split('-');if(p.length<3)return String(d);return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0];}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function showToast(msg,type='ok'){const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="td"></span>'+msg;w.appendChild(el);setTimeout(()=>el.remove(),3400);}
+function showJSMsg(msg,type){const el=document.getElementById('js-msg');el.textContent=msg;el.className='fm-msg '+type;}
+function clearJSMsg(){const el=document.getElementById('js-msg');el.textContent='';el.className='fm-msg';}
+document.getElementById('js-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeJS();});
+function logout(){localStorage.clear();window.location.href='login.html';}
+</script>
+<script src="tab-fix.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

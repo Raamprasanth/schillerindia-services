@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script>(function(){
+    const token = localStorage.getItem('schiller_token');
+    const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
+    if (!token || !['fqc','admin','superadmin'].includes(role)) window.location.href = 'login.html';
+  })();</script>
+  <title>SchillerIndia |- BIR</title>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    :root{
+      --bg:#f4f7fa;--surface:#ffffff;--surface2:#eaf1f6;--border:#d0e0ec;
+      --accent:#0077cc;--accent2:#007a8a;--green:#059669;--amber:#d97706;
+      --red:#cc0000;--text:#1a2a3a;--muted:#7a9ab0;--soft:#4a6a8a;--card:#ffffff;
+      --purple:#7c3aed;--cyan:#0891b2;--glow-accent:rgba(0,119,204,0.15);
+    }
+    body{font-family:Calibri, Arial, sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
+    /* SIDEBAR */
+    .sidebar{width:240px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 12px rgba(0,80,120,0.06);}
+    .sidebar-header{padding:16px 18px 14px;border-bottom:1px solid rgba(255,255,255,0.16);background:linear-gradient(145deg,#450a0a,#b91c1c);}
+    .sidebar-logo{display:flex;align-items:center;gap:10px;}
+    .sidebar-logo-icon{width:34px;height:34px;background:rgba(255,255,255,0.16);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:Calibri, Arial, sans-serif;font-weight:800;font-size:13px;color:#fff;box-shadow:0 2px 8px rgba(76,29,149,0.25);border:1px solid rgba(255,255,255,0.22);}
+    .sidebar-logo-text{font-family:Calibri, Arial, sans-serif;font-size:13px;font-weight:700;color:#fff;}
+    .sidebar-logo-text .sub{font-size:10px;color:rgba(255,255,255,0.68);font-family:Calibri, Arial, sans-serif;font-weight:400;}
+    .sidebar-nav{flex:1;padding:10px 8px;}
+    .nav-item{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:7px;color:var(--soft);font-size:13px;font-weight:500;cursor:pointer;transition:all 0.18s;margin-bottom:3px;border:none;background:none;width:100%;text-align:left;font-family:Calibri, Arial, sans-serif;text-decoration:none;}
+    .nav-item:hover{background:var(--surface2);color:var(--text);}
+    .nav-item.active{background:rgba(185,28,28,0.1);color:#b91c1c;font-weight:700;border-left:3px solid #b91c1c;padding-left:9px;}
+    .nav-item .icon{font-size:13px;width:17px;text-align:center;flex-shrink:0;}
+    .nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;}
+    .nav-badge-amber{margin-left:auto;background:var(--amber);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;}
+    .sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);}
+    .user-info{display:flex;align-items:center;gap:10px;}
+    .user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#b91c1c,#ef4444);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
+    .user-name{font-size:12px;font-weight:600;color:var(--text);}
+    .user-role{font-size:10px;color:var(--muted);}
+    .logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s;}
+    .logout-btn:hover{border-color:var(--red);color:var(--red);}
+    .role-badge{margin:10px 20px 0;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;display:inline-block;background:rgba(185,28,28,0.1);color:#b91c1c;border:1px solid rgba(185,28,28,0.25);}
+    .nav-section{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;padding:10px 8px 5px;}
+    .theme-toggle{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all 0.2s;}
+    .theme-toggle:hover{border-color:var(--red);}
+
+    /* MAIN */
+    .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .topbar{padding:14px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:0 2px 8px rgba(0,80,120,0.05);}
+    .topbar-left .page-title{font-family:Calibri, Arial, sans-serif;font-size:20px;font-weight:700;color:var(--text);}
+    .topbar-left .topbar-date{font-size:12px;color:var(--muted);margin-top:2px;}
+    .topbar-actions{display:flex;align-items:center;gap:10px;}
+    .topbar-btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;border:1px solid var(--border);background:var(--surface2);color:var(--soft);font-family:Calibri, Arial, sans-serif;}
+    .topbar-btn:hover{border-color:var(--red);color:var(--red);}
+    .topbar-btn.primary{background:var(--purple);color:#fff;border-color:var(--purple);box-shadow:0 2px 8px rgba(124,58,237,0.24);}
+    .topbar-btn.primary:hover{background:#5b21b6;}
+    .content{flex:1;padding:24px 28px;overflow-y:auto;background:var(--bg);}
+
+
+    /* PAGE / ANIMATION */
+    .page{display:none;animation:fadeUp 0.35s ease both;}
+    .page.active{display:block;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+    /* HERO */
+    .bir-hero,.kpi-ticker{display:none;}
+
+    /* STATS */
+    .stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:20px;margin-bottom:24px;}
+    .stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 2px 10px rgba(0,80,120,0.05);position:relative;overflow:hidden;}
+    .stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0;}
+    .stat-card.s-blue::after{background:var(--accent);}
+    .stat-card.s-amber::after{background:var(--amber);}
+    .stat-card.s-green::after{background:var(--green);}
+    .stat-card.s-red::after{background:var(--red);}
+    .stat-card.s-purple::after{background:var(--purple);}
+    .stat-card.s-cyan::after{background:var(--cyan);}
+    .stat-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,80,120,0.1);}
+    .stat-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;}
+    .stat-value{font-family:Calibri, Arial, sans-serif;font-size:30px;font-weight:800;margin-bottom:3px;}
+    .stat-sub{font-size:11px;color:var(--muted);font-weight:500;}
+    .stat-icon{font-size:20px;opacity:0.35;float:right;margin-top:-28px;}
+    .s-blue .stat-value{color:var(--accent);}
+    .s-amber .stat-value{color:var(--amber);}
+    .s-green .stat-value{color:var(--green);}
+    .s-red .stat-value{color:var(--red);}
+    .s-purple .stat-value{color:var(--purple);}
+    .s-cyan .stat-value{color:var(--cyan);}
+
+/* -- FILTER STRIP --------------------------------------------------------- */
+.filter-strip{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 2px 8px rgba(0,80,120,0.04);}
+.filter-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;white-space:nowrap;}
+.f-input{padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:Calibri, Arial, sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s;}
+.f-input:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(204,0,0,0.07);}
+.f-select{padding:8px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:Calibri, Arial, sans-serif;color:var(--soft);background:var(--surface);outline:none;cursor:pointer;transition:border-color 0.2s;}
+.f-select:focus{border-color:var(--red);}
+.f-divider{width:1px;height:24px;background:var(--border);flex-shrink:0;}
+
+/* -- TABLE CARD ----------------------------------------------------------- */
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,80,120,0.05);}
+.table-card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:var(--surface);border-left:4px solid var(--red);}
+.table-card-title{font-family:Calibri, Arial, sans-serif;font-size:15px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+.count-badge{background:rgba(204,0,0,0.1);color:var(--red);border:1px solid rgba(204,0,0,0.2);font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px;}
+.table-toolbar{display:flex;align-items:center;gap:10px;}
+.show-row{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);}
+.srch-wrap{position:relative;}
+.srch-wrap input{padding:7px 12px 7px 29px;border:1.5px solid var(--border);border-radius:7px;font-size:12.5px;font-family:Calibri, Arial, sans-serif;color:var(--text);background:var(--surface);outline:none;width:210px;transition:border-color 0.2s;}
+.srch-wrap input:focus{border-color:var(--red);}
+.srch-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);}
+.table-wrap{overflow-x:auto;}
+table.ns-table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1300px;}
+table.ns-table thead th{padding:10px 12px;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;text-align:left;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap;cursor:pointer;user-select:none;transition:color 0.2s;}
+table.ns-table thead th:hover{color:var(--red);}
+table.ns-table thead th.sorted{color:var(--red);}
+table.ns-table thead th .si{font-size:8px;margin-left:2px;opacity:0.4;}
+table.ns-table thead th.sorted .si{opacity:1;}
+table.ns-table thead th.no-sort{cursor:default;}
+table.ns-table thead th.no-sort:hover{color:var(--muted);}
+table.ns-table tbody td{padding:10px 12px;border-bottom:1px solid rgba(0,80,120,0.06);vertical-align:middle;white-space:nowrap;}
+table.ns-table tbody tr{transition:background 0.12s;}
+table.ns-table tbody tr:hover td{background:var(--glow-accent);}
+table.ns-table tbody tr:last-child td{border-bottom:none;}
+.table-foot{padding:11px 18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted);flex-wrap:wrap;gap:8px;background:var(--surface2);}
+.pager-row{display:flex;align-items:center;gap:3px;}
+.pager{min-width:28px;height:28px;padding:0 7px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--soft);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.18s;font-family:Calibri, Arial, sans-serif;}
+.pager:hover{border-color:var(--red);color:var(--red);}
+.pager.active{background:var(--red);border-color:var(--red);color:#fff;}
+.pager:disabled{opacity:0.3;cursor:not-allowed;}
+
+    /* BADGES / CHIPS */
+    .chip-sm{display:inline-flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-size:11px;color:var(--soft);font-weight:500;font-family:Calibri, Arial, sans-serif;}
+    .badge-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+    .badge-pill::before{content:'';width:5px;height:5px;border-radius:50%;display:block;}
+    .bp-blue{background:rgba(0,119,204,0.1);color:var(--accent);}.bp-blue::before{background:var(--accent);}
+    .bp-purple{background:rgba(124,58,237,0.12);color:var(--purple);}.bp-purple::before{background:var(--purple);}
+    .bp-cyan{background:rgba(8,145,178,0.12);color:var(--cyan);}.bp-cyan::before{background:var(--cyan);}
+    .bp-amber{background:rgba(217,119,6,0.12);color:var(--amber);}.bp-amber::before{background:var(--amber);}
+    .status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+    .status-badge::before{content:'';width:6px;height:6px;border-radius:50%;display:block;}
+    .st-pending{background:rgba(217,119,6,0.12);color:var(--amber);}.st-pending::before{background:var(--amber);}
+    .st-approved{background:rgba(5,150,105,0.12);color:var(--green);}.st-approved::before{background:var(--green);}
+    .st-rejected{background:rgba(204,0,0,0.1);color:var(--red);}.st-rejected::before{background:var(--red);}
+    .st-wip{background:rgba(8,145,178,0.12);color:var(--cyan);}.st-wip::before{background:var(--cyan);}
+
+    /* BUTTONS */
+    .btn{padding:9px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:Calibri, Arial, sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;}
+    .btn-primary{background:var(--purple);color:#fff;box-shadow:0 2px 8px rgba(124,58,237,0.24);}
+    .btn-primary:hover{background:#5b21b6;}
+    .btn-danger{background:var(--red);color:#fff;}
+    .btn-success{background:var(--green);color:#fff;}
+    .btn-outline{background:none;border:1.5px solid var(--border);color:var(--soft);}
+    .btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+    .btn-sm{padding:6px 14px;font-size:12px;}
+    .btn-xs{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:none;color:var(--soft);font-family:Calibri, Arial, sans-serif;transition:all 0.2s;}
+    .btn-xs:hover{border-color:var(--accent);color:var(--accent);}
+    .btn-xs.danger{color:var(--red);border-color:rgba(204,0,0,0.3);}
+    .btn-xs.danger:hover{background:rgba(204,0,0,0.06);}
+    .btn-xs.success{color:var(--green);border-color:rgba(5,150,105,0.3);}
+    .btn-xs.success:hover{background:rgba(5,150,105,0.06);}
+
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(10,20,35,0.42);z-index:500;display:none;align-items:flex-start;justify-content:center;backdrop-filter:blur(5px);overflow-y:auto;padding:24px 12px;}
+    .modal-overlay.show{display:flex;animation:fadeUp 0.2s ease both;}
+    .modal-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:860px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,0.18);margin:auto;}
+    .modal-box h3{font-family:Calibri, Arial, sans-serif;font-size:18px;font-weight:800;color:var(--text);margin-bottom:4px;}
+    .modal-subtitle{font-size:12px;color:var(--muted);margin-bottom:24px;}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:20px;border-top:1px solid var(--border);}
+    .modal-header{padding:12px 18px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--surface),var(--surface2));display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+    .modal-title{font-family:Calibri, Arial, sans-serif;font-size:15px;font-weight:700;color:var(--text);}
+    .modal-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+    .modal-close{width:30px;height:30px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:14px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+    .modal-close:hover{background:rgba(204,0,0,0.08);color:var(--red);border-color:rgba(204,0,0,0.3);}
+    .modal-scroll{flex:1;overflow-y:auto;}
+    .modal-body{padding:24px;}
+    .modal-footer{padding:10px 18px;border-top:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;gap:8px;justify-content:flex-end;flex-shrink:0;}
+    #bir-modal{top:0;right:0;bottom:0;left:240px;background:rgba(10,20,35,0.42);backdrop-filter:blur(5px);padding:0;align-items:stretch;justify-content:stretch;overflow:hidden;}
+    #bir-modal .modal-box{max-width:none;width:100%;height:100%;max-height:none;margin:0;border-radius:0;border:0;border-left:1px solid var(--border);box-shadow:none;padding:0;display:flex;flex-direction:column;overflow:hidden;}
+
+    #bir-modal > .modal-box > h3,
+    #bir-modal > .modal-box > .modal-subtitle{display:none;}
+    #bir-modal .modal-header{padding:12px 20px;}
+    #bir-modal .modal-body{padding:24px 28px 28px;max-width:1240px;width:100%;margin:0 auto;}
+    #bir-modal .modal-footer{padding:10px 20px;}
+    #bir-modal .form-section:first-of-type{margin-top:0;}
+
+    /* FORM */
+    .form-section{margin-bottom:24px;}
+    .form-section-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+    .form-section-title .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);}
+    .form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+    .form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .form-group{display:flex;flex-direction:column;gap:5px;}
+    .form-group.span-2{grid-column:span 2;}
+    .form-group.span-3{grid-column:span 3;}
+    .form-group label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
+    .form-group label .req{color:var(--red);margin-left:2px;}
+    .form-group input,.form-group select,.form-group textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:Calibri, Arial, sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+    .form-group textarea{resize:none;min-height:42px;height:42px;overflow:auto;}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(8,145,178,0.1);}
+    .form-group input:read-only{background:var(--surface2);color:var(--muted);}
+    .form-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+    .form-group.span-2{grid-column:span 2;}.form-group.span-4{grid-column:span 4;}
+    /* BIR TABS */
+    .bir-tabs{display:none;}
+    .bir-tab{padding:11px 18px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;font-family:Calibri, Arial, sans-serif;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all 0.18s;display:flex;align-items:center;gap:6px;white-space:nowrap;}
+    .bir-tab:hover{color:var(--text);background:rgba(8,145,178,0.06);}
+    .bir-tab.active{color:var(--cyan);border-bottom-color:var(--cyan);font-weight:700;}
+    .bir-tab-pane{display:block;padding:22px 28px 0;}
+    .bir-tab-pane.active{display:block;}
+    .bir-tab-pane + .bir-tab-pane{padding-top:28px;}
+    .form-msg{font-size:12px;font-weight:600;padding:8px 14px;border-radius:6px;margin-top:10px;display:none;}
+    .modal-footer .form-msg{margin-top:0;margin-right:auto;}
+    .form-msg.ok{display:block;background:rgba(5,150,105,0.1);color:var(--green);border:1px solid rgba(5,150,105,0.25);}
+    .form-msg.err-msg{display:block;background:rgba(204,0,0,0.08);color:var(--red);border:1px solid rgba(204,0,0,0.2);}
+
+    /* FROZEN SECTIONS */
+    .section-frozen{position:relative;border:1.5px solid rgba(0,119,204,0.18);border-radius:12px;padding:20px;margin-top:22px;background:linear-gradient(135deg,rgba(0,119,204,0.03),rgba(8,145,178,0.04));}
+    .section-frozen::before{content:'🔒 LOCKED';position:absolute;top:-10px;right:16px;background:linear-gradient(135deg,var(--accent),var(--cyan));color:#fff;font-size:9px;font-weight:700;letter-spacing:0.1em;padding:2px 10px;border-radius:10px;}
+    .section-frozen .form-group input,.section-frozen .form-group select,.section-frozen .form-group textarea{background:var(--surface2)!important;color:var(--muted)!important;cursor:not-allowed;}
+    .section-unlocked{position:relative;border:1.5px solid rgba(5,150,105,0.22);border-radius:12px;padding:20px;background:linear-gradient(135deg,rgba(5,150,105,0.03),rgba(5,150,105,0.05));}
+    .section-unlocked::before{content:'🔓 UNLOCKED';position:absolute;top:-10px;right:16px;background:linear-gradient(135deg,var(--green),#10b981);color:#fff;font-size:9px;font-weight:700;letter-spacing:0.1em;padding:2px 10px;border-radius:10px;}
+    .section-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+    .section-title .dot{width:6px;height:6px;border-radius:50%;}
+
+    /* CONFIRM MODAL */
+    .confirm-box{max-width:380px;}
+    .confirm-box p{font-size:13px;color:var(--muted);margin-bottom:4px;line-height:1.6;}
+
+    /* TOAST */
+    .toast-wrap{position:fixed;bottom:24px;right:24px;z-index:600;display:flex;flex-direction:column;gap:8px;}
+    .toast{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;min-width:240px;animation:fadeUp 0.3s ease;box-shadow:0 8px 24px rgba(0,0,0,0.12);}
+    .toast.ok{border-color:rgba(5,150,105,0.4);}.toast.ok .tdot{background:var(--green);}
+    .toast.err{border-color:rgba(204,0,0,0.4);}.toast.err .tdot{background:var(--red);}
+    .tdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+    /* KPI TICKER */
+    .kpi-ticker{display:flex;gap:20px;padding:12px 20px;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow-x:auto;margin-bottom:20px;align-items:center;}
+    .kpi-ticker::-webkit-scrollbar{display:none;}
+    .kpi-item{display:flex;align-items:center;gap:8px;flex-shrink:0;padding-right:20px;border-right:1px solid var(--border);}
+    .kpi-item:last-child{border-right:none;padding-right:0;}
+    .kpi-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;}
+    .kpi-val{font-family:Calibri, Arial, sans-serif;font-size:14px;font-weight:600;color:var(--text);}
+
+    /* DETAIL VIEW */
+    .detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;}
+    .detail-row{display:contents;}
+    .detail-cell{padding:10px 14px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);}
+    .detail-cell:nth-child(3n){border-right:none;}
+    .detail-cell:last-child,.detail-cell:nth-last-child(2),.detail-cell:nth-last-child(3){border-bottom:none;}
+    .detail-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px;}
+    .detail-val{font-size:13px;color:var(--text);font-weight:500;}
+    .detail-val.mono{font-family:Calibri, Arial, sans-serif;font-size:12px;}
+
+    /* PROGRESS */
+    .progress-wrap{background:var(--surface2);border-radius:6px;height:5px;overflow:hidden;}
+    .progress-bar{height:5px;border-radius:6px;background:linear-gradient(90deg,var(--cyan),var(--accent2));transition:width 1s ease;}
+
+    /* EMPTY STATE */
+    .empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+    .empty-state .empty-icon{font-size:40px;margin-bottom:12px;opacity:0.4;}
+    .empty-state p{font-size:14px;}
+
+    /* PAGINATION */
+    .pagination{display:flex;align-items:center;gap:6px;}
+    .pg-btn{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--soft);font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+    .pg-btn:hover,.pg-btn.active{background:var(--cyan);color:#fff;border-color:var(--cyan);}
+    .pg-btn:disabled{opacity:0.4;cursor:not-allowed;}
+
+    @media(max-width:900px){
+      .stats-grid{grid-template-columns:repeat(2,1fr);}
+      .form-grid{grid-template-columns:1fr 1fr;}
+      .form-group.span-3{grid-column:span 2;}
+      .detail-grid{grid-template-columns:1fr 1fr;}
+    }
+    @media(max-width:600px){
+      .stats-grid{grid-template-columns:1fr;}
+      .form-grid,.form-grid-2{grid-template-columns:1fr;}
+      .form-group.span-2,.form-group.span-3{grid-column:span 1;}
+      .sidebar{display:none;}
+      #bir-modal{left:0;}
+      #bir-modal .modal-box{border-left:0;}
+    }
+  
+    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
+    </style>
+  <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="employee-theme.css">
+  <style>
+  .sidebar{width:240px !important;background:var(--surface) !important;border-right:1px solid var(--border) !important;box-shadow:2px 0 12px rgba(0,80,120,0.06) !important;}
+  .sidebar-header{padding:16px 18px 14px !important;border-bottom:1px solid rgba(255,255,255,0.16) !important;background:linear-gradient(145deg,#450a0a,#b91c1c) !important;}
+  .sidebar-logo{display:flex !important;align-items:center !important;gap:10px !important;}
+  .sidebar-logo-text{font-family:Calibri, Arial, sans-serif !important;font-size:15px !important;font-weight:800 !important;color:#fff !important;line-height:1.2 !important;}
+  .sidebar-logo-text .sub{font-family:Calibri, Arial, sans-serif !important;font-size:12px !important;font-weight:600 !important;color:rgba(255,255,255,0.68) !important;}
+  .sidebar-nav{flex:1 !important;padding:10px 8px !important;}
+  .nav-section{font-size:12px !important;font-weight:800 !important;color:var(--muted) !important;letter-spacing:.1em !important;text-transform:uppercase !important;padding:10px 8px 5px !important;}
+  .nav-item{display:flex !important;align-items:center !important;gap:9px !important;padding:10px 12px !important;border-radius:7px !important;color:var(--soft) !important;font-size:15px !important;font-weight:700 !important;margin-bottom:3px !important;border:none !important;background:none !important;width:100% !important;text-align:left !important;font-family:Calibri, Arial, sans-serif !important;text-decoration:none !important;line-height:1.2 !important;}
+  .nav-item:hover{background:var(--surface2) !important;color:var(--text) !important;}
+  .nav-item.active{background:rgba(124,58,237,0.11) !important;color:var(--purple) !important;font-weight:700 !important;border-left:3px solid var(--purple) !important;padding-left:9px !important;}
+  .nav-item .icon{font-size:15px !important;width:20px !important;min-width:20px !important;display:inline-flex !important;align-items:center !important;justify-content:center !important;text-align:center !important;line-height:1 !important;flex-shrink:0 !important;}
+  .role-badge{margin:10px 20px 0 !important;padding:4px 12px !important;border-radius:20px !important;font-size:11px !important;font-weight:700 !important;letter-spacing:.06em !important;}
+  .sidebar-footer{padding:14px 18px !important;border-top:1px solid var(--border) !important;}
+  .user-name{font-size:12px !important;font-weight:600 !important;color:var(--text) !important;}
+  .user-role{font-size:10px !important;font-weight:400 !important;color:var(--muted) !important;}
+  </style>
+  <link rel="stylesheet" href="fqc-page-theme.css">
+  <script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <script src="brand-logo.js" defer></script>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-box confirm-box">
+    <h3>&#9888;&#65039; Confirm Action</h3>
+    <div class="modal-subtitle" id="confirm-subtitle">This action cannot be undone.</div>
+    <p id="confirm-msg">Are you sure?</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline btn-sm" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="confirm-yes">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT BIR MODAL -->
+<div class="modal-overlay" id="bir-modal">
+  <div class="modal-box">
+    <h3 id="bir-modal-title">&#128196; New Batch Inspection Report</h3>
+    <div class="modal-subtitle" id="bir-modal-sub">Fill in all required fields to create a BIR entry</div>
+
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="bir-modal-title-ui">Batch Inspection Report</div>
+        <div class="modal-sub" id="bir-modal-sub-ui">Fill in all required fields to create a BIR entry</div>
+      </div>
+      <button class="modal-close" onclick="closeBIRModal()" title="Close">&#10005;</button>
+    </div>
+    <!-- TAB NAV (hidden - single section now) -->
+
+    <div class="modal-scroll">
+
+      <div class="modal-body">
+        <div class="section-unlocked" id="fqc-section">
+          <div class="section-title"><span class="dot" style="background:var(--cyan)"></span> FQC Section</div>
+          <div class="form-grid-4">
+          <div class="form-group">
+            <label>Division <span class="req">*</span></label>
+            <select id="f-division" onchange="onDivisionChange()">
+              <option value="">Select Division</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Unit Inward Date <span class="req">*</span></label>
+            <input type="date" id="f-unit-inward"/>
+          </div>
+          <div class="form-group">
+            <label>FQC Inward Date</label>
+            <input type="date" id="f-fqc-inward"/>
+          </div>
+          <div class="form-group">
+            <label>BIR Reference No.</label>
+            <input type="text" id="f-bir-ref" placeholder="Auto-generated if blank"/>
+          </div>
+          <div class="form-group">
+            <label>Supplier</label>
+            <select id="f-supplier" onchange="onSupplierChange()">
+              <option value="">Select Supplier</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Model <span class="req">*</span></label>
+            <select id="f-model">
+              <option value="">Select Model</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Configuration</label>
+            <input type="text" id="f-configuration" placeholder="Provocation"/>
+          </div>
+          <div class="form-group">
+            <label>Received Qty <span class="req">*</span></label>
+            <input type="text" id="f-qty" placeholder="27"/>
+          </div>
+          <div class="form-group">
+            <label>Unit Serial No.</label>
+            <input type="text" id="f-serial" placeholder="Serial number"/>
+          </div>
+          <div class="form-group">
+            <label>Invoice No.</label>
+            <input type="text" id="f-invoice-no" placeholder="Invoice number"/>
+          </div>
+          <div class="form-group">
+            <label>Invoice Date</label>
+            <input type="date" id="f-invoice-date"/>
+          </div>
+          <div class="form-group">
+            <label>Previous Software Version</label>
+            <input type="text" id="f-prev-sw" placeholder=""/>
+          </div>
+          <div class="form-group">
+            <label>Present Software Version</label>
+            <input type="text" id="f-pres-sw" placeholder=""/>
+          </div>
+          <div class="form-group">
+            <label>Accessory Changes</label>
+            <select id="f-acc-changes">
+              <option value="">Select</option>
+              <option>No Change</option><option>Added</option><option>Removed</option><option>Replaced</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Accessory Details</label>
+            <input type="text" id="f-acc-details" placeholder=""/>
+          </div>
+          <div class="form-group">
+            <label>User Manual Update</label>
+            <select id="f-manual-update">
+              <option value="">Select</option>
+              <option>Yes</option><option>No</option><option>NA</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>FQC Remarks</label>
+            <input type="text" id="f-fqc-remarks" placeholder="FQC team remarks"/>
+          </div>
+          <div class="form-group">
+            <label>Status <span class="req">*</span></label>
+            <select id="f-status">
+              <option value="Pending">Pending</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+          </div>
+        </div>
+
+        <!-- SERVICE SECTION (Locked) -->
+        <div class="section-frozen" id="service-section">
+          <div class="section-title"><span class="dot" style="background:var(--green)"></span> Service Section</div>
+          <div class="form-grid-4">
+            <div class="form-group">
+              <label>SC Engineer</label>
+              <input type="text" id="f-sc-engineer" placeholder="SC engineer name" disabled/>
+            </div>
+            <div class="form-group">
+              <label>SC Inward Date</label>
+              <input type="date" id="f-sc-inward" disabled/>
+            </div>
+            <div class="form-group">
+              <label>SC Observation</label>
+              <input type="text" id="f-sc-obs" placeholder="SC observation" disabled/>
+            </div>
+            <div class="form-group">
+              <label>SC Action Plan</label>
+              <input type="text" id="f-sc-action" placeholder="Action plan" disabled/>
+            </div>
+            <div class="form-group">
+              <label>Tentative Date</label>
+              <input type="date" id="f-tent-date" disabled/>
+            </div>
+            <div class="form-group">
+              <label>Ship Date to FQC</label>
+              <input type="date" id="f-ship-fqc" disabled/>
+            </div>
+            <div class="form-group">
+              <label>Defective Unit Received Date</label>
+              <input type="date" id="f-def-recv" disabled/>
+            </div>
+            <div class="form-group">
+              <label>Replacement Ship Date</label>
+              <input type="date" id="f-rep-ship" disabled/>
+            </div>
+            <div class="form-group">
+              <label>Accessory Change Remarks</label>
+              <input type="text" id="f-acc-remarks" placeholder="Accessory change remarks" disabled/>
+            </div>
+            <div class="form-group">
+              <label>Hardware Changes</label>
+              <input type="text" id="f-hw-changes" placeholder="" disabled/>
+            </div>
+            <div class="form-group">
+              <label>Hardware Change Remarks</label>
+              <input type="text" id="f-hw-remarks" placeholder="Hardware change details" disabled/>
+            </div>
+            <div class="form-group">
+              <label>Service Manual Update</label>
+              <select id="f-service-manual" disabled>
+                <option value="">Select</option>
+                <option>Yes</option><option>No</option><option>NA</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Technical Remarks</label>
+              <input type="text" id="f-tech-remarks" placeholder="Technical notes" disabled/>
+            </div>
+            <div class="form-group">
+              <label>Software Change Remarks</label>
+              <input type="text" id="f-sw-remarks" placeholder="Software change details" disabled/>
+            </div>
+            <div class="form-group">
+              <label>SC Final Remarks</label>
+              <input type="text" id="f-fqc-final-remarks" placeholder="SC final remarks" disabled/>
+            </div>
+            <div class="form-group">
+              <label>FQC Observation</label>
+              <input type="text" id="f-fqc-obs" placeholder="FQC observation" disabled/>
+            </div>
+          </div>
+        </div>
+
+        <!-- PRODUCT TEAM SECTION (Locked) -->
+        <div class="section-frozen" id="product-section">
+          <div class="section-title"><span class="dot" style="background:var(--purple)"></span> Product Team Section</div>
+          <div class="form-grid-4">
+            <div class="form-group">
+              <label>TS Team Verification Date</label>
+              <input type="date" id="f-ts-date" disabled/>
+            </div>
+            <div class="form-group">
+              <label>PS Engineer</label>
+              <input type="text" id="f-ps-engineer" placeholder="PS engineer name" disabled/>
+            </div>
+            <div class="form-group">
+              <label>CNR/Technews Circulation</label>
+              <select id="f-cnr-circ" disabled>
+                <option value="">Select</option>
+                <option>Yes</option><option>No</option><option>NA</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>CNR/Technews Reference No.</label>
+              <input type="text" id="f-cnr-ref" placeholder="Reference number" disabled/>
+            </div>
+            <div class="form-group">
+              <label>CNR/Technews Release Date</label>
+              <input type="date" id="f-cnr-date" disabled/>
+            </div>
+            <div class="form-group">
+              <label>PS Team Verification Date</label>
+              <input type="date" id="f-ps-date" disabled/>
+            </div>
+            <div class="form-group">
+              <label>Approved Date</label>
+              <input type="date" id="f-approved-date" disabled/>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div><!-- /modal-scroll -->
+
+    <div class="modal-footer">
+      <div id="bir-form-msg" class="form-msg"></div>
+      <button class="btn btn-outline btn-sm" onclick="closeBIRModal()">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="bir-save-btn" onclick="saveBIR()">&#128190; Save BIR Entry</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- VIEW DETAIL MODAL -->
+<div class="modal-overlay" id="view-modal">
+  <div class="modal-box">
+    <h3 id="view-modal-title">&#128196; BIR Detail</h3>
+    <div class="modal-subtitle" id="view-modal-sub">Full batch inspection record</div>
+    <div id="view-modal-content"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline btn-sm" onclick="closeViewModal()">Close</button>
+      <button class="btn btn-primary btn-sm" id="view-edit-btn">&#9998; Edit Record</button>
+    </div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="sidebar-logo-text">SchillerIndia<div class="sub">Services</div></div>
+    </div>
+  </div>
+  <div style="padding:10px 20px 0;"><span class="role-badge">FQC</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">FQC</div>
+    <a class="nav-item" href="fqc-dashboard.html"><span class="icon">&#128202;</span> Dashboard</a>
+    <a class="nav-item" href="fqc-dashboard.html?page=pending-activity"><span class="icon">&#9203;</span> Pending Activity</a>
+    <a class="nav-item" href="fqc-dashboard.html?page=closed-activity"><span class="icon">&#9989;</span> Closed Activity</a>
+    <a class="nav-item" href="fns.html">
+      <span class="icon">&#128230;</span> Non Saleable
+    </a>
+    <a class="nav-item" href="fs.html">
+      <span class="icon">&#128176;</span> Saleables
+    </a>
+    <a class="nav-item active" href="fbir.html">
+      <span class="icon">&#128203;</span> BIR LIST
+    </a>
+    <a class="nav-item"  href="fcbir.html"><span class="icon">&#128193;</span> Closed BIR LIST</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="admin-avatar">A</div>
+      <div>
+        <div class="user-name" id="admin-name">FQC</div>
+        <div class="user-role">FQC Inspector</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="page-title">Batch Inspection Report</div>
+      <div class="topbar-date" id="admin-date"></div>
+    </div>
+    <div class="topbar-actions">
+      <button class="topbar-btn" onclick="exportCSV()">&#128228; Export</button>
+      <button class="topbar-btn primary" onclick="openBIRModal()">+ New BIR</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card s-cyan"><div class="stat-label">Total Entries</div><div class="stat-icon">&#128202;</div><div class="stat-value" id="st-total">0</div><div class="stat-sub">All BIRs</div></div>
+      <div class="stat-card s-purple"><div class="stat-label">Divisions</div><div class="stat-icon">&#127970;</div><div class="stat-value" id="st-divs">0</div><div class="stat-sub">Active departments</div></div>
+      <div class="stat-card s-green"><div class="stat-label">Today's BIRs</div><div class="stat-icon">&#128197;</div><div class="stat-value" id="st-today">0</div><div class="stat-sub">Logged today</div></div>
+      <div class="stat-card s-blue"><div class="stat-label">In Progress</div><div class="stat-icon">&#9203;</div><div class="stat-value" id="st-wip">0</div><div class="stat-sub">Under review</div></div>
+      <div class="stat-card s-red"><div class="stat-label">Rejected</div><div class="stat-icon">&#128683;</div><div class="stat-value" id="st-rejected">0</div><div class="stat-sub">Need rework</div></div>
+    </div>
+
+    <!-- Date & Division Filter -->
+    <div class="filter-strip">
+      <span class="filter-label">Division</span>
+      <select class="f-select" id="f-filter-div" onchange="renderTable()">
+        <option value="">All Divisions</option>
+        <option>GANSHORN</option><option>VENTILATOR</option><option>PATIENT MONITORS</option>
+        <option>SHIPL</option><option>INJECTOR</option><option>RADIOLOGY</option><option>HOLTER</option>
+      </select>
+      <div class="f-divider"></div>
+      <span class="filter-label">Status</span>
+      <select class="f-select" id="f-filter-status" onchange="renderTable()">
+        <option value="">All Statuses</option>
+        <option>Pending</option><option>In Progress</option><option>Approved</option><option>Rejected</option>
+      </select>
+      <button class="btn btn-outline btn-sm" onclick="clearFilters()" style="margin-left:auto;">&#10005; Clear</button>
+    </div>
+
+    <!-- BIR TABLE -->
+    <div class="table-card">
+      <div class="table-card-header">
+        <div class="table-card-title">
+          &#128196; BIR Details
+          <span class="count-badge" id="bir-count">- entries</span>
+        </div>
+        <div class="table-toolbar">
+          <div class="show-row">
+            Show
+            <select class="f-select" id="f-filter-rows" style="padding:5px 8px;" onchange="renderTable()">
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+            entries
+          </div>
+          <div class="srch-wrap">
+            <span class="srch-ico">&#128269;</span>
+            <input type="text" id="bir-search" placeholder="Search model, ref, serial..." oninput="renderTable()"/>
+          </div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="ns-table">
+          <thead>
+            <tr>
+              <th class="sortable" data-col="birRef">BIR Ref No.<span class="si">&#8693;</span></th>
+              <th class="sortable" data-col="unitInwardDate">Inward Date<span class="si">&#8693;</span></th>
+              <th class="sortable" data-col="division">Division<span class="si">&#8693;</span></th>
+              <th class="sortable" data-col="model">Model<span class="si">&#8693;</span></th>
+              <th class="no-sort">Configuration</th>
+              <th class="sortable" data-col="receivedQty">Qty<span class="si">&#8693;</span></th>
+              <th class="no-sort">Prev SW</th>
+              <th class="no-sort">HW Changes</th>
+              <th class="no-sort">Accessory Details</th>
+              <th class="no-sort">CNR/Technews</th>
+              <th class="sortable" data-col="status">Status<span class="si">&#8693;</span></th>
+              <th class="no-sort">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="bir-tbody">
+            <tr class="loading-row"><td colspan="12"><span class="spin"></span>Loading from database-</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-foot">
+        <span id="bir-footer">Showing 0 of 0 entries</span>
+        <div class="pager-row" id="pagination"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// -- DATA ----------------------------------------------------------------------
+let birData = [];
+let editingId = null;
+let sortCol = 'unitInwardDate';
+let sortDir = 'desc';
+let currentPage = 1;
+
+// -- HELPERS -------------------------------------------------------------------
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function getToken(){return localStorage.getItem('schiller_token')||'';}
+function authHeaders(){return{'Content-Type':'application/json',Authorization:'Bearer '+getToken()};}
+function handleUnauth(r){if(r.status===401){showToast('Session expired.','err');setTimeout(()=>window.location.href='login.html',1500);throw new Error('Unauthorized');}}
+function showToast(msg,type='ok'){const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="tdot"></span>'+msg;w.appendChild(el);setTimeout(()=>el.remove(),3200);}
+function stClass(s){return s==='Approved'?'st-approved':s==='Rejected'?'st-rejected':s==='In Progress'?'st-wip':'st-pending';}
+function divClass(d){return'bp-cyan';}
+function todayStr(){return new Date().toISOString().split('T')[0];}
+function fmtDate(d){if(!d)return'-';const dt=new Date(d);return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}
+function genRef(division){const now=new Date();const dd=String(now.getDate()).padStart(2,'0');const mm=String(now.getMonth()+1).padStart(2,'0');const yy=String(now.getFullYear()).slice(-2);const idx=birData.length+1;const prefix=(division||'BIR').split(' ')[0].substring(0,5).toUpperCase();return`${prefix}/${dd}${mm}${yy}/${String(idx).padStart(2,'0')}`;}
+function isOpenBir(r){return !['Closed','Completed'].includes(String(r?.status||''));}
+function normalizeClosedBir(doc){if(!doc)return null;const out={...doc};if(out.status==='Completed')out.status='Closed';return out;}
+function persistClosedBir(doc){
+  const normalized=normalizeClosedBir(doc);
+  if(!normalized)return;
+  const key='si_closed_bir_data';
+  const list=JSON.parse(localStorage.getItem(key)||'[]');
+  const id=normalized._id||normalized.id||normalized.birRef;
+  const next=[normalized,...list.filter(x=>(x._id||x.id||x.birRef)!==id)];
+  localStorage.setItem(key,JSON.stringify(next));
+}
+
+// -- LOAD/SAVE DATA ------------------------------------------------------------
+async function loadData(){
+  try{
+    const res=await fetch('/api/bir',{headers:authHeaders()});
+    if(res.ok){birData=(await res.json()).filter(isOpenBir);}else{birData=JSON.parse(localStorage.getItem('si_bir_data')||'[]').filter(isOpenBir);}
+  }catch(e){
+    birData=JSON.parse(localStorage.getItem('si_bir_data')||'[]').filter(isOpenBir);
+    // seed demo data if empty
+    if(birData.length===0){birData=demoData();}
+  }
+  updateAll();
+}
+
+function demoData(){
+  return[
+    {_id:'bir001',birRef:'SAG/270426/27',unitInwardDate:'2026-04-27',fqcInwardDate:'2026-04-27',division:'GANSHORN',model:'DLCO',configuration:'Spirometry, SBD, Provocation.',receivedQty:'1no',prevSwVersion:'1.10.2.54',presSwVersion:'',hwChanges:'',hwChangeRemarks:'',swChangeRemarks:'',accChanges:'No Change',accDetails:'std acc recd',accChangeRemarks:'',userManualUpdate:'',serviceManualUpdate:'',fqcRemarks:'',scEngineer:'',psEngineer:'',techRemarks:'',tsVerificationDate:'',psVerificationDate:'',cnrCirculation:'',cnrRefNo:'',cnrReleaseDate:'',approvedDate:'',invoiceNo:'',invoiceDate:'',serial:'',supplier:'',status:'Pending'},
+    {_id:'bir002',birRef:'VENT/230426/32',unitInwardDate:'2026-04-23',fqcInwardDate:'2026-04-23',division:'VENTILATOR',model:'NNT_8050',configuration:'servo control',receivedQty:'27',prevSwVersion:'1.14',presSwVersion:'',hwChanges:'',hwChangeRemarks:'',swChangeRemarks:'',accChanges:'No Change',accDetails:'standard accessories received',accChangeRemarks:'',userManualUpdate:'',serviceManualUpdate:'',fqcRemarks:'',scEngineer:'',psEngineer:'',techRemarks:'',tsVerificationDate:'',psVerificationDate:'',cnrCirculation:'',cnrRefNo:'',cnrReleaseDate:'',approvedDate:'',invoiceNo:'',invoiceDate:'',serial:'',supplier:'',status:'Pending'},
+    {_id:'bir003',birRef:'OEM/230426/11',unitInwardDate:'2026-04-24',fqcInwardDate:'2026-04-24',division:'PATIENT MONITORS',model:'BLT CNS',configuration:'DUAL DISPLAY',receivedQty:'5nos',prevSwVersion:'V02.00.00.RE01',presSwVersion:'',hwChanges:'',hwChangeRemarks:'',swChangeRemarks:'',accChanges:'No Change',accDetails:'std acc recd',accChangeRemarks:'',userManualUpdate:'',serviceManualUpdate:'',fqcRemarks:'',scEngineer:'',psEngineer:'',techRemarks:'',tsVerificationDate:'',psVerificationDate:'',cnrCirculation:'',cnrRefNo:'',cnrReleaseDate:'',approvedDate:'',invoiceNo:'',invoiceDate:'',serial:'',supplier:'',status:'In Progress'},
+    {_id:'bir004',birRef:'VENT/170426/31',unitInwardDate:'2026-04-17',fqcInwardDate:'2026-04-17',division:'VENTILATOR',model:'GRAPHNET TS',configuration:'ADL, PED',receivedQty:'25',prevSwVersion:'N11-TS-01.15',presSwVersion:'',hwChanges:'',hwChangeRemarks:'',swChangeRemarks:'',accChanges:'No Change',accDetails:'standard accessories received',accChangeRemarks:'',userManualUpdate:'',serviceManualUpdate:'',fqcRemarks:'',scEngineer:'',psEngineer:'',techRemarks:'',tsVerificationDate:'',psVerificationDate:'',cnrCirculation:'',cnrRefNo:'',cnrReleaseDate:'',approvedDate:'',invoiceNo:'',invoiceDate:'',serial:'',supplier:'',status:'Approved'},
+    {_id:'bir005',birRef:'SAG/150426/26',unitInwardDate:'2026-04-16',fqcInwardDate:'2026-04-16',division:'GANSHORN',model:'DLCO',configuration:'Spirometry + SBD + Provocation+FRC Washout+ROCC+P0.1/Pmax',receivedQty:'1no',prevSwVersion:'1.10.2.54',presSwVersion:'',hwChanges:'',hwChangeRemarks:'',swChangeRemarks:'',accChanges:'Added',accDetails:'std acc recd',accChangeRemarks:'',userManualUpdate:'',serviceManualUpdate:'',fqcRemarks:'',scEngineer:'',psEngineer:'',techRemarks:'',tsVerificationDate:'',psVerificationDate:'',cnrCirculation:'',cnrRefNo:'',cnrReleaseDate:'',approvedDate:'',invoiceNo:'',invoiceDate:'',serial:'',supplier:'',status:'Pending'},
+    {_id:'bir006',birRef:'SAG/150426/25',unitInwardDate:'2026-04-15',fqcInwardDate:'2026-04-15',division:'GANSHORN',model:'Body Plus',configuration:'Spirometry+SBD+Body plethysmography+Provocation',receivedQty:'2nos',prevSwVersion:'1.10.2.54',presSwVersion:'',hwChanges:'NA',hwChangeRemarks:'',swChangeRemarks:'',accChanges:'No Change',accDetails:'std acc recd',accChangeRemarks:'',userManualUpdate:'',serviceManualUpdate:'',fqcRemarks:'',scEngineer:'',psEngineer:'',techRemarks:'',tsVerificationDate:'',psVerificationDate:'',cnrCirculation:'',cnrRefNo:'',cnrReleaseDate:'',approvedDate:'',invoiceNo:'',invoiceDate:'',serial:'',supplier:'',status:'Approved'},
+    {_id:'bir007',birRef:'SHIPL/15042026/09',unitInwardDate:'2026-04-15',fqcInwardDate:'2026-04-15',division:'SHIPL',model:'DG-400x',configuration:'ESNRPAC - 12 LEAD (LI-ION)',receivedQty:'5',prevSwVersion:'V2.5',presSwVersion:'',hwChanges:'NA',hwChangeRemarks:'',swChangeRemarks:'',accChanges:'No Change',accDetails:'NA',accChangeRemarks:'',userManualUpdate:'',serviceManualUpdate:'',fqcRemarks:'',scEngineer:'',psEngineer:'',techRemarks:'',tsVerificationDate:'',psVerificationDate:'',cnrCirculation:'',cnrRefNo:'',cnrReleaseDate:'',approvedDate:'',invoiceNo:'',invoiceDate:'',serial:'',supplier:'',status:'Rejected'},
+  ];
+}
+
+async function persistData(){localStorage.setItem('si_bir_data',JSON.stringify(birData.filter(isOpenBir)));}
+
+// -- UPDATE UI -----------------------------------------------------------------
+function updateAll(){updateStats();renderTable();}
+function updateStats(){
+  const total=birData.length;
+  const pending=birData.filter(x=>x.status==='Pending').length;
+  const approved=birData.filter(x=>x.status==='Approved').length;
+  const rejected=birData.filter(x=>x.status==='Rejected').length;
+  const wip=birData.filter(x=>x.status==='In Progress').length;
+  const hwChanged=birData.filter(x=>x.hwChanges&&x.hwChanges.toLowerCase()!=='na'&&x.hwChanges.trim()!=='').length;
+  const divCount=[...new Set(birData.map(x=>x.division))].length;
+  const todayISO=todayStr();
+  const todayCount=birData.filter(x=>x.unitInwardDate===todayISO).length;
+  if(document.getElementById('hero-total')) (document.getElementById('hero-total')||{}).textContent =total;
+  if(document.getElementById('hero-pending')) (document.getElementById('hero-pending')||{}).textContent =pending;
+  if(document.getElementById('hero-approved')) (document.getElementById('hero-approved')||{}).textContent =approved;
+  if(document.getElementById('st-total')) (document.getElementById('st-total')||{}).textContent =total;
+  if(document.getElementById('st-divs')) (document.getElementById('st-divs')||{}).textContent =divCount;
+  if(document.getElementById('st-today')) (document.getElementById('st-today')||{}).textContent =todayCount;
+  if(document.getElementById('st-wip')) (document.getElementById('st-wip')||{}).textContent =wip;
+  if(document.getElementById('st-rejected')) (document.getElementById('st-rejected')||{}).textContent =rejected;
+  
+  if(document.getElementById('kpi-total')) (document.getElementById('kpi-total')||{}).textContent =total;
+  if(document.getElementById('kpi-divs')) (document.getElementById('kpi-divs')||{}).textContent =divCount;
+  if(document.getElementById('kpi-today')) (document.getElementById('kpi-today')||{}).textContent =todayCount;
+  if(document.getElementById('kpi-wip')) (document.getElementById('kpi-wip')||{}).textContent =wip;
+  if(document.getElementById('kpi-rejected')) (document.getElementById('kpi-rejected')||{}).textContent =rejected;
+}
+
+// -- SORT ----------------------------------------------------------------------
+document.querySelectorAll('.ns-table th.sortable').forEach(th=>{
+  th.addEventListener('click',()=>{
+    const col=th.dataset.col;
+    if(sortCol===col)sortDir=sortDir==='asc'?'desc':'asc';
+    else{sortCol=col;sortDir='asc';}
+    document.querySelectorAll('.ns-table th').forEach(t=>{t.classList.remove('sort-asc','sort-desc');});
+    th.classList.add(sortDir==='asc'?'sort-asc':'sort-desc');
+    currentPage=1;renderTable();
+  });
+});
+
+function clearFilters(){
+  document.getElementById('bir-search').value='';
+  document.getElementById('f-filter-div').value='';
+  document.getElementById('f-filter-status').value='';
+  renderTable();
+}
+
+// -- RENDER TABLE --------------------------------------------------------------
+function renderTable(){
+  const q=(document.getElementById('bir-search').value||'').toLowerCase();
+  const divF=document.getElementById('f-filter-div').value;
+  const stF=document.getElementById('f-filter-status').value;
+  const pageSize=parseInt(document.getElementById('f-filter-rows').value)||10;
+
+  let data=[...birData];
+  if(q)data=data.filter(x=>[x.birRef,x.division,x.model,x.configuration,x.serial,x.supplier,x.accDetails].join(' ').toLowerCase().includes(q));
+  if(divF)data=data.filter(x=>x.division===divF);
+  if(stF)data=data.filter(x=>x.status===stF);
+
+  // sort
+  data.sort((a,b)=>{
+    const av=String(a[sortCol]||''),bv=String(b[sortCol]||'');
+    return sortDir==='asc'?av.localeCompare(bv,undefined,{numeric:true}):bv.localeCompare(av,undefined,{numeric:true});
+  });
+
+  const total=data.length;
+  const pages=pageSize>=100?1:Math.ceil(total/pageSize);
+  if(currentPage>pages)currentPage=1;
+  const start=(currentPage-1)*pageSize;
+  const paged=pageSize>=100?data:data.slice(start,start+pageSize);
+
+  (document.getElementById('bir-count')||{}).textContent =total+' records';
+  (document.getElementById('bir-footer')||{}).textContent =`Showing ${Math.min(start+1,total)}-${Math.min(start+paged.length,total)} of ${total} entries`;
+
+  const tbody=document.getElementById('bir-tbody');
+  tbody.innerHTML=paged.length?paged.map(e=>`
+    <tr>
+      <td><span class="chip-sm">${esc(e.birRef||e._id)}</span></td>
+      <td style="color:var(--muted);font-size:12px;">${fmtDate(e.unitInwardDate)}</td>
+      <td><span class="badge-pill ${divClass(e.division)}">${esc(e.division)}</span></td>
+      <td style="font-weight:600;">${esc(e.model)}</td>
+      <td style="font-size:12px;color:var(--soft);max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(e.configuration)}">${esc(e.configuration||'-')}</td>
+      <td style="font-family:Calibri, Arial, sans-serif;font-weight:600;">${esc(e.receivedQty||'-')}</td>
+      <td style="font-family:Calibri, Arial, sans-serif;font-size:11px;color:var(--soft);">${esc(e.prevSwVersion||'-')}</td>
+      <td>${e.hwChanges&&e.hwChanges!=='NA'&&e.hwChanges.trim()?`<span style="color:var(--amber);font-size:11px;font-weight:600;">&#9888;&#65039; ${esc(e.hwChanges)}</span>`:`<span style="color:var(--muted);font-size:11px;">NA</span>`}</td>
+      <td style="font-size:12px;color:var(--soft);max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(e.accDetails)}">${esc(e.accDetails||'-')}</td>
+      <td style="font-size:12px;">${e.cnrCirculation?`<span style="color:var(--purple);font-weight:600;">&#9888;&#65039; ${esc(e.cnrCirculation)}</span>`:`<span style="color:var(--muted);">-</span>`}</td>
+      <td><span class="status-badge ${stClass(e.status)}">${esc(e.status)}</span></td>
+      <td style="white-space:nowrap;">
+        <button class="btn-xs" onclick="viewBIR('${e._id}')" title="View">&#128065;</button>
+        <button class="btn-xs success" onclick="editBIR('${e._id}')" title="Update">&#9999;&#65039;</button>
+      </td>
+    </tr>`).join(''):`<tr><td colspan="12"><div class="empty-state"><div class="empty-icon">&#128203;</div><p>No BIR entries found.</p></div></td></tr>`;
+
+  // pagination
+  renderPagination(pages);
+}
+
+function renderPagination(pages){
+  const pg=document.getElementById('pagination');
+  if(pages<=1){pg.innerHTML='';return;}
+  let html='';
+  html+=`<button class="pager" onclick="goPage(${currentPage-1})" ${currentPage<=1?'disabled':''}>&lt;</button>`;
+  for(let i=1;i<=pages;i++){
+    if(pages>7&&(i>2&&i<pages-1&&Math.abs(i-currentPage)>1)){if(i===3||i===pages-2)html+='<span style="color:var(--muted);padding:0 4px;">...</span>';continue;}
+    html+=`<button class="pager ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  html+=`<button class="pager" onclick="goPage(${currentPage+1})" ${currentPage>=pages?'disabled':''}>&gt;</button>`;
+  pg.innerHTML=html;
+}
+function goPage(p){currentPage=p;renderTable();}
+
+// -- VIEW MODAL ----------------------------------------------------------------
+function viewBIR(id){
+  const e=birData.find(x=>x._id===id);if(!e)return;
+  document.getElementById('view-modal-title').innerHTML ='&#128196; BIR: '+esc(e.birRef||id);
+  (document.getElementById('view-modal-sub')||{}).textContent =`${esc(e.division)} - ${esc(e.model)} - Inward: ${fmtDate(e.unitInwardDate)}`;
+  const fields=[
+    ['BIR Ref No.',e.birRef,'mono'],['Division',e.division],['Model',e.model],
+    ['Configuration',e.configuration],['Received Qty',e.receivedQty],['Unit Serial No.',e.serial],
+    ['Supplier',e.supplier],['Unit Inward Date',fmtDate(e.unitInwardDate)],['FQC Inward Date',fmtDate(e.fqcInwardDate)],
+    ['Invoice No.',e.invoiceNo],['Invoice Date',fmtDate(e.invoiceDate)],['Status',e.status],
+    ['Prev SW Version',e.prevSwVersion,'mono'],['Present SW Version',e.presSwVersion,'mono'],['HW Changes',e.hwChanges],
+    ['HW Change Remarks',e.hwChangeRemarks],['SW Change Remarks',e.swChangeRemarks],['Accessory Changes',e.accChanges],
+    ['Accessory Details',e.accDetails],['Accessory Change Remarks',e.accChangeRemarks],['User Manual Update',e.userManualUpdate],
+    ['Service Manual Update',e.serviceManualUpdate],['FQC Remarks',e.fqcRemarks],['Technical Remarks',e.techRemarks],
+    ['SC Inward Date',fmtDate(e.scInwardDate)],['SC Observation',e.scObservation],['SC Action Plan',e.scActionPlan],['Tentative Date',fmtDate(e.tentativeDate)],
+    ['Ship Date to FQC',fmtDate(e.shipDateToFqc)],['Defective Unit Received Date',fmtDate(e.defUnitReceivedDate)],
+    ['Replacement Ship Date',fmtDate(e.replacementShipDate)],['SC Final Remarks',e.fqcFinalRemarks],['FQC Observation',e.fqcObservation],
+    ['SC Engineer',e.scEngineer],['PS Engineer',e.psEngineer],['TS Verification Date',fmtDate(e.tsVerificationDate)],
+    ['PS Verification Date',fmtDate(e.psVerificationDate)],['CNR/Technews Circulation',e.cnrCirculation],['CNR Ref No.',e.cnrRefNo],
+    ['CNR Release Date',fmtDate(e.cnrReleaseDate)],['Approved Date',fmtDate(e.approvedDate)],
+  ];
+  document.getElementById('view-modal-content').innerHTML=`<div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;"><div class="detail-grid">${fields.map(([l,v,cls])=>`<div class="detail-cell"><div class="detail-label">${esc(l)}</div><div class="detail-val ${cls||''}">${esc(v||'-')}</div></div>`).join('')}</div></div>`;
+  document.getElementById('view-edit-btn').onclick=()=>{closeViewModal();editBIR(id);};
+  document.getElementById('view-modal').classList.add('show');
+}
+function closeViewModal(){document.getElementById('view-modal').classList.remove('show');}
+document.getElementById('view-modal').addEventListener('click',e=>{if(e.target===document.getElementById('view-modal'))closeViewModal();});
+
+// -- ADD/EDIT MODAL ------------------------------------------------------------
+const FIELDS=['division','unitInwardDate','fqcInwardDate','birRef','supplier','model','configuration','receivedQty','serial','invoiceNo','invoiceDate','prevSwVersion','presSwVersion','accChanges','accDetails','userManualUpdate','fqcRemarks','status','scEngineer','scInwardDate','scObservation','scActionPlan','tentativeDate','shipDateToFqc','defUnitReceivedDate','replacementShipDate','fqcFinalRemarks','fqcObservation','accChangeRemarks','hwChanges','hwChangeRemarks','serviceManualUpdate','techRemarks','tsVerificationDate','psEngineer','swChangeRemarks','cnrCirculation','cnrRefNo','cnrReleaseDate','psVerificationDate','approvedDate'];
+const FIELD_MAP={'division':'f-division','unitInwardDate':'f-unit-inward','fqcInwardDate':'f-fqc-inward','birRef':'f-bir-ref','supplier':'f-supplier','model':'f-model','configuration':'f-configuration','receivedQty':'f-qty','serial':'f-serial','invoiceNo':'f-invoice-no','invoiceDate':'f-invoice-date','prevSwVersion':'f-prev-sw','presSwVersion':'f-pres-sw','accChanges':'f-acc-changes','accDetails':'f-acc-details','userManualUpdate':'f-manual-update','fqcRemarks':'f-fqc-remarks','status':'f-status','scEngineer':'f-sc-engineer','scInwardDate':'f-sc-inward','scObservation':'f-sc-obs','scActionPlan':'f-sc-action','tentativeDate':'f-tent-date','shipDateToFqc':'f-ship-fqc','defUnitReceivedDate':'f-def-recv','replacementShipDate':'f-rep-ship','fqcFinalRemarks':'f-fqc-final-remarks','fqcObservation':'f-fqc-obs','accChangeRemarks':'f-acc-remarks','hwChanges':'f-hw-changes','hwChangeRemarks':'f-hw-remarks','serviceManualUpdate':'f-service-manual','techRemarks':'f-tech-remarks','tsVerificationDate':'f-ts-date','psEngineer':'f-ps-engineer','swChangeRemarks':'f-sw-remarks','cnrCirculation':'f-cnr-circ','cnrRefNo':'f-cnr-ref','cnrReleaseDate':'f-cnr-date','psVerificationDate':'f-ps-date','approvedDate':'f-approved-date'};
+
+// Frozen section fields (always disabled)
+const FROZEN_FIELDS=['f-sc-engineer','f-sc-inward','f-sc-obs','f-sc-action','f-tent-date','f-ship-fqc','f-def-recv','f-rep-ship','f-fqc-final-remarks','f-fqc-obs','f-acc-remarks','f-hw-changes','f-hw-remarks','f-service-manual','f-tech-remarks','f-ts-date','f-ps-engineer','f-sw-remarks','f-cnr-circ','f-cnr-ref','f-cnr-date','f-ps-date','f-approved-date'];
+function lockFrozenSections(){
+  FROZEN_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.disabled = true; }
+  });
+}
+
+// -- POPULATE DROPDOWNS FROM DB ------------------------------------------------
+let DIVISIONS_DATA = [];
+
+async function populateDropdowns(){
+  try {
+    const res = await fetch('/api/divisions', { headers: authHeaders() });
+    if (res.ok) {
+      DIVISIONS_DATA = await res.json();
+      const sel = document.getElementById('f-division');
+      sel.innerHTML = '<option value="">Select Division</option>';
+      DIVISIONS_DATA.forEach(d => {
+        const name = d.name || '';
+        if (!name) return;
+        const o = document.createElement('option');
+        o.value = name; o.textContent = name;
+        sel.appendChild(o);
+      });
+    }
+  } catch(e) { console.warn('Division fetch failed:', e.message); }
+}
+
+function onDivisionChange(preselectSupplier) {
+  const divName = document.getElementById('f-division').value;
+  const div = DIVISIONS_DATA.find(d => d.name === divName);
+  const suppliers = div
+    ? [...new Set((div.models || []).map(m => m.supplier).filter(Boolean))].sort()
+    : [];
+  const sel = document.getElementById('f-supplier');
+  sel.innerHTML = '<option value="">Select Supplier</option>';
+  suppliers.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s; o.textContent = s;
+    sel.appendChild(o);
+  });
+  if (preselectSupplier) sel.value = preselectSupplier;
+  onSupplierChange();
+}
+
+function onSupplierChange(preselectModel) {
+  const divName  = document.getElementById('f-division').value;
+  const supplier = document.getElementById('f-supplier').value;
+  const div = DIVISIONS_DATA.find(d => d.name === divName);
+  const models = div
+    ? [...new Set((div.models || [])
+        .filter(m => !supplier || m.supplier === supplier)
+        .map(m => m.model).filter(Boolean))].sort()
+    : [];
+  const sel = document.getElementById('f-model');
+  sel.innerHTML = '<option value="">Select Model</option>';
+  models.forEach(m => {
+    const o = document.createElement('option');
+    o.value = m; o.textContent = m;
+    sel.appendChild(o);
+  });
+  if (preselectModel) sel.value = preselectModel;
+}
+
+function openBIRModal(){
+  editingId=null;
+  document.getElementById('bir-modal-title').innerHTML ='&#128196; New Batch Inspection Report';
+  (document.getElementById('bir-modal-sub')||{}).textContent ='Fill in all required fields to create a BIR entry';
+  document.getElementById('bir-modal-title-ui').innerHTML ='&#128196; New Batch Inspection Report';
+  (document.getElementById('bir-modal-sub-ui')||{}).textContent ='Fill in all required fields to create a BIR entry';
+  FIELDS.forEach(f=>{const el=document.getElementById(FIELD_MAP[f]);if(el)el.value=f==='status'?'Pending':'';});
+  onDivisionChange();
+  document.getElementById('bir-form-msg').className='form-msg';
+  document.getElementById('bir-modal').classList.add('show');
+  lockFrozenSections();
+}
+
+function closeBIRModal(){document.getElementById('bir-modal').classList.remove('show');}
+document.getElementById('bir-modal').addEventListener('click',e=>{if(e.target===document.getElementById('bir-modal'))closeBIRModal();});
+
+function editBIR(id){
+  const e=birData.find(x=>x._id===id);if(!e)return;
+  editingId=id;
+  document.getElementById('bir-modal-title').innerHTML ='&#9998; Edit BIR: '+esc(e.birRef||id);
+  (document.getElementById('bir-modal-sub')||{}).textContent ='Update the batch inspection record';
+  document.getElementById('bir-modal-title-ui').innerHTML ='&#9998; Edit BIR: '+(e.birRef||id);
+  (document.getElementById('bir-modal-sub-ui')||{}).textContent ='Update the batch inspection record';
+  const CASCADE = new Set(['supplier','model']);
+  FIELDS.forEach(f=>{if(CASCADE.has(f))return;const el=document.getElementById(FIELD_MAP[f]);if(el)el.value=e[f]||'';});
+  onDivisionChange(e.supplier||'');
+  onSupplierChange(e.model||'');
+  document.getElementById('bir-form-msg').className='form-msg';
+  document.getElementById('bir-modal').classList.add('show');
+  lockFrozenSections();
+}
+
+async function saveBIR(){
+  const msg=document.getElementById('bir-form-msg');
+  const div=document.getElementById('f-division').value;
+  const model=document.getElementById('f-model').value.trim();
+  const qty=document.getElementById('f-qty').value.trim();
+  const inward=document.getElementById('f-unit-inward').value;
+  const status=document.getElementById('f-status').value;
+  if(!div||!model||!qty||!inward||!status){msg.className='form-msg err-msg';msg.textContent='Please fill all required fields (Division, Model, Received Qty, Inward Date, Status).';return;}
+  const btn=document.getElementById('bir-save-btn');btn.disabled=true;btn.textContent='Saving...';
+  const payload={};
+  FIELDS.forEach(f=>{const el=document.getElementById(FIELD_MAP[f]);if(el)payload[f]=el.value;});
+  if(!payload.birRef)payload.birRef=genRef(div);
+  try{
+    if(editingId){
+      let res;
+      try{res=await fetch('/api/bir/'+editingId,{method:'PUT',headers:authHeaders(),body:JSON.stringify(payload)});handleUnauth(res);}catch(e2){res=null;}
+      if(!res||!res.ok){
+        const errData=res?await res.json().catch(()=>({})): {};
+        throw new Error(errData.message||'Update failed');
+      }
+      const updated=await res.json();
+      if(updated&&updated.movedToClosed){
+        persistClosedBir(updated.data||payload);
+        birData=birData.filter(x=>x._id!==editingId);
+        await persistData();
+        msg.className='form-msg ok';msg.textContent='BIR moved to closed list successfully!';
+        showToast('BIR moved to Closed BIR.','ok');
+        setTimeout(()=>{closeBIRModal();updateAll();window.location.href='fcbir.html';},700);
+        return;
+      }
+      const idx=birData.findIndex(x=>x._id===editingId);
+      if(idx>=0)birData[idx]={...birData[idx],...updated};
+    }else{
+      let saved=null;
+      try{
+        const res=await fetch('/api/bir',{method:'POST',headers:authHeaders(),body:JSON.stringify(payload)});
+        handleUnauth(res);
+        if(!res.ok){
+          const errData = await res.json();
+          throw new Error(errData.message || 'Server returned '+res.status);
+        }
+        saved=await res.json();
+      }catch(e2){
+        msg.className='form-msg err-msg';
+        msg.textContent='Save failed: '+e2.message;
+        btn.disabled=false;
+        btn.innerHTML ='&#128190; Save BIR Entry';
+        return;
+      }
+      if(saved&&saved.movedToClosed){
+        persistClosedBir(saved.data||payload);
+        await persistData();
+        msg.className='form-msg ok';msg.textContent='BIR moved to closed list successfully!';
+        showToast('BIR moved to Closed BIR.','ok');
+        setTimeout(()=>{closeBIRModal();updateAll();window.location.href='fcbir.html';},700);
+        return;
+      }
+      birData.unshift(saved);
+    }
+    await persistData();
+    msg.className='form-msg ok';msg.textContent=editingId?'BIR updated successfully!':'BIR entry created!';
+    showToast(editingId?'BIR updated.':'BIR entry created!','ok');
+    setTimeout(()=>{closeBIRModal();updateAll();},900);
+  }catch(e){if(e.message!=='Unauthorized'){msg.className='form-msg err-msg';msg.textContent='Save failed: '+e.message;}}
+  finally{btn.disabled=false;btn.innerHTML ='&#128190; Save BIR Entry';}
+}
+
+// -- DELETE --------------------------------------------------------------------
+function confirmDelete(id){
+  const e=birData.find(x=>x._id===id);
+  (document.getElementById('confirm-msg')||{}).textContent =`Delete BIR ${e?.birRef||id}? This cannot be undone.`;
+  document.getElementById('confirm-yes').onclick=async()=>{
+    closeConfirm();
+    try{await fetch('/api/bir/'+id,{method:'DELETE',headers:authHeaders()});}catch(_){}
+    birData=birData.filter(x=>x._id!==id);
+    await persistData();
+    showToast('BIR entry deleted.','ok');
+    updateAll();
+  };
+  document.getElementById('confirm-modal').classList.add('show');
+}
+function closeConfirm(){document.getElementById('confirm-modal').classList.remove('show');}
+document.getElementById('confirm-modal').addEventListener('click',e=>{if(e.target===document.getElementById('confirm-modal'))closeConfirm();});
+
+// -- EXPORT --------------------------------------------------------------------
+function exportCSV(){
+  const headers=['BIR Ref','Division','Model','Configuration','Inward Date','Received Qty','Serial','Prev SW','Pres SW','HW Changes','Accessory Details','CNR Circulation','Status'];
+  const rows=birData.map(e=>[e.birRef,e.division,e.model,e.configuration,e.unitInwardDate,e.receivedQty,e.serial,e.prevSwVersion,e.presSwVersion,e.hwChanges,e.accDetails,e.cnrCirculation,e.status].map(v=>'"'+(String(v||'').replace(/"/g,'""'))+'"').join(','));
+  const csv=[headers.join(','),...rows].join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='bir-export-'+Date.now()+'.csv';a.click();
+  showToast('BIR data exported as CSV.','ok');
+}
+
+// -- THEME / USER --------------------------------------------------------------
+(document.getElementById('admin-date')||{}).textContent =new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+(function(){const u=JSON.parse(localStorage.getItem('schiller_user')||'{}');const n=u.name||'Admin';(document.getElementById('admin-name')||{}).textContent =n;(document.getElementById('admin-avatar')||{}).textContent =n.charAt(0).toUpperCase();})();
+
+function logout(){localStorage.clear();window.location.href='login.html';}
+
+// -- INIT ----------------------------------------------------------------------
+loadData();
+populateDropdowns();
+</script>
+<script src="tab-fix.js"></script>
+</body>
+</html>
+

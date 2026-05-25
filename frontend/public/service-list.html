@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light'); })();</script>
+<title>SchillerIndia - Service List</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f4f7fa;--surface:#ffffff;--surface2:#eaf1f6;--border:#d0e0ec;
+  --accent:#0077cc;--accent2:#007a8a;--green:#059669;--amber:#d97706;
+  --red:#cc0000;--text:#1a2a3a;--muted:#7a9ab0;--soft:#4a6a8a;--card:#ffffff;
+}
+[data-theme="dark"]{
+  --bg:#0f1621;--surface:#1a2333;--surface2:#1e293b;--border:#2a3a52;
+  --accent:#3b9eff;--accent2:#22d3ee;--green:#10b981;--amber:#f59e0b;
+  --red:#f87171;--text:#e2eaf4;--muted:#4a6a8a;--soft:#7a9ab0;--card:#1a2333;
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
+/* SIDEBAR */
+.sidebar{width:240px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 12px rgba(0,80,120,0.06);}
+.sidebar-header{padding:20px 20px 16px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#450a0a,#b91c1c);}
+.sidebar-logo{display:flex;align-items:center;gap:10px;}
+.sidebar-logo-icon{width:36px;height:36px;background:rgba(255,255,255,0.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:#fff;box-shadow:0 2px 8px rgba(204,0,0,0.2);}
+.sidebar-logo-text{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;}
+.sidebar-logo-text .sub{font-size:10px;color:rgba(255,255,255,0.6);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;}
+.role-badge{margin:10px 20px 0;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;display:inline-block;background:rgba(185,28,28,0.1);color:#b91c1c;border:1px solid rgba(185,28,28,0.25);}
+.sidebar-nav{flex:1;padding:12px 10px;}
+.nav-section{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;padding:10px 8px 5px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:500;cursor:pointer;transition:all 0.2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:rgba(185,28,28,0.1);color:#b91c1c;font-weight:600;}
+.nav-item .icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:#b91c1c;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;}
+.nav-group-toggle{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:600;cursor:pointer;transition:all 0.2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;}
+.nav-group-toggle:hover{background:var(--surface2);color:var(--text);}
+.nav-group-toggle .icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.caret{margin-left:auto;font-size:9px;transition:transform 0.25s;}
+.nav-group-toggle.open .caret{transform:rotate(90deg);}
+.nav-children{max-height:0;overflow:hidden;transition:max-height 0.3s ease;}
+.nav-children.open{max-height:400px;}
+.nav-sub .nav-item{padding:6px 10px 6px 28px;font-size:12px;color:var(--muted);}
+.nav-sub .nav-item:hover{color:var(--text);}
+.nav-sub .nav-item.active{color:#b91c1c;background:rgba(185,28,28,0.07);}
+.sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);}
+.user-info{display:flex;align-items:center;gap:10px;}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#b91c1c,#ef4444);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
+.user-name{font-size:13px;font-weight:600;color:var(--text);}
+.user-role{font-size:11px;color:var(--muted);}
+.logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s;}
+.logout-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:0 2px 8px rgba(0,80,120,0.05);}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:11px;margin-bottom:3px;}
+.breadcrumb a{color:var(--muted);text-decoration:none;transition:color 0.2s;}
+.breadcrumb a:hover{color:var(--accent);}
+.breadcrumb .sep{color:var(--border);}
+.topbar-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);}
+.topbar-date{font-size:12px;color:var(--muted);}
+.content{flex:1;padding:24px;overflow-y:auto;background:var(--bg);}
+
+/* VIEW TOGGLE */
+#view-list{display:block;}
+#view-form{display:none;}
+
+/* FILTER ROW */
+.filter-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,80,120,0.04);}
+.filter-row label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;}
+.filter-input{padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s;}
+.filter-input:focus{border-color:var(--accent);}
+.filter-select{padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--soft);background:var(--surface);outline:none;cursor:pointer;}
+.ml-auto{margin-left:auto;}
+.filter-divider{width:1px;height:28px;background:var(--border);}
+
+/* BUTTONS */
+.btn{padding:8px 16px;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:#005fa3;}
+.btn-success{background:var(--green);color:#fff;}
+.btn-success:hover{background:#047857;}
+.btn-outline{background:none;border:1.5px solid var(--border);color:var(--soft);}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+.btn-danger{background:none;border:1.5px solid rgba(204,0,0,0.3);color:var(--red);}
+.btn-danger:hover{background:rgba(204,0,0,0.06);}
+.btn-sm{padding:5px 12px;font-size:11.5px;}
+.btn-xs{padding:3px 9px;font-size:11px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--soft);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;}
+.btn-xs:hover{border-color:var(--accent);color:var(--accent);}
+.btn-xs.edit{color:var(--accent);border-color:rgba(0,119,204,0.3);}
+.btn-xs.del{color:var(--red);border-color:rgba(204,0,0,0.3);}
+.btn-xs.js{color:var(--green);border-color:rgba(5,150,105,0.3);}
+
+/* TABLE CARD */
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(0,80,120,0.05);}
+.table-top{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--surface);}
+.show-entries{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);}
+.search-box{position:relative;}
+.search-box input{padding:7px 12px 7px 30px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;width:200px;transition:border-color 0.2s;}
+.search-box input:focus{border-color:var(--accent);}
+.search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);}
+.table-wrap{overflow-x:auto;}
+table.svc-table{width:100%;border-collapse:collapse;font-size:12px;min-width:1400px;}
+table.svc-table thead th{padding:10px 10px;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;text-align:left;border-bottom:2px solid var(--border);background:var(--surface2);white-space:nowrap;cursor:pointer;user-select:none;}
+table.svc-table thead th:hover{color:var(--accent);}
+table.svc-table thead th.sorted{color:var(--accent);}
+table.svc-table thead th .si{margin-left:5px;opacity:0.3;font-size:11px;transition:all 0.2s;display:inline-block;}
+table.svc-table thead th.sorted .si{opacity:1;color:var(--accent);}
+table.svc-table tbody td{padding:9px 10px;border-bottom:1px solid rgba(0,80,120,0.06);vertical-align:middle;white-space:nowrap;color:var(--text);}
+table.svc-table tbody tr:hover td{background:rgba(0,119,204,0.025);}
+table.svc-table tbody tr:last-child td{border-bottom:none;}
+.table-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted);}
+.pagination{display:flex;align-items:center;gap:3px;}
+.pager{min-width:28px;height:28px;padding:0 6px;border-radius:5px;border:1px solid var(--border);background:none;color:var(--soft);font-size:11.5px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;}
+.pager:hover{border-color:var(--accent);color:var(--accent);}
+.pager.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.pager:disabled{opacity:0.3;cursor:not-allowed;}
+
+/* STATUS PILLS */
+.s-pill{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;}
+.s-pill::before{content:'';width:5px;height:5px;border-radius:50%;display:block;}
+.sp-pending{background:rgba(217,119,6,0.12);color:var(--amber);}.sp-pending::before{background:var(--amber);}
+.sp-completed{background:rgba(5,150,105,0.12);color:var(--green);}.sp-completed::before{background:var(--green);}
+.sp-escalated{background:rgba(204,0,0,0.1);color:var(--red);}.sp-escalated::before{background:var(--red);}
+.sp-inprogress{background:rgba(0,119,204,0.12);color:var(--accent);}.sp-inprogress::before{background:var(--accent);}
+
+/* ADD SERVICE FORM */
+.form-page-header{display:flex;align-items:center;gap:14px;margin-bottom:22px;}
+.back-btn{display:flex;align-items:center;gap:5px;padding:8px 16px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);color:var(--soft);font-size:12.5px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;}
+.back-btn:hover{border-color:var(--accent);color:var(--accent);}
+.fgroup{background:var(--card);border:1.5px solid var(--border);border-radius:14px;margin-bottom:20px;overflow:hidden;box-shadow:0 2px 10px rgba(0,80,120,0.04);}
+.fgroup-header{padding:14px 20px;background:var(--surface2);border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:10px;}
+.fgroup-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.fgroup-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);}
+.fgroup-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.fgroup-body{padding:20px;}
+.fg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.fg-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+.fg-field{display:flex;flex-direction:column;gap:5px;}
+.fg-field.span2{grid-column:span 2;}
+.fg-field.span3{grid-column:span 3;}
+.fg-field label{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;display:flex;align-items:center;gap:4px;}
+.req{color:var(--red);}
+.fg-field input,.fg-field select,.fg-field textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s,box-shadow 0.2s;width:100%;}
+.fg-field input:focus,.fg-field select:focus,.fg-field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,119,204,0.08);}
+.fg-field input::placeholder{color:var(--muted);font-size:12px;}
+.fg-field input.err,.fg-field select.err{border-color:var(--red)!important;}
+.fg-field textarea{resize:vertical;min-height:72px;}
+.field-hint{font-size:10px;color:var(--muted);margin-top:2px;}
+.field-hint.req-hint{color:var(--amber);font-weight:600;}
+.mandatory-badge{font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;background:rgba(204,0,0,0.1);color:var(--red);text-transform:uppercase;letter-spacing:0.04em;}
+.conditional-badge{font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;background:rgba(217,119,6,0.12);color:var(--amber);text-transform:uppercase;letter-spacing:0.04em;}
+.form-submit-bar{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;align-items:center;justify-content:flex-end;gap:12px;box-shadow:0 2px 8px rgba(0,80,120,0.04);}
+.form-validate-msg{font-size:12px;font-weight:600;padding:8px 14px;border-radius:7px;display:none;margin-right:auto;}
+.form-validate-msg.show-err{display:block;background:rgba(204,0,0,0.08);color:var(--red);border:1px solid rgba(204,0,0,0.2);}
+.form-validate-msg.show-ok{display:block;background:rgba(5,150,105,0.1);color:var(--green);border:1px solid rgba(5,150,105,0.25);}
+
+/* Autofill strip */
+.autofill-strip{display:flex;align-items:stretch;gap:0;background:rgba(4,120,87,0.05);border:1px solid rgba(4,120,87,0.2);border-radius:10px;overflow:hidden;flex-shrink:0;}
+.autofill-cell{padding:8px 14px;display:flex;flex-direction:column;gap:3px;border-right:1px solid rgba(4,120,87,0.15);}
+.autofill-cell:last-child{border-right:none;}
+.autofill-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:rgba(4,120,87,0.7);white-space:nowrap;}
+.autofill-val{font-size:11.5px;font-weight:700;color:var(--green);white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis;}
+.autofill-badge{display:inline-block;font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px;background:rgba(4,120,87,0.12);color:var(--green);border:1px solid rgba(4,120,87,0.25);text-transform:uppercase;letter-spacing:0.04em;margin-left:4px;vertical-align:middle;}
+
+/* Notice strip (auto-routing banners) */
+.notice-strip{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.auto-notice{display:none;align-items:center;gap:8px;padding:10px 14px;border-radius:9px;font-size:12px;font-weight:600;}
+.auto-notice.show{display:flex;}
+.frn-notice{background:rgba(14,116,144,0.06);border:1px solid rgba(14,116,144,0.22);color:var(--accent2);}
+.est-notice{background:rgba(180,83,9,0.06);border:1px solid rgba(180,83,9,0.22);color:var(--amber);}
+.ur-notice{background:rgba(4,120,87,0.06);border:1px solid rgba(4,120,87,0.22);color:var(--green);}
+
+/* 4-column form grid */
+.fg-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+
+/* Section label inside form */
+.fg-section-label{
+  grid-column:1/-1;
+  font-size:11px;
+  font-weight:800;
+  color:#ffffff;
+  text-transform:uppercase;
+  letter-spacing:0.1em;
+  padding:10px 14px;
+  border:2px solid #065f46;
+  border-radius:10px;
+  background:linear-gradient(135deg,#14532d 0%,#065f46 55%,#064e3b 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.12),0 3px 10px rgba(6,79,58,0.4);
+  text-shadow:0 1px 2px rgba(0,0,0,0.25);
+}
+
+/* Routing badges in table */
+.frn-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:700;background:rgba(14,116,144,0.1);color:var(--accent2);border:1px solid rgba(14,116,144,0.2);margin-left:3px;white-space:nowrap;}
+.est-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:700;background:rgba(180,83,9,0.1);color:var(--amber);border:1px solid rgba(180,83,9,0.22);margin-left:3px;white-space:nowrap;}
+.chip{display:inline-flex;align-items:center;background:rgba(0,119,204,0.08);border:1px solid rgba(0,119,204,0.15);border-radius:5px;padding:2px 7px;font-size:10px;color:var(--accent);font-weight:600;}
+
+/* Owner row highlight */
+.my-row td{background:rgba(4,120,87,0.02);}
+.btn-xs.locked{opacity:0.35;cursor:not-allowed;}
+
+/* Disabled inputs */
+.fg-field input:disabled,.fg-field textarea:disabled{background:#edf3f8;color:var(--muted);border-color:#d7e3ed;cursor:not-allowed;opacity:1;}
+
+/* Toast */
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:600;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;min-width:240px;animation:fadeUp 0.3s ease;box-shadow:0 8px 24px rgba(0,0,0,0.1);}
+.toast.ok{border-color:rgba(5,150,105,0.4);}.toast.ok .tdot{background:var(--green);}
+.toast.err{border-color:rgba(204,0,0,0.4);}.toast.err .tdot{background:var(--red);}
+.toast.info{border-color:rgba(0,119,204,0.35);}.toast.info .tdot{background:var(--accent);}
+.tdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+/* Loading */
+.loading-bar{position:fixed;top:0;left:0;right:0;height:3px;background:var(--accent);z-index:9999;transform:scaleX(0);transform-origin:left;transition:transform 0.3s ease;border-radius:0 2px 2px 0;}
+.loading-bar.active{animation:loadingAnim 1.2s ease infinite;}
+@keyframes loadingAnim{0%{transform:scaleX(0);transform-origin:left;}50%{transform:scaleX(0.7);transform-origin:left;}100%{transform:scaleX(1);transform-origin:left;opacity:0;}}
+
+    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
+    </style>
+  <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="employee-theme.css">
+  <link rel="stylesheet" href="admin-sidebar.css">
+  <script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <script src="brand-logo.js" defer></script>
+</head>
+<body>
+
+<div class="loading-bar" id="loading-bar"></div>
+
+<!-- SIDEBAR -->
+<!-- === SIDEBAR === -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="sidebar-logo-text">SchillerIndia<div class="sub">Services</div></div>
+    </div>
+  </div>
+  <div style="padding:10px 20px 0;"><span class="role-badge">Admin</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <button class="nav-item " onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
+    <button class="nav-item " onclick="window.location.href='company-section.html'"><span class="icon">&#127970;</span> Company</button>
+    <button class="nav-item " onclick="window.location.href='division-section.html'"><span class="icon">&#128309;</span> Division</button>
+    <button class="nav-item " onclick="window.location.href='engineer-section.html'"><span class="icon">&#128119;</span> Engineers</button>
+    <button class="nav-item " onclick="window.location.href='dealer-section.html'"><span class="icon">&#129309;</span> Dealers</button>
+    <div class="nav-section">Operations</div>
+    <button class="nav-group-toggle open" id="sf-toggle" onclick="toggleSF()">
+      <span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span>
+    </button>
+    <div class="nav-children open" id="sf-children">
+      <div class="nav-sub">
+        <button class="nav-item active" onclick="window.location.href='service-list.html'"><span class="icon">&#128225;</span> Services</button>
+        <button class="nav-item " onclick="window.location.href='pending-frn.html'"><span class="icon">&#128221;</span> Pending FRN</button>
+        <button class="nav-item " onclick="window.location.href='ob-pending.html'"><span class="icon">&#128194;</span> OB Pending</button>
+        <button class="nav-item " onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
+        <button class="nav-item " onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
+        <button class="nav-item " onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
+        <button class="nav-item " onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
+        <button class="nav-item " onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="ar-toggle" onclick="toggleAR()"><span class="icon">&#128196;</span> Activity Register <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="ar-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
+        <a class="nav-item " href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
+        <a class="nav-item " href="aprfob.html"><span class="icon">&#128203;</span> PRF/OB List</a>
+        <a class="nav-item " href="acr.html"><span class="icon">&#128209;</span> Closed PRF/OB</a>
+        <a class="nav-item " href="ans.html"><span class="icon">&#128230;</span> Non Saleable</a>
+        <a class="nav-item " href="as.html"><span class="icon">&#128176;</span> Saleable</a>
+        <a class="nav-item " href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
+        <a class="nav-item " href="acbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="rta-toggle" onclick="toggleRTA()"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="rta-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="atfrn.html"><span class="icon">&#128221;</span> Admin RT FRN</a>
+        <a class="nav-item " href="atob.html"><span class="icon">&#128230;</span> Admin RT OB</a>
+        <a class="nav-item " href="atur.html"><span class="icon">&#128736;&#65039;</span> Admin RT UR</a>
+        <a class="nav-item " href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
+      </div>
+    </div>
+    <div class="nav-section">Admin</div>
+    <button class="nav-item " onclick="window.location.href='usermanagement.html'"><span class="icon">&#128101;</span> User Management</button>
+    <button class="nav-item " onclick="window.location.href='Reports.html'"><span class="icon">&#128200;</span> Reports</button>
+    <button class="nav-item " onclick="window.location.href='settings.html'"><span class="icon">&#9881;&#65039;</span> Settings</button>
+    <button class="nav-item " onclick="window.location.href='notifications.html'"><span class="icon">&#128276;</span> Notifications</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="admin-avatar">A</div>
+      <div>
+        <div class="user-name" id="admin-name">Admin</div>
+        <div class="user-role">Administrator</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="back-btn" id="topbar-back-btn" onclick="showList()" style="display:none;">&larr; Back</button>
+      <div>
+        <div class="breadcrumb">
+          <a href="admin-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
+          <span id="topbar-breadcrumb-cur">Services</span>
+        </div>
+        <div class="topbar-title" id="topbar-title">All Services</div>
+      </div>
+    </div>
+    <div id="topbar-list-controls" style="display:flex;align-items:center;gap:10px;">
+      <span style="font-size:12px;color:var(--muted);" id="topbar-date"></span>
+      <button class="btn btn-outline btn-sm" onclick="loadServices()">&#10227; Refresh</button>
+    </div>
+    <div id="topbar-form-controls" style="display:none;align-items:center;gap:10px;flex-wrap:wrap;">
+      <div class="autofill-strip">
+        <div class="autofill-cell">
+          <div class="autofill-lbl">SC Engineer <span class="autofill-badge">Auto</span></div>
+          <div class="autofill-val" id="strip-sceng"></div>
+          <input type="hidden" id="f-sceng"/>
+        </div>
+        <div class="autofill-cell">
+          <div class="autofill-lbl">Division <span class="autofill-badge">Auto</span></div>
+          <div class="autofill-val" id="strip-division"></div>
+          <input type="hidden" id="f-division"/>
+        </div>
+        <div class="autofill-cell">
+          <div class="autofill-lbl">Entry Date <span class="autofill-badge">Auto</span></div>
+          <div class="autofill-val" id="strip-entrydate"></div>
+          <input type="hidden" id="f-entrydate"/>
+        </div>
+        <div class="autofill-cell">
+          <div class="autofill-lbl">Rcvd Date SC <span class="autofill-badge">Auto</span></div>
+          <div class="autofill-val" id="strip-entrydate"></div>
+          <input type="hidden" id="f-entrydate"/>
+        </div>
+      </div>
+      <button type="button" onclick="getPreviousEntry()"
+        style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;border:1.5px solid rgba(4,120,87,0.4);background:rgba(4,120,87,0.07);color:#047857;font-size:12px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;white-space:nowrap;"
+        onmouseover="this.style.background='rgba(4,120,87,0.15)'"
+        onmouseout="this.style.background='rgba(4,120,87,0.07)'"
+      >&#10227; Get Previous</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- LIST VIEW -->
+    <div id="view-list">
+      <div class="filter-row">
+        <label>From</label>
+        <input type="date" class="filter-input" id="fl-from" style="width:148px;" onchange="applyFilters()"/>
+        <label>To</label>
+        <input type="date" class="filter-input" id="fl-to" style="width:148px;" onchange="applyFilters()"/>
+        <button class="btn btn-outline btn-sm" onclick="clearDateFilter()">Clear</button>
+        <div class="filter-divider"></div>
+        <label>Status</label>
+        <select class="filter-select" id="fl-status" onchange="applyFilters()">
+          <option value="">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Completed</option>
+          <option value="escalated">Escalated</option>
+        </select>
+        <label>Division</label>
+        <select class="filter-select" id="fl-div" onchange="applyFilters()">
+          <option value="">All Divisions</option>
+        </select>
+        <label>Engineer</label>
+        <select class="filter-select" id="fl-eng" onchange="applyFilters()">
+          <option value="">All Engineers</option>
+        </select>
+        <label>Mine only</label>
+        <input type="checkbox" id="fl-mine" onchange="applyFilters()" style="accent-color:var(--green);width:15px;height:15px;cursor:pointer;"/>
+        <div class="ml-auto" style="display:flex;gap:8px;">
+          <button class="btn btn-success btn-sm" onclick="exportCSV()">&#128228; Export</button>
+          <button class="btn btn-primary" id="btn-add-new" onclick="showForm()">&#10133; Add New Record</button>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-top">
+          <div class="show-entries">
+            Show
+            <select class="filter-select" id="per-page" style="padding:5px 8px;width:auto;" onchange="renderTable()">
+              <option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option>
+            </select>
+            entries
+            <span id="count-chip" style="margin-left:8px;background:rgba(0,119,204,0.08);color:var(--accent);font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:10px;border:1px solid rgba(0,119,204,0.15);">- total</span>
+          </div>
+          <div class="search-box">
+            <span class="search-icon">&#128269;</span>
+            <input type="text" id="tbl-search" placeholder="Search..." oninput="applyFilters()"/>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="svc-table">
+            <thead>
+              <tr>
+                <th onclick="sortBy('status')">Status <span class="si">&#8693;</span></th>
+                <th onclick="sortBy('entryDate')" class="sorted">Entry Date <span class="si">&#8693;</span></th>
+                <th onclick="sortBy('scReNo')">Sc ReNo <span class="si">&#8693;</span></th>
+                <th onclick="sortBy('scEng')">Sc Eng <span class="si">&#8693;</span></th>
+                <th onclick="sortBy('frnNo')">Frn No <span class="si">&#8693;</span></th>
+                <th onclick="sortBy('reg')">Reg <span class="si">&#8693;</span></th>
+                <th onclick="sortBy('eng')">Eng <span class="si">&#8693;</span></th>
+                <th onclick="sortBy('custName')">Cust Name <span class="si">&#8693;</span></th>
+                <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
+                <th onclick="sortBy('unitSts')">Unit Sts <span class="si">&#8693;</span></th>
+                <th onclick="sortBy('defMod')">Def Mod/brd <span class="si">&#8693;</span></th>
+                <th onclick="sortBy('defGir')">Def Gir <span class="si">&#8693;</span></th>
+                <th onclick="sortBy('typeWork')">Type of Work <span class="si">&#8693;</span></th>
+                <th>PD (PFRN)</th>
+                <th>PD (OBP)</th>
+                <th>PD (URP)</th>
+                <th>PD (SCC)</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="svc-tbody"></tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="tbl-info"></span>
+          <div class="pagination" id="tbl-pagination"></div>
+        </div>
+      </div>
+    </div><!-- /view-list -->
+
+    <!-- ADD/EDIT SERVICE FORM -->
+    <div id="view-form">
+      <div class="notice-strip">
+        <div class="auto-notice frn-notice" id="frn-notice">
+          This record will be <strong>auto-added to Pending FRN</strong> - Unit Status is one of OW / LAMC / IW / EW / CAMC / STOCK / Demo / Repeat / Buy Back and REP Type is NA.
+        </div>
+        <div class="auto-notice est-notice" id="est-notice">
+          This record will <strong>also go to Estimation Pending</strong> - Unit Status OW or LAMC + REP Type NA.
+        </div>
+        <div class="auto-notice ur-notice" id="ur-notice">
+          This record will be <strong>auto-added to Under Repair</strong> - REP Type is TO/ADV SO.
+        </div>
+        <div class="auto-notice est-notice" id="so-notice">
+          This record will <strong>go directly to SO Pending</strong> - Unit Status OW or LAMC + REP Type BS/SO.
+        </div>
+      </div>
+
+      <!-- GROUP 1 -->
+      <div class="fgroup">
+        <div class="fgroup-header">
+          <div class="fgroup-icon" style="background:rgba(0,104,181,0.1);">&#128203;</div>
+          <div><div class="fgroup-title">Group 1 - Service Entry &amp; Account Details</div></div>
+        </div>
+        <div class="fgroup-body">
+          <div class="fg-grid-4">
+            <div class="fg-field"><label>SC Ref No <span class="req">*</span></label><input type="text" id="f-screfno" placeholder="" required style="text-transform:uppercase;"/></div>
+            <div class="fg-field"><label>FRN No <span class="req">*</span></label><input type="text" id="f-frnno" placeholder="" required/></div>
+            <div class="fg-field"><label>FRN Date <span class="req">*</span></label><input type="date" id="f-frndate" required/></div>
+            <div class="fg-field"><label>Ser Comm Inward Date <span class="req">*</span></label><input type="date" id="f-sercomm" required/></div>
+            <div class="fg-field"><label>Received Date at SC <span class="req">*</span></label><input type="date" id="f-rcvdatesc" required/></div>
+            <div class="fg-field"><label>STOCK / CUST <span class="req">*</span></label>
+              <select id="f-stkcust" required><option value="">Select...</option><option value="STK">STOCK</option><option value="CUST">CUST</option></select>
+            </div>
+
+            <div class="fg-field">
+              <label>Region <span class="req">*</span></label>
+              <select id="f-region" required onchange="onRegionChange()">
+                <option value="">Loading regions</option>
+              </select>
+            </div>
+
+            <div class="fg-field">
+              <label>Branch <span class="req">*</span></label>
+              <select id="f-branch" required onchange="onBranchChange()">
+                <option value=""> Select Region first </option>
+              </select>
+            </div>
+
+            <div class="fg-field">
+              <label>Engineer <span class="req">*</span></label>
+              <select id="f-engineer" required>
+                <option value=""> Select Branch first </option>
+              </select>
+              <span class="field-hint" id="engineer-hint">Filtered by branch</span>
+            </div>
+
+            <div class="fg-field">
+              <label>Dealer Name <span class="req">*</span></label>
+              <select id="f-dealer" required>
+                <option value="">Loading dealers</option>
+              </select>
+            </div>
+
+            <div class="fg-field"><label>Customer Name <span class="req">*</span></label><input type="text" id="f-customer" placeholder="" required/></div>
+            <div class="fg-field"><label>Supplier <span class="req">*</span></label>
+              <select id="f-supplier" required>
+                <option value="">Select Supplier...</option>
+                <option>BIOLIGHT</option><option>SCHILLER AG</option><option>PHILIPS</option>
+                <option>GE HEALTHCARE</option><option>NIHON KOHDEN</option><option>MINDRAY</option>
+                <option>DRAGER</option><option>HAMILTON</option><option>MEDTRONIC</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GROUP 2 -->
+      <div class="fgroup">
+        <div class="fgroup-header">
+          <div class="fgroup-icon" style="background:rgba(109,40,217,0.08);">&#128421;</div>
+          <div>
+            <div class="fgroup-title">Group 2 - Device Details &amp; Report / Dispatch</div>
+            <div class="fgroup-sub">Model &middot; Serial &middot; Unit Status &middot; Defective parts &middot; GIR &middot; Rep Type &middot; Work Status</div>
+          </div>
+        </div>
+        <div class="fgroup-body">
+          <div class="fg-grid-4">
+            <div class="fg-section-label">Device Details</div>
+            <div class="fg-field"><label>Model <span class="req">*</span></label>
+              <select id="f-model" required>
+                <option value="">Select Model...</option>
+                <option>AT-2 Plus</option><option>AT-10 Plus</option><option>CS-200</option>
+                <option>CARDIOVIT AT-10</option><option>DEFIGARD 5000</option><option>Hamilton-C1</option>
+                <option>Hamilton-G5</option><option>Logiq E10</option><option>MT-200</option>
+                <option>PF-300</option><option>SP-10</option><option>SV300</option>
+                <option>Stellant</option><option>uMEC 10</option><option>BIOVISION CMS</option>
+                <option>GRAPHNET TS</option><option>GRAPHNET NEO</option><option>DKDS50</option>
+                <option>ARZEO_2G</option><option>A-mac S23</option>
+              </select>
+            </div>
+            <div class="fg-field"><label>Model Configuration</label><input type="text" id="f-modelconfig" placeholder=""/></div>
+            <div class="fg-field"><label>Unit SL No <span class="req">*</span></label><input type="text" id="f-unitsl" placeholder="" required/></div>
+            <div class="fg-field"><label>Unit Status <span class="req">*</span></label>
+              <select id="f-unitstatus" required onchange="checkAutoTriggers()">
+                <option value="">Select Status...</option>
+                <option value="Repeat">Repeat</option>
+                <option value="Demo">Demo</option><option value="OW">OW</option>
+                <option value="IW">IW</option><option value="EW">EW</option>
+                <option value="LAMC">LAMC</option><option value="CAMC">CAMC</option>
+                <option value="STOCK">STOCK</option>
+              </select>
+            </div>
+            <div class="fg-field"><label>Part Number <span class="req">*</span></label><input type="text" id="f-partno" placeholder="" required style="text-transform:uppercase;"/></div>
+            <div class="fg-field"><label>Mod / Brd Name <span class="req">*</span></label><input type="text" id="f-modbrd" placeholder="" required/></div>
+            <div class="fg-field"><label>DEF Type <span class="req">*</span></label>
+              <select id="f-deftype" required>
+                <option value="">Select DEF Type...</option>
+                <option>Spare</option><option>PCB</option><option>Sub Unit</option><option>Consumables</option><option>Unit</option>
+              </select>
+            </div>
+            <div class="fg-field"><label>Type of Acc <span class="req">*</span></label>
+              <select id="f-typeacc" required>
+                <option value="">Select Account...</option>
+                <option>NA</option><option>Local</option><option>Repaired</option><option>Imported</option>
+              </select>
+            </div>
+            <div class="fg-field"><label>DOI (Date of Installation)</label><input type="date" id="f-doi"/></div>
+            <div class="fg-field"><label>DEF Part SNO <span class="req">*</span></label><input type="text" id="f-defpartsno" placeholder="" required/></div>
+            <div class="fg-field"><label>DEF GIR No <span class="req">*</span></label><input type="text" id="f-defgirno" placeholder="" required style="text-transform:uppercase;"/></div>
+            <div class="fg-field"><label>REP Type <span class="req">*</span></label>
+              <select id="f-reptype" required onchange="onRepTypeChange(); checkAutoTriggers();">
+                <option value="">Select REP Type...</option>
+                <option value="NA">NA</option><option value="TO/ADV SO">TO/ADV SO</option><option value="BS/SO">BS/SO</option>
+              </select>
+            </div>
+            <div class="fg-field">
+              <label>REP GIR SNO <span class="conditional-badge" id="repgirno-badge">OPTIONAL</span></label>
+              <input type="text" id="f-repgirno" placeholder="" disabled style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase();"/>
+              <span class="field-hint" id="repgirno-hint">Becomes mandatory when REP Type = TO/ADV SO</span>
+            </div>
+            <div class="fg-field"><label>Field Remarks <span class="req">*</span></label><input type="text" id="f-fieldremarks" placeholder="Describe the issue observed in the field" required/></div>
+            <div class="fg-field"><label>OB Details</label><input type="text" id="f-Obd" placeholder="OB notes..." disabled/></div>
+            <div class="fg-field"><label>Comm Warr Details</label><input type="text" id="f-commwarrdetails" placeholder="Commercial / warranty details..."/></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-submit-bar">
+        <div class="form-validate-msg" id="form-msg"></div>
+        <button class="btn btn-outline" onclick="showList()">Cancel</button>
+        <button class="btn btn-primary" id="save-btn" onclick="submitForm()">Save Service Record</button>
+      </div>
+    </div><!-- /view-form -->
+
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+const API_BASE_URL = '';
+const LOGGED_USER  = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+const EMP_NAME     = LOGGED_USER.name       || '';
+const EMP_DIVISION = LOGGED_USER.division   || LOGGED_USER.department || '';
+
+const FRN_UNIT_STATUSES = ['IW','EW','CAMC','STOCK','Demo','Repeat','Buy Back'];
+const EST_UNIT_STATUSES = ['OW','LAMC'];
+
+let DB_BRANCHES  = [];
+let DB_ENGINEERS = [];
+let DB_DEALERS   = [];
+
+async function fetchFormData() {
+  try {
+    const headers = authHeaders();
+    const [brRes, engRes, dealRes] = await Promise.all([
+      fetch(API_BASE_URL + '/api/branches',  { headers }).catch(() => null),
+      fetch(API_BASE_URL + '/api/engineers', { headers }).catch(() => null),
+      fetch(API_BASE_URL + '/api/dealers',   { headers }).catch(() => null),
+    ]);
+    if (brRes && brRes.ok) { const data = await brRes.json(); DB_BRANCHES = Array.isArray(data) ? data : (data.data || []); }
+    if (engRes && engRes.ok) { const data = await engRes.json(); DB_ENGINEERS = Array.isArray(data) ? data : (data.data || []); }
+    if (dealRes && dealRes.ok) { const data = await dealRes.json(); DB_DEALERS = Array.isArray(data) ? data : (data.data || []); }
+    populateRegionSelect();
+    populateDealerSelect();
+    populateEngFilterFromDB();
+  } catch(e) {
+    console.warn('fetchFormData error:', e.message);
+    populateRegionSelect();
+    populateDealerSelect();
+  }
+}
+
+async function loadDivisions() {
+  try {
+    const res = await fetch(API_BASE_URL + '/api/divisions', { headers: authHeaders() });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const divisions = await res.json();
+    const formSel   = document.getElementById('f-division');
+    const filterSel = document.getElementById('fl-div');
+    if (formSel) formSel.innerHTML = '<option value="">Select Division...</option>';
+    if (filterSel) filterSel.innerHTML = '<option value="">All Divisions</option>';
+    divisions.forEach(d => {
+      [formSel, filterSel].forEach(sel => {
+        if (!sel) return;
+        const o = document.createElement('option');
+        o.value = d._id || d.name; o.textContent = d.name || d._id; sel.appendChild(o);
+      });
+    });
+  } catch(e) {
+    populateDivisionsFallback();
+  }
+}
+
+function populateDivisionsFallback() {
+  const names = ['SHIPL','VENTILATOR','INJECTOR','RADIOLOGY','GANSHORN',
+                  'DEFIBRILLATOR','HOLTER','SPIROMETRY','ULTRASOUND','MONITORS','FQC','H & F','REPAIR'];
+  const formSel   = document.getElementById('f-division');
+  const filterSel = document.getElementById('fl-div');
+  if (formSel) formSel.innerHTML = '<option value="">Select Division...</option>';
+  if (filterSel) filterSel.innerHTML = '<option value="">All Divisions</option>';
+  names.forEach(n => {
+    [formSel, filterSel].forEach(sel => {
+      if (!sel) return;
+      const o = document.createElement('option');
+      o.value = n; o.textContent = n; sel.appendChild(o);
+    });
+  });
+}
+
+function populateRegionSelect() {
+  const regions = [...new Set(DB_BRANCHES.map(b => b.region || b.reg || '').filter(Boolean))].sort();
+  const sel = document.getElementById('f-region');
+  if (!sel) return;
+  if (!regions.length) {
+    sel.innerHTML = `<option value="">Select Region...</option><option>North</option><option>East</option><option>West 1</option><option>West 2</option><option>South 1 TN</option><option>South 1 KL</option><option>South 2 KA</option><option>South 2 AP/TL</option><option>Puducherry</option><option>CG</option>`;
+    return;
+  }
+  sel.innerHTML = '<option value="">Select Region...</option>';
+  regions.forEach(r => { const o = document.createElement('option'); o.value = r; o.textContent = r; sel.appendChild(o); });
+}
+
+function populateDealerSelect() {
+  const sel = document.getElementById('f-dealer');
+  if (!sel) return;
+  if (!DB_DEALERS.length) {
+    sel.innerHTML = `<option value="">Select Dealer...</option><option>DIRECT</option><option>Dee Dee Enterprises</option><option>Futech Biomedicals</option><option>Life Support Medicare</option><option>Medline Agencies</option><option>Care Medical</option><option>Health First</option><option>BioMed Solutions</option><option>Malabar Medicals</option><option>Karnataka Biomedics</option><option>Hyderabad Medical</option><option>Puducherry Pharma</option><option>Raipur Medicals</option>`;
+    return;
+  }
+  sel.innerHTML = '<option value="">Select Dealer...</option>';
+  DB_DEALERS.forEach(d => { const name = d.name || d.dealerName || String(d); const o = document.createElement('option'); o.value = name; o.textContent = name; sel.appendChild(o); });
+}
+
+function onRegionChange() {
+  const reg   = document.getElementById('f-region').value;
+  const brSel = document.getElementById('f-branch');
+  const enSel = document.getElementById('f-engineer');
+  brSel.innerHTML = '<option value=""> Select Branch </option>';
+  enSel.innerHTML = '<option value=""> Select Branch first </option>';
+  (document.getElementById('engineer-hint')||{}).textContent = 'Filtered by branch';
+  if (!reg) return;
+  const branches = DB_BRANCHES.filter(b => (b.region || b.reg || '') === reg);
+  if (branches.length) {
+    branches.forEach(b => { const name = b.name || b.branchName || String(b); const o = document.createElement('option'); o.value = name; o.textContent = name; brSel.appendChild(o); });
+  } else {
+    brSel.innerHTML = '<option value="">No branches for this region</option>';
+  }
+}
+
+function onBranchChange() {
+  const branch = document.getElementById('f-branch').value;
+  const reg    = document.getElementById('f-region').value;
+  const enSel  = document.getElementById('f-engineer');
+  const hint   = document.getElementById('engineer-hint');
+  enSel.innerHTML = '<option value=""> Select Engineer </option>';
+  if (!branch) return;
+  let engineers = DB_ENGINEERS.filter(e => (e.branch || e.branchName || '') === branch);
+  if (!engineers.length && reg) {
+    engineers = DB_ENGINEERS.filter(e => (e.region || e.reg || '') === reg);
+    if (engineers.length) hint.textContent = 'Showing all engineers for this region';
+  }
+  if (!engineers.length && DB_ENGINEERS.length) { engineers = DB_ENGINEERS; hint.textContent = 'Showing all engineers'; }
+  if (engineers.length) {
+    engineers.forEach(e => { const name = e.name || e.engineerName || String(e); const o = document.createElement('option'); o.value = name; o.textContent = name; enSel.appendChild(o); });
+    if (hint.textContent === 'Filtered by branch') hint.textContent = engineers.length + ' engineer' + (engineers.length !== 1 ? 's' : '') + ' in this branch';
+  } else {
+    enSel.innerHTML = '<option value="">No engineers found</option>';
+    hint.textContent = 'No engineers found for this branch';
+  }
+}
+
+function populateEngFilterFromDB() {
+  if (!DB_ENGINEERS.length) return;
+  const sel = document.getElementById('fl-eng');
+  const existing = new Set(Array.from(sel.options).map(o => o.value).filter(Boolean));
+  DB_ENGINEERS.forEach(e => {
+    const name = e.name || e.engineerName || String(e);
+    if (name && !existing.has(name)) { const o = document.createElement('option'); o.value = name; o.textContent = name; sel.appendChild(o); existing.add(name); }
+  });
+}
+
+function getAutoRoutes() {
+  const unitSts = document.getElementById('f-unitstatus').value;
+  const repType = document.getElementById('f-reptype').value;
+  return {
+    isFRN: FRN_UNIT_STATUSES.includes(unitSts) && repType === 'NA',
+    isEST: EST_UNIT_STATUSES.includes(unitSts) && repType === 'NA',
+    isUR: repType === 'TO/ADV SO',
+    isSO: EST_UNIT_STATUSES.includes(unitSts) && repType === 'BS/SO'
+  };
+}
+function checkAutoTriggers() {
+  const { isFRN, isEST, isUR, isSO } = getAutoRoutes();
+  document.getElementById('frn-notice').classList.toggle('show', isFRN);
+  document.getElementById('est-notice').classList.toggle('show', isEST);
+  document.getElementById('ur-notice').classList.toggle('show', isUR);
+  document.getElementById('so-notice').classList.toggle('show', isSO);
+}
+
+function isOwner(s) { return s.isOwner || s.scEng===EMP_NAME || s.eng===EMP_NAME || s.submittedBy===EMP_NAME || LOGGED_USER.role==='admin'; }
+function setLoading(on) { document.getElementById('loading-bar').className = on ? 'loading-bar active' : 'loading-bar'; }
+function getToken()     { return localStorage.getItem('schiller_token') || ''; }
+function authHeaders()  { return { 'Content-Type':'application/json', 'Authorization':'Bearer '+getToken() }; }
+function handleUnauth(res) {
+  if (res.status===401) { showToast('Session expired  logging out.','err'); setTimeout(()=>{ localStorage.clear(); window.location.href='login.html'; },1500); throw new Error('Unauthorized'); }
+}
+
+async function apiGetAll() { const res = await fetch(API_BASE_URL+'/api/services',{headers:authHeaders()}); handleUnauth(res); if(!res.ok) throw new Error('HTTP '+res.status); return res.json(); }
+async function apiCreate(record) { const res = await fetch(API_BASE_URL+'/api/services',{method:'POST',headers:authHeaders(),body:JSON.stringify(record)}); handleUnauth(res); if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Save failed');} return res.json(); }
+async function apiUpdate(id,record) { const res = await fetch(API_BASE_URL+'/api/services/'+id,{method:'PUT',headers:authHeaders(),body:JSON.stringify(record)}); handleUnauth(res); if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Update failed');} return res.json(); }
+async function apiDelete(id) { const res = await fetch(API_BASE_URL+'/api/services/'+id,{method:'DELETE',headers:authHeaders()}); handleUnauth(res); if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Delete failed');} return res.json(); }
+
+let services=[], filtered=[], sortKey='entryDate', sortDir=-1, currentPage=1, editingId=null;
+
+async function loadServices() {
+  setLoading(true);
+  try {
+    const data = await apiGetAll();
+    services = data.map(s=>({...s,id:s._id||s.id}));
+    populateEngFilter();
+    applyFilters();
+    showToast('Loaded '+services.length+' record'+(services.length!==1?'s':''),'info');
+  } catch(e) {
+    if(e.message==='Unauthorized') return;
+    showToast('Cannot load records: '+e.message,'err');
+    services=[]; applyFilters();
+  } finally { setLoading(false); }
+}
+
+function populateEngFilter() {
+  const engs = [...new Set(services.map(s=>s.eng||s.scEng).filter(Boolean))].sort();
+  const sel  = document.getElementById('fl-eng');
+  const existing = new Set(Array.from(sel.options).map(o=>o.value).filter(Boolean));
+  engs.forEach(e=>{ if(!existing.has(e)){ const o=document.createElement('option');o.value=e;o.textContent=e;sel.appendChild(o); } });
+}
+
+(function init() {
+  
+  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const name = u.name || 'Admin';
+  const elName = document.getElementById('admin-name');
+  if(elName) elName.textContent = name;
+  const elAv = document.getElementById('admin-avatar');
+  if(elAv) elAv.textContent = name.charAt(0).toUpperCase();
+
+  const empNameEl=document.getElementById('emp-name'); if(empNameEl) empNameEl.textContent = EMP_NAME||'Employee';
+  const empAvEl = document.getElementById('emp-avatar'); if(empAvEl) empAvEl.textContent = EMP_NAME.charAt(0).toUpperCase()||'E';
+  (document.getElementById('topbar-date')||{}).textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.querySelectorAll('#topbar-form-controls .autofill-cell').forEach(cell=>{
+    const label = cell.querySelector('.autofill-lbl');
+    if (label && /Rcvd Date SC/i.test(label.textContent || '')) {
+      cell.remove();
+    }
+  });
+  fetchFormData();
+  loadServices();
+})();
+
+let sfOpen = true;
+function toggleSF() {
+  sfOpen = !sfOpen;
+  document.getElementById('sf-children').classList.toggle('open', sfOpen);
+  document.getElementById('sf-toggle').classList.toggle('open', sfOpen);
+}
+function toggleAR(){ var btn=document.getElementById('ar-toggle'); var panel=document.getElementById('ar-children'); if(!btn||!panel)return; btn.classList.toggle('open'); panel.classList.toggle('open'); }
+
+function logout() { localStorage.clear(); window.location.href='login.html'; }
+
+async function autoFillFromLogin() {
+  const todayISO   = new Date().toISOString().split('T')[0];
+  const todayLocal = new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric'});
+  
+  // Set default dates
+  ['f-frndate','f-sercomm','f-rcvdatesc','f-doi','f-entrydate'].forEach(id=>{ 
+    const el=document.getElementById(id); 
+    if(el) { el.max=todayISO; if(!el.value) el.value=todayISO; } 
+  });
+
+  (document.getElementById('strip-sceng')||{}).textContent = EMP_NAME||'';
+  document.getElementById('f-sceng').value               = EMP_NAME||'';
+  (document.getElementById('strip-entrydate')||{}).textContent = todayLocal;
+  document.getElementById('f-entrydate').value           = todayISO;
+  try {
+    const token = localStorage.getItem('schiller_token');
+    const r = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!r.ok) throw new Error();
+    const json = await r.json();
+    const divName = (json.data && json.data.division) || EMP_DIVISION || '';
+    (document.getElementById('strip-division')||{}).textContent = divName || '';
+    document.getElementById('f-division').value           = divName;
+    try { localStorage.setItem('schiller_user', JSON.stringify({ ...LOGGED_USER, division: divName })); } catch(_){}
+  } catch (_) {
+    (document.getElementById('strip-division')||{}).textContent = EMP_DIVISION || '';
+    document.getElementById('f-division').value           = EMP_DIVISION || '';
+  }
+}
+
+function onRepTypeChange() {
+  const val   = document.getElementById('f-reptype').value;
+  const badge = document.getElementById('repgirno-badge');
+  const hint  = document.getElementById('repgirno-hint');
+  const input = document.getElementById('f-repgirno');
+  const obd   = document.getElementById('f-Obd');
+  if (val==='TO/ADV SO') {
+    badge.textContent='MANDATORY'; badge.className='mandatory-badge';
+    hint.textContent=' Required  Rep Type is TO/ADV SO'; hint.className='field-hint req-hint';
+    input.required=true;
+    input.disabled=false;
+    input.readOnly=false;
+    if (obd) {
+      obd.disabled=false;
+      obd.readOnly=false;
+    }
+  } else {
+    badge.textContent='OPTIONAL'; badge.className='conditional-badge';
+    hint.textContent='Becomes mandatory when REP Type = TO/ADV SO'; hint.className='field-hint';
+    input.required=false;
+    input.value='';
+    input.disabled=true;
+    input.readOnly=true;
+    if (obd) {
+      obd.value='';
+      obd.disabled=true;
+      obd.readOnly=true;
+    }
+  }
+}
+
+function getPreviousEntry() {
+  const myRecs = services.filter(s=>s.scEng===EMP_NAME||s.eng===EMP_NAME||s.submittedBy===EMP_NAME);
+  if(!myRecs.length){showToast('No previous entries found.','info');return;}
+  const last = [...myRecs].sort((a,b)=>(b.submittedAt||b.entryDate||'').localeCompare(a.submittedAt||a.entryDate||''))[0];
+  const set = (elId,val)=>{const el=document.getElementById(elId);if(el)el.value=val||'';};
+  // Only load Group 1 - Service Entry & Account Details
+  set('f-screfno',last.scReNo); set('f-sercomm',last.serComm); set('f-rcvdatesc',last.rcvdDate); set('f-stkcust',last.stkCust);
+  set('f-dealer',last.dealer); set('f-frnno',last.frnNo); set('f-frndate',last.frnDate);
+  set('f-supplier',last.supplier); set('f-customer',last.custName||last.customer);
+  set('f-region',last.reg); onRegionChange();
+  setTimeout(()=>{ set('f-branch',last.branch); onBranchChange(); setTimeout(()=>{ set('f-engineer',last.eng); },80); },80);
+  showToast('Previous entry loaded  SC: '+(last.scReNo||'?'),'ok');
+}
+
+function clearDateFilter() { document.getElementById('fl-from').value=''; document.getElementById('fl-to').value=''; applyFilters(); }
+
+function applyFilters() {
+  const q    = document.getElementById('tbl-search').value.toLowerCase();
+  const stat = document.getElementById('fl-status').value;
+  const eng  = document.getElementById('fl-eng').value;
+  const div  = document.getElementById('fl-div').value;
+  const from = document.getElementById('fl-from').value;
+  const to   = document.getElementById('fl-to').value;
+  const mine = document.getElementById('fl-mine').checked;
+  filtered = services.filter(s=>{
+    const mQ    = !q    || ((s.scReNo||'')+' '+(s.custName||'')+' '+(s.eng||'')+' '+(s.scEng||'')+' '+(s.frnNo||'')+' '+(s.model||'')+' '+(s.defGir||'')).toLowerCase().includes(q);
+    const mS    = !stat || s.status===stat;
+    const mE    = !eng  || s.eng===eng||s.scEng===eng;
+    const mD    = !div  || String(s.division)===div || s.divisionName===div;
+    const mF    = !from || (s.entryDate||'')>=from;
+    const mT    = !to   || (s.entryDate||'')<=to;
+    const mMine = !mine || isOwner(s);
+    return mQ&&mS&&mE&&mD&&mF&&mT&&mMine;
+  });
+  sortArr(); currentPage=1; renderTable();
+}
+
+function sortBy(key) {
+  if(sortKey===key) sortDir*=-1;
+  else{sortKey=key;sortDir=1;}
+  sortArr();
+  updateSortUI(key);
+  renderTable();
+}
+function updateSortUI(key) {
+  document.querySelectorAll('table.svc-table thead th').forEach(th => {
+    th.classList.remove('sorted');
+    if(th.getAttribute('onclick') && th.getAttribute('onclick').includes(`'${key}'`)) {
+      th.classList.add('sorted');
+    }
+  });
+}
+function sortArr()   { filtered.sort((a,b)=>{const av=String(a[sortKey]||'').toLowerCase(),bv=String(b[sortKey]||'').toLowerCase();return av<bv?-sortDir:av>bv?sortDir:0;}); }
+
+function getRoutingTags(s) {
+  const tags=[];
+  if(FRN_UNIT_STATUSES.includes(s.unitSts)&&(s.repType==='NA'||s.frnCreated))tags.push('<span class="frn-badge"> Pending FRN</span>');
+  if(EST_UNIT_STATUSES.includes(s.unitSts)&&s.repType!=='BS/SO'&&(s.repType==='NA'||s.estPending))tags.push('<span class="est-badge"> Estimation Pending</span>');
+  if(EST_UNIT_STATUSES.includes(s.unitSts)&&(s.repType==='BS/SO'||s.soPending))tags.push('<span class="est-badge">SO Pending</span>');
+  if(s.repType==='TO/ADV SO')tags.push('<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:700;background:rgba(4,120,87,0.1);color:var(--green);border:1px solid rgba(4,120,87,0.2);"> Under Repair</span>');
+  return tags.join('');
+}
+
+function renderTable() {
+  const perPage = parseInt(document.getElementById('per-page').value);
+  const total   = filtered.length;
+  const pages   = Math.max(1,Math.ceil(total/perPage));
+  if(currentPage>pages) currentPage=pages;
+  const slice = filtered.slice((currentPage-1)*perPage,currentPage*perPage);
+  (document.getElementById('count-chip')||{}).textContent = total+' entr'+(total===1?'y':'ies');
+  const tbody = document.getElementById('svc-tbody');
+  if(!slice.length){
+    tbody.innerHTML=`<tr><td colspan="18" style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">${services.length?'No records match the current filters.':'No service records yet. Click <strong>+ Add New Record</strong>.'}</td></tr>`;
+  } else {
+    tbody.innerHTML=slice.map(s=>{
+      const rowId=s._id||s.id; const owner=isOwner(s);
+      const sc=s.status==='completed'?'sp-completed':s.status==='pending'?'sp-pending':s.status==='escalated'?'sp-escalated':'sp-inprogress';
+      const lbl=s.status?s.status.replace('_',' ').replace(/\b\w/g,c=>c.toUpperCase()):'';
+      const tags=getRoutingTags(s);
+      const editBtn=owner?`<button class="btn-xs edit" onclick="editService('${rowId}')">Edit</button>`:`<button class="btn-xs locked" disabled title="Only your records">Edit</button>`;
+      const delBtn=owner?`<button class="btn-xs del" onclick="deleteService('${rowId}')">Delete</button>`:`<button class="btn-xs locked" disabled title="Only your records">Delete</button>`;
+      return`<tr class="${owner?'my-row':''}">
+        <td><span class="s-pill ${sc}">${lbl}</span></td>
+        <td style="font-size:11px;color:var(--soft);">${fmt(s.entryDate)}</td>
+        <td><span class="chip">${s.scReNo||''}</span></td>
+        <td>${s.scEng||''}</td>
+        <td style="font-family:monospace;font-size:11px;">${s.frnNo||''}</td>
+        <td><span style="background:rgba(0,104,181,0.1);color:var(--accent);padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;">${s.branch||''}</span></td>
+        <td>${s.eng||''}</td>
+        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;" title="${esc(s.custName||s.customer||'')}">${s.custName||s.customer||''}</td>
+        <td style="font-weight:600;">${s.model||''}</td>
+        <td>${s.unitSts||''}</td>
+        <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;">${s.defMod||''}</td>
+        <td style="font-family:monospace;font-size:11px;">${s.defGir||''}</td>
+        <td>${s.typeWork||s.type||''}</td>
+        <td style="font-size:11px;">${s.pdPfrn||0}</td>
+        <td style="font-size:11px;">${s.pdEstp||s.pdObp||0}</td>
+        <td style="font-size:11px;">${s.pdUrp||0}</td>
+        <td style="font-size:11px;">${s.pdScc||0}</td>
+        <td style="white-space:nowrap;">${editBtn}&nbsp;${delBtn}</td>
+      </tr>`;
+    }).join('');
+  }
+  const fr=total?(currentPage-1)*perPage+1:0;
+  (document.getElementById('tbl-info')||{}).textContent =total?`Showing ${fr} to ${Math.min(currentPage*perPage,total)} of ${total} entries`:'0 entries';
+  renderPagination(pages);
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmt(d){if(!d)return'';const p=d.split('-');if(p.length<3)return d;return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0];}
+
+function renderPagination(pages) {
+  const el=document.getElementById('tbl-pagination'); if(pages<=1){el.innerHTML='';return;}
+  let h=`<button class="pager" ${currentPage===1?'disabled':''} onclick="changePage(${currentPage-1})">Previous</button>`;
+  getRange(currentPage,pages).forEach(p=>{if(p==='...')h+=`<button class="pager" disabled>...</button>`;else h+=`<button class="pager ${p===currentPage?'active':''}" onclick="changePage(${p})">${p}</button>`;});
+  h+=`<button class="pager" ${currentPage===pages?'disabled':''} onclick="changePage(${currentPage+1})">Next</button>`;
+  el.innerHTML=h;
+}
+function getRange(c,t){if(t<=7)return Array.from({length:t},(_,i)=>i+1);if(c<=4)return[1,2,3,4,5,'...',t];if(c>=t-3)return[1,'...',t-4,t-3,t-2,t-1,t];return[1,'...',c-1,c,c+1,'...',t];}
+function changePage(p){currentPage=p;renderTable();}
+
+function showForm() {
+  autoFillFromLogin();
+  editingId=null;
+  document.getElementById('view-list').style.display='none';
+  document.getElementById('view-form').style.display='block';
+  document.getElementById('topbar-back-btn').style.display='flex';
+  document.getElementById('topbar-list-controls').style.display='none';
+  document.getElementById('topbar-form-controls').style.display='flex';
+  (document.getElementById('topbar-title')||{}).textContent ='Add Service';
+  (document.getElementById('topbar-breadcrumb-cur')||{}).textContent ='Add Service';
+  (document.getElementById('save-btn')||{}).textContent =' Save Service Record';
+  ['frn-notice','est-notice','ur-notice','so-notice'].forEach(id=>document.getElementById(id).classList.remove('show'));
+  const today=new Date().toISOString().split('T')[0];
+  ['f-frndate','f-sercomm','f-rcvdatesc','f-doi','f-entrydate'].forEach(id=>{const el=document.getElementById(id);if(el)el.max=today;});
+  resetForm();
+  window.scrollTo(0,0);
+}
+function showList() {
+  document.getElementById('view-form').style.display='none';
+  document.getElementById('view-list').style.display='block';
+  document.getElementById('topbar-back-btn').style.display='none';
+  document.getElementById('topbar-list-controls').style.display='flex';
+  document.getElementById('topbar-form-controls').style.display='none';
+  (document.getElementById('topbar-title')||{}).textContent ='All Services';
+  (document.getElementById('topbar-breadcrumb-cur')||{}).textContent ='Services';
+  editingId=null; window.scrollTo(0,0);
+}
+function resetForm() {
+  document.querySelectorAll('#view-form input:not([type=hidden]),#view-form select,#view-form textarea').forEach(el=>{el.value='';el.classList.remove('err');});
+  document.getElementById('f-branch').innerHTML  = '<option value=""> Select Region first </option>';
+  document.getElementById('f-engineer').innerHTML= '<option value=""> Select Branch first </option>';
+  (document.getElementById('engineer-hint')||{}).textContent = 'Filtered by branch';
+  document.getElementById('form-msg').className  = 'form-validate-msg';
+  document.getElementById('f-repgirno').required = false;
+  document.getElementById('f-repgirno').disabled = true;
+  document.getElementById('f-repgirno').readOnly = true;
+  document.getElementById('f-Obd').disabled = true;
+  document.getElementById('f-Obd').readOnly = true;
+  ['frn-notice','est-notice','ur-notice'].forEach(id=>document.getElementById(id).classList.remove('show'));
+  populateRegionSelect();
+  populateDealerSelect();
+}
+
+function editService(id) {
+  const s=services.find(x=>(x._id||x.id)===id);
+  if(!s){showToast('Record not found','err');return;}
+  if(!isOwner(s)){showToast('You can only edit your own records.','err');return;}
+  editingId=id;
+  document.getElementById('view-list').style.display='none';
+  document.getElementById('view-form').style.display='block';
+  document.getElementById('topbar-back-btn').style.display='flex';
+  document.getElementById('topbar-list-controls').style.display='none';
+  document.getElementById('topbar-form-controls').style.display='flex';
+  (document.getElementById('topbar-title')||{}).textContent ='Edit Service';
+  (document.getElementById('topbar-breadcrumb-cur')||{}).textContent ='Edit Service';
+  (document.getElementById('save-btn')||{}).textContent =' Update Service Record';
+  resetForm();
+  (document.getElementById('strip-sceng')||{}).textContent = s.scEng || s.eng || '';
+  document.getElementById('f-sceng').value = s.scEng || s.eng || '';
+  const divName = (s.division && s.division.name) || s.division || '';
+  (document.getElementById('strip-division')||{}).textContent = divName;
+  document.getElementById('f-division').value = divName !== '' ? divName : '';
+  if(s.entryDate){ document.getElementById('f-entrydate').value = String(s.entryDate).slice(0, 10); (document.getElementById('strip-entrydate')||{}).textContent = String(s.entryDate).slice(0, 10); }
+  setTimeout(()=>{
+    const set=(elId,val)=>{const el=document.getElementById(elId);if(el)el.value=val||'';};
+    set('f-screfno',s.scReNo); set('f-frnno',s.frnNo); set('f-frndate',s.frnDate);
+    set('f-sercomm',s.serComm); set('f-rcvdatesc',s.rcvdDate); set('f-stkcust',s.stkCust);
+    set('f-region',s.reg); onRegionChange();
+    setTimeout(()=>{ set('f-branch',s.branch); onBranchChange(); setTimeout(()=>{ set('f-engineer',s.eng); }, 80); }, 80);
+    set('f-dealer',s.dealer); set('f-customer',s.custName||s.customer);
+    set('f-supplier',s.supplier); set('f-model',s.model); set('f-modelconfig',s.modelConfig);
+    set('f-unitsl',s.unitSl); set('f-unitstatus',s.unitSts);
+    set('f-doi',s.doi||s.dod); set('f-modbrd',s.defMod); set('f-partno',s.partNo);
+    set('f-defpartsno',s.defPartSno); set('f-deftype',s.defType);
+    set('f-typeacc',s.typeAcc); set('f-defgirno',s.defGir);
+    set('f-reptype',s.repType); set('f-repgirno',s.repGirNo);
+    set('f-fieldremarks',s.fieldRemarks);
+    set('f-commwarrdetails',s.commWarrDetails);
+    onRepTypeChange(); checkAutoTriggers();
+  },150);
+  window.scrollTo(0,0);
+}
+
+async function deleteService(id) {
+  const s=services.find(x=>(x._id||x.id)===id);
+  if(!isOwner(s)){showToast('You can only delete your own records.','err');return;}
+  if(!confirm('Delete this service record? This will also remove it from Pending FRN and Estimation Pending.'))return;
+  setLoading(true);
+  try{await apiDelete(id);services=services.filter(s=>(s._id||s.id)!==id);applyFilters();showToast('Record deleted and removed from all linked queues.','ok');}
+  catch(e){showToast('Delete failed: '+e.message,'err');}
+  finally{setLoading(false);}
+}
+
+function printJobSheet(id){showToast('Generating JobSheet for #'+id+' ','ok');}
+
+document.getElementById('f-screfno')?.addEventListener('input', (e) => {
+  e.target.value = String(e.target.value || '').toUpperCase();
+});
+
+async function createSoPendingFromService(serviceRecord) {
+  const serviceId = serviceRecord._id || serviceRecord.id;
+  if (!serviceId) throw new Error('Saved service id missing.');
+  const payload = {
+    source: 'service-bs-so',
+    serviceId,
+    entryDate: serviceRecord.entryDate || new Date().toISOString().split('T')[0],
+    scReNo: serviceRecord.scReNo || '',
+    scEng: serviceRecord.scEng || '',
+    frnNo: serviceRecord.frnNo || '',
+    frnDate: serviceRecord.frnDate || '',
+    reg: serviceRecord.reg || '',
+    branch: serviceRecord.branch || '',
+    eng: serviceRecord.eng || '',
+    custName: serviceRecord.custName || serviceRecord.customer || '',
+    customer: serviceRecord.customer || serviceRecord.custName || '',
+    model: serviceRecord.model || '',
+    unitSts: serviceRecord.unitSts || '',
+    defMod: serviceRecord.defMod || '',
+    defGir: serviceRecord.defGir || '',
+    typeWork: serviceRecord.typeWork || serviceRecord.type || '',
+    repType: serviceRecord.repType || 'BS/SO',
+    estStatus: 'SO Pending',
+    submittedBy: serviceRecord.submittedBy || EMP_NAME,
+    submittedAt: serviceRecord.submittedAt || new Date().toISOString()
+  };
+  const res = await fetch(API_BASE_URL + '/api/estimation', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(payload)
+  });
+  handleUnauth(res);
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || 'SO Pending create failed');
+  }
+  return res.json();
+}
+
+async function submitForm() {
+  const msg=document.getElementById('form-msg');
+  msg.className='form-validate-msg';
+  const reqs=['f-screfno','f-frnno','f-frndate','f-sercomm','f-rcvdatesc','f-stkcust','f-region','f-branch','f-engineer','f-dealer','f-customer','f-supplier','f-model','f-unitsl','f-unitstatus','f-partno','f-modbrd','f-defpartsno','f-deftype','f-typeacc','f-defgirno','f-reptype','f-fieldremarks'];
+  if(document.getElementById('f-reptype').value==='TO/ADV SO') reqs.push('f-repgirno');
+  const errors=[];
+  reqs.forEach(fid=>{const el=document.getElementById(fid);if(!el)return;if(!el.value.trim()){el.classList.add('err');errors.push(fid);}else el.classList.remove('err');});
+  if(errors.length){ msg.textContent=' Please fill all required fields.';msg.className='form-validate-msg show-err'; document.getElementById(errors[0]).scrollIntoView({behavior:'smooth',block:'center'});return; }
+  const divisionVal  = document.getElementById('f-division').value||EMP_DIVISION;
+  const scEngVal     = document.getElementById('f-sceng').value||EMP_NAME;
+  const custVal      = document.getElementById('f-customer').value.trim();
+  const rcvdDateVal  = document.getElementById('f-entrydate').value||new Date().toISOString().split('T')[0];
+  const existingSvc  = editingId?services.find(s=>(s._id||s.id)===editingId):null;
+  const unitStsVal   = document.getElementById('f-unitstatus').value;
+  const repTypeVal   = document.getElementById('f-reptype').value;
+  const willCreateFRN= !editingId&&FRN_UNIT_STATUSES.includes(unitStsVal)&&repTypeVal==='NA';
+  const willCreateEST= !editingId&&EST_UNIT_STATUSES.includes(unitStsVal)&&repTypeVal==='NA';
+  const willCreateUR = !editingId&&repTypeVal==='TO/ADV SO';
+  const willCreateSO = !editingId&&EST_UNIT_STATUSES.includes(unitStsVal)&&repTypeVal==='BS/SO';
+  const typeWorkVal  = unitStsVal;
+  const obdEl        = document.getElementById('f-Obd');
+  const obdVal       = obdEl?obdEl.value.trim():'';
+  const rec = {
+    status:     existingSvc?(existingSvc.status||'pending'):'pending',
+    entryDate:  existingSvc?(existingSvc.entryDate||new Date().toISOString().split('T')[0]):(document.getElementById('f-entrydate').value||new Date().toISOString().split('T')[0]),
+    ...(divisionVal&&/^[a-f\d]{24}$/i.test(divisionVal)?{division:divisionVal}:{divisionName:divisionVal}),
+    scReNo:       document.getElementById('f-screfno').value.trim().toUpperCase(),
+    scEng:        scEngVal,
+    frnNo:        document.getElementById('f-frnno').value.trim(),
+    frnDate:      document.getElementById('f-frndate').value,
+    serComm:      document.getElementById('f-sercomm').value,
+    rcvdDate: document.getElementById('f-rcvdatesc').value||rcvdDateVal, entryDate: rcvdDateVal,
+    stkCust:      document.getElementById('f-stkcust').value,
+    reg:          document.getElementById('f-region').value,
+    branch:       document.getElementById('f-branch').value,
+    eng:          document.getElementById('f-engineer').value,
+    dealer:       document.getElementById('f-dealer').value,
+    custName:     custVal, customer:custVal,
+    supplier:     document.getElementById('f-supplier').value,
+    model:        document.getElementById('f-model').value,
+    modelConfig:  document.getElementById('f-modelconfig').value.trim(),
+    unitSl:       document.getElementById('f-unitsl').value.trim(),
+    unitSts:      unitStsVal,
+    doi:          document.getElementById('f-doi').value,
+    defMod:       document.getElementById('f-modbrd').value.trim(),
+    partNo:       document.getElementById('f-partno').value.trim(),
+    defPartSno:   document.getElementById('f-defpartsno').value.trim(),
+    defType:      document.getElementById('f-deftype').value,
+    typeAcc:      document.getElementById('f-typeacc').value,
+    defGir:       document.getElementById('f-defgirno').value.trim(),
+    repType:      repTypeVal,
+    repGirNo:     document.getElementById('f-repgirno').value.trim().toUpperCase(),
+    typeWork:     typeWorkVal, type:typeWorkVal, typeReport:'Service Center',
+    fieldRemarks: document.getElementById('f-fieldremarks').value.trim(),
+    commWarrDetails: document.getElementById('f-commwarrdetails').value.trim(),
+    obDetails:    obdVal, finalRemarks:'', components:'', commRemarks:'',
+    pdPfrn:0, pdEstp:0, pdUrp:0, pdScc:0,
+    submittedBy:  EMP_NAME, submittedAt:new Date().toISOString(),
+    frnCreated:   willCreateFRN, estPending:willCreateEST||willCreateSO, soPending:willCreateSO,
+    estStatus:    willCreateSO?'SO Pending':(willCreateEST?'Estimation Pending':''),
+  };
+  const saveBtn=document.getElementById('save-btn');
+  saveBtn.disabled=true; saveBtn.textContent='Saving...'; setLoading(true);
+  try {
+    let saved;
+    if(editingId){
+      saved=await apiUpdate(editingId,rec); saved={...saved,id:saved._id||saved.id};
+      const idx=services.findIndex(s=>(s._id||s.id)===editingId); if(idx!==-1)services[idx]=saved;
+      msg.textContent=' Record updated  all employees can see the changes!';
+      showToast('Record updated  visible to all.','ok');
+    } else {
+      saved=await apiCreate(rec); saved={...saved,id:saved._id||saved.id}; services.unshift(saved);
+      if(willCreateSO) await createSoPendingFromService(saved);
+      msg.textContent=' Record saved  immediately visible to all employees!';
+      showToast('Saved  visible to all employees now.','ok');
+    }
+    msg.className='form-validate-msg show-ok';
+    if(willCreateFRN) showToast(' Auto-added to Pending FRN.','ok');
+    if(willCreateEST) showToast(' Auto-added to Estimation Pending.','ok');
+    if(willCreateUR)  showToast(' Auto-added to Under Repair.','ok');
+    if(willCreateSO)  showToast('Auto-added to SO Pending.','ok');
+    setTimeout(()=>{
+      if(willCreateSO) window.location.href='ob-pending.html';
+      else { showList(); applyFilters(); }
+    },1200);
+  } catch(e) {
+    msg.textContent=' '+e.message; msg.className='form-validate-msg show-err';
+    showToast('Save failed: '+e.message,'err');
+  } finally {
+    saveBtn.disabled=false;
+    saveBtn.textContent=editingId?' Update Service Record':' Save Service Record';
+    setLoading(false);
+  }
+}
+
+function exportCSV() {
+  const rows=[['Status','Entry Date','Sc ReNo','Sc Eng','FRN No','Branch','Eng','Cust Name','Model','Unit Sts','Def Mod','Def Gir','Type of Work','Auto-sent to','PD PFRN','PD ESTP','PD URP','PD SCC']];
+  filtered.forEach(s=>{
+    const tags=[];
+    if(FRN_UNIT_STATUSES.includes(s.unitSts)&&(s.repType==='NA'||s.frnCreated))tags.push('Pending FRN');
+    if(EST_UNIT_STATUSES.includes(s.unitSts)&&s.repType!=='BS/SO'&&(s.repType==='NA'||s.estPending))tags.push('Estimation Pending');
+    if(EST_UNIT_STATUSES.includes(s.unitSts)&&(s.repType==='BS/SO'||s.soPending))tags.push('SO Pending');
+    if(s.repType==='TO/ADV SO')tags.push('Under Repair');
+    rows.push([s.status,s.entryDate,s.scReNo,s.scEng,s.frnNo,s.branch,s.eng,s.custName||s.customer,s.model,s.unitSts,s.defMod,s.defGir,s.typeWork||s.type,tags.join(' + ')||'',s.pdPfrn,s.pdEstp||s.pdObp,s.pdUrp,s.pdScc]);
+  });
+  const csv=rows.map(r=>r.map(v=>`"${v||''}"`).join(',')).join('\n');
+  const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='all-services-'+new Date().toISOString().split('T')[0]+'.csv'; a.click();
+  showToast('CSV exported  '+filtered.length+' records.','ok');
+}
+
+function showToast(msg,type='ok'){
+  const wrap=document.getElementById('toast-wrap'); const el=document.createElement('div');
+  el.className='toast '+type; el.innerHTML='<span class="tdot"></span>'+msg; wrap.appendChild(el);
+  setTimeout(()=>el.remove(),3200);
+}
+</script>
+<script src="tab-fix.js"></script>
+</body>
+</html>
+
+
+
+
+
+

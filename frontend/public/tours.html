@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+(function(){
+  document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme') || 'light');
+  const token = localStorage.getItem('schiller_token');
+  const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
+  if (!token || !['employee','admin','superadmin','administrator'].includes(role)) window.location.href = 'login.html';
+})();
+</script>
+<title>SchillerIndia - Tour Summary</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="global-typography.css">
+<link rel="stylesheet" href="employee-theme.css">
+<link rel="stylesheet" href="brand-logo.css">
+<script src="brand-logo.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f0f4f8;--surface:#fff;--surface2:#e8f0f7;--surface3:#f8fafc;--border:#ccdde8;--accent:#0068b5;--green:#059669;--green2:#047857;--red:#b91c1c;--text:#0f2236;--muted:#6b8ca8;--soft:#3d6480;--card:#fff;--shadow:0 1px 8px rgba(0,60,120,.07)}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+.sidebar{width:230px;min-height:100vh;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 16px rgba(0,60,120,.08)}
+.sidebar-header{padding:18px 16px 14px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#002d5c,#0068b5)}
+.logo-wrap{display:flex;align-items:center;gap:10px}.logo-text{font-family:'Syne',sans-serif;font-size:13.5px;font-weight:700;color:#fff;line-height:1.25}.logo-text span{display:block;font-size:10px;color:rgba(255,255,255,.55);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400}
+.organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.2)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.3)}35%{transform:scale(1.1)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.1) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
+.emp-badge{margin:8px 12px 0;padding:3px 10px;border-radius:20px;font-size:9.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;display:inline-block;background:rgba(4,120,87,.12);color:#059669;border:1px solid rgba(4,120,87,.2)}
+.sidebar-nav{flex:1;padding:10px 8px}.nav-sec{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;padding:10px 9px 4px}
+.nav-item,.nav-group-toggle{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:500;cursor:pointer;transition:all .18s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none}
+.nav-item:hover,.nav-group-toggle:hover{background:var(--surface2);color:var(--text)}.nav-item.active{background:#e8f3fb;color:var(--accent);font-weight:700;border-left:3px solid var(--accent);padding-left:9px}.ico{font-size:13px;width:18px;text-align:center;flex-shrink:0}.caret{margin-left:auto;font-size:10px;transition:transform .22s}.nav-group-toggle.open .caret{transform:rotate(90deg)}.nav-children{max-height:0;overflow:hidden;transition:max-height .28s}.nav-children.open{max-height:400px}
+.sidebar-footer{padding:12px 13px;border-top:1px solid var(--border);background:#f5f9fc}.user-row{display:flex;align-items:center;gap:9px}.user-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#059669,#0068b5);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff}.user-nm{font-size:12.5px;font-weight:600}.user-rl{font-size:10px;color:var(--muted)}.logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:10.5px;font-weight:600}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}.topbar{padding:13px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:var(--shadow);gap:14px}.topbar-left{min-width:0}.breadcrumb{display:flex;align-items:center;gap:5px;font-size:10.5px;margin-bottom:2px;color:var(--muted);flex-wrap:wrap}.breadcrumb a{color:var(--muted);text-decoration:none}.breadcrumb a:hover{color:var(--accent)}.breadcrumb .sep{color:#b8cad8}.page-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);line-height:1.2}.topbar-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}.topbar-date-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:var(--surface3);font-size:11.5px;font-weight:700;color:var(--soft);white-space:nowrap}
+.content{padding:20px 24px;overflow:auto}.panel{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}.panel-head{padding:14px 18px;background:var(--surface3);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.panel-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px}.badge{padding:3px 10px;border-radius:20px;font-size:10.5px;font-weight:700;background:rgba(5,150,105,.1);color:#047857;border:1px solid rgba(5,150,105,.2)}
+.btn{border:none;border-radius:8px;padding:8px 15px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;display:inline-flex;align-items:center;gap:6px}.btn-primary{background:var(--green);color:#fff}.btn-primary:hover{background:var(--green2)}.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--soft)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.tour-list{padding:18px;display:flex;flex-direction:column;gap:18px}.tour-group{position:relative;padding-left:22px}.tour-group::before{content:'';position:absolute;left:7px;top:38px;bottom:6px;width:2px;background:linear-gradient(#9bd6c2,#d7e8f5);border-radius:4px}.tour-group-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;flex-wrap:wrap}.tour-group-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px}.tour-group-title::before{content:'';width:14px;height:14px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px rgba(5,150,105,.12);margin-left:-21px}.tour-group-meta{font-size:11.5px;color:var(--muted);font-weight:700}.tour-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.tour-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 7px rgba(0,60,120,.06);overflow:hidden}.tour-card-top{padding:12px 14px;background:linear-gradient(135deg,#f8fbff,#f0fdf8);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.tour-card-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.tour-day{display:inline-flex;align-items:center;gap:5px;background:rgba(5,150,105,.1);color:#047857;border:1px solid rgba(5,150,105,.2);border-radius:999px;padding:3px 9px;font-size:11px;font-weight:800}.tour-date{font-size:11.5px;color:var(--accent);font-weight:800;margin-top:5px}.tour-customer{font-size:14px;font-weight:800;color:var(--text);line-height:1.35}.tour-card-body{padding:13px 14px;display:flex;flex-direction:column;gap:12px}.tour-meta-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.tour-meta{background:var(--surface3);border:1px solid rgba(0,60,120,.07);border-radius:9px;padding:8px}.tour-meta-label{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:800;margin-bottom:3px}.tour-meta-val{font-size:11.5px;color:var(--text);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tour-notes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.tour-note{border:1px solid rgba(0,60,120,.08);border-radius:9px;padding:9px;background:#fbfdff}.tour-note-title{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:800;margin-bottom:4px}.tour-note-text{font-size:11.5px;line-height:1.45;color:var(--soft);max-height:52px;overflow:hidden}.tour-photos{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.pill{display:inline-block;padding:2px 8px;border-radius:9px;font-size:11px;font-weight:700;background:rgba(0,104,181,.08);color:var(--accent)}.thumb{width:42px;height:42px;object-fit:cover;border-radius:7px;border:1px solid var(--border);cursor:pointer}.del,.add-day,.pdf-day{background:none;border:1px solid rgba(185,28,28,.25);color:var(--red);border-radius:6px;padding:4px 9px;font-size:11px;font-weight:700;cursor:pointer}.add-day{border-color:rgba(5,150,105,.28);color:#047857;background:rgba(5,150,105,.06)}.pdf-day{border-color:rgba(0,104,181,.28);color:var(--accent);background:rgba(0,104,181,.06)}.empty{text-align:center;padding:55px 20px;color:var(--muted)}
+.overlay{position:fixed;top:0;left:230px;right:0;bottom:0;background:rgba(5,18,38,.54);backdrop-filter:blur(4px);z-index:1200;display:none;align-items:stretch;justify-content:stretch;padding:0}.overlay.open{display:flex}.modal{background:var(--surface);border:none;border-radius:0;width:100%;max-width:none;height:100%;max-height:none;overflow:hidden;display:flex;flex-direction:column;box-shadow:none}.modal-head{padding:18px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0}.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800}.modal-sub{font-size:11.5px;color:var(--muted);margin-top:3px}.modal-close{width:34px;height:34px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:15px}.modal-body{padding:22px 28px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;flex:1}.section-title{padding-bottom:8px;border-bottom:1px solid var(--border);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.fg2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.visit-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.field{display:flex;flex-direction:column;gap:5px}.field label{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}.req{color:var(--red)}.field input,.field textarea,.field select{border:1.5px solid var(--border);border-radius:10px;padding:9px 13px;font-size:13px;color:var(--text);background:var(--surface);font-family:'Plus Jakarta Sans',sans-serif;outline:none;width:100%;min-width:0}.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(5,150,105,.1)}.field textarea{resize:vertical;min-height:82px}
+.img-area{background:linear-gradient(180deg,#f8fbff,#eef7f3);border:1.5px dashed #9fbdd3;border-radius:12px;padding:14px}.img-note{display:flex;justify-content:space-between;gap:10px;margin-bottom:10px;font-size:11.5px;color:var(--soft);flex-wrap:wrap}.img-note strong{color:var(--text);font-size:12px}.img-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.img-slot{border:1.5px dashed var(--border);border-radius:10px;aspect-ratio:4/3;overflow:hidden;cursor:pointer;background:var(--surface);display:flex;align-items:center;justify-content:center;position:relative}.img-slot:hover{border-color:var(--green);background:rgba(5,150,105,.04)}.img-placeholder{text-align:center;color:var(--muted);font-size:11px;font-weight:700;pointer-events:none}.img-placeholder span{display:block;font-size:24px;margin-bottom:5px}.img-preview{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}.img-remove{position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;background:rgba(185,28,28,.9);color:#fff;border:none;cursor:pointer;z-index:2}.modal-foot{padding:16px 28px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;background:var(--surface3);flex-shrink:0}.msg{font-size:12px;font-weight:700;color:var(--red);display:none;padding:8px 12px;background:rgba(185,28,28,.06);border-radius:8px;border:1px solid rgba(185,28,28,.15);margin-right:auto}
+@media(max-width:1200px){.visit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tour-cards{grid-template-columns:1fr}.tour-meta-grid,.tour-notes{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:900px){.sidebar{display:none}.overlay{left:0}.fg2,.visit-grid,.tour-meta-grid,.tour-notes{grid-template-columns:1fr}.img-slots{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}.content{padding:14px}.tour-list{padding:12px}.tour-group{padding-left:0}.tour-group::before,.tour-group-title::before{display:none}}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-header"><div class="logo-wrap"><div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div><div class="logo-text">SchillerIndia<span>Services Portal</span></div></div></div>
+  <div style="padding:7px 12px 0;"><span class="emp-badge">Employee</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-sec">Operations</div>
+    <a class="nav-item" href="employee-dashboard.html"><span class="ico">&#128202;</span> Dashboard</a>
+    <a class="nav-item" href="employee-dashboard.html#messages"><span class="ico">&#128172;</span> Messaging</a>
+    <a class="nav-item" href="employee-service-list.html"><span class="ico">&#128225;</span> Services</a>
+    <a class="nav-item" href="emppendingfrn.html"><span class="ico">&#128221;</span> Pending FRN</a>
+    <a class="nav-item" href="employee-ob-pending.html"><span class="ico">&#128230;</span> Estimation Pending</a>
+    <a class="nav-item" href="empestpend.html"><span class="ico">&#128203;</span> SO Pending</a>
+    <a class="nav-item" href="empunderep.html"><span class="ico">&#128736;</span> Under Repair</a>
+    <a class="nav-item" href="completed-frn.html"><span class="ico">&#9989;</span> Completed FRN</a>
+    <a class="nav-item" href="Emp-scrap-list.html"><span class="ico">&#9888;</span> Supplier Warranty</a>
+    <a class="nav-item" href="sc-completed-frn.html"><span class="ico">&#128257;</span> External Repair</a>
+    <button class="nav-group-toggle open" type="button" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');"><span class="ico">&#128193;</span><span>Records</span><span class="caret">&#9656;</span></button>
+    <div class="nav-children nav-sub open">
+      <a class="nav-item" href="ecall.html"><span class="ico">&#128222;</span> Call Register</a>
+      <a class="nav-item" href="eclose.html"><span class="ico">&#9989;</span> Closed Calls</a>
+      <a class="nav-item" href="eprfob.html"><span class="ico">&#128203;</span> PRF/OB Register</a>
+      <a class="nav-item" href="ecr.html"><span class="ico">&#128274;</span> Closed PRF/OB Register</a>
+      <a class="nav-item active" href="tours.html"><span class="ico">&#128205;</span> Tour Summary</a>
+      <a class="nav-item" href="dailyw.html"><span class="ico">&#128197;</span> Daily Work</a>
+    </div>
+    <button class="nav-group-toggle" type="button" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');"><span class="ico">&#128230;</span><span>Inventory</span><span class="caret">&#9656;</span></button>
+    <div class="nav-children nav-sub">
+      <a class="nav-item" href="emp-non-saleable.html"><span class="ico">&#128230;</span> Non Saleable</a>
+      <a class="nav-item" href="emp-saleables.html"><span class="ico">&#128176;</span> Saleables</a>
+      <a class="nav-item" href="ebir.html"><span class="ico">&#128203;</span> BIR LIST</a>
+      <a class="nav-item" href="ecbir.html"><span class="ico">&#128193;</span> Closed BIR</a>
+      <a class="nav-item" href="elt.html"><span class="ico">&#128451;</span> Loan Items</a>
+      <a class="nav-item" href="ecli.html"><span class="ico">&#128193;</span> Closed Loan Item</a>
+    </div>
+  </nav>
+  <div class="sidebar-footer"><div class="user-row"><div class="user-av" id="emp-avatar">E</div><div><div class="user-nm" id="emp-name">Employee</div><div class="user-rl" id="emp-desig">Field Engineer</div></div><button class="logout-btn" onclick="logout()">&#8617;</button></div></div>
+</aside>
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left"><div class="breadcrumb"><a href="employee-dashboard.html">Dashboard</a><span class="sep">&#8250;</span><span>Records</span><span class="sep">&#8250;</span><span>Tour Summary</span></div><div class="page-title">Tour Summary</div></div>
+    <div class="topbar-actions"><span class="topbar-date-pill" id="topbar-date"></span><button class="btn btn-outline" onclick="loadTours()">&#10227; Refresh</button><button class="btn btn-primary" onclick="openTourModal()">&#43; Add New</button></div>
+  </div>
+  <div class="content">
+    <section class="panel">
+      <div class="panel-head"><div><div class="panel-title">&#128205; Field Visit Entries</div><div style="font-size:11.5px;color:var(--muted);margin-top:3px;">Record customer visits, observed issues, actions, and supporting photos.</div></div><span class="badge" id="tour-count-badge">0 entries</span></div>
+      <div class="tour-list" id="tour-list"><div class="empty">Loading tour summaries...</div></div>
+    </section>
+  </div>
+</main>
+<div class="overlay" id="tour-overlay">
+  <div class="modal">
+    <div class="modal-head"><div><div class="modal-title">&#128205; Add New Tour Summary</div><div class="modal-sub">Record the visit details and attach up to 3 supporting photos</div></div><button class="modal-close" onclick="closeTourModal()">&#10005;</button></div>
+    <div class="modal-body">
+      <div class="section-title">Visit Details</div>
+      <div class="visit-grid">
+        <div class="field"><label>Tour Name</label><input type="text" id="tour-name"></div>
+        <div class="field"><label>Day</label><input type="number" id="tour-day" min="1" step="1" value="1"></div>
+        <div class="field"><label>Start Date <span class="req">*</span></label><input type="date" id="tour-date"></div>
+        <div class="field"><label>Customer Name <span class="req">*</span></label><input type="text" id="tour-customer"></div>
+        <div class="field"><label>Branch</label><input type="text" id="tour-branch"></div>
+        <div class="field"><label>Model</label><input type="text" id="tour-model"></div>
+        <div class="field"><label>Unit Status</label><select id="tour-status"><option value="">Select status...</option><option>OW</option><option>IW</option><option>EW</option><option>CAMC</option><option>LAMC</option><option>STOCK</option></select></div>
+        <div class="field"><label>Unit SL No</label><input type="text" id="tour-slno"></div>
+      </div>
+      <div class="section-title">Service Observation</div>
+      <div class="field"><label>Problem Reported</label><textarea id="tour-reported"></textarea></div>
+      <div class="field"><label>Problem Observed</label><textarea id="tour-observed"></textarea></div>
+      <div class="field"><label>Action Taken</label><textarea id="tour-action"></textarea></div>
+      <div class="section-title">Photos</div>
+      <div class="field"><label>Upload Images</label><div class="img-area"><div class="img-note"><strong>Attach up to 3 images</strong><span>Each image must be 3 MB or smaller.</span></div><div class="img-slots" id="img-slots"></div></div></div>
+    </div>
+    <div class="modal-foot"><div class="msg" id="tour-msg"></div><button class="btn btn-outline" onclick="closeTourModal()">Cancel</button><button class="btn btn-primary" id="save-btn" onclick="saveTour()">&#128190; Save Entry</button></div>
+  </div>
+</div>
+<script>
+const token = localStorage.getItem('schiller_token') || '';
+let tours = [], tourImgs = [null, null, null];
+(function init(){
+  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const name = u.name || 'Employee';
+  setText('emp-name', name); setText('emp-avatar', name.charAt(0).toUpperCase()); setText('emp-desig', u.designation || 'Field Engineer');
+  setText('topbar-date', new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'}));
+  renderSlots();
+  loadTours();
+})();
+function hdrs(){ return {'Content-Type':'application/json', Authorization:'Bearer '+token}; }
+function handleAuth(res){ if(res.status===401){ window.location.href='login.html'; throw new Error('Unauthorized'); } }
+async function loadTours(){
+  const listEl = document.getElementById('tour-list');
+  listEl.innerHTML = '<div class="empty">Loading tour summaries...</div>';
+  try{
+    const res = await fetch('/api/tours', { headers: hdrs() }); handleAuth(res);
+    const json = await res.json().catch(()=>[]);
+    if(!res.ok) throw new Error(json.message || 'HTTP '+res.status);
+    tours = Array.isArray(json) ? json : (json.data || []);
+    renderTable();
+  }catch(e){
+    if(e.message !== 'Unauthorized') listEl.innerHTML = '<div class="empty" style="color:var(--red)">Could not load tours: '+esc(e.message)+'</div>';
+  }
+}
+function renderTable(){
+  setText('tour-count-badge', tours.length + (tours.length === 1 ? ' entry' : ' entries'));
+  const listEl = document.getElementById('tour-list');
+  if(!tours.length){ listEl.innerHTML = '<div class="empty"><div style="font-size:28px;margin-bottom:8px;">&#128205;</div>No tour entries yet.<br><span style="font-size:12px;">Click <strong>+ Add New</strong> to add your first field visit record.</span></div>'; return; }
+  const groups = {};
+  tours.forEach(t => {
+    const key = (t.tourName || t.customerName || 'Tour Summary').trim();
+    if(!groups[key]) groups[key] = [];
+    groups[key].push(t);
+  });
+  listEl.innerHTML = '<div class="tour-cards">'
+    + Object.keys(groups).sort().map((name, index) => {
+        const items = groups[name].sort((a,b) => (Number(a.dayNo||1)-Number(b.dayNo||1)) || String(a.startDate||'').localeCompare(String(b.startDate||'')));
+        return renderTourCardGroup(name, items, index + 1);
+      }).join('')
+    + '</div>';
+}
+function renderTourCardGroup(name, items, tourNum){
+  const tourKey = escAttr(name);
+  const sortedItems = [...items].sort((a,b) => String(a.startDate||'').localeCompare(String(b.startDate||'')));
+  const firstDate = sortedItems[0] ? fmtDate(sortedItems[0].startDate) : '';
+  const lastDate = sortedItems[sortedItems.length - 1] ? fmtDate(sortedItems[sortedItems.length - 1].startDate) : '';
+  const dateText = (firstDate === lastDate || !lastDate) ? firstDate : (firstDate + ' - ' + lastDate);
+
+  let html = '<div class="tour-card-wrapper" style="display: flex; align-items: flex-start; gap: 10px; width: 100%;">'
+    + '<div class="tour-number" style="font-size: 13px; font-weight: 800; color: var(--muted); margin-top: 10px; background: var(--surface2); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); flex-shrink: 0;">' + tourNum + '</div>'
+    + '<article class="tour-card" style="flex: 1; min-width: 0;">'
+    + '<div class="tour-card-top" onclick="toggleTourBody(this)" style="cursor: pointer; user-select: none; border-bottom: none;"><div><div class="tour-day">' + esc(name) + '</div><div class="tour-date">' + dateText + ' (' + items.length + ' day' + (items.length === 1 ? '' : 's') + ' logged)</div></div>'
+    + '<div class="tour-card-actions" onclick="event.stopPropagation()">'
+    + '  <button class="add-day" onclick="openNextDay(&quot;' + tourKey + '&quot;)">&#43; Add Day</button>'
+    + '  <button class="pdf-day" onclick="generateTourPdf(&quot;' + tourKey + '&quot;)">&#128196; PDF</button>'
+    + '</div></div>'
+    + '<div class="tour-card-body" style="display: none; flex-direction: column; gap: 16px;">';
+    
+  items.forEach((t, idx) => {
+    const photos = (t.images || []).filter(Boolean).map(src => '<img class="thumb" src="'+src+'" onclick="viewImg(&quot;'+esc(src)+'&quot;)" title="View photo">').join('') || '<span style="color:var(--muted);font-size:11.5px;">No photos</span>';
+    
+    if (idx > 0) {
+      html += '<div style="border-top: 1px dashed var(--border); margin: 4px 0;"></div>';
+    }
+    
+    html += '<div class="tour-day-section" style="display:flex; flex-direction:column; gap:10px;">'
+      + '  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">'
+      + '    <div style="display:flex; align-items:center; gap:8px;">'
+      + '      <span style="font-size:12px; font-weight:800; color:var(--accent); background:rgba(0,104,181,.08); padding:3px 9px; border-radius:12px;">Day ' + esc(t.dayNo || 1) + '</span>'
+      + '      <span style="font-size:12px; font-weight:700; color:var(--muted);">' + fmtDate(t.startDate) + '</span>'
+      + '    </div>'
+      + '    <div class="tour-card-actions">'
+      + '      <button class="del" onclick="deleteTour(&quot;'+(t._id||t.id)+'&quot;)">&#128465; Delete</button>'
+      + '    </div>'
+      + '  </div>'
+      + '  <div class="tour-customer">' + esc(t.customerName || '-') + '</div>'
+      + '  <div class="tour-meta-grid">'
+      + '    ' + meta('Branch', t.branch) + meta('Model', t.model) + meta('Unit Status', t.unitStatus) + meta('Unit SL No', t.unitSlNo)
+      + '  </div>'
+      + '  <div class="tour-notes">'
+      + '    ' + note('Problem Reported', t.problemReported) + note('Problem Observed', t.problemObserved) + note('Action Taken', t.actionTaken)
+      + '  </div>'
+      + '  <div class="tour-photos">' + photos + '</div>'
+      + '  <div style="font-size:11px; color:var(--muted); font-weight:700;">Added by ' + esc(t.createdBy || '-') + '</div>'
+      + '</div>';
+  });
+  
+  html += '</div></article></div>';
+  return html;
+}
+function toggleTourBody(headerEl) {
+  const card = headerEl.closest('.tour-card');
+  const body = card.querySelector('.tour-card-body');
+  if (body) {
+    if (body.style.display === 'none') {
+      body.style.display = 'flex';
+      headerEl.style.borderBottom = '1px solid var(--border)';
+    } else {
+      body.style.display = 'none';
+      headerEl.style.borderBottom = 'none';
+    }
+  }
+}
+function meta(label,value){ return '<div class="tour-meta"><div class="tour-meta-label">'+esc(label)+'</div><div class="tour-meta-val" title="'+esc(value||'')+'">'+esc(value||'-')+'</div></div>'; }
+function note(label,value){ return '<div class="tour-note"><div class="tour-note-title">'+esc(label)+'</div><div class="tour-note-text" title="'+esc(value||'')+'">'+esc(value||'-')+'</div></div>'; }
+function openTourModal(defaults){
+  clearForm();
+  defaults = defaults || {};
+  document.getElementById('tour-date').value = defaults.startDate || new Date().toISOString().slice(0,10);
+  if(defaults.tourName) document.getElementById('tour-name').value = defaults.tourName;
+  if(defaults.dayNo) document.getElementById('tour-day').value = defaults.dayNo;
+  if(defaults.customerName) document.getElementById('tour-customer').value = defaults.customerName;
+  if(defaults.branch) document.getElementById('tour-branch').value = defaults.branch;
+  if(defaults.model) document.getElementById('tour-model').value = defaults.model;
+  if(defaults.unitStatus) document.getElementById('tour-status').value = defaults.unitStatus;
+  if(defaults.unitSlNo) document.getElementById('tour-slno').value = defaults.unitSlNo;
+  document.getElementById('tour-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById(defaults.tourName ? 'tour-customer' : 'tour-name').focus(),50);
+}
+function openNextDay(tourName){
+  const sameTour = tours.filter(t => String(t.tourName || t.customerName || 'Tour Summary') === String(tourName));
+  const nextDay = sameTour.reduce((max,t) => Math.max(max, Number(t.dayNo) || 1), 0) + 1;
+  const lastItem = sameTour.sort((a,b) => (Number(a.dayNo||1)-Number(b.dayNo||1)))[sameTour.length - 1] || {};
+  openTourModal({
+    tourName: lastItem.tourName || lastItem.customerName || '',
+    dayNo: nextDay,
+    customerName: lastItem.customerName || '',
+    branch: lastItem.branch || '',
+    model: lastItem.model || '',
+    unitStatus: lastItem.unitStatus || '',
+    unitSlNo: lastItem.unitSlNo || ''
+  });
+}
+function closeTourModal(){ document.getElementById('tour-overlay').classList.remove('open'); }
+function clearForm(){ ['tour-name','tour-day','tour-date','tour-customer','tour-branch','tour-model','tour-status','tour-slno','tour-reported','tour-observed','tour-action'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';}); const day=document.getElementById('tour-day'); if(day) day.value='1'; tourImgs=[null,null,null]; renderSlots(); showMsg(''); }
+function renderSlots(){ const wrap=document.getElementById('img-slots'); if(!wrap) return; wrap.innerHTML=[0,1,2].map(i=>'<div class="img-slot" onclick="document.getElementById(&quot;tour-img-'+i+'&quot;).click()"><input type="file" id="tour-img-'+i+'" accept="image/*" style="display:none" onchange="handleImg('+i+',this)">'+(tourImgs[i]?'<img class="img-preview" src="'+tourImgs[i]+'"><button class="img-remove" onclick="removeImg('+i+',event)">&#10005;</button>':'<div class="img-placeholder"><span>&#128247;</span>Add Photo</div>')+'</div>').join(''); }
+function handleImg(i,input){ const file=input.files&&input.files[0]; if(!file) return; if(!/^image\//.test(file.type||'')){ alert('Please upload an image file.'); input.value=''; return; } if(file.size > 3*1024*1024){ alert('Image '+(i+1)+' exceeds 3 MB limit.'); input.value=''; return; } const reader=new FileReader(); reader.onload=e=>{ tourImgs[i]=e.target.result; renderSlots(); }; reader.readAsDataURL(file); }
+function removeImg(i,event){ event.stopPropagation(); tourImgs[i]=null; renderSlots(); }
+async function saveTour(){
+  const payload = { tourName: val('tour-name'), dayNo: Number(val('tour-day')) || 1, startDate: val('tour-date'), customerName: val('tour-customer'), branch: val('tour-branch'), model: val('tour-model'), unitStatus: val('tour-status'), unitSlNo: val('tour-slno'), problemReported: val('tour-reported'), problemObserved: val('tour-observed'), actionTaken: val('tour-action'), images: tourImgs.filter(Boolean) };
+  if(!payload.startDate || !payload.customerName){ showMsg('Required: Start Date and Customer Name.'); return; }
+  const btn=document.getElementById('save-btn'); btn.disabled=true; btn.textContent='Saving...';
+  try{
+    const res = await fetch('/api/tours', { method:'POST', headers:hdrs(), body:JSON.stringify(payload) }); handleAuth(res);
+    const json = await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(json.message || 'HTTP '+res.status);
+    closeTourModal(); await loadTours();
+  }catch(e){ if(e.message !== 'Unauthorized') showMsg('Save failed: '+e.message); }
+  finally{ btn.disabled=false; btn.innerHTML='&#128190; Save Entry'; }
+}
+async function deleteTour(id){ if(!confirm('Delete this tour summary?')) return; const res=await fetch('/api/tours/'+id,{method:'DELETE',headers:hdrs()}); handleAuth(res); await loadTours(); }
+async function generateTourPdf(tourName){
+  const sameTour = tours.filter(t => String(t.tourName || t.customerName || 'Tour Summary') === String(tourName));
+  if(!sameTour.length){ alert('No tour days found.'); return; }
+  const items = sameTour.sort((a,b) => (Number(a.dayNo||1)-Number(b.dayNo||1)) || String(a.startDate||'').localeCompare(String(b.startDate||'')));
+  const jsPDFLib = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+  if(!jsPDFLib){ printTourFallback(tourName, items); return; }
+  const doc = new jsPDFLib('p','mm','a4');
+  const pageW = 210, pageH = 297, margin = 14;
+  let y = 16;
+  const addText = (text, x, yy, opts={}) => {
+    doc.setFont('helvetica', opts.bold ? 'bold' : 'normal');
+    doc.setFontSize(opts.size || 10);
+    doc.setTextColor(opts.color || '#0f2236');
+    const lines = doc.splitTextToSize(String(text || '-'), opts.width || (pageW - margin*2));
+    doc.text(lines, x, yy);
+    return yy + (lines.length * ((opts.size || 10) * 0.42)) + (opts.gap || 4);
+  };
+  const ensure = (need) => { if(y + need > pageH - 16){ doc.addPage(); y = 16; } };
+  
+  items.forEach((t, index) => {
+    if(index > 0) {
+      doc.addPage();
+      y = 16;
+    }
+    doc.setFillColor(0,104,181); doc.rect(0,0,pageW,30,'F');
+    doc.setTextColor('#ffffff'); doc.setFont('helvetica','bold'); doc.setFontSize(17); doc.text('SchillerIndia Tour Summary', margin, 13);
+    doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.text(tourName + ' - Day ' + (t.dayNo || 1), margin, 22);
+    y = 40;
+    doc.setDrawColor(204,221,232); doc.setLineWidth(0.2);
+    const details = [
+      ['Start Date', fmtDate(t.startDate)], ['Customer Name', t.customerName], ['Branch', t.branch], ['Model', t.model],
+      ['Unit Status', t.unitStatus], ['Unit SL No', t.unitSlNo], ['Added By', t.createdBy], ['Generated', new Date().toLocaleDateString('en-IN')]
+    ];
+    details.forEach((row, i) => {
+      const col = i % 2, x = margin + col * 92;
+      if(col === 0 && i) y += 16;
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor('#6b8ca8'); doc.text(row[0], x, y);
+      doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor('#0f2236'); doc.text(doc.splitTextToSize(String(row[1] || '-'), 78), x, y + 5);
+    });
+    y += 23;
+    [['Problem Reported', t.problemReported], ['Problem Observed', t.problemObserved], ['Action Taken', t.actionTaken]].forEach(([title, body]) => {
+      ensure(32);
+      doc.setFillColor(248,250,252); doc.roundedRect(margin, y - 5, pageW - margin*2, 8, 1.5, 1.5, 'F');
+      y = addText(title, margin + 2, y, { bold:true, size:10, color:'#0068b5', gap:3 });
+      y = addText(body || '-', margin + 2, y, { size:10, width:pageW - margin*2 - 4, gap:8 });
+    });
+    const imgs = (t.images || []).filter(Boolean);
+    if(imgs.length){
+      ensure(60);
+      y = addText('Photos', margin, y, { bold:true, size:11, color:'#0068b5', gap:4 });
+      let x = margin;
+      for(let i=0;i<imgs.length;i++){
+        ensure(52);
+        try{
+          const format = imageFormat(imgs[i]);
+          doc.addImage(imgs[i], format, x, y, 54, 42, undefined, 'FAST');
+          x += 60;
+          if(x + 54 > pageW - margin){ x = margin; y += 48; }
+        }catch(_){}
+      }
+    }
+  });
+  const fname = safeFileName(tourName + '-complete-summary-' + (new Date().toISOString().slice(0,10))) + '.pdf';
+  doc.save(fname);
+}
+function imageFormat(src){
+  const m = String(src).match(/^data:image\/(png|jpeg|jpg|webp)/i);
+  if(!m) return 'JPEG';
+  return m[1].toLowerCase() === 'png' ? 'PNG' : m[1].toLowerCase() === 'webp' ? 'WEBP' : 'JPEG';
+}
+function printTourFallback(tourName, items){
+  const w = window.open('', '_blank');
+  let html = '<html><head><title>Tour Summary PDF</title><style>body{font-family:Arial;padding:24px;color:#102336}h1{color:#0068b5}.day-block{page-break-after:always;margin-bottom:20px;border-bottom:2px solid #ccc;padding-bottom:20px;}.box{border:1px solid #ccd;padding:12px;margin:10px 0;border-radius:8px}label{font-weight:bold;color:#60758a}</style></head><body><h1>SchillerIndia Tour Summary - ' + esc(tourName) + '</h1>';
+  items.forEach((t) => {
+    const imgs = (t.images || []).filter(Boolean).map(src => '<img src="'+src+'" style="width:160px;height:120px;object-fit:cover;margin:6px;border:1px solid #ccd;">').join('');
+    html += '<div class="day-block">'
+      + '<h2>Day ' + esc(t.dayNo || 1) + ' (' + fmtDate(t.startDate) + ')</h2>'
+      + '<div class="box"><label>Customer:</label> '+esc(t.customerName||'-')+'<br><label>Branch:</label> '+esc(t.branch||'-')+'<br><label>Model:</label> '+esc(t.model||'-')+'<br><label>Unit Status:</label> '+esc(t.unitStatus||'-')+'<br><label>Unit SL No:</label> '+esc(t.unitSlNo||'-')+'</div>'
+      + '<div class="box"><label>Problem Reported</label><p>'+esc(t.problemReported||'-')+'</p></div>'
+      + '<div class="box"><label>Problem Observed</label><p>'+esc(t.problemObserved||'-')+'</p></div>'
+      + '<div class="box"><label>Action Taken</label><p>'+esc(t.actionTaken||'-')+'</p></div>'
+      + '<div>'+imgs+'</div>'
+      + '</div>';
+  });
+  html += '</body></html>';
+  w.document.write(html);
+  w.document.close(); w.print();
+}
+function safeFileName(s){ return String(s||'tour-summary').toLowerCase().replace(/[^a-z0-9\-]+/g,'-').replace(/^-+|-+$/g,'').slice(0,80) || 'tour-summary'; }
+function viewImg(src){ const ov=document.createElement('div'); ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out'; ov.onclick=()=>ov.remove(); const img=document.createElement('img'); img.src=src; img.style.cssText='max-width:90vw;max-height:88vh;border-radius:12px'; ov.appendChild(img); document.body.appendChild(ov); }
+function val(id){ return (document.getElementById(id)?.value || '').trim(); }
+function setText(id,v){ const el=document.getElementById(id); if(el) el.textContent=v; }
+function showMsg(m){ const el=document.getElementById('tour-msg'); if(!el) return; el.textContent=m; el.style.display=m?'block':'none'; }
+function fmtDate(d){ if(!d)return'-'; const p=String(d).split('T')[0].split('-'); return p.length===3 ? p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Number(p[1])-1]+' '+p[0] : String(d); }
+function clip(s){ s=String(s||'-'); return esc(s.length>55?s.slice(0,55)+'...':s); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escAttr(s){ return esc(s).replace(/'/g,'&#39;'); }
+function logout(){ localStorage.clear(); window.location.href='login.html'; }
+document.getElementById('tour-overlay').addEventListener('click',e=>{ if(e.target.id==='tour-overlay') closeTourModal(); });
+</script>
+</body>
+</html>

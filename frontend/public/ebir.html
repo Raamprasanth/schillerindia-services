@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light'); const token = localStorage.getItem('schiller_token'); if (!token) window.location.href = 'login.html'; })();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SchillerIndia - BIR LIST</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f4f7fa;--surface:#ffffff;--surface2:#eaf1f6;--border:#d0e0ec;
+  --accent:#0077cc;--accent2:#007a8a;--green:#059669;--amber:#d97706;
+  --red:#cc0000;--text:#1a2a3a;--muted:#7a9ab0;--soft:#4a6a8a;--card:#ffffff;
+}
+[data-theme="dark"]{
+  --bg:#0f1621;--surface:#1a2333;--surface2:#1e293b;--border:#2a3a52;
+  --accent:#3b9eff;--accent2:#22d3ee;--green:#10b981;--amber:#f59e0b;
+  --red:#f87171;--text:#e2eaf4;--muted:#4a6a8a;--soft:#7a9ab0;--card:#1a2333;
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
+/* ?"??"? SIDEBAR ?"??"? */
+.sidebar{width:225px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 14px rgba(0,60,120,0.07);}
+.sidebar::-webkit-scrollbar{width:4px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.sidebar-header{padding:16px 16px 12px;border-bottom:1px solid var(--border);background:var(--surface);}
+.logo-wrap{display:flex;align-items:center;gap:9px;}
+.logo-icon{width:34px;height:34px;background:rgba(255,255,255,0.14);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#fff;border:1.5px solid rgba(255,255,255,0.22);}
+.logo-text{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#fff;line-height:1.2;}
+.logo-text span{display:block;font-size:10px;color:rgba(255,255,255,0.55);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;}
+.emp-badge{margin:8px 12px 0;padding:3px 10px;border-radius:20px;font-size:9.5px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;display:inline-block;background:rgba(4,120,87,0.12);color:#059669;border:1px solid rgba(4,120,87,0.2);}
+.sidebar-nav{flex:1;padding:8px 6px;}
+.nav-sec{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;padding:9px 8px 4px;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;color:var(--soft);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.18s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:var(--accent3);color:var(--accent);font-weight:700;border-left:3px solid var(--accent);padding-left:8px;}
+.nav-item .ico{font-size:12px;width:17px;text-align:center;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:9px;}
+.sidebar-footer{padding:11px 12px;border-top:1px solid var(--border);background:var(--surface3);}
+.user-row{display:flex;align-items:center;gap:8px;}
+.user-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#0ea5e9);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;flex-shrink:0;}
+.user-nm{font-size:12px;font-weight:600;color:var(--text);}
+.user-rl{font-size:10px;color:var(--muted);}
+.logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:10.5px;font-weight:600;transition:all 0.2s;}
+.logout-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* ?"??"? MAIN ?"??"? */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;}
+.topbar{padding:13px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:var(--shadow);}
+.breadcrumb{display:flex;align-items:center;gap:5px;font-size:10.5px;margin-bottom:2px;}
+.breadcrumb a{color:var(--muted);text-decoration:none;}
+.breadcrumb a:hover{color:var(--accent);}
+.breadcrumb .sep{color:var(--border2);}
+.page-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);}
+.content{flex:1;padding:20px 24px;overflow-y:auto;}
+
+/* ?"??"? STATS ?"??"? */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;box-shadow:var(--shadow);transition:all 0.2s;position:relative;overflow:hidden;display:grid;grid-template-columns:24px 1fr;column-gap:8px;align-items:start;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:11px 11px 0 0;}
+.sc-blue::before{background:linear-gradient(90deg,#0068b5,#0ea5e9);}
+.sc-amber::before{background:linear-gradient(90deg,#b45309,#d97706);}
+.sc-red::before{background:linear-gradient(90deg,#b91c1c,#dc2626);}
+.sc-green::before{background:linear-gradient(90deg,#047857,#059669);}
+.sc-purple::before{background:linear-gradient(90deg,#5b21b6,#7c3aed);}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.stat-icon{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;grid-column:1;grid-row:1;}
+.si-blue{background:rgba(0,104,181,0.1);}
+.si-amber{background:rgba(180,83,9,0.1);}
+.si-red{background:rgba(185,28,28,0.1);}
+.si-green{background:rgba(4,120,87,0.1);}
+.si-purple{background:rgba(91,33,182,0.1);}
+.stat-label{font-size:8.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;grid-column:2;grid-row:1;align-self:center;}
+.stat-value{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);line-height:1;grid-column:1/span 2;grid-row:2;margin-top:6px;}
+.stat-sub{font-size:9px;color:var(--muted);margin-top:2px;grid-column:1/span 2;grid-row:3;}
+
+/* ?"??"? FILTER STRIP ?"??"? */
+.filter-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:14px;display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;box-shadow:var(--shadow);}
+.filter-field{display:flex;flex-direction:column;gap:5px;}
+.filter-field label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;}
+.f-inp{padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s;min-width:150px;}
+.f-inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,104,181,0.07);}
+.f-select{padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--soft);background:var(--surface);outline:none;cursor:pointer;}
+.f-select:focus{border-color:var(--accent);}
+.filter-actions{display:flex;gap:8px;margin-left:auto;align-items:flex-end;}
+
+/* ?"??"? TABLE CARD ?"??"? */
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);}
+.table-top{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--surface3);}
+.table-title{font-family:'Syne',sans-serif;font-size:13.5px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+.count-chip{background:var(--accent3);color:var(--accent);font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:10px;border:1px solid rgba(0,104,181,0.15);}
+.toolbar-r{display:flex;align-items:center;gap:9px;}
+.show-row{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted);}
+.srch-wrap{position:relative;}
+.srch-wrap input{padding:7px 12px 7px 30px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;width:220px;transition:border-color 0.2s,box-shadow 0.2s;}
+.srch-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,104,181,0.07);}
+.srch-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);}
+
+/* ?"??"? TABLE ?"??"? */
+.table-wrap{overflow-x:auto;}
+table.bir-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:1400px;}
+table.bir-table thead th{padding:9px 10px;font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;text-align:left;border-bottom:2px solid var(--border);background:var(--surface3);white-space:nowrap;cursor:pointer;user-select:none;transition:color 0.2s;}
+table.bir-table thead th:hover{color:var(--accent);}
+table.bir-table thead th.sorted{color:var(--accent);}
+table.bir-table thead th .si{font-size:8px;margin-left:2px;opacity:0.45;}
+table.bir-table thead th.sorted .si{opacity:1;}
+table.bir-table thead th.no-sort{cursor:default;}
+table.bir-table thead th.no-sort:hover{color:var(--muted);}
+table.bir-table tbody td{padding:9px 10px;border-bottom:1px solid rgba(0,60,120,0.05);vertical-align:middle;}
+table.bir-table tbody tr{transition:background 0.13s;cursor:pointer;}
+table.bir-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
+table.bir-table tbody tr:last-child td{border-bottom:none;}
+.table-foot{padding:11px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--muted);flex-wrap:wrap;gap:8px;background:var(--surface3);}
+.pager-row{display:flex;align-items:center;gap:3px;}
+.pager{min-width:28px;height:28px;padding:0 7px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--soft);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.18s;font-family:'Plus Jakarta Sans',sans-serif;}
+.pager:hover{border-color:var(--accent);color:var(--accent);}
+.pager.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.pager:disabled{opacity:0.3;cursor:not-allowed;}
+
+/* ?"??"? PILLS & BADGES ?"??"? */
+.s-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;}
+.s-pill::before{content:'';width:5px;height:5px;border-radius:50%;display:block;}
+.sp-pending{background:var(--amber-bg);color:var(--amber);}.sp-pending::before{background:var(--amber);}
+.sp-closed{background:var(--green-bg);color:var(--green);}.sp-closed::before{background:var(--green);}
+.sp-review{background:var(--purple-bg);color:var(--purple);}.sp-review::before{background:var(--purple);}
+.sp-rejected{background:var(--red-bg);color:var(--red);}.sp-rejected::before{background:var(--red);}
+.div-tag{background:var(--purple-bg);color:var(--purple);padding:2px 7px;border-radius:9px;font-size:9.5px;font-weight:700;display:inline-block;}
+.hw-yes{background:rgba(4,120,87,0.1);color:var(--green);padding:2px 7px;border-radius:9px;font-size:9.5px;font-weight:700;display:inline-block;}
+.hw-no{background:rgba(107,140,168,0.1);color:var(--muted);padding:2px 7px;border-radius:9px;font-size:9.5px;font-weight:700;display:inline-block;}
+.mono{font-family:monospace;font-size:11px;}
+.bir-ref{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:800;background:rgba(0,104,181,0.08);color:var(--accent);border:1px solid rgba(0,104,181,0.18);font-family:monospace;letter-spacing:0.01em;}
+
+/* ?"??"? BUTTONS ?"??"? */
+.btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(0,104,181,0.22);}.btn-primary:hover{background:var(--accent2);}
+.btn-success{background:var(--green);color:#fff;box-shadow:0 2px 8px rgba(4,120,87,0.2);}.btn-success:hover{background:#036644;}
+.btn-export{background:linear-gradient(135deg,var(--teal),var(--accent));color:#fff;box-shadow:0 2px 8px rgba(0,104,181,0.2);}.btn-export:hover{box-shadow:0 4px 14px rgba(0,104,181,0.3);transform:translateY(-1px);}
+.btn-outline{background:none;border:1.5px solid var(--border);color:var(--soft);}.btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+.btn-sm{padding:6px 13px;font-size:12px;}
+.btn-xs{padding:4px 10px;font-size:11px;border-radius:6px;border:1.5px solid var(--border);background:none;color:var(--soft);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;font-weight:600;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;}
+.btn-xs:hover{border-color:var(--accent);color:var(--accent);background:var(--accent3);}
+.btn-xs.update{color:var(--accent);border-color:rgba(0,104,181,0.3);background:var(--accent3);}
+.btn-xs.view{color:var(--teal);border-color:rgba(14,116,144,0.3);background:var(--teal-bg);}
+.btn-xs.close-btn{color:var(--green);border-color:rgba(4,120,87,0.3);background:var(--green-bg);}
+
+/* ?"??"? LOADING / EMPTY ?"??"? */
+.loading-row td{text-align:center;padding:50px 20px;color:var(--muted);font-size:13px;}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:8px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty-st{text-align:center;padding:50px 20px;}
+.ei{font-size:38px;margin-bottom:10px;opacity:0.28;}
+.et{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:5px;}
+.es{font-size:12px;color:var(--muted);}
+
+/* ?"??"? FULL-SCREEN OVERLAY MODAL ?"??"? */
+.overlay{position:fixed;top:0;left:225px;right:0;bottom:0;background:rgba(5,18,38,0.55);backdrop-filter:blur(4px);z-index:500;display:none;align-items:stretch;}
+.overlay.open{display:flex;animation:fadeIn 0.18s ease;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.modal{background:var(--surface);width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;}
+.modal-header{padding:16px 28px;border-bottom:1px solid var(--border);background:var(--surface);z-index:2;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);}
+.modal-close{width:34px;height:34px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:16px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.modal-close:hover{background:var(--red-bg);color:var(--red);border-color:rgba(185,28,28,0.3);}
+
+/* ?"??"? RECORD INFO STRIP ?"??"? */
+.rec-info{display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface3);}
+.rec-info-item{padding:11px 18px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
+.rec-info-item:nth-child(5n){border-right:none;}
+.rec-info-item:nth-child(n+6){border-bottom:none;}
+.rec-info-label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:3px;}
+.rec-info-val{font-size:12.5px;font-weight:700;color:var(--accent);}
+.rec-info-val.normal{color:var(--text);font-weight:600;}
+
+/* ?"??"? MODAL TABS ?"??"? */
+.modal-tab-bar{display:flex;gap:0;border-bottom:2px solid var(--border);background:var(--surface3);flex-shrink:0;}
+.modal-tab{padding:11px 26px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:none;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.2s;display:flex;align-items:center;gap:7px;}
+.modal-tab:hover{color:var(--text);background:var(--surface2);}
+.modal-tab.active{color:var(--accent);border-bottom-color:var(--accent);background:var(--surface);}
+.modal-tab.tab-view.active{color:var(--teal);border-bottom-color:var(--teal);}
+
+.modal-scroll{flex:1;overflow-y:auto;}
+.modal-body{padding:24px 28px;}
+
+/* ?"??"? FORM GRID ?"??"? */
+.form-section{margin-bottom:22px;}
+.form-section-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--muted);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.fg-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.fg-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.fg-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+.span2{grid-column:span 2;}.span3{grid-column:span 3;}.span4{grid-column:span 4;}
+.ff{display:flex;flex-direction:column;gap:5px;}
+.ff label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
+.ff label .req{color:var(--red);}
+.ff input,.ff select,.ff textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s,box-shadow 0.2s;width:100%;}
+.ff input:focus,.ff select:focus,.ff textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,104,181,0.08);}
+.ff input.err,.ff select.err{border-color:var(--red)!important;}
+.ff textarea{resize:none;height:80px;}
+.ff input[readonly]{background:var(--surface3);color:var(--muted);cursor:not-allowed;}
+.ff input::placeholder,.ff textarea::placeholder{color:var(--muted);font-size:11.5px;}
+
+/* ?"??"? DETAIL VIEW ?"??"? */
+.detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.detail-item{background:var(--surface3);border:1px solid var(--border2);border-radius:9px;padding:11px 13px;}
+.detail-item.span2{grid-column:span 2;}
+.detail-item.span4{grid-column:span 4;}
+.detail-lbl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:4px;}
+.detail-val{font-size:13px;font-weight:600;color:var(--text);line-height:1.5;word-break:break-word;white-space:normal;}
+.detail-val.accent{color:var(--accent);}
+
+.modal-footer{padding:16px 28px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;justify-content:flex-end;background:var(--surface3);flex-shrink:0;}
+.form-msg{font-size:11.5px;font-weight:600;padding:7px 13px;border-radius:7px;margin-right:auto;display:none;}
+.form-msg.ok{display:block;background:var(--green-bg);color:var(--green);border:1px solid rgba(4,120,87,0.2);}
+.form-msg.err{display:block;background:var(--red-bg);color:var(--red);border:1px solid rgba(185,28,28,0.18);}
+
+/* ?"??"? TOAST ?"??"? */
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:700;display:flex;flex-direction:column;gap:7px;}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:11px 15px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:9px;min-width:230px;animation:fadeUp 0.28s ease;box-shadow:0 8px 22px rgba(0,0,0,0.1);}
+.toast.ok{border-color:rgba(4,120,87,0.35);}.toast.ok .td{background:var(--green);}
+.toast.err{border-color:rgba(185,28,28,0.35);}.toast.err .td{background:var(--red);}
+.toast.info{border-color:rgba(0,104,181,0.35);}.toast.info .td{background:var(--accent);}
+.td{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+/* EBIR Section Styles */
+.ebir-section-frozen{position:relative;border:1.5px solid rgba(0,119,204,0.18);border-radius:12px;padding:20px;margin-top:22px;background:linear-gradient(135deg,rgba(0,119,204,0.03),rgba(8,145,178,0.04));}
+.ebir-section-frozen::before{content:'🔒 LOCKED';position:absolute;top:-10px;right:16px;background:linear-gradient(135deg,var(--accent),var(--teal));color:#fff;font-size:9px;font-weight:700;letter-spacing:0.1em;padding:2px 10px;border-radius:10px;}
+.ebir-section-frozen .ff input,.ebir-section-frozen .ff select,.ebir-section-frozen .ff textarea{background:var(--surface3)!important;color:var(--muted)!important;cursor:not-allowed;}
+.ebir-section-unlocked{position:relative;border:1.5px solid rgba(5,150,105,0.22);border-radius:12px;padding:20px;margin-top:22px;background:linear-gradient(135deg,rgba(5,150,105,0.03),rgba(5,150,105,0.05));}
+.ebir-section-unlocked::before{content:'?? UNLOCKED';position:absolute;top:-10px;right:16px;background:linear-gradient(135deg,var(--green),#10b981);color:#fff;font-size:9px;font-weight:700;letter-spacing:0.1em;padding:2px 10px;border-radius:10px;}
+.ebir-section-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.ebir-section-title .ebir-dot{width:6px;height:6px;border-radius:50%;}
+
+    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
+    .nav-group-toggle{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;color:var(--soft,#3d6480);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;margin-bottom:3px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;}
+.nav-group-toggle:hover{background:var(--surface2,#e8f0f7);color:var(--text,#0f2236);}
+.nav-group-toggle .ico{font-size:12px;width:17px;text-align:center;flex-shrink:0;}
+.nav-group-toggle .caret{margin-left:auto;font-size:10px;transition:transform .22s ease;}
+.nav-group-toggle.open .caret{transform:rotate(90deg);}
+.nav-children{max-height:0;overflow:hidden;transition:max-height .28s ease;margin-bottom:3px;}
+.nav-children.open{max-height:400px;}
+.nav-sub .nav-item{padding-left:28px;font-size:11.5px;}
+</style>
+  <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="employee-theme.css">
+  <script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <script src="brand-logo.js" defer></script>
+</head>
+<body>
+
+<!-- ----------- UPDATE MODAL ----------- -->
+<div class="overlay" id="update-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-title">&#9998; Update BIR Record</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:3px;" id="modal-sub">Fill in the update fields and save.</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()" title="Close (Esc)">&#10005;</button>
+    </div>
+
+    <div class="modal-scroll">
+      <div class="modal-body">
+        <input type="hidden" id="upd-id"/>
+
+        <!-- FQC Section (LOCKED - read-only, shows all FQC data) -->
+        <div class="ebir-section-frozen" id="fqc-section">
+          <div class="ebir-section-title"><span class="ebir-dot" style="background:var(--accent)"></span> FQC Section</div>
+          <div class="fg-4">
+            <div class="ff"><label>Division</label><input type="text" id="upd-division" disabled/></div>
+            <div class="ff"><label>Unit Inward Date</label><input type="date" id="upd-inward-date" disabled/></div>
+            <div class="ff"><label>Invoice Date</label><input type="date" id="upd-invoice-date" disabled/></div>
+            <div class="ff"><label>BIR Reference No.</label><input type="text" id="upd-bir-ref" disabled/></div>
+            <div class="ff"><label>Supplier</label><input type="text" id="upd-supplier" disabled/></div>
+            <div class="ff"><label>Model</label><input type="text" id="upd-model" disabled/></div>
+            <div class="ff"><label>Configuration</label><input type="text" id="upd-configuration" disabled/></div>
+            <div class="ff"><label>Received Qty</label><input type="text" id="upd-received-qty" disabled/></div>
+            <div class="ff"><label>Unit Serial No.</label><input type="text" id="upd-serial" disabled/></div>
+            <div class="ff"><label>Invoice No.</label><input type="text" id="upd-invoice-no" disabled/></div>
+            <div class="ff"><label>Previous Software Version</label><input type="text" id="upd-prev-sw" disabled/></div>
+            <div class="ff"><label>Present Software Version</label><input type="text" id="upd-pres-sw" disabled/></div>
+            <div class="ff"><label>Accessory Details</label><input type="text" id="upd-acc-details" disabled/></div>
+            <div class="ff"><label>Accessory Change Remarks</label><input type="text" id="upd-acc-remarks" disabled/></div>
+            <div class="ff"><label>User Manual Update</label><input type="text" id="upd-manual-update" disabled/></div>
+            <div class="ff"><label>FQC Remarks</label><input type="text" id="upd-fqc-remarks-disp" disabled/></div>
+            <div class="ff">
+              <label>Status</label>
+              <select id="upd-final-status">
+                <option value="Pending">Pending</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Under Review">Under Review</option>
+                <option value="Closed">Closed</option>
+                <option value="Approved">Approved</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Service / Engineer Section (UNLOCKED - editable) -->
+        <div class="ebir-section-unlocked" id="service-section">
+          <div class="ebir-section-title"><span class="ebir-dot" style="background:var(--green)"></span> Service Section</div>
+          <div class="fg-4">
+            <div class="ff"><label>SC Engineer</label><input type="text" id="upd-sc-engineer" placeholder="SC engineer name"/></div>
+            <div class="ff"><label>SC Inward Date</label><input type="date" id="upd-sc-inward"/></div>
+            <div class="ff"><label>SC Observation</label><input type="text" id="upd-sc-obs" placeholder="Observation notes..."/></div>
+            <div class="ff"><label>SC Action Plan</label><input type="text" id="upd-sc-action" placeholder="Action plan details..."/></div>
+            <div class="ff"><label>Tentative Date</label><input type="date" id="upd-tent-date"/></div>
+            <div class="ff"><label>Ship Date to FQC</label><input type="date" id="upd-ship-fqc"/></div>
+            <div class="ff"><label>Defective Unit Received Date</label><input type="date" id="upd-def-recv"/></div>
+            <div class="ff"><label>Replacement Ship Date</label><input type="date" id="upd-rep-ship"/></div>
+            <div class="ff"><label>Hardware Changes</label><input type="text" id="upd-hw-changes" placeholder="Hardware change status"/></div>
+            <div class="ff"><label>Hardware Change Remarks</label><input type="text" id="upd-hw-remarks" placeholder="Hardware change details"/></div>
+            <div class="ff"><label>Service Manual Update</label>
+              <select id="upd-service-manual">
+                <option value="">Select</option><option>Yes</option><option>No</option><option>NA</option>
+              </select>
+            </div>
+            <div class="ff"><label>Technical Remarks</label><input type="text" id="upd-tech-remarks" placeholder="Technical notes"/></div>
+            <div class="ff"><label>Software Change Remarks</label><input type="text" id="upd-sw-remarks" placeholder="Software change details"/></div>
+            <div class="ff"><label>SC Final Remarks</label><input type="text" id="upd-fqc-remarks" placeholder="SC final remarks..."/></div>
+            <div class="ff"><label>FQC Observation</label><input type="text" id="upd-fqc-obs" placeholder="FQC observation notes..."/></div>
+          </div>
+        </div>
+
+        <!-- Product Team Section (LOCKED) -->
+        <div class="ebir-section-frozen" id="product-section">
+          <div class="ebir-section-title"><span class="ebir-dot" style="background:var(--purple)"></span> Product Team Section</div>
+          <div class="fg-4">
+            <div class="ff"><label>TS Team Verification Date</label><input type="date" id="upd-ts-date" disabled/></div>
+            <div class="ff"><label>PS Engineer</label><input type="text" id="upd-ps-engineer" disabled/></div>
+            <div class="ff"><label>CNR / Technews Circulation</label>
+              <select id="upd-cnr" disabled>
+                <option value="">Select...</option>
+                <option value="Required">Required</option>
+                <option value="Not Required">Not Required</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+            <div class="ff"><label>CNR/Technews Reference No.</label><input type="text" id="upd-cnr-ref" disabled/></div>
+            <div class="ff"><label>CNR/Technews Release Date</label><input type="date" id="upd-cnr-date" disabled/></div>
+            <div class="ff"><label>PS Team Verification Date</label><input type="date" id="upd-ps-date" disabled/></div>
+            <div class="ff"><label>Approved Date</label><input type="date" id="upd-approved-date" disabled/></div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /modal-scroll -->
+
+    <div class="modal-footer">
+      <div class="form-msg" id="upd-msg"></div>
+      <button class="btn btn-outline btn-sm" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-success" id="upd-save-btn" onclick="submitUpdate()">&#128190; Save Update</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- === SIDEBAR === -->
+<aside class="sidebar">
+  <div class="sidebar-header" style="background:linear-gradient(145deg,#002d5c,#0068b5);">
+    <div class="logo-wrap">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="logo-text" style="color:#fff;">SchillerIndia<span style="color:rgba(255,255,255,0.55);">Services Portal</span></div>
+    </div>
+  </div>
+  <div style="padding:7px 12px 0;"><span class="emp-badge">Employee</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-sec">Operations</div>
+    <a class="nav-item" href="employee-dashboard.html"><span class="ico">&#128202;</span> Dashboard</a>
+    <a class="nav-item" href="employee-service-list.html"><span class="ico">&#128225;</span> Services</a>
+    <a class="nav-item" href="emppendingfrn.html"><span class="ico">&#128221;</span> Pending FRN</a>
+    <a class="nav-item" href="employee-ob-pending.html"><span class="ico">&#128230;</span> Estimation Pending</a>
+    <a class="nav-item" href="empestpend.html"><span class="ico">&#128203;</span> SO Pending</a>
+    <a class="nav-item" href="empunderep.html"><span class="ico">&#128736;&#65039;</span> Under Repair</a>
+    <a class="nav-item" href="completed-frn.html"><span class="ico">&#9989;</span> Completed FRN</a>
+    <a class="nav-item" href="Emp-scrap-list.html"><span class="ico">&#9888;&#65039;</span> Supplier Warranty</a>
+    <a class="nav-item" href="sc-completed-frn.html"><span class="ico">&#128257;</span> External Repair</a>
+    <button class="nav-group-toggle" type="button" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');"><span class="ico">&#128193;</span><span>Records</span><span class="caret">&#9656;</span></button>
+    <div class="nav-children nav-sub">
+    <a class="nav-item" href="ecall.html"><span class="ico">&#128222;</span> Call Register</a>
+    <a class="nav-item" href="eclose.html"><span class="ico">&#9989;</span> Closed Calls</a>
+    <a class="nav-item" href="eprfob.html"><span class="ico">&#128203;</span> PRF/OB Register</a>
+    <a class="nav-item" href="ecr.html"><span class="ico">&#128274;</span> Closed PRF/OB Register</a>
+    <a class="nav-item" href="tours.html"><span class="ico">&#128205;</span> Tour Summary</a>
+      <a class="nav-item" href="dailyw.html"><span class="ico">&#128197;</span> Daily Work</a>
+    </div>
+    <button class="nav-group-toggle open" type="button" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');"><span class="ico">&#128230;</span><span>Inventory</span><span class="caret">&#9656;</span></button>
+    <div class="nav-children nav-sub open">
+    <a class="nav-item" href="emp-non-saleable.html"><span class="ico">&#128230;</span> Non Saleable</a>
+    <a class="nav-item" href="emp-saleables.html"><span class="ico">&#128176;</span> Saleables</a>
+    <a class="nav-item active" href="ebir.html"><span class="ico">&#128203;</span> BIR LIST</a>
+    <a class="nav-item" href="ecbir.html"><span class="ico">&#128193;</span> Closed BIR</a>
+      <a class="nav-item" href="elt.html"><span class="ico">&#128451;</span> Loan Items</a>
+      <a class="nav-item" href="ecli.html"><span class="ico">&#128193;</span> Closed Loan Item</a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="user-av" id="emp-avatar">E</div>
+      <div>
+        <div class="user-nm" id="emp-name">Employee</div>
+        <div class="user-rl" id="emp-desig">Field Engineer</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<!-- =========== MAIN =========== -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="employee-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
+        <span>Inventory</span><span class="sep">&#8250;</span>
+        <span>BIR LIST</span>
+      </div>
+      <div class="page-title">Batch Inspection Report</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+      <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
+      <button class="btn btn-outline btn-sm" onclick="loadData()">&#8635; Refresh</button>
+      <button class="btn btn-export btn-sm" onclick="exportCSV()">&#128228; Export CSV</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card sc-blue"><div class="stat-icon si-blue">&#128203;</div><div class="stat-label">Total BIR</div><div class="stat-value" id="s-total">&#8212;</div><div class="stat-sub">All entries</div></div>
+      <div class="stat-card sc-amber"><div class="stat-icon si-amber">&#9203;</div><div class="stat-label">Pending</div><div class="stat-value" id="s-pending">&#8212;</div><div class="stat-sub">Awaiting action</div></div>
+      <div class="stat-card sc-green"><div class="stat-icon si-green">&#9989;</div><div class="stat-label">Closed</div><div class="stat-value" id="s-closed">&#8212;</div><div class="stat-sub">Completed</div></div>
+      <div class="stat-card sc-purple"><div class="stat-icon si-purple">&#128295;</div><div class="stat-label">Under Review</div><div class="stat-value" id="s-review">&#8212;</div><div class="stat-sub">Being processed</div></div>
+    </div>
+
+    <!-- DATE FILTER -->
+    <div class="filter-card">
+      <div class="filter-field">
+        <label>From Date</label>
+        <input type="date" class="f-inp" id="fl-from" onchange="applyFilters()"/>
+      </div>
+      <div class="filter-field">
+        <label>To Date</label>
+        <input type="date" class="f-inp" id="fl-to" onchange="applyFilters()"/>
+      </div>
+      <div class="filter-field">
+        <label>Division</label>
+        <select class="f-select" id="fl-division" onchange="applyFilters()">
+          <option value="">All Divisions</option>
+          <option>PATIENT MONITORS</option><option>SAG</option><option>GANSHORN</option><option>VENTILATOR</option><option>DEFIBRILLATOR</option><option>ECG</option><option>ULTRASOUND</option><option>ANAESTHESIA</option><option>SHIPL</option><option>INJECTOR</option><option>RADIOLOGY</option><option>HOLTER</option>
+          <option>DEFIBRILLATOR</option><option>ECG</option><option>SYRINGE PUMP</option>
+          <option>INFUSION PUMP</option><option>ULTRASOUND</option><option>ANAESTHESIA</option>
+          <option>RADIOLOGY</option><option>OTHER</option>
+        </select>
+      </div>
+      <div class="filter-field">
+        <label>Status</label>
+        <select class="f-select" id="fl-status" onchange="applyFilters()">
+          <option value="">All Status</option>
+          <option>Pending</option><option>Closed</option><option>Under Review</option><option>Rejected</option>
+        </select>
+      </div>
+      <div class="filter-field">
+        <label>HW Changes</label>
+        <select class="f-select" id="fl-hw" onchange="applyFilters()">
+          <option value="">All</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+          <option value="NA">NA</option>
+        </select>
+      </div>
+      <div class="filter-actions">
+        <button class="btn btn-outline btn-sm" onclick="clearFilters()">&#10005; Clear</button>
+        <button class="btn btn-export btn-sm" onclick="exportCSV()">&#128228; Export</button>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-card">
+      <div class="table-top">
+        <div class="table-title">BIR List <span class="count-chip" id="count-chip">&#8212; entries</span></div>
+        <div class="toolbar-r">
+          <div class="show-row">
+            Show
+            <select class="f-select" id="per-page" style="padding:5px 8px;min-width:60px;" onchange="renderTable()">
+              <option>10</option><option>25</option><option>50</option><option>100</option>
+            </select>
+            entries
+          </div>
+          <div class="srch-wrap">
+            <span class="srch-ico">&#128269;</span>
+            <input type="text" id="tbl-search" placeholder="Search BIR Ref, model, division..." oninput="applyFilters()"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="bir-table">
+          <thead><tr>
+            <th style="width:42px;" class="no-sort">#</th>
+            <th onclick="sortBy('inwardDate')">Inward Date <span class="si">&#8597;</span></th>
+            <th onclick="sortBy('division')">Division <span class="si">&#8597;</span></th>
+            <th onclick="sortBy('model')">Model <span class="si">&#8597;</span></th>
+            <th onclick="sortBy('configuration')">Configuration <span class="si">&#8597;</span></th>
+            <th onclick="sortBy('receivedQty')">Received Qty <span class="si">&#8597;</span></th>
+            <th onclick="sortBy('prevSwVersion')">Previous Software Version <span class="si">&#8597;</span></th>
+            <th onclick="sortBy('hwChanges')">Hardware Changes <span class="si">&#8597;</span></th>
+            <th>Accessory Details</th>
+            <th onclick="sortBy('cnrCirculation')">CNR/Technews Circulation <span class="si">&#8597;</span></th>
+            <th onclick="sortBy('birRefNo')">BIR Ref No. <span class="si">&#8597;</span></th>
+            <th onclick="sortBy('finalStatus')">Status <span class="si">&#8597;</span></th>
+            <th class="no-sort">Action</th>
+          </tr></thead>
+          <tbody id="bir-tbody">
+            <tr class="loading-row"><td colspan="13"><span class="spin"></span>Loading from database...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-foot">
+        <span id="tbl-info">&#8212;</span>
+        <div class="pager-row" id="tbl-pagination"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API = '';
+let DATA = [], filtered = [], sortKey = 'inwardDate', sortDir = -1, currentPage = 1;
+let activeTab = 'update';
+
+/* ?"??"? INIT ?"??"? */
+(function init(){
+  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  if(u.name){
+    (document.getElementById('admin-name')||{}).textContent = u.name;
+    (document.getElementById('admin-avatar')||{}).textContent = u.name.charAt(0).toUpperCase();
+    (document.getElementById('admin-role')||{}).textContent = u.role === 'admin' ? 'Administrator' : 'Field Engineer';
+  }
+  (document.getElementById('topbar-date')||{}).textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  loadData();
+})();
+
+function getToken(){ return localStorage.getItem('schiller_token') || ''; }
+function authHeaders(){ return { 'Content-Type':'application/json', Authorization:'Bearer '+getToken() }; }
+function handleUnauth(res){
+  if(res.status===401||res.status===403){
+    showToast('Session expired - please log in again.','err');
+    setTimeout(()=>window.location.href='login.html',1500);
+    throw new Error('Unauthorized');
+  }
+}
+
+/* ?"??"? LOAD ?"??"? */
+async function loadData(){
+  setLoading();
+  try{
+    const res = await fetch(API+'/api/emp/bir',{headers:authHeaders()});
+    handleUnauth(res);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    DATA = await res.json();
+    DATA = DATA.map(d=>({...d, id: d._id||d.id}));
+    applyFilters();
+    updateStats();
+    const b = document.getElementById('sidebar-bir-count');
+    if(b) b.textContent = DATA.length;
+    showToast('Loaded '+DATA.length+' record'+(DATA.length!==1?'s':''),'info');
+  }catch(e){
+    if(e.message === 'Unauthorized') return;
+    /* Demo data if API unavailable */
+    DATA = generateDemoData();
+    applyFilters();
+    updateStats();
+    const b = document.getElementById('sidebar-bir-count');
+    if(b) b.textContent = DATA.length;
+    showToast('Demo mode - connect API for live data','info');
+  }
+}
+
+function generateDemoData(){
+  const divs = ['PATIENT MONITORS','SAG','VENTILATOR','DEFIBRILLATOR','ECG','ULTRASOUND','ANAESTHESIA'];
+  const models = ['BLT CNS','TS III','TS ULTRA Q5','TS TOUCH MINI','ETCO2 MODULE','MPS','P15'];
+  const configs = ['DUAL DISPLAY','5P','5P+A+WOT','5P+N+WOT+VGA','CAPNO CO2','MPS-P02-5P+12lead'];
+  const statuses = ['Pending','Pending','Pending','Closed','Under Review','Closed','Rejected'];
+  const hwVals = ['Yes','No','NA'];
+  const swVers = ['V02.00.00.RE01','V.1.1.0.0109','1.0.5-DRE','1.3.0-CRM','NA','V1.2.4'];
+  const accDetails = ['std acc recd','std acc recd without skin temp probe','Analog/Digital 12 pin probe available','std acc recd - VGA cable missing'];
+  const cnrVals = ['Not Required','Required','Completed','In Progress'];
+  const data = [];
+  for(let i=1;i<=28;i++){
+    const st = statuses[Math.floor(Math.random()*statuses.length)];
+    const d = new Date(2026,Math.floor(Math.random()*4),Math.floor(Math.random()*28)+1);
+    data.push({
+      _id:'demo_'+i, id:i,
+      inwardDate: d.toISOString().slice(0,10),
+      division: divs[Math.floor(Math.random()*divs.length)],
+      model: models[Math.floor(Math.random()*models.length)],
+      configuration: configs[Math.floor(Math.random()*configs.length)],
+      receivedQty: Math.floor(Math.random()*50)+1+'nos',
+      prevSwVersion: swVers[Math.floor(Math.random()*swVers.length)],
+      hwChanges: hwVals[Math.floor(Math.random()*hwVals.length)],
+      accessoryDetails: accDetails[Math.floor(Math.random()*accDetails.length)],
+      cnrCirculation: cnrVals[Math.floor(Math.random()*cnrVals.length)],
+      birRefNo: 'OEM/'+String(d.getDate()).padStart(2,'0')+String(d.getMonth()+1).padStart(2,'0')+'26/'+String(i).padStart(2,'0'),
+      finalStatus: st,
+      scInwardDate: '',
+      scObservation: '',
+      requiredParts: '',
+      rootCause: '',
+      scActionPlan: '',
+      tentativeDate: '',
+      shipDateToFqc: '',
+      fqcFinalRemarks: '',
+      fqcObservation: st==='Closed'?'Inspection passed. Unit functional.':'',
+      defUnitReceivedDate: '',
+      replacementShipDate: '',
+    });
+  }
+  return data;
+}
+
+/* ?"??"? STATS ?"??"? */
+function updateStats(){
+  (document.getElementById('s-total')||{}).textContent = DATA.length;
+  (document.getElementById('s-pending')||{}).textContent = DATA.filter(d=>d.finalStatus==='Pending').length;
+  (document.getElementById('s-closed')||{}).textContent = DATA.filter(d=>d.finalStatus==='Closed').length;
+  (document.getElementById('s-review')||{}).textContent = DATA.filter(d=>d.finalStatus==='Under Review').length;
+}
+
+/* ?"??"? FILTERS ?"??"? */
+function clearFilters(){
+  ['fl-from','fl-to','fl-division','fl-status','fl-hw','tbl-search'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  applyFilters();
+}
+function divisionMatches(recordDivision, selectedDivision){
+  if(!selectedDivision) return true;
+  const record = String(recordDivision || '').trim().toUpperCase();
+  const selected = String(selectedDivision || '').trim().toUpperCase();
+  return record === selected;
+}
+function applyFilters(){
+  const q = document.getElementById('tbl-search').value.toLowerCase();
+  const from = document.getElementById('fl-from').value;
+  const to = document.getElementById('fl-to').value;
+  const div = document.getElementById('fl-division').value;
+  const st = document.getElementById('fl-status').value;
+  const hw = document.getElementById('fl-hw').value;
+  filtered = DATA.filter(d=>
+    (!q || ((d.birRefNo||'')+' '+(d.model||'')+' '+(d.division||'')+' '+(d.configuration||'')).toLowerCase().includes(q)) &&
+    (!from || (d.inwardDate||'') >= from) &&
+    (!to   || (d.inwardDate||'') <= to) &&
+    divisionMatches(d.division, div) &&
+    (!st   || d.finalStatus === st) &&
+    (!hw   || d.hwChanges === hw)
+  );
+  sortArr(); currentPage = 1; renderTable();
+}
+
+function sortBy(k){
+  if(sortKey===k) sortDir*=-1; else {sortKey=k; sortDir=-1;}
+  sortArr(); renderTable();
+}
+function sortArr(){
+  filtered.sort((a,b)=>{
+    const av=a[sortKey]??'', bv=b[sortKey]??'';
+    if(typeof av==='number'&&typeof bv==='number') return (av-bv)*sortDir;
+    return String(av).toLowerCase()<String(bv).toLowerCase()?-sortDir:String(av).toLowerCase()>String(bv).toLowerCase()?sortDir:0;
+  });
+}
+
+/* ?"??"? RENDER ?"??"? */
+function statusPill(s){
+  const m = {Pending:'sp-pending',Closed:'sp-closed','Under Review':'sp-review',Rejected:'sp-rejected'};
+  return '<span class="s-pill '+(m[s]||'sp-pending')+'">'+esc(s||'Pending')+'</span>';
+}
+function hwBadge(v){
+  if(!v||v==='NA') return '<span class="hw-no">NA</span>';
+  return v.toLowerCase()==='yes'?'<span class="hw-yes">Yes</span>':'<span class="hw-no">No</span>';
+}
+function renderTable(){
+  const perPage = parseInt(document.getElementById('per-page').value)||10;
+  const total = filtered.length;
+  const pages = Math.max(1,Math.ceil(total/perPage));
+  if(currentPage>pages) currentPage=pages;
+  const slice = filtered.slice((currentPage-1)*perPage,currentPage*perPage);
+  (document.getElementById('count-chip')||{}).textContent = total+' entr'+(total===1?'y':'ies');
+  const tbody = document.getElementById('bir-tbody');
+  if(!total){
+    tbody.innerHTML = '<tr><td colspan="13"><div class="empty-st"><div class="ei">&#128203;</div><div class="et">'+(DATA.length?'No records match the current filters':'No BIR entries found')+'</div><div class="es">'+(DATA.length?'Try clearing the filters.':'BIR entries will appear here.')+'</div></div></td></tr>';
+    (document.getElementById('tbl-info')||{}).textContent = '0 entries';
+    document.getElementById('tbl-pagination').innerHTML = '';
+    return;
+  }
+  tbody.innerHTML = slice.map((d,i)=>{
+    const rid = d._id||d.id;
+    return '<tr onclick="openModal(\''+rid+'\')">' +
+      '<td style="color:var(--muted);font-family:monospace;font-size:10.5px;">'+(((currentPage-1)*perPage)+i+1)+'</td>' +
+      '<td style="font-size:11px;color:var(--soft);white-space:nowrap;">'+fmtDate(d.inwardDate)+'</td>' +
+      '<td><span class="div-tag">'+esc(d.division||'&#8212;')+'</span></td>' +
+      '<td style="font-weight:700;color:var(--text);">'+esc(d.model||'&#8212;')+'</td>' +
+      '<td style="font-size:11px;color:var(--soft);max-width:120px;overflow:hidden;text-overflow:ellipsis;" title="'+esc(d.configuration||'')+'">'+esc(d.configuration||'&#8212;')+'</td>' +
+      '<td style="font-weight:600;color:var(--accent);">'+esc(d.receivedQty||'&#8212;')+'</td>' +
+      '<td style="font-family:monospace;font-size:11px;color:var(--soft);">'+esc(d.prevSwVersion||'NA')+'</td>' +
+      '<td>'+hwBadge(d.hwChanges)+'</td>' +
+      '<td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--soft);" title="'+esc(d.accessoryDetails||'')+'">'+esc((d.accessoryDetails||'&#8212;').slice(0,45))+((d.accessoryDetails||'').length>45?'&#8230;':'')+'</td>' +
+      '<td><span style="font-size:11px;color:var(--soft);">'+esc(d.cnrCirculation||'&#8212;')+'</span></td>' +
+      '<td><span class="bir-ref">'+esc(d.birRefNo||'&#8212;')+'</span></td>' +
+      '<td>'+statusPill(d.finalStatus)+'</td>' +
+      '<td onclick="event.stopPropagation()">' +
+        '<div style="display:flex;gap:5px;">' +
+          '<button class="btn-xs view" onclick="openModal(\''+rid+'\',\'view\')">&#128065; View</button>' +
+          '<button class="btn-xs update" onclick="openModal(\''+rid+'\',\'update\')" title="Update">&#9999;&#65039;</button>' +
+        '</div>' +
+      '</td>' +
+    '</tr>';
+  }).join('');
+  const fr = total?(currentPage-1)*perPage+1:0;
+  (document.getElementById('tbl-info')||{}).textContent = total ? 'Showing '+fr+' to '+Math.min(currentPage*perPage,total)+' of '+total+' entr'+(total===1?'y':'ies') : '0 entries';
+  renderPagination(pages);
+}
+
+/* ?"??"? MODAL ?"??"? */
+function openModal(id){
+  const d = DATA.find(x=>(x._id||x.id)===id); if(!d) return;
+  (document.getElementById('modal-title')||{}).textContent = '&#9998; Update BIR Record';
+  (document.getElementById('modal-sub')||{}).textContent = (d.birRefNo||'') + ' - ' + (d.model||'');
+  document.getElementById('upd-id').value = id;
+  const set = (elId,val) => { const el=document.getElementById(elId); if(el) el.value = val||''; };
+
+  // FQC Section (locked - display only)
+  set('upd-division', d.division);
+  set('upd-inward-date', d.inwardDate);
+  set('upd-invoice-date', d.invoiceDate);
+  set('upd-bir-ref', d.birRefNo);
+  set('upd-supplier', d.supplier);
+  set('upd-model', d.model);
+  set('upd-configuration', d.configuration);
+  set('upd-received-qty', d.receivedQty);
+  set('upd-serial', d.serial);
+  set('upd-invoice-no', d.invoiceNo);
+  set('upd-prev-sw', d.prevSwVersion);
+  set('upd-pres-sw', d.presSwVersion);
+  set('upd-acc-details', d.accessoryDetails);
+  set('upd-acc-remarks', d.accChangeRemarks);
+  set('upd-hw-changes', d.hwChanges);
+  set('upd-hw-remarks', d.hwChangeRemarks);
+  set('upd-sw-remarks', d.swChangeRemarks);
+  set('upd-manual-update', d.userManualUpdate);
+  set('upd-fqc-remarks-disp', d.fqcRemarks);
+  set('upd-final-status', d.finalStatus||'Pending');
+
+  // Service Section (unlocked - editable)
+  const currentUser = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  set('upd-sc-engineer', d.scEngineer || currentUser.name || '');
+  set('upd-sc-inward', d.scInwardDate);
+  set('upd-sc-obs', d.scObservation);
+  set('upd-sc-action', d.scActionPlan);
+  set('upd-tent-date', d.tentativeDate);
+  set('upd-ship-fqc', d.shipDateToFqc);
+  set('upd-def-recv', d.defUnitReceivedDate);
+  set('upd-rep-ship', d.replacementShipDate);
+  set('upd-service-manual', d.serviceManualUpdate);
+  set('upd-tech-remarks', d.techRemarks);
+  set('upd-cnr', d.cnrCirculation);
+  set('upd-fqc-remarks', d.fqcFinalRemarks);
+  set('upd-final-status', d.finalStatus||'Pending');
+  set('upd-fqc-obs', d.fqcObservation);
+
+  // Product Team Section (locked)
+  set('upd-ts-date', d.tsVerificationDate);
+  set('upd-ps-engineer', d.psEngineer);
+  set('upd-cnr-ref', d.cnrRefNo);
+  set('upd-cnr-date', d.cnrReleaseDate);
+  set('upd-ps-date', d.psVerificationDate);
+  set('upd-approved-date', d.approvedDate);
+
+  clearMsg();
+  document.getElementById('update-overlay').classList.add('open');
+  document.querySelector('.modal-scroll').scrollTop = 0;
+}
+
+function closeModal(){ document.getElementById('update-overlay').classList.remove('open'); }
+
+/* -- SUBMIT -- */
+async function submitUpdate(){
+  const id = document.getElementById('upd-id').value;
+  let finalStatus = document.getElementById('upd-final-status').value;
+  const msg = document.getElementById('upd-msg');
+
+  const editPayload = {
+    scInwardDate:        document.getElementById('upd-sc-inward').value,
+    scObservation:       document.getElementById('upd-sc-obs').value.trim(),
+    scActionPlan:        document.getElementById('upd-sc-action').value.trim(),
+    tentativeDate:       document.getElementById('upd-tent-date').value,
+    shipDateToFqc:       document.getElementById('upd-ship-fqc').value,
+    hwChanges:           document.getElementById('upd-hw-changes').value.trim(),
+    hwChangeRemarks:     document.getElementById('upd-hw-remarks').value.trim(),
+    swChangeRemarks:     document.getElementById('upd-sw-remarks').value.trim(),
+    fqcFinalRemarks:     document.getElementById('upd-fqc-remarks').value.trim(),
+    finalStatus:         finalStatus,
+    defUnitReceivedDate: document.getElementById('upd-def-recv').value,
+    replacementShipDate: document.getElementById('upd-rep-ship').value,
+    fqcObservation:      document.getElementById('upd-fqc-obs').value.trim(),
+    scEngineer:          document.getElementById('upd-sc-engineer').value.trim() || (JSON.parse(localStorage.getItem('schiller_user') || '{}').name || ''),
+    serviceManualUpdate: document.getElementById('upd-service-manual').value,
+    techRemarks:         document.getElementById('upd-tech-remarks').value.trim(),
+  };
+  const hasServiceUpdate = [
+    'scInwardDate', 'scObservation', 'scActionPlan', 'tentativeDate', 'shipDateToFqc', 'fqcFinalRemarks',
+    'defUnitReceivedDate', 'replacementShipDate', 'fqcObservation',
+    'hwChanges', 'hwChangeRemarks', 'swChangeRemarks',
+    'serviceManualUpdate', 'techRemarks'
+  ].some(key => String(editPayload[key] || '').trim());
+  if(finalStatus === 'Pending' && hasServiceUpdate){
+    finalStatus = 'Closed';
+    editPayload.finalStatus = finalStatus;
+    document.getElementById('upd-final-status').value = finalStatus;
+  }
+  const isClosed = finalStatus === 'Closed' || finalStatus === 'Approved';
+
+  const btn = document.getElementById('upd-save-btn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+
+  try{
+    if(isClosed){
+      const res = await fetch(API+'/api/emp/bir/'+id,{method:'PUT',headers:authHeaders(),body:JSON.stringify(editPayload)});
+      handleUnauth(res);
+      if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'HTTP '+res.status);}
+      const saved = await res.json().catch(()=>({}));
+      if(!saved.movedToClosed){throw new Error('Record saved, but closed move was not confirmed.');}
+      DATA.splice(DATA.findIndex(x=>(x._id||x.id)===id),1);
+      filtered=filtered.filter(x=>(x._id||x.id)!==id);
+      updateStats(); renderTable();
+      msg.textContent='&#10004; Record closed and moved to Closed BIR!';
+      msg.className='form-msg ok';
+      showToast('BIR record closed.','ok');
+      setTimeout(()=>window.location.href='ecbir.html',1100);
+    }else{
+      // Update in place
+      const res = await fetch(API+'/api/emp/bir/'+id,{method:'PUT',headers:authHeaders(),body:JSON.stringify(editPayload)});
+      handleUnauth(res);
+      if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'HTTP '+res.status);}
+      const saved = await res.json().catch(()=>({}));
+      const idx = DATA.findIndex(x=>(x._id||x.id)===id);
+      if(idx!==-1) DATA[idx]={...DATA[idx],...editPayload,...saved};
+      filtered=filtered.map(x=>(x._id||x.id)===id?{...x,...editPayload,...saved}:x);
+      updateStats(); renderTable();
+      msg.textContent='&#10004; Record updated successfully!';
+      msg.className='form-msg ok';
+      showToast('BIR record updated.','ok');
+      setTimeout(()=>closeModal(),1100);
+    }
+  }catch(e){
+    if(e.message!=='Unauthorized'){
+      msg.textContent='Save failed: '+e.message;
+      msg.className='form-msg err';
+      showToast('Update failed: '+e.message,'err');
+    }
+  }finally{
+    btn.disabled = false; btn.innerHTML = '&#128190; Save Update';
+  }
+}
+
+/* -- EXPORT -- */
+function exportCSV(){
+  const headers=['#','Inward Date','Division','Model','Configuration','Received Qty','Prev SW Version','HW Changes','Accessory Details','CNR Circulation','BIR Ref No.','Status','SC Inward Date','SC Action Plan','Tentative Date','Ship Date to FQC','SC Final Remarks','FQC Observation'];
+  const rows = filtered.map((d,i)=>[
+    i+1,d.inwardDate,d.division,d.model,d.configuration,d.receivedQty,
+    d.prevSwVersion,d.hwChanges,d.accessoryDetails,d.cnrCirculation,
+    d.birRefNo,d.finalStatus,d.scInwardDate,d.scActionPlan,d.tentativeDate,d.shipDateToFqc,d.fqcFinalRemarks,d.fqcObservation
+  ]);
+  const csv = [headers,...rows].map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download = 'bir-list-'+new Date().toISOString().split('T')[0]+'.csv';
+  a.click();
+  showToast('Exported '+filtered.length+' records.','ok');
+}
+
+/* -- PAGINATION -- */
+function renderPagination(pages){
+  const el = document.getElementById('tbl-pagination');
+  if(pages<=1){el.innerHTML='';return;}
+  let h = '<button class="pager" '+(currentPage===1?'disabled':'')+' onclick="gp('+(currentPage-1)+')">&#8249; Prev</button>';
+  getRange(currentPage,pages).forEach(p=>{
+    if(p==='&#8230;') h+='<button class="pager" disabled>&#8230;</button>';
+    else h+='<button class="pager '+(p===currentPage?'active':'')+'" onclick="gp('+p+'">'+p+'</button>';
+  });
+  h += '<button class="pager" '+(currentPage===pages?'disabled':'')+' onclick="gp('+(currentPage+1)+')">Next &#8250;</button>';
+  el.innerHTML = h;
+}
+function getRange(c,t){
+  if(t<=7) return Array.from({length:t},(_,i)=>i+1);
+  if(c<=4) return [1,2,3,4,5,'&#8230;',t];
+  if(c>=t-3) return [1,'&#8230;',t-4,t-3,t-2,t-1,t];
+  return [1,'&#8230;',c-1,c,c+1,'&#8230;',t];
+}
+function gp(p){ currentPage=p; renderTable(); }
+
+/* -- HELPERS -- */
+function setLoading(){
+  document.getElementById('bir-tbody').innerHTML = '<tr class="loading-row"><td colspan="13"><span class="spin"></span>Loading from database&#8230;</td></tr>';
+  ['s-total','s-pending','s-closed','s-review'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='&#8212;';});
+}
+function fmtDate(d){
+  if(!d) return '&#8212;';
+  const p = String(d).split('T')[0].split('-');
+  if(p.length<3) return String(d);
+  return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0];
+}
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function showToast(msg,type='ok'){ const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="td"></span>'+msg;w.appendChild(el);setTimeout(()=>el.remove(),3400); }
+function clearMsg(){ const el=document.getElementById('upd-msg');el.textContent='';el.className='form-msg'; }
+function logout(){ localStorage.clear(); window.location.href='login.html'; }
+document.addEventListener('keydown',e=>{if(e.key==='Escape') closeModal();});
+</script>
+<script>
+function toggleSF(){var btn=document.getElementById('sf-toggle');var panel=document.getElementById('sf-children');if(!btn||!panel)return;btn.classList.toggle('open');panel.classList.toggle('open');}
+function toggleAR(){var btn=document.getElementById('ar-toggle');var panel=document.getElementById('ar-children');if(!btn||!panel)return;btn.classList.toggle('open');panel.classList.toggle('open');}</script>
+</body>
+</html>
+
+

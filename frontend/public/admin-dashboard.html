@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light'); })();</script>
+
+  <title>SchillerIndia - Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+      --bg:#f4f7fa;--surface:#ffffff;--surface2:#eaf1f6;--border:#d0e0ec;
+      --accent:#0077cc;--accent2:#007a8a;--green:#059669;--amber:#d97706;
+      --red:#cc0000;--text:#1a2a3a;--muted:#7a9ab0;--soft:#4a6a8a;--card:#ffffff;
+    }
+    [data-theme="dark"]{
+      --bg:#0f1621;--surface:#1a2333;--surface2:#1e293b;--border:#2a3a52;
+      --accent:#3b9eff;--accent2:#22d3ee;--green:#10b981;--amber:#f59e0b;
+      --red:#f87171;--text:#e2eaf4;--muted:#4a6a8a;--soft:#7a9ab0;--card:#1a2333;
+    }
+   body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  transition:background 0.3s, color 0.3s; /* ADD THIS */
+}
+    .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .sidebar{width:240px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 12px rgba(0,80,120,0.06);}
+    .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .sidebar-header{padding:20px 20px 16px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#450a0a,#b91c1c);}
+    .sidebar-logo{display:flex;align-items:center;gap:10px;}
+    .sidebar-logo-icon{width:36px;height:36px;background:rgba(255,255,255,0.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:#fff;box-shadow:0 2px 8px rgba(204,0,0,0.2);}
+    .sidebar-logo-text{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;}
+    .sidebar-logo-text .sub{font-size:10px;color:rgba(255,255,255,0.6);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;}
+    .role-badge{margin:10px 20px 0;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;display:inline-block;background:rgba(185,28,28,0.1);color:#b91c1c;border:1px solid rgba(185,28,28,0.25);}
+    .sidebar-nav{flex:1;padding:12px 10px;}
+    .nav-section{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;padding:10px 8px 5px;}
+    .nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:500;cursor:pointer;transition:all 0.2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;}
+    .nav-item:hover{background:var(--surface2);color:var(--text);}
+    .nav-item.active{background:rgba(185,28,28,0.1);color:#b91c1c;font-weight:600;}
+    .nav-item .icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+    .nav-badge{margin-left:auto;background:#b91c1c;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;}
+    .nav-group-toggle{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:600;cursor:pointer;transition:all 0.2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;}
+    .nav-group-toggle:hover{background:var(--surface2);color:var(--text);}
+    .nav-group-toggle .icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+    .caret{margin-left:auto;font-size:9px;transition:transform 0.25s;}
+    .nav-group-toggle.open .caret{transform:rotate(90deg);}
+    .nav-children{max-height:0;overflow:hidden;transition:max-height 0.3s ease;}
+    .nav-children.open{max-height:400px;}
+    .nav-sub .nav-item{padding:6px 10px 6px 28px;font-size:12px;color:var(--muted);}
+    .nav-sub .nav-item:hover{color:var(--text);}
+    .nav-sub .nav-item.active{color:#b91c1c;background:rgba(185,28,28,0.07);}
+    .sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);}
+    .user-info{display:flex;align-items:center;gap:10px;}
+    .user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#b91c1c,#ef4444);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
+    .user-name{font-size:13px;font-weight:600;color:var(--text);}
+    .user-role{font-size:11px;color:var(--muted);}
+    .logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s;}
+    .logout-btn:hover{border-color:var(--red);color:var(--red);}
+    .topbar{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,80,120,0.05);}
+    .topbar-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);}
+    .topbar-date{font-size:12px;color:var(--muted);margin-top:2px;}
+    .topbar-actions{display:flex;align-items:center;gap:12px;}
+    .topbar-btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;border:1px solid var(--border);background:var(--surface2);color:var(--soft);font-family:'Plus Jakarta Sans',sans-serif;}
+    .topbar-btn:hover{border-color:var(--accent);color:var(--accent);}
+    .topbar-btn.primary{background:var(--red);color:#fff;border-color:var(--red);}
+    .topbar-btn.primary:hover{background:#aa0000;}
+    .notif-dot{width:7px;height:7px;background:var(--red);border-radius:50%;display:inline-block;margin-left:3px;vertical-align:middle;}
+    .content{flex:1;padding:28px;overflow-y:auto;background:var(--bg);}
+    .page{display:none;animation:fadeUp 0.35s ease both;}
+    .page.active{display:block;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:28px;}
+    .stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;transition:transform 0.2s,border-color 0.2s,box-shadow 0.2s;box-shadow:0 2px 10px rgba(0,80,120,0.05);cursor:default;}
+    .stat-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,80,120,0.1);}
+    .stat-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;}
+    .stat-value{font-family:'Syne',sans-serif;font-size:32px;font-weight:700;margin-bottom:4px;}
+    .stat-sub{font-size:11px;color:var(--muted);font-weight:500;}
+    .stat-icon{float:right;font-size:24px;opacity:0.4;margin-top:-32px;}
+    .stat-amber .stat-value{color:var(--amber);}.stat-amber:hover{border-color:var(--amber);}
+    .stat-blue .stat-value{color:var(--accent);}.stat-blue:hover{border-color:var(--accent);}
+    .stat-red .stat-value{color:var(--red);}.stat-red:hover{border-color:var(--red);}
+    .stat-teal .stat-value{color:var(--accent2);}.stat-teal:hover{border-color:var(--accent2);}
+    .stat-green .stat-value{color:var(--green);}.stat-green:hover{border-color:var(--green);}
+    .refresh-row{display:flex;align-items:center;gap:8px;margin-bottom:18px;}
+    .refresh-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;display:flex;align-items:center;gap:6px;}
+    .refresh-btn:hover{border-color:var(--accent);color:var(--accent);}
+    .last-updated{font-size:11px;color:var(--muted);}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+    .grid-3{display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:20px;}
+    .panel{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,80,120,0.05);margin-bottom:20px;}
+    .panel-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);}
+    .panel-title{font-size:14px;font-weight:700;color:var(--text);}
+    .panel-action{font-size:12px;color:var(--accent);cursor:pointer;font-weight:600;}
+    .panel-body{padding:20px;}
+    .data-table{width:100%;border-collapse:collapse;}
+    .data-table th{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;padding:0 12px 12px;text-align:left;border-bottom:1px solid var(--border);}
+    .data-table td{padding:12px;font-size:13px;border-bottom:1px solid rgba(0,80,120,0.07);color:var(--text);}
+    .data-table tr:last-child td{border-bottom:none;}
+    .data-table tr:hover td{background:rgba(0,119,204,0.03);}
+    .status{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+    .status::before{content:'';width:6px;height:6px;border-radius:50%;display:block;}
+    .status-active{background:rgba(5,150,105,0.12);color:var(--green);}.status-active::before{background:var(--green);}
+    .status-pending{background:rgba(217,119,6,0.12);color:var(--amber);}.status-pending::before{background:var(--amber);}
+    .status-inactive{background:rgba(122,154,176,0.15);color:var(--muted);}.status-inactive::before{background:var(--muted);}
+    .status-closed{background:rgba(204,0,0,0.1);color:var(--red);}.status-closed::before{background:var(--red);}
+    .bar-chart{display:flex;align-items:flex-end;gap:6px;height:80px;margin-top:12px;}
+    .bar{flex:1;border-radius:4px 4px 0 0;background:linear-gradient(to top,var(--accent),var(--accent2));opacity:0.6;transition:opacity 0.2s;position:relative;}
+    .bar:hover{opacity:1;}
+    .quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .qa-btn{padding:14px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);color:var(--soft);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;text-align:center;font-family:'Plus Jakarta Sans',sans-serif;}
+    .qa-btn:hover{border-color:var(--accent);color:#b91c1c;background:rgba(185,28,28,0.07);}
+    .qa-icon{font-size:20px;display:block;margin-bottom:6px;}
+    .activity-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid rgba(0,80,120,0.08);}
+    .activity-item:last-child{border-bottom:none;}
+    .activity-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+    .activity-text{font-size:13px;color:var(--soft);}
+    .activity-text strong{color:var(--text);}
+    .activity-time{font-size:11px;color:var(--muted);margin-top:2px;}
+    .btn{padding:9px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;}
+    .btn-primary{background:var(--accent);color:#fff;}
+    .btn-primary:hover{background:#005fa3;}
+    .btn-danger{background:var(--red);color:#fff;}
+    .btn-danger:hover{background:#aa0000;}
+    .btn-outline{background:none;border:1.5px solid var(--border);color:var(--soft);}
+    .btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+    .btn-sm{padding:6px 14px;font-size:12px;}
+    .btn:disabled{opacity:0.6;cursor:not-allowed;}
+    .um-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;}
+    .um-search{flex:1;min-width:200px;padding:9px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s;}
+    .um-search:focus{border-color:var(--accent);}
+    .add-user-card{background:var(--card);border:1.5px solid var(--accent);border-radius:14px;padding:24px;margin-bottom:24px;box-shadow:0 4px 20px rgba(0,119,204,0.08);display:none;}
+    .add-user-card.show{display:block;animation:fadeUp 0.3s ease both;}
+    .add-user-card h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);margin-bottom:18px;}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .form-group{display:flex;flex-direction:column;gap:6px;}
+    .form-group label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
+    .form-group input,.form-group select{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s;}
+    .form-group input:focus,.form-group select:focus{border-color:var(--accent);}
+    .form-group input.err{border-color:var(--red)!important;}
+    .form-actions{display:flex;gap:10px;margin-top:18px;align-items:center;}
+    .form-msg{font-size:12px;font-weight:600;padding:8px 14px;border-radius:6px;margin-top:12px;display:none;}
+    .form-msg.ok{display:block;background:rgba(5,150,105,0.1);color:var(--green);border:1px solid rgba(5,150,105,0.25);}
+    .form-msg.err-msg{display:block;background:rgba(204,0,0,0.08);color:var(--red);border:1px solid rgba(204,0,0,0.2);}
+    .um-table-wrap{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,80,120,0.05);}
+    .role-chip{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;}
+    .role-admin{background:rgba(0,119,204,0.12);color:var(--accent);}
+    .role-superadmin{background:rgba(204,0,0,0.1);color:var(--red);}
+    .role-employee{background:rgba(5,150,105,0.12);color:var(--green);}
+    .del-btn{background:none;border:1px solid rgba(204,0,0,0.3);color:var(--red);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;}
+    .del-btn:hover{background:rgba(204,0,0,0.08);border-color:var(--red);}
+    .modal-overlay{position:fixed;inset:0;background:rgba(10,20,35,0.35);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+    .modal-overlay.show{display:flex;animation:fadeUp 0.2s ease both;}
+    .modal-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;max-width:360px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.12);}
+    .modal-box h3{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);margin-bottom:8px;}
+    .modal-box p{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.6;}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+    .placeholder-page{padding:60px 40px;text-align:center;color:var(--muted);}
+    .ph-icon{font-size:48px;margin-bottom:16px;}
+    .placeholder-page h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:8px;}
+    .placeholder-page p{font-size:14px;line-height:1.6;}
+    .svc-filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+    .svc-search{flex:1;min-width:200px;padding:9px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s;}
+    .svc-search:focus{border-color:var(--accent);}
+    .svc-select{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--soft);background:var(--surface);outline:none;cursor:pointer;}
+    .badge-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+    .badge-pill::before{content:'';width:5px;height:5px;border-radius:50%;display:block;}
+    .bp-red{background:rgba(204,0,0,0.1);color:var(--red);}.bp-red::before{background:var(--red);}
+    .bp-amber{background:rgba(217,119,6,0.12);color:var(--amber);}.bp-amber::before{background:var(--amber);}
+    .bp-green{background:rgba(5,150,105,0.12);color:var(--green);}.bp-green::before{background:var(--green);}
+    .bp-blue{background:rgba(0,119,204,0.12);color:var(--accent);}.bp-blue::before{background:var(--accent);}
+    .bp-muted{background:rgba(122,154,176,0.15);color:var(--muted);}.bp-muted::before{background:var(--muted);}
+    .chip-sm{display:inline-flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-size:11px;color:var(--soft);font-weight:500;}
+    .action-xs{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:none;color:var(--soft);font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;}
+    .action-xs:hover{border-color:var(--accent);color:var(--accent);}
+    .action-xs.danger{color:var(--red);border-color:rgba(204,0,0,0.3);}
+    .action-xs.danger:hover{background:rgba(204,0,0,0.06);}
+    .table-footer-bar{padding:12px 16px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);}
+    .toast-wrap{position:fixed;bottom:24px;right:24px;z-index:600;display:flex;flex-direction:column;gap:8px;}
+    .toast{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;min-width:240px;animation:fadeUp 0.3s ease;box-shadow:0 8px 24px rgba(0,0,0,0.12);}
+    .toast.ok{border-color:rgba(5,150,105,0.4);}.toast.ok .tdot{background:var(--green);}
+    .toast.err{border-color:rgba(204,0,0,0.4);}.toast.err .tdot{background:var(--red);}
+    .tdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+    .stat-card-sm{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;transition:transform 0.2s,border-color 0.2s,box-shadow 0.2s;box-shadow:0 2px 10px rgba(0,80,120,0.05);}
+    .stat-card-sm:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,80,120,0.1);}
+  
+    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
+    </style>
+  <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="employee-theme.css">
+  <link rel="stylesheet" href="admin-sidebar.css">
+  <script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <link rel="stylesheet" href="dashboard-topbar-actions.css">
+  <script src="dashboard-topbar-actions.js" defer></script>
+  <script src="brand-logo.js" defer></script>
+</head>
+<body>
+
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-box">
+    <h3>&#128465; Delete User?</h3>
+    <p id="confirm-msg">This action cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline btn-sm" onclick="closeConfirmModal()">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="confirm-yes">Delete</button>
+    </div>
+  </div>
+</div>
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- === SIDEBAR === -->
+<!-- === SIDEBAR === -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="sidebar-logo-text">SchillerIndia<div class="sub">Services</div></div>
+    </div>
+  </div>
+  <div style="padding:10px 20px 0;"><span class="role-badge">Admin</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <button class="nav-item active" onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
+    <button class="nav-item " onclick="window.location.href='company-section.html'"><span class="icon">&#127970;</span> Company</button>
+    <button class="nav-item " onclick="window.location.href='division-section.html'"><span class="icon">&#128309;</span> Division</button>
+    <button class="nav-item " onclick="window.location.href='engineer-section.html'"><span class="icon">&#128119;</span> Engineers</button>
+    <button class="nav-item " onclick="window.location.href='dealer-section.html'"><span class="icon">&#129309;</span> Dealers</button>
+    <div class="nav-section">Operations</div>
+    <button class="nav-group-toggle " id="sf-toggle" onclick="toggleSF()">
+      <span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span>
+    </button>
+    <div class="nav-children " id="sf-children">
+      <div class="nav-sub">
+        <button class="nav-item " onclick="window.location.href='service-list.html'"><span class="icon">&#128225;</span> Services</button>
+        <button class="nav-item " onclick="window.location.href='pending-frn.html'"><span class="icon">&#128221;</span> Pending FRN</button>
+        <button class="nav-item " onclick="window.location.href='ob-pending.html'"><span class="icon">&#128194;</span> OB Pending</button>
+        <button class="nav-item " onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
+        <button class="nav-item " onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
+        <button class="nav-item " onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
+        <button class="nav-item " onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
+        <button class="nav-item " onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="ar-toggle" onclick="toggleAR()"><span class="icon">&#128196;</span> Activity Register <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="ar-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
+        <a class="nav-item " href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
+        <a class="nav-item " href="aprfob.html"><span class="icon">&#128203;</span> PRF/OB List</a>
+        <a class="nav-item " href="acr.html"><span class="icon">&#128209;</span> Closed PRF/OB</a>
+        <a class="nav-item " href="ans.html"><span class="icon">&#128230;</span> Non Saleable</a>
+        <a class="nav-item " href="as.html"><span class="icon">&#128176;</span> Saleable</a>
+        <a class="nav-item " href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
+        <a class="nav-item " href="acbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="rta-toggle" onclick="toggleRTA()"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="rta-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="atfrn.html"><span class="icon">&#128221;</span> Admin RT FRN</a>
+        <a class="nav-item " href="atob.html"><span class="icon">&#128230;</span> Admin RT OB</a>
+        <a class="nav-item " href="atur.html"><span class="icon">&#128736;&#65039;</span> Admin RT UR</a>
+        <a class="nav-item " href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
+      </div>
+    </div>
+    <div class="nav-section">Admin</div>
+    <button class="nav-item " onclick="window.location.href='usermanagement.html'"><span class="icon">&#128101;</span> User Management</button>
+    <button class="nav-item " onclick="window.location.href='Reports.html'"><span class="icon">&#128200;</span> Reports</button>
+    <button class="nav-item " onclick="window.location.href='settings.html'"><span class="icon">&#9881;&#65039;</span> Settings</button>
+    <button class="nav-item " onclick="window.location.href='notifications.html'"><span class="icon">&#128276;</span> Notifications</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="admin-avatar">A</div>
+      <div>
+        <div class="user-name" id="admin-name">Admin</div>
+        <div class="user-role">Administrator</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<!-- === MAIN === -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-date" id="admin-date"></div>
+    </div>
+    <div class="topbar-actions">
+      
+      <button class="topbar-btn" id="backup-btn" onclick="downloadBackup()">&#128190; Backup</button>
+      <button class="topbar-btn primary" onclick="window.location.href='service-list.html'">+ New Service</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <!-- Profile -->
+      <div class="profile-card" style="display:flex;align-items:center;gap:16px;padding:20px 24px;background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:24px;animation:fadeUp 0.5s ease both;box-shadow:0 1px 6px rgba(0,60,120,0.06);">
+        <div class="profile-avatar" id="profile-admin-avatar" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#60A5FA);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px;color:#fff;flex-shrink:0;">A</div>
+        <div>
+          <div class="profile-name" id="profile-admin-name" style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);">Admin</div>
+          <div class="profile-dept" id="profile-admin-dept" style="font-size:13px;color:var(--muted);margin-top:3px;">System Administrator</div>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+          <a href="https://synergycrm.net/schillerservice/" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:7px 18px;border-radius:8px;border:1.5px solid var(--accent);background:rgba(96,165,250,0.08);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='var(--accent)';this.style.color='#fff';" onmouseout="this.style.background='rgba(96,165,250,0.08)';this.style.color='var(--accent)';">&#128196; CRM</a>
+          <a href="https://schillerindia.com/" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:7px 18px;border-radius:8px;border:1.5px solid #0e7490;background:rgba(14,116,144,0.08);color:#0e7490;font-size:12px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='#0e7490';this.style.color='#fff';" onmouseout="this.style.background='rgba(14,116,144,0.08)';this.style.color='#0e7490';">&#127760; SHIPL</a>
+          <a href="usermanagement.html" style="display:inline-flex;align-items:center;gap:6px;padding:7px 18px;border-radius:8px;border:1.5px solid var(--purple);background:rgba(192,132,252,0.08);color:var(--purple);font-size:12px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='var(--purple)';this.style.color='#fff';" onmouseout="this.style.background='rgba(192,132,252,0.08)';this.style.color='var(--purple)';">&#128101; Manage Users</a>
+        </div>
+      </div>
+
+      <div class="refresh-row">
+        <button class="refresh-btn" onclick="loadStats()"><span>&#10227;</span> Refresh Stats</button>
+        <span class="last-updated" id="last-updated">-</span>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card stat-teal" style="cursor:pointer;" onclick="window.location.href='service-list.html'"><div class="stat-label">Total</div><div class="stat-icon">&#128203;</div><div class="stat-value" id="stat-total-services">...</div><div class="stat-sub">All Services</div></div>
+        <div class="stat-card stat-amber" style="cursor:pointer;" onclick="window.location.href='pending-frn.html'"><div class="stat-label">Pending FRN</div><div class="stat-icon">&#128221;</div><div class="stat-value" id="stat-pending-frn">...</div><div class="stat-sub">Field Report Notes</div></div>
+        <div class="stat-card stat-blue" style="cursor:pointer;" onclick="window.location.href='ob-pending.html'"><div class="stat-label">OB Pending</div><div class="stat-icon">&#128194;</div><div class="stat-value" id="stat-ob-pending">...</div><div class="stat-sub">Outward Bills awaiting</div></div>
+        <div class="stat-card stat-red" style="cursor:pointer;" onclick="window.location.href='under-repair.html'"><div class="stat-label">Under Repair</div><div class="stat-icon">&#128295;</div><div class="stat-value" id="stat-under-repair">...</div><div class="stat-sub">Devices in service</div></div>
+        <div class="stat-card stat-green" style="cursor:pointer;" onclick="window.location.href='closed-frn.html'"><div class="stat-label">Completed FRN</div><div class="stat-icon">&#9989;</div><div class="stat-value" id="stat-completed-frn">...</div><div class="stat-sub">Closed this month</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Service Activity (This Week)</div><span class="panel-action" onclick="window.location.href='service-list.html'" style="cursor:pointer;">View All &#8594;</span></div>
+          <div class="panel-body">
+            <div style="display:flex; justify-content:center; gap:16px; margin-bottom:16px; font-size:11px; color:var(--muted); font-weight:600;">
+              <div style="display:flex; align-items:center; gap:6px;"><span style="width:10px;height:10px;border-radius:3px;background:var(--accent);"></span> Service</div>
+              <div style="display:flex; align-items:center; gap:6px;"><span style="width:10px;height:10px;border-radius:3px;background:var(--amber);"></span> Supplier Warranty</div>
+              <div style="display:flex; align-items:center; gap:6px;"><span style="width:10px;height:10px;border-radius:3px;background:var(--purple);"></span> External Repair</div>
+            </div>
+            <div class="bar-chart" id="activity-bar-chart">
+              <!-- bars dynamically populated -->
+            </div>
+            <div style="display:flex; gap:6px; margin-top:8px; font-size:11px; color:var(--muted); text-align:center;" id="activity-bar-labels">
+              <!-- labels dynamically populated -->
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Completed FRN Activity (This Week)</div><span class="panel-action" onclick="window.location.href='closed-frn.html'" style="cursor:pointer;">View All &#8594;</span></div>
+          <div class="panel-body">
+            <div class="bar-chart" id="completed-bar-chart">
+              <!-- bars dynamically populated -->
+            </div>
+            <div style="display:flex; gap:6px; margin-top:8px; font-size:11px; color:var(--muted); text-align:center;" id="completed-bar-labels">
+              <!-- labels dynamically populated -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUB PAGES (same as before) -->
+    <div class="page" id="page-svc-services">
+      <div style="padding:40px;text-align:center;">
+        <div style="font-size:48px;margin-bottom:16px;">&#128225;</div>
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:8px;">Services</div>
+        <p style="font-size:14px;color:var(--muted);margin-bottom:20px;">Full service management is available in the dedicated Services page.</p>
+        <button class="btn btn-primary" onclick="window.location.href='service-list.html'">Open Service List &#8594;</button>
+      </div>
+    </div>
+    <div class="page" id="page-svc-underrepair">
+      <div class="svc-filter-bar"><input class="svc-search" placeholder="&#128269; Search under repair..." oninput="filterSvcTable(this,'ur-tbody')"/></div>
+      <div class="panel"><div class="panel-header"><div class="panel-title">Devices Under Repair</div><button class="btn btn-primary btn-sm" onclick="addSvcRow('ur-tbody')">&#10133; Add</button></div>
+        <div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Service ID</th><th>Device</th><th>Serial No.</th><th>Customer</th><th>Engineer</th><th>Since</th><th>Action</th></tr></thead>
+          <tbody id="ur-tbody">
+            <tr><td><span class="chip-sm">#SVC-1037</span></td><td>Hamilton-G5</td><td>HG5-2023-001</td><td>City Hospital</td><td>Binod Kumar</td><td>25 Mar 2026</td><td><button class="action-xs danger" onclick="delRow(this)">&#128465;</button></td></tr>
+            <tr><td><span class="chip-sm">#SVC-1035</span></td><td>DEFIGARD 5000</td><td>DG5-2022-044</td><td>Apollo Clinic</td><td>Deepa Thomas</td><td>22 Mar 2026</td><td><button class="action-xs danger" onclick="delRow(this)">&#128465;</button></td></tr>
+            <tr><td><span class="chip-sm">#SVC-1031</span></td><td>MT-200</td><td>MT2-2021-018</td><td>Sunrise Med</td><td>Ashok Kumar</td><td>18 Mar 2026</td><td><button class="action-xs danger" onclick="delRow(this)">&#128465;</button></td></tr>
+          </tbody></table></div></div>
+    </div>
+    <div class="page" id="page-svc-pendingfrn">
+      <div class="svc-filter-bar" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <input class="svc-search" id="frn-search" placeholder="&#128269; Search SC Ref, FRN, engineer, customer, model..." oninput="filterFrnTable()" style="flex:1;min-width:220px;"/>
+        <select id="frn-filter-branch" onchange="filterFrnTable()" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--soft);background:var(--surface);outline:none;">
+          <option value="">All Branches</option>
+        </select>
+        <button class="btn btn-outline btn-sm" onclick="loadPendingFRN()" style="white-space:nowrap;">&#8635; Refresh</button>
+        <span id="frn-count-badge" style="font-size:11px;color:var(--muted);white-space:nowrap;"></span>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Pending Field Report Notes - All Divisions</div>
+          <button class="btn btn-primary btn-sm" onclick="window.location.href='emppendingfrn.html'">&#128196; Open Full View</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table" id="frn-table" style="min-width:1100px;">
+            <thead><tr>
+              <th>SC Ref No</th>
+              <th>SC Eng</th>
+              <th>FRN No</th>
+              <th>Branch</th>
+              <th>Engineer</th>
+              <th>Customer</th>
+              <th>Model</th>
+              <th>Unit Status</th>
+              <th>Def Mod / Brd</th>
+              <th>Entry Date</th>
+              <th>Pend Days</th>
+            </tr></thead>
+            <tbody id="frn-tbody">
+              <tr><td colspan="11" style="text-align:center;padding:28px;color:var(--muted);">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="page" id="page-svc-obpending">
+      <div class="svc-filter-bar"><input class="svc-search" placeholder="&#128269; Search OB..." oninput="filterSvcTable(this,'ob-tbody')"/></div>
+      <div class="panel"><div class="panel-header"><div class="panel-title">OB Pending</div><button class="btn btn-primary btn-sm" onclick="addSvcRow('ob-tbody')">&#10133; Add</button></div>
+        <div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>OB ID</th><th>Customer</th><th>Amount</th><th>Engineer</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="ob-tbody">
+            <tr><td><span class="chip-sm">#OB-201</span></td><td>Narmada Corp</td><td>?18,500</td><td>Priya Devi</td><td>29 Mar 2026</td><td><span class="badge-pill bp-amber">Pending</span></td><td><button class="action-xs danger" onclick="delRow(this)">&#128465;</button></td></tr>
+            <tr><td><span class="chip-sm">#OB-200</span></td><td>City Hospital</td><td>?32,000</td><td>Binod Kumar</td><td>27 Mar 2026</td><td><span class="badge-pill bp-amber">Pending</span></td><td><button class="action-xs danger" onclick="delRow(this)">&#128465;</button></td></tr>
+          </tbody></table></div></div>
+    </div>
+    <div class="page" id="page-svc-scclosed">
+      <div class="svc-filter-bar"><input class="svc-search" placeholder="&#128269; Search SC Closed..." oninput="filterSvcTable(this,'scc-tbody')"/></div>
+      <div class="panel"><div class="panel-header"><div class="panel-title">SC Closed Services</div></div>
+        <div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Service ID</th><th>Customer</th><th>Device</th><th>Engineer</th><th>Closed On</th><th>Action</th></tr></thead>
+          <tbody id="scc-tbody">
+            <tr><td><span class="chip-sm">#SVC-1036</span></td><td>Apollo Clinic</td><td>uMEC 10</td><td>Ashok Kumar</td><td>26 Mar 2026</td><td><button class="action-xs danger" onclick="delRow(this)">&#128465;</button></td></tr>
+            <tr><td><span class="chip-sm">#SVC-1033</span></td><td>Sunrise Med</td><td>CS-200</td><td>Ravi Shankar</td><td>23 Mar 2026</td><td><button class="action-xs danger" onclick="delRow(this)">&#128465;</button></td></tr>
+          </tbody></table></div></div>
+    </div>
+    <div class="page" id="page-svc-scraplist">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+        <div><div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);">Scrap List</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">Devices marked for scrapping / write-off</div></div>
+        <button class="btn btn-danger btn-sm" onclick="openScrapModal()">&#10133; Add to Scrap List</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
+        <div class="stat-card-sm" style="border-left:3px solid var(--red);"><div class="stat-label">Total Scrap</div><div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:700;color:var(--red);" id="scrap-total">0</div></div>
+        <div class="stat-card-sm" style="border-left:3px solid var(--amber);"><div class="stat-label">Pending</div><div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:700;color:var(--amber);" id="scrap-pending">0</div></div>
+        <div class="stat-card-sm" style="border-left:3px solid var(--green);"><div class="stat-label">Approved</div><div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:700;color:var(--green);" id="scrap-approved">0</div></div>
+        <div class="stat-card-sm" style="border-left:3px solid var(--accent2);"><div class="stat-label">Disposed</div><div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:700;color:var(--accent2);" id="scrap-disposed">0</div></div>
+      </div>
+      <div class="svc-filter-bar">
+        <input class="svc-search" placeholder="&#128269; Search scrap items..." oninput="filterSvcTable(this,'scrap-tbody')"/>
+        <select class="svc-select" id="scrap-status-filter" onchange="renderScrap()"><option value="">All Status</option><option value="Pending Approval">Pending Approval</option><option value="Approved">Approved</option><option value="Disposed">Disposed</option></select>
+        <select class="svc-select" id="scrap-div-filter" onchange="renderScrap()"><option value="">All Divisions</option><option>SHIPL</option><option>VENTILATOR</option><option>INJECTOR</option><option>RADIOLOGY</option><option>GANSHORN</option><option>HOLTER</option><option>MONITORS</option></select>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Scrap Items</div><div style="font-size:12px;color:var(--muted);" id="scrap-count-label">Loading...</div></div>
+        <div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Scrap ID</th><th>Device</th><th>Serial No.</th><th>Division</th><th>Customer</th><th>Reason</th><th>Added By</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="scrap-tbody"></tbody></table></div>
+        <div class="table-footer-bar" id="scrap-footer">-</div>
+      </div>
+    </div>
+    <div class="page" id="page-reports"><div class="placeholder-page"><div class="ph-icon">&#128200;</div><h2>Reports</h2><p>Generate and view reports.</p></div></div>
+    <div class="page" id="page-settings"><div class="placeholder-page"><div class="ph-icon">&#9881;&#65039;</div><h2>Settings</h2><p>System settings.</p></div></div>
+    <div class="page" id="page-notifications"><div class="placeholder-page"><div class="ph-icon">&#128276;</div><h2>Notifications</h2><p>System notifications.</p></div></div>
+
+
+<!-- SCRAP ADD MODAL -->
+<div class="modal-overlay" id="scrap-modal">
+  <div class="modal-box" style="max-width:560px;width:95%;">
+    <h3>&#128465; Add to Scrap List</h3>
+    <div class="form-grid" style="margin-top:16px;">
+      <div class="form-group"><label>Device / Model *</label><input type="text" id="sc-device" placeholder=""/></div>
+      <div class="form-group"><label>Serial No.</label><input type="text" id="sc-serial" placeholder=""/></div>
+      <div class="form-group"><label>Division *</label><select id="sc-div"><option value="">Select...</option><option>SHIPL</option><option>VENTILATOR</option><option>INJECTOR</option><option>RADIOLOGY</option><option>GANSHORN</option><option>HOLTER</option><option>MONITORS</option></select></div>
+      <div class="form-group"><label>Customer</label><input type="text" id="sc-customer" placeholder="Customer name"/></div>
+      <div class="form-group" style="grid-column:span 2;"><label>Reason *</label><input type="text" id="sc-reason" placeholder=""/></div>
+      <div class="form-group"><label>Added By</label><input type="text" id="sc-addedby" placeholder="Engineer name"/></div>
+      <div class="form-group"><label>Status</label><select id="sc-status"><option>Pending Approval</option><option>Approved</option><option>Disposed</option></select></div>
+    </div>
+    <div id="scrap-form-msg" class="form-msg" style="margin-top:10px;"></div>
+    <div class="modal-actions" style="margin-top:18px;">
+      <button class="btn btn-outline btn-sm" onclick="closeScrapModal()">Cancel</button>
+      <button class="btn btn-danger btn-sm" onclick="saveScrapItem()">&#128465; Add to Scrap</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const pageTitles={
+  dashboard:'Dashboard','svc-services':'Services','svc-underrepair':'Under Repair',
+  'svc-pendingfrn':'Pending FRN','svc-obpending':'OB Pending','svc-scclosed':'SC Closed',
+  'svc-scraplist':'Scrap List',
+  usermgmt:'User Management',settings:'Settings',notifications:'Notifications'
+};
+
+(document.getElementById('admin-date')||{}).textContent =new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+(async function initUser(){
+  const token = localStorage.getItem('schiller_token');
+  let name = 'Admin';
+  let roleText = 'System Administrator';
+  try {
+    const res = await fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.name) name = data.name;
+      if (data.role) roleText = String(data.role).charAt(0).toUpperCase() + String(data.role).slice(1);
+    } else {
+      const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+      if (u.name) name = u.name;
+      if (u.role) roleText = String(u.role).charAt(0).toUpperCase() + String(u.role).slice(1);
+    }
+  } catch(e) {
+    const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+    if (u.name) name = u.name;
+  }
+  
+  // Update Sidebar Footer
+  const nameEl = document.getElementById('admin-name');
+  if (nameEl) nameEl.textContent = name;
+  const avatarEl = document.getElementById('admin-avatar');
+  if (avatarEl) avatarEl.textContent = name.charAt(0).toUpperCase();
+
+  // Update Profile Card
+  const profileNameEl = document.getElementById('profile-admin-name');
+  if (profileNameEl) profileNameEl.textContent = name;
+  const profileAvatarEl = document.getElementById('profile-admin-avatar');
+  if (profileAvatarEl) profileAvatarEl.textContent = name.charAt(0).toUpperCase();
+  const profileDeptEl = document.getElementById('profile-admin-dept');
+  if (profileDeptEl) profileDeptEl.textContent = roleText;
+})();
+(document.getElementById('last-updated')||{}).textContent ='Last updated: '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+
+// ?"??"? NAV ?"??"?
+document.querySelectorAll('.nav-item[data-page]').forEach(btn=>{
+  btn.addEventListener('click',()=>goTo(btn.dataset.page));
+});
+
+function goTo(page){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll(`.nav-item[data-page="${page}"]`).forEach(n=>n.classList.add('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const t=document.getElementById('page-'+page);
+  if(t) t.classList.add('active');
+  (document.getElementById('topbar-title')||{}).textContent =pageTitles[page]||page;
+  if(page.startsWith('svc-')) openSF();
+  if(page==='usermgmt') renderUserTable();
+  if(page==='svc-scraplist') renderScrap();
+  if(page==='svc-pendingfrn') loadPendingFRN();
+  // Update URL without reload
+  history.replaceState(null,'','?page='+page);
+}
+
+// ?"??"? PENDING FRN ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
+let frnAllData = [];
+let frnFiltered = [];
+
+function authHdr(){ return {Authorization:'Bearer '+(localStorage.getItem('schiller_token')||'')}; }
+
+async function downloadBackup(){
+  const btn = document.getElementById('backup-btn');
+  const oldText = btn ? btn.textContent : '';
+  try {
+    if (btn) { btn.disabled = true; btn.textContent = 'Backing up...'; }
+    const res = await fetch('/api/admin/backup/download', { headers: authHdr() });
+    if (res.status === 401) { localStorage.clear(); window.location.href = 'login.html'; return; }
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Backup failed');
+    }
+    const blob = await res.blob();
+    const disposition = res.headers.get('Content-Disposition') || '';
+    const match = disposition.match(/filename="?([^"]+)"?/i);
+    const filename = match ? match[1] : 'schiller-backup-' + new Date().toISOString().slice(0,10) + '.json';
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(link.href);
+    showToast('Backup downloaded to your local system.','ok');
+  } catch(e) {
+    showToast('Backup failed: ' + e.message,'err');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = oldText || 'Backup'; }
+  }
+}
+
+async function loadPendingFRN(){
+  const tbody = document.getElementById('frn-tbody');
+  tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:28px;color:var(--muted);">Loading...</td></tr>';
+  try {
+    const res = await fetch('/api/emp/frn', {headers: authHdr()});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    frnAllData = await res.json();
+    // Update stat card
+    const statEl = document.getElementById('stat-pending-frn');
+    if(statEl) statEl.textContent = frnAllData.length;
+    // Populate branch filter
+    const branchSel = document.getElementById('frn-filter-branch');
+    const branches = [...new Set(frnAllData.map(r=>r.branch||'').filter(Boolean))].sort();
+    branchSel.innerHTML = '<option value="">All Branches</option>' +
+      branches.map(b=>`<option value="${esc(b)}">${esc(b)}</option>`).join('');
+    filterFrnTable();
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:28px;color:var(--red);">Failed to load: ${e.message}</td></tr>`;
+  }
+}
+
+function filterFrnTable(){
+  const q = (document.getElementById('frn-search').value||'').toLowerCase();
+  const br = document.getElementById('frn-filter-branch').value;
+  frnFiltered = frnAllData.filter(r=>{
+    const matchQ = !q || [r.scRno,r.frnNo,r.eng,r.scEng,r.customer,r.model,r.branch,r.region].join(' ').toLowerCase().includes(q);
+    const matchBr = !br || (r.branch||'') === br;
+    return matchQ && matchBr;
+  });
+  renderFrnTable();
+}
+
+function renderFrnTable(){
+  const tbody = document.getElementById('frn-tbody');
+  const badge = document.getElementById('frn-count-badge');
+  if(badge) badge.textContent = frnFiltered.length + ' record' + (frnFiltered.length!==1?'s':'');
+  if(!frnFiltered.length){
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:28px;color:var(--muted);">No pending FRN records found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = frnFiltered.map(r=>{
+    const pd = r.pdays ?? 0;
+    const pdClass = pd >= 7 ? 'color:var(--red);font-weight:700;' : pd >= 3 ? 'color:var(--amber);font-weight:700;' : 'color:var(--green);';
+    const dt = r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '-';
+    return `<tr>
+      <td><span class="chip-sm">${esc(r.scRno||'-')}</span></td>
+      <td style="font-size:12px;">${esc(r.scEng||'-')}</td>
+      <td style="font-size:12px;color:var(--accent);">${esc(r.frnNo||'-')}</td>
+      <td style="font-size:12px;">${esc(r.branch||'-')}</td>
+      <td style="font-size:12px;">${esc(r.eng||'-')}</td>
+      <td style="font-size:12px;">${esc(r.customer||'-')}</td>
+      <td style="font-size:12px;">${esc(r.model||'-')}</td>
+      <td style="font-size:12px;">${esc(r.unitStatus||'-')}</td>
+      <td style="font-size:12px;color:var(--soft);">${esc(r.defMod||'-')}</td>
+      <td style="font-size:12px;color:var(--muted);">${dt}</td>
+      <td style="${pdClass}">${pd}d</td>
+    </tr>`;
+  }).join('');
+}
+
+// ?"??"? Read ?page= param on load ?"??"?
+(function(){
+  const p=new URLSearchParams(window.location.search).get('page');
+  if(p && document.getElementById('page-'+p)){
+    goTo(p);
+  }
+})();
+
+let sfOpen=false;
+function toggleSF(){sfOpen=!sfOpen;applySF();}
+function toggleAR(){ var btn=document.getElementById('ar-toggle'); var panel=document.getElementById('ar-children'); if(!btn||!panel)return; btn.classList.toggle('open'); panel.classList.toggle('open'); }
+function toggleRTA(){ var btn=document.getElementById('rta-toggle'); var panel=document.getElementById('rta-children'); if(!btn||!panel)return; btn.classList.toggle('open'); panel.classList.toggle('open'); }
+function openSF(){sfOpen=true;applySF();}
+function applySF(){
+  document.getElementById('sf-children').classList.toggle('open',sfOpen);
+  document.getElementById('sf-toggle').classList.toggle('open',sfOpen);
+}
+async function loadStats() {
+  const t = document.getElementById('last-updated');
+  if(t) t.textContent = 'Updating...';
+
+  try {
+    const opts = { headers: authHdr() };
+    const [frn, ob, ur, dashboardData, closed] = await Promise.all([
+      fetch('/api/emp/frn', opts).then(r=>r.ok?r.json():[]).catch(()=>[]),
+      fetch('/api/prfob', opts).then(r=>r.ok?r.json():[]).catch(()=>[]),
+      fetch('/api/underrepair', opts).then(r=>r.ok?r.json():[]).catch(()=>[]),
+      fetch('/api/dashboard/admin', opts).then(r=>r.ok?r.json():{}).catch(()=>({})),
+      fetch('/api/completed-frn/admin/all', opts).then(r=>r.ok?r.json():[]).catch(()=>[])
+    ]);
+
+    if(document.getElementById('stat-total-services')) document.getElementById('stat-total-services').textContent = dashboardData?.stats?.totalServices || 0;
+    if(document.getElementById('stat-pending-frn')) document.getElementById('stat-pending-frn').textContent = frn.length || 0;
+    if(document.getElementById('stat-ob-pending')) document.getElementById('stat-ob-pending').textContent = ob.length || 0;
+    if(document.getElementById('stat-under-repair')) document.getElementById('stat-under-repair').textContent = ur.length || 0;
+    if(document.getElementById('stat-completed-frn')) document.getElementById('stat-completed-frn').textContent = closed.length || 0;
+
+    // Populate the weekly activity bar chart
+    if (dashboardData && dashboardData.weeklyData) {
+      const chartEl = document.getElementById('activity-bar-chart');
+      const labelsEl = document.getElementById('activity-bar-labels');
+      if (chartEl && labelsEl) {
+        chartEl.innerHTML = '';
+        labelsEl.innerHTML = '';
+        const maxCount = Math.max(...dashboardData.weeklyData.flatMap(d => [d.count||0, d.externalCount||0, d.supplierCount||0]), 1);
+        
+        dashboardData.weeklyData.forEach(d => {
+          const dayGroupWrapper = document.createElement('div');
+          dayGroupWrapper.style.flex = '1';
+          dayGroupWrapper.style.height = '100%';
+          dayGroupWrapper.style.display = 'flex';
+          dayGroupWrapper.style.alignItems = 'flex-end';
+          dayGroupWrapper.style.justifyContent = 'center';
+          dayGroupWrapper.style.gap = '2px';
+
+          const createBar = (val, color, name) => {
+            const barWrapper = document.createElement('div');
+            barWrapper.style.flex = '1';
+            barWrapper.style.display = 'flex';
+            barWrapper.style.flexDirection = 'column';
+            barWrapper.style.justifyContent = 'flex-end';
+            barWrapper.style.alignItems = 'center';
+            barWrapper.style.height = '100%';
+            barWrapper.style.position = 'relative';
+
+            const heightPct = Math.max(2, Math.round(((val || 0) / maxCount) * 100));
+
+            const bar = document.createElement('div');
+            bar.style.width = '100%';
+            bar.style.height = heightPct + '%';
+            bar.style.backgroundColor = color;
+            bar.style.borderRadius = '3px 3px 0 0';
+            bar.style.opacity = '0.85';
+            bar.style.transition = 'opacity 0.2s';
+            bar.style.cursor = 'pointer';
+            bar.title = `${name}: ${val}`;
+            bar.onmouseover = () => bar.style.opacity = '1';
+            bar.onmouseout = () => bar.style.opacity = '0.85';
+
+            if (val > 0) {
+              const countLbl = document.createElement('span');
+              countLbl.style.position = 'absolute';
+              countLbl.style.bottom = heightPct + '%';
+              countLbl.style.marginBottom = '2px';
+              countLbl.style.fontSize = '8.5px';
+              countLbl.style.color = 'var(--text)';
+              countLbl.style.fontWeight = '700';
+              countLbl.textContent = val;
+              barWrapper.appendChild(countLbl);
+            }
+
+            barWrapper.appendChild(bar);
+            dayGroupWrapper.appendChild(barWrapper);
+          };
+
+          createBar(d.count, 'var(--accent)', 'Service');
+          createBar(d.supplierCount, 'var(--amber)', 'Supplier Warranty');
+          createBar(d.externalCount, 'var(--purple)', 'External Repair');
+
+          chartEl.appendChild(dayGroupWrapper);
+
+          const lbl = document.createElement('span');
+          lbl.style.flex = '1';
+          lbl.textContent = d.date;
+          labelsEl.appendChild(lbl);
+        });
+      }
+
+      const compChartEl = document.getElementById('completed-bar-chart');
+      const compLabelsEl = document.getElementById('completed-bar-labels');
+      if (compChartEl && compLabelsEl) {
+        compChartEl.innerHTML = '';
+        compLabelsEl.innerHTML = '';
+        const maxCompCount = Math.max(...dashboardData.weeklyData.map(d => d.completedFrnCount || 0), 1);
+        
+        dashboardData.weeklyData.forEach(d => {
+          const heightPct = Math.max(5, Math.round(((d.completedFrnCount || 0) / maxCompCount) * 100));
+          
+          const bar = document.createElement('div');
+          bar.className = 'bar';
+          bar.style.height = heightPct + '%';
+          bar.style.backgroundColor = 'var(--green)'; // Use green since it's completed
+          bar.style.backgroundImage = 'linear-gradient(to top, #047857, #059669)';
+          bar.title = `${d.completedFrnCount || 0} completed FRNs`;
+          
+          if (d.completedFrnCount > 0) {
+            bar.innerHTML = `<span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); font-size:10px; color:var(--text); font-weight:700;">${d.completedFrnCount}</span>`;
+          }
+          compChartEl.appendChild(bar);
+
+          const lbl = document.createElement('span');
+          lbl.style.flex = '1';
+          lbl.textContent = d.date;
+          compLabelsEl.appendChild(lbl);
+        });
+      }
+    }
+
+  } catch(e) {
+    console.error('Failed to load stats', e);
+  }
+  
+  if(t) t.textContent = 'Last updated: ' + new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+
+// Call on load
+document.addEventListener('DOMContentLoaded', loadStats);
+// For safety if DOM is already loaded
+if(document.readyState === 'complete' || document.readyState === 'interactive') {
+  loadStats();
+}
+
+function filterSvcTable(input,tbodyId){
+  const q=input.value.toLowerCase();
+  document.querySelectorAll('#'+tbodyId+' tr').forEach(tr=>{tr.style.display=tr.textContent.toLowerCase().includes(q)?'':'none';});
+}
+function delRow(btn){if(confirm('Remove this record?')){btn.closest('tr').remove();showToast('Record removed.','ok');}}
+function addSvcRow(tbodyId){
+  const tbody=document.getElementById(tbodyId);
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td colspan="8" style="padding:10px 12px;"><div style="display:flex;gap:8px;flex-wrap:wrap;"><input style="flex:1;min-width:120px;padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;" placeholder="Enter details..."/><button class="btn btn-primary btn-sm" onclick="confirmAddRow(this,'${tbodyId}')">Add</button><button class="btn btn-outline btn-sm" onclick="this.closest('tr').remove()">Cancel</button></div></td>`;
+  tbody.appendChild(tr);tr.querySelector('input').focus();
+}
+function confirmAddRow(btn,tbodyId){
+  const inp=btn.closest('td').querySelector('input');
+  const val=inp?.value?.trim();
+  if(!val){showToast('Enter some value first.','err');return;}
+  const tr=btn.closest('tr');
+  tr.innerHTML=`<td colspan="7">${val}</td><td><button class="action-xs danger" onclick="delRow(this)">&#128465;</button></td>`;
+  showToast('Row added.','ok');
+}
+
+// ?"??"? SCRAP ?"??"?
+let scrapItems=[
+  {id:'SCR-001',device:'AT-2 Plus',serial:'AT2-2019-004',division:'SHIPL',customer:'City Hospital',reason:'Motherboard burnt',addedBy:'Ravi Shankar',date:'15 Mar 2026',status:'Approved'},
+  {id:'SCR-002',device:'Hamilton-C1',serial:'HC1-2018-011',division:'VENTILATOR',customer:'Apollo Clinic',reason:'Beyond economical repair',addedBy:'Priya Devi',date:'18 Mar 2026',status:'Pending Approval'},
+  {id:'SCR-003',device:'Stellant Injector',serial:'STL-2017-007',division:'INJECTOR',customer:'Sunrise Med',reason:'Pump failure',addedBy:'Deepa Thomas',date:'20 Mar 2026',status:'Disposed'},
+  {id:'SCR-004',device:'Logiq E10',serial:'LE10-2020-002',division:'RADIOLOGY',customer:'BlueStar Hosp',reason:'Transducer cracked',addedBy:'Meena Kumari',date:'22 Mar 2026',status:'Pending Approval'},
+  {id:'SCR-005',device:'PF-300',serial:'PF3-2016-009',division:'GANSHORN',customer:'Apex Medics',reason:'Calibration impossible',addedBy:'Rajesh Verma',date:'25 Mar 2026',status:'Approved'},
+  {id:'SCR-006',device:'MT-200',serial:'MT2-2015-022',division:'HOLTER',customer:'Med City',reason:'PCB water damage',addedBy:'Ashok Kumar',date:'27 Mar 2026',status:'Disposed'},
+  {id:'SCR-007',device:'uMEC 10',serial:'UM10-2021-031',division:'MONITORS',customer:'Green Cross',reason:'Power supply failure',addedBy:'Binod Kumar',date:'28 Mar 2026',status:'Pending Approval'},
+];
+let nextScrapId=8;
+function renderScrap(){
+  const statusF=document.getElementById('scrap-status-filter').value;
+  const divF=document.getElementById('scrap-div-filter').value;
+  const filtered=scrapItems.filter(s=>(!statusF||s.status===statusF)&&(!divF||s.division===divF));
+  (document.getElementById('scrap-total')||{}).textContent =scrapItems.length;
+  (document.getElementById('scrap-pending')||{}).textContent =scrapItems.filter(s=>s.status==='Pending Approval').length;
+  (document.getElementById('scrap-approved')||{}).textContent =scrapItems.filter(s=>s.status==='Approved').length;
+  (document.getElementById('scrap-disposed')||{}).textContent =scrapItems.filter(s=>s.status==='Disposed').length;
+  (document.getElementById('scrap-count-label')||{}).textContent =filtered.length+' items';
+  (document.getElementById('scrap-footer')||{}).textContent ='Showing '+filtered.length+' of '+scrapItems.length+' scrap items';
+  document.getElementById('scrap-tbody').innerHTML=filtered.map(s=>`<tr>
+    <td><span class="chip-sm">#${s.id}</span></td><td style="font-weight:600;">${s.device}</td>
+    <td style="font-size:12px;color:var(--soft);font-family:monospace;">${s.serial}</td>
+    <td><span class="badge-pill bp-blue">${s.division}</span></td>
+    <td style="font-size:12px;">${s.customer}</td>
+    <td style="font-size:12px;color:var(--soft);">${s.reason}</td>
+    <td style="font-size:12px;">${s.addedBy}</td>
+    <td style="font-size:12px;color:var(--muted);">${s.date}</td>
+    <td><span class="badge-pill ${s.status==='Approved'?'bp-green':s.status==='Disposed'?'bp-muted':'bp-amber'}">${s.status}</span></td>
+    <td>
+      <select class="svc-select" style="padding:3px 8px;font-size:11px;" onchange="changeScrapStatus('${s.id}',this.value)">
+        <option ${s.status==='Pending Approval'?'selected':''}>Pending Approval</option>
+        <option ${s.status==='Approved'?'selected':''}>Approved</option>
+        <option ${s.status==='Disposed'?'selected':''}>Disposed</option>
+      </select>
+      <button class="action-xs danger" style="margin-left:4px;" onclick="deleteScrap('${s.id}')">&#128465;</button>
+    </td>
+  </tr>`).join('');
+}
+function changeScrapStatus(id,status){const item=scrapItems.find(s=>s.id===id);if(item){item.status=status;renderScrap();showToast('Status updated.','ok');}}
+function deleteScrap(id){if(confirm('Remove from scrap list?')){scrapItems=scrapItems.filter(s=>s.id!==id);renderScrap();showToast('Removed.','ok');}}
+function openScrapModal(){document.getElementById('scrap-modal').classList.add('show');}
+function closeScrapModal(){document.getElementById('scrap-modal').classList.remove('show');}
+function saveScrapItem(){
+  const device=document.getElementById('sc-device').value.trim();
+  const div=document.getElementById('sc-div').value;
+  const reason=document.getElementById('sc-reason').value.trim();
+  const msg=document.getElementById('scrap-form-msg');
+  if(!device||!div||!reason){msg.className='form-msg err-msg';msg.textContent='Please fill Device, Division and Reason.';return;}
+  scrapItems.push({id:'SCR-00'+nextScrapId++,device,serial:document.getElementById('sc-serial').value.trim()||'-',division:div,customer:document.getElementById('sc-customer').value.trim()||'-',reason,addedBy:document.getElementById('sc-addedby').value.trim()||'Admin',date:new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}),status:document.getElementById('sc-status').value});
+  msg.className='form-msg ok';msg.textContent='Added successfully!';
+  setTimeout(()=>{closeScrapModal();renderScrap();msg.className='form-msg';},800);
+  showToast('Item added to Scrap List.','ok');
+  ['sc-device','sc-serial','sc-customer','sc-reason','sc-addedby'].forEach(id=>document.getElementById(id).value='');
+}
+document.getElementById('scrap-modal').addEventListener('click',e=>{if(e.target===document.getElementById('scrap-modal'))closeScrapModal();});
+
+// ?"??"? USER MGMT ?"??"?
+let localUsers=JSON.parse(localStorage.getItem('si_users')||'[]');
+if(!localUsers.length){localUsers=[{id:'u1',name:'Admin',email:'admin@schillerindia.com',role:'admin',created:'01 Jan 2025'},{id:'u2',name:'Kumar',email:'kumar@schillerindia.com',role:'admin',created:'15 Feb 2025'},{id:'u3',name:'Ashok Kumar',email:'ashok@schillerindia.com',role:'employee',created:'10 Mar 2025'}];saveUsers();}
+function saveUsers(){localStorage.setItem('si_users',JSON.stringify(localUsers));}
+function renderUserTable(){
+  const q=(document.getElementById('um-search')?.value||'').toLowerCase();
+  const shown=localUsers.filter(u=>u.name.toLowerCase().includes(q)||u.email.toLowerCase().includes(q));
+  const tbody=document.getElementById('um-tbody');
+  const empty=document.getElementById('um-empty');
+  if(!shown.length){tbody.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  tbody.innerHTML=shown.map((u,i)=>`<tr><td style="padding-left:20px;color:var(--muted);font-size:12px;">${i+1}</td><td><strong>${esc(u.name)}</strong></td><td style="color:var(--soft);">${esc(u.email)}</td><td><span class="role-chip role-${u.role}">${u.role}</span></td><td style="color:var(--muted);font-size:12px;">${u.created}</td><td><button class="del-btn" onclick="confirmDeleteUser('${u.id}','${esc(u.name)}')">&#128465; Delete</button></td></tr>`).join('');
+}
+function filterUsers(){renderUserTable();}
+function toggleAddForm(){const card=document.getElementById('add-user-card');const showing=card.classList.contains('show');card.classList.toggle('show',!showing);if(!showing){['u-name','u-email','u-pass'].forEach(id=>{document.getElementById(id).value='';document.getElementById(id).classList.remove('err');});document.getElementById('u-role').value='employee';clearFormMsg();}}
+function submitAddUser(){
+  clearFormMsg();
+  const name=document.getElementById('u-name').value.trim();const email=document.getElementById('u-email').value.trim();const pass=document.getElementById('u-pass').value.trim();const role=document.getElementById('u-role').value;
+  let hasErr=false;
+  ['u-name','u-email','u-pass'].forEach(id=>document.getElementById(id).classList.remove('err'));
+  if(!name){document.getElementById('u-name').classList.add('err');hasErr=true;}
+  if(!email||!email.includes('@')){document.getElementById('u-email').classList.add('err');hasErr=true;}
+  if(!pass||pass.length<6){document.getElementById('u-pass').classList.add('err');hasErr=true;}
+  if(hasErr){showFormMsg('Please fill all fields. Password must be at least 6 characters.','err-msg');return;}
+  if(localUsers.find(u=>u.email.toLowerCase()===email.toLowerCase())){showFormMsg('A user with this email already exists.','err-msg');return;}
+  const newUser={id:'u'+Date.now(),name,email,password:pass,role,created:new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})};
+  localUsers.push(newUser);saveUsers();
+  showFormMsg('?" User "'+name+'" created successfully!','ok');
+  const btn=document.getElementById('add-submit-btn');btn.textContent='?" Created';
+  renderUserTable();
+  setTimeout(()=>{toggleAddForm();btn.textContent='Create User';},1500);
+  showToast(name+' added as '+role+'!','ok');
+}
+function confirmDeleteUser(id,name){
+  (document.getElementById('confirm-msg')||{}).textContent ='Are you sure you want to delete "'+name+'"? This cannot be undone.';
+  document.getElementById('confirm-modal').classList.add('show');
+  document.getElementById('confirm-yes').onclick=()=>doDeleteUser(id,name);
+}
+function closeConfirmModal(){document.getElementById('confirm-modal').classList.remove('show');}
+function doDeleteUser(id,name){closeConfirmModal();localUsers=localUsers.filter(u=>u.id!==id);saveUsers();renderUserTable();showToast(name+' deleted.','ok');}
+document.getElementById('confirm-modal').addEventListener('click',e=>{if(e.target===document.getElementById('confirm-modal'))closeConfirmModal();});
+function showFormMsg(text,cls){const el=document.getElementById('add-form-msg');el.textContent=text;el.className='form-msg '+cls;}
+function clearFormMsg(){const el=document.getElementById('add-form-msg');el.textContent='';el.className='form-msg';}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function showToast(msg,type='ok'){const wrap=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="tdot"></span>'+msg;wrap.appendChild(el);setTimeout(()=>el.remove(),3200);}
+function logout(){localStorage.removeItem('schiller_token');localStorage.removeItem('schiller_user');localStorage.removeItem('schiller_role');window.location.href='login.html';}
+</script>
+</body>
+</html>
+
+
+
+
+
+

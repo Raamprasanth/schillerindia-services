@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<script>(function(){
+  const t=localStorage.getItem('schiller_token');
+  if(!t) window.location.href='login.html';
+})();</script>
+<title>SchillerIndia - Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f0f4f8;--surface:#ffffff;--surface2:#e8f0f7;--surface3:#f5f9fc;
+  --border:#ccdde8;--border2:#ddeaf4;
+  --accent:#0068b5;--accent2:#005a9e;--accent3:#e8f3fb;
+  --green:#047857;--green-bg:rgba(4,120,87,0.08);
+  --amber:#b45309;--amber-bg:rgba(180,83,9,0.08);
+  --red:#b91c1c;--red-bg:rgba(185,28,28,0.07);
+  --purple:#5b21b6;--purple-bg:rgba(91,33,182,0.08);
+  --teal:#0e7490;--teal-bg:rgba(14,116,144,0.08);
+  --text:#0f2236;--muted:#6b8ca8;--soft:#3d6480;--card:#ffffff;
+  --shadow:0 1px 8px rgba(0,60,120,0.07);
+  --shadow-md:0 4px 20px rgba(0,60,120,0.1);
+  --shadow-lg:0 12px 40px rgba(0,60,120,0.13);
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
+/* ── SIDEBAR ── */
+.sidebar{width:225px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 14px rgba(0,60,120,0.07);}
+.sidebar::-webkit-scrollbar{width:4px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.sidebar-header{padding:16px 16px 12px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#002d5c,#0068b5);}
+.logo-wrap{display:flex;align-items:center;gap:9px;}
+.logo-icon{width:34px;height:34px;background:rgba(255,255,255,0.14);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#fff;border:1.5px solid rgba(255,255,255,0.22);}
+.logo-text{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#fff;line-height:1.2;}
+.logo-text span{display:block;font-size:10px;color:rgba(255,255,255,0.55);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;}
+.pt-badge{margin:8px 12px 0;padding:3px 10px;border-radius:20px;font-size:9.5px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;display:inline-block;background:rgba(91,33,182,0.12);color:#7c3aed;border:1px solid rgba(91,33,182,0.22);}
+.sidebar-nav{flex:1;padding:8px 6px;}
+.nav-sec{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;padding:9px 8px 4px;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:7px;color:var(--soft);font-size:12.5px;font-weight:500;cursor:pointer;transition:all 0.18s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:var(--accent3);color:var(--accent);font-weight:700;border-left:3px solid var(--accent);padding-left:8px;}
+.nav-item .ico{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:9px;}
+.nav-badge.amber{background:var(--amber);}
+.nav-badge.green{background:var(--green);}
+.sidebar-footer{padding:11px 12px;border-top:1px solid var(--border);background:var(--surface3);}
+.user-row{display:flex;align-items:center;gap:8px;}
+.user-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#5b21b6,#7c3aed);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
+.user-nm{font-size:12px;font-weight:600;color:var(--text);}
+.user-rl{font-size:10px;color:var(--muted);}
+.logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:10.5px;font-weight:600;transition:all 0.2s;}
+.logout-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;}
+.topbar{padding:14px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:var(--shadow);}
+.topbar-left h1{font-family:'Syne',sans-serif;font-size:19px;font-weight:700;color:var(--text);}
+.topbar-date{font-size:11.5px;color:var(--muted);margin-top:2px;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.notif-wrap{position:relative;}
+.notif-btn{position:relative;padding:8px 14px;border-radius:8px;font-size:15px;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--soft);display:flex;align-items:center;gap:6px;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;}
+.notif-btn:hover{border-color:var(--accent);color:var(--accent);}
+.notif-count{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;background:#b91c1c;color:#fff;border-radius:20px;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center;padding:0 4px;border:2px solid var(--surface);}
+.notif-count.show{display:flex;}
+.notif-panel{position:absolute;top:calc(100% + 10px);right:0;width:360px;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 16px 48px rgba(0,30,80,0.16);z-index:200;display:none;flex-direction:column;overflow:hidden;}
+.notif-panel.open{display:flex;}
+.np-head{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.np-head-title{font-family:'Syne',sans-serif;font-size:13.5px;font-weight:700;color:var(--text);}
+.np-mark{font-size:11px;color:var(--accent);cursor:pointer;font-weight:600;background:none;border:none;padding:0;}
+.np-list{max-height:360px;overflow-y:auto;}
+.np-item{padding:13px 16px;border-bottom:1px solid rgba(0,40,80,0.06);transition:background 0.15s;}
+.np-item:last-child{border-bottom:none;}
+.np-item:hover{background:var(--surface2);}
+.np-item.unread{border-left:3px solid var(--accent);}
+.np-item.unread.prio-urgent,.np-item.unread.prio-high{border-left-color:#b91c1c;}
+.np-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.np-title{font-size:12.5px;font-weight:600;color:var(--text);}
+.np-msg{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.45;}
+.np-time{font-size:10px;color:var(--muted);margin-top:3px;}
+.np-badge{padding:2px 7px;border-radius:10px;font-size:9.5px;font-weight:700;flex-shrink:0;}
+.np-empty{padding:36px;text-align:center;color:var(--muted);font-size:12.5px;}
+.np-foot{padding:10px 16px;border-top:1px solid var(--border);text-align:center;}
+.np-foot a{font-size:11.5px;color:var(--accent);text-decoration:none;font-weight:600;}
+.content{flex:1;padding:24px 28px;overflow-y:auto;}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.anim{animation:fadeUp 0.45s ease both;}
+.anim-1{animation-delay:0.05s;}.anim-2{animation-delay:0.1s;}.anim-3{animation-delay:0.15s;}.anim-4{animation-delay:0.2s;}.anim-5{animation-delay:0.25s;}.anim-6{animation-delay:0.3s;}
+
+/* ── WELCOME HERO ── */
+.hero{background:linear-gradient(135deg,#002d5c 0%,#0068b5 55%,#0ea5e9 100%);border-radius:16px;padding:26px 30px;margin-bottom:22px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:20px;box-shadow:0 4px 24px rgba(0,104,181,0.3);}
+.hero::before{content:'';position:absolute;top:-60px;right:-40px;width:280px;height:280px;border-radius:50%;background:rgba(255,255,255,0.05);pointer-events:none;}
+.hero::after{content:'';position:absolute;bottom:-80px;right:120px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.04);pointer-events:none;}
+.hero-left h2{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:#fff;margin-bottom:5px;}
+.hero-left p{font-size:13px;color:rgba(255,255,255,0.7);max-width:400px;line-height:1.6;}
+.hero-meta{display:flex;gap:28px;flex-shrink:0;}
+.hero-stat{text-align:center;}
+.hero-stat-val{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#fff;line-height:1;}
+.hero-stat-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.08em;margin-top:4px;}
+.hero-divider{width:1px;background:rgba(255,255,255,0.2);align-self:stretch;}
+.live-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:20px;font-size:11px;font-weight:700;color:#fff;margin-top:10px;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;animation:blink 1.5s infinite;}
+@keyframes blink{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(1.3);}}
+
+/* ── STATS GRID ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:var(--shadow);cursor:pointer;}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
+.sc-blue::after{background:linear-gradient(90deg,#0068b5,#0ea5e9);}
+.sc-green::after{background:linear-gradient(90deg,#047857,#059669);}
+.sc-amber::after{background:linear-gradient(90deg,#b45309,#d97706);}
+.sc-purple::after{background:linear-gradient(90deg,#5b21b6,#7c3aed);}
+.sc-teal::after{background:linear-gradient(90deg,#0e7490,#0891b2);}
+.sc-red::after{background:linear-gradient(90deg,#b91c1c,#dc2626);}
+.stat-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);}
+.stat-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.stat-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;}
+.stat-ico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.ico-blue{background:rgba(0,104,181,0.1);}
+.ico-green{background:rgba(4,120,87,0.1);}
+.ico-amber{background:rgba(180,83,9,0.1);}
+.ico-purple{background:rgba(91,33,182,0.1);}
+.ico-teal{background:rgba(14,116,144,0.1);}
+.ico-red{background:rgba(185,28,28,0.1);}
+.stat-val{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;line-height:1;margin-bottom:4px;}
+.sv-blue{color:var(--accent);}
+.sv-green{color:var(--green);}
+.sv-amber{color:var(--amber);}
+.sv-purple{color:var(--purple);}
+.sv-teal{color:var(--teal);}
+.sv-red{color:var(--red);}
+.stat-sub{font-size:10.5px;color:var(--muted);font-weight:500;}
+.stat-bar{height:4px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-top:10px;}
+.stat-bar-fill{height:4px;border-radius:4px;transition:width 1.2s ease;}
+.sbf-blue{background:linear-gradient(90deg,var(--accent),#0ea5e9);}
+.sbf-green{background:linear-gradient(90deg,var(--green),#059669);}
+.sbf-amber{background:linear-gradient(90deg,var(--amber),#d97706);}
+.sbf-purple{background:linear-gradient(90deg,var(--purple),#7c3aed);}
+
+/* ── PANELS ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+.grid-3{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:18px;}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);}
+.panel-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface3);}
+.panel-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;}
+.panel-action{font-size:12px;color:var(--accent);font-weight:600;cursor:pointer;text-decoration:none;border:none;background:none;font-family:'Plus Jakarta Sans',sans-serif;}
+.panel-action:hover{color:var(--accent2);}
+.panel-body{padding:18px;}
+
+/* ── TABLE ── */
+.mini-table{width:100%;border-collapse:collapse;}
+.mini-table th{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;padding:0 10px 10px;text-align:left;border-bottom:1px solid var(--border);}
+.mini-table td{padding:10px;font-size:12.5px;border-bottom:1px solid rgba(0,60,120,0.05);color:var(--text);vertical-align:middle;}
+.mini-table tr:last-child td{border-bottom:none;}
+.mini-table tbody tr{cursor:pointer;transition:background 0.13s;}
+.mini-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
+
+/* ── ACTIVITY FEED ── */
+.activity-item{display:flex;align-items:flex-start;gap:11px;padding:11px 0;border-bottom:1px solid rgba(0,60,120,0.05);}
+.activity-item:last-child{border-bottom:none;}
+.a-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.a-text{font-size:12.5px;color:var(--soft);line-height:1.5;}
+.a-text strong{color:var(--text);font-weight:600;}
+.a-time{font-size:10.5px;color:var(--muted);margin-top:2px;font-family:'JetBrains Mono',monospace;}
+
+/* ── PILLS ── */
+.s-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:700;white-space:nowrap;}
+.s-pill::before{content:'';width:5px;height:5px;border-radius:50%;display:block;}
+.sp-open{background:var(--amber-bg);color:var(--amber);}.sp-open::before{background:var(--amber);}
+.sp-closed{background:var(--green-bg);color:var(--green);}.sp-closed::before{background:var(--green);}
+.sp-pending{background:rgba(91,33,182,0.1);color:var(--purple);}.sp-pending::before{background:var(--purple);}
+.sp-active{background:var(--teal-bg);color:var(--teal);}.sp-active::before{background:var(--teal);}
+
+/* ── PROGRESS RING ── */
+.ring-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px 10px;}
+.ring-svg{transform:rotate(-90deg);}
+.ring-label{text-align:center;margin-top:12px;}
+.ring-val{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);}
+.ring-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+.rings-row{display:flex;gap:10px;justify-content:space-around;padding:16px 10px;}
+
+/* ── QUICK LINKS ── */
+.quick-links{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.quick-link{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;border:1.5px solid var(--border);text-decoration:none;color:var(--soft);font-size:12.5px;font-weight:600;transition:all 0.2s;background:var(--surface);}
+.quick-link:hover{border-color:var(--accent);color:var(--accent);background:var(--accent3);transform:translateY(-1px);box-shadow:var(--shadow);}
+.ql-ico{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+
+/* ── PERFORMANCE CARD ── */
+.perf-card{background:linear-gradient(145deg,var(--surface),var(--surface2));border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:var(--shadow);}
+.perf-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.perf-title{font-size:11px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--soft);}
+.perf-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:10px;font-weight:700;border:1px solid rgba(0,104,181,0.18);background:rgba(0,104,181,0.08);color:var(--accent);}
+.perf-score{font-family:'Syne',sans-serif;font-size:44px;font-weight:800;line-height:1;color:var(--text);}
+.perf-label{font-size:13px;font-weight:700;color:var(--green);margin-top:4px;}
+.perf-summary{font-size:12.5px;color:var(--soft);line-height:1.6;margin-top:8px;}
+.perf-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px;}
+.perf-metric{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:10px 12px;}
+.pm-lbl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);margin-bottom:4px;}
+.pm-val{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);}
+
+/* ── BUTTONS ── */
+.btn{padding:8px 16px;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--accent);color:#fff;}.btn-primary:hover{background:var(--accent2);}
+.btn-outline{background:none;border:1.5px solid var(--border);color:var(--soft);}.btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+.btn-sm{padding:6px 13px;font-size:12px;border-radius:7px;}
+
+/* ── MINI CHART ── */
+.bar-chart-row{display:flex;align-items:flex-end;gap:6px;height:64px;padding:0 2px;}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.bar{width:100%;border-radius:4px 4px 0 0;transition:height 0.8s ease;}
+.bar-lbl{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+.chart-legend{display:flex;gap:14px;margin-top:10px;}
+.cl-item{display:flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:var(--soft);}
+.cl-dot{width:9px;height:9px;border-radius:3px;}
+
+/* ── TOAST ── */
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:700;display:flex;flex-direction:column;gap:7px;}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:11px 15px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:9px;min-width:230px;animation:fadeUp 0.28s ease;box-shadow:0 8px 22px rgba(0,0,0,0.1);}
+.toast.ok{border-color:rgba(4,120,87,0.35);}.toast.ok .td{background:var(--green);}
+.toast.err{border-color:rgba(185,28,28,0.35);}.toast.err .td{background:var(--red);}
+.toast.info{border-color:rgba(0,104,181,0.35);}.toast.info .td{background:var(--accent);}
+.td{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+@media(max-width:1100px){.stats-grid{grid-template-columns:1fr 1fr;}.grid-2,.grid-3{grid-template-columns:1fr;}}
+
+    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
+    </style>
+  <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="employee-theme.css">
+  <script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <link rel="stylesheet" href="dashboard-topbar-actions.css">
+  <script src="dashboard-topbar-actions.js" defer></script>
+  <script src="brand-logo.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-wrap">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="logo-text">SchillerIndia<span>Services Portal</span></div>
+    </div>
+  </div>
+  <div style="padding:7px 12px 0;"><span class="pt-badge">&#9733; Product Team</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-sec">My Dashboard</div>
+    <a class="nav-item active" href="pt-dashboard.html"><span class="ico">&#128202;</span> Dashboard</a>
+    <div class="nav-sec">Service Records</div>
+    <a class="nav-item" href="ptcall.html"><span class="ico">&#128222;</span> Call Register</a>
+    <a class="nav-item" href="ptclose.html"><span class="ico">&#9989;</span> Closed Calls</a>
+
+    <div class="nav-sec">Inventory</div>
+    <a class="nav-item" href="ptbir.html"><span class="ico">&#128203;</span> BIR LIST</a>
+    <a class="nav-item" href="ptcbir.html"><span class="ico">&#128193;</span> Closed BIR</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="user-av" id="user-av">K</div>
+      <div>
+        <div class="user-nm" id="user-nm">User</div>
+        <div class="user-rl">Product Team Engineer</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-left">
+        <h1>Dashboard</h1>
+      </div>
+      <div class="topbar-date" id="topbar-date"></div>
+    </div>
+    <div class="topbar-right">
+      <div class="notif-wrap">
+        
+        <div class="notif-panel" id="notif-panel">
+          <div class="np-head"><span class="np-head-title">&#128276; Announcements</span><button class="np-mark" onclick="markAllRead()">Mark all read</button></div>
+          <div class="np-list" id="np-list"><div class="np-empty">Loading…</div></div>
+          <div class="np-foot"><a href="#">View all</a></div>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="loadAllData()">&#8635; Refresh</button>
+      <button class="btn btn-primary btn-sm" onclick="exportSummary()">&#128228; Export Summary</button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- HERO -->
+    <div class="hero anim anim-1">
+      <div class="hero-left">
+        <h2>Welcome back, <span id="hero-name">User</span> &#128075;</h2>
+        <p>Here's your activity overview for SchillerIndia Services Portal. All your assigned records and activities are summarised below.</p>
+        <div class="live-pill"><span class="live-dot"></span> Live Data</div>
+      </div>
+      <div class="hero-meta">
+        <div class="hero-stat">
+          <div class="hero-stat-val" id="hero-total">&#8212;</div>
+          <div class="hero-stat-lbl">Total Records</div>
+        </div>
+        <div class="hero-divider"></div>
+        <div class="hero-stat">
+          <div class="hero-stat-val" id="hero-open">&#8212;</div>
+          <div class="hero-stat-lbl">Open Items</div>
+        </div>
+        <div class="hero-divider"></div>
+        <div class="hero-stat">
+          <div class="hero-stat-val" id="hero-closed">&#8212;</div>
+          <div class="hero-stat-lbl">Closed</div>
+        </div>
+        <div class="hero-divider"></div>
+        <div class="hero-stat">
+          <div class="hero-stat-val" id="hero-rate">&#8212;</div>
+          <div class="hero-stat-lbl">Close Rate</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stats-grid">
+      <div class="stat-card sc-blue anim anim-2" onclick="window.location.href='ptcall.html'">
+        <div class="stat-header">
+          <div class="stat-lbl">Call Register</div>
+          <div class="stat-ico ico-blue">&#128222;</div>
+        </div>
+        <div class="stat-val sv-blue" id="sc-calls">&#8212;</div>
+        <div class="stat-sub">Open service calls</div>
+        <div class="stat-bar"><div class="stat-bar-fill sbf-blue" id="bar-calls" style="width:0%"></div></div>
+      </div>
+      <div class="stat-card sc-green anim anim-2" onclick="window.location.href='ptclose.html'">
+        <div class="stat-header">
+          <div class="stat-lbl">Closed Calls</div>
+          <div class="stat-ico ico-green">&#128274;</div>
+        </div>
+        <div class="stat-val sv-green" id="sc-closed-calls">&#8212;</div>
+        <div class="stat-sub">Completed calls</div>
+        <div class="stat-bar"><div class="stat-bar-fill sbf-green" id="bar-closed-calls" style="width:0%"></div></div>
+      </div>
+      <div class="stat-card sc-amber anim anim-3" onclick="window.location.href='pt-pending-activity.html'">
+        <div class="stat-header">
+          <div class="stat-lbl">Pending Activity</div>
+          <div class="stat-ico ico-amber">&#9203;</div>
+        </div>
+        <div class="stat-val sv-amber" id="sc-pending-act">&#8212;</div>
+        <div class="stat-sub">Activities pending</div>
+        <div class="stat-bar"><div class="stat-bar-fill sbf-amber" id="bar-pending-act" style="width:0%"></div></div>
+      </div>
+      <div class="stat-card sc-purple anim anim-3" onclick="window.location.href='pt-closed-activity.html'">
+        <div class="stat-header">
+          <div class="stat-lbl">Closed Activity</div>
+          <div class="stat-ico ico-purple">&#9989;</div>
+        </div>
+        <div class="stat-val sv-purple" id="sc-closed-act">&#8212;</div>
+        <div class="stat-sub">Activities resolved</div>
+        <div class="stat-bar"><div class="stat-bar-fill sbf-purple" id="bar-closed-act" style="width:0%"></div></div>
+      </div>
+      <div class="stat-card sc-teal anim anim-4" onclick="window.location.href='ptbir.html'">
+        <div class="stat-header">
+          <div class="stat-lbl">BIR LIST</div>
+          <div class="stat-ico ico-teal">&#128203;</div>
+        </div>
+        <div class="stat-val sv-teal" id="sc-bir">&#8212;</div>
+        <div class="stat-sub">Inspection records</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="background:linear-gradient(90deg,var(--teal),#0891b2);width:0%" id="bar-bir"></div></div>
+      </div>
+      <div class="stat-card sc-green anim anim-4" onclick="window.location.href='ptcbir.html'">
+        <div class="stat-header">
+          <div class="stat-lbl">Closed BIR</div>
+          <div class="stat-ico ico-green">&#128193;</div>
+        </div>
+        <div class="stat-val sv-green" id="sc-closed-bir">&#8212;</div>
+        <div class="stat-sub">Closed inspections</div>
+        <div class="stat-bar"><div class="stat-bar-fill sbf-green" id="bar-closed-bir" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- ROW: PERFORMANCE + QUICK LINKS -->
+    <div class="grid-3 anim anim-4">
+      <!-- Performance -->
+      <div class="perf-card">
+        <div class="perf-head">
+          <div class="perf-title">My Performance Index</div>
+          <div class="perf-badge">&#9650; Calculated</div>
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:16px;">
+          <div>
+            <div class="perf-score" id="perf-score">0%</div>
+            <div class="perf-label" id="perf-label">Calculating...</div>
+          </div>
+          <!-- Mini bar chart -->
+          <div style="flex:1;">
+            <div class="bar-chart-row" id="perf-chart">
+              <div class="bar-col"><div class="bar sbf-blue" style="height:30%;background:linear-gradient(to top,var(--accent),#0ea5e9);"></div><div class="bar-lbl">Calls</div></div>
+              <div class="bar-col"><div class="bar" style="height:60%;background:linear-gradient(to top,var(--green),#059669);"></div><div class="bar-lbl">C.Calls</div></div>
+              <div class="bar-col"><div class="bar" style="height:50%;background:linear-gradient(to top,var(--teal),#0891b2);"></div><div class="bar-lbl">BIR</div></div>
+              <div class="bar-col"><div class="bar" style="height:85%;background:linear-gradient(to top,var(--green),#059669);"></div><div class="bar-lbl">C.BIR</div></div>
+            </div>
+            <div class="chart-legend">
+              <div class="cl-item"><div class="cl-dot" style="background:var(--accent);"></div>Open</div>
+              <div class="cl-item"><div class="cl-dot" style="background:var(--green);"></div>Closed</div>
+            </div>
+          </div>
+        </div>
+        <div class="perf-summary" id="perf-summary">Your performance index is being calculated based on your call register, activity and BIR records.</div>
+        <div class="perf-metrics" style="grid-template-columns:repeat(2,1fr);">
+          <div class="perf-metric"><div class="pm-lbl">Total Calls</div><div class="pm-val" id="pm-calls">&#8212;</div></div>
+          <div class="perf-metric"><div class="pm-lbl">BIR Count</div><div class="pm-val" id="pm-bir">&#8212;</div></div>
+        </div>
+      </div>
+
+      <!-- Quick Links + Rings -->
+      <div>
+        <!-- Closure rings -->
+        <div class="panel" style="margin-bottom:14px;">
+          <div class="panel-head">
+            <div class="panel-title">&#127919; Closure Rates</div>
+          </div>
+          <div class="rings-row" id="rings-row">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- WEEKLY BAR GRAPH -->
+    <div class="panel anim anim-4" style="margin-bottom:22px;">
+      <div class="panel-head">
+        <div class="panel-title">&#128202; Weekly Performance Overview</div>
+      </div>
+      <div class="panel-body">
+        <div style="position: relative; height:300px; width:100%;">
+          <canvas id="weeklyChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW: RECENT CALLS + RECENT BIR -->
+    <div class="grid-2 anim anim-5">
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">&#128336; Recent Calls</div>
+          <a class="panel-action" href="ptcall.html">View All &#8250;</a>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="mini-table">
+            <thead><tr><th>Ref No.</th><th>Customer</th><th>Type</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody id="calls-tbody">
+              <tr><td colspan="5" style="text-align:center;padding:30px;color:var(--muted);font-size:12px;">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">&#128230; Recent BIR Entries</div>
+          <a class="panel-action" href="ptbir.html">View All &#8250;</a>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="mini-table">
+            <thead><tr><th>BIR Ref</th><th>Division</th><th>Model</th><th>Inward</th><th>Status</th></tr></thead>
+            <tbody id="bir-tbody">
+              <tr><td colspan="5" style="text-align:center;padding:30px;color:var(--muted);font-size:12px;">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+const API = '';
+let STATS = { calls:0, closedCalls:0, pendingAct:0, closedAct:0, bir:0, closedBir:0 };
+
+/* ── INIT ── */
+(function init(){
+  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const name = u.name || 'User';
+  (document.getElementById('user-nm')||{}).textContent = name;
+  (document.getElementById('user-av')||{}).textContent = name.charAt(0).toUpperCase();
+  (document.getElementById('hero-name')||{}).textContent = name.split(' ')[0];
+  (document.getElementById('topbar-date')||{}).textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  loadAllData();
+})();
+
+function getToken(){ return localStorage.getItem('schiller_token') || ''; }
+function authHeaders(){ return { 'Content-Type':'application/json', Authorization:'Bearer '+getToken() }; }
+function handleUnauth(res){
+  if(res.status===401||res.status===403){
+    showToast('Session expired.','err');
+    setTimeout(()=>window.location.href='login.html',1500);
+    throw new Error('Unauthorized');
+  }
+}
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtDate(d){ if(!d)return '&#8212;'; const p=String(d).split('T')[0].split('-'); return p.length<3?String(d):p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0]; }
+function showToast(msg,type='ok'){ const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="td"></span>'+msg;w.appendChild(el);setTimeout(()=>el.remove(),3400); }
+
+/* ── LOAD ALL DATA ── */
+async function loadAllData(){
+  showToast('Refreshing dashboard...','info');
+  window.LIVE_DATA = { calls:[], closedCalls:[], bir:[], closedBir:[] };
+  await Promise.allSettled([
+    loadCalls(),
+    loadClosedCalls(),
+    loadPendingActivity(),
+    loadClosedActivity(),
+    loadBIR(),
+    loadClosedBIR(),
+  ]);
+  updateHero();
+  updatePerformance();
+  renderRings();
+  if(typeof updateWeeklyChart === 'function') updateWeeklyChart();
+}
+
+async function safeFetch(url, fallback=[]){
+  try{
+    const res = await fetch(API+url, {headers:authHeaders()});
+    handleUnauth(res);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    return await res.json();
+  }catch(e){
+    if(e.message==='Unauthorized') throw e;
+    return fallback;
+  }
+}
+
+/* ── INDIVIDUAL LOADERS ── */
+async function loadCalls(){
+  let data = await safeFetch('/api/pt/calls', generateDemoData('calls', 8));
+  if(data && data.data) data = data.data;
+  window.LIVE_DATA.calls = Array.isArray(data) ? data : [];
+  STATS.calls = window.LIVE_DATA.calls.length;
+  setVal('sc-calls', STATS.calls);
+  setVal('badge-calls', STATS.calls);
+  setBar('bar-calls', 100);
+  renderCallsTable(window.LIVE_DATA.calls.slice(0,5));
+}
+async function loadClosedCalls(){
+  let data = await safeFetch('/api/pt/closed-calls', generateDemoData('closed-calls', 12));
+  if(data && data.data) data = data.data;
+  window.LIVE_DATA.closedCalls = Array.isArray(data) ? data : [];
+  STATS.closedCalls = window.LIVE_DATA.closedCalls.length;
+  setVal('sc-closed-calls', STATS.closedCalls);
+  setVal('badge-closed', STATS.closedCalls);
+  setBar('bar-closed-calls', Math.min(100, Math.round((STATS.closedCalls/(STATS.closedCalls+STATS.calls||1))*100)));
+}
+async function loadPendingActivity(){
+  const data = await safeFetch('/api/pt/activity/pending', generateDemoData('activity', 5));
+  STATS.pendingAct = Array.isArray(data) ? data.length : 0;
+  setVal('sc-pending-act', STATS.pendingAct);
+  setVal('badge-pending', STATS.pendingAct);
+  setBar('bar-pending-act', 100);
+  renderActivityTable(Array.isArray(data) ? data.slice(0,5) : []);
+}
+async function loadClosedActivity(){
+  const data = await safeFetch('/api/pt/activity/closed', generateDemoData('closed-activity', 9));
+  STATS.closedAct = Array.isArray(data) ? data.length : 0;
+  setVal('sc-closed-act', STATS.closedAct);
+  setVal('badge-closed-act', STATS.closedAct);
+  setBar('bar-closed-act', Math.min(100, Math.round((STATS.closedAct/(STATS.closedAct+STATS.pendingAct||1))*100)));
+}
+async function loadBIR(){
+  let data = await safeFetch('/api/pt/bir', generateDemoData('bir', 10));
+  if(data && data.data) data = data.data;
+  window.LIVE_DATA.bir = Array.isArray(data) ? data : [];
+  STATS.bir = window.LIVE_DATA.bir.length;
+  setVal('sc-bir', STATS.bir);
+  setVal('badge-bir', STATS.bir);
+  setBar('bar-bir', 100);
+  renderBIRTable(window.LIVE_DATA.bir.slice(0,5));
+}
+async function loadClosedBIR(){
+  let data = await safeFetch('/api/pt/bir/closed', generateDemoData('closed-bir', 7));
+  if(data && data.data) data = data.data;
+  window.LIVE_DATA.closedBir = Array.isArray(data) ? data : [];
+  STATS.closedBir = window.LIVE_DATA.closedBir.length;
+  setVal('sc-closed-bir', STATS.closedBir);
+  setVal('badge-closed-bir', STATS.closedBir);
+  setBar('bar-closed-bir', Math.min(100, Math.round((STATS.closedBir/(STATS.closedBir+STATS.bir||1))*100)));
+}
+
+/* ── HERO UPDATE ── */
+function updateHero(){
+  const total = STATS.calls + STATS.closedCalls + STATS.pendingAct + STATS.closedAct + STATS.bir + STATS.closedBir;
+  const closed = STATS.closedCalls + STATS.closedAct + STATS.closedBir;
+  const open = STATS.calls + STATS.pendingAct + STATS.bir;
+  const rate = total > 0 ? Math.round((closed/total)*100) : 0;
+  setVal('hero-total', total);
+  setVal('hero-open', open);
+  setVal('hero-closed', closed);
+  (document.getElementById('hero-rate')||{}).textContent = rate+'%';
+}
+
+/* ── PERFORMANCE ── */
+function updatePerformance(){
+  const total = STATS.calls + STATS.closedCalls + STATS.bir + STATS.closedBir;
+  const closed = STATS.closedCalls + STATS.closedBir;
+  const rate = total > 0 ? Math.round((closed/total)*100) : 0;
+  const label = rate>=80?'Excellent &#11088;':rate>=60?'Good &#128077;':rate>=40?'Average &#9888;':'Needs Improvement &#9889;';
+  const summary = rate>=80?'Outstanding performance! You are efficiently managing and closing assigned records well above target.'
+    :rate>=60?'Good progress. Keep focusing on closing your calls and BIRs promptly.'
+    :'Keep working on your open items. Consistent follow-up on calls and BIRs will improve your score.';
+  (document.getElementById('perf-score')||{}).textContent = rate+'%';
+  document.getElementById('perf-label').innerHTML = label;
+  (document.getElementById('perf-summary')||{}).textContent = summary;
+  (document.getElementById('pm-calls')||{}).textContent = STATS.calls+STATS.closedCalls;
+  (document.getElementById('pm-bir')||{}).textContent = STATS.bir+STATS.closedBir;
+  updateChartBars();
+}
+
+function updateChartBars(){
+  const maxVal = Math.max(STATS.calls, STATS.closedCalls, STATS.bir, STATS.closedBir, 1);
+  const vals = [STATS.calls, STATS.closedCalls, STATS.bir, STATS.closedBir];
+  const colors = [
+    'linear-gradient(to top,var(--accent),#0ea5e9)',
+    'linear-gradient(to top,var(--green),#059669)',
+    'linear-gradient(to top,var(--teal),#0891b2)',
+    'linear-gradient(to top,var(--green),#059669)',
+  ];
+  const labels = ['Calls','C.Calls','BIR','C.BIR'];
+  document.getElementById('perf-chart').innerHTML = vals.map((v,i)=>`
+    <div class="bar-col">
+      <div class="bar" style="height:${Math.max(8,Math.round((v/maxVal)*100))}%;background:${colors[i]};opacity:0.75;"></div>
+      <div class="bar-lbl">${labels[i]}</div>
+    </div>`).join('');
+}
+
+/* ── RINGS ── */
+function renderRings(){
+  const rings = [
+    {label:'Calls',open:STATS.calls,closed:STATS.closedCalls,color:'#0068b5'},
+    {label:'BIR',open:STATS.bir,closed:STATS.closedBir,color:'#0e7490'},
+  ];
+  document.getElementById('rings-row').innerHTML = rings.map(r=>{
+    const total = r.open + r.closed;
+    const pct = total > 0 ? Math.round((r.closed/total)*100) : 0;
+    const circ = 2*Math.PI*36;
+    const offset = circ - (circ*pct/100);
+    return `<div class="ring-wrap">
+      <svg class="ring-svg" width="88" height="88" viewBox="0 0 88 88">
+        <circle cx="44" cy="44" r="36" fill="none" stroke="var(--border)" stroke-width="7"/>
+        <circle cx="44" cy="44" r="36" fill="none" stroke="${r.color}" stroke-width="7"
+          stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${offset}"
+          style="transition:stroke-dashoffset 1.2s ease;"/>
+      </svg>
+      <div class="ring-label">
+        <div class="ring-val">${pct}%</div>
+        <div class="ring-sub">${r.label}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;">${r.closed}/${total}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── TABLE RENDERERS ── */
+function statusPill(s){
+  const map={'Open':'sp-open','Active':'sp-active','Closed':'sp-closed','Pending':'sp-pending','Completed':'sp-closed'};
+  const cls = map[s] || 'sp-open';
+  return '<span class="s-pill '+cls+'">'+esc(s||'Open')+'</span>';
+}
+function renderCallsTable(data){
+  document.getElementById('calls-tbody').innerHTML = data.length ? data.map(d=>`<tr>
+    <td style="font-weight:600;">${esc(d.refNo||d.scRefNo||d._id?.slice(-6)||'#')}</td>
+    <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;">${esc(d.customer||d.customerName||'&#8212;')}</td>
+    <td style="font-size:11.5px;">${esc(d.type||d.typeWork||'Service')}</td>
+    <td style="font-size:11px;color:var(--muted);">${fmtDate(d.entryDate||d.createdAt)}</td>
+    <td>${statusPill(d.status||'Open')}</td>
+  </tr>`).join('') : '<tr><td colspan="5" style="text-align:center;padding:28px;color:var(--muted);">No records found</td></tr>';
+}
+function renderActivityTable(data){
+  const el = document.getElementById('activity-tbody');
+  if(!el) return;
+  el.innerHTML = data.length ? data.map(d=>`<tr>
+    <td style="font-weight:600;max-width:160px;overflow:hidden;text-overflow:ellipsis;">${esc(d.activity||d.description||d.subject||'Activity')}</td>
+    <td style="font-size:11px;"><span style="background:var(--purple-bg);color:var(--purple);padding:2px 7px;border-radius:9px;font-size:9.5px;font-weight:700;">${esc(d.division||'General')}</span></td>
+    <td style="font-size:11px;color:var(--muted);">${fmtDate(d.entryDate||d.date||d.createdAt)}</td>
+    <td>${statusPill(d.status||'Pending')}</td>
+  </tr>`).join('') : '<tr><td colspan="4" style="text-align:center;padding:28px;color:var(--muted);">No records found</td></tr>';
+}
+function renderBIRTable(data){
+  document.getElementById('bir-tbody').innerHTML = data.length ? data.map(d=>`<tr>
+    <td style="font-weight:700;color:var(--teal);font-family:monospace;font-size:11px;">${esc(d.birRefNo||d._id?.slice(-8)||'&#8212;')}</td>
+    <td><span style="background:var(--purple-bg);color:var(--purple);padding:2px 7px;border-radius:9px;font-size:9.5px;font-weight:700;">${esc(d.division||'&#8212;')}</span></td>
+    <td style="font-weight:600;font-size:12px;">${esc(d.model||'&#8212;')}</td>
+    <td style="font-size:11px;color:var(--muted);">${fmtDate(d.inwardDate)}</td>
+    <td>${statusPill(d.finalStatus||'Pending')}</td>
+  </tr>`).join('') : '<tr><td colspan="5" style="text-align:center;padding:28px;color:var(--muted);">No records found</td></tr>';
+}
+
+/* ── FEED ── */
+function renderFeed(){
+  const events = [
+    {dot:'var(--accent)',text:`<strong>Call Register</strong> - ${STATS.calls} active call${STATS.calls!==1?'s':''} assigned`,time:'Current'},
+    {dot:'var(--green)',text:`<strong>Closed Calls</strong> - ${STATS.closedCalls} call${STATS.closedCalls!==1?'s':''} successfully closed`,time:'Total'},
+    {dot:'var(--amber)',text:`<strong>Pending Activity</strong> - ${STATS.pendingAct} item${STATS.pendingAct!==1?'s':''} awaiting completion`,time:'Current'},
+    {dot:'var(--purple)',text:`<strong>Closed Activity</strong> - ${STATS.closedAct} activit${STATS.closedAct!==1?'ies':'y'} resolved`,time:'Total'},
+    {dot:'var(--teal)',text:`<strong>BIR LIST</strong> - ${STATS.bir} open inspection record${STATS.bir!==1?'s':''}`,time:'Current'},
+    {dot:'var(--green)',text:`<strong>Closed BIR</strong> - ${STATS.closedBir} inspection${STATS.closedBir!==1?'s':''} completed`,time:'Total'},
+  ];
+  const el = document.getElementById('activity-feed');
+  if(!el) return;
+  el.innerHTML = events.map(e=>`
+    <div class="activity-item">
+      <div class="a-dot" style="background:${e.dot};"></div>
+      <div>
+        <div class="a-text">${e.text}</div>
+        <div class="a-time">${e.time}</div>
+      </div>
+    </div>`).join('');
+}
+
+/* ── DEMO DATA ── */
+function generateDemoData(type, count){
+  const arr = [];
+  const divs = ['PATIENT MONITORS','SAG','VENTILATOR','DEFIBRILLATOR','ECG'];
+  const models = ['TS III','TS ULTRA','MPS','BLT CNS','P15','ETCO2 MODULE'];
+  const statusMap = {
+    'calls':['Open','Active'],
+    'closed-calls':['Closed','Completed'],
+    'activity':['Pending','Open'],
+    'closed-activity':['Closed','Completed'],
+    'bir':['Pending','Under Review'],
+    'closed-bir':['Closed','Completed'],
+  };
+  const statuses = statusMap[type] || ['Open'];
+  for(let i=1;i<=count;i++){
+    const d=new Date(2026,Math.floor(Math.random()*4),Math.floor(Math.random()*28)+1);
+    arr.push({
+      _id:'demo_'+type+'_'+i,
+      refNo:'SC-2026-'+String(i).padStart(3,'0'),
+      scRefNo:'SC-2026-'+String(i).padStart(3,'0'),
+      birRefNo:'OEM/'+String(d.getDate()).padStart(2,'0')+String(d.getMonth()+1).padStart(2,'0')+'26/'+String(i).padStart(2,'0'),
+      customer:'Customer '+i,
+      customerName:'Customer '+i,
+      type:['AMC','Installation','Repair','PM'][i%4],
+      typeWork:['AMC','Installation','Repair'][i%3],
+      activity:'Activity record '+i,
+      description:'Service activity '+i,
+      division:divs[i%divs.length],
+      model:models[i%models.length],
+      status:statuses[i%statuses.length],
+      finalStatus:statuses[i%statuses.length],
+      entryDate:d.toISOString().slice(0,10),
+      inwardDate:d.toISOString().slice(0,10),
+      createdAt:d.toISOString(),
+    });
+  }
+  return arr;
+}
+
+/* ── HELPERS ── */
+function setVal(id, val){ const el=document.getElementById(id); if(el) el.textContent = val; }
+function setBar(id, pct){ const el=document.getElementById(id); if(el) setTimeout(()=>{el.style.width=Math.min(100,pct)+'%';}, 200); }
+
+/* ── EXPORT ── */
+function exportSummary(){
+  const lines = [
+    'SchillerIndia Services - Dashboard Summary',
+    'Generated: '+new Date().toLocaleString('en-IN'),
+    '',
+    'Module,Open,Closed',
+    'Call Register,'+STATS.calls+','+STATS.closedCalls,
+    'Activity,'+STATS.pendingAct+','+STATS.closedAct,
+    'BIR LIST,'+STATS.bir+','+STATS.closedBir,
+    '',
+    'Total Open,'+(STATS.calls+STATS.pendingAct+STATS.bir),
+    'Total Closed,'+(STATS.closedCalls+STATS.closedAct+STATS.closedBir),
+  ];
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(lines.join('\n'));
+  a.download='dashboard-summary-'+new Date().toISOString().split('T')[0]+'.csv';
+  a.click();
+  showToast('Summary exported.','ok');
+}
+
+function logout(){ localStorage.clear(); window.location.href='login.html'; }
+
+/* ── NOTIFICATION PANEL ── */
+const NOTIF_READ_KEY='si_notif_read_pt';
+let notifData=[];
+function getReadIds(){try{return JSON.parse(localStorage.getItem(NOTIF_READ_KEY)||'[]');}catch(e){return[];}}
+function saveReadIds(ids){localStorage.setItem(NOTIF_READ_KEY,JSON.stringify(ids));}
+async function loadNotifications(){
+  try{
+    const token=localStorage.getItem('schiller_token');
+    const res=await fetch('/api/admin/notifications',{headers:{'Authorization':'Bearer '+token}});
+    if(!res.ok)return;
+    const all=await res.json();
+    notifData=all.filter(d=>d.isActive&&(d.targetRole==='all'||d.targetRole==='pt'));
+    renderNotifPanel();
+  }catch(e){}
+}
+function renderNotifPanel(){
+  const readIds=getReadIds();
+  const countEl=document.getElementById('notif-count');
+  const list=document.getElementById('np-list');
+  const unread=notifData.filter(d=>!readIds.includes(d._id)).length;
+  countEl.textContent=unread>9?'9+':unread;
+  countEl.classList.toggle('show',unread>0);
+  if(!notifData.length){list.innerHTML='<div class="np-empty">&#127881; No announcements</div>';return;}
+  const prioColor={urgent:'#b91c1c',high:'#d97706',medium:'#0077cc',low:'#059669'};
+  const typeIco={announcement:'&#128226;',info:'&#8505;&#65039;',warning:'&#9888;&#65039;',alert:'&#128680;'};
+  list.innerHTML=notifData.map(d=>{
+    const isUnread=!readIds.includes(d._id);
+    const m=Math.floor((Date.now()-new Date(d.createdAt))/60000);
+    const ago=m<1?'Just now':m<60?m+'m ago':Math.floor(m/60)<24?Math.floor(m/60)+'h ago':Math.floor(m/1440)+'d ago';
+    return`<div class="np-item${isUnread?' unread prio-'+(d.priority||'medium'):''}" onclick="markRead('${d._id}')">
+      <div class="np-row"><span class="np-title">${typeIco[d.type]||'&#128276;'} ${d.title}</span><span class="np-badge" style="background:${prioColor[d.priority]||'#0077cc'}20;color:${prioColor[d.priority]||'#0077cc'}">${d.priority}</span></div>
+      <div class="np-msg">${d.message}</div>
+      <div class="np-time">${ago}</div>
+    </div>`;
+  }).join('');
+}
+function markRead(id){const ids=getReadIds();if(!ids.includes(id)){ids.push(id);saveReadIds(ids);renderNotifPanel();}}
+function markAllRead(){saveReadIds(notifData.map(d=>d._id));renderNotifPanel();}
+function toggleNotifPanel(){
+  const p=document.getElementById('notif-panel');
+  const open=p.classList.toggle('open');
+  if(open)loadNotifications();
+}
+document.addEventListener('click',e=>{if(!e.target.closest('.notif-wrap'))document.getElementById('notif-panel').classList.remove('open');});
+loadNotifications();
+
+/* ── WEEKLY CHART ── */
+function updateWeeklyChart(){
+  const ctx = document.getElementById('weeklyChart');
+  if(!ctx) return;
+  
+  const now = new Date();
+  const day = now.getDay() || 7; 
+  const monDate = new Date(now);
+  monDate.setDate(now.getDate() - day + 1);
+  monDate.setHours(0,0,0,0);
+  
+  const callsData = [0,0,0,0,0,0,0];
+  const closedCallsData = [0,0,0,0,0,0,0];
+  const birData = [0,0,0,0,0,0,0];
+  const closedBirData = [0,0,0,0,0,0,0];
+
+  function fillData(arr, resultArr, dateKey) {
+    if(!arr || !Array.isArray(arr)) return;
+    arr.forEach(item => {
+      const dStr = item[dateKey] || item.createdAt || item.updatedAt;
+      if(dStr) {
+        const d = new Date(dStr);
+        if(d >= monDate) {
+          let dayIdx = d.getDay() || 7;
+          resultArr[dayIdx - 1]++;
+        }
+      }
+    });
+  }
+
+  fillData(window.LIVE_DATA.calls, callsData, 'entryDate');
+  fillData(window.LIVE_DATA.closedCalls, closedCallsData, 'closedDate');
+  fillData(window.LIVE_DATA.bir, birData, 'inwardDate');
+  fillData(window.LIVE_DATA.closedBir, closedBirData, 'closedDate');
+
+  if(window.weeklyChartInstance) {
+    window.weeklyChartInstance.data.datasets[0].data = callsData;
+    window.weeklyChartInstance.data.datasets[1].data = closedCallsData;
+    window.weeklyChartInstance.data.datasets[2].data = birData;
+    window.weeklyChartInstance.data.datasets[3].data = closedBirData;
+    window.weeklyChartInstance.update();
+  } else {
+    window.weeklyChartInstance = new Chart(ctx.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+        datasets: [
+          { label: 'Calls', data: callsData, backgroundColor: '#0068b5', borderRadius: 4 },
+          { label: 'Closed Calls', data: closedCallsData, backgroundColor: '#047857', borderRadius: 4 },
+          { label: 'BIR', data: birData, backgroundColor: '#0e7490', borderRadius: 4 },
+          { label: 'Closed BIR', data: closedBirData, backgroundColor: '#b45309', borderRadius: 4 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top', labels: { font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 } } }
+        },
+        scales: {
+          y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+}
+</script>
+</body>
+</html>
+

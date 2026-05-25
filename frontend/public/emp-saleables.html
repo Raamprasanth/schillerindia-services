@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<script>(function(){
+  document.documentElement.setAttribute('data-theme', 'light');
+  const token = localStorage.getItem('schiller_token');
+  const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
+  if (!token || (role && role !== 'employee')) window.location.href = 'login.html';
+})();</script>
+<title>SchillerIndia - Employee Saleables</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f0f4f8;--surface:#ffffff;--surface2:#e8f0f7;--surface3:#f5f9fc;--border:#ccdde8;
+  --accent:#0068b5;--accent2:#005a9e;--green:#047857;--amber:#b45309;
+  --red:#b91c1c;--text:#0f2236;--muted:#6b8ca8;--soft:#3d6480;--card:#ffffff;
+  --purple:#5b21b6;--cyan:#0e7490;--glow-accent:rgba(0,104,181,0.08);
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+.sidebar{width:225px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 12px rgba(0,80,120,0.06);}
+.sidebar-header{padding:16px 16px 12px;border-bottom:1px solid #ccdde8;background:linear-gradient(145deg,#002d5c,#0068b5);}
+.sidebar-logo{display:flex;align-items:center;gap:10px;}
+.sidebar-logo-icon{width:34px;height:34px;background:rgba(255,255,255,0.14);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#fff;border:1.5px solid rgba(255,255,255,0.22);}
+.sidebar-logo-text{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#fff;line-height:1.2;}
+.sidebar-logo-text .sub{font-size:10px;color:rgba(255,255,255,0.55);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;}
+.emp-badge{margin:8px 12px 0;padding:3px 10px;border-radius:20px;font-size:9.5px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;display:inline-block;background:rgba(4,120,87,0.12);color:#059669;border:1px solid rgba(4,120,87,0.2);}
+.sidebar-nav{flex:1;padding:8px 6px;}
+.nav-sec{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;padding:9px 8px 4px;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;color:var(--soft);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.18s;margin-bottom:3px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:#e8f3fb;color:var(--accent);font-weight:700;border-left:3px solid var(--accent);padding-left:8px;}
+.nav-item .ico{font-size:12px;width:17px;text-align:center;flex-shrink:0;}
+.sidebar-footer{padding:11px 12px;border-top:1px solid #ccdde8;background:#f5f9fc;}
+.user-row{display:flex;align-items:center;gap:8px;}
+.user-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#0068b5,#0ea5e9);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;flex-shrink:0;}
+.user-nm{font-size:12px;font-weight:600;color:var(--text);}
+.user-rl{font-size:10px;color:var(--muted);}
+.logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s;}
+.logout-btn:hover{border-color:var(--accent);color:var(--accent);}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{padding:13px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:0 2px 8px rgba(0,80,120,0.05);}
+.breadcrumb{display:flex;align-items:center;gap:5px;font-size:10.5px;margin-bottom:2px;}
+.breadcrumb a{color:var(--muted);text-decoration:none;}
+.breadcrumb a:hover{color:var(--accent);}
+.breadcrumb .sep{color:var(--border);}
+.page-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);}
+.topbar-date{font-size:11.5px;color:var(--muted);margin-top:2px;}
+.topbar-actions{display:flex;align-items:center;gap:10px;}
+.content{flex:1;padding:20px 24px;overflow-y:auto;background:var(--bg);}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;box-shadow:0 2px 10px rgba(0,80,120,0.05);position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0;}
+.sc-blue::after{background:linear-gradient(90deg,var(--accent),#0ea5e9);}
+.sc-green::after{background:linear-gradient(90deg,var(--green),#10b981);}
+.sc-amber::after{background:linear-gradient(90deg,var(--amber),#f59e0b);}
+.sc-purple::after{background:linear-gradient(90deg,var(--purple),var(--cyan));}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,80,120,0.1);}
+.stat-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;}
+.stat-value{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:3px;}
+.sc-blue .stat-value{color:var(--accent);}
+.sc-green .stat-value{color:var(--green);}
+.sc-amber .stat-value{color:var(--amber);}
+.sc-purple .stat-value{color:var(--purple);}
+.stat-sub{font-size:11px;color:var(--muted);}
+.stat-icon{font-size:18px;opacity:0.35;float:right;margin-top:-26px;}
+.filter-strip{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 2px 8px rgba(0,80,120,0.04);}
+.filter-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;white-space:nowrap;}
+.f-input{padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s;}
+.f-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,104,181,0.07);}
+.f-select{padding:8px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--soft);background:var(--surface);outline:none;cursor:pointer;transition:border-color 0.2s;}
+.f-select:focus{border-color:var(--accent);}
+.f-divider{width:1px;height:24px;background:var(--border);flex-shrink:0;}
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,80,120,0.05);}
+.table-card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:var(--surface);border-left:4px solid var(--green);}
+.table-card-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+.count-badge{background:rgba(4,120,87,0.09);color:var(--green);border:1px solid rgba(4,120,87,0.18);font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px;}
+.table-toolbar{display:flex;align-items:center;gap:10px;}
+.show-row{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);}
+.srch-wrap{position:relative;}
+.srch-wrap input{padding:7px 12px 7px 29px;border:1.5px solid var(--border);border-radius:7px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;width:210px;transition:border-color 0.2s;}
+.srch-wrap input:focus{border-color:var(--accent);}
+.srch-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);}
+.table-wrap{overflow-x:auto;}
+table.sale-table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1300px;}
+table.sale-table thead th{padding:10px 12px;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;text-align:left;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap;cursor:pointer;user-select:none;transition:color 0.2s;}
+table.sale-table thead th:hover{color:var(--accent);}
+table.sale-table thead th.sorted{color:var(--accent);}
+table.sale-table thead th .si{font-size:8px;margin-left:2px;opacity:0.4;}
+table.sale-table tbody td{padding:10px 12px;border-bottom:1px solid rgba(0,80,120,0.06);vertical-align:middle;white-space:nowrap;}
+table.sale-table tbody tr{transition:background 0.12s;}
+table.sale-table tbody tr:hover td{background:var(--glow-accent);}
+table.sale-table tbody tr:last-child td{border-bottom:none;}
+.table-foot{padding:11px 18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted);flex-wrap:wrap;gap:8px;background:var(--surface2);}
+.pager-row{display:flex;align-items:center;gap:3px;}
+.pager{min-width:28px;height:28px;padding:0 7px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--soft);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.18s;font-family:'Plus Jakarta Sans',sans-serif;}
+.pager:hover{border-color:var(--accent);color:var(--accent);}
+.pager.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.pager:disabled{opacity:0.3;cursor:not-allowed;}
+.status-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;}
+.status-pill::before{content:'';width:5px;height:5px;border-radius:50%;display:block;}
+.sp-ready{background:rgba(5,150,105,0.1);color:var(--green);border:1px solid rgba(5,150,105,0.22);}.sp-ready::before{background:var(--green);}
+.sp-pending{background:rgba(217,119,6,0.1);color:var(--amber);border:1px solid rgba(217,119,6,0.22);}.sp-pending::before{background:var(--amber);}
+.sp-hold{background:rgba(185,28,28,0.08);color:var(--red);border:1px solid rgba(185,28,28,0.18);}.sp-hold::before{background:var(--red);}
+.chip-sm{display:inline-flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-size:11px;color:var(--soft);font-weight:500;font-family:'JetBrains Mono',monospace;}
+.mono{font-family:'JetBrains Mono',monospace;font-size:11px;}
+.btn{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--green);color:#fff;box-shadow:0 2px 8px rgba(5,150,105,0.2);}.btn-primary:hover{background:#036644;}
+.btn-outline{background:none;border:1.5px solid var(--border);color:var(--soft);}.btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+.btn-sm{padding:6px 14px;font-size:12px;}
+.action-xs{padding:4px 11px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:none;color:var(--soft);font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;white-space:nowrap;}
+.action-xs.view{color:var(--accent);border-color:rgba(0,104,181,0.3);background:rgba(0,104,181,0.06);}
+.action-xs.view:hover{background:rgba(0,104,181,0.12);}
+.loading-row td{text-align:center;padding:50px 20px;color:var(--muted);font-size:13px;}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:8px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty-st{text-align:center;padding:50px 20px;}
+.ei{font-size:36px;margin-bottom:10px;opacity:0.25;}
+.et{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:5px;}
+.es{font-size:12px;color:var(--muted);}
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:700;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;min-width:240px;animation:fadeUp 0.3s ease;box-shadow:0 8px 24px rgba(0,0,0,0.12);}
+.toast.ok{border-color:rgba(5,150,105,0.4);}.toast.ok .tdot{background:var(--green);}
+.toast.info{border-color:rgba(0,119,204,0.4);}.toast.info .tdot{background:var(--accent);}
+.tdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+::-webkit-scrollbar{width:7px;height:7px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+@media(max-width:900px){.stats-row{grid-template-columns:repeat(2,1fr);}.topbar{align-items:flex-start;gap:12px;flex-direction:column;}.sidebar{width:210px;}}
+
+    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
+    .nav-group-toggle{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;color:var(--soft,#3d6480);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;margin-bottom:3px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;}
+.nav-group-toggle:hover{background:var(--surface2,#e8f0f7);color:var(--text,#0f2236);}
+.nav-group-toggle .ico{font-size:12px;width:17px;text-align:center;flex-shrink:0;}
+.nav-group-toggle .caret{margin-left:auto;font-size:10px;transition:transform .22s ease;}
+.nav-group-toggle.open .caret{transform:rotate(90deg);}
+.nav-children{max-height:0;overflow:hidden;transition:max-height .28s ease;margin-bottom:3px;}
+.nav-children.open{max-height:400px;}
+.nav-sub .nav-item{padding-left:28px;font-size:11.5px;}
+</style>
+  <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="employee-theme.css">
+  <script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <script src="brand-logo.js" defer></script>
+</head>
+<body>
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="sidebar-logo-text">SchillerIndia<div class="sub">Services Portal</div></div>
+    </div>
+  </div>
+  <div style="padding:7px 12px 0;"><span class="emp-badge">Employee</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-sec">Operations</div>
+    <a class="nav-item" href="employee-dashboard.html"><span class="icon">&#128202;</span> Dashboard</a>
+    <a class="nav-item" href="employee-service-list.html"><span class="ico">&#128225;</span> Services</a>
+    <a class="nav-item" href="emppendingfrn.html"><span class="ico">&#128221;</span> Pending FRN</a>
+    <a class="nav-item" href="employee-ob-pending.html"><span class="ico">&#128230;</span> Estimation Pending</a>
+    <a class="nav-item" href="empestpend.html"><span class="ico">&#128203;</span> SO Pending</a>
+    <a class="nav-item" href="empunderep.html"><span class="ico">&#128736;&#65039;</span> Under Repair</a>
+    <a class="nav-item" href="completed-frn.html"><span class="ico">&#9989;</span> Completed FRN</a>
+    <a class="nav-item" href="Emp-scrap-list.html"><span class="ico">&#9888;&#65039;</span> Supplier Warranty</a>
+    <a class="nav-item" href="sc-completed-frn.html"><span class="ico">&#128257;</span> External Repair</a>
+    <button class="nav-group-toggle" type="button" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');"><span class="ico">&#128193;</span><span>Records</span><span class="caret">&#9656;</span></button>
+    <div class="nav-children nav-sub">
+    <a class="nav-item" href="ecall.html"><span class="ico">&#128222;</span> Call Register</a>
+    <a class="nav-item" href="eclose.html"><span class="ico">&#9989;</span> Closed Calls</a>
+    <a class="nav-item" href="eprfob.html"><span class="ico">&#128203;</span> PRF/OB Register</a>
+    <a class="nav-item" href="ecr.html"><span class="ico">&#128274;</span> Closed PRF/OB Register</a>
+    <a class="nav-item" href="tours.html"><span class="ico">&#128205;</span> Tour Summary</a>
+      <a class="nav-item" href="dailyw.html"><span class="ico">&#128197;</span> Daily Work</a>
+    </div>
+    <button class="nav-group-toggle open" type="button" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');"><span class="ico">&#128230;</span><span>Inventory</span><span class="caret">&#9656;</span></button>
+    <div class="nav-children nav-sub open">
+    <a class="nav-item" href="emp-non-saleable.html"><span class="ico">&#128230;</span> Non Saleable</a>
+    <a class="nav-item active" href="emp-saleables.html"><span class="ico">&#128176;</span> Saleables</a>
+    <a class="nav-item" href="ebir.html"><span class="ico">&#128203;</span> BIR LIST</a>
+    <a class="nav-item" href="ecbir.html"><span class="ico">&#128193;</span> Closed BIR</a>
+      <a class="nav-item" href="elt.html"><span class="ico">&#128451;</span> Loan Items</a>
+      <a class="nav-item" href="ecli.html"><span class="ico">&#128193;</span> Closed Loan Item</a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="user-av" id="emp-avatar">E</div>
+      <div>
+        <div class="user-nm" id="emp-name">Employee</div>
+        <div class="user-rl" id="emp-desig">Field Engineer</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="employee-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
+        <span>Inventory</span><span class="sep">&#8250;</span>
+        <span>Saleables</span>
+      </div>
+      <div class="page-title">Saleable List</div>
+      <div class="topbar-date" id="topbar-date"></div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-outline btn-sm" onclick="loadData()">&#10227; Refresh</button>
+      <button class="btn btn-outline btn-sm" onclick="exportCSV()">&#128228; Export</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="stats-row">
+      <div class="stat-card sc-blue">
+        <div class="stat-label">Total Saleable</div>
+        <div class="stat-icon">&#9989;</div>
+        <div class="stat-value" id="s-total">&mdash;</div>
+        <div class="stat-sub">Cleared records</div>
+      </div>
+      <div class="stat-card sc-green">
+        <div class="stat-label">Ready</div>
+        <div class="stat-icon">&#10003;</div>
+        <div class="stat-value" id="s-ready">&mdash;</div>
+        <div class="stat-sub">Ready for dispatch</div>
+      </div>
+      <div class="stat-card sc-amber">
+        <div class="stat-label">Pending</div>
+        <div class="stat-icon">&#9989;</div>
+        <div class="stat-value" id="s-pending">&mdash;</div>
+        <div class="stat-sub">Awaiting confirmation</div>
+      </div>
+      <div class="stat-card sc-purple">
+        <div class="stat-label">This Month</div>
+        <div class="stat-icon">&#128202;</div>
+        <div class="stat-value" id="s-month">&mdash;</div>
+        <div class="stat-sub">Current month entries</div>
+      </div>
+    </div>
+
+    <div class="filter-strip">
+      <span class="filter-label">From Date</span>
+      <input type="date" class="f-input" id="filter-from" onchange="applyFilters()"/>
+      <div class="f-divider"></div>
+      <span class="filter-label">To Date</span>
+      <input type="date" class="f-input" id="filter-to" onchange="applyFilters()"/>
+      <div class="f-divider"></div>
+      <span class="filter-label">Division</span>
+      <select class="f-select" id="filter-div" onchange="applyFilters()">
+        <option value="">All Division</option>
+        <option>SHIPL</option><option>VENTILATOR</option><option>INJECTOR</option>
+        <option>RADIOLOGY</option><option>GANSHORN</option><option>HOLTER</option><option>MONITORS</option>
+      </select>
+      <div class="f-divider"></div>
+      <span class="filter-label">Status</span>
+      <select class="f-select" id="filter-status" onchange="applyFilters()">
+        <option value="">All Status</option>
+        <option>Ready</option><option>Pending</option><option>On Hold</option>
+      </select>
+      <button class="btn btn-outline btn-sm" onclick="clearFilters()" style="margin-left:auto;">Clear</button>
+    </div>
+
+    <div class="table-card">
+      <div class="table-card-header">
+        <div class="table-card-title">
+          ? Saleable Details
+          <span class="count-badge" id="count-badge">&mdash; entries</span>
+        </div>
+        <div class="table-toolbar">
+          <div class="show-row">
+            Show
+            <select class="f-select" id="per-page" style="padding:5px 8px;" onchange="renderTable()">
+              <option>10</option><option>25</option><option>50</option><option>100</option>
+            </select>
+            entries
+          </div>
+          <div class="srch-wrap">
+            <span class="srch-ico">&#128269;</span>
+            <input type="text" id="tbl-search" placeholder="Search model, serial, customer" oninput="applyFilters()"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="sale-table">
+          <thead><tr>
+            <th style="width:42px;" class="no-sort">#</th>
+            <th onclick="sortBy('entryDate')">Entry Date <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('unitDetails')">Unit Details <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('fqcInDate')">FQC Inward Date <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
+            <th>FQC Remarks</th>
+            <th onclick="sortBy('scInDate')">SC Inward Date <span class="si">&#8693;</span></th>
+            <th>SC Observation</th>
+            <th onclick="sortBy('modelSn')">Model SN <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('tentDate')">Tentative Date <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('shipFqcDate')">Ship Date to FQC <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('status')">Final Status <span class="si">&#8693;</span></th>
+            <th class="no-sort">Action</th>
+          </tr></thead>
+          <tbody id="sale-tbody">
+            <tr class="loading-row"><td colspan="13"><span class="spin"></span>Loading frontend records...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-foot">
+        <span id="tbl-info">&mdash;</span>
+        <div class="pager-row" id="tbl-pagination"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+let SALE_DATA = [], filtered = [], sortKey = 'entryDate', sortDir = -1, currentPage = 1;
+
+(function init(){
+  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  if (u.name) {
+    (document.getElementById('emp-name')||{}).textContent = u.name;
+    (document.getElementById('emp-avatar')||{}).textContent = u.name.charAt(0).toUpperCase();
+    (document.getElementById('emp-desig')||{}).textContent = u.designation||'Field Engineer';
+  }
+  (document.getElementById('topbar-date')||{}).textContent = new Date().toLocaleDateString('en-IN', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+  loadData();
+})();
+
+function getToken(){ return localStorage.getItem('schiller_token') || ''; }
+function authHeaders(){ return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getToken() }; }
+function handleUnauth(res){
+  if (res.status === 401){
+    showToast('Session expired - please log in again.', 'err');
+    setTimeout(() => window.location.href = 'login.html', 1500);
+    throw new Error('Unauthorized');
+  }
+}
+
+async function loadData(){
+  setLoading();
+  try {
+    const res = await fetch(`${API}/api/emp/saleables`, { headers: authHeaders() });
+    handleUnauth(res);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    SALE_DATA = (await res.json()).map(d => ({ ...d, id: d._id || d.id }));
+    applyFilters();
+    updateStats();
+    showToast('Loaded ' + SALE_DATA.length + ' record' + (SALE_DATA.length !== 1 ? 's' : ''), 'info');
+  } catch(e) {
+    if (e.message === 'Unauthorized') return;
+    showToast('Load failed: ' + e.message, 'err');
+    document.getElementById('sale-tbody').innerHTML =
+      `<tr class="loading-row"><td colspan="13" style="color:var(--accent);">&#9888; ${esc(e.message)}</td></tr>`;
+  }
+}
+
+function setLoading(){
+  document.getElementById('sale-tbody').innerHTML =
+    '<tr class="loading-row"><td colspan="13"><span class="spin"></span>Loading from database...</td></tr>';
+  ['s-total','s-ready','s-pending','s-month'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.textContent = '-';
+  });
+}
+
+function updateStats(){
+  const month = new Date().toISOString().slice(0, 7);
+  (document.getElementById('s-total')||{}).textContent = SALE_DATA.length;
+  (document.getElementById('s-ready')||{}).textContent = SALE_DATA.filter(d => d.status === 'Ready').length;
+  (document.getElementById('s-pending')||{}).textContent = SALE_DATA.filter(d => d.status === 'Pending').length;
+  (document.getElementById('s-month')||{}).textContent = SALE_DATA.filter(d => String(d.entryDate || '').slice(0, 7) === month).length;
+}
+
+function clearFilters(){
+  document.getElementById('filter-from').value = '';
+  document.getElementById('filter-to').value = '';
+  document.getElementById('filter-div').value = '';
+  document.getElementById('filter-status').value = '';
+  document.getElementById('tbl-search').value = '';
+  applyFilters();
+}
+
+function applyFilters(){
+  const q = document.getElementById('tbl-search').value.toLowerCase();
+  const fromVal = document.getElementById('filter-from').value;
+  const toVal = document.getElementById('filter-to').value;
+  const divVal = document.getElementById('filter-div').value;
+  const stVal = document.getElementById('filter-status').value;
+  const from = fromVal ? new Date(fromVal) : null;
+  const to = toVal ? new Date(toVal + 'T23:59:59') : null;
+
+  filtered = SALE_DATA.filter(d => {
+    if (divVal && d.division !== divVal) return false;
+    if (stVal && d.status !== stVal) return false;
+    if (from || to) {
+      const ed = d.entryDate ? new Date(d.entryDate) : null;
+      if (!ed) return false;
+      if (from && ed < from) return false;
+      if (to && ed > to) return false;
+    }
+    if (q && !([d.model, d.modelSn, d.customer, d.division, d.engineer, d.unitDetails,
+                d.fqcRemarks, d.scObservation].join(' ')).toLowerCase().includes(q)) return false;
+    return true;
+  });
+  sortArr();
+  currentPage = 1;
+  renderTable();
+}
+
+function sortBy(k){
+  if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = -1; }
+  sortArr();
+  renderTable();
+}
+
+function sortArr(){
+  filtered.sort((a, b) => {
+    const av = a[sortKey] || '', bv = b[sortKey] || '';
+    return String(av).toLowerCase() < String(bv).toLowerCase() ? -sortDir
+         : String(av).toLowerCase() > String(bv).toLowerCase() ? sortDir : 0;
+  });
+}
+
+function renderTable(){
+  const perPage = parseInt(document.getElementById('per-page').value, 10) || 10;
+  const total = filtered.length;
+  const pages = Math.max(1, Math.ceil(total / perPage));
+  if (currentPage > pages) currentPage = pages;
+  const slice = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
+
+  (document.getElementById('count-badge')||{}).textContent = total + ' entr' + (total === 1 ? 'y' : 'ies');
+  const tbody = document.getElementById('sale-tbody');
+
+  if (!total) {
+    tbody.innerHTML = `<tr><td colspan="13"><div class="empty-st">
+      <div class="ei">?</div>
+      <div class="et">${SALE_DATA.length ? 'No records match the current filters' : 'No Saleable Records'}</div>
+      <div class="es">${SALE_DATA.length ? 'Try adjusting the filters.' : 'This employee saleables page is separate from FQC and has no records yet.'}</div>
+    </div></td></tr>`;
+  } else {
+    tbody.innerHTML = slice.map((d, i) => {
+      const rid = d.id || d._id || String(i);
+      const remarks = d.fqcRemarks || '-';
+      const obs = d.scObservation || '-';
+      return `<tr>
+        <td class="mono" style="color:var(--muted);">${(currentPage - 1) * perPage + i + 1}</td>
+        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
+        <td style="font-size:12px;">${esc(d.unitDetails || '-')}</td>
+        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.fqcInDate)}</td>
+        <td><strong style="color:var(--text);">${esc(d.model || '-')}</strong></td>
+        <td style="max-width:200px;font-size:11.5px;white-space:normal;line-height:1.45;" title="${esc(remarks)}">${esc(shorten(remarks, 55))}</td>
+        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.scInDate)}</td>
+        <td style="max-width:160px;font-size:11.5px;white-space:normal;line-height:1.45;" title="${esc(obs)}">${esc(shorten(obs, 45))}</td>
+        <td><span class="chip-sm">${esc(d.modelSn || '-')}</span></td>
+        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.tentDate)}</td>
+        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.shipFqcDate)}</td>
+        <td>${statusPill(d.status)}</td>
+        <td><button class="action-xs view" onclick="viewRecord('${esc(rid)}')">View</button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  const fr = total ? (currentPage - 1) * perPage + 1 : 0;
+  (document.getElementById('tbl-info')||{}).textContent = total
+    ? `Showing ${fr} to ${Math.min(currentPage * perPage, total)} of ${total} entr${total === 1 ? 'y' : 'ies'}`
+    : '0 entries';
+  renderPagination(pages);
+}
+
+function statusPill(status){
+  const s = status || 'Ready';
+  const cls = s === 'Pending' ? 'sp-pending' : s === 'On Hold' ? 'sp-hold' : 'sp-ready';
+  return `<span class="status-pill ${cls}">${esc(s)}</span>`;
+}
+
+function renderPagination(pages){
+  const el = document.getElementById('tbl-pagination');
+  if (pages <= 1) { el.innerHTML = ''; return; }
+  let h = `<button class="pager" ${currentPage === 1 ? 'disabled' : ''} onclick="gp(${currentPage - 1})">&lsaquo; Prev</button>`;
+  getRange(currentPage, pages).forEach(p => {
+    if (p === '...') h += `<button class="pager" disabled>...</button>`;
+    else h += `<button class="pager ${p === currentPage ? 'active' : ''}" onclick="gp(${p})">${p}</button>`;
+  });
+  h += `<button class="pager" ${currentPage === pages ? 'disabled' : ''} onclick="gp(${currentPage + 1})">Next &rsaquo;</button>`;
+  el.innerHTML = h;
+}
+
+function getRange(c, t){
+  if (t <= 7) return Array.from({ length: t }, (_, i) => i + 1);
+  if (c <= 4) return [1, 2, 3, 4, 5, '...', t];
+  if (c >= t - 3) return [1, '...', t - 4, t - 3, t - 2, t - 1, t];
+  return [1, '...', c - 1, c, c + 1, '...', t];
+}
+
+function gp(p){ currentPage = p; renderTable(); }
+
+function exportCSV(){
+  const headers = ['#','Entry Date','Unit Details','FQC Inward Date','Model','FQC Remarks','SC Inward Date',
+    'SC Observation','Model SN','Tentative Date','Ship to FQC','Status','Customer','Engineer','Division'];
+  const rows = filtered.map((d, i) => [
+    i + 1, fmtDate(d.entryDate), d.unitDetails, fmtDate(d.fqcInDate), d.model, d.fqcRemarks,
+    fmtDate(d.scInDate), d.scObservation, d.modelSn, fmtDate(d.tentDate), fmtDate(d.shipFqcDate),
+    d.status, d.customer, d.engineer, d.division
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'employee-saleables-' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+  showToast('Exported ' + filtered.length + ' records.', 'ok');
+}
+
+function viewRecord(id){
+  const rec = SALE_DATA.find(d => String(d.id || d._id) === String(id));
+  showToast(rec ? 'Selected ' + (rec.modelSn || rec.model || 'record') : 'Record not found.', 'info');
+}
+
+function fmtDate(d){
+  if (!d) return '-';
+  const p = String(d).split('T')[0].split('-');
+  if (p.length < 3) return String(d);
+  return p[2] + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1], 10) - 1] + ' ' + p[0];
+}
+
+function shorten(text, len){ return String(text || '-').length > len ? String(text).slice(0, len) + '...' : String(text || '-'); }
+function esc(s){ return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+function showToast(msg, type = 'ok'){
+  const w = document.getElementById('toast-wrap');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = '<span class="tdot"></span>' + esc(msg);
+  w.appendChild(el);
+  setTimeout(() => el.remove(), 2800);
+}
+
+function logout(){
+  localStorage.clear();
+  window.location.href = 'login.html';
+}
+</script>
+<script src="tab-fix.js"></script>
+</body>
+</html>
+
+
+

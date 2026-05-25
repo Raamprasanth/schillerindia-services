@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light'); })();</script>
+
+<title>SchillerIndia - Company Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+ :root{
+      --bg:#f4f7fa;--surface:#ffffff;--surface2:#eaf1f6;--border:#d0e0ec;
+      --accent:#0077cc;--accent2:#007a8a;--green:#059669;--amber:#d97706;
+      --red:#cc0000;--text:#1a2a3a;--muted:#7a9ab0;--soft:#4a6a8a;--card:#ffffff;
+    }
+    [data-theme="dark"]{
+      --bg:#0f1621;--surface:#1a2333;--surface2:#1e293b;--border:#2a3a52;
+      --accent:#3b9eff;--accent2:#22d3ee;--green:#10b981;--amber:#f59e0b;
+      --red:#f87171;--text:#e2eaf4;--muted:#4a6a8a;--soft:#7a9ab0;--card:#1a2333;
+    }
+body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  transition:background 0.3s, color 0.3s; /* ADD THIS */
+}
+
+/* SIDEBAR */
+.sidebar{width:240px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 12px rgba(0,80,120,0.06);}
+.sidebar-header{padding:20px 20px 16px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#450a0a,#b91c1c);}
+.sidebar-logo{display:flex;align-items:center;gap:10px;}
+.sidebar-logo-icon{width:36px;height:36px;background:rgba(255,255,255,0.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:#fff;box-shadow:0 2px 8px rgba(204,0,0,0.2);}
+.sidebar-logo-text{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;}
+.sidebar-logo-text .sub{font-size:10px;color:rgba(255,255,255,0.6);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;}
+.role-badge{margin:10px 20px 0;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;display:inline-block;background:rgba(185,28,28,0.1);color:#b91c1c;border:1px solid rgba(185,28,28,0.25);}
+.sidebar-nav{flex:1;padding:12px 10px;}
+.nav-section{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;padding:10px 8px 5px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:500;cursor:pointer;transition:all 0.2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:rgba(185,28,28,0.1);color:#b91c1c;font-weight:600;}
+.nav-item .icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:#b91c1c;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;}
+.nav-group-toggle{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:600;cursor:pointer;transition:all 0.2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;}
+.nav-group-toggle:hover{background:var(--surface2);color:var(--text);}
+.nav-group-toggle.active{background:rgba(0,119,204,0.1);color:var(--accent);}
+.nav-group-toggle .icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.caret{margin-left:auto;font-size:9px;transition:transform 0.25s;}
+.nav-group-toggle.open .caret{transform:rotate(90deg);}
+.nav-children{max-height:0;overflow:hidden;transition:max-height 0.3s ease;}
+.nav-children.open{max-height:400px;}
+.nav-sub .nav-item{padding:6px 10px 6px 34px;font-size:12px;color:var(--muted);}
+.nav-sub .nav-item:hover{color:var(--text);background:var(--surface2);}
+.nav-sub .nav-item.active{color:var(--accent);background:rgba(0,119,204,0.08);}
+.sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);}
+.user-info{display:flex;align-items:center;gap:10px;}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#b91c1c,#ef4444);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
+.user-name{font-size:13px;font-weight:600;color:var(--text);}
+.user-role{font-size:11px;color:var(--muted);}
+.logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s;}
+.logout-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,80,120,0.05);}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:4px;}
+.breadcrumb a{color:var(--muted);text-decoration:none;transition:color 0.2s;cursor:pointer;}
+.breadcrumb a:hover{color:var(--accent);}
+.breadcrumb .sep{color:var(--border);}
+.breadcrumb .cur{color:var(--soft);}
+.topbar-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);}
+.topbar-date{font-size:12px;color:var(--muted);margin-top:2px;}
+.topbar-actions{display:flex;align-items:center;gap:10px;}
+
+/* BUTTONS */
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;border:1px solid var(--border);background:var(--surface2);color:var(--soft);font-family:'Plus Jakarta Sans',sans-serif;display:inline-flex;align-items:center;gap:6px;}
+.btn:hover{border-color:var(--accent);color:var(--accent);}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn.primary:hover{background:#005fa3;}
+.btn.success{background:var(--green);color:#fff;border-color:var(--green);}
+.btn.success:hover{background:#047857;}
+.btn.danger{background:transparent;color:var(--red);border-color:rgba(204,0,0,0.3);}
+.btn.danger:hover{background:rgba(204,0,0,0.06);border-color:var(--red);}
+.btn.sm{padding:6px 12px;font-size:12px;}
+.btn.xs{padding:4px 10px;font-size:11px;border-radius:6px;}
+
+/* CONTENT */
+.content{flex:1;padding:28px;overflow-y:auto;background:var(--bg);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.fade-up{animation:fadeUp 0.45s ease both;}
+
+/* VIEW TABS */
+.view-tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:24px;width:fit-content;}
+.view-tab{padding:8px 20px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:none;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;display:flex;align-items:center;gap:6px;}
+.view-tab.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(0,119,204,0.2);}
+.view-tab:not(.active):hover{color:var(--text);background:var(--surface2);}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.mini-stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:14px;transition:border-color 0.2s,transform 0.2s;box-shadow:0 2px 8px rgba(0,80,120,0.04);}
+.mini-stat:hover{border-color:var(--accent);transform:translateY(-1px);}
+.mini-stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.mini-stat-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;}
+.mini-stat-lbl{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-top:1px;}
+
+/* PANEL */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,80,120,0.04);}
+.panel-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:var(--surface);}
+.panel-title{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+.panel-title .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+.panel-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.search-box{position:relative;}
+.search-box input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px 7px 34px;font-size:13px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;outline:none;width:220px;transition:border-color 0.2s;}
+.search-box input:focus{border-color:var(--accent);}
+.search-box input::placeholder{color:var(--muted);}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);}
+.show-select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;color:var(--soft);font-family:'Plus Jakarta Sans',sans-serif;outline:none;cursor:pointer;}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;padding:12px 16px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;}
+thead th:hover{color:var(--soft);}
+thead th .sort-icon{display:inline-block;margin-left:4px;opacity:0.4;font-size:10px;}
+thead th.sorted .sort-icon{opacity:1;color:var(--accent);}
+tbody td{padding:13px 16px;font-size:13px;border-bottom:1px solid rgba(0,80,120,0.07);vertical-align:middle;color:var(--text);}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr{transition:background 0.15s;}
+tbody tr:hover td{background:rgba(0,119,204,0.03);}
+.table-footer{padding:14px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted);}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;display:block;}
+.badge-active{background:rgba(5,150,105,0.12);color:var(--green);}.badge-active::before{background:var(--green);}
+.badge-inactive{background:rgba(122,154,176,0.15);color:var(--muted);}.badge-inactive::before{background:var(--muted);}
+.badge-blue{background:rgba(0,119,204,0.12);color:var(--accent);}.badge-blue::before{background:var(--accent);}
+.chip{display:inline-flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:11px;color:var(--soft);font-weight:500;}
+.region-pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(109,40,217,0.1);color:var(--purple);border:1px solid rgba(109,40,217,0.2);}
+.action-group{display:flex;align-items:center;gap:6px;}
+
+/* PAGINATION */
+.pagination{display:flex;align-items:center;gap:4px;}
+.page-btn{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--soft);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;display:flex;align-items:center;justify-content:center;}
+.page-btn:hover{border-color:var(--accent);color:var(--accent);}
+.page-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.page-btn:disabled{opacity:0.3;cursor:not-allowed;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,20,35,0.35);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;animation:fadeUp 0.3s ease;box-shadow:0 20px 60px rgba(0,0,0,0.12);}
+.modal.wide{max-width:720px;}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1;}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);}
+.modal-close{background:none;border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0;}
+.modal-close:hover{border-color:var(--red);color:var(--red);}
+.modal-body{padding:24px;}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field.span2{grid-column:span 2;}
+.field label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
+.field input,.field select,.field textarea{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px 13px;font-size:13px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,119,204,0.08);}
+.field input::placeholder,.field textarea::placeholder{color:var(--muted);}
+.field textarea{resize:vertical;min-height:80px;}
+.field select option{background:var(--surface);}
+.required-star{color:var(--red);}
+
+/* BRANCH EDITOR */
+.branch-editor{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:4px;}
+.branch-editor table{width:100%;}
+.branch-editor thead th{background:var(--surface2);font-size:10px;padding:9px 12px;border-bottom:1px solid var(--border);color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;}
+.branch-editor tbody td{padding:6px 8px;border-bottom:1px solid rgba(0,80,120,0.08);}
+.branch-editor tbody td input,.branch-editor tbody td select{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px 9px;font-size:12px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;outline:none;width:100%;transition:border-color 0.2s;}
+.branch-editor tbody td input:focus,.branch-editor tbody td select:focus{border-color:var(--accent);}
+.branch-editor tbody tr:last-child td{border-bottom:none;}
+.branch-editor-footer{padding:10px 12px;border-top:1px solid var(--border);background:var(--surface2);}
+.add-row-btn{background:none;border:1px dashed var(--border);color:var(--muted);border-radius:7px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;width:100%;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;}
+.add-row-btn:hover{border-color:var(--accent);color:var(--accent);}
+.del-row-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:4px 6px;border-radius:5px;transition:all 0.2s;}
+.del-row-btn:hover{color:var(--red);}
+
+/* CONFIRM */
+.confirm-box{background:var(--surface);border:1px solid rgba(204,0,0,0.25);border-radius:14px;width:100%;max-width:400px;padding:28px;text-align:center;animation:fadeUp 0.3s ease;box-shadow:0 20px 60px rgba(0,0,0,0.12);}
+.confirm-icon{font-size:40px;margin-bottom:14px;}
+.confirm-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:8px;color:var(--text);}
+.confirm-msg{font-size:13px;color:var(--soft);margin-bottom:22px;line-height:1.6;}
+.confirm-actions{display:flex;gap:10px;justify-content:center;}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:60px 20px;}
+.empty-icon{font-size:48px;margin-bottom:14px;opacity:0.4;}
+.empty-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:6px;color:var(--text);}
+.empty-sub{font-size:13px;color:var(--muted);}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;min-width:260px;animation:fadeUp 0.3s ease;box-shadow:0 8px 24px rgba(0,0,0,0.1);}
+.toast.success{border-color:rgba(5,150,105,0.4);}.toast.success .toast-dot{background:var(--green);}
+.toast.error{border-color:rgba(204,0,0,0.4);}.toast.error .toast-dot{background:var(--red);}
+.toast.info{border-color:rgba(0,119,204,0.3);}.toast.info .toast-dot{background:var(--accent);}
+.toast-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* SYNC INDICATOR */
+.sync-indicator{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:4px 10px;border-radius:20px;font-weight:600;}
+.sync-indicator.synced{background:rgba(5,150,105,0.1);color:var(--green);border:1px solid rgba(5,150,105,0.2);}
+.sync-indicator.syncing{background:rgba(0,119,204,0.1);color:var(--accent);border:1px solid rgba(0,119,204,0.2);}
+.sync-indicator.offline{background:rgba(217,119,6,0.1);color:var(--amber);border:1px solid rgba(217,119,6,0.2);}
+.sync-dot{width:6px;height:6px;border-radius:50%;}
+.synced .sync-dot{background:var(--green);}
+.syncing .sync-dot{background:var(--accent);animation:pulse 1s infinite;}
+.offline .sync-dot{background:var(--amber);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
+    </style>
+  <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="employee-theme.css">
+  <link rel="stylesheet" href="admin-sidebar.css">
+  <script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <script src="brand-logo.js" defer></script>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<!-- === SIDEBAR === -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="sidebar-logo-text">SchillerIndia<div class="sub">Services</div></div>
+    </div>
+  </div>
+  <div style="padding:10px 20px 0;"><span class="role-badge">Admin</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <button class="nav-item " onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
+    <button class="nav-item active" onclick="window.location.href='company-section.html'"><span class="icon">&#127970;</span> Company</button>
+    <button class="nav-item " onclick="window.location.href='division-section.html'"><span class="icon">&#128309;</span> Division</button>
+    <button class="nav-item " onclick="window.location.href='engineer-section.html'"><span class="icon">&#128119;</span> Engineers</button>
+    <button class="nav-item " onclick="window.location.href='dealer-section.html'"><span class="icon">&#129309;</span> Dealers</button>
+    <div class="nav-section">Operations</div>
+    <button class="nav-group-toggle " id="sf-toggle" onclick="toggleSF()">
+      <span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span>
+    </button>
+    <div class="nav-children " id="sf-children">
+      <div class="nav-sub">
+        <button class="nav-item " onclick="window.location.href='service-list.html'"><span class="icon">&#128225;</span> Services</button>
+        <button class="nav-item " onclick="window.location.href='pending-frn.html'"><span class="icon">&#128221;</span> Pending FRN</button>
+        <button class="nav-item " onclick="window.location.href='ob-pending.html'"><span class="icon">&#128194;</span> OB Pending</button>
+        <button class="nav-item " onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
+        <button class="nav-item " onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
+        <button class="nav-item " onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
+        <button class="nav-item " onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
+        <button class="nav-item " onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="ar-toggle" onclick="toggleAR()"><span class="icon">&#128196;</span> Activity Register <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="ar-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
+        <a class="nav-item " href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
+        <a class="nav-item " href="aprfob.html"><span class="icon">&#128203;</span> PRF/OB List</a>
+        <a class="nav-item " href="acr.html"><span class="icon">&#128209;</span> Closed PRF/OB</a>
+        <a class="nav-item " href="ans.html"><span class="icon">&#128230;</span> Non Saleable</a>
+        <a class="nav-item " href="as.html"><span class="icon">&#128176;</span> Saleable</a>
+        <a class="nav-item " href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
+        <a class="nav-item " href="acbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="rta-toggle" onclick="toggleRTA()"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="rta-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="atfrn.html"><span class="icon">&#128221;</span> Admin RT FRN</a>
+        <a class="nav-item " href="atob.html"><span class="icon">&#128230;</span> Admin RT OB</a>
+        <a class="nav-item " href="atur.html"><span class="icon">&#128736;&#65039;</span> Admin RT UR</a>
+        <a class="nav-item " href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
+      </div>
+    </div>
+    <div class="nav-section">Admin</div>
+    <button class="nav-item " onclick="window.location.href='usermanagement.html'"><span class="icon">&#128101;</span> User Management</button>
+    <button class="nav-item " onclick="window.location.href='Reports.html'"><span class="icon">&#128200;</span> Reports</button>
+    <button class="nav-item " onclick="window.location.href='settings.html'"><span class="icon">&#9881;&#65039;</span> Settings</button>
+    <button class="nav-item " onclick="window.location.href='notifications.html'"><span class="icon">&#128276;</span> Notifications</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="admin-avatar">A</div>
+      <div>
+        <div class="user-name" id="admin-name">Admin</div>
+        <div class="user-role">Administrator</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="breadcrumb">
+        <a onclick="navTo('admin-dashboard.html')">Dashboard</a>
+        <span class="sep">&#8250;</span>
+        <span class="cur">Company Management</span>
+      </div>
+      <div class="topbar-title">Company Management</div>
+      <div class="topbar-date" id="page-date"></div>
+    </div>
+    <div class="topbar-actions">
+      <span class="sync-indicator synced" id="sync-badge"><span class="sync-dot"></span><span id="sync-text">Synced</span></span>
+      <button class="btn" onclick="exportCSV()">&#128228; Export</button>
+      <button class="btn primary" onclick="openAddCompany()">&#10133; Add Company</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-row fade-up">
+      <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:rgba(0,119,204,0.12);">&#127970;</div>
+        <div><div class="mini-stat-val" style="color:var(--accent);" id="stat-companies">0</div><div class="mini-stat-lbl">Companies</div></div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:rgba(5,150,105,0.12);">&#127980;</div>
+        <div><div class="mini-stat-val" style="color:var(--green);" id="stat-branches">0</div><div class="mini-stat-lbl">Total Branches</div></div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:rgba(109,40,217,0.1);">&#127980;</div>
+        <div><div class="mini-stat-val" style="color:var(--purple);" id="stat-regions">10</div><div class="mini-stat-lbl">Regions</div></div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:rgba(217,119,6,0.12);">&#9989;</div>
+        <div><div class="mini-stat-val" style="color:var(--amber);" id="stat-active">0</div><div class="mini-stat-lbl">Active Companies</div></div>
+      </div>
+    </div>
+
+    <!-- VIEW TABS -->
+    <div class="view-tabs fade-up">
+      <button class="view-tab active" id="tab-companies" onclick="switchView('companies')">&#127970; Companies</button>
+      <button class="view-tab" id="tab-branches" onclick="switchView('branches')">&#127980; All Branches</button>
+    </div>
+
+    <!-- COMPANIES VIEW -->
+    <div id="view-companies" class="fade-up">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="dot"></span> Company List</div>
+          <div class="panel-controls">
+            <div class="search-box">
+              <span class="search-icon">&#128269;</span>
+              <input type="text" id="company-search" placeholder="Search companies..." oninput="filterCompanies()"/>
+            </div>
+            <select class="show-select" id="company-per-page" onchange="renderCompanies()">
+              <option value="10">10 / page</option>
+              <option value="25">25 / page</option>
+              <option value="50">50 / page</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th onclick="sortCompanies('_id')" class="sorted">#<span class="sort-icon">&#8597;</span></th>
+                <th onclick="sortCompanies('name')">Company Name<span class="sort-icon">&#8597;</span></th>
+                <th onclick="sortCompanies('address')">Address<span class="sort-icon">&#8597;</span></th>
+                <th onclick="sortCompanies('email')">Email<span class="sort-icon">&#8597;</span></th>
+                <th onclick="sortCompanies('mobile')">Mobile<span class="sort-icon">&#8597;</span></th>
+                <th>Branches</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="company-tbody"></tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="company-count-text"></span>
+          <div class="pagination" id="company-pagination"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BRANCHES VIEW -->
+    <div id="view-branches" style="display:none;" class="fade-up">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="dot" style="background:var(--green);"></span> Branch Directory</div>
+          <div class="panel-controls">
+            <select class="show-select" id="branch-region-filter" onchange="filterBranches()">
+              <option value="">All Regions</option>
+            </select>
+            <div class="search-box">
+              <span class="search-icon">&#128269;</span>
+              <input type="text" id="branch-search" placeholder="Search branches..." oninput="filterBranches()"/>
+            </div>
+            <select class="show-select" id="branch-per-page" onchange="renderBranches()">
+              <option value="10">10 / page</option>
+              <option value="25">25 / page</option>
+              <option value="50">50 / page</option>
+            </select>
+            <button class="btn primary sm" onclick="openAddBranch()">&#10133; Add Branch</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th onclick="sortBranches('_id')" class="sorted">Branch ID<span class="sort-icon">&#8597;</span></th>
+                <th onclick="sortBranches('name')">Branch Name<span class="sort-icon">&#8597;</span></th>
+                <th onclick="sortBranches('location')">Location<span class="sort-icon">&#8597;</span></th>
+                <th onclick="sortBranches('region')">Region<span class="sort-icon">&#8597;</span></th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="branch-tbody"></tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="branch-count-text"></span>
+          <div class="pagination" id="branch-pagination"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ADD/EDIT COMPANY MODAL -->
+<div class="modal-overlay" id="modal-company">
+  <div class="modal wide">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-company-title">Add Company</div>
+      <button class="modal-close" onclick="closeModal('modal-company')">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field span2">
+          <label>Company Name <span class="required-star">*</span></label>
+          <input type="text" id="c-name" placeholder=""/>
+        </div>
+        <div class="field span2">
+          <label>Address <span class="required-star">*</span></label>
+          <textarea id="c-address" placeholder="Full company address..."></textarea>
+        </div>
+        <div class="field">
+          <label>Email <span class="required-star">*</span></label>
+          <input type="email" id="c-email" placeholder="support@company.com"/>
+        </div>
+        <div class="field">
+          <label>Mobile <span class="required-star">*</span></label>
+          <input type="tel" id="c-mobile" placeholder="9876543210"/>
+        </div>
+        <div class="field">
+          <label>Website</label>
+          <input type="text" id="c-website" placeholder="www.company.com"/>
+        </div>
+        <div class="field">
+          <label>GST Number</label>
+          <input type="text" id="c-gst" placeholder="22AAAAA0000A1Z5"/>
+        </div>
+      </div>
+      <div style="margin-top:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;">Branches</label>
+          <button class="btn xs" onclick="addBranchRow()">&#10133; Add Row</button>
+        </div>
+        <div class="branch-editor">
+          <table>
+            <thead>
+              <tr><th>Branch Name</th><th>Location</th><th>Region</th><th></th></tr>
+            </thead>
+            <tbody id="branch-rows"></tbody>
+          </table>
+          <div class="branch-editor-footer">
+            <button class="add-row-btn" onclick="addBranchRow()">&#10133; Add another branch</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-company')">Cancel</button>
+      <button class="btn primary" id="save-company-btn" onclick="saveCompany()">&#128190; Save Company</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT BRANCH MODAL -->
+<div class="modal-overlay" id="modal-branch">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-branch-title">Add Branch</div>
+      <button class="modal-close" onclick="closeModal('modal-branch')">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field">
+          <label>Company <span class="required-star">*</span></label>
+          <select id="b-company"><option value="">Select company...</option></select>
+        </div>
+        <div class="field">
+          <label>Region <span class="required-star">*</span></label>
+          <select id="b-region">
+            <option value="">Select region...</option>
+            <option>North</option><option>East</option><option>West 1</option><option>West 2</option>
+            <option>South 1 TN</option><option>South 1 KL</option><option>South 2 KA</option>
+            <option>South 2 AP/TL</option><option>Puducherry</option><option>CG</option>
+          </select>
+        </div>
+        <div class="field span2">
+          <label>Branch Name <span class="required-star">*</span></label>
+          <input type="text" id="b-name" placeholder=""/>
+        </div>
+        <div class="field span2">
+          <label>Location / City <span class="required-star">*</span></label>
+          <input type="text" id="b-location" placeholder="Chennai"/>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-branch')">Cancel</button>
+      <button class="btn success" id="save-branch-btn" onclick="saveBranch()">&#128190; Save Branch</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="confirm-box">
+    <div class="confirm-icon">&#9888;&#65039;</div>
+    <div class="confirm-title" id="confirm-title">Delete this record?</div>
+    <div class="confirm-msg" id="confirm-msg">This action cannot be undone.</div>
+    <div class="confirm-actions">
+      <button class="btn" onclick="closeModal('modal-confirm')">Cancel</button>
+      <button class="btn danger" id="confirm-ok-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+// ==========================================================
+//  CONFIG - set API_BASE to your backend URL
+//  e.g. 'http://localhost:3001' or 'https://your-backend.com'
+//  If blank, app runs in localStorage-only mode.
+// ==========================================================
+const API_BASE = '';
+
+const REGIONS = ['North','East','West 1','West 2','South 1 TN','South 1 KL','South 2 KA','South 2 AP/TL','Puducherry','CG'];
+
+// ?"??"? In-memory state (loaded from API or localStorage)
+let companies = [];
+let branches  = [];
+
+function branchKey(b) {
+  return (b._id && String(b._id) !== 'undefined')
+    ? String(b._id)
+    : `${String(b.companyId)}__${encodeURIComponent(b.name)}`;
+}
+
+// ?"??"? Pagination / sort state
+let currentView  = 'companies';
+let companyPage  = 1, branchPage = 1;
+let companySortKey = 'name', companySortDir = 1;
+let branchSortKey  = 'name', branchSortDir  = 1;
+let filteredCompanies = [], filteredBranches = [];
+let editingCompanyId  = null, editingBranchId = null;
+
+// ?"??"? Services sub-menu
+let sfOpen = false;
+
+// ==========================================================
+//  NAVIGATION
+// ==========================================================
+function navTo(href) { window.location.href = href; }
+
+function toggleSF() {
+  sfOpen = !sfOpen;
+  document.getElementById('sf-children').classList.toggle('open', sfOpen);
+  document.getElementById('sf-toggle').classList.toggle('open', sfOpen);
+}
+function toggleAR(){ var btn=document.getElementById('ar-toggle'); var panel=document.getElementById('ar-children'); if(!btn||!panel)return; btn.classList.toggle('open'); panel.classList.toggle('open'); }
+
+// ==========================================================
+//  SYNC / PERSISTENCE LAYER
+//  Priority: MongoDB Atlas (via API) &#8594; localStorage fallback
+// ==========================================================
+const LS_COMPANIES = 'si_companies';
+const LS_BRANCHES  = 'si_branches';
+
+function setSyncStatus(status) {
+  const badge = document.getElementById('sync-badge');
+  const text  = document.getElementById('sync-text');
+  badge.className = 'sync-indicator ' + status;
+  const labels = { synced:'Synced', syncing:'Syncing...', offline:'Local only' };
+  text.textContent = labels[status] || status;
+}
+
+// Persist to localStorage as cache
+function saveToLocalStorage() {
+  try {
+    localStorage.setItem(LS_COMPANIES, JSON.stringify(companies));
+    localStorage.setItem(LS_BRANCHES,  JSON.stringify(branches));
+  } catch(e) { console.warn('localStorage write failed:', e); }
+}
+
+// Load from localStorage (fallback / initial cache)
+function loadFromLocalStorage() {
+  try {
+    const c = localStorage.getItem(LS_COMPANIES);
+    const b = localStorage.getItem(LS_BRANCHES);
+    if (c) companies = JSON.parse(c);
+    if (b) branches  = JSON.parse(b);
+  } catch(e) { console.warn('localStorage read failed:', e); }
+}
+
+// API helpers - graceful fallback on network error
+async function apiFetch(method, path, body) {
+  const token = localStorage.getItem('schiller_token') || '';
+  const opts = {
+    method,
+    headers:{
+      'Content-Type':'application/json',
+      ...(token ? { Authorization:'Bearer ' + token } : {})
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(API_BASE + path, opts);
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || !json.success) throw new Error(json.error || json.message || ('HTTP ' + res.status));
+  return json.data;
+}
+
+// Load all data from API; fallback to localStorage if unreachable
+async function loadData() {
+  setSyncStatus('syncing');
+  // Show cached data immediately while fetching
+  loadFromLocalStorage();
+  refresh();
+
+  try {
+    const [apiCompanies, apiBranches] = await Promise.all([
+      apiFetch('GET', '/api/companies'),
+      apiFetch('GET', '/api/branches'),
+    ]);
+    companies = apiCompanies;
+    branches  = apiBranches;
+    saveToLocalStorage();
+    setSyncStatus('synced');
+  } catch(e) {
+    // API unavailable - use localStorage data
+    setSyncStatus('offline');
+    showToast('Running in offline mode - changes saved locally only.', 'info');
+  }
+  refresh();
+}
+
+// ==========================================================
+//  INIT
+// ==========================================================
+(document.getElementById('page-date')||{}).textContent =
+  new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+(function initUser(){
+  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const name = u.name || 'Admin';
+  (document.getElementById('admin-name')||{}).textContent = name;
+  (document.getElementById('admin-avatar')||{}).textContent = name.charAt(0).toUpperCase();
+})();
+
+populateRegionFilter();
+loadData(); // async - loads API, falls back to localStorage
+
+// ==========================================================
+//  UI REFRESH
+// ==========================================================
+function refresh() {
+  updateStats();
+  populateCompanyDropdown();
+  filterCompanies();
+  filterBranches();
+}
+
+function updateStats() {
+  (document.getElementById('stat-companies')||{}).textContent = companies.length;
+  (document.getElementById('stat-branches')||{}).textContent = branches.length;
+  (document.getElementById('stat-regions')||{}).textContent = REGIONS.length;
+  (document.getElementById('stat-active')||{}).textContent = companies.filter(c=>c.status==='active').length;
+}
+
+function switchView(v) {
+  currentView = v;
+  document.getElementById('view-companies').style.display = v==='companies' ? 'block' : 'none';
+  document.getElementById('view-branches').style.display  = v==='branches'  ? 'block' : 'none';
+  document.getElementById('tab-companies').className = 'view-tab' + (v==='companies' ? ' active' : '');
+  document.getElementById('tab-branches').className  = 'view-tab' + (v==='branches'  ? ' active' : '');
+}
+
+// ==========================================================
+//  COMPANIES
+// ==========================================================
+function filterCompanies() {
+  const q = (document.getElementById('company-search').value || '').toLowerCase();
+  filteredCompanies = companies.filter(c =>
+    c.name.toLowerCase().includes(q) ||
+    (c.email||'').toLowerCase().includes(q) ||
+    (c.address||'').toLowerCase().includes(q)
+  );
+  sortArr(filteredCompanies, companySortKey, companySortDir);
+  companyPage = 1;
+  renderCompanies();
+}
+
+function sortCompanies(key) {
+  if (companySortKey===key) companySortDir*=-1; else { companySortKey=key; companySortDir=1; }
+  filterCompanies();
+}
+
+function renderCompanies() {
+  const perPage = parseInt(document.getElementById('company-per-page').value);
+  const total   = filteredCompanies.length;
+  const pages   = Math.max(1, Math.ceil(total/perPage));
+  if (companyPage > pages) companyPage = pages;
+  const slice = filteredCompanies.slice((companyPage-1)*perPage, companyPage*perPage);
+  const tbody = document.getElementById('company-tbody');
+
+  if (!slice.length) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">&#127970;</div><div class="empty-title">No companies found</div><div class="empty-sub">Try adjusting your search or add a new company.</div></div></td></tr>`;
+    (document.getElementById('company-count-text')||{}).textContent = '0 companies';
+    document.getElementById('company-pagination').innerHTML = '';
+    return;
+  }
+
+  tbody.innerHTML = slice.map(c => {
+    const cid = c._id || c.id;
+    const bc  = branches.filter(b => String(b.companyId) === String(cid)).length;
+    const shortId = String(cid).slice(-5);
+    return `<tr>
+      <td><span class="chip">#${shortId}</span></td>
+      <td><div style="font-weight:600;">${c.name}</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">${c.website||''}</div></td>
+      <td style="max-width:200px;color:var(--soft);font-size:12px;">${c.address||''}</td>
+      <td><a href="mailto:${c.email}" style="color:var(--accent);text-decoration:none;font-size:13px;">${c.email||''}</a></td>
+      <td style="font-size:13px;">${c.mobile||''}</td>
+      <td><span class="badge badge-blue" style="cursor:pointer;" onclick="switchView('branches')">${bc} branch${bc!==1?'es':''}</span></td>
+      <td><span class="badge ${c.status==='active'?'badge-active':'badge-inactive'}">${c.status||'active'}</span></td>
+      <td><div class="action-group">
+        <button class="btn xs" onclick="openEditCompany('${cid}')">&#9998; Edit</button>
+        <button class="btn xs" onclick="openAddBranch('${cid}')">&#10133; Branch</button>
+        <button class="btn xs danger" onclick="confirmDelete('company','${cid}','${c.name.replace(/'/g,"\\'")}')">&#128465;</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  (document.getElementById('company-count-text')||{}).textContent =
+    `Showing ${Math.min((companyPage-1)*perPage+1,total)}-${Math.min(companyPage*perPage,total)} of ${total} companies`;
+  renderPagination('company-pagination', companyPage, pages, p => { companyPage=p; renderCompanies(); });
+}
+
+// ==========================================================
+//  BRANCHES
+// ==========================================================
+function populateRegionFilter() {
+  const sel = document.getElementById('branch-region-filter');
+  REGIONS.forEach(r => { const o=document.createElement('option'); o.value=r; o.textContent=r; sel.appendChild(o); });
+}
+
+function filterBranches() {
+  const q   = (document.getElementById('branch-search').value || '').toLowerCase();
+  const reg = document.getElementById('branch-region-filter').value;
+  filteredBranches = branches.filter(b => {
+    const ms = !q   || b.name.toLowerCase().includes(q) || (b.location||'').toLowerCase().includes(q);
+    const mr = !reg || b.region === reg;
+    return ms && mr;
+  });
+  sortArr(filteredBranches, branchSortKey, branchSortDir);
+  branchPage = 1;
+  renderBranches();
+}
+
+function sortBranches(key) {
+  if (branchSortKey===key) branchSortDir*=-1; else { branchSortKey=key; branchSortDir=1; }
+  filterBranches();
+}
+
+function renderBranches() {
+  const perPage = parseInt(document.getElementById('branch-per-page').value);
+  const total   = filteredBranches.length;
+  const pages   = Math.max(1, Math.ceil(total/perPage));
+  if (branchPage > pages) branchPage = pages;
+  const slice = filteredBranches.slice((branchPage-1)*perPage, branchPage*perPage);
+  const tbody = document.getElementById('branch-tbody');
+
+  if (!slice.length) {
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">&#127980;</div><div class="empty-title">No branches found</div><div class="empty-sub">Try adjusting filters or add a new branch.</div></div></td></tr>`;
+    (document.getElementById('branch-count-text')||{}).textContent = '0 branches';
+    document.getElementById('branch-pagination').innerHTML = '';
+    return;
+  }
+
+  tbody.innerHTML = slice.map(b => {
+    const bid = (b._id && String(b._id) !== 'undefined')
+      ? String(b._id)
+      : `${String(b.companyId)}__${encodeURIComponent(b.name)}`;
+    const shortId = String(b._id || b.name || '').slice(-5);
+    return `<tr>
+      <td><span class="chip">#${shortId}</span></td>
+      <td><div style="font-weight:600;">${b.name}</div></td>
+      <td style="color:var(--soft);">${b.location||''}</td>
+      <td><span class="region-pill">${b.region||'-'}</span></td>
+      <td><div class="action-group">
+        <button class="btn xs" onclick="openEditBranch('${bid}')">&#9998; Edit</button>
+        <button class="btn xs danger" onclick="confirmDelete('branch','${bid}','${b.name.replace(/'/g,"\\'")}')">&#128465;</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  (document.getElementById('branch-count-text')||{}).textContent =
+    `Showing ${Math.min((branchPage-1)*perPage+1,total)}-${Math.min(branchPage*perPage,total)} of ${total} branches`;
+  renderPagination('branch-pagination', branchPage, pages, p => { branchPage=p; renderBranches(); });
+}
+
+// ==========================================================
+//  COMPANY MODAL
+// ==========================================================
+function openAddCompany() {
+  editingCompanyId = null;
+  (document.getElementById('modal-company-title')||{}).textContent = 'Add New Company';
+  (document.getElementById('save-company-btn')||{}).innerHTML = '&#128190; Save Company';
+  ['c-name','c-address','c-email','c-mobile','c-website','c-gst'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('branch-rows').innerHTML = '';
+  addBranchRow();
+  openModal('modal-company');
+}
+
+function openEditCompany(id) {
+  const c = companies.find(x => String(x._id||x.id) === String(id));
+  if (!c) return;
+  editingCompanyId = String(c._id || c.id);
+  (document.getElementById('modal-company-title')||{}).textContent = 'Edit Company';
+  (document.getElementById('save-company-btn')||{}).innerHTML = '&#128190; Update Company';
+  document.getElementById('c-name').value    = c.name    || '';
+  document.getElementById('c-address').value = c.address || '';
+  document.getElementById('c-email').value   = c.email   || '';
+  document.getElementById('c-mobile').value  = c.mobile  || '';
+  document.getElementById('c-website').value = c.website || '';
+  document.getElementById('c-gst').value     = c.gst     || '';
+  document.getElementById('branch-rows').innerHTML = '';
+  const compBranches = branches.filter(b => String(b.companyId) === String(editingCompanyId));
+  compBranches.forEach(b => addBranchRow(b));
+  if (!compBranches.length) addBranchRow();
+  openModal('modal-company');
+}
+
+function addBranchRow(data = {}) {
+  const tr = document.createElement('tr');
+  tr.dataset.branchId = data._id || data.id || '';
+  tr.innerHTML = `
+    <td><input type="text" placeholder="SHIPL City" value="${data.name || ''}"/></td>
+    <td><input type="text" placeholder="City"        value="${data.location || ''}"/></td>
+    <td><select style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px 8px;font-size:12px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;outline:none;width:100%;">
+      <option value="">Region</option>
+      ${REGIONS.map(r => `<option ${r===(data.region||'')?'selected':''}>${r}</option>`).join('')}
+    </select></td>
+    <td><button class="del-row-btn" onclick="this.closest('tr').remove()" type="button">&#10005;</button></td>
+  `;
+  document.getElementById('branch-rows').appendChild(tr);
+}
+
+async function saveCompany() {
+  const name    = document.getElementById('c-name').value.trim();
+  const address = document.getElementById('c-address').value.trim();
+  const email   = document.getElementById('c-email').value.trim();
+  const mobile  = document.getElementById('c-mobile').value.trim();
+  if (!name || !address || !email || !mobile) { showToast('Please fill all required fields.','error'); return; }
+
+  // Gather inline branches
+  const inlineBranches = [];
+  document.getElementById('branch-rows').querySelectorAll('tr').forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    const sel    = row.querySelector('select');
+    const bName  = inputs[0].value.trim();
+    if (!bName) return;
+    inlineBranches.push({
+      _id:      row.dataset.branchId || null,
+      name:     bName,
+      location: inputs[1].value.trim(),
+      region:   sel.value,
+    });
+  });
+
+  const payload = { name, address, email, mobile,
+    website: document.getElementById('c-website').value.trim(),
+    gst:     document.getElementById('c-gst').value.trim(),
+    status: 'active', branches: inlineBranches };
+
+  setSyncStatus('syncing');
+  document.getElementById('save-company-btn').disabled = true;
+  (document.getElementById('save-company-btn')||{}).innerHTML = '&#9203; Saving...';
+
+  try {
+    let savedCompany;
+    if (editingCompanyId) {
+      // UPDATE via API
+      savedCompany = await apiFetch('PUT', `/api/companies/${editingCompanyId}`, payload);
+      const idx = companies.findIndex(c => String(c._id||c.id) === String(editingCompanyId));
+      if (idx !== -1) companies[idx] = savedCompany;
+      // Refresh branches from API
+      const updatedBranches = await apiFetch('GET', '/api/branches');
+      branches = updatedBranches;
+    } else {
+      // CREATE via API
+      savedCompany = await apiFetch('POST', '/api/companies', payload);
+      companies.push(savedCompany);
+      // Reload branches (inline ones were created server-side)
+      const updatedBranches = await apiFetch('GET', '/api/branches');
+      branches = updatedBranches;
+    }
+    setSyncStatus('synced');
+    showToast(editingCompanyId ? 'Company updated and saved to database!' : 'Company added and saved to database!', 'success');
+  } catch(apiErr) {
+    // API failed - save locally
+    setSyncStatus('offline');
+    if (editingCompanyId) {
+      const idx = companies.findIndex(c => String(c._id||c.id) === String(editingCompanyId));
+      if (idx !== -1) companies[idx] = { ...companies[idx], name, address, email, mobile, website:payload.website, gst:payload.gst };
+      // Upsert inline branches locally
+      inlineBranches.forEach(b => {
+        if (b._id) {
+          const bi = branches.findIndex(x => String(x._id||x.id) === String(b._id));
+          if (bi !== -1) branches[bi] = { ...branches[bi], name:b.name, location:b.location, region:b.region };
+        } else {
+          branches.push({ id: 'local_' + Date.now() + Math.random(), companyId: editingCompanyId, name:b.name, location:b.location, region:b.region });
+        }
+      });
+    } else {
+      const localId = 'local_' + Date.now();
+      companies.push({ id: localId, name, address, email, mobile, website:payload.website, gst:payload.gst, status:'active' });
+      inlineBranches.forEach(b => {
+        branches.push({ id: 'local_' + Date.now() + Math.random(), companyId: localId, name:b.name, location:b.location, region:b.region });
+      });
+    }
+    showToast('Saved locally (database unavailable). Data will sync when server is reachable.', 'info');
+  }
+
+  saveToLocalStorage();
+  document.getElementById('save-company-btn').disabled = false;
+  (document.getElementById('save-company-btn')||{}).innerHTML = editingCompanyId ? '&#128190; Update Company' : '&#128190; Save Company';
+  closeModal('modal-company');
+  refresh();
+}
+
+// ==========================================================
+//  BRANCH MODAL
+// ==========================================================
+function populateCompanyDropdown() {
+  const sel = document.getElementById('b-company');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Select company...</option>';
+  companies.forEach(c => {
+    const o = document.createElement('option');
+    o.value = String(c._id || c.id);
+    o.textContent = c.name;
+    sel.appendChild(o);
+  });
+  if (cur) sel.value = cur;
+}
+
+function openAddBranch(companyId = null) {
+  editingBranchId = null;
+  (document.getElementById('modal-branch-title')||{}).textContent = 'Add Branch';
+  (document.getElementById('save-branch-btn')||{}).innerHTML = '&#128190; Save Branch';
+  ['b-name','b-location'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('b-region').value  = '';
+  document.getElementById('b-company').value = companyId ? String(companyId) : '';
+  openModal('modal-branch');
+}
+
+function openEditBranch(id) {
+  let b;
+  if (id.includes('__')) {
+    const sep = id.indexOf('__');
+    const companyId = id.slice(0, sep);
+    const name = decodeURIComponent(id.slice(sep + 2));
+    b = branches.find(x => String(x.companyId) === companyId && x.name === name);
+  } else {
+    b = branches.find(x => String(x._id || x.id) === id);
+  }
+  if (!b) return;
+  editingBranchId = branchKey(b);
+  (document.getElementById('modal-branch-title')||{}).textContent = 'Edit Branch';
+  (document.getElementById('save-branch-btn')||{}).innerHTML = '&#128190; Update Branch';
+  document.getElementById('b-company').value  = String(b.companyId);
+  document.getElementById('b-region').value   = b.region   || '';
+  document.getElementById('b-name').value     = b.name     || '';
+  document.getElementById('b-location').value = b.location || '';
+  openModal('modal-branch');
+}
+
+async function saveBranch() {
+  const companyId = document.getElementById('b-company').value;
+  const name      = document.getElementById('b-name').value.trim();
+  const location  = document.getElementById('b-location').value.trim();
+  const region    = document.getElementById('b-region').value;
+  if (!companyId || !name || !location) { showToast('Please fill all required fields.','error'); return; }
+
+  const payload = { companyId, name, location, region };
+
+  setSyncStatus('syncing');
+  document.getElementById('save-branch-btn').disabled = true;
+  (document.getElementById('save-branch-btn')||{}).innerHTML = '&#9203; Saving...';
+
+  try {
+    if (editingBranchId) {
+      const saved = await apiFetch('PUT', `/api/branches/${editingBranchId}`, payload);
+      const idx = branches.findIndex(b => branchKey(b) === editingBranchId);
+      if (idx !== -1) branches[idx] = saved;
+    } else {
+      const saved = await apiFetch('POST', '/api/branches', payload);
+      branches.push(saved);
+    }
+    setSyncStatus('synced');
+    showToast(editingBranchId ? 'Branch updated and saved to database!' : 'Branch added and saved to database!', 'success');
+  } catch(apiErr) {
+    // API failed - save locally
+    setSyncStatus('offline');
+    if (editingBranchId) {
+      const idx = branches.findIndex(b => branchKey(b) === editingBranchId);
+      if (idx !== -1) branches[idx] = { ...branches[idx], companyId, name, location, region };
+    } else {
+      branches.push({ id: 'local_' + Date.now(), companyId, name, location, region });
+    }
+    showToast('Saved locally (database unavailable).', 'info');
+  }
+
+  saveToLocalStorage();
+  document.getElementById('save-branch-btn').disabled = false;
+  (document.getElementById('save-branch-btn')||{}).textContent = editingBranchId ? '&#128190; Update Branch' : '&#128190; Save Branch';
+  closeModal('modal-branch');
+  refresh();
+}
+
+// ==========================================================
+//  DELETE
+// ==========================================================
+function confirmDelete(type, id, name) {
+  (document.getElementById('confirm-title')||{}).textContent = `Delete ${type==='company' ? 'Company' : 'Branch'}?`;
+  (document.getElementById('confirm-msg')||{}).textContent = `"${name}" will be permanently removed. This cannot be undone.`;
+  document.getElementById('confirm-ok-btn').onclick = async () => {
+    setSyncStatus('syncing');
+    try {
+      if (type === 'company') {
+        await apiFetch('DELETE', `/api/companies/${id}`);
+        companies = companies.filter(c => String(c._id||c.id) !== String(id));
+        branches  = branches.filter(b => String(b.companyId) !== String(id));
+      } else {
+        await apiFetch('DELETE', `/api/branches/${id}`);
+        branches = branches.filter(b => branchKey(b) !== id);
+      }
+      setSyncStatus('synced');
+    } catch(e) {
+      // Local delete fallback
+      setSyncStatus('offline');
+      if (type === 'company') { companies = companies.filter(c => String(c._id||c.id) !== String(id)); branches = branches.filter(b => String(b.companyId) !== String(id)); }
+      else { branches = branches.filter(b => branchKey(b) !== id); }
+    }
+    saveToLocalStorage();
+    closeModal('modal-confirm');
+    refresh();
+    showToast(`${type==='company'?'Company':'Branch'} deleted.`, 'success');
+  };
+  openModal('modal-confirm');
+}
+
+// ==========================================================
+//  EXPORT CSV
+// ==========================================================
+function exportCSV() {
+  const rows = [['Branch ID','Company','Branch Name','Location','Region']];
+  branches.forEach(b => {
+    const c = companies.find(x => String(x._id||x.id) === String(b.companyId));
+    rows.push([b._id||b.id, c?c.name:'', b.name, b.location, b.region]);
+  });
+  const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'schillerindia-branches.csv';
+  a.click();
+  showToast('CSV exported successfully!', 'success');
+}
+
+// ==========================================================
+//  HELPERS
+// ==========================================================
+function sortArr(arr, key, dir) {
+  arr.sort((a, b) => {
+    const av = (a[key]||'').toString().toLowerCase();
+    const bv = (b[key]||'').toString().toLowerCase();
+    return av < bv ? -dir : av > bv ? dir : 0;
+  });
+}
+
+function renderPagination(cid, current, total, onPage) {
+  const el = document.getElementById(cid);
+  if (total <= 1) { el.innerHTML = ''; return; }
+  let h = `<button class="page-btn" ${current===1?'disabled':''} onclick="(${onPage})(${current-1})">&#8249;</button>`;
+  getPageRange(current, total).forEach(p => {
+    if (p==='...') h += `<button class="page-btn" disabled>...</button>`;
+    else h += `<button class="page-btn ${p===current?'active':''}" onclick="(${onPage})(${p})">${p}</button>`;
+  });
+  h += `<button class="page-btn" ${current===total?'disabled':''} onclick="(${onPage})(${current+1})">&#8250;</button>`;
+  el.innerHTML = h;
+}
+
+function getPageRange(current, total) {
+  if (total<=7)        return Array.from({length:total},(_,i)=>i+1);
+  if (current<=4)      return [1,2,3,4,5,'...',total];
+  if (current>=total-3)return [1,'...',total-4,total-3,total-2,total-1,total];
+  return [1,'...',current-1,current,current+1,'...',total];
+}
+
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); });
+});
+
+function showToast(msg, type='success') {
+  const wrap = document.getElementById('toast-wrap');
+  const el   = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span class="toast-dot"></span>${msg}`;
+  wrap.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+</script>
+</body>
+</html>
+
+
+
+
+
+
+

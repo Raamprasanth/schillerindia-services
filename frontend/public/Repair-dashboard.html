@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script>(function(){
+    const token = localStorage.getItem('schiller_token');
+    const role  = (localStorage.getItem('schiller_role')||'').toLowerCase();
+    if (!token || !['repair','repair_team','admin'].includes(role)) window.location.href = 'login.html';
+  })();</script>
+  <title>SchillerIndia - Repair Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    :root{
+      --bg:#f4f7fa;
+      --surface:#ffffff;
+      --surface2:#eaf1f6;
+      --border:#d0e0ec;
+      --accent:#059669;
+      --accent2:#047857;
+      --accent-soft:rgba(5,150,105,0.08);
+      --green:#059669;
+      --amber:#d97706;
+      --red:#cc0000;
+      --blue:#0077cc;
+      --text:#1a2a3a;
+      --muted:#7a9ab0;
+      --soft:#4a6a8a;
+      --card:#ffffff;
+      --shadow:0 2px 12px rgba(0,60,120,0.07);
+      --shadow-md:0 4px 24px rgba(0,60,120,0.1);
+    }
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
+    /* ── SIDEBAR ── */
+    .sidebar{width:230px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 14px rgba(0,60,120,0.06);}
+    .sidebar-header{padding:18px 18px 14px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#052e16,#059669);}
+    .logo-wrap{display:flex;align-items:center;gap:10px;}
+    .logo-icon{width:36px;height:36px;background:rgba(255,255,255,0.15);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#fff;border:1.5px solid rgba(255,255,255,0.25);}
+    .logo-text{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#fff;line-height:1.2;}
+    .logo-text span{display:block;font-size:10px;color:rgba(255,255,255,0.55);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;}
+    .repair-badge{margin:8px 12px 0;padding:3px 10px;border-radius:20px;font-size:9.5px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;display:inline-block;background:rgba(5,150,105,0.2);color:#6ee7b7;border:1px solid rgba(5,150,105,0.4);}
+    .sidebar-nav{flex:1;padding:10px 8px;}
+    .nav-sec{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;padding:10px 8px 4px;}
+    .nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:500;cursor:pointer;transition:all 0.18s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;}
+    .nav-item:hover{background:var(--surface2);color:var(--text);}
+    .nav-item.active{background:rgba(5,150,105,0.12);color:var(--accent);font-weight:700;border-left:3px solid var(--accent);padding-left:8px;}
+    .nav-item .ico{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+    .sidebar-footer{padding:12px 14px;border-top:1px solid var(--border);background:#f0fdf4;}
+    .user-row{display:flex;align-items:center;gap:9px;}
+    .user-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
+    .user-nm{font-size:12.5px;font-weight:600;color:var(--text);}
+    .user-rl{font-size:10px;color:var(--muted);}
+    .logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:4px 9px;cursor:pointer;font-size:10.5px;font-weight:600;transition:all 0.2s;}
+    .logout-btn:hover{border-color:var(--red);color:var(--red);}
+
+    /* ── MAIN ── */
+    .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .topbar{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:var(--shadow);}
+    .topbar-left h1{font-family:'Syne',sans-serif;font-size:19px;font-weight:700;color:var(--text);}
+    .topbar-left p{font-size:12px;color:var(--muted);margin-top:2px;}
+    .topbar-right{display:flex;align-items:center;gap:10px;}
+    .content{flex:1;padding:26px;overflow-y:auto;background:var(--bg);}
+
+    /* ── WELCOME STRIP ── */
+    .welcome-strip{background:linear-gradient(135deg,#052e16,#059669);border-radius:14px;padding:22px 28px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(5,150,105,0.25);}
+    .welcome-text h2{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:4px;}
+    .welcome-text p{font-size:13px;color:rgba(255,255,255,0.7);}
+    .welcome-icon{font-size:42px;opacity:0.85;}
+
+    /* ── STAT CARDS ── */
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+    .stat-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:18px 20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px;transition:transform 0.2s,box-shadow 0.2s;cursor:default;}
+    .stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+    .stat-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+    .stat-val{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;line-height:1;}
+    .stat-lbl{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:3px;}
+
+    /* ── SECTION GRID ── */
+    .section-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+    .section-grid.full{grid-template-columns:1fr;}
+
+    /* ── CARD COMPONENT ── */
+    .panel{background:var(--card);border:1px solid var(--border);border-radius:13px;overflow:hidden;box-shadow:var(--shadow);}
+    .panel-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2);}
+    .panel-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+    .panel-body{padding:0;}
+    .panel-empty{padding:36px;text-align:center;color:var(--muted);font-size:13px;}
+    .panel-footer{padding:10px 18px;border-top:1px solid var(--border);background:var(--surface2);font-size:11.5px;color:var(--muted);}
+
+    /* ── TABLE ── */
+    .mini-table{width:100%;border-collapse:collapse;font-size:12px;}
+    .mini-table thead th{padding:9px 14px;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;text-align:left;border-bottom:1px solid var(--border);background:var(--surface);white-space:nowrap;}
+    .mini-table tbody td{padding:10px 14px;border-bottom:1px solid rgba(0,60,120,0.05);color:var(--text);vertical-align:middle;}
+    .mini-table tbody tr:last-child td{border-bottom:none;}
+    .mini-table tbody tr:hover td{background:rgba(5,150,105,0.025);}
+
+    /* ── PILLS ── */
+    .pill{display:inline-flex;align-items:center;gap:3px;padding:2px 9px;border-radius:12px;font-size:10px;font-weight:700;}
+    .pill::before{content:'';width:5px;height:5px;border-radius:50%;display:block;}
+    .chip{display:inline-flex;align-items:center;background:rgba(0,104,181,0.08);border:1px solid rgba(0,104,181,0.15);border-radius:5px;padding:2px 7px;font-size:10px;color:var(--accent);font-weight:600;}
+    .pill-pending{background:rgba(217,119,6,0.1);color:var(--amber);}.pill-pending::before{background:var(--amber);}
+    .pill-inprogress{background:rgba(0,119,204,0.1);color:var(--blue);}.pill-inprogress::before{background:var(--blue);}
+    .pill-completed{background:rgba(5,150,105,0.1);color:var(--green);}.pill-completed::before{background:var(--green);}
+    .pill-escalated{background:rgba(204,0,0,0.08);color:var(--red);}.pill-escalated::before{background:var(--red);}
+    .pill-open{background:rgba(5,150,105,0.1);color:var(--accent);}.pill-open::before{background:var(--accent);}
+
+    /* ── QUICK LINKS ── */
+    .quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px;}
+    .quick-link{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 10px;border-radius:10px;border:1.5px solid var(--border);text-decoration:none;color:var(--soft);font-size:12px;font-weight:600;transition:all 0.2s;background:var(--surface);text-align:center;}
+    .quick-link:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);transform:translateY(-2px);}
+    .quick-link .ql-icon{font-size:22px;}
+
+    /* ── ACTIVITY LIST ── */
+    .activity-list{padding:4px 0;}
+    .activity-item{display:flex;align-items:flex-start;gap:12px;padding:12px 18px;border-bottom:1px solid rgba(0,60,120,0.05);}
+    .activity-item:last-child{border-bottom:none;}
+    .activity-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+    .activity-text{font-size:12.5px;color:var(--text);line-height:1.5;}
+    .activity-time{font-size:10.5px;color:var(--muted);margin-top:2px;}
+
+    /* ── BUTTONS ── */
+    .btn{padding:8px 16px;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:5px;}
+    .btn-primary{background:var(--accent);color:#fff;}.btn-primary:hover{background:var(--accent2);}
+    .btn-outline{background:none;border:1.5px solid var(--border);color:var(--soft);}.btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+    .btn-sm{padding:5px 12px;font-size:11.5px;}
+    .btn-xs{padding:3px 9px;font-size:11px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--soft);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;font-weight:600;}
+    .btn-xs:hover{border-color:var(--accent);color:var(--accent);}
+
+    /* ── LOADING BAR ── */
+    @keyframes loadBar{0%{transform:scaleX(0);opacity:1;}80%{transform:scaleX(0.85);opacity:1;}100%{transform:scaleX(1);opacity:0;}}
+
+    /* ── SKELETON ── */
+    .skeleton{height:14px;border-radius:6px;background:linear-gradient(90deg,var(--surface2) 25%,var(--border) 50%,var(--surface2) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;}
+    @keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+    /* ── TOAST ── */
+    .toast-wrap{position:fixed;bottom:24px;right:24px;z-index:600;display:flex;flex-direction:column;gap:8px;}
+    .toast{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;min-width:240px;animation:fadeUp 0.3s ease;box-shadow:var(--shadow-md);}
+    .toast.ok{border-color:rgba(5,150,105,0.4);}.toast.ok .tdot{background:var(--green);}
+    .toast.err{border-color:rgba(204,0,0,0.4);}.toast.err .tdot{background:var(--red);}
+    .tdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+    @media(max-width:900px){.stats-grid{grid-template-columns:1fr 1fr;}.section-grid{grid-template-columns:1fr;}}
+    @media(max-width:600px){.sidebar{display:none;}.stats-grid{grid-template-columns:1fr 1fr;}}
+  
+    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
+
+    /* ── PERFORMANCE CARD ── */
+    .perf-card{background:linear-gradient(145deg,var(--surface),var(--surface2));border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:var(--shadow);}
+    .perf-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+    .perf-title{font-size:11px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--soft);}
+    .perf-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:10px;font-weight:700;border:1px solid rgba(0,104,181,0.18);background:rgba(0,104,181,0.08);color:var(--accent);}
+    .perf-score{font-family:'Syne',sans-serif;font-size:44px;font-weight:800;line-height:1;color:var(--text);}
+    .perf-label{font-size:13px;font-weight:700;color:var(--green);margin-top:4px;}
+    .perf-summary{font-size:12.5px;color:var(--soft);line-height:1.6;margin-top:8px;}
+    .perf-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px;}
+    .perf-metric{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:10px 12px;}
+    .pm-lbl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);margin-bottom:4px;}
+    .pm-val{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);}
+    .bar-chart-row{display:flex;align-items:flex-end;gap:6px;height:64px;padding:0 2px;}
+    .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;}
+    .bar{width:100%;border-radius:4px 4px 0 0;transition:height 0.8s ease;}
+    .bar-lbl{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+
+    /* ITEM AI */
+    .item-ai-card{background:var(--card);border:1px solid var(--border);border-radius:13px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px;}
+    .item-ai-head{padding:15px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--surface2);}
+    .item-ai-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+    .item-ai-sub{font-size:11.5px;color:var(--muted);margin-top:2px;}
+    .item-ai-body{padding:18px;display:grid;grid-template-columns:320px 1fr;gap:18px;align-items:start;}
+    .item-upload{border:1.5px dashed var(--border);border-radius:10px;background:var(--surface);padding:14px;display:flex;flex-direction:column;gap:12px;min-height:265px;}
+    .item-preview{height:170px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--muted);font-size:12px;text-align:center;padding:16px;}
+    .item-preview img{width:100%;height:100%;object-fit:contain;display:block;}
+    .item-file-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+    .item-file-row input{font-size:11.5px;color:var(--soft);max-width:100%;}
+    .item-note{font-size:11px;color:var(--muted);line-height:1.5;}
+    .item-result{border:1px solid var(--border);border-radius:10px;background:var(--surface);min-height:265px;padding:16px;}
+    .item-placeholder{height:100%;min-height:230px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:13px;line-height:1.6;}
+    .item-status{font-size:12px;color:var(--soft);margin-bottom:10px;}
+    .item-name{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--text);margin-bottom:4px;}
+    .item-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+    .item-tag{display:inline-flex;align-items:center;border:1px solid rgba(5,150,105,0.18);background:rgba(5,150,105,0.08);color:var(--accent);border-radius:999px;padding:3px 9px;font-size:10.5px;font-weight:700;}
+    .item-section{margin-top:13px;}
+    .item-section h4{font-size:10.5px;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);margin-bottom:6px;}
+    .item-section p,.item-section li{font-size:12.5px;color:var(--soft);line-height:1.55;}
+    .item-list{padding-left:17px;}
+    .item-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px;}
+    .item-link{border:1px solid var(--border);border-radius:8px;padding:9px 10px;text-decoration:none;color:var(--accent);background:var(--surface2);font-size:12px;font-weight:700;line-height:1.35;transition:all 0.2s;}
+    .item-link:hover{border-color:var(--accent);background:var(--accent-soft);}
+    .item-error{border:1px solid rgba(204,0,0,0.25);background:rgba(204,0,0,0.06);color:var(--red);border-radius:9px;padding:12px;font-size:12.5px;line-height:1.5;}
+    @media(max-width:900px){.item-ai-body{grid-template-columns:1fr;}.item-links{grid-template-columns:1fr;}}
+    </style>
+  <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="employee-theme.css">
+  <script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <link rel="stylesheet" href="dashboard-topbar-actions.css">
+  <script src="dashboard-topbar-actions.js" defer></script>
+  <script src="brand-logo.js" defer></script>
+</head>
+<body>
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-wrap">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="logo-text">SchillerIndia<span>Services Portal</span></div>
+    </div>
+  </div>
+  <div style="padding:7px 12px 0;"><span class="repair-badge">&#128295; Repair Team</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-sec">Main</div>
+    <a class="nav-item active" href="repair-dashboard.html"><span class="ico">&#128202;</span> Dashboard</a>
+    <div class="nav-sec">Repair Work</div>
+    <a class="nav-item" href="Rtfrn.html"><span class="ico">&#128221;</span> Repair List PFRN</a>
+    <a class="nav-item" href="Rtob.html"><span class="ico">&#128230;</span> Repair List OB</a>
+    <a class="nav-item" href="Rtur.html"><span class="ico">&#128736;&#65039;</span> Repair List UR</a>
+    <a class="nav-item" href="Rtcrl.html"><span class="ico">&#9989;</span> Closed Repair List</a>
+    <div class="nav-sec">Other Activities</div>
+    <a class="nav-item" href="Rtoa.html"><span class="ico">&#128203;</span> Other Activity</a>
+    <a class="nav-item" href="Rtcoa.html"><span class="ico">&#9989;</span> Closed Activity</a>
+    <a class="nav-item" href="Rtcomr.html"><span class="ico">&#128296;</span> Components Request</a>
+    <a class="nav-item" href="Rtccr.html"><span class="ico">&#128194;</span> Closed Request</a>
+     </nav>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="user-av" id="user-avatar">R</div>
+      <div>
+        <div class="user-nm" id="user-name">Repair User</div>
+        <div class="user-rl">Repair Team</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Repair Dashboard</h1>
+      <p id="topbar-date"></p>
+    </div>
+    <div class="topbar-right">
+      <span style="font-size:11px;color:var(--muted);" id="last-sync">-</span>
+      <button class="btn btn-outline btn-sm" onclick="loadDashboard()">&#10227; Refresh</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- WELCOME STRIP -->
+    <div class="welcome-strip">
+      <div class="welcome-text">
+        <h2>Welcome back, <span id="welcome-name">Repair Team</span>!</h2>
+        <p>Here's your repair work overview for today.</p>
+      </div>
+      <div class="welcome-icon">&#128295;</div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(217,119,6,0.1);">📝</div>
+        <div>
+          <div class="stat-val" style="color:var(--amber);" id="s-pfrn">-</div>
+          <div class="stat-lbl">Repair List PFRN</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(0,119,204,0.1);">&#128230;</div>
+        <div>
+          <div class="stat-val" style="color:var(--blue);" id="s-ob">-</div>
+          <div class="stat-lbl">Repair List OB</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(109,40,217,0.1);">&#128736;&#65039;</div>
+        <div>
+          <div class="stat-val" style="color:var(--accent);" id="s-ur">-</div>
+          <div class="stat-lbl">Repair List UR</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(5,150,105,0.1);">&#9989;</div>
+        <div>
+          <div class="stat-val" style="color:var(--green);" id="s-closed">-</div>
+          <div class="stat-lbl">Closed Repairs</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERFORMANCE ROW -->
+    <div style="margin-bottom:20px;">
+      <div class="perf-card">
+        <div class="perf-head">
+          <div class="perf-title">&#128200; Performance Index</div>
+          <div class="perf-badge">&#11088; Auto-Calculated</div>
+        </div>
+        <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+          <!-- Score info -->
+          <div style="flex:1;min-width:200px;">
+            <div class="perf-score" id="perf-score">0%</div>
+            <div class="perf-label" id="perf-label">Calculating...</div>
+          </div>
+          <!-- Mini bar chart -->
+          <div style="flex:2;min-width:300px;">
+            <div class="bar-chart-row" id="perf-chart">
+              <div class="bar-col"><div class="bar sbf-blue" style="height:30%;background:linear-gradient(to top,var(--accent),#0ea5e9);"></div><div class="bar-lbl">PFRN</div></div>
+              <div class="bar-col"><div class="bar" style="height:40%;background:linear-gradient(to top,var(--blue),#3b82f6);"></div><div class="bar-lbl">OB</div></div>
+              <div class="bar-col"><div class="bar" style="height:50%;background:linear-gradient(to top,var(--amber),#d97706);"></div><div class="bar-lbl">UR</div></div>
+              <div class="bar-col"><div class="bar" style="height:85%;background:linear-gradient(to top,var(--green),#059669);"></div><div class="bar-lbl">Closed</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="perf-summary" id="perf-summary">Your performance index is being calculated based on your repair records.</div>
+        <div class="perf-metrics">
+          <div class="perf-metric"><div class="pm-lbl">PFRN</div><div class="pm-val" id="pm-pfrn">&#8212;</div></div>
+          <div class="perf-metric"><div class="pm-lbl">OB</div><div class="pm-val" id="pm-ob">&#8212;</div></div>
+          <div class="perf-metric"><div class="pm-lbl">UR</div><div class="pm-val" id="pm-ur">&#8212;</div></div>
+          <div class="perf-metric"><div class="pm-lbl">Closed</div><div class="pm-val" id="pm-closed">&#8212;</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ITEM AI IDENTIFIER -->
+    <div class="item-ai-card">
+      <div class="item-ai-head">
+        <div>
+          <div class="item-ai-title">&#129302; AI Item Identifier</div>
+          <div class="item-ai-sub">Upload a part, board, cable, sensor, or spare image to get quick repair information.</div>
+        </div>
+        <button class="btn btn-primary btn-sm" id="item-analyze-btn" onclick="analyzeItemImage()" disabled>&#128269; Analyze Image</button>
+      </div>
+      <div class="item-ai-body">
+        <div class="item-upload">
+          <div class="item-preview" id="item-preview">Choose an image to preview it here.</div>
+          <div class="item-file-row">
+            <input type="file" id="item-image-input" accept="image/*" onchange="handleItemImageSelect(event)">
+            <button class="btn btn-outline btn-sm" onclick="clearItemImage()">Clear</button>
+          </div>
+          <div class="item-note">Best results: clear photo, good light, visible labels or part numbers, and one item per image. Max image size: 8 MB.</div>
+        </div>
+        <div class="item-result" id="item-result">
+          <div class="item-placeholder">AI results will appear here with item details, likely use, specs to verify, handling tips, and reference search links.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+const API_BASE   = 'http://localhost:5000/api';
+const LOGGED_USER = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+const USER_NAME   = LOGGED_USER.name || 'Repair User';
+
+// ── Init UI ───────────────────────────────────────────────
+(document.getElementById('user-name')||{}).textContent = USER_NAME;
+(document.getElementById('user-avatar')||{}).textContent = USER_NAME.charAt(0).toUpperCase();
+(document.getElementById('welcome-name')||{}).textContent = USER_NAME.split(' ')[0];
+(document.getElementById('topbar-date')||{}).textContent =
+  new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+function getToken()    { return localStorage.getItem('schiller_token') || ''; }
+function authHeaders() { return { 'Content-Type':'application/json', Authorization: 'Bearer ' + getToken() }; }
+async function syncRepairSessionUser(){
+  try{
+    const res=await fetch('/api/auth/me',{headers:authHeaders()});
+    if(!res.ok) return;
+    const data=await res.json().catch(()=>null);
+    const user=data&&(data.user||data.data||data);
+    if(!user||!user.name) return;
+    (document.getElementById('user-name')||{}).textContent =user.name;
+    (document.getElementById('user-avatar')||{}).textContent =String(user.name||'R').charAt(0).toUpperCase();
+    (document.getElementById('welcome-name')||{}).textContent =String(user.name||'Repair').split(' ')[0];
+  }catch(_){}
+}
+
+syncRepairSessionUser();
+
+function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+
+function showToast(msg, type = 'ok') {
+  const wrap = document.getElementById('toast-wrap');
+  const el   = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = '<span class="tdot"></span>' + msg;
+  wrap.appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+function fmt(d) {
+  if (!d) return '-';
+  const p = String(d).split('-');
+  if (p.length < 3) return d;
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return p[2] + ' ' + months[parseInt(p[1]) - 1] + ' ' + p[0];
+}
+
+function pillHtml(status) {
+  if (!status) return '-';
+  const s = status.toLowerCase().replace(/\s+/g,'_');
+  const map = {
+    pending:     'pill-pending',
+    in_progress: 'pill-inprogress',
+    inprogress:  'pill-inprogress',
+    completed:   'pill-completed',
+    escalated:   'pill-escalated',
+    open:        'pill-open',
+    under_repair:'pill-inprogress',
+    closed:      'pill-completed',
+  };
+  const cls = map[s] || 'pill-open';
+  const lbl = status.replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+  return `<span class="pill ${cls}">${lbl}</span>`;
+}
+
+function emptyRow(cols, msg = 'No records found') {
+  return `<tr><td colspan="${cols}" style="text-align:center;padding:28px;color:var(--muted);font-size:12.5px;">${msg}</td></tr>`;
+}
+
+// ── LOAD ALL DATA ─────────────────────────────────────────
+async function loadDashboard() {
+  (document.getElementById('last-sync')||{}).textContent = 'Syncing...';
+
+  await Promise.allSettled([
+    loadPFRN(),
+    loadOB(),
+    loadUR(),
+    loadClosed(),
+    loadCallRegister(),
+    loadClosedCalls(),
+  ]);
+
+  (document.getElementById('last-sync')||{}).textContent =
+    'Synced: ' + new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+
+// ── PFRN ─────────────────────────────────────────────────
+async function loadPFRN() {
+  try {
+    const res  = await fetch(API_BASE + '/frn', { headers: authHeaders() });
+    const data = await res.json();
+    STATS.pfrn = (data.data || data || []).length;
+    (document.getElementById('s-pfrn')||{}).textContent = STATS.pfrn;
+  } catch(e) {
+    (document.getElementById('s-pfrn')||{}).textContent = '-';
+  }
+}
+
+async function loadOB() {
+  try {
+    const res  = await fetch(API_BASE + '/ob-pending', { headers: authHeaders() });
+    const data = await res.json();
+    STATS.ob = (data.data || data || []).length;
+    (document.getElementById('s-ob')||{}).textContent = STATS.ob;
+  } catch(e) {
+    (document.getElementById('s-ob')||{}).textContent = '-';
+  }
+}
+
+async function loadUR() {
+  try {
+    const res  = await fetch(API_BASE + '/under-repair', { headers: authHeaders() });
+    const data = await res.json();
+    STATS.ur = (data.data || data || []).length;
+    (document.getElementById('s-ur')||{}).textContent = STATS.ur;
+  } catch(e) {
+    (document.getElementById('s-ur')||{}).textContent = '-';
+  }
+}
+
+async function loadClosed() {
+  try {
+    const res  = await fetch(API_BASE + '/emp/sc-completed-frn', { headers: authHeaders() });
+    const data = await res.json();
+    STATS.closed = (data.data || data || []).length;
+    (document.getElementById('s-closed')||{}).textContent = STATS.closed;
+  } catch(e) {
+    (document.getElementById('s-closed')||{}).textContent = '-';
+  }
+}
+
+let STATS = { pfrn: 0, ob: 0, ur: 0, closed: 0 };
+
+async function loadDashboard() {
+  await Promise.allSettled([
+    loadPFRN(),
+    loadOB(),
+    loadUR(),
+    loadClosed()
+  ]);
+  updatePerformance();
+}
+
+function updatePerformance(){
+  const total = STATS.pfrn + STATS.ob + STATS.ur + STATS.closed;
+  const closed = STATS.closed;
+  const rate = total > 0 ? Math.round((closed/total)*100) : 0;
+  const label = rate>=80?'Excellent &#11088;':rate>=60?'Good &#128077;':rate>=40?'Average &#9888;':'Needs Improvement &#9889;';
+  const summary = rate>=80?'Outstanding performance! You are efficiently managing and closing assigned repair records well above target.'
+    :rate>=60?'Good progress. Keep focusing on closing your pending FRNs and OBs promptly.'
+    :'Keep working on your open items. Consistent follow-up on under-repair items will improve your score.';
+  (document.getElementById('perf-score')||{}).textContent = rate+'%';
+  (document.getElementById('perf-label')||{}).innerHTML = label;
+  (document.getElementById('perf-summary')||{}).textContent = summary;
+  (document.getElementById('pm-pfrn')||{}).textContent = STATS.pfrn;
+  (document.getElementById('pm-ob')||{}).textContent = STATS.ob;
+  (document.getElementById('pm-ur')||{}).textContent = STATS.ur;
+  (document.getElementById('pm-closed')||{}).textContent = STATS.closed;
+  updateChartBars();
+}
+
+function updateChartBars(){
+  const maxVal = Math.max(STATS.pfrn, STATS.ob, STATS.ur, STATS.closed, 1);
+  const vals = [STATS.pfrn, STATS.ob, STATS.ur, STATS.closed];
+  const colors = [
+    'linear-gradient(to top,var(--accent),#0ea5e9)',
+    'linear-gradient(to top,var(--blue),#3b82f6)',
+    'linear-gradient(to top,var(--amber),#d97706)',
+    'linear-gradient(to top,var(--green),#059669)',
+  ];
+  const labels = ['PFRN','OB','UR','Closed'];
+  const chartEl = document.getElementById('perf-chart');
+  if(chartEl) {
+    chartEl.innerHTML = vals.map((v,i)=>`
+      <div class="bar-col">
+        <div class="bar" style="height:${Math.max(8,Math.round((v/maxVal)*100))}%;background:${colors[i]};opacity:0.75;"></div>
+        <div class="bar-lbl">${labels[i]}</div>
+      </div>`).join('');
+  }
+}
+
+// ── Boot ─────────────────────────────────────────────────
+let selectedItemImage = null;
+
+function escapeHtml(value){
+  return String(value || '').replace(/[&<>"']/g, ch => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#039;'
+  }[ch]));
+}
+
+function renderItemList(items){
+  const arr = Array.isArray(items) ? items.filter(Boolean) : [];
+  if(!arr.length) return '<p>-</p>';
+  return '<ul class="item-list">' + arr.map(item => `<li>${escapeHtml(item)}</li>`).join('') + '</ul>';
+}
+
+function renderItemLinks(links){
+  const arr = Array.isArray(links) ? links.filter(link => link && link.url) : [];
+  if(!arr.length) return '<p>No links generated.</p>';
+  return '<div class="item-links">' + arr.map(link => `
+    <a class="item-link" href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.title || link.url)}</a>
+  `).join('') + '</div>';
+}
+
+function setItemResultLoading(){
+  const result = document.getElementById('item-result');
+  if(result) result.innerHTML = '<div class="item-placeholder">Analyzing image with AI... this may take a few seconds.</div>';
+}
+
+function setItemResultError(message){
+  const result = document.getElementById('item-result');
+  if(result) result.innerHTML = `<div class="item-error">${escapeHtml(message || 'Unable to analyze this image.')}</div>`;
+}
+
+function handleItemImageSelect(event){
+  const file = event.target.files && event.target.files[0];
+  const preview = document.getElementById('item-preview');
+  const btn = document.getElementById('item-analyze-btn');
+  selectedItemImage = null;
+
+  if(!file){
+    clearItemImage();
+    return;
+  }
+  if(!file.type || !file.type.startsWith('image/')){
+    showToast('Please select a valid image file.', 'err');
+    clearItemImage();
+    return;
+  }
+  if(file.size > 8 * 1024 * 1024){
+    showToast('Image must be 8 MB or smaller.', 'err');
+    clearItemImage();
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    selectedItemImage = {
+      mimeType: file.type,
+      data: reader.result
+    };
+    if(preview) preview.innerHTML = `<img src="${reader.result}" alt="Selected item preview">`;
+    if(btn) btn.disabled = false;
+  };
+  reader.onerror = () => {
+    showToast('Could not read image file.', 'err');
+    clearItemImage();
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearItemImage(){
+  selectedItemImage = null;
+  const input = document.getElementById('item-image-input');
+  const preview = document.getElementById('item-preview');
+  const btn = document.getElementById('item-analyze-btn');
+  const result = document.getElementById('item-result');
+  if(input) input.value = '';
+  if(preview) preview.textContent = 'Choose an image to preview it here.';
+  if(btn) btn.disabled = true;
+  if(result) result.innerHTML = '<div class="item-placeholder">AI results will appear here with item details, likely use, specs to verify, handling tips, and reference search links.</div>';
+}
+
+function renderItemAnalysis(analysis){
+  const result = document.getElementById('item-result');
+  if(!result) return;
+  const confidence = analysis.confidence || 'unknown';
+  result.innerHTML = `
+    <div class="item-name">${escapeHtml(analysis.itemName || 'Unknown item')}</div>
+    <div class="item-meta">
+      <span class="item-tag">${escapeHtml(analysis.category || 'Item')}</span>
+      <span class="item-tag">Confidence: ${escapeHtml(confidence)}</span>
+    </div>
+    <div class="item-section">
+      <h4>Description</h4>
+      <p>${escapeHtml(analysis.description || '-')}</p>
+    </div>
+    <div class="item-section">
+      <h4>Likely Use</h4>
+      <p>${escapeHtml(analysis.likelyUse || '-')}</p>
+    </div>
+    <div class="item-section">
+      <h4>Visible Identifiers</h4>
+      ${renderItemList(analysis.visibleIdentifiers)}
+    </div>
+    <div class="item-section">
+      <h4>Specs To Check</h4>
+      ${renderItemList(analysis.keySpecsToCheck)}
+    </div>
+    <div class="item-section">
+      <h4>Handling Tips</h4>
+      ${renderItemList(analysis.handlingTips)}
+    </div>
+    <div class="item-section">
+      <h4>Reference Links</h4>
+      ${renderItemLinks(analysis.referenceLinks)}
+    </div>
+  `;
+}
+
+async function analyzeItemImage(){
+  if(!selectedItemImage){
+    showToast('Please upload an item image first.', 'err');
+    return;
+  }
+  const btn = document.getElementById('item-analyze-btn');
+  if(btn) {
+    btn.disabled = true;
+    btn.innerHTML = '&#8987; Analyzing...';
+  }
+  setItemResultLoading();
+
+  try{
+    const res = await fetch(API_BASE + '/defect-analysis/identify-item', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify(selectedItemImage)
+    });
+    const payload = await res.json().catch(() => ({}));
+    if(!res.ok || !payload.success){
+      throw new Error(payload.message || 'Item identification failed.');
+    }
+    renderItemAnalysis(payload.analysis || {});
+    showToast('AI item information generated.', 'ok');
+  }catch(err){
+    setItemResultError(err.message || 'AI item identification failed.');
+    showToast('AI item identification failed.', 'err');
+  }finally{
+    if(btn) {
+      btn.disabled = false;
+      btn.innerHTML = '&#128269; Analyze Image';
+    }
+  }
+}
+
+loadDashboard();
+</script>
+</body>
+</html>

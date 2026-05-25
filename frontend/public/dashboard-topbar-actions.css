@@ -1,0 +1,41 @@
+.dashboard-topbar-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.dashboard-topbar-action {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  border: 1px solid var(--border, #d0e0ec);
+  background: var(--surface2, #eaf1f6);
+  color: var(--soft, #4a6a8a);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.2s;
+}
+
+.dashboard-topbar-action:hover {
+  border-color: var(--accent, #0077cc);
+  color: var(--accent, #0077cc);
+  transform: translateY(-1px);
+}
+
+.dashboard-topbar-action .notif-dot {
+  position: absolute;
+  top: 6px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--red, #cc0000);
+  border: 2px solid var(--surface, #fff);
+}
+

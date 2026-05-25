@@ -1,0 +1,2362 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>(function () {
+      document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme') || 'light');
+      const t = localStorage.getItem('schiller_token');
+      if (!t) window.location.href = 'login.html';
+    })();</script>
+  <title>SchillerIndia - PRF/OB Register</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #f4f7fa;
+      --surface: #ffffff;
+      --surface2: #eaf1f6;
+      --border: #d0e0ec;
+      --accent: #0077cc;
+      --accent2: #007a8a;
+      --green: #059669;
+      --amber: #d97706;
+      --red: #cc0000;
+      --text: #1a2a3a;
+      --muted: #7a9ab0;
+      --soft: #4a6a8a;
+      --card: #ffffff;
+      --purple: #7c3aed;
+      --cyan: #0891b2;
+      --orange: #ea580c;
+      --teal: #0d9488;
+      --glow-accent: rgba(0, 119, 204, 0.08);
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f1621;
+      --surface: #1a2333;
+      --surface2: #1e293b;
+      --border: #2a3a52;
+      --accent: #3b9eff;
+      --accent2: #22d3ee;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #f87171;
+      --text: #e2eaf4;
+      --muted: #4a6a8a;
+      --soft: #7a9ab0;
+      --card: #1a2333;
+      --purple: #a78bfa;
+      --cyan: #22d3ee;
+      --orange: #fb923c;
+      --teal: #2dd4bf;
+      --glow-accent: rgba(59, 158, 255, 0.08);
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      transition: background .3s, color .3s;
+    }
+
+    /* --- SIDEBAR (matches ECR design) --- */
+    .sidebar {
+      width: 225px;
+      min-height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      box-shadow: 2px 0 14px rgba(0, 60, 120, 0.07);
+    }
+
+    .sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    .sidebar-header {
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(145deg, #002d5c, #0068b5);
+      flex-shrink: 0;
+    }
+
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .logo-icon {
+      width: 34px;
+      height: 34px;
+      background: rgba(255, 255, 255, 0.14);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 13px;
+      color: #fff;
+      border: 1.5px solid rgba(255, 255, 255, 0.22);
+    }
+
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.2;
+    }
+
+    .logo-text span {
+      display: block;
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.55);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 400;
+    }
+
+    .emp-badge {
+      margin: 8px 12px 0;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      display: inline-block;
+      background: rgba(4, 120, 87, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(4, 120, 87, 0.25);
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 8px 6px 12px;
+    }
+
+    .nav-sec {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: 9px 8px 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 7px;
+      color: var(--soft);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .18s;
+      margin-bottom: 1px;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      text-decoration: none;
+    }
+
+    .nav-item:hover {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .nav-item.active {
+      background: rgba(0, 104, 181, 0.09);
+      color: #0068b5;
+      font-weight: 700;
+      border-left: 3px solid #0068b5;
+      padding-left: 8px;
+    }
+
+    [data-theme="dark"] .nav-item.active {
+      background: rgba(59, 158, 255, 0.12);
+      color: var(--accent);
+      border-left-color: var(--accent);
+    }
+
+    .nav-item .ico {
+      font-size: 12px;
+      width: 17px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .nav-badge {
+      margin-left: auto;
+      background: var(--red);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 9px;
+    }
+
+    .nav-badge.amber {
+      background: var(--amber);
+    }
+
+    .nav-badge.green {
+      background: var(--green);
+    }
+
+    .nav-badge.purple {
+      background: var(--purple);
+    }
+
+    .nav-badge.cyan {
+      background: var(--cyan);
+    }
+
+    .sidebar-footer {
+      padding: 11px 12px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .user-card {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0068b5, #0ea5e9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 12px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .user-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .user-role {
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .logout-btn {
+      margin-left: auto;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 10.5px;
+      font-weight: 600;
+      transition: all .2s;
+    }
+
+    .logout-btn:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    /* --- MAIN --- */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .topbar {
+      padding: 13px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0, 80, 120, 0.06);
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topbar-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .topbar-breadcrumb {
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 2px;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all .2s;
+      color: var(--soft);
+    }
+
+    .icon-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .content {
+      flex: 1;
+      padding: 24px 28px;
+      overflow-y: auto;
+    }
+
+    /* --- PAGE SYSTEM --- */
+    .page {
+      display: none;
+      animation: fadeUp .3s ease both;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* --- PAGE HEADER --- */
+    .page-header {
+      margin-bottom: 22px;
+    }
+
+    .page-header h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .page-header p {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .page-title-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* --- FILTER STRIP --- */
+    .filter-strip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 22px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: flex-end;
+      gap: 16px;
+      flex-wrap: wrap;
+      box-shadow: 0 2px 8px rgba(0, 80, 120, 0.04);
+    }
+
+    .filter-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .filter-field label {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .filter-field input,
+    .filter-field select {
+      padding: 8px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--text);
+      background: var(--surface);
+      outline: none;
+      transition: border-color .2s;
+      min-width: 160px;
+    }
+
+    .filter-field input:focus,
+    .filter-field select:focus {
+      border-color: var(--accent);
+    }
+
+    .filter-actions {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+      align-items: flex-end;
+    }
+
+    /* --- BUTTONS --- */
+    .btn {
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: all .2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #0062ab;
+    }
+
+    .btn-purple {
+      background: var(--purple);
+      color: #fff;
+    }
+
+    .btn-purple:hover {
+      background: #5b21b6;
+    }
+
+    .btn-green {
+      background: var(--green);
+      color: #fff;
+    }
+
+    .btn-green:hover {
+      background: #047857;
+    }
+
+    .btn-export {
+      background: linear-gradient(135deg, var(--cyan), var(--accent));
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(0, 119, 204, .25);
+    }
+
+    .btn-export:hover {
+      box-shadow: 0 4px 16px rgba(0, 119, 204, .35);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: none;
+      border: 1.5px solid var(--border);
+      color: var(--soft);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-danger {
+      background: none;
+      border: 1.5px solid rgba(204, 0, 0, .25);
+      color: var(--red);
+    }
+
+    .btn-danger:hover {
+      background: rgba(204, 0, 0, .07);
+    }
+
+    .btn-sm {
+      padding: 6px 13px;
+      font-size: 12px;
+      border-radius: 7px;
+    }
+
+    .btn-xs {
+      padding: 4px 9px;
+      font-size: 11px;
+      border-radius: 6px;
+    }
+
+    /* --- STATS STRIP --- */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      box-shadow: var(--shadow);
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      column-gap: 8px;
+      align-items: start;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      border-radius: 11px 11px 0 0;
+    }
+
+    .sc-blue::before {
+      background: linear-gradient(90deg, #0068b5, #0ea5e9);
+    }
+
+    .sc-amber::before {
+      background: linear-gradient(90deg, #b45309, #d97706);
+    }
+
+    .sc-red::before {
+      background: linear-gradient(90deg, #b91c1c, #dc2626);
+    }
+
+    .sc-green::before {
+      background: linear-gradient(90deg, #047857, #059669);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .stat-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      margin-bottom: 0;
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .si-blue {
+      background: rgba(0, 104, 181, 0.1);
+    }
+
+    .si-amber {
+      background: rgba(180, 83, 9, 0.1);
+    }
+
+    .si-red {
+      background: rgba(185, 28, 28, 0.1);
+    }
+
+    .si-green {
+      background: rgba(4, 120, 87, 0.1);
+    }
+
+    .stat-label {
+      font-size: 8.5px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 2px;
+      grid-column: 2;
+      grid-row: 1;
+      align-self: center;
+    }
+
+    .stat-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+      grid-column: 1 / span 2;
+      grid-row: 2;
+      margin-top: 6px;
+    }
+
+    .stat-sub {
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 2px;
+      grid-column: 1 / span 2;
+      grid-row: 3;
+    }
+
+    .stat-tile::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2.5px;
+      border-radius: 12px 12px 0 0;
+    }
+
+    .stat-tile::after {
+      background: var(--accent);
+    }
+
+    .stat-tile::after {
+      background: var(--green);
+    }
+
+    .stat-tile::after {
+      background: var(--amber);
+    }
+
+    .stat-tile::after {
+      background: var(--red);
+    }
+
+    .stat-tile::after {
+      background: var(--purple);
+    }
+
+    .stat-tile::after {
+      background: var(--cyan);
+    }
+
+    .stat-tile::after {
+      background: var(--orange);
+    }
+
+    .stat-tile:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 80, 120, .08);
+    }
+
+    /* --- TABLE PANEL --- */
+    .table-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0, 80, 120, .05);
+    }
+
+    .table-panel-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .table-panel-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .table-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .show-entries {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    .show-entries select {
+      padding: 5px 8px;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      font-size: 12px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--text);
+      background: var(--surface);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    .search-box input {
+      padding: 7px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--text);
+      background: var(--surface);
+      outline: none;
+      transition: border-color .2s;
+      width: 200px;
+    }
+
+    .search-box input:focus {
+      border-color: var(--accent);
+    }
+
+    /* --- SORTABLE TABLE --- */
+    .data-wrap {
+      overflow-x: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1200px;
+    }
+
+    .data-table th {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 2px solid var(--border);
+      background: var(--surface2);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+      transition: color .2s;
+    }
+
+    .data-table th:hover {
+      color: var(--accent);
+    }
+
+    .data-table th .sort-icon {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 1px;
+      margin-left: 5px;
+      opacity: .4;
+      vertical-align: middle;
+    }
+
+    .data-table th.sorted .sort-icon {
+      opacity: 1;
+      color: var(--accent);
+    }
+
+    .data-table th .sort-icon span {
+      font-size: 7px;
+      line-height: 1;
+    }
+
+    .data-table td {
+      padding: 11px 14px;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(0, 80, 120, .07);
+      color: var(--text);
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tbody tr {
+      transition: background .15s;
+    }
+
+    .data-table tbody tr:hover td {
+      background: var(--glow-accent);
+    }
+
+    .data-table .empty-row td {
+      text-align: center;
+      padding: 48px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* --- TABLE FOOTER --- */
+    .table-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--muted);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .page-btn {
+      padding: 5px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      background: var(--surface);
+      color: var(--soft);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: all .2s;
+    }
+
+    .page-btn:hover:not(:disabled) {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .page-btn:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    .page-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* --- STATUS BADGES --- */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .badge::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      display: block;
+      flex-shrink: 0;
+    }
+
+    .badge-open {
+      background: rgba(217, 119, 6, .12);
+      color: var(--amber);
+    }
+
+    .badge-open::before {
+      background: var(--amber);
+    }
+
+    .badge-pass {
+      background: rgba(5, 150, 105, .12);
+      color: var(--green);
+    }
+
+    .badge-pass::before {
+      background: var(--green);
+    }
+
+    .badge-fail {
+      background: rgba(204, 0, 0, .1);
+      color: var(--red);
+    }
+
+    .badge-fail::before {
+      background: var(--red);
+    }
+
+    .badge-wip {
+      background: rgba(8, 145, 178, .12);
+      color: var(--cyan);
+    }
+
+    .badge-wip::before {
+      background: var(--cyan);
+    }
+
+    .badge-review {
+      background: rgba(124, 58, 237, .12);
+      color: var(--purple);
+    }
+
+    .badge-review::before {
+      background: var(--purple);
+    }
+
+    .badge-closed {
+      background: rgba(5, 150, 105, .12);
+      color: var(--green);
+    }
+
+    .badge-closed::before {
+      background: var(--green);
+    }
+
+    .badge-pending {
+      background: rgba(234, 88, 12, .12);
+      color: var(--orange);
+    }
+
+    .badge-pending::before {
+      background: var(--orange);
+    }
+
+    .badge-warranty {
+      background: rgba(13, 148, 136, .12);
+      color: var(--teal);
+    }
+
+    .badge-warranty::before {
+      background: var(--teal);
+    }
+
+    .badge-amc {
+      background: rgba(124, 58, 237, .12);
+      color: var(--purple);
+    }
+
+    .badge-amc::before {
+      background: var(--purple);
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 2px 8px;
+      font-size: 11px;
+      color: var(--soft);
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* --- MODAL --- */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 16, 28, .45);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(6px);
+    }
+
+    .modal-overlay.show {
+      display: flex;
+      animation: fadeUp .2s ease both;
+    }
+
+    .modal-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      max-width: 640px;
+      width: 95%;
+      box-shadow: 0 28px 72px rgba(0, 0, 0, .18);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .modal-header h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 0 2px;
+      line-height: 1;
+      transition: color .2s;
+    }
+
+    .modal-close:hover {
+      color: var(--red);
+    }
+
+    .modal-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 22px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group.full {
+      grid-column: span 2;
+    }
+
+    .form-group.span3 {
+      grid-column: span 2;
+    }
+
+    .form-group label {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 9px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--text);
+      background: var(--surface);
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 72px;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .form-group input.err {
+      border-color: var(--red) !important;
+    }
+
+    .form-msg {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 8px 13px;
+      border-radius: 7px;
+      margin-top: 10px;
+      display: none;
+    }
+
+    .form-msg.ok {
+      display: block;
+      background: rgba(5, 150, 105, .1);
+      color: var(--green);
+      border: 1px solid rgba(5, 150, 105, .25);
+    }
+
+    .form-msg.err-msg {
+      display: block;
+      background: rgba(204, 0, 0, .08);
+      color: var(--red);
+      border: 1px solid rgba(204, 0, 0, .2);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    .ep-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .ep-grid .form-group input.locked,
+    .ep-grid .form-group select.locked,
+    .ep-grid .form-group textarea.locked {
+      background: var(--surface2);
+      color: var(--muted);
+      cursor: not-allowed;
+    }
+
+    .ep-section-title {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin: 12px 0 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* --- TOAST --- */
+    .toast-wrap {
+      position: fixed;
+      bottom: 22px;
+      right: 22px;
+      z-index: 600;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 240px;
+      animation: fadeUp .3s ease;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, .12);
+    }
+
+    .toast.ok {
+      border-color: rgba(5, 150, 105, .35);
+    }
+
+    .toast.ok .tdot {
+      background: var(--green);
+    }
+
+    .toast.err {
+      border-color: rgba(204, 0, 0, .35);
+    }
+
+    .toast.err .tdot {
+      background: var(--red);
+    }
+
+    .tdot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* --- VIEW DETAIL PANEL --- */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .detail-item {
+      background: var(--surface2);
+      border-radius: 9px;
+      padding: 12px 14px;
+    }
+
+    .detail-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      margin-bottom: 4px;
+    }
+
+    .detail-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* --- MISC --- */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 16px 0;
+    }
+
+    .section-sub-header {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-sub-header::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .progress-bar-wrap {
+      background: var(--surface2);
+      border-radius: 6px;
+      height: 5px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 5px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, var(--accent), var(--cyan));
+      transition: width 1s ease;
+    }
+
+    .live-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .live-dot::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: blink 1.5s infinite;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: .4;
+        transform: scale(1.35);
+      }
+    }
+
+    .no-data {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 56px 20px;
+      color: var(--muted);
+    }
+
+    .no-data-icon {
+      font-size: 44px;
+      margin-bottom: 12px;
+      opacity: .6;
+    }
+
+    .no-data h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .no-data p {
+      font-size: 13px;
+      text-align: center;
+      line-height: 1.6;
+    }
+  
+    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
+    .nav-group-toggle{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;color:var(--soft,#3d6480);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;margin-bottom:3px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;}
+.nav-group-toggle:hover{background:var(--surface2,#e8f0f7);color:var(--text,#0f2236);}
+.nav-group-toggle .ico{font-size:12px;width:17px;text-align:center;flex-shrink:0;}
+.nav-group-toggle .caret{margin-left:auto;font-size:10px;transition:transform .22s ease;}
+.nav-group-toggle.open .caret{transform:rotate(90deg);}
+.nav-children{max-height:0;overflow:hidden;transition:max-height .28s ease;margin-bottom:3px;}
+.nav-children.open{max-height:400px;}
+.nav-sub .nav-item{padding-left:28px;font-size:11.5px;}
+</style>
+  <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="employee-theme.css">
+  <script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <script src="brand-logo.js" defer></script>
+</head>
+
+<body>
+
+  <!-- ----------- MODALS ----------- -->
+
+  <!-- CONFIRM -->
+  <div class="modal-overlay" id="confirm-modal">
+    <div class="modal-box" style="max-width:380px;">
+      <div class="modal-header">
+        <h3>&#9888; Confirm Action</h3><button class="modal-close" onclick="closeConfirm()">&#10005;</button>
+      </div>
+      <p id="confirm-msg" style="font-size:13px;color:var(--muted);margin:14px 0 6px;line-height:1.6;"></p>
+      <div class="modal-actions">
+        <button class="btn btn-outline btn-sm" onclick="closeConfirm()">Cancel</button>
+        <button class="btn btn-sm" id="confirm-yes" style="background:var(--red);color:#fff;">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEW PRF/OB ENTRY -->
+  <div class="modal-overlay" id="prfob-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>&#128196; New PRF/OB Entry</h3>
+        <button class="modal-close" onclick="closePRFModal()">&#10005;</button>
+      </div>
+      <p class="modal-sub">Register a new PRF / Outward Bill entry</p>
+      <div class="form-grid">
+        <div class="form-group"><label>Division *</label>
+          <select id="pf-div">
+            <option value="">Select...</option>
+            <option>SHIPL</option>
+            <option>VENTILATOR</option>
+            <option>INJECTOR</option>
+            <option>RADIOLOGY</option>
+            <option>GANSHORN</option>
+            <option>HOLTER</option>
+            <option>MONITORS</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Type *</label>
+          <select id="pf-type">
+            <option value="">Select...</option>
+            <option>PRF</option>
+            <option>OB</option>
+            <option>PRF+OB</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Entry Date *</label><input type="date" id="pf-entry-date" /></div>
+        <div class="form-group"><label>Received Date</label><input type="date" id="pf-received-date" /></div>
+        <div class="form-group"><label>Sc Engg *</label><input type="text" id="pf-sc-engg"
+            placeholder="Service Charge Engineer" /></div>
+        <div class="form-group"><label>Engineer *</label><input type="text" id="pf-engineer"
+            placeholder="Engineer name" /></div>
+        <div class="form-group"><label>Branch *</label>
+          <select id="pf-branch">
+            <option value="">Select...</option>
+            <option>Mumbai</option>
+            <option>Delhi</option>
+            <option>Chennai</option>
+            <option>Bangalore</option>
+            <option>Kolkata</option>
+            <option>Hyderabad</option>
+            <option>Pune</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Model *</label><input type="text" id="pf-model" placeholder="Device model" />
+        </div>
+        <div class="form-group"><label>Warranty Status *</label>
+          <select id="pf-warranty">
+            <option value="">Select...</option>
+            <option>In Warranty</option>
+            <option>Out of Warranty</option>
+            <option>AMC</option>
+            <option>CAMC</option>
+          </select>
+        </div>
+        <div class="form-group"><label>PRF/OB Ref No.</label><input type="text" id="pf-ref"
+            placeholder="" /></div>
+        <div class="form-group"><label>CRM Ref No.</label><input type="text" id="pf-crm"
+            placeholder="" /></div>
+        <div class="form-group"><label>Status *</label>
+          <select id="pf-status">
+            <option value="">Select...</option>
+            <option>Open</option>
+            <option>In Progress</option>
+            <option>Closed</option>
+            <option>Pending Review</option>
+            <option>Escalated</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Executed Date</label><input type="date" id="pf-executed-date" /></div>
+        <div class="form-group full"><label>Remarks</label><textarea id="pf-remarks"
+            placeholder="Additional notes..."></textarea></div>
+      </div>
+      <div id="prf-form-msg" class="form-msg"></div>
+      <div class="modal-actions">
+        <button class="btn btn-outline btn-sm" onclick="closePRFModal()">Cancel</button>
+        <button class="btn btn-primary btn-sm" id="prf-save-btn" onclick="savePRFEntry()">&#128190; Submit
+          Entry</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW ENTRY -->
+  <div class="modal-overlay" id="view-modal">
+    <div class="modal-box" style="max-width:680px;">
+      <div class="modal-header">
+        <h3 id="view-title">&#128196; PRF/OB Entry Detail</h3>
+        <button class="modal-close"
+          onclick="document.getElementById('view-modal').classList.remove('show')">&#10005;</button>
+      </div>
+      <p class="modal-sub" id="view-sub">Full record details</p>
+      <div class="detail-grid" id="view-detail-grid"></div>
+      <div class="divider"></div>
+      <div id="view-remarks-section"></div>
+      <div class="modal-actions">
+        <button class="btn btn-outline btn-sm"
+          onclick="document.getElementById('view-modal').classList.remove('show')">Close</button>
+        <button class="btn btn-export btn-sm" onclick="exportSingle()">&#128228; Export</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="employee-update-modal">
+    <div class="modal-box" style="max-width:1180px;width:96%;">
+      <div class="modal-header">
+        <h3>&#9998; Update PRF/OB Entry</h3>
+        <button class="modal-close" onclick="closeEmployeeUpdateModal()">&#10005;</button>
+      </div>
+      <p class="modal-sub">Details from Service Coordinator stay locked here. Only the lower section is editable in
+        employee PRF/OB.</p>
+      <input type="hidden" id="ep-id" />
+
+      <div class="ep-section-title">PRF/OB Register Form</div>
+      <div class="ep-grid">
+        <div class="form-group"><label>Division</label><input class="locked" id="ep-division" readonly /></div>
+        <div class="form-group"><label>Type</label><input class="locked" id="ep-type" readonly /></div>
+        <div class="form-group"><label>TO/SO Raised Date</label><input class="locked" id="ep-entryDate" readonly />
+        </div>
+        <div class="form-group"><label>Region</label><input class="locked" id="ep-region" readonly /></div>
+
+        <div class="form-group"><label>Branch</label><input class="locked" id="ep-branch" readonly /></div>
+        <div class="form-group"><label>Dealer</label><input class="locked" id="ep-dealer" readonly /></div>
+        <div class="form-group"><label>Engineer</label><input class="locked" id="ep-eng" readonly /></div>
+        <div class="form-group"><label>Supplier</label><input class="locked" id="ep-supplier" readonly /></div>
+
+        <div class="form-group"><label>Model</label><input class="locked" id="ep-model" readonly /></div>
+        <div class="form-group"><label>Warranty Status</label><input class="locked" id="ep-warrantyStatus" readonly />
+        </div>
+        <div class="form-group"><label>PRF/OB Reference No.</label><input class="locked" id="ep-refNo" readonly /></div>
+        <div class="form-group"><label>Part No</label><input class="locked" id="ep-partType" readonly /></div>
+
+        <div class="form-group"><label>Parts Description</label><input class="locked" id="ep-partsDescription"
+            readonly /></div>
+        <div class="form-group"><label>Spares Received at SVC</label><input class="locked" id="ep-sparesReceivedAtSvc"
+            readonly /></div>
+        <div class="form-group"><label>Status</label><input class="locked" id="ep-status" readonly /></div>
+        <div class="form-group"><label>Entry Date from SC</label><input class="locked" id="ep-receivedDate" readonly />
+        </div>
+      </div>
+
+      <div class="ep-section-title">Employee Update Section</div>
+      <div class="ep-grid">
+        <div class="form-group"><label>SC Engineer</label><input id="ep-scEng" placeholder="SC Engineer" /></div>
+        <div class="form-group"><label>GIR No</label><input id="ep-crmRefNo" placeholder="GIR No" /></div>
+        <div class="form-group" style="grid-column:span 2;"><label>Remarks</label><textarea id="ep-remarks"
+            placeholder="Remarks"></textarea></div>
+      </div>
+
+      <div id="ep-form-msg" class="form-msg"></div>
+      <div class="modal-actions">
+        <button class="btn btn-outline btn-sm" onclick="closeEmployeeUpdateModal()">Cancel</button>
+        <button class="btn btn-primary btn-sm" id="ep-save-btn" onclick="saveEmployeeUpdate()">&#128190; Save
+          Update</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-wrap" id="toast-wrap"></div>
+
+  <!-- === SIDEBAR === -->
+<aside class="sidebar">
+  <div class="sidebar-header" style="background:linear-gradient(145deg,#002d5c,#0068b5);">
+    <div class="logo-wrap">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="logo-text" style="color:#fff;">SchillerIndia<span style="color:rgba(255,255,255,0.55);">Services Portal</span></div>
+    </div>
+  </div>
+  <div style="padding:7px 12px 0;"><span class="emp-badge">Employee</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-sec">Operations</div>
+    <a class="nav-item" href="employee-dashboard.html"><span class="ico">&#128202;</span> Dashboard</a>
+    <a class="nav-item" href="employee-service-list.html"><span class="ico">&#128225;</span> Services</a>
+    <a class="nav-item" href="emppendingfrn.html"><span class="ico">&#128221;</span> Pending FRN</a>
+    <a class="nav-item" href="employee-ob-pending.html"><span class="ico">&#128230;</span> Estimation Pending</a>
+    <a class="nav-item" href="empestpend.html"><span class="ico">&#128203;</span> SO Pending</a>
+    <a class="nav-item" href="empunderep.html"><span class="ico">&#128736;&#65039;</span> Under Repair</a>
+    <a class="nav-item" href="completed-frn.html"><span class="ico">&#9989;</span> Completed FRN</a>
+    <a class="nav-item" href="Emp-scrap-list.html"><span class="ico">&#9888;&#65039;</span> Supplier Warranty</a>
+    <a class="nav-item" href="sc-completed-frn.html"><span class="ico">&#128257;</span> External Repair</a>
+    <button class="nav-group-toggle open" type="button" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');"><span class="ico">&#128193;</span><span>Records</span><span class="caret">&#9656;</span></button>
+    <div class="nav-children nav-sub open">
+    <a class="nav-item" href="ecall.html"><span class="ico">&#128222;</span> Call Register</a>
+    <a class="nav-item" href="eclose.html"><span class="ico">&#9989;</span> Closed Calls</a>
+    <a class="nav-item active" href="eprfob.html"><span class="ico">&#128203;</span> PRF/OB Register</a>
+    <a class="nav-item" href="ecr.html"><span class="ico">&#128274;</span> Closed PRF/OB Register</a>
+    <a class="nav-item" href="tours.html"><span class="ico">&#128205;</span> Tour Summary</a>
+      <a class="nav-item" href="dailyw.html"><span class="ico">&#128197;</span> Daily Work</a>
+    </div>
+    <button class="nav-group-toggle" type="button" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');"><span class="ico">&#128230;</span><span>Inventory</span><span class="caret">&#9656;</span></button>
+    <div class="nav-children nav-sub">
+    <a class="nav-item" href="emp-non-saleable.html"><span class="ico">&#128230;</span> Non Saleable</a>
+    <a class="nav-item" href="emp-saleables.html"><span class="ico">&#128176;</span> Saleables</a>
+    <a class="nav-item" href="ebir.html"><span class="ico">&#128203;</span> BIR LIST</a>
+    <a class="nav-item" href="ecbir.html"><span class="ico">&#128193;</span> Closed BIR</a>
+      <a class="nav-item" href="elt.html"><span class="ico">&#128451;</span> Loan Items</a>
+      <a class="nav-item" href="ecli.html"><span class="ico">&#128193;</span> Closed Loan Item</a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="user-av" id="emp-avatar">E</div>
+      <div>
+        <div class="user-nm" id="emp-name">Employee</div>
+        <div class="user-rl" id="emp-desig">Field Engineer</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbar-title">PRF/OB Register</div>
+        <div class="topbar-breadcrumb"><span>SchillerIndia</span><span>&#8250;</span><span id="topbar-sub">PRF/OB
+            Register</span></div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-export btn-sm" onclick="exportAll()">&#128228; Export CSV</button>
+        <button class="btn btn-purple btn-sm" onclick="openPRFModal()">&#43; New PRF/OB</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ---- PRF/OB REGISTER (default active) ---- -->
+      <div class="page active" id="page-prfob-register">
+        <div class="page-header">
+          <div class="page-title-row">
+            <div>
+              <h1>PRF/OB Register</h1>
+              <p>Manage and track all PRF (Part Return Form) and Outward Bill records</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats strip -->
+        <div class="stats-row">
+          <div class="stat-card sc-blue">
+            <div class="stat-icon si-blue">&#128202;</div>
+            <div class="stat-label">Total PRF/OB</div>
+            <div class="stat-value" id="s-total">-</div>
+            <div class="stat-sub">Active records</div>
+          </div>
+          <div class="stat-card sc-red">
+            <div class="stat-icon si-red">&#128308;</div>
+            <div class="stat-label">Critical (&gt;30 days)</div>
+            <div class="stat-value" id="s-critical">-</div>
+            <div class="stat-sub">Needs immediate action</div>
+          </div>
+          <div class="stat-card sc-amber">
+            <div class="stat-icon si-amber">&#9888;</div>
+            <div class="stat-label">Warning (14-30 days)</div>
+            <div class="stat-value" id="s-warn">-</div>
+            <div class="stat-sub">Monitor closely</div>
+          </div>
+          <div class="stat-card sc-green">
+            <div class="stat-icon si-green">&#9989;</div>
+            <div class="stat-label">Closed</div>
+            <div class="stat-value" id="s-closed">-</div>
+            <div class="stat-sub">Completed PRF/OB</div>
+          </div>
+        </div>
+
+        <!-- PRF/OB Details -->
+        <div class="table-panel">
+          <div class="table-panel-header">
+            <div class="table-panel-title">&#128196; PRF/OB Details</div>
+            <div class="table-controls">
+              <div class="show-entries">
+                Show <select id="entries-per-page" onchange="changePageSize()">
+                  <option value="10">10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select> entries
+              </div>
+              <div class="search-box">Search: <input type="text" id="main-search" placeholder="Search..."
+                  oninput="searchTable()" /></div>
+            </div>
+          </div>
+          <div class="data-wrap">
+            <table class="data-table" id="main-table">
+              <thead>
+                <tr>
+                  <th onclick="sortTable('id')"><span>Id</span><span
+                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('division')">Division<span
+                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('entryDate')">Entry Date<span
+                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('scEngg')">Sc Engg<span
+                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('type')">Type<span
+                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('receivedDate')">Received Date<span
+                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('branch')">Branch<span
+                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('engineer')">Engineer<span
+                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('model')">Model<span
+                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('warranty')">Warranty Status<span
+                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('prfobRef')">PRF/OB Ref No.<span
+                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('crmRef')">CRM Ref No.<span
+                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('status')">Status<span
+                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('executedDate')">Executed Date<span
+                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="main-tbody"></tbody>
+            </table>
+          </div>
+          <div class="table-footer">
+            <div id="main-info">Showing 0 to 0 of 0 entries</div>
+            <div class="pagination" id="main-pagination"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---- CLOSED PRF/OB ---- -->
+      <div class="page" id="page-closed-prfob">
+        <div class="page-header">
+          <div class="page-title-row">
+            <div>
+              <h1>Closed PRF/OB Register</h1>
+              <p>All resolved and closed PRF/OB entries</p>
+            </div>
+          </div>
+        </div>
+        <div class="filter-strip">
+          <div class="filter-field"><label>From Date</label><input type="date" id="closed-from" /></div>
+          <div class="filter-field"><label>To Date</label><input type="date" id="closed-to" /></div>
+          <div class="filter-field"><label>Division</label>
+            <select id="closed-div">
+              <option value="">All Divisions</option>
+              <option>SHIPL</option>
+              <option>VENTILATOR</option>
+              <option>INJECTOR</option>
+              <option>RADIOLOGY</option>
+              <option>GANSHORN</option>
+              <option>HOLTER</option>
+              <option>MONITORS</option>
+            </select>
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-export btn-sm" onclick="exportFiltered('closed')">&#128228; Export</button>
+          </div>
+        </div>
+        <div class="table-panel">
+          <div class="table-panel-header">
+            <div class="table-panel-title" style="color:var(--green);">&#128196; Closed PRF/OB Details</div>
+            <div class="table-controls">
+              <div class="show-entries">Show <select id="closed-per-page" onchange="renderClosedTable()">
+                  <option value="10">10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                </select> entries</div>
+              <div class="search-box">Search: <input type="text" id="closed-search" placeholder="Search..."
+                  oninput="renderClosedTable()" /></div>
+            </div>
+          </div>
+          <div class="data-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Id</th>
+                  <th>Division</th>
+                  <th>Entry Date</th>
+                  <th>Sc Engg</th>
+                  <th>Type</th>
+                  <th>Engineer</th>
+                  <th>Branch</th>
+                  <th>Model</th>
+                  <th>Warranty</th>
+                  <th>PRF/OB Ref</th>
+                  <th>CRM Ref</th>
+                  <th>Executed Date</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="closed-tbody"></tbody>
+            </table>
+          </div>
+          <div class="table-footer">
+            <div id="closed-info">Showing 0 to 0 of 0 entries</div>
+            <div class="pagination" id="closed-pagination"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---- GENERIC PLACEHOLDER PAGES ---- -->
+      <div class="page" id="page-services">
+        <div class="no-data">
+          <div class="no-data-icon">&#128203;</div>
+          <h3>Services</h3>
+          <p>Service tracking module. Connect to your API to view live service records.</p>
+        </div>
+      </div>
+      <div class="page" id="page-pending-frn">
+        <div class="no-data">
+          <div class="no-data-icon">?</div>
+          <h3>Pending FRN</h3>
+          <p>All pending Field Return Note entries awaiting action.</p>
+        </div>
+      </div>
+      <div class="page" id="page-ob-pending">
+        <div class="no-data">
+          <div class="no-data-icon">&#128196;</div>
+          <h3>OB Pending</h3>
+          <p>Outward Bills awaiting processing.</p>
+        </div>
+      </div>
+      <div class="page" id="page-under-repair">
+        <div class="no-data">
+          <div class="no-data-icon">&#128196;</div>
+          <h3>Under Repair Pending</h3>
+          <p>Units currently under repair awaiting completion.</p>
+        </div>
+      </div>
+      <div class="page" id="page-sc-completed">
+        <div class="no-data">
+          <div class="no-data-icon">&#10003;</div>
+          <h3>SC_Completed FRN</h3>
+          <p>Service Centre completed FRN records.</p>
+        </div>
+      </div>
+      <div class="page" id="page-completed-frn">
+        <div class="no-data">
+          <div class="no-data-icon">?</div>
+          <h3>Completed FRN</h3>
+          <p>All fully completed Field Return Notes.</p>
+        </div>
+      </div>
+      <div class="page" id="page-scrap-list">
+        <div class="no-data">
+          <div class="no-data-icon">&#128196;</div>
+          <h3>Scrap List</h3>
+          <p>Devices marked for scrap or disposal.</p>
+        </div>
+      </div>
+      <div class="page" id="page-call-register">
+        <div class="no-data">
+          <div class="no-data-icon">&#128196;</div>
+          <h3>Call Register</h3>
+          <p>All service call registrations.</p>
+        </div>
+      </div>
+      <div class="page" id="page-closed-calls">
+        <div class="no-data">
+          <div class="no-data-icon">&#128196;</div>
+          <h3>Closed Calls</h3>
+          <p>Resolved service calls.</p>
+        </div>
+      </div>
+      <div class="page" id="page-pending-activity">
+        <div class="no-data">
+          <div class="no-data-icon">?</div>
+          <h3>Pending Activity</h3>
+          <p>Activities awaiting completion.</p>
+        </div>
+      </div>
+      <div class="page" id="page-closed-activity">
+        <div class="no-data">
+          <div class="no-data-icon">?</div>
+          <h3>Closed Activity</h3>
+          <p>All resolved activities.</p>
+        </div>
+      </div>
+      <div class="page" id="page-non-saleable">
+        <div class="no-data">
+          <div class="no-data-icon">&#128196;</div>
+          <h3>Non Saleable</h3>
+          <p>Items that cannot be sold.</p>
+        </div>
+      </div>
+      <div class="page" id="page-saleables">
+        <div class="no-data">
+          <div class="no-data-icon">&#128196;</div>
+          <h3>Saleables</h3>
+          <p>Items cleared for sale.</p>
+        </div>
+      </div>
+      <div class="page" id="page-bir-list">
+        <div class="no-data">
+          <div class="no-data-icon">&#128196;</div>
+          <h3>BIR LIST</h3>
+          <p>Branch Inventory Reconciliation list.</p>
+        </div>
+      </div>
+      <div class="page" id="page-closed-bir">
+        <div class="no-data">
+          <div class="no-data-icon">&#128196;</div>
+          <h3>Closed BIR</h3>
+          <p>Closed Branch Inventory Reconciliation records.</p>
+        </div>
+      </div>
+      <div class="page" id="page-spares-list">
+        <div class="no-data">
+          <div class="no-data-icon">&#9881;</div>
+          <h3>Spares_List</h3>
+          <p>Spare parts inventory and tracking.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    /* ----------- DATA ----------- */
+    let prfobData = [];
+    let filteredData = [];
+    let currentPage = 1;
+    let pageSize = 10;
+    let sortKey = 'id';
+    let sortDir = 1;
+    let viewingEntry = null;
+
+    const pageTitles = {
+      'services': 'Services', 'pending-frn': 'Pending FRN', 'ob-pending': 'OB Pending',
+      'under-repair': 'Under Repair Pending', 'sc-completed': 'SC_Completed FRN',
+      'completed-frn': 'Completed FRN', 'scrap-list': 'Scrap List', 'call-register': 'Call Register',
+      'closed-calls': 'Closed Calls', 'pending-activity': 'Pending Activity',
+      'closed-activity': 'Closed Activity', 'prfob-register': 'PRF/OB Register',
+      'closed-prfob': 'Closed PRF/OB Register', 'non-saleable': 'Non Saleable',
+      'saleables': 'Saleables', 'bir-list': 'BIR LIST', 'closed-bir': 'Closed BIR',
+      'spares-list': 'Spares_List'
+    };
+
+    function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    function showToast(msg, type = 'ok') { const w = document.getElementById('toast-wrap'); const el = document.createElement('div'); el.className = 'toast ' + type; el.innerHTML = '<span class="tdot"></span>' + esc(msg); w.appendChild(el); setTimeout(() => el.remove(), 3400); }
+    function getToken() { return localStorage.getItem('schiller_token') || ''; }
+    function authH() { return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getToken() }; }
+
+    /* ----------- INIT ----------- */
+    document.getElementById('admin-date') && ((document.getElementById('admin-date')||{}).textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }));
+    (function () {
+      const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+      const n = u.name || 'Admin';
+      (document.getElementById('user-nm')||{}).textContent = n;
+      (document.getElementById('user-av')||{}).textContent = n.charAt(0).toUpperCase();
+      const rl = document.getElementById('user-rl');
+      if (rl) rl.textContent = u.role === 'admin' ? 'Administrator' : 'Field Engineer';
+    })();
+
+    /* ----------- NAV ----------- */
+    document.querySelectorAll('.nav-item[data-page]').forEach(b => {
+      b.addEventListener('click', () => goTo(b.dataset.page));
+    });
+    function goTo(page) {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.querySelectorAll('.nav-item[data-page="' + page + '"]').forEach(n => n.classList.add('active'));
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const pg = document.getElementById('page-' + page); if (pg) pg.classList.add('active');
+      const title = pageTitles[page] || page;
+      (document.getElementById('topbar-title')||{}).textContent = title;
+      (document.getElementById('topbar-sub')||{}).textContent = title;
+      history.replaceState(null, '', '?page=' + page);
+      if (page === 'prfob-register') { currentPage = 1; applyDateFilter(); }
+      if (page === 'closed-prfob') renderClosedTable();
+    }
+
+    /* ----------- LOAD DATA ----------- */
+    async function loadData() {
+      try {
+        const res = await fetch('/api/prfob', { headers: authH() });
+        if (res.status === 401 || res.status === 403) { showToast('Session expired.', 'err'); setTimeout(() => window.location.href = 'login.html', 1500); return; }
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const result = await res.json();
+        const rows = result.data || result || [];
+        prfobData = rows.map((r, idx) => ({
+          ...r,
+          _id: r._id || r.id,
+          id: r.id || idx + 1,
+          division: r.division || '',
+          entryDate: r.entryDate || '',
+          scEngg: r.scEngg || r.scEng || '',
+          scEng: r.scEng || r.scEngg || '',
+          type: r.type || '',
+          receivedDate: r.receivedDate || '',
+          branch: r.branch || '',
+          engineer: r.engineer || r.eng || '',
+          eng: r.eng || r.engineer || '',
+          model: r.model || '',
+          warranty: r.warranty || r.warrantyStatus || '',
+          warrantyStatus: r.warrantyStatus || r.warranty || '',
+          prfobRef: r.prfobRef || r.refNo || '',
+          refNo: r.refNo || r.prfobRef || '',
+          crmRef: r.crmRef || r.crmRefNo || '',
+          crmRefNo: r.crmRefNo || r.crmRef || '',
+          dealer: r.dealer || '',
+          region: r.region || '',
+          supplier: r.supplier || '',
+          sparesReceivedAtSvc: r.sparesReceivedAtSvc || '',
+          partType: r.partType || '',
+          partsDescription: r.partsDescription || '',
+          remarks: r.remarks || '',
+          status: r.status || 'Pending'
+        }));
+      } catch (e) {
+        console.error(e);
+        prfobData = [];
+        showToast('Failed to load API data', 'err');
+      }
+      filteredData = [...prfobData];
+      updateStats();
+      updateBadges();
+      applyDateFilter();
+    }
+
+
+
+    /* ----------- STATS & BADGES ----------- */
+    function calcDays(d) {
+      if (!d) return 0;
+      return Math.max(0, Math.floor((Date.now() - new Date(d).getTime()) / 86400000));
+    }
+
+    function updateStats() {
+      const d = prfobData;
+      (document.getElementById('s-total')||{}).textContent = d.length;
+
+      const pending = d.filter(x => x.status !== 'Closed' && x.status !== 'Completed');
+      const critical = pending.filter(x => calcDays(x.entryDate || x.createdAt) > 30).length;
+      const warn = pending.filter(x => { const days = calcDays(x.entryDate || x.createdAt); return days > 14 && days <= 30; }).length;
+      const closed = d.filter(x => x.status === 'Closed' || x.status === 'Completed').length;
+
+      (document.getElementById('s-critical')||{}).textContent = critical;
+      (document.getElementById('s-warn')||{}).textContent = warn;
+      (document.getElementById('s-closed')||{}).textContent = closed;
+    }
+
+    async function savePRFEntry() {
+      const fields = { division: 'pf-div', type: 'pf-type', entryDate: 'pf-entry-date', scEngg: 'pf-sc-engg', engineer: 'pf-engineer', branch: 'pf-branch', model: 'pf-model', warranty: 'pf-warranty', status: 'pf-status' };
+      const data = {}; let ok = true;
+      for (const [k, id] of Object.entries(fields)) {
+        const v = document.getElementById(id)?.value?.trim();
+        if (!v) { document.getElementById(id).classList.add('err'); ok = false; }
+        else { document.getElementById(id).classList.remove('err'); data[k] = v; }
+      }
+      data.scEng = data.scEngg; delete data.scEngg;
+      data.eng = data.engineer; delete data.engineer;
+      data.warrantyStatus = data.warranty; delete data.warranty;
+      data.receivedDate = document.getElementById('pf-received-date')?.value || '';
+      data.refNo = document.getElementById('pf-ref')?.value?.trim() || '';
+      data.crmRefNo = document.getElementById('pf-crm')?.value?.trim() || '';
+      data.executedDate = document.getElementById('pf-executed-date')?.value || '';
+      data.remarks = document.getElementById('pf-remarks')?.value?.trim() || '';
+      const msg = document.getElementById('prf-form-msg');
+      if (!ok) { msg.className = 'form-msg err-msg'; msg.textContent = 'Please fill all required fields.'; return; }
+      const btn = document.getElementById('prf-save-btn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+      try {
+        let saved;
+        try {
+          const res = await fetch('/api/prfob', { method: 'POST', headers: authH(), body: JSON.stringify(data) });
+          if (!res.ok) throw new Error('API');
+          saved = await res.json();
+        } catch (e) {
+          /* Demo mode */
+          saved = { ...data, _id: 'demo_' + Date.now(), id: prfobData.length + 1 };
+        }
+        prfobData.unshift({
+          ...saved,
+          _id: saved._id || saved.id,
+          id: saved.id || prfobData.length + 1,
+          scEngg: saved.scEng || '',
+          engineer: saved.eng || '',
+          warranty: saved.warrantyStatus || '',
+          prfobRef: saved.refNo || '',
+          crmRef: saved.crmRefNo || ''
+        });
+        filteredData = [...prfobData];
+        updateStats(); updateBadges();
+        msg.className = 'form-msg ok'; msg.textContent = 'Entry submitted successfully!';
+        showToast('PRF/OB entry added!', 'ok');
+        setTimeout(() => { closePRFModal(); applyDateFilter();['pf-div', 'pf-type', 'pf-branch', 'pf-warranty', 'pf-status'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });['pf-entry-date', 'pf-received-date', 'pf-executed-date', 'pf-sc-engg', 'pf-engineer', 'pf-model', 'pf-ref', 'pf-crm', 'pf-remarks'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; }); }, 900);
+      } catch (e) { msg.className = 'form-msg err-msg'; msg.textContent = 'Save failed: ' + e.message; }
+      finally { if (btn) { btn.disabled = false; btn.innerHTML = '&#128190; Submit Entry'; } }
+    }
+
+    function updateBadges() {
+      const total = prfobData.length;
+      const open = prfobData.filter(x => String(x.status).toLowerCase() === 'pending' || String(x.status).toLowerCase() === 'open').length;
+      const closed = prfobData.filter(x => ['closed', 'completed'].includes(String(x.status).toLowerCase())).length;
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val ?? '-'; };
+      set('badge-prfob', total);
+      set('badge-pfrn', open);
+      set('badge-closed-prfob', closed);
+    }
+
+    function statusClass(s) {
+      const v = String(s || '').toLowerCase();
+      if (v === 'closed' || v === 'completed') return 'badge badge-closed';
+      if (v === 'pending') return 'badge badge-pending';
+      if (v === 'open') return 'badge badge-open';
+      if (v.includes('progress')) return 'badge badge-wip';
+      if (v.includes('review')) return 'badge badge-review';
+      return 'badge badge-open';
+    }
+
+    function applyDateFilter() {
+      filteredData = [...prfobData].filter(x => !['closed', 'completed'].includes(String(x.status).toLowerCase()));
+      currentPage = 1;
+      renderMainTable();
+    }
+
+    function searchTable() {
+      const q = (document.getElementById('main-search')?.value || '').trim().toLowerCase();
+      filteredData = prfobData.filter(e => {
+        if (['closed', 'completed'].includes(String(e.status).toLowerCase())) return false;
+        if (!q) return true;
+        return [e.prfobRef, e.crmRef, e.engineer, e.model, e.division, e.branch, e.scEngg, e.dealer, e.region].join(' ').toLowerCase().includes(q);
+      });
+      currentPage = 1;
+      renderMainTable();
+    }
+
+    function sortTable(key) {
+      if (sortKey === key) sortDir *= -1; else { sortKey = key; sortDir = 1; }
+      const getValue = (row) => {
+        const map = { scEngg: 'scEngg', engineer: 'engineer', warranty: 'warranty', prfobRef: 'prfobRef', crmRef: 'crmRef' };
+        return row[map[key] || key];
+      };
+      filteredData.sort((a, b) => {
+        const av = getValue(a) ?? '';
+        const bv = getValue(b) ?? '';
+        return String(av).localeCompare(String(bv), undefined, { numeric: true, sensitivity: 'base' }) * sortDir;
+      });
+      renderMainTable();
+    }
+
+    function changePageSize() {
+      pageSize = Number(document.getElementById('entries-per-page')?.value || 10);
+      currentPage = 1;
+      renderMainTable();
+    }
+
+    function renderPager(total, containerId, onPage) {
+      const el = document.getElementById(containerId); if (!el) return;
+      const pages = Math.max(1, Math.ceil(total / pageSize));
+      if (currentPage > pages) currentPage = pages;
+      let html = `<button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="${onPage}(${currentPage - 1})">Prev</button>`;
+      for (let p = 1; p <= pages; p++) { html += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="${onPage}(${p})">${p}</button>`; }
+      html += `<button class="page-btn" ${currentPage === pages ? 'disabled' : ''} onclick="${onPage}(${currentPage + 1})">Next</button>`;
+      el.innerHTML = html;
+    }
+
+    function goMainPage(p) { currentPage = p; renderMainTable(); }
+    function goClosedPage(p) { currentPage = p; renderClosedTable(); }
+
+    function renderMainTable() {
+      const tbody = document.getElementById('main-tbody'); if (!tbody) return;
+      const start = (currentPage - 1) * pageSize;
+      const pageRows = filteredData.slice(start, start + pageSize);
+      if (!pageRows.length) {
+        tbody.innerHTML = `<tr class="empty-row"><td colspan="15">No PRF/OB records found.</td></tr>`;
+      } else {
+        tbody.innerHTML = pageRows.map(e => `
+      <tr>
+        <td>${esc(e.id)}</td>
+        <td><span style="font-size:12px;font-weight:600;color:var(--accent);">${esc(e.division)}</span></td>
+        <td>${esc(e.entryDate)}</td>
+        <td>${esc(e.scEngg)}</td>
+        <td>${esc(e.type)}</td>
+        <td>${esc(e.receivedDate)}</td>
+        <td>${esc(e.branch)}</td>
+        <td style="font-weight:600;">${esc(e.engineer)}</td>
+        <td>${esc(e.model)}</td>
+        <td>${esc(e.warranty)}</td>
+        <td><span class="chip">${esc(e.prfobRef)}</span></td>
+        <td>${esc(e.crmRef)}</td>
+        <td><span class="${statusClass(e.status)}">${esc(e.status)}</span></td>
+        <td>${esc(e.executedDate || '')}</td>
+        <td><button class="btn-xs" onclick="openEmployeeUpdateModal('${e._id}')" title="Update">&#9999;&#65039;</button></td>
+      </tr>`).join('');
+      }
+      const info = document.getElementById('main-info');
+      if (info) info.textContent = `Showing ${filteredData.length ? start + 1 : 0} to ${Math.min(start + pageRows.length, filteredData.length)} of ${filteredData.length} entries`;
+      renderPager(filteredData.length, 'main-pagination', 'goMainPage');
+    }
+
+    function renderClosedTable() {
+      const tbody = document.getElementById('closed-tbody'); if (!tbody) return;
+      const q = (document.getElementById('closed-search')?.value || '').trim().toLowerCase();
+      const rows = prfobData.filter(e => ['closed', 'completed'].includes(String(e.status).toLowerCase()) && (!q || [e.prfobRef, e.crmRef, e.engineer, e.model, e.division].join(' ').toLowerCase().includes(q)));
+      const start = (currentPage - 1) * pageSize;
+      const pageRows = rows.slice(start, start + pageSize);
+      tbody.innerHTML = !pageRows.length
+        ? `<tr class="empty-row"><td colspan="13">No closed PRF/OB records found.</td></tr>`
+        : pageRows.map(e => `
+      <tr>
+        <td>${esc(e.id)}</td><td>${esc(e.division)}</td><td>${esc(e.entryDate)}</td><td>${esc(e.scEngg)}</td><td>${esc(e.type)}</td><td>${esc(e.engineer)}</td><td>${esc(e.branch)}</td><td>${esc(e.model)}</td><td>${esc(e.warranty)}</td><td>${esc(e.prfobRef)}</td><td>${esc(e.crmRef)}</td><td>${esc(e.executedDate || '')}</td>
+        <td><button class="btn-xs" onclick="openEmployeeUpdateModal('${e._id}')">&#128065; View</button></td>
+      </tr>`).join('');
+      const info = document.getElementById('closed-info');
+      if (info) info.textContent = `Showing ${rows.length ? start + 1 : 0} to ${Math.min(start + pageRows.length, rows.length)} of ${rows.length} entries`;
+      renderPager(rows.length, 'closed-pagination', 'goClosedPage');
+    }
+
+    function openPRFModal() { const m = document.getElementById('prfob-modal'); if (m) m.classList.add('show'); }
+    function closePRFModal() { const m = document.getElementById('prfob-modal'); if (m) m.classList.remove('show'); const msg = document.getElementById('prf-form-msg'); if (msg) msg.className = 'form-msg'; }
+
+    function setField(id, val) { const el = document.getElementById(id); if (el) el.value = val ?? ''; }
+    function openEmployeeUpdateModal(id) {
+      const row = prfobData.find(x => String(x._id) === String(id)); if (!row) return;
+      setField('ep-id', row._id);
+      setField('ep-division', row.division);
+      setField('ep-type', row.type);
+      setField('ep-entryDate', row.entryDate);
+      setField('ep-region', row.region);
+      setField('ep-branch', row.branch);
+      setField('ep-dealer', row.dealer);
+      setField('ep-eng', row.engineer);
+      setField('ep-supplier', row.supplier);
+      setField('ep-model', row.model);
+      setField('ep-warrantyStatus', row.warranty);
+      setField('ep-refNo', row.prfobRef);
+      setField('ep-partType', row.partType);
+      setField('ep-partsDescription', row.partsDescription);
+      setField('ep-sparesReceivedAtSvc', row.sparesReceivedAtSvc);
+      setField('ep-status', row.status);
+      setField('ep-receivedDate', row.receivedDate);
+      setField('ep-scEng', row.scEng);
+      setField('ep-crmRefNo', row.crmRefNo);
+      setField('ep-remarks', row.remarks);
+      document.getElementById('employee-update-modal')?.classList.add('show');
+    }
+
+    function closeEmployeeUpdateModal() {
+      document.getElementById('employee-update-modal')?.classList.remove('show');
+      const msg = document.getElementById('ep-form-msg'); if (msg) msg.className = 'form-msg';
+    }
+
+    async function saveEmployeeUpdate() {
+      const id = document.getElementById('ep-id')?.value;
+      const msg = document.getElementById('ep-form-msg');
+      const btn = document.getElementById('ep-save-btn');
+      const row = prfobData.find(x => String(x._id) === String(id));
+      if (!id || !row) { if (msg) { msg.className = 'form-msg err-msg'; msg.textContent = 'Record not found.'; } return; }
+      const payload = {
+        ...row,
+        status: 'Closed',
+        executedDate: new Date().toISOString().slice(0, 10),
+        scEng: document.getElementById('ep-scEng')?.value?.trim() || '',
+        crmRefNo: document.getElementById('ep-crmRefNo')?.value?.trim() || '',
+        remarks: document.getElementById('ep-remarks')?.value?.trim() || ''
+      };
+      if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+      try {
+        const res = await fetch('/api/prfob/' + encodeURIComponent(id), { method: 'PUT', headers: authH(), body: JSON.stringify(payload) });
+        if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || ('HTTP ' + res.status)); }
+        const saved = await res.json();
+        const idx = prfobData.findIndex(x => String(x._id) === String(id));
+        if (idx !== -1) {
+          prfobData[idx] = {
+            ...prfobData[idx],
+            ...saved,
+            _id: saved._id || prfobData[idx]._id,
+            scEngg: saved.scEng || '',
+            scEng: saved.scEng || '',
+            engineer: saved.eng || prfobData[idx].engineer,
+            warranty: saved.warrantyStatus || prfobData[idx].warranty,
+            prfobRef: saved.refNo || prfobData[idx].prfobRef,
+            crmRef: saved.crmRefNo || '',
+            crmRefNo: saved.crmRefNo || ''
+          };
+        }
+        prfobData = prfobData.filter(x => String(x._id) !== String(id));
+        filteredData = [...prfobData].filter(x => !['closed', 'completed'].includes(String(x.status).toLowerCase()));
+        updateStats(); updateBadges(); renderMainTable(); renderClosedTable();
+        if (msg) { msg.className = 'form-msg ok'; msg.textContent = 'Update saved successfully!'; }
+        showToast('PRF/OB update saved.', 'ok');
+        setTimeout(() => { closeEmployeeUpdateModal(); window.location.href = 'ecr.html'; }, 900);
+      } catch (e) {
+        if (msg) { msg.className = 'form-msg err-msg'; msg.textContent = 'Save failed: ' + e.message; }
+        showToast('Save failed: ' + e.message, 'err');
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = '&#128190; Save Update'; }
+      }
+    }
+
+    /* ----------- DELETE ----------- */
+    function confirmDelete(id) { showConfirm('Delete this PRF/OB entry? This cannot be undone.', async () => { try { try { const r = await fetch('/api/prfob/' + id, { method: 'DELETE', headers: authH() }); if (!r.ok) throw new Error(''); } catch (e) { } prfobData = prfobData.filter(x => x._id !== id); filteredData = filteredData.filter(x => x._id !== id); updateStats(); updateBadges(); renderMainTable(); showToast('Entry deleted.', 'ok'); } catch (e) { showToast('Delete failed.', 'err'); } }); }
+    function showConfirm(msg, cb) { (document.getElementById('confirm-msg')||{}).textContent = msg; document.getElementById('confirm-modal').classList.add('show'); document.getElementById('confirm-yes').onclick = () => { closeConfirm(); cb(); }; }
+    function closeConfirm() { document.getElementById('confirm-modal').classList.remove('show'); }
+    document.getElementById('confirm-modal').addEventListener('click', e => { if (e.target === document.getElementById('confirm-modal')) closeConfirm(); });
+
+    /* ----------- EXPORT ----------- */
+    function exportAll() {
+      const d = filteredData;
+      const csv = ['Id,Division,Entry Date,Sc Engg,Type,Received Date,Branch,Engineer,Model,Warranty,PRF/OB Ref,CRM Ref,Status,Executed Date,Remarks', ...d.map(e => [e.id, e.division, e.entryDate, e.scEngg, e.type, e.receivedDate, e.branch, e.engineer, e.model, e.warranty, e.prfobRef, e.crmRef, e.status, e.executedDate, '"' + (e.remarks || '').replace(/"/g, '""') + '"'].join(','))].join('\n');
+      downloadCSV(csv, 'prfob-export-' + Date.now() + '.csv');
+      showToast('Exported ' + d.length + ' entries as CSV.', 'ok');
+    }
+    function exportFiltered(ctx) { exportAll(); }
+    function downloadCSV(csv, fname) { const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = fname; a.click(); }
+    function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+
+    /* ----------- BOOTSTRAP ----------- */
+    (function () {
+      const cur = new URLSearchParams(window.location.search).get('page') || 'prfob-register';
+      goTo(cur);
+      loadData();
+    })();
+  </script>
+  <script src="tab-fix.js"></script>
+<script>
+function toggleSF(){var btn=document.getElementById('sf-toggle');var panel=document.getElementById('sf-children');if(!btn||!panel)return;btn.classList.toggle('open');panel.classList.toggle('open');}
+function toggleAR(){var btn=document.getElementById('ar-toggle');var panel=document.getElementById('ar-children');if(!btn||!panel)return;btn.classList.toggle('open');panel.classList.toggle('open');}</script>
+</body>
+
+</html>
+
+
+

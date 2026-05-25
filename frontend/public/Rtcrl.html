@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<script>(function(){
+  const token = localStorage.getItem('schiller_token');
+  if (!token) { window.location.href = 'login.html'; }
+})();</script>
+<title>SchillerIndia - RT CRL</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f0f4f8;--surface:#ffffff;--surface2:#e8f0f7;--surface3:#f5f9fc;
+  --border:#ccdde8;--border2:#ddeaf4;
+  --accent:#059669;--accent2:#047857;--accent3:#ecfdf5;
+  --green:#059669;--green-bg:rgba(5,150,105,0.08);
+  --amber:#b45309;--amber-bg:rgba(180,83,9,0.08);
+  --red:#b91c1c;--red-bg:rgba(185,28,28,0.07);
+  --purple:#5b21b6;--purple-bg:rgba(91,33,182,0.08);
+  --blue:#0068b5;--blue-bg:rgba(0,104,181,0.08);
+  --teal:#0e7490;--teal-bg:rgba(14,116,144,0.08);
+  --crl:#059669;--crl2:#047857;--crl-bg:rgba(5,150,105,0.08);--crl-soft:rgba(5,150,105,0.12);
+  --text:#0f2236;--muted:#6b8ca8;--soft:#3d6480;--card:#ffffff;
+  --shadow:0 1px 8px rgba(0,60,120,0.07);--shadow-md:0 4px 20px rgba(0,60,120,0.10);--shadow-lg:0 12px 40px rgba(0,60,120,0.13);
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+.sidebar{width:230px;min-height:100vh;background:#ffffff;border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 14px rgba(0,60,120,0.06);}
+.sidebar-header{padding:18px 18px 14px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#052e16,#059669);}
+.logo-wrap{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:36px;height:36px;background:rgba(255,255,255,0.15);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#fff;border:1.5px solid rgba(255,255,255,0.25);}
+.logo-text{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#fff;line-height:1.2;}
+.logo-text span{display:block;font-size:10px;color:rgba(255,255,255,0.55);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;}
+.crl-badge{margin:8px 12px 0;padding:3px 10px;border-radius:20px;font-size:9.5px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;display:inline-block;background:rgba(5,150,105,0.2);color:#6ee7b7;border:1px solid rgba(5,150,105,0.4);}
+.sidebar-nav{flex:1;padding:10px 8px;}
+.nav-sec{font-size:9px;font-weight:700;color:#6b8ca8;letter-spacing:0.12em;text-transform:uppercase;padding:10px 8px 4px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:#4a6a8a;font-size:12.5px;font-weight:500;cursor:pointer;transition:all 0.18s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;}
+.nav-item:hover{background:#eaf1f6;color:#1a2a3a;}
+.nav-item.active{background:var(--crl-soft);color:var(--crl);font-weight:700;border-left:3px solid var(--crl);padding-left:8px;}
+.nav-item .ico{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.sidebar-footer{padding:12px 14px;border-top:1px solid var(--border);background:#f0fdf4;}
+.user-row{display:flex;align-items:center;gap:9px;}
+.user-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--crl),var(--crl2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
+.user-nm{font-size:12.5px;font-weight:600;color:#1a2a3a;}
+.user-rl{font-size:10px;color:#6b8ca8;}
+.logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:#6b8ca8;border-radius:7px;padding:4px 9px;cursor:pointer;font-size:10.5px;font-weight:600;transition:all 0.2s;}
+.logout-btn:hover{border-color:var(--red);color:var(--red);}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{padding:14px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:var(--shadow);}
+.breadcrumb{display:flex;align-items:center;gap:5px;font-size:10.5px;margin-bottom:3px;}
+.breadcrumb a{color:var(--muted);text-decoration:none;}
+.breadcrumb a:hover{color:var(--crl);}
+.breadcrumb .sep{color:var(--border2);}
+.topbar-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);}
+.content{flex:1;padding:22px 28px;overflow-y:auto;background:var(--bg);}
+.hero-banner{background:linear-gradient(135deg,#052e16 0%,#047857 50%,#059669 100%);border-radius:16px;padding:22px 28px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(5,150,105,0.25);}
+.hero-banner::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.05);pointer-events:none;}
+.hero-left{position:relative;z-index:1;}
+.hero-tag{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;color:rgba(255,255,255,0.85);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;}
+.hero-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;margin-bottom:4px;}
+.hero-sub{font-size:12px;color:rgba(255,255,255,0.65);}
+.hero-stats{display:flex;gap:24px;position:relative;z-index:1;}
+.hstat{text-align:center;}
+.hstat-val{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:#fff;}
+.hstat-lbl{font-size:9.5px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:0.06em;margin-top:2px;}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:15px 18px;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:13px 13px 0 0;}
+.sc-green::before{background:linear-gradient(90deg,#047857,#059669);}
+.sc-blue::before{background:linear-gradient(90deg,#0068b5,#2185d0);}
+.sc-purple::before{background:linear-gradient(90deg,#5b21b6,#7c3aed);}
+.sc-teal::before{background:linear-gradient(90deg,#0e7490,#0891b2);}
+.stat-ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:9px;}
+.si-green{background:rgba(5,150,105,0.12);}.si-blue{background:rgba(0,104,181,0.1);}.si-purple{background:rgba(91,33,182,0.1);}.si-teal{background:rgba(14,116,144,0.1);}
+.stat-lbl{font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;}
+.stat-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;color:var(--text);line-height:1;}
+.stat-sub{font-size:10px;color:var(--muted);margin-top:3px;}
+.filter-bar{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:14px 18px;margin-bottom:18px;box-shadow:var(--shadow);display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;}
+.fb-grp{display:flex;flex-direction:column;gap:4px;}
+.fb-lbl{font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
+.fb-inp,.fb-sel{padding:7px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface2);outline:none;transition:border-color 0.2s;cursor:pointer;}
+.fb-inp{cursor:text;}
+.fb-inp:focus,.fb-sel:focus{border-color:var(--crl);}
+.fb-right{margin-left:auto;display:flex;gap:8px;align-items:flex-end;}
+.btn{padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+.btn-crl{background:var(--crl);color:#fff;box-shadow:0 2px 8px rgba(5,150,105,0.3);}.btn-crl:hover{background:var(--crl2);}
+.btn-outline{background:none;border:1.5px solid var(--border);color:var(--soft);}.btn-outline:hover{border-color:var(--crl);color:var(--crl);}
+.btn-sm{padding:6px 13px;font-size:11px;}
+.btn-xs{padding:3px 10px;font-size:11px;border-radius:6px;border:1.5px solid var(--border);background:none;color:var(--soft);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;font-weight:600;}
+.btn-xs.view{color:var(--crl);border-color:rgba(5,150,105,0.3);background:var(--crl-bg);}
+.btn-xs.view:hover{background:rgba(5,150,105,0.15);border-color:var(--crl);}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:13px;overflow:hidden;box-shadow:var(--shadow);}
+.table-top{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--surface3);}
+.table-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+.count-pill{background:var(--crl-bg);color:var(--crl);font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;border:1px solid rgba(5,150,105,0.2);}
+.toolbar-r{display:flex;align-items:center;gap:8px;}
+.show-row{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);}
+.srch-wrap{position:relative;}
+.srch-wrap input{padding:7px 12px 7px 30px;border:1.5px solid var(--border);border-radius:7px;font-size:11.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;width:220px;transition:border-color 0.2s;}
+.srch-wrap input:focus{border-color:var(--crl);}
+.srch-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);}
+.table-wrap{overflow-x:auto;}
+table.crl-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:1200px;}
+table.crl-table thead th{padding:10px 12px;font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;text-align:left;border-bottom:2px solid var(--border);background:var(--surface3);white-space:nowrap;cursor:pointer;user-select:none;}
+table.crl-table thead th:hover{color:var(--crl);}
+table.crl-table tbody td{padding:10px 12px;border-bottom:1px solid rgba(0,60,120,0.05);vertical-align:middle;white-space:nowrap;color:var(--text);}
+table.crl-table tbody tr:hover td{background:rgba(5,150,105,0.03);}
+table.crl-table tbody tr:last-child td{border-bottom:none;}
+.table-foot{padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--muted);flex-wrap:wrap;gap:8px;background:var(--surface3);}
+.status-pill{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;}
+.status-pill::before{content:'';width:5px;height:5px;border-radius:50%;display:block;}
+.sp-completed{background:var(--green-bg);color:var(--green);}.sp-completed::before{background:var(--green);}
+.sp-pfrn{background:var(--purple-bg);color:var(--purple);}.sp-pfrn::before{background:var(--purple);}
+.sp-ur{background:var(--blue-bg);color:var(--blue);}.sp-ur::before{background:var(--blue);}
+.sp-ob{background:var(--teal-bg);color:var(--teal);}.sp-ob::before{background:var(--teal);}
+.div-tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;background:var(--purple-bg);color:var(--purple);border:1px solid rgba(91,33,182,0.18);}
+.crl-tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;background:var(--crl-bg);color:var(--crl);border:1px solid rgba(5,150,105,0.25);}
+.chip{display:inline-flex;align-items:center;background:var(--crl-bg);border:1px solid rgba(5,150,105,0.2);border-radius:5px;padding:2px 7px;font-size:10px;color:var(--crl);font-weight:600;}
+.day-ok{color:var(--green);font-weight:700;}.day-warn{color:var(--amber);font-weight:700;}.day-crit{color:var(--red);font-weight:700;}
+.mono{font-family:monospace;font-size:10.5px;color:var(--muted);}
+.pager-row{display:flex;align-items:center;gap:3px;}
+.pager{min-width:28px;height:28px;padding:0 7px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--soft);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.18s;font-family:'Plus Jakarta Sans',sans-serif;}
+.pager:hover{border-color:var(--crl);color:var(--crl);}
+.pager.active{background:var(--crl);border-color:var(--crl);color:#fff;}
+.pager:disabled{opacity:0.3;cursor:not-allowed;}
+/* DETAIL MODAL */
+.overlay{position:fixed;inset:0;background:rgba(5,18,38,0.55);backdrop-filter:blur(5px);z-index:500;display:none;align-items:stretch;}
+.overlay.open{display:flex;animation:fadeIn 0.18s ease;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.modal{background:var(--surface);width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;}
+.modal-head{padding:16px 28px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative;}
+.modal-head-accent{position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--crl),var(--crl2),transparent);}
+.modal-htitle{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:10px;}
+.modal-badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:10px;background:var(--crl-bg);color:var(--crl);border:1px solid rgba(5,150,105,0.25);}
+.modal-close{width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:15px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.modal-close:hover{background:var(--red-bg);color:var(--red);border-color:rgba(185,28,28,0.3);}
+.info-strip{display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface3);border-bottom:1px solid var(--border);}
+.info-cell{padding:11px 18px;border-right:1px solid var(--border);}
+.info-cell:last-child{border-right:none;}
+.info-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:3px;}
+.info-val{font-size:12px;font-weight:700;color:var(--crl);}
+.info-val.dark{color:var(--text);font-weight:600;}
+.modal-scroll{flex:1;overflow-y:auto;}
+.modal-body{padding:24px 28px;}
+.detail-sec{margin-bottom:22px;}
+.detail-sec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:13px;padding-bottom:8px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:7px;}
+.dg-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.dg-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.dg-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+.df{display:flex;flex-direction:column;gap:5px;}
+.df label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
+.df .dval{padding:9px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface3);min-height:40px;}
+.df .dval.long{min-height:72px;line-height:1.5;}
+.df .dval.hl{color:var(--crl);font-weight:600;}
+.df .dval.empty{color:var(--muted);font-style:italic;}
+.modal-foot{padding:14px 28px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;justify-content:flex-end;background:var(--surface3);flex-shrink:0;}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid var(--border);border-top-color:var(--crl);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:8px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty-st{text-align:center;padding:56px 20px;}
+.ei{font-size:42px;margin-bottom:12px;opacity:0.25;}
+.et{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:5px;}
+.es{font-size:12px;color:var(--muted);}
+
+.auth-warn{display:none;background:linear-gradient(90deg,#fef3c7,#fffbeb);border:1px solid #fbbf24;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#92400e;align-items:center;gap:10px;}
+.auth-warn.show{display:flex;}
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:700;display:flex;flex-direction:column;gap:7px;}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:11px 15px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:9px;min-width:230px;animation:fadeUp 0.28s ease;box-shadow:0 8px 22px rgba(0,0,0,0.1);}
+.toast.ok{border-color:rgba(5,150,105,0.35);}.toast.ok .td{background:var(--green);}
+.toast.err{border-color:rgba(185,28,28,0.35);}.toast.err .td{background:var(--red);}
+.toast.info{border-color:rgba(5,150,105,0.4);}.toast.info .td{background:var(--crl);}
+.td{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+/* CATEGORY TABS */
+.cat-tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
+.cat-tab{padding:6px 16px;border-radius:20px;font-size:11.5px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:none;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.18s;}
+.cat-tab:hover{border-color:var(--crl);color:var(--crl);}
+.cat-tab.active{background:var(--crl);border-color:var(--crl);color:#fff;}
+.cat-tab.pfrn.active{background:var(--purple);border-color:var(--purple);}
+.cat-tab.ur.active{background:var(--blue);border-color:var(--blue);}
+.cat-tab.ob.active{background:var(--teal);border-color:var(--teal);}
+::-webkit-scrollbar{width:7px;height:7px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
+    </style>
+  <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="employee-theme.css">
+  <script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <script src="brand-logo.js" defer></script>
+</head>
+<body>
+<!-- DETAIL VIEW MODAL -->
+<div class="overlay" id="modal-detail">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-htitle">&#9989; Closed Repair Record <span class="modal-badge" id="modal-scref">-</span></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">Full repair history and resolution details for this closed record.</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">&#10005;</button>
+      <div class="modal-head-accent"></div>
+    </div>
+    <div class="info-strip">
+      <div class="info-cell"><div class="info-lbl">SC Ref No</div><div class="info-val" id="ri-scref">-</div></div>
+      <div class="info-cell"><div class="info-lbl">Division</div><div class="info-val dark" id="ri-div">-</div></div>
+      <div class="info-cell"><div class="info-lbl">DEF GIR No</div><div class="info-val" id="ri-defgir">-</div></div>
+      <div class="info-cell"><div class="info-lbl">Model</div><div class="info-val dark" id="ri-model">-</div></div>
+      <div class="info-cell"><div class="info-lbl">Category</div><div class="info-val dark" id="ri-category">-</div></div>
+      <div class="info-cell"><div class="info-lbl">Def Brd/Mod Name</div><div class="info-val dark" id="ri-defbrd">-</div></div>
+      <div class="info-cell"><div class="info-lbl">Entry Date</div><div class="info-val dark" id="ri-date">-</div></div>
+      <div class="info-cell"><div class="info-lbl">Closed Date</div><div class="info-val" id="ri-closed">-</div></div>
+      <div class="info-cell"><div class="info-lbl">No of Days</div><div class="info-val" id="ri-days">-</div></div>
+      <div class="info-cell"><div class="info-lbl">Closed By</div><div class="info-val dark" id="ri-by">-</div></div>
+    </div>
+    <div class="modal-scroll">
+      <div class="modal-body">
+        <div class="detail-sec">
+          <div class="detail-sec-title">&#128295; Repair Details</div>
+          <div class="dg-4">
+            <div class="df"><label>Repaired By</label><div class="dval hl" id="d-repairedby">-</div></div>
+            <div class="df"><label>DC No</label><div class="dval" id="d-dcno">-</div></div>
+            <div class="df"><label>Repaired BRD Stk Date</label><div class="dval" id="d-repbrddate">-</div></div>
+            <div class="df"><label>Return Date to Field</label><div class="dval" id="d-returndate">-</div></div>
+            <div class="df" style="grid-column:span 4"><label>Component Used to Repair</label><div class="dval" id="d-compused">-</div></div>
+          </div>
+        </div>
+        <div class="detail-sec">
+          <div class="detail-sec-title">&#128172; Remarks &amp; Findings</div>
+          <div class="dg-3">
+            <div class="df"><label>Tech Remarks</label><div class="dval long" id="d-techremarks">-</div></div>
+            <div class="df"><label>Final Remarks</label><div class="dval long" id="d-finalremarks">-</div></div>
+            <div class="df"><label>Additional Notes</label><div class="dval long" id="d-addnotes">-</div></div>
+          </div>
+        </div>
+        <div class="detail-sec">
+          <div class="detail-sec-title">&#128666; Dispatch &amp; Return</div>
+          <div class="dg-4">
+            <div class="df"><label>Return DC No</label><div class="dval" id="d-returndcno">-</div></div>
+            <div class="df"><label>Destination</label><div class="dval" id="d-destination">-</div></div>
+            <div class="df"><label>Submitted By</label><div class="dval" id="d-submittedby">-</div></div>
+            <div class="df"><label>Submitted At</label><div class="dval" id="d-submittedat">-</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline btn-sm" onclick="closeModal()">&#10005; Close</button>
+      <button class="btn btn-crl btn-sm" onclick="printRecord()">Print</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-wrap">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="logo-text">SchillerIndia<span>Services Portal</span></div>
+    </div>
+  </div>
+  <div style="padding:7px 12px 0;"><span class="crl-badge">&#9989; Repair Team</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-sec">Main</div>
+    <a class="nav-item" href="repair-dashboard.html"><span class="ico">&#128202;</span> Dashboard</a>
+    <div class="nav-sec">Repair Work</div>
+    <a class="nav-item" href="rtfrn.html"><span class="ico">&#128221;</span> Repair List PFRN</a>
+    <a class="nav-item" href="rtob.html"><span class="ico">&#128230;</span> Repair List OB</a>
+    <a class="nav-item" href="Rtur.html"><span class="ico">&#128736;&#65039;</span> Repair List UR</a>
+    <a class="nav-item active" href="Rtcrl.html"><span class="ico">&#9989;</span> Closed Repair List</a>
+    <div class="nav-sec">Other Activities</div>
+    <a class="nav-item" href="Rtoa.html"><span class="ico">&#128203;</span> Other Activity</a>
+    <a class="nav-item" href="Rtcoa.html"><span class="ico">&#9989;</span> Closed Activity</a>
+    <a class="nav-item" href="Rtcomr.html"><span class="ico">&#128296;</span> Components Request</a>
+    <a class="nav-item" href="Rtccr.html"><span class="ico">&#128194;</span> Closed Request</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="user-av" id="emp-avatar">R</div>
+      <div><div class="user-nm" id="emp-name">Repair User</div><div class="user-rl" id="emp-role">Repair Team</div></div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="Repair-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
+        <span>Repair Work</span><span class="sep">&#8250;</span><span>Closed Repair List</span>
+      </div>
+      <div class="topbar-title">Closed Repair List</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px;">
+      <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
+      <button class="btn btn-outline btn-sm" onclick="loadData()">&#10227; Refresh</button>
+      <button class="btn btn-crl btn-sm" onclick="exportCSV()">&#128228; Export</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- AUTH WARN -->
+    <div class="auth-warn" id="auth-warn">
+      &#9888;&#65039; <strong>Access Warning:</strong> The server returned a permission error.
+      Your role (<span id="warn-role">-</span>) may not have access to <code>/api/rtcrl</code>.
+      <button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="document.getElementById('auth-warn').classList.remove('show')">Dismiss</button>
+    </div>
+
+
+
+    <!-- STATS ROW -->
+    <div class="stats-row">
+      <div class="stat-card sc-green"><div class="stat-ico si-green">&#9989;</div><div class="stat-lbl">Total Closed</div><div class="stat-val" id="st-total">-</div><div class="stat-sub">All categories</div></div>
+      <div class="stat-card sc-purple"><div class="stat-ico si-purple">&#128221;</div><div class="stat-lbl">PFRN Closed</div><div class="stat-val" id="st-pfrn">-</div><div class="stat-sub">Pending FRN closed</div></div>
+      <div class="stat-card sc-blue"><div class="stat-ico si-blue">&#128736;&#65039;</div><div class="stat-lbl">UR Closed</div><div class="stat-val" id="st-ur">-</div><div class="stat-sub">Under repair closed</div></div>
+      <div class="stat-card sc-teal"><div class="stat-ico si-teal">&#128230;</div><div class="stat-lbl">OB Closed</div><div class="stat-val" id="st-ob">-</div><div class="stat-sub">OB pending closed</div></div>
+    </div>
+
+    <!-- CATEGORY TABS -->
+    <div class="cat-tabs">
+      <button class="cat-tab active" data-cat="" onclick="setCatTab(this,'')">All Records</button>
+      <button class="cat-tab pfrn" data-cat="PFRN" onclick="setCatTab(this,'PFRN')">PFRN</button>
+      <button class="cat-tab ur"   data-cat="UR"   onclick="setCatTab(this,'UR')">&#128736;&#65039; UR</button>
+      <button class="cat-tab ob"   data-cat="OB"   onclick="setCatTab(this,'OB')">&#128230; OB</button>
+    </div>
+
+    <!-- FILTER BAR -->
+    <!-- TABLE -->
+    <div class="table-card">
+      <div class="table-top">
+        <div class="table-title">Closed Repair Activity <span class="count-pill" id="count-pill">- entries</span></div>
+        <div class="toolbar-r">
+          <div class="show-row">Show
+            <select class="fb-sel" id="per-page" style="padding:5px 8px;min-width:60px;" onchange="renderTable()">
+              <option>10</option><option>25</option><option>50</option><option>100</option>
+            </select> entries
+          </div>
+          <div class="srch-wrap">
+            <span class="srch-ico">&#128269;</span>
+            <input type="text" id="tbl-search" placeholder="Search SC Ref, GIR, model..." oninput="applyFilters()"/>
+          </div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="crl-table">
+          <thead><tr>
+            <th onclick="sortBy('entryDate')">Entry Date &#8597;</th>
+            <th onclick="sortBy('closedDate')">Closed Date &#8597;</th>
+            <th onclick="sortBy('division')">Division &#8597;</th>
+            <th onclick="sortBy('scRefNo')">SC Ref No &#8597;</th>
+            <th onclick="sortBy('defGirNo')">DEF GIR No &#8597;</th>
+            <th onclick="sortBy('category')">Category &#8597;</th>
+            <th onclick="sortBy('model')">Model &#8597;</th>
+            <th onclick="sortBy('defBrdModName')">Def Brd/Mod Name &#8597;</th>
+            <th onclick="sortBy('noOfDays')">No of Days &#8597;</th>
+            <th onclick="sortBy('repairedBy')">Repaired By &#8597;</th>
+            <th onclick="sortBy('closedBy')">Closed By &#8597;</th>
+            <th>Details</th>
+          </tr></thead>
+          <tbody id="crl-tbody">
+            <tr><td colspan="12" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-foot">
+        <span id="tbl-info">-</span>
+        <div class="pager-row" id="tbl-pagination"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API      = '';
+const LUSER    = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+const EMP_NAME = LUSER.name || '';
+const RAW_ROLE = (LUSER.role || localStorage.getItem('schiller_role') || '').toLowerCase();
+
+let allData = [], filtered = [], sortKey = 'closedDate', sortDir = -1, currentPage = 1;
+let activeCat = '';
+
+(function init() {
+  (document.getElementById('emp-name')||{}).textContent = EMP_NAME || 'Repair User';
+  (document.getElementById('emp-avatar')||{}).textContent = (EMP_NAME.charAt(0) || 'R').toUpperCase();
+  (document.getElementById('emp-role')||{}).textContent = RAW_ROLE || 'Repair Team';
+  (document.getElementById('topbar-date')||{}).textContent =
+    new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  loadData();
+})();
+
+function getToken()    { return localStorage.getItem('schiller_token') || ''; }
+function authHeaders() { return { 'Content-Type':'application/json', Authorization:'Bearer '+getToken() }; }
+function handleUnauth(r) {
+  if (r.status === 401) {
+    showToast('Session expired - please log in again.', 'err');
+    setTimeout(() => { localStorage.clear(); window.location.href = 'login.html'; }, 1800);
+    throw new Error('Unauthorized');
+  }
+  if (r.status === 403) {
+    (document.getElementById('warn-role')||{}).textContent = RAW_ROLE || 'unknown';
+    document.getElementById('auth-warn').classList.add('show');
+    throw new Error('Forbidden');
+  }
+}
+
+async function loadData() {
+  try {
+    const res = await fetch(`${API}/api/rtcrl`, { headers: authHeaders() });
+    handleUnauth(res);
+    if (res.status === 404) {
+      showError('The <code>/api/rtcrl</code> route does not exist yet.<br>Add it to server.js and it will show data automatically.');
+      allData = []; applyFilters(); updateStats(); return;
+    }
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const list = data.data || data;
+    allData = list.map(d => ({ ...d, id: d._id || d.id, noOfDays: calcDays(d.entryDate, d.closedDate) }));
+    applyFilters(); updateStats();
+    showToast('Loaded ' + allData.length + ' closed record' + (allData.length !== 1 ? 's' : ''), 'info');
+  } catch (e) {
+    if (e.message === 'Unauthorized' || e.message === 'Forbidden') return;
+    showError('Could not load records: ' + esc(e.message));
+    showToast('Load failed: ' + e.message, 'err');
+    allData = []; applyFilters(); updateStats();
+  } finally { }
+}
+
+function showError(msg) {
+  document.getElementById('crl-tbody').innerHTML =
+    `<tr><td colspan="12"><div class="empty-st">
+      <div class="ei">&#9888;&#65039;</div><div class="et">Cannot load data</div>
+      <div class="es">${msg}</div>
+      <div style="margin-top:14px;"><button class="btn btn-crl btn-sm" onclick="loadData()">&#10227; Try Again</button></div>
+    </div></td></tr>`;
+}
+
+// noOfDays = days from entry to close (or to today if not closed yet)
+function calcDays(entry, closed) {
+  if (!entry) return 0;
+  const end  = closed ? new Date(closed) : new Date();
+  const diff = Math.floor((end.getTime() - new Date(entry).getTime()) / 86400000);
+  return Math.max(0, isNaN(diff) ? 0 : diff);
+}
+
+function updateStats() {
+  const total = allData.length;
+  const pfrn  = allData.filter(d => d.category === 'PFRN').length;
+  const ur    = allData.filter(d => d.category === 'UR').length;
+  const ob    = allData.filter(d => d.category === 'OB').length;
+  document.getElementById('st-total').textContent = total;
+  document.getElementById('st-pfrn').textContent = pfrn;
+  document.getElementById('st-ur').textContent = ur;
+  document.getElementById('st-ob').textContent = ob;
+}
+
+function setCatTab(el, cat) {
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  activeCat = cat;
+  currentPage = 1;
+  applyFilters();
+}
+
+function clearDates() { applyFilters(); }
+function clearAllFilters() {
+  document.getElementById('tbl-search').value = '';
+  applyFilters();
+}
+
+function applyFilters() {
+  const q = document.getElementById('tbl-search').value.toLowerCase();
+  filtered = allData.filter(d => {
+    const mQ = !q || Object.values(d).some(v => String(v || '').toLowerCase().includes(q));
+    const mC = !activeCat || d.category === activeCat;
+    return mQ && mC;
+  });
+  sortArr(); currentPage = 1; renderTable();
+}
+
+function sortBy(k) { if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = -1; } sortArr(); renderTable(); }
+function sortArr() {
+  filtered.sort((a, b) => {
+    const av = a[sortKey] ?? '', bv = b[sortKey] ?? '';
+    if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * sortDir;
+    return String(av).toLowerCase() < String(bv).toLowerCase() ? -sortDir
+         : String(av).toLowerCase() > String(bv).toLowerCase() ?  sortDir : 0;
+  });
+}
+
+function renderTable() {
+  const perPage = parseInt(document.getElementById('per-page').value) || 10;
+  const total   = filtered.length;
+  const pages   = Math.max(1, Math.ceil(total / perPage));
+  if (currentPage > pages) currentPage = pages;
+  const slice = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
+
+  (document.getElementById('count-pill')||{}).textContent = total + ' entr' + (total === 1 ? 'y' : 'ies');
+  const tbody = document.getElementById('crl-tbody');
+
+  if (!slice.length) {
+    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-st">
+      <div class="ei">&#9989;</div>
+      <div class="et">${allData.length ? 'No records match filters' : 'No Closed Repair Records'}</div>
+      <div class="es">${allData.length ? 'Try clearing the filters or changing the category tab.' : 'Records appear here once a repair is marked as completed.'}</div>
+    </div></td></tr>`;
+  } else {
+    tbody.innerHTML = slice.map(d => {
+      const id    = d._id || d.id;
+      const days  = d.noOfDays || 0;
+      const dCls  = days <= 14 ? 'day-ok' : days <= 45 ? 'day-warn' : 'day-crit';
+      const catCls = d.category === 'PFRN' ? 'sp-pfrn' : d.category === 'OB' ? 'sp-ob' : 'sp-ur';
+      return `<tr>
+        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
+        <td style="font-size:11px;color:var(--green);font-weight:600;">${fmtDate(d.closedDate)}</td>
+        <td><span class="div-tag">${esc(d.division || '-')}</span></td>
+        <td style="font-size:13.5px;font-weight:800;color:var(--text);">${esc(d.scRefNo || '-')}</td>
+        <td style="font-size:13.5px;font-weight:900;color:var(--purple);font-family:monospace;">${esc(d.defGirNo || '-')}</td>
+        <td><span class="status-pill ${catCls}">${esc(d.category || 'UR')}</span></td>
+        <td style="font-weight:600;">${esc(d.model || '-')}</td>
+        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.defBrdModName || '')}">${esc(d.defBrdModName || '-')}</td>
+        <td><span class="${dCls}">${days}</span></td>
+        <td style="font-size:11.5px;">${esc(d.repairedBy || '-')}</td>
+        <td style="font-size:11px;color:var(--muted);">${esc(d.closedBy || '-')}</td>
+        <td><button class="btn-xs view" onclick="openDetail('${id}')">View</button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  const fr = total ? (currentPage - 1) * perPage + 1 : 0;
+  (document.getElementById('tbl-info')||{}).textContent = total
+    ? `Showing ${fr} to ${Math.min(currentPage * perPage, total)} of ${total} entries`
+    : '0 entries';
+  renderPagination(pages);
+}
+
+// -- DETAIL MODAL ------------------------------------------------------------
+function openDetail(id) {
+  const d = allData.find(x => (x._id || x.id) === id);
+  if (!d) return;
+
+  (document.getElementById('modal-scref')||{}).textContent = d.scRefNo     || '-';
+  (document.getElementById('ri-scref')||{}).textContent = d.scRefNo     || '-';
+  (document.getElementById('ri-div')||{}).textContent = d.division    || '-';
+  (document.getElementById('ri-defgir')||{}).textContent = d.defGirNo    || '-';
+  (document.getElementById('ri-model')||{}).textContent = d.model       || '-';
+  (document.getElementById('ri-category')||{}).textContent = d.category    || '-';
+  (document.getElementById('ri-defbrd')||{}).textContent = d.defBrdModName || '-';
+  (document.getElementById('ri-date')||{}).textContent = fmtDate(d.entryDate);
+  (document.getElementById('ri-closed')||{}).textContent = fmtDate(d.closedDate);
+  (document.getElementById('ri-days')||{}).textContent = (d.noOfDays || 0) + ' days';
+  (document.getElementById('ri-by')||{}).textContent = d.closedBy    || '-';
+
+  const set = (id, val) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = val || '-';
+    el.className   = 'dval' + (val ? '' : ' empty') + (id === 'd-repairedby' && val ? ' hl' : '');
+    if (['d-techremarks','d-finalremarks','d-addnotes'].includes(id)) el.classList.add('long');
+  };
+  set('d-repairedby',  d.repairedBy);
+  set('d-dcno',        d.dcNo);
+  set('d-repbrddate',  d.repBrdDate  ? fmtDate(d.repBrdDate)  : '');
+  set('d-returndate',  d.returnDate  ? fmtDate(d.returnDate)  : '');
+  set('d-compused',    d.compUsedToRepair);
+  set('d-techremarks', d.techRemarks);
+  set('d-finalremarks',d.finalRemarks);
+  set('d-addnotes',    d.addNotes);
+  set('d-returndcno',  d.returnDcNo);
+  set('d-destination', d.destination);
+  set('d-submittedby', d.submittedBy);
+  set('d-submittedat', d.submittedAt ? fmtDate(d.submittedAt) : '');
+
+  document.getElementById('modal-detail').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modal-detail').classList.remove('open'); }
+
+function printRecord() { window.print(); }
+
+// -- EXPORT -------------------------------------------------------------------
+function exportCSV() {
+  const headers = ['Entry Date','Closed Date','Division','SC Ref No','DEF GIR No',
+                   'Category','Model','Def Brd/Mod Name','No of Days',
+                   'Repaired By','Closed By','Tech Remarks','Final Remarks'];
+  const rows = filtered.map(d => [
+    fmtDate(d.entryDate), fmtDate(d.closedDate), d.division, d.scRefNo,
+    d.defGirNo, d.category||'UR', d.model, d.defBrdModName, d.noOfDays||0,
+    d.repairedBy||'-', d.closedBy||'-', d.techRemarks||'-', d.finalRemarks||'-',
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a   = document.createElement('a');
+  a.href    = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'rtcrl-' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+  showToast('Exported ' + filtered.length + ' records.', 'ok');
+}
+
+// -- PAGINATION ---------------------------------------------------------------
+function renderPagination(pages) {
+  const el = document.getElementById('tbl-pagination');
+  if (pages <= 1) { el.innerHTML = ''; return; }
+  let h = `<button class="pager" ${currentPage===1?'disabled':''} onclick="gp(${currentPage-1})">&#8249; Prev</button>`;
+  getRange(currentPage, pages).forEach(p => {
+    h += p === '...'
+      ? `<button class="pager" disabled>...</button>`
+      : `<button class="pager ${p===currentPage?'active':''}" onclick="gp(${p})">${p}</button>`;
+  });
+  h += `<button class="pager" ${currentPage===pages?'disabled':''} onclick="gp(${currentPage+1})">Next &#8250;</button>`;
+  el.innerHTML = h;
+}
+function getRange(c,t){if(t<=7)return Array.from({length:t},(_,i)=>i+1);if(c<=4)return[1,2,3,4,5,'...',t];if(c>=t-3)return[1,'...',t-4,t-3,t-2,t-1,t];return[1,'...',c-1,c,c+1,'...',t];}
+function gp(p) { currentPage = p; renderTable(); }
+
+// -- UTILS --------------------------------------------------------------------
+function fmtDate(d){if(!d)return'-';const p=String(d).split('T')[0].split('-');if(p.length<3)return String(d);return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0];}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function showToast(msg,type='ok'){const w=document.getElementById('toast-wrap'),el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="td"></span>'+msg;w.appendChild(el);setTimeout(()=>el.remove(),3500);}
+function logout(){localStorage.clear();window.location.href='login.html';}
+
+document.getElementById('modal-detail').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>
