@@ -465,6 +465,7 @@ table.ob-table tbody tr:last-child td{border-bottom:none;}
           <thead><tr>
             <th onclick="sortBy('entryDate')">Entry Date <span class="si">&#8597;</span></th>
             <th>Update</th>
+            <th>Del</th>
             <th onclick="sortBy('division')">Division <span class="si">&#8597;</span></th>
             <th onclick="sortBy('scRefNo')">SC Ref No <span class="si">&#8597;</span></th>
             <th onclick="sortBy('defGirNo')">DEF GIR No <span class="si">&#8597;</span></th>
@@ -638,6 +639,7 @@ function renderTable(){
       return`<tr>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
         <td><button class="btn-xs upd" onclick="openUpdate('${id}')" title="Update">&#9999;&#65039;</button></td>
+        <td><button class="btn-xs del" onclick="confirmDelete('${id}','${esc(d.scRefNo||id)}')" title="Delete">&#128465;</button></td>
         <td><span class="div-tag">${esc(d.division||'-')}</span></td>
         <td style="font-size:13.5px;font-weight:800;color:var(--text);">${esc(d.scRefNo||'-')}</td>
         <td style="font-size:13.5px;font-weight:900;color:var(--purple);font-family:monospace;">${esc(d.defGirNo||'-')}</td>
@@ -755,6 +757,24 @@ async function submitUpdate(){
     if(e.message!=='Unauthorized'&&e.message!=='Forbidden'){errEl.textContent=e.message;errEl.classList.add('show');showToast('Update failed: '+e.message,'err');}
   }finally{btn.disabled=false;btn.innerHTML ='&#128190; Save Update';}
 }
+// -- DELETE RECORD ---------------------------------------
+function confirmDelete(id, ref) {
+  if (!confirm(`Delete record "${ref}"?\n\nThis action cannot be undone.`)) return;
+  deleteRecord(id, ref);
+}
+async function deleteRecord(id, ref) {
+  try {
+    const res = await fetch(`${API}${ATOB_API}/${id}`, { method: 'DELETE', headers: authHeaders() });
+    handleUnauth(res);
+    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete failed'); }
+    allData = allData.filter(x => (x._id||x.id) !== id);
+    applyFilters(); updateStats();
+    showToast(`Record "${ref}" deleted.`, 'ok');
+  } catch(e) {
+    if (e.message !== 'Unauthorized') showToast('Delete failed: ' + e.message, 'err');
+  }
+}
+
 function exportCSV(){
   const headers=['Entry Date','Division','SC Ref No','DEF GIR No','OB Type','Model','Def Brd/Mod Name','No of Days','Status','RA Engineer','PRF/OB No','Submitted By','Type of Work','Final Remarks'];
   const rows=filtered.map(d=>[fmtDate(d.entryDate),d.division,d.scRefNo,d.defGirNo,d.obType||'OB',d.model,d.defBrdModName,d.noOfDays,d.status,d.raEng||'-',d.prfObNo||'-',d.submittedBy||'-',d.typeWork||'-',d.finalRemarks||'-']);
