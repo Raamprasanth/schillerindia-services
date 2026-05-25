@@ -7,7 +7,7 @@
 // ══════════════════════════════════════════════════════════
 
 const express    = require('express');
-const RepairTeam = require('../models/RepairTeam');
+const RepairTeam = require('../models/Repairteam');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 
 const router = express.Router();

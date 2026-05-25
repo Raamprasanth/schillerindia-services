@@ -11,7 +11,7 @@ const express     = require('express');
 const jwt         = require('jsonwebtoken');
 const Admin       = require('../models/Admin');
 const Employee    = require('../models/Employee');
-const RepairTeam  = require('../models/RepairTeam');
+const RepairTeam  = require('../models/Repairteam');
 const User        = require('../models/User');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 

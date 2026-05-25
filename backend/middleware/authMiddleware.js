@@ -1,7 +1,7 @@
 const jwt      = require('jsonwebtoken');
 const Admin    = require('../models/Admin');
 const Employee = require('../models/Employee');
-const RepairTeam = require('../models/RepairTeam');
+const RepairTeam = require('../models/Repairteam');
 
 function withDivisionAccess(user, defaultRole, collection) {
   const divisions = Array.isArray(user.divisions) ? user.divisions : [];
