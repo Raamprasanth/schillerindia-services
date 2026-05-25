@@ -113,9 +113,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .srch-wrap input:focus{border-color:var(--ob);}
 .srch-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);}
 .table-wrap{overflow-x:auto;}
-table.ob-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:1400px;}
-table.ob-table thead th{padding:10px 12px;font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;text-align:left;border-bottom:2px solid var(--border);background:var(--surface3);white-space:nowrap;cursor:pointer;user-select:none;}
+table.ob-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:1300px;}
+table.ob-table thead th{padding:10px 12px;font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;text-align:left;border-bottom:2px solid var(--border);background:var(--surface3);white-space:nowrap;cursor:pointer;user-select:none;transition:color 0.2s;}
 table.ob-table thead th:hover{color:var(--ob);}
+table.ob-table thead th.sorted{color:var(--ob);}
+table.ob-table thead th .si{font-size:8px;opacity:0.45;margin-left:2px;}
 table.ob-table tbody td{padding:10px 12px;border-bottom:1px solid rgba(0,60,120,0.05);vertical-align:middle;white-space:nowrap;color:var(--text);}
 table.ob-table tbody tr:hover td{background:rgba(5,150,105,0.03);}
 table.ob-table tbody tr:last-child td{border-bottom:none;}
@@ -482,17 +484,15 @@ table.ob-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
             <th onclick="sortBy('scRefNo')">SC Ref No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('defGirNo')">DEF GIR No <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('obType')">OB Type <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('category')">Category <span class="si">&#8693;</span></th>
             <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
             <th onclick="sortBy('defBrdModName')">Def Brd/Mod Name <span class="si">&#8693;</span></th>
             <th onclick="sortBy('noOfDays')" class="sorted">No of Days <span class="si">&#8693;</span></th>
             <th onclick="sortBy('status')">Status <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('raEng')">RA Engineer <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('prfObNo')">PRF/OB No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('submittedBy')">Submitted By <span class="si">&#8693;</span></th>
           </tr></thead>
           <tbody id="ob-tbody">
-            <tr><td colspan="14" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
+            <tr><td colspan="12" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -578,7 +578,7 @@ async function loadData() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
 
     const data = await res.json();
-    allData = data.map(d => ({ ...d, id: d._id || d.id, noOfDays: calcDays(d.entryDate) }));
+    allData = data.map(d => ({ ...d, category: d.category || d.obType || 'OB', id: d._id || d.id, noOfDays: calcDays(d.entryDate) }));
     applyFilters(); updateStats();
     showToast('Loaded ' + allData.length + ' record' + (allData.length !== 1 ? 's' : ''), 'info');
   } catch (e) {
@@ -591,7 +591,7 @@ async function loadData() {
 
 function showError(msg) {
   document.getElementById('ob-tbody').innerHTML =
-    `<tr><td colspan="14"><div class="empty-st">
+    `<tr><td colspan="12"><div class="empty-st">
       <div class="ei">&#128196;</div>
       <div class="et">Cannot load data</div>
       <div class="es">${msg}</div>
@@ -640,7 +640,7 @@ function renderTable(){
   (document.getElementById('count-pill')||{}).textContent =total+' entr'+(total===1?'y':'ies');
   const tbody=document.getElementById('ob-tbody');
   if(!slice.length){
-    tbody.innerHTML=`<tr><td colspan="14"><div class="empty-st">
+    tbody.innerHTML=`<tr><td colspan="12"><div class="empty-st">
       <div class="ei">&#128196;</div>
       <div class="et">${allData.length?'No records match filters':'No RT OB Records'}</div>
       <div class="es">${allData.length?'Try clearing the filters.':'No RT OB records available.'}</div>
@@ -657,13 +657,11 @@ function renderTable(){
         <td><span class="div-tag">${esc(d.division||'-')}</span></td>
         <td style="font-size:13.5px;font-weight:800;color:var(--text);">${esc(d.scRefNo||'-')}</td>
         <td style="font-size:13.5px;font-weight:900;color:var(--purple);font-family:monospace;">${esc(d.defGirNo||'-')}</td>
-        <td><span class="ob-tag">${esc(d.obType||'OB')}</span></td>
+        <td><span class="ob-tag">${esc(d.category||d.obType||'OB')}</span></td>
         <td style="font-weight:600;">${esc(d.model||'-')}</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.defBrdModName||'')}">${esc(d.defBrdModName||'-')}</td>
         <td><span class="${pdCls}">${d.noOfDays}</span></td>
         <td><span class="status-pill ${stCls}">${stLbl}</span></td>
-        <td style="font-size:11.5px;">${esc(d.raEng||'-')}</td>
-        <td class="mono" style="font-size:10.5px;">${esc(d.prfObNo||'-')}</td>
         <td style="font-size:11px;color:var(--muted);">${esc(d.submittedBy||'-')}</td>
       </tr>`;
     }).join('');
@@ -790,8 +788,8 @@ async function submitUpdate(){
   }finally{btn.disabled=false;btn.innerHTML ='&#128190; Save Update';}
 }
 function exportCSV(){
-  const headers=['Entry Date','Division','SC Ref No','DEF GIR No','OB Type','Model','Def Brd/Mod Name','No of Days','Status','RA Engineer','PRF/OB No','Submitted By','Type of Work','Final Remarks'];
-  const rows=filtered.map(d=>[fmtDate(d.entryDate),d.division,d.scRefNo,d.defGirNo,d.obType||'OB',d.model,d.defBrdModName,d.noOfDays,d.status,d.raEng||'-',d.prfObNo||'-',d.submittedBy||'-',d.typeWork||'-',d.finalRemarks||'-']);
+  const headers=['Entry Date','Division','SC Ref No','DEF GIR No','Category','Model','Def Brd/Mod Name','No of Days','Status','Submitted By','Type of Work','Final Remarks'];
+  const rows=filtered.map(d=>[fmtDate(d.entryDate),d.division,d.scRefNo,d.defGirNo,d.category||d.obType||'OB',d.model,d.defBrdModName,d.noOfDays,d.status,d.submittedBy||'-',d.typeWork||'-',d.finalRemarks||'-']);
   const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='rtob-'+new Date().toISOString().split('T')[0]+'.csv';a.click();
   showToast('Exported '+filtered.length+' records.','ok');
