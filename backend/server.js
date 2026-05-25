@@ -1,5 +1,5 @@
 /**
- * SchillerIndia — Main Server
+ * SchillerIndia â€” Main Server
  *
  * Setup:
  *   npm install express mongoose cors dotenv
@@ -13,7 +13,7 @@ const mongoose   = require('mongoose');
 const cors       = require('cors');
 const path       = require('path');
 
-// ── ROUTE IMPORTS ─────────────────────────────────────────
+// â”€â”€ ROUTE IMPORTS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const authRoutes         = require('./routes/authRoutes');
 const { companyRouter,
         branchRouter }   = require('./routes/companyRoutes');
@@ -61,6 +61,7 @@ const closedLoanRoutes = require('./routes/closedLoanRoutes');
 const empClosedLoanRoutes = require('./routes/empClosedLoanRoutes');
 const tourSummaryRoutes = require('./routes/tourSummaryRoutes');
 const ptourSummaryRoutes = require('./routes/ptourSummaryRoutes');
+const ptDailyWorkRoutes = require('./routes/ptDailyWorkRoutes');
 const ecrRoutes      = require('./routes/ecrRoutes');
 const ecallRoutes    = require('./routes/ecallRoutes');
 const ecloseRoutes           = require('./routes/ecloseRoutes');
@@ -79,7 +80,7 @@ const ptActivityRoutes         = require('./routes/ptActivityRoutes');
 const ptBirRoutes              = require('./routes/ptBirRoutes');
 const ptClosedBirRoutes        = require('./routes/ptClosedBirRoutes');
 
-// ── ADMIN ACTIVITY REGISTER ROUTES ───────────────────────
+// â”€â”€ ADMIN ACTIVITY REGISTER ROUTES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const acallRoutes  = require('./routes/acallRoutes');
 const acloseRoutes = require('./routes/acloseRoutes');
 const aprofRoutes  = require('./routes/aprofRoutes');
@@ -100,7 +101,7 @@ const backupRoutes = require('./routes/backupRoutes');
 const app  = express();
 const PORT = process.env.PORT || 5000;
 
-// ── MIDDLEWARE ────────────────────────────────────────────
+// â”€â”€ MIDDLEWARE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.use(cors({
   origin: [
     'http://localhost:3001',
@@ -115,16 +116,16 @@ app.use(cors({
 app.use(express.json({ limit: '16mb' }));
 app.use(express.urlencoded({ extended: true, limit: '16mb' }));
 
-// ── DATABASE ──────────────────────────────────────────────
+// â”€â”€ DATABASE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function connectMongo() {
   try {
     await mongoose.connect(process.env.MONGO_URI, {
       serverSelectionTimeoutMS: 10000,
     });
-    console.log('✅  MongoDB Atlas connected');
+    console.log('âœ…  MongoDB Atlas connected');
   } catch (err) {
-    console.error('❌  MongoDB connection error:', err.message);
-    console.error('⚠️  Starting server without database connection. API calls may fail until MongoDB is reachable.');
+    console.error('âŒ  MongoDB connection error:', err.message);
+    console.error('âš ï¸  Starting server without database connection. API calls may fail until MongoDB is reachable.');
   }
 }
 
@@ -132,18 +133,18 @@ connectMongo();
 initEscalationScheduler();
 
 mongoose.connection.on('connected', () => {
-  console.log('✅  MongoDB connection established');
+  console.log('âœ…  MongoDB connection established');
 });
 
 mongoose.connection.on('error', (err) => {
-  console.error('❌  MongoDB runtime error:', err.message);
+  console.error('âŒ  MongoDB runtime error:', err.message);
 });
 
 mongoose.connection.on('disconnected', () => {
-  console.warn('⚠️  MongoDB disconnected');
+  console.warn('âš ï¸  MongoDB disconnected');
 });
 
-// ── API ROUTES (must come BEFORE static files) ────────────
+// â”€â”€ API ROUTES (must come BEFORE static files) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.use('/api/auth',          authRoutes);
 app.use('/api/companies',     companyRouter);
 app.use('/api/branches',      branchRouter);
@@ -174,7 +175,7 @@ app.use('/api/atob', atobRoutes);
 app.use('/api/rtur', rturRoutes);
 app.use('/api/atur', aturRoutes);
 app.use('/api/rtcrl', rtcrlRoutes);
-app.use('/api/atcrl', atcrlRoutes);  // Admin CRL — same rtcrls collection, read-only
+app.use('/api/atcrl', atcrlRoutes);  // Admin CRL â€” same rtcrls collection, read-only
 app.use('/api/rtoa',  rtoaRoutes);
 app.use('/api/rtcoa', rtcoaRoutes);
 app.use('/api/rtcomr', rtcomrRoutes);
@@ -186,8 +187,8 @@ app.use('/api/reports',   reportRoutes);
 app.use('/api/emp/prfob',  scPrfObRoutes);
 app.use('/api/emp/eprfob', ePrfObRoutes);
 app.use('/api/prfob',      ePrfObRoutes);
-app.use('/api/fqc/non-saleable', fqcNonSaleableFsRoutes);  // fs.html — must be BEFORE /api/fqc
-app.use('/api/fqc/nonsaleable',  fqcNonsaleableRoutes);    // fns.html — must be BEFORE /api/fqc
+app.use('/api/fqc/non-saleable', fqcNonSaleableFsRoutes);  // fs.html â€” must be BEFORE /api/fqc
+app.use('/api/fqc/nonsaleable',  fqcNonsaleableRoutes);    // fns.html â€” must be BEFORE /api/fqc
 app.use('/api/fqc',             fqcRoutes);
 app.use('/api/sccr',     sccrRoutes);
 app.use('/api/loan-items', loanItemRoutes);
@@ -212,7 +213,7 @@ app.use('/api/pt/activity',           ptActivityRoutes);
 app.use('/api/pt/bir/closed',         ptClosedBirRoutes);
 app.use('/api/pt/bir',                ptBirRoutes);
 
-// ── ADMIN ACTIVITY REGISTER ROUTES ───────────────────────
+// â”€â”€ ADMIN ACTIVITY REGISTER ROUTES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.use('/api/admin/calls/closed',    acloseRoutes);   // must be BEFORE /api/admin/calls
 app.use('/api/admin/calls',           acallRoutes);
 app.use('/api/admin/prfob/closed',    acrRoutes);      // must be BEFORE /api/admin/prfob
@@ -226,7 +227,7 @@ app.use('/api/admin/notifications',   notificationRoutes);
 app.use('/api/admin/backup',          backupRoutes);
 app.use('/api/notifications',         userNotificationRoutes);
 
-// ── HEALTH CHECK ──────────────────────────────────────────
+// â”€â”€ HEALTH CHECK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.get('/api/health', (req, res) => {
   res.json({
     success:   true,
@@ -236,12 +237,12 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// ── /api/me ───────────────────────────────────────────────
+// â”€â”€ /api/me â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.get('/api/me', require('./middleware/authMiddleware').protect, (req, res) => {
   res.json(req.user);
 });
 
-// ── STATIC FILES ──────────────────────────────────────────
+// â”€â”€ STATIC FILES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const frontendPath = path.join(__dirname, '../frontend/public');
 app.use(express.static(frontendPath));
 
@@ -281,61 +282,61 @@ app.get('/notifications.html',         (req, res) => res.sendFile(path.join(fron
 app.get('/Atcrl.html',                 (req, res) => res.sendFile(path.join(frontendPath, 'Atcrl.html')));
 app.get('/atcrl.html',                 (req, res) => res.sendFile(path.join(frontendPath, 'Atcrl.html')));
 
-// ── 404 FOR UNKNOWN API ROUTES ────────────────────────────
+// â”€â”€ 404 FOR UNKNOWN API ROUTES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.use('/api/*', (req, res) => {
   res.status(404).json({ success: false, message: `API route ${req.originalUrl} not found.` });
 });
 
-// ── FALLBACK: serve index.html for any non-API route ─────
+// â”€â”€ FALLBACK: serve index.html for any non-API route â”€â”€â”€â”€â”€
 app.get('*', (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
-// ── GLOBAL ERROR HANDLER ──────────────────────────────────
+// â”€â”€ GLOBAL ERROR HANDLER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.use((err, req, res, next) => {
   console.error('Server Error:', err.stack);
   res.status(500).json({ success: false, message: 'Internal server error.' });
 });
 
-// ── START ─────────────────────────────────────────────────
+// â”€â”€ START â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.listen(PORT, () => {
-  console.log(`\n🚀  Server running  →  http://localhost:${PORT}`);
-  console.log(`🔐  Login page      →  http://localhost:${PORT}/login.html`);
-  console.log(`📂  API base        →  http://localhost:${PORT}/api\n`);
-  console.log('📋  Registered API routes:');
-  console.log(`    /api/auth             → Auth`);
-  console.log(`    /api/companies        → Companies`);
-  console.log(`    /api/branches         → Branches`);
-  console.log(`    /api/dashboard        → Dashboard`);
-  console.log(`    /api/dealers          → Dealers`);
-  console.log(`    /api/divisions        → Divisions`);
-  console.log(`    /api/engineers        → Engineers`);
-  console.log(`    /api/services         → Service List (Admin)`);
-  console.log(`    /api/emp/services     → Service List (Employee)`);
-  console.log(`    /api/users            → Users`);
-  console.log(`    /api/me               → Current user`);
-  console.log(`    /api/frn              → Pending FRN (Admin)`);
-  console.log(`    /api/emp/frn          → Pending FRN (Employee)`);
-  console.log(`    /api/under-repair     → Under Repair`);
-  console.log(`    /api/ob-pending       → OB Pending`);
-  console.log(`    /api/emp/prfob        → PRF/OB Register`);
-  console.log(`    /api/calls            → Call Register (eCall)`);
-  console.log(`    /api/emp/calls/closed  → Closed Calls (eClose)`);
-  console.log(`    /api/emp/nonsaleable   → Employee Non Saleable (emp-non-saleable)`);
-  console.log(`    /api/emp/saleables     → Employee Saleables (emp-saleables)`);
-  console.log(`    /api/fqc/nonsaleable   → FQC Non Saleable (fns)`);
-  console.log(`    /api/fqc/non-saleable  → FQC Non Saleable (fs)`);
-  console.log(`    /api/bir               → Batch Inspection Report (fbir)`);
-  console.log(`    /api/bir/closed        → Closed BIR List (fcbir)`);
-  console.log(`    /api/emp/bir           → Employee BIR (ebir)`);
-  console.log(`    /api/emp/bir/closed    → Employee Closed BIR (ecbir)`);
-  console.log(`    /api/pt/calls          → PT Call Register (open/closed)`);
-  console.log(`    /api/pt/closed-calls   → PT Closed Calls (ptclose)`);
-  console.log(`    /api/pt/activity       → PT Activity (pending/closed)`);
-  console.log(`    /api/pt/bir            → PT BIR (ptbir)`);
-  console.log(`    /api/pt/bir/closed     → PT Closed BIR (ptcbir)`);
-  console.log(`    /api/admin/notifications → Admin Notifications`);
-  console.log(`\n🌐  Frontend pages served:`);
+  console.log(`\nðŸš€  Server running  â†’  http://localhost:${PORT}`);
+  console.log(`ðŸ”  Login page      â†’  http://localhost:${PORT}/login.html`);
+  console.log(`ðŸ“‚  API base        â†’  http://localhost:${PORT}/api\n`);
+  console.log('ðŸ“‹  Registered API routes:');
+  console.log(`    /api/auth             â†’ Auth`);
+  console.log(`    /api/companies        â†’ Companies`);
+  console.log(`    /api/branches         â†’ Branches`);
+  console.log(`    /api/dashboard        â†’ Dashboard`);
+  console.log(`    /api/dealers          â†’ Dealers`);
+  console.log(`    /api/divisions        â†’ Divisions`);
+  console.log(`    /api/engineers        â†’ Engineers`);
+  console.log(`    /api/services         â†’ Service List (Admin)`);
+  console.log(`    /api/emp/services     â†’ Service List (Employee)`);
+  console.log(`    /api/users            â†’ Users`);
+  console.log(`    /api/me               â†’ Current user`);
+  console.log(`    /api/frn              â†’ Pending FRN (Admin)`);
+  console.log(`    /api/emp/frn          â†’ Pending FRN (Employee)`);
+  console.log(`    /api/under-repair     â†’ Under Repair`);
+  console.log(`    /api/ob-pending       â†’ OB Pending`);
+  console.log(`    /api/emp/prfob        â†’ PRF/OB Register`);
+  console.log(`    /api/calls            â†’ Call Register (eCall)`);
+  console.log(`    /api/emp/calls/closed  â†’ Closed Calls (eClose)`);
+  console.log(`    /api/emp/nonsaleable   â†’ Employee Non Saleable (emp-non-saleable)`);
+  console.log(`    /api/emp/saleables     â†’ Employee Saleables (emp-saleables)`);
+  console.log(`    /api/fqc/nonsaleable   â†’ FQC Non Saleable (fns)`);
+  console.log(`    /api/fqc/non-saleable  â†’ FQC Non Saleable (fs)`);
+  console.log(`    /api/bir               â†’ Batch Inspection Report (fbir)`);
+  console.log(`    /api/bir/closed        â†’ Closed BIR List (fcbir)`);
+  console.log(`    /api/emp/bir           â†’ Employee BIR (ebir)`);
+  console.log(`    /api/emp/bir/closed    â†’ Employee Closed BIR (ecbir)`);
+  console.log(`    /api/pt/calls          â†’ PT Call Register (open/closed)`);
+  console.log(`    /api/pt/closed-calls   â†’ PT Closed Calls (ptclose)`);
+  console.log(`    /api/pt/activity       â†’ PT Activity (pending/closed)`);
+  console.log(`    /api/pt/bir            â†’ PT BIR (ptbir)`);
+  console.log(`    /api/pt/bir/closed     â†’ PT Closed BIR (ptcbir)`);
+  console.log(`    /api/admin/notifications â†’ Admin Notifications`);
+  console.log(`\nðŸŒ  Frontend pages served:`);
   console.log(`    /admin-dashboard.html`);
   console.log(`    /employee-dashboard.html`);
   console.log(`    /employee-service-list.html`);
