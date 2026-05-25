@@ -306,7 +306,6 @@ table.oa-table tbody tr:last-child td{border-bottom:none;}
       <div class="modal-body">
         
         <div class="fg-4">
-          <!-- Row 1: 4 columns -->
           <div class="ff"><label>Repaired By <span class="req">*</span></label><select id="f-repairedBy">
               <option value="">Select Repair Engineer</option>
               <option value="Gajenthiran">Gajenthiran</option>
@@ -318,20 +317,14 @@ table.oa-table tbody tr:last-child td{border-bottom:none;}
           <div class="ff"><label>Division <span class="req">*</span></label><select id="f-division2"><option value="">Select Division</option></select></div>
           <div class="ff"><label>Model</label><input type="text" id="f-model"/></div>
           
-          <!-- Row 2: Description (Full width) -->
-          <div class="ff span4"><label>Description</label><textarea id="f-description"></textarea></div>
-          
-          <!-- Row 3: Part No & Problem Observed -->
-          <div class="ff span2"><label>Part Number</label><input type="text" id="f-partNumber"/></div>
-          <div class="ff span2"><label>Problem Observed <span class="req">*</span></label><textarea id="f-problemObserved"></textarea></div>
+          <div class="ff"><label>Description</label><textarea id="f-description"></textarea></div>
+          <div class="ff"><label>Part Number</label><input type="text" id="f-partNumber"/></div>
+          <div class="ff"><label>Problem Observed <span class="req">*</span></label><textarea id="f-problemObserved"></textarea></div>
+          <div class="ff"><label>Components Used to Repair</label><textarea id="f-componentsUsed"></textarea></div>
 
-          <!-- Row 4: Components & Final Remarks -->
-          <div class="ff span2"><label>Components Used to Repair</label><textarea id="f-componentsUsed"></textarea></div>
-          <div class="ff span2"><label>Final Remarks</label><textarea id="f-finalRemarks"></textarea></div>
-
-          <!-- Row 5: Repaired Date & Status -->
-          <div class="ff span2"><label>Repaired Date</label><input type="date" id="f-repairedDate"/></div>
-          <div class="ff span2"><label>Status <span class="req">*</span></label>
+          <div class="ff"><label>Final Remarks</label><textarea id="f-finalRemarks"></textarea></div>
+          <div class="ff"><label>Repaired Date</label><input type="date" id="f-repairedDate"/></div>
+          <div class="ff"><label>Status <span class="req">*</span></label>
             <select id="f-status">
               <option value="">Select Status...</option>
               <option value="Open">Open</option>
@@ -339,9 +332,7 @@ table.oa-table tbody tr:last-child td{border-bottom:none;}
               <option value="Closed">Closed</option>
             </select>
           </div>
-
-          <!-- Extra Row: Remarks -->
-          <div class="ff span4"><label>Remarks</label><textarea id="f-remarks"></textarea></div>
+          <div class="ff"><label>Remarks</label><textarea id="f-remarks"></textarea></div>
         </div>
 
       </div>
