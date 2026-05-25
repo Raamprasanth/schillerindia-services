@@ -1,13 +1,21 @@
 const fs = require('fs');
 let s = fs.readFileSync('backend/server.js', 'utf8');
 
-if (!s.includes("app.use('/api/todr',")) {
+// Require the route
+if (!s.includes('const ctodrRoutes')) {
   s = s.replace(
-    "app.use('/api/pt/bir',                ptBirRoutes);",
-    "app.use('/api/pt/bir',                ptBirRoutes);\napp.use('/api/todr',                  todrRoutes);"
+    /const todrRoutes\s*=\s*require\('\.\/routes\/todrRoutes'\);/,
+    "const todrRoutes               = require('./routes/todrRoutes');\nconst ctodrRoutes              = require('./routes/ctodrRoutes');"
   );
-  fs.writeFileSync('backend/server.js', s, 'utf8');
-  console.log('Successfully injected /api/todr route!');
-} else {
-  console.log('Route already exists!');
 }
+
+// Mount the route
+if (!s.includes("app.use('/api/ctodr',")) {
+  s = s.replace(
+    "app.use('/api/todr',                  todrRoutes);",
+    "app.use('/api/todr',                  todrRoutes);\napp.use('/api/ctodr',                 ctodrRoutes);"
+  );
+}
+
+fs.writeFileSync('backend/server.js', s, 'utf8');
+console.log('Successfully injected /api/ctodr route!');
