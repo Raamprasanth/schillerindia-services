@@ -27,7 +27,7 @@
 }
 body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
 
-/* ── SIDEBAR ── */
+/* â”€â”€ SIDEBAR â”€â”€ */
 .sidebar{width:225px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 14px rgba(0,60,120,0.07);}
 .sidebar::-webkit-scrollbar{width:4px;}
 .sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
@@ -54,7 +54,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:10.5px;font-weight:600;transition:all 0.2s;}
 .logout-btn:hover{border-color:var(--red);color:var(--red);}
 
-/* ── MAIN ── */
+/* â”€â”€ MAIN â”€â”€ */
 .main{flex:1;display:flex;flex-direction:column;min-width:0;}
 .topbar{padding:14px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:var(--shadow);}
 .topbar-left h1{font-family:'Syne',sans-serif;font-size:19px;font-weight:700;color:var(--text);}
@@ -86,12 +86,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .np-foot a{font-size:11.5px;color:var(--accent);text-decoration:none;font-weight:600;}
 .content{flex:1;padding:24px 28px;overflow-y:auto;}
 
-/* ── ANIMATIONS ── */
+/* â”€â”€ ANIMATIONS â”€â”€ */
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
 .anim{animation:fadeUp 0.45s ease both;}
 .anim-1{animation-delay:0.05s;}.anim-2{animation-delay:0.1s;}.anim-3{animation-delay:0.15s;}.anim-4{animation-delay:0.2s;}.anim-5{animation-delay:0.25s;}.anim-6{animation-delay:0.3s;}
 
-/* ── WELCOME HERO ── */
+/* â”€â”€ WELCOME HERO â”€â”€ */
 .hero{background:linear-gradient(135deg,#002d5c 0%,#0068b5 55%,#0ea5e9 100%);border-radius:16px;padding:26px 30px;margin-bottom:22px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:20px;box-shadow:0 4px 24px rgba(0,104,181,0.3);}
 .hero::before{content:'';position:absolute;top:-60px;right:-40px;width:280px;height:280px;border-radius:50%;background:rgba(255,255,255,0.05);pointer-events:none;}
 .hero::after{content:'';position:absolute;bottom:-80px;right:120px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.04);pointer-events:none;}
@@ -106,7 +106,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .live-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;animation:blink 1.5s infinite;}
 @keyframes blink{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(1.3);}}
 
-/* ── STATS GRID ── */
+/* â”€â”€ STATS GRID â”€â”€ */
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
 .stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:var(--shadow);cursor:pointer;}
 .stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
@@ -141,7 +141,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .sbf-amber{background:linear-gradient(90deg,var(--amber),#d97706);}
 .sbf-purple{background:linear-gradient(90deg,var(--purple),#7c3aed);}
 
-/* ── PANELS ── */
+/* â”€â”€ PANELS â”€â”€ */
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
 .grid-3{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:18px;}
 .panel{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);}
@@ -151,7 +151,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .panel-action:hover{color:var(--accent2);}
 .panel-body{padding:18px;}
 
-/* ── TABLE ── */
+/* â”€â”€ TABLE â”€â”€ */
 .mini-table{width:100%;border-collapse:collapse;}
 .mini-table th{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;padding:0 10px 10px;text-align:left;border-bottom:1px solid var(--border);}
 .mini-table td{padding:10px;font-size:12.5px;border-bottom:1px solid rgba(0,60,120,0.05);color:var(--text);vertical-align:middle;}
@@ -159,7 +159,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .mini-table tbody tr{cursor:pointer;transition:background 0.13s;}
 .mini-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
 
-/* ── ACTIVITY FEED ── */
+/* â”€â”€ ACTIVITY FEED â”€â”€ */
 .activity-item{display:flex;align-items:flex-start;gap:11px;padding:11px 0;border-bottom:1px solid rgba(0,60,120,0.05);}
 .activity-item:last-child{border-bottom:none;}
 .a-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
@@ -167,7 +167,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .a-text strong{color:var(--text);font-weight:600;}
 .a-time{font-size:10.5px;color:var(--muted);margin-top:2px;font-family:'JetBrains Mono',monospace;}
 
-/* ── PILLS ── */
+/* â”€â”€ PILLS â”€â”€ */
 .s-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:700;white-space:nowrap;}
 .s-pill::before{content:'';width:5px;height:5px;border-radius:50%;display:block;}
 .sp-open{background:var(--amber-bg);color:var(--amber);}.sp-open::before{background:var(--amber);}
@@ -175,7 +175,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .sp-pending{background:rgba(91,33,182,0.1);color:var(--purple);}.sp-pending::before{background:var(--purple);}
 .sp-active{background:var(--teal-bg);color:var(--teal);}.sp-active::before{background:var(--teal);}
 
-/* ── PROGRESS RING ── */
+/* â”€â”€ PROGRESS RING â”€â”€ */
 .ring-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px 10px;}
 .ring-svg{transform:rotate(-90deg);}
 .ring-label{text-align:center;margin-top:12px;}
@@ -183,13 +183,13 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .ring-sub{font-size:10px;color:var(--muted);margin-top:2px;}
 .rings-row{display:flex;gap:10px;justify-content:space-around;padding:16px 10px;}
 
-/* ── QUICK LINKS ── */
+/* â”€â”€ QUICK LINKS â”€â”€ */
 .quick-links{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .quick-link{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;border:1.5px solid var(--border);text-decoration:none;color:var(--soft);font-size:12.5px;font-weight:600;transition:all 0.2s;background:var(--surface);}
 .quick-link:hover{border-color:var(--accent);color:var(--accent);background:var(--accent3);transform:translateY(-1px);box-shadow:var(--shadow);}
 .ql-ico{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
 
-/* ── PERFORMANCE CARD ── */
+/* â”€â”€ PERFORMANCE CARD â”€â”€ */
 .perf-card{background:linear-gradient(145deg,var(--surface),var(--surface2));border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:var(--shadow);}
 .perf-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .perf-title{font-size:11px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--soft);}
@@ -202,13 +202,13 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .pm-lbl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);margin-bottom:4px;}
 .pm-val{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);}
 
-/* ── BUTTONS ── */
+/* â”€â”€ BUTTONS â”€â”€ */
 .btn{padding:8px 16px;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;}
 .btn-primary{background:var(--accent);color:#fff;}.btn-primary:hover{background:var(--accent2);}
 .btn-outline{background:none;border:1.5px solid var(--border);color:var(--soft);}.btn-outline:hover{border-color:var(--accent);color:var(--accent);}
 .btn-sm{padding:6px 13px;font-size:12px;border-radius:7px;}
 
-/* ── MINI CHART ── */
+/* â”€â”€ MINI CHART â”€â”€ */
 .bar-chart-row{display:flex;align-items:flex-end;gap:6px;height:64px;padding:0 2px;}
 .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;}
 .bar{width:100%;border-radius:4px 4px 0 0;transition:height 0.8s ease;}
@@ -217,7 +217,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .cl-item{display:flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:var(--soft);}
 .cl-dot{width:9px;height:9px;border-radius:3px;}
 
-/* ── TOAST ── */
+/* â”€â”€ TOAST â”€â”€ */
 .toast-wrap{position:fixed;bottom:20px;right:20px;z-index:700;display:flex;flex-direction:column;gap:7px;}
 .toast{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:11px 15px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:9px;min-width:230px;animation:fadeUp 0.28s ease;box-shadow:0 8px 22px rgba(0,0,0,0.1);}
 .toast.ok{border-color:rgba(4,120,87,0.35);}.toast.ok .td{background:var(--green);}
@@ -244,7 +244,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
 <div class="toast-wrap" id="toast-wrap"></div>
 
-<!-- ═══════════ SIDEBAR ═══════════ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â• SIDEBAR â•â•â•â•â•â•â•â•â•â•â• -->
 <aside class="sidebar">
   <div class="sidebar-header">
     <div class="logo-wrap">
@@ -259,6 +259,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     <div class="nav-sec">Service Records</div>
     <a class="nav-item" href="ptcall.html"><span class="ico">&#128222;</span> Call Register</a>
     <a class="nav-item" href="ptclose.html"><span class="ico">&#9989;</span> Closed Calls</a>
+    <a class="nav-item" href="ptour.html"><span class="ico">&#128663;</span> Tour Summary</a>
 
     <div class="nav-sec">Inventory</div>
     <a class="nav-item" href="ptbir.html"><span class="ico">&#128203;</span> BIR LIST</a>
@@ -276,7 +277,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   </div>
 </aside>
 
-<!-- ═══════════ MAIN ═══════════ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â• MAIN â•â•â•â•â•â•â•â•â•â•â• -->
 <div class="main">
   <!-- TOPBAR -->
   <div class="topbar">
@@ -291,7 +292,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         
         <div class="notif-panel" id="notif-panel">
           <div class="np-head"><span class="np-head-title">&#128276; Announcements</span><button class="np-mark" onclick="markAllRead()">Mark all read</button></div>
-          <div class="np-list" id="np-list"><div class="np-empty">Loading…</div></div>
+          <div class="np-list" id="np-list"><div class="np-empty">Loadingâ€¦</div></div>
           <div class="np-foot"><a href="#">View all</a></div>
         </div>
       </div>
@@ -491,7 +492,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 const API = '';
 let STATS = { calls:0, closedCalls:0, pendingAct:0, closedAct:0, bir:0, closedBir:0 };
 
-/* ── INIT ── */
+/* â”€â”€ INIT â”€â”€ */
 (function init(){
   const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
   const name = u.name || 'User';
@@ -515,7 +516,7 @@ function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
 function fmtDate(d){ if(!d)return '&#8212;'; const p=String(d).split('T')[0].split('-'); return p.length<3?String(d):p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0]; }
 function showToast(msg,type='ok'){ const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="td"></span>'+msg;w.appendChild(el);setTimeout(()=>el.remove(),3400); }
 
-/* ── LOAD ALL DATA ── */
+/* â”€â”€ LOAD ALL DATA â”€â”€ */
 async function loadAllData(){
   showToast('Refreshing dashboard...','info');
   window.LIVE_DATA = { calls:[], closedCalls:[], bir:[], closedBir:[] };
@@ -545,7 +546,7 @@ async function safeFetch(url, fallback=[]){
   }
 }
 
-/* ── INDIVIDUAL LOADERS ── */
+/* â”€â”€ INDIVIDUAL LOADERS â”€â”€ */
 async function loadCalls(){
   let data = await safeFetch('/api/pt/calls', generateDemoData('calls', 8));
   if(data && data.data) data = data.data;
@@ -600,7 +601,7 @@ async function loadClosedBIR(){
   setBar('bar-closed-bir', Math.min(100, Math.round((STATS.closedBir/(STATS.closedBir+STATS.bir||1))*100)));
 }
 
-/* ── HERO UPDATE ── */
+/* â”€â”€ HERO UPDATE â”€â”€ */
 function updateHero(){
   const total = STATS.calls + STATS.closedCalls + STATS.pendingAct + STATS.closedAct + STATS.bir + STATS.closedBir;
   const closed = STATS.closedCalls + STATS.closedAct + STATS.closedBir;
@@ -612,7 +613,7 @@ function updateHero(){
   (document.getElementById('hero-rate')||{}).textContent = rate+'%';
 }
 
-/* ── PERFORMANCE ── */
+/* â”€â”€ PERFORMANCE â”€â”€ */
 function updatePerformance(){
   const total = STATS.calls + STATS.closedCalls + STATS.bir + STATS.closedBir;
   const closed = STATS.closedCalls + STATS.closedBir;
@@ -646,7 +647,7 @@ function updateChartBars(){
     </div>`).join('');
 }
 
-/* ── RINGS ── */
+/* â”€â”€ RINGS â”€â”€ */
 function renderRings(){
   const rings = [
     {label:'Calls',open:STATS.calls,closed:STATS.closedCalls,color:'#0068b5'},
@@ -673,7 +674,7 @@ function renderRings(){
   }).join('');
 }
 
-/* ── TABLE RENDERERS ── */
+/* â”€â”€ TABLE RENDERERS â”€â”€ */
 function statusPill(s){
   const map={'Open':'sp-open','Active':'sp-active','Closed':'sp-closed','Pending':'sp-pending','Completed':'sp-closed'};
   const cls = map[s] || 'sp-open';
@@ -708,7 +709,7 @@ function renderBIRTable(data){
   </tr>`).join('') : '<tr><td colspan="5" style="text-align:center;padding:28px;color:var(--muted);">No records found</td></tr>';
 }
 
-/* ── FEED ── */
+/* â”€â”€ FEED â”€â”€ */
 function renderFeed(){
   const events = [
     {dot:'var(--accent)',text:`<strong>Call Register</strong> - ${STATS.calls} active call${STATS.calls!==1?'s':''} assigned`,time:'Current'},
@@ -730,7 +731,7 @@ function renderFeed(){
     </div>`).join('');
 }
 
-/* ── DEMO DATA ── */
+/* â”€â”€ DEMO DATA â”€â”€ */
 function generateDemoData(type, count){
   const arr = [];
   const divs = ['PATIENT MONITORS','SAG','VENTILATOR','DEFIBRILLATOR','ECG'];
@@ -769,11 +770,11 @@ function generateDemoData(type, count){
   return arr;
 }
 
-/* ── HELPERS ── */
+/* â”€â”€ HELPERS â”€â”€ */
 function setVal(id, val){ const el=document.getElementById(id); if(el) el.textContent = val; }
 function setBar(id, pct){ const el=document.getElementById(id); if(el) setTimeout(()=>{el.style.width=Math.min(100,pct)+'%';}, 200); }
 
-/* ── EXPORT ── */
+/* â”€â”€ EXPORT â”€â”€ */
 function exportSummary(){
   const lines = [
     'SchillerIndia Services - Dashboard Summary',
@@ -796,7 +797,7 @@ function exportSummary(){
 
 function logout(){ localStorage.clear(); window.location.href='login.html'; }
 
-/* ── NOTIFICATION PANEL ── */
+/* â”€â”€ NOTIFICATION PANEL â”€â”€ */
 const NOTIF_READ_KEY='si_notif_read_pt';
 let notifData=[];
 function getReadIds(){try{return JSON.parse(localStorage.getItem(NOTIF_READ_KEY)||'[]');}catch(e){return[];}}
@@ -841,7 +842,7 @@ function toggleNotifPanel(){
 }
 document.addEventListener('click',e=>{if(!e.target.closest('.notif-wrap'))document.getElementById('notif-panel').classList.remove('open');});
 
-/* ── WEEKLY CHART ── */
+/* â”€â”€ WEEKLY CHART â”€â”€ */
 function updateWeeklyChart(){
   const ctx = document.getElementById('weeklyChart');
   if(!ctx) return;
