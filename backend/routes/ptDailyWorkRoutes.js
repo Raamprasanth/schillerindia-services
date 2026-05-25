@@ -70,4 +70,34 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.put('/:id', async (req, res) => {
+  try {
+    const filter = { _id: req.params.id, ...ownerFilter(req.user) };
+    const body = req.body || {};
+    
+    if (!body.date || !body.activity || !body.fromTime || !body.toTime) {
+      return res.status(400).json({ message: 'Required fields missing.' });
+    }
+
+    const doc = await PtDailyWork.findOneAndUpdate(
+      filter,
+      {
+        date: body.date,
+        activity: body.activity,
+        fromTime: body.fromTime,
+        toTime: body.toTime,
+        team: body.team,
+        dayTotal: body.dayTotal
+      },
+      { new: true }
+    );
+
+    if (!doc) return res.status(404).json({ message: 'Daily work record not found.' });
+    res.json(doc);
+  } catch (err) {
+    console.error('[PUT /api/ptdw/:id]', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
 module.exports = router;

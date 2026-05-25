@@ -81,6 +81,7 @@ const ptCloseRoutes            = require('./routes/ptCloseRoutes');
 const ptActivityRoutes         = require('./routes/ptActivityRoutes');
 const ptBirRoutes              = require('./routes/ptBirRoutes');
 const ptClosedBirRoutes        = require('./routes/ptClosedBirRoutes');
+const todrRoutes               = require('./routes/todrRoutes');
 
 // Ã¢â€â‚¬Ã¢â€â‚¬ ADMIN ACTIVITY REGISTER ROUTES Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 const acallRoutes  = require('./routes/acallRoutes');

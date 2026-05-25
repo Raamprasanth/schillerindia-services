@@ -100,18 +100,20 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .kb-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);}
 .kb-subtitle{font-size:12px;color:var(--muted);margin-top:2px;}
 .kb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
-.kb-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow);transition:transform 0.2s, box-shadow 0.2s;display:flex;flex-direction:column;position:relative;overflow:hidden;}
-.kb-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--accent);}
+.kb-card{background:var(--card);border:2px solid var(--border);border-radius:14px;padding:22px 20px;box-shadow:var(--shadow);transition:transform 0.2s, box-shadow 0.2s;display:flex;flex-direction:column;position:relative;overflow:hidden;}
+.kb-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:var(--accent);}
 .kb-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--green);border-radius:4px 0 0 4px;}
 .kb-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
 .kb-num{font-size:10px;font-weight:800;color:var(--accent);background:var(--accent3);padding:3px 8px;border-radius:12px;}
 .kb-time{font-size:11.5px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:4px;}
 .kb-time .ico{color:var(--soft);font-size:13px;}
-.kb-activity{font-size:13.5px;font-weight:600;color:var(--text);line-height:1.5;flex:1;}
+.kb-activity{font-size:15px;font-weight:800;color:var(--text);line-height:1.5;flex:1;}
 .kb-foot{margin-top:14px;padding-top:12px;border-top:1px dashed var(--border);display:flex;justify-content:space-between;align-items:center;}
 .kb-user{font-size:10.5px;color:var(--muted);display:flex;align-items:center;gap:5px;}
 .kb-user span{background:var(--surface2);padding:2px 6px;border-radius:6px;color:var(--soft);font-weight:600;}
-.kb-del{background:rgba(185,28,28,0.08);color:var(--red);border:1px solid rgba(185,28,28,0.15);width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;}
+.kb-del{background:rgba(185,28,28,0.08);color:var(--red);border:1px solid rgba(185,28,28,0.15);width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;}
+.kb-edit{background:rgba(0,104,181,0.08);color:var(--accent);border:1px solid rgba(0,104,181,0.15);width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;}
+.kb-edit:hover{background:var(--accent);color:#fff;}
 .kb-del:hover{background:var(--red);color:#fff;}
 .kb-empty{text-align:center;padding:60px 20px;background:var(--card);border:1.5px dashed var(--border);border-radius:14px;}
 .kb-empty-ico{font-size:32px;color:var(--muted);margin-bottom:10px;opacity:0.5;}
@@ -228,7 +230,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         <span id="dw-total-hours" style="color:var(--accent);">Total: 0h 0m</span>
       </div>
       <div id="dw-rows-container"></div>
-      <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:5px;" onclick="addDwRow()">+ Add Row</button>
+      <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:5px;" id="add-row-btn" onclick="addDwRow()">+ Add Row</button>
     </div>
     <div class="modal-foot"><div class="msg" id="dw-msg"></div><button class="btn btn-outline" onclick="closeDwModal()">Cancel</button><button class="btn btn-primary" id="save-btn" onclick="saveDw()">&#128190; Save Entry</button></div>
   </div>
@@ -236,6 +238,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
 <script>
 let currentDate = new Date();
+let editId = null;
 let currentMonth = currentDate.getMonth();
 let currentYear = currentDate.getFullYear();
 // Format timezone correct date string for today
@@ -365,19 +368,50 @@ function renderKanban() {
       <div class="kb-activity">${esc(t.activity||'')}</div>
       <div class="kb-foot">
         <div class="kb-user">By <span>${esc(t.addedBy||'Employee')}</span></div>
-        <button class="kb-del" onclick="deleteDw(${t._origIdx})" title="Delete Entry">&#128465;</button>
+        <div style="display:flex;gap:6px;">
+          <button class="kb-edit" onclick="editDw(${t._origIdx})" title="Edit Entry">&#9998;</button>
+          <button class="kb-del" onclick="deleteDw(${t._origIdx})" title="Delete Entry">&#128465;</button>
+        </div>
       </div>
     </div>
   `).join('');
 }
 
 function openDwModal(){ 
+  editId = null;
   clearForm(); 
   document.getElementById('dw-date').value = selectedDateStr; 
   document.getElementById('dw-rows-container').innerHTML = '';
   addDwRow();
+  document.querySelector(".modal-title").innerHTML = "&#128197; Add New Daily Work";
+  document.getElementById("save-btn").innerHTML = "&#128190; Save Entry";
+  document.getElementById("add-row-btn").style.display = "flex";
   document.getElementById('dw-overlay').classList.add('open'); 
   setTimeout(()=>document.querySelector('.row-act')?.focus(),50); 
+}
+
+function editDw(idx) {
+  editId = idx;
+  const list = getDwList();
+  const entry = list[idx];
+  if(!entry) return;
+  
+  clearForm();
+  document.getElementById("dw-date").value = entry.date;
+  document.getElementById("dw-team").value = entry.team || "";
+  document.getElementById("dw-rows-container").innerHTML = "";
+  addDwRow();
+  
+  setTimeout(() => {
+    document.querySelector(".row-act").value = entry.activity;
+    document.querySelector(".row-from").value = entry.fromTime;
+    document.querySelector(".row-to").value = entry.toTime;
+    calcTotalHours();
+    document.querySelector(".modal-title").innerHTML = "&#9998; Edit Daily Work";
+    document.getElementById("save-btn").innerHTML = "&#128190; Update Entry";
+    document.getElementById("add-row-btn").style.display = "none";
+    document.getElementById("dw-overlay").classList.add("open"); 
+  }, 50);
 }
 function closeDwModal(){ document.getElementById('dw-overlay').classList.remove('open'); }
 function clearForm(){ ['dw-date','dw-team'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';}); document.getElementById('dw-rows-container').innerHTML=''; document.getElementById('dw-total-hours').textContent='Total: 0h 0m'; showMsg(''); }
@@ -409,17 +443,29 @@ function saveDw(){
     let totalDayMins = calcTotalHours();
     let durationFormatted = document.getElementById('dw-total-hours').textContent.replace('Total: ', '');
 
-    entries.reverse().forEach(ent => {
-       list.unshift({
-          date, team, 
-          activity: ent.activity, 
-          fromTime: ent.fromTime, 
-          toTime: ent.toTime,
-          dayTotal: durationFormatted, // Store total for reference if needed
-          addedBy: u.name || 'Employee',
-          createdAt: new Date().toISOString()
+    if (editId !== null) {
+       list[editId] = {
+          ...list[editId],
+          date, team,
+          activity: entries[0].activity,
+          fromTime: entries[0].fromTime,
+          toTime: entries[0].toTime,
+          dayTotal: durationFormatted
+       };
+       editId = null;
+    } else {
+       entries.reverse().forEach(ent => {
+          list.unshift({
+             date, team, 
+             activity: ent.activity, 
+             fromTime: ent.fromTime, 
+             toTime: ent.toTime,
+             dayTotal: durationFormatted, // Store total for reference if needed
+             addedBy: u.name || 'Employee',
+             createdAt: new Date().toISOString()
+          });
        });
-    });
+    }
     
     setDwList(list);
     
