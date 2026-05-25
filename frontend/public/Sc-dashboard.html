@@ -295,7 +295,7 @@ table.mini-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
   <div style="padding:7px 13px 0;"><span class="sc-badge">Service Coordinator</span></div>
   <nav class="sidebar-nav">
     <div class="nav-sec">Main</div>
-    <a class="nav-item active" href="sc-dashboard.html"><span class="ico">&#128202;</span> Dashboard</a>
+    <a class="nav-item active" href="Sc-dashboard.html"><span class="ico">&#128202;</span> Dashboard</a>
     <a class="nav-item" id="sc-msg-nav" href="#messages" onclick="showScMessages(event)"><span class="ico">&#128172;</span> Messaging <span class="nav-badge" id="sc-msg-badge" style="display:none;">0</span></a>
 
     <div class="nav-sec">Work Orders</div>
@@ -662,7 +662,7 @@ function showScDashboard(){
     if (el !== workspace) el.style.display = '';
   });
   document.querySelectorAll('.sidebar .nav-item').forEach(a => a.classList.remove('active'));
-  const dash = document.querySelector('.sidebar .nav-item[href="sc-dashboard.html"]');
+  const dash = document.querySelector('.sidebar .nav-item[href="Sc-dashboard.html"]');
   if (dash) dash.classList.add('active');
 }
 
