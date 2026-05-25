@@ -295,8 +295,14 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
           <input type="date" id="m-calldate" required/>
         </div>
         <div class="ff">
+          <label>Region <span class="req">*</span></label>
+          <select id="m-region" required onchange="onRegionChange()">
+            <option value="">Select Region-</option>
+          </select>
+        </div>
+        <div class="ff">
           <label>Branch <span class="req">*</span></label>
-          <select id="m-region" required onchange="onBranchChange()">
+          <select id="m-branch" required onchange="onBranchChange()">
             <option value="">Select Branch-</option>
           </select>
         </div>
@@ -538,6 +544,7 @@ let pendingDeleteId = null;
 let editMode = false;
 let CURRENT_USER = {};
 let BRANCH_OPTIONS = [];
+let REGION_OPTIONS = [];
 let MODEL_OPTIONS = [];
 
 /* -- INIT -- */
@@ -639,25 +646,61 @@ async function loadBranchOptions(){
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const payload = await res.json();
     const rows = Array.isArray(payload?.data) ? payload.data : Array.isArray(payload) ? payload : [];
-    BRANCH_OPTIONS = Array.from(new Set(rows.map(b => b.name || b.branchName || '').filter(Boolean)));
+    BRANCH_OPTIONS = rows.map(b => ({
+      name: String(b.name || b.branchName || '').trim(),
+      region: String(b.region || '').trim()
+    })).filter(b => b.name);
+    REGION_OPTIONS = Array.from(new Set(BRANCH_OPTIONS.map(b => b.region).filter(Boolean))).sort((a,b) => a.localeCompare(b));
+    renderRegionOptions();
     renderBranchOptions();
   }catch(e){
     if(e.message === 'Unauthorized') return;
     BRANCH_OPTIONS = [];
+    REGION_OPTIONS = [];
+    renderRegionOptions();
     renderBranchOptions();
   }
 }
 
-function renderBranchOptions(selected = ''){
+function optionHtml(value){
+  return `<option value="${esc(value)}">${esc(value)}</option>`;
+}
+
+function getRecordRegion(branch = '', region = ''){
+  const cleanRegion = String(region || '').trim();
+  if(cleanRegion) return cleanRegion;
+  const match = BRANCH_OPTIONS.find(b => b.name === String(branch || '').trim());
+  return match ? match.region : '';
+}
+
+function renderRegionOptions(selected = ''){
   const sel = document.getElementById('m-region');
   if(!sel) return;
-  sel.innerHTML = `<option value="">Select Branch-</option>` + BRANCH_OPTIONS.map(name => `<option value="${esc(name)}">${esc(name)}</option>`).join('');
-  if(selected && BRANCH_OPTIONS.includes(selected)) sel.value = selected;
-  else if(selected) sel.value = selected;
+  let options = REGION_OPTIONS.map(optionHtml).join('');
+  if(selected && !REGION_OPTIONS.includes(selected)) options += optionHtml(selected);
+  sel.innerHTML = `<option value="">Select Region-</option>` + options;
+  if(selected) sel.value = selected;
+}
+
+function renderBranchOptions(selected = ''){
+  const sel = document.getElementById('m-branch');
+  if(!sel) return;
+  const region = (document.getElementById('m-region')?.value || '').trim();
+  const branches = BRANCH_OPTIONS.filter(b => !region || b.region === region).map(b => b.name);
+  const uniqueBranches = Array.from(new Set(branches)).sort((a,b) => a.localeCompare(b));
+  let options = uniqueBranches.map(optionHtml).join('');
+  if(selected && !uniqueBranches.includes(selected)) options += optionHtml(selected);
+  sel.innerHTML = `<option value="">Select Branch-</option>` + options;
+  if(selected) sel.value = selected;
+}
+
+function onRegionChange(selectedBranch = ''){
+  renderBranchOptions(selectedBranch);
+  onBranchChange();
 }
 
 async function onBranchChange(selectedEngineer = '') {
-  const branch = document.getElementById('m-region').value;
+  const branch = document.getElementById('m-branch').value;
   const engSel = document.getElementById('m-engineer');
   if(!branch) {
     engSel.innerHTML = '<option value="">Select Engineer-</option>';
@@ -821,6 +864,7 @@ async function openAddModal(){
   document.getElementById('top-division').textContent = div || '-';
   document.getElementById('m-calldate').value = new Date().toISOString().split('T')[0];
   document.getElementById('m-engineer').innerHTML = '<option value="">Select Engineer-</option>';
+  renderRegionOptions();
   renderBranchOptions();
   await loadDivisionModels(div);
   clearModalMsg();
@@ -837,8 +881,10 @@ async function openEditModal(id){
   set('m-division', d.division);
   (document.getElementById('top-division')||{}).textContent = d.division || '-';
   await loadDivisionModels(d.division, d.model);
-  renderBranchOptions(d.region || d.branch || '');
-  set('m-region', d.region || d.branch);
+  const recordBranch = d.branch || d.region || '';
+  const recordRegion = getRecordRegion(recordBranch, d.region);
+  renderRegionOptions(recordRegion);
+  renderBranchOptions(recordBranch);
   set('m-calldate', (d.callDate||'').slice(0,10));
   set('m-sceng', d.scEng);
   document.getElementById('top-sceng').textContent = d.scEng || '-';
@@ -855,7 +901,7 @@ async function openEditModal(id){
 function closeAddModal(){ document.getElementById('add-modal').classList.remove('open'); }
 
 function clearModalForm(){
-  ['m-region','m-engineer','m-calltype','m-commtype','m-status'].forEach(id => {
+  ['m-region','m-branch','m-engineer','m-calltype','m-commtype','m-status'].forEach(id => {
     const el = document.getElementById(id);
     if(el) el.value = '';
   });
@@ -863,7 +909,7 @@ function clearModalForm(){
   const div = CURRENT_USER.division || '';
   document.getElementById('m-division').value = div;
   (document.getElementById('top-division')||{}).textContent = div || '-';
-  ['m-division','m-region','m-calldate','m-engineer','m-model','m-calltype','m-status','m-remarks'].forEach(id => document.getElementById(id).classList.remove('err'));
+  ['m-division','m-region','m-branch','m-calldate','m-engineer','m-model','m-calltype','m-status','m-remarks'].forEach(id => document.getElementById(id).classList.remove('err'));
 }
 
 function clearModalMsg(){
@@ -876,7 +922,7 @@ function showModalErr(msg){
 }
 
 async function saveEntry(){
-  const required = ['m-division','m-region','m-calldate','m-engineer','m-model','m-calltype','m-status','m-remarks'];
+  const required = ['m-division','m-region','m-branch','m-calldate','m-engineer','m-model','m-calltype','m-status','m-remarks'];
   let err = false;
   required.forEach(id=>{const el=document.getElementById(id);if(!el)return;if(!el.value.trim()){el.classList.add('err');err=true;}else el.classList.remove('err');});
   if(err){ showModalErr('Please fill all required fields.'); return; }
@@ -885,7 +931,7 @@ async function saveEntry(){
   const payload = {
     division:   document.getElementById('m-division').value,
     region:     document.getElementById('m-region').value,
-    branch:     document.getElementById('m-region').value,
+    branch:     document.getElementById('m-branch').value,
     callDate:   document.getElementById('m-calldate').value,
     entryDate:  new Date().toISOString().split('T')[0],
     scEng:      document.getElementById('m-sceng').value,
@@ -1021,10 +1067,6 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeAddModal();
 <script src="tab-fix.js"></script>
 </body>
 </html>
-
-
-
-
 
 
 

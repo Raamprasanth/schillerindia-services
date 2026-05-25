@@ -191,7 +191,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     <div class="modal-body">
       <div class="ff"><label>Call Date *</label><input type="date" id="m-callDate"/></div>
       <div class="ff"><label>Division</label><input type="text" id="m-division"/></div>
-      <div class="ff"><label>Region / Branch</label><input type="text" id="m-region"/></div>
+      <div class="ff"><label>Region</label><select id="m-region" onchange="onRegionChange()"><option value="">Select Region-</option></select></div>
+      <div class="ff"><label>Branch</label><select id="m-branch"><option value="">Select Branch-</option></select></div>
       <div class="ff"><label>SC Eng</label><input type="text" id="m-scEng"/></div>
       <div class="ff"><label>Engineer</label><input type="text" id="m-engineer"/></div>
       <div class="ff"><label>Customer</label><input type="text" id="m-customer"/></div>
@@ -210,17 +211,53 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 <script>
 const API='';
 let allCalls=[], filtered=[];
+let BRANCH_OPTIONS=[], REGION_OPTIONS=[];
 (function init(){
   const role=(sessionStorage.getItem('schiller_role')||'').toLowerCase();
   if(role && role!=='admin' && role!=='superadmin'){window.location.href='login.html';return;}
   const u=JSON.parse(sessionStorage.getItem('schiller_user')||'{}');
   if(u.name){document.getElementById('admin-name').textContent=u.name;document.getElementById('admin-avatar').textContent=u.name.charAt(0).toUpperCase();}
   document.getElementById('topbar-date').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  loadBranchOptions();
   loadData();
 })();
 function getToken(){return sessionStorage.getItem('schiller_token')||'';}
 function authHeaders(){return {'Content-Type':'application/json',Authorization:'Bearer '+getToken()};}
 function handleUnauth(res){if(res.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';throw new Error('Unauthorized');}}
+function optionHtml(value){return `<option value="${esc(value)}">${esc(value)}</option>`;}
+async function loadBranchOptions(){
+  try{
+    const res=await fetch(`${API}/api/branches`,{headers:authHeaders()});
+    handleUnauth(res);
+    const payload=await res.json();
+    if(!res.ok) throw new Error(payload.message||'HTTP '+res.status);
+    const rows=Array.isArray(payload?.data)?payload.data:Array.isArray(payload)?payload:[];
+    BRANCH_OPTIONS=rows.map(b=>({name:String(b.name||b.branchName||'').trim(),region:String(b.region||'').trim()})).filter(b=>b.name);
+    REGION_OPTIONS=Array.from(new Set(BRANCH_OPTIONS.map(b=>b.region).filter(Boolean))).sort((a,b)=>a.localeCompare(b));
+  }catch(e){
+    if(e.message==='Unauthorized') return;
+    BRANCH_OPTIONS=[];REGION_OPTIONS=[];
+  }
+  renderRegionOptions();
+  renderBranchOptions();
+}
+function renderRegionOptions(selected=''){
+  const sel=document.getElementById('m-region');if(!sel)return;
+  let options=REGION_OPTIONS.map(optionHtml).join('');
+  if(selected&&!REGION_OPTIONS.includes(selected)) options+=optionHtml(selected);
+  sel.innerHTML='<option value="">Select Region-</option>'+options;
+  if(selected) sel.value=selected;
+}
+function renderBranchOptions(selected=''){
+  const sel=document.getElementById('m-branch');if(!sel)return;
+  const region=(document.getElementById('m-region')?.value||'').trim();
+  const branches=Array.from(new Set(BRANCH_OPTIONS.filter(b=>!region||b.region===region).map(b=>b.name))).sort((a,b)=>a.localeCompare(b));
+  let options=branches.map(optionHtml).join('');
+  if(selected&&!branches.includes(selected)) options+=optionHtml(selected);
+  sel.innerHTML='<option value="">Select Branch-</option>'+options;
+  if(selected) sel.value=selected;
+}
+function onRegionChange(){renderBranchOptions();}
 async function loadData(){
   document.getElementById('call-tbody').innerHTML='<tr><td colspan="14" style="text-align:center;padding:40px;color:var(--muted);">Loading...</td></tr>';
   try{
@@ -280,11 +317,11 @@ function renderTable(){
     <td><span class="status-pill ${statusCls(d.status)}">${esc(d.status||'Open')}</span></td>
   </tr>`).join('');
 }
-function openAddModal(){document.getElementById('m-callDate').value=new Date().toISOString().slice(0,10);document.getElementById('add-modal').classList.add('open');}
+function openAddModal(){document.getElementById('m-callDate').value=new Date().toISOString().slice(0,10);renderRegionOptions();renderBranchOptions();document.getElementById('add-modal').classList.add('open');}
 function closeAddModal(){document.getElementById('add-modal').classList.remove('open');}
 async function saveAdminCall(){
   if(!document.getElementById('m-callDate').value){showToast('Call date is required.');return;}
-  const payload={entryDate:new Date().toISOString().slice(0,10),callDate:v('m-callDate'),division:v('m-division'),region:v('m-region'),branch:v('m-region'),scEng:v('m-scEng'),engineer:v('m-engineer'),customer:v('m-customer'),model:v('m-model'),callType:v('m-callType'),commType:v('m-commType'),duration:v('m-duration'),status:v('m-status'),remarks:v('m-remarks')};
+  const payload={entryDate:new Date().toISOString().slice(0,10),callDate:v('m-callDate'),division:v('m-division'),region:v('m-region'),branch:v('m-branch'),scEng:v('m-scEng'),engineer:v('m-engineer'),customer:v('m-customer'),model:v('m-model'),callType:v('m-callType'),commType:v('m-commType'),duration:v('m-duration'),status:v('m-status'),remarks:v('m-remarks')};
   const btn=document.getElementById('save-btn');btn.disabled=true;btn.textContent='Saving...';
   try{
     const res=await fetch(`${API}/api/admin/calls`,{method:'POST',headers:authHeaders(),body:JSON.stringify(payload)});
@@ -306,4 +343,3 @@ function logout(){sessionStorage.clear(); localStorage.clear();window.location.h
 </script>
 </body>
 </html>
-
