@@ -911,6 +911,18 @@ function lockFrozenSections(){
   });
 }
 
+function syncCnrTechnewsLock(){
+  const circ = document.getElementById('f-cnr-circ');
+  const ref = document.getElementById('f-cnr-ref');
+  const date = document.getElementById('f-cnr-date');
+  if(!circ || !ref || !date) return;
+  const isNa = ['NA','N/A'].includes(String(circ.value || '').trim().toUpperCase());
+  [ref, date].forEach(el => {
+    if(isNa) el.value = '';
+    el.disabled = isNa;
+  });
+}
+
 // -- POPULATE DROPDOWNS FROM DB ------------------------------------------------
 async function populateDropdowns(){
   // Divisions
@@ -956,6 +968,7 @@ function openBIRModal(){
   document.getElementById('bir-form-msg').className='form-msg';
   document.getElementById('bir-modal').classList.add('show');
   lockFrozenSections();
+  syncCnrTechnewsLock();
 }
 
 function closeBIRModal(){document.getElementById('bir-modal').classList.remove('show');}
@@ -977,6 +990,7 @@ function editBIR(id){
   ['f-ts-date','f-ps-engineer','f-cnr-circ','f-cnr-ref','f-cnr-date','f-ps-date','f-approved-date'].forEach(fid=>{
     const el=document.getElementById(fid); if(el) el.disabled = false;
   });
+  syncCnrTechnewsLock();
 }
 
 async function saveBIR(){
@@ -987,6 +1001,7 @@ async function saveBIR(){
   const inward=document.getElementById('f-unit-inward').value;
   const status=document.getElementById('f-status').value;
   if(!div||!model||!qty||!inward||!status){msg.className='form-msg err-msg';msg.textContent='Please fill all required fields (Division, Model, Received Qty, Inward Date, Status).';return;}
+  syncCnrTechnewsLock();
   const btn=document.getElementById('bir-save-btn');btn.disabled=true;btn.textContent='Saving...';
   const payload={};
   FIELDS.forEach(f=>{const el=document.getElementById(FIELD_MAP[f]);if(el)payload[f]=el.value;});
@@ -1086,6 +1101,7 @@ function exportCSV(){
 function logout(){localStorage.clear();window.location.href='login.html';}
 
 // -- INIT ----------------------------------------------------------------------
+document.getElementById('f-cnr-circ')?.addEventListener('change', syncCnrTechnewsLock);
 loadData();
 populateDropdowns();
 </script>
