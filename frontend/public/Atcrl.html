@@ -91,7 +91,53 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .fb-inp,.fb-sel{padding:7px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface2);outline:none;transition:border-color 0.2s;cursor:pointer;}
 .fb-inp{cursor:text;}
 .fb-inp:focus,.fb-sel:focus{border-color:var(--crl);}
-.fb-right{margin-left:auto;display:flex;gap:8px;align-items:flex-end;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+.sidebar{width:230px;min-height:100vh;background:#ffffff;border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 14px rgba(0,60,120,0.06);}
+.sidebar-header{padding:18px 18px 14px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#450a0a,#b91c1c);}
+.logo-wrap{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:36px;height:36px;background:rgba(255,255,255,0.15);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#fff;border:1.5px solid rgba(255,255,255,0.25);}
+.logo-text{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#fff;line-height:1.2;}
+.logo-text span{display:block;font-size:10px;color:rgba(255,255,255,0.55);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;}
+.crl-badge{margin:8px 12px 0;padding:3px 10px;border-radius:20px;font-size:9.5px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;text-align:center;display:inline-block;background:rgba(5,150,105,0.2);color:#6ee7b7;border:1px solid rgba(5,150,105,0.4);}
+.sidebar-nav{flex:1;padding:10px 8px;}
+.nav-section{font-size:9px;font-weight:700;color:#6b8ca8;letter-spacing:0.12em;text-transform:uppercase;padding:10px 8px 4px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:#4a6a8a;font-size:12.5px;font-weight:500;cursor:pointer;transition:all 0.18s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;}
+.nav-item:hover{background:#eaf1f6;color:#1a2a3a;}
+.nav-item.active{background:var(--crl-soft);color:var(--crl);font-weight:700;border-left:3px solid var(--crl);padding-left:8px;}
+.nav-group-toggle{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;color:#4a6a8a;font-size:12.5px;font-weight:500;cursor:pointer;transition:all 0.18s;margin-bottom:1px;border:none;background:none;width:100%;font-family:'Plus Jakarta Sans',sans-serif;}
+.nav-group-toggle .icon{margin-right:9px;}
+.nav-group-toggle .caret{transition:transform 0.2s;font-size:10px;}
+.nav-group-toggle.open .caret{transform:rotate(90deg);}
+.nav-children{display:none;padding-left:15px;}
+.nav-children.open{display:block;}
+.sidebar-footer{padding:12px 14px;border-top:1px solid var(--border);background:#f0fdf4;}
+.user-row{display:flex;align-items:center;gap:9px;}
+.user-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--crl),var(--crl2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
+.user-nm{font-size:12.5px;font-weight:600;color:#1a2a3a;}
+.user-rl{font-size:10px;color:#6b8ca8;}
+.logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:#6b8ca8;border-radius:7px;padding:4px 9px;cursor:pointer;font-size:10.5px;font-weight:600;transition:all 0.2s;}
+.logout-btn:hover{border-color:var(--red);color:var(--red);}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{padding:14px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:var(--shadow);}
+.breadcrumb{display:flex;align-items:center;gap:5px;font-size:10.5px;margin-bottom:3px;}
+.breadcrumb a{color:var(--muted);text-decoration:none;}
+.breadcrumb a:hover{color:var(--crl);}
+.breadcrumb .sep{color:var(--border2);}
+.topbar-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);}
+.content{flex:1;padding:22px 28px;overflow-y:auto;background:var(--bg);}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:15px 18px;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:13px 13px 0 0;}
+.sc-green::before{background:linear-gradient(90deg,#047857,#059669);}
+.sc-blue::before{background:linear-gradient(90deg,#0068b5,#2185d0);}
+.sc-purple::before{background:linear-gradient(90deg,#5b21b6,#7c3aed);}
+.sc-teal::before{background:linear-gradient(90deg,#0e7490,#0891b2);}
+.stat-ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:9px;}
+.si-green{background:rgba(5,150,105,0.12);}.si-blue{background:rgba(0,104,181,0.1);}.si-purple{background:rgba(91,33,182,0.1);}.si-teal{background:rgba(14,116,144,0.1);}
+.stat-lbl{font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;}
+.stat-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;color:var(--text);line-height:1;}
+.stat-sub{font-size:10px;color:var(--muted);margin-top:3px;}
 .btn{padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
 .btn-crl{background:var(--crl);color:#fff;box-shadow:0 2px 8px rgba(5,150,105,0.3);}.btn-crl:hover{background:var(--crl2);}
 .btn-outline{background:none;border:1.5px solid var(--border);color:var(--soft);}.btn-outline:hover{border-color:var(--crl);color:var(--crl);}
@@ -99,6 +145,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .btn-xs{padding:3px 10px;font-size:11px;border-radius:6px;border:1.5px solid var(--border);background:none;color:var(--soft);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;font-weight:600;}
 .btn-xs.view{color:var(--crl);border-color:rgba(5,150,105,0.3);background:var(--crl-bg);}
 .btn-xs.view:hover{background:rgba(5,150,105,0.15);border-color:var(--crl);}
+.btn-xs.del{color:var(--red);border-color:rgba(185,28,28,0.3);}.btn-xs.del:hover{background:var(--red-bg);border-color:var(--red);}
 .btn:disabled{opacity:0.5;cursor:not-allowed;}
 .table-card{background:var(--card);border:1px solid var(--border);border-radius:13px;overflow:hidden;box-shadow:var(--shadow);}
 .table-top{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--surface3);}
@@ -125,10 +172,7 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
 .sp-ur{background:var(--blue-bg);color:var(--blue);}.sp-ur::before{background:var(--blue);}
 .sp-ob{background:var(--teal-bg);color:var(--teal);}.sp-ob::before{background:var(--teal);}
 .div-tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;background:var(--purple-bg);color:var(--purple);border:1px solid rgba(91,33,182,0.18);}
-.crl-tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;background:var(--crl-bg);color:var(--crl);border:1px solid rgba(5,150,105,0.25);}
-.chip{display:inline-flex;align-items:center;background:var(--crl-bg);border:1px solid rgba(5,150,105,0.2);border-radius:5px;padding:2px 7px;font-size:10px;color:var(--crl);font-weight:600;}
 .day-ok{color:var(--green);font-weight:700;}.day-warn{color:var(--amber);font-weight:700;}.day-crit{color:var(--red);font-weight:700;}
-.mono{font-family:monospace;font-size:10.5px;color:var(--muted);}
 .pager-row{display:flex;align-items:center;gap:3px;}
 .pager{min-width:28px;height:28px;padding:0 7px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--soft);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.18s;font-family:'Plus Jakarta Sans',sans-serif;}
 .pager:hover{border-color:var(--crl);color:var(--crl);}
@@ -157,7 +201,6 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
 .detail-sec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:13px;padding-bottom:8px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:7px;}
 .dg-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
 .dg-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
-.dg-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
 .df{display:flex;flex-direction:column;gap:5px;}
 .df label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
 .df .dval{padding:9px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface3);min-height:40px;}
@@ -171,7 +214,6 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
 .ei{font-size:42px;margin-bottom:12px;opacity:0.25;}
 .et{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:5px;}
 .es{font-size:12px;color:var(--muted);}
-
 .auth-warn{display:none;background:linear-gradient(90deg,#fef3c7,#fffbeb);border:1px solid #fbbf24;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#92400e;align-items:center;gap:10px;}
 .auth-warn.show{display:flex;}
 .toast-wrap{position:fixed;bottom:20px;right:20px;z-index:700;display:flex;flex-direction:column;gap:7px;}
@@ -186,23 +228,10 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
 .cat-tab{padding:6px 16px;border-radius:20px;font-size:11.5px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:none;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.18s;}
 .cat-tab:hover{border-color:var(--crl);color:var(--crl);}
 .cat-tab.active{background:var(--crl);border-color:var(--crl);color:#fff;}
-.cat-tab.pfrn.active{background:var(--purple);border-color:var(--purple);}
-.cat-tab.ur.active{background:var(--blue);border-color:var(--blue);}
-.cat-tab.ob.active{background:var(--teal);border-color:var(--teal);}
 ::-webkit-scrollbar{width:7px;height:7px;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
-
     .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
     </style>
-  <link rel="stylesheet" href="global-typography.css">
-  <link rel="stylesheet" href="admin-sidebar.css">
-  <link rel="stylesheet" href="dashboard-topbar-actions.css">
-  <script src="dashboard-topbar-actions.js" defer></script>
-  <link rel="stylesheet" href="employee-theme.css">
-  <script src="employee-theme.js"></script>
-  <link rel="stylesheet" href="topbar-alignment.css">
-  <link rel="stylesheet" href="brand-logo.css">
-  <script src="brand-logo.js" defer></script>
 </head>
 <body>
 <!-- DETAIL VIEW MODAL -->
@@ -268,7 +297,6 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
 
 <div class="toast-wrap" id="toast-wrap"></div>
 
-<!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-header">
     <div class="logo-wrap">
@@ -305,319 +333,6 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
     <button class="nav-item" onclick="window.location.href='Reports.html'"><span class="icon">&#128200;</span> Reports</button>
     <button class="nav-item" onclick="window.location.href='settings.html'"><span class="icon">&#9881;&#65039;</span> Settings</button>
     <button class="nav-item" onclick="window.location.href='notifications.html'"><span class="icon">&#128276;</span> Notifications</button>
-  </nav>
-  <div class="sidebar-footer">
-    <div class="user-row">
-      <div class="user-av" id="emp-avatar">A</div>
-      <div><div class="user-nm" id="emp-name">Admin</div><div class="user-rl" id="emp-role">Administrator</div></div>
-      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
-    </div>
-  </div>
-</aside>
-
-<!-- MAIN -->
-<div class="main">
-  <div class="topbar">
-    <div>
-      <div class="breadcrumb">
-        <a href="admin-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
-        <span>Repair Team</span><span class="sep">&#8250;</span><span>Admin Closed Repair List</span>
-      </div>
-      <div class="topbar-title">Admin Closed Repair List</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:9px;">
-      <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
-      <button class="btn btn-outline btn-sm" onclick="loadData()">&#10227; Refresh</button>
-      <button class="btn btn-crl btn-sm" onclick="exportCSV()">&#128228; Export</button>
-    </div>
-  </div>
-
-  <div class="content">
-    <!-- AUTH WARN -->
-    <div class="auth-warn" id="auth-warn">
-      &#9888;&#65039; <strong>Access Warning:</strong> The server returned a permission error.
-      Your role (<span id="warn-role">-</span>) may not have access to <code>/api/atcrl</code>. Make sure you are logged in as Admin.
-      <button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="document.getElementById('auth-warn').classList.remove('show')">Dismiss</button>
-    </div>
-
-
-
-    <!-- STATS ROW -->
-    <div class="stats-row">
-      <div class="stat-card sc-green"><div class="stat-ico si-green">&#9989;</div><div class="stat-lbl">Total Closed</div><div class="stat-val" id="st-total">-</div><div class="stat-sub">All categories</div></div>
-      <div class="stat-card sc-purple"><div class="stat-ico si-purple">&#128221;</div><div class="stat-lbl">PFRN Closed</div><div class="stat-val" id="st-pfrn">-</div><div class="stat-sub">Pending FRN closed</div></div>
-      <div class="stat-card sc-blue"><div class="stat-ico si-blue">&#128736;&#65039;</div><div class="stat-lbl">UR Closed</div><div class="stat-val" id="st-ur">-</div><div class="stat-sub">Under repair closed</div></div>
-      <div class="stat-card sc-teal"><div class="stat-ico si-teal">&#128230;</div><div class="stat-lbl">OB Closed</div><div class="stat-val" id="st-ob">-</div><div class="stat-sub">OB pending closed</div></div>
-    </div>
-
-    <!-- CATEGORY TABS -->
-    <div class="cat-tabs">
-      <button class="cat-tab active" data-cat="" onclick="setCatTab(this,'')">All Records</button>
-      <button class="cat-tab pfrn" data-cat="PFRN" onclick="setCatTab(this,'PFRN')">PFRN</button>
-      <button class="cat-tab ur"   data-cat="UR"   onclick="setCatTab(this,'UR')">&#128736;&#65039; UR</button>
-      <button class="cat-tab ob"   data-cat="OB"   onclick="setCatTab(this,'OB')">&#128230; OB</button>
-    </div>
-
-    <!-- FILTER BAR -->
-    <!-- TABLE -->
-    <div class="table-card">
-      <div class="table-top">
-        <div class="table-title">Closed Repair Activity <span class="count-pill" id="count-pill">- entries</span></div>
-        <div class="toolbar-r">
-          <div class="show-row">Show
-            <select class="fb-sel" id="per-page" style="padding:5px 8px;min-width:60px;" onchange="renderTable()">
-              <option>10</option><option>25</option><option>50</option><option>100</option>
-            </select> entries
-          </div>
-          <div class="srch-wrap">
-            <span class="srch-ico">&#128269;</span>
-            <input type="text" id="tbl-search" placeholder="Search SC Ref, GIR, model..." oninput="applyFilters()"/>
-          </div>
-        </div>
-      </div>
-      <div class="table-wrap">
-        <table class="crl-table">
-          <thead><tr>
-            <th onclick="sortBy('entryDate')">Entry Date &#8597;</th>
-            <th onclick="sortBy('closedDate')">Closed Date &#8597;</th>
-            <th onclick="sortBy('division')">Division &#8597;</th>
-            <th onclick="sortBy('scRefNo')">SC Ref No &#8597;</th>
-            <th onclick="sortBy('defGirNo')">DEF GIR No &#8597;</th>
-            <th onclick="sortBy('category')">Category &#8597;</th>
-            <th onclick="sortBy('model')">Model &#8597;</th>
-            <th onclick="sortBy('defBrdModName')">Def Brd/Mod Name &#8597;</th>
-            <th onclick="sortBy('noOfDays')">No of Days &#8597;</th>
-            <th onclick="sortBy('repairedBy')">Repaired By &#8597;</th>
-            <th onclick="sortBy('closedBy')">Closed By &#8597;</th>
-            <th>Details</th>
-          </tr></thead>
-          <tbody id="crl-tbody">
-            <tr><td colspan="12" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="table-foot">
-        <span id="tbl-info">-</span>
-        <div class="pager-row" id="tbl-pagination"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-const API      = '';
-const LUSER    = JSON.parse(localStorage.getItem('schiller_user') || '{}');
-const EMP_NAME = LUSER.name || '';
-const RAW_ROLE = (LUSER.role || localStorage.getItem('schiller_role') || '').toLowerCase();
-
-let allData = [], filtered = [], sortKey = 'closedDate', sortDir = -1, currentPage = 1;
-let activeCat = '';
-
-(function init() {
-  (document.getElementById('emp-name')||{}).textContent = EMP_NAME || 'Admin';
-  (document.getElementById('emp-avatar')||{}).textContent = (EMP_NAME.charAt(0) || 'R').toUpperCase();
-  (document.getElementById('emp-role')||{}).textContent = RAW_ROLE || 'Administrator';
-  (document.getElementById('topbar-date')||{}).textContent =
-    new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-  loadData();
-})();
-
-function getToken()    { return localStorage.getItem('schiller_token') || ''; }
-function authHeaders() { return { 'Content-Type':'application/json', Authorization:'Bearer '+getToken() }; }
-function handleUnauth(r) {
-  if (r.status === 401) {
-    showToast('Session expired - please log in again.', 'err');
-    setTimeout(() => { localStorage.clear(); window.location.href = 'login.html'; }, 1800);
-    throw new Error('Unauthorized');
-  }
-  if (r.status === 403) {
-    (document.getElementById('warn-role')||{}).textContent = RAW_ROLE || 'unknown';
-    document.getElementById('auth-warn').classList.add('show');
-    throw new Error('Forbidden');
-  }
-}
-
-async function loadData() {
-  try {
-    const res = await fetch(`${API}/api/atcrl`, { headers: authHeaders() });
-    handleUnauth(res);
-    if (res.status === 404) {
-      showError('The <code>/api/atcrl</code> route does not exist yet.<br>Add it to server.js and it will show data automatically.');
-      allData = []; applyFilters(); updateStats(); return;
-    }
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    const list = data.data || data;
-    allData = list.map(d => ({ ...d, id: d._id || d.id, noOfDays: calcDays(d.entryDate, d.closedDate) }));
-    applyFilters(); updateStats();
-    showToast('Loaded ' + allData.length + ' closed record' + (allData.length !== 1 ? 's' : ''), 'info');
-  } catch (e) {
-    if (e.message === 'Unauthorized' || e.message === 'Forbidden') return;
-    showError('Could not load records: ' + esc(e.message));
-    showToast('Load failed: ' + e.message, 'err');
-    allData = []; applyFilters(); updateStats();
-  } finally { }
-}
-
-function showError(msg) {
-  document.getElementById('crl-tbody').innerHTML =
-    `<tr><td colspan="12"><div class="empty-st">
-      <div class="ei">&#9888;&#65039;</div><div class="et">Cannot load data</div>
-      <div class="es">${msg}</div>
-      <div style="margin-top:14px;"><button class="btn btn-crl btn-sm" onclick="loadData()">&#10227; Try Again</button></div>
-    </div></td></tr>`;
-}
-
-// noOfDays = days from entry to close (or to today if not closed yet)
-function calcDays(entry, closed) {
-  if (!entry) return 0;
-  const end  = closed ? new Date(closed) : new Date();
-  const diff = Math.floor((end.getTime() - new Date(entry).getTime()) / 86400000);
-  return Math.max(0, isNaN(diff) ? 0 : diff);
-}
-
-function updateStats() {
-  const total = allData.length;
-  const pfrn  = allData.filter(d => d.category === 'PFRN').length;
-  const ur    = allData.filter(d => d.category === 'UR').length;
-  const ob    = allData.filter(d => d.category === 'OB').length;
-  document.getElementById('st-total').textContent = total;
-  document.getElementById('st-pfrn').textContent = pfrn;
-  document.getElementById('st-ur').textContent = ur;
-  document.getElementById('st-ob').textContent = ob;
-}
-
-function setCatTab(el, cat) {
-  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  activeCat = cat;
-  currentPage = 1;
-  applyFilters();
-}
-
-function clearDates() { applyFilters(); }
-function clearAllFilters() {
-  document.getElementById('tbl-search').value = '';
-  applyFilters();
-}
-
-function applyFilters() {
-  const q = document.getElementById('tbl-search').value.toLowerCase();
-  filtered = allData.filter(d => {
-    const mQ = !q || Object.values(d).some(v => String(v || '').toLowerCase().includes(q));
-    const mC = !activeCat || d.category === activeCat;
-    return mQ && mC;
-  });
-  sortArr(); currentPage = 1; renderTable();
-}
-
-function sortBy(k) { if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = -1; } sortArr(); renderTable(); }
-function sortArr() {
-  filtered.sort((a, b) => {
-    const av = a[sortKey] ?? '', bv = b[sortKey] ?? '';
-    if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * sortDir;
-    return String(av).toLowerCase() < String(bv).toLowerCase() ? -sortDir
-         : String(av).toLowerCase() > String(bv).toLowerCase() ?  sortDir : 0;
-  });
-}
-
-function renderTable() {
-  const perPage = parseInt(document.getElementById('per-page').value) || 10;
-  const total   = filtered.length;
-  const pages   = Math.max(1, Math.ceil(total / perPage));
-  if (currentPage > pages) currentPage = pages;
-  const slice = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
-
-  (document.getElementById('count-pill')||{}).textContent = total + ' entr' + (total === 1 ? 'y' : 'ies');
-  const tbody = document.getElementById('crl-tbody');
-
-  if (!slice.length) {
-    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-st">
-      <div class="ei">&#9989;</div>
-      <div class="et">${allData.length ? 'No records match filters' : 'No Closed Repair Records'}</div>
-      <div class="es">${allData.length ? 'Try clearing the filters or changing the category tab.' : 'Records appear here once a repair is marked as completed.'}</div>
-    </div></td></tr>`;
-  } else {
-    tbody.innerHTML = slice.map(d => {
-      const id    = d._id || d.id;
-      const days  = d.noOfDays || 0;
-      const dCls  = days <= 14 ? 'day-ok' : days <= 45 ? 'day-warn' : 'day-crit';
-      const catCls = d.category === 'PFRN' ? 'sp-pfrn' : d.category === 'OB' ? 'sp-ob' : 'sp-ur';
-      return `<tr>
-        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
-        <td style="font-size:11px;color:var(--green);font-weight:600;">${fmtDate(d.closedDate)}</td>
-        <td><span class="div-tag">${esc(d.division || '-')}</span></td>
-        <td style="font-size:13.5px;font-weight:800;color:var(--text);">${esc(d.scRefNo || '-')}</td>
-        <td style="font-size:13.5px;font-weight:900;color:var(--purple);font-family:monospace;">${esc(d.defGirNo || '-')}</td>
-        <td><span class="status-pill ${catCls}">${esc(d.category || 'UR')}</span></td>
-        <td style="font-weight:600;">${esc(d.model || '-')}</td>
-        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.defBrdModName || '')}">${esc(d.defBrdModName || '-')}</td>
-        <td><span class="${dCls}">${days}</span></td>
-        <td style="font-size:11.5px;">${esc(d.repairedBy || '-')}</td>
-        <td style="font-size:11px;color:var(--muted);">${esc(d.closedBy || '-')}</td>
-        <td><button class="btn-xs view" onclick="openDetail('${id}')">View</button></td>
-      </tr>`;
-    }).join('');
-  }
-
-  const fr = total ? (currentPage - 1) * perPage + 1 : 0;
-  (document.getElementById('tbl-info')||{}).textContent = total
-    ? `Showing ${fr} to ${Math.min(currentPage * perPage, total)} of ${total} entries`
-    : '0 entries';
-  renderPagination(pages);
-}
-
-// -- DETAIL MODAL ------------------------------------------------------------
-function openDetail(id) {
-  const d = allData.find(x => (x._id || x.id) === id);
-  if (!d) return;
-
-  (document.getElementById('modal-scref')||{}).textContent = d.scRefNo     || '-';
-  (document.getElementById('ri-scref')||{}).textContent = d.scRefNo     || '-';
-  (document.getElementById('ri-div')||{}).textContent = d.division    || '-';
-  (document.getElementById('ri-defgir')||{}).textContent = d.defGirNo    || '-';
-  (document.getElementById('ri-model')||{}).textContent = d.model       || '-';
-  (document.getElementById('ri-category')||{}).textContent = d.category    || '-';
-  (document.getElementById('ri-defbrd')||{}).textContent = d.defBrdModName || '-';
-  (document.getElementById('ri-date')||{}).textContent = fmtDate(d.entryDate);
-  (document.getElementById('ri-closed')||{}).textContent = fmtDate(d.closedDate);
-  (document.getElementById('ri-days')||{}).textContent = (d.noOfDays || 0) + ' days';
-  (document.getElementById('ri-by')||{}).textContent = d.closedBy    || '-';
-
-  const set = (id, val) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.textContent = val || '-';
-    el.className   = 'dval' + (val ? '' : ' empty') + (id === 'd-repairedby' && val ? ' hl' : '');
-    if (['d-techremarks','d-finalremarks','d-addnotes'].includes(id)) el.classList.add('long');
-  };
-  set('d-repairedby',  d.repairedBy);
-  set('d-dcno',        d.dcNo);
-  set('d-repbrddate',  d.repBrdDate  ? fmtDate(d.repBrdDate)  : '');
-  set('d-returndate',  d.returnDate  ? fmtDate(d.returnDate)  : '');
-  set('d-compused',    d.compUsedToRepair);
-  set('d-techremarks', d.techRemarks);
-  set('d-finalremarks',d.finalRemarks);
-  set('d-addnotes',    d.addNotes);
-  set('d-returndcno',  d.returnDcNo);
-  set('d-destination', d.destination);
-  set('d-submittedby', d.submittedBy);
-  set('d-submittedat', d.submittedAt ? fmtDate(d.submittedAt) : '');
-
-  document.getElementById('modal-detail').classList.add('open');
-}
-
-function closeModal() { document.getElementById('modal-detail').classList.remove('open'); }
-
-function printRecord() { window.print(); }
-
-// -- EXPORT -------------------------------------------------------------------
-function exportCSV() {
-  const headers = ['Entry Date','Closed Date','Division','SC Ref No','DEF GIR No',
-                   'Category','Model','Def Brd/Mod Name','No of Days',
-                   'Repaired By','Closed By','Tech Remarks','Final Remarks'];
-  const rows = filtered.map(d => [
-    fmtDate(d.entryDate), fmtDate(d.closedDate), d.division, d.scRefNo,
     d.defGirNo, d.category||'UR', d.model, d.defBrdModName, d.noOfDays||0,
     d.repairedBy||'-', d.closedBy||'-', d.techRemarks||'-', d.finalRemarks||'-',
   ]);

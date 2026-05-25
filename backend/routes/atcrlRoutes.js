@@ -155,4 +155,18 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// DELETE /api/atcrl/:id
+// Admin delete route for Closed Repair Lists
+// ─────────────────────────────────────────────────────────────────────────────
+router.delete('/:id', async (req, res) => {
+  try {
+    const record = await ATCRL.findByIdAndDelete(req.params.id);
+    if (!record) return fail(res, 404, 'Record not found');
+    return res.json({ success: true, message: 'Record deleted successfully' });
+  } catch (err) {
+    return fail(res, 500, 'Failed to delete record', err);
+  }
+});
+
 module.exports = router;
