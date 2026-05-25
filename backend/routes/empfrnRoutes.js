@@ -6,6 +6,7 @@ const CompletedFRN = require('../models/CompletedFRN');
 const SCCompletedFRN = require('../models/SCCompletedFRN');
 const Scrap = require('../models/Scrap');
 const Service      = require('../models/Service');
+const Todr         = require('../models/Todr');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 const {
   buildFrnEscalationRow,
@@ -38,6 +39,60 @@ function normalizeUnitStatus(value) {
 
 function normalizeRepType(value) {
   return String(value || '').trim().toUpperCase();
+}
+
+function toDateValue(value) {
+  const date = value ? new Date(value) : new Date();
+  return Number.isNaN(date.getTime()) ? new Date() : date;
+}
+
+function buildTodrDescription(doc, item = {}) {
+  const parts = [
+    doc.customer,
+    doc.model,
+    doc.defMod,
+    doc.defGir ? `Def GIR: ${doc.defGir}` : '',
+    item.qty ? `Qty: ${item.qty}` : '',
+    doc.finalRemarks || doc.remarks,
+  ];
+  return parts.map(v => String(v || '').trim()).filter(Boolean).join(' | ') || 'TO/DR entry';
+}
+
+async function mirrorFrnToTodr(doc, action, items = [], queuedBy = '') {
+  try {
+    const rows = action === 'TO'
+      ? items.map(item => ({
+          partNo: String(item.partNo || '').trim(),
+          description: buildTodrDescription(doc, item),
+        })).filter(item => item.partNo)
+      : [{
+          partNo: String(doc.partNo || doc.defMod || doc.defGir || 'DR').trim(),
+          description: buildTodrDescription(doc),
+        }];
+
+    await Promise.all(rows.map(row => Todr.findOneAndUpdate(
+      {
+        sourceModule: 'emp_pending_frn',
+        sourceId: String(doc._id),
+        action,
+        partNo: row.partNo,
+      },
+      {
+        entryDate: toDateValue(doc.entryDate || doc.rcvdDate || doc.createdAt),
+        frnNo: doc.frnNo || doc.scRno || String(doc._id),
+        partNo: row.partNo,
+        description: row.description,
+        action,
+        sourceModule: 'emp_pending_frn',
+        sourceId: String(doc._id),
+        queuedBy,
+        updatedAt: new Date(),
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    )));
+  } catch (err) {
+    console.error('[TODR mirror] Failed to mirror pending FRN:', err);
+  }
 }
 
 async function syncMissingPendingFrn(user) {
@@ -693,6 +748,7 @@ router.post('/:id/sr', protect, async (req, res) => {
     }
 
     if (doc.srEscalationQueuedAt) {
+      await mirrorFrnToTodr(doc, 'DR', [], doc.srEscalationQueuedBy || req.user?.name || '');
       return res.json({
         success: true,
         alreadyQueued: true,
@@ -711,6 +767,7 @@ router.post('/:id/sr', protect, async (req, res) => {
       req.user?.name || '',
       buildFrnEscalationRow(doc.toObject())
     );
+    await mirrorFrnToTodr(doc, 'DR', [], req.user?.name || '');
 
     res.json({
       success: true,
@@ -763,6 +820,7 @@ router.post('/:id/to', protect, async (req, res) => {
       req.user?.name || '',
       buildToEscalationRow(doc.toObject(), cleanItems)
     );
+    await mirrorFrnToTodr(doc, 'TO', cleanItems, req.user?.name || '');
 
     res.json({
       success: true,

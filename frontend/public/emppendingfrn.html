@@ -1230,7 +1230,7 @@ function generateEstimationPDFData(s, mode='download'){
 
   y=72;
   drawBox(L, y, R-L, 24);
-  labelValue(L+2, y+7, 'Engineer Name and Contact', s.eng || '-', 45);
+  labelValue(L+2, y+7, 'Engineer Name', s.eng || '-', 45);
   labelValue(104, y+7, 'FRN', s.frnNo || '-', 20);
   labelValue(104, y+14, 'DATE', fmtDate(s.frnDate), 20);
   labelValue(104, y+21, 'Service Centre Rcvd Date', fmtDate(s.rcvdDate || s.entryDate), 45);
