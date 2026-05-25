@@ -295,13 +295,21 @@ router.get('/:id', protect, async (req, res) => {
     const doc = await Empfrn.findById(req.params.id).populate('serviceId', 'branch dealer').lean();
     if (!doc) return res.status(404).json({ message: 'Record not found' });
 
-    if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+    let __is_allowed = false;
+    if (req.user.role === 'admin' || req.user.role === 'superadmin') {
+      __is_allowed = true;
+    } else {
       const { hasDivisionAccessToService } = require('../utils/visibility');
-      const allowed = await hasDivisionAccessToService(req.user, doc.serviceId && (doc.serviceId._id || doc.serviceId));
-      if (!allowed) {
-        return res.status(403).json({ message: 'Access denied' });
+      if (doc && doc.serviceId && await hasDivisionAccessToService(req.user, doc.serviceId && (doc.serviceId._id || doc.serviceId))) {
+        __is_allowed = true;
+      } else {
+        const _uName = String(req.user.name || '').trim().toLowerCase();
+        if (_uName && [doc.eng, doc.scEng, doc.estRaEng, doc.obRaEng, doc.submittedBy, doc.createdBy].some(v => String(v || '').trim().toLowerCase() === _uName)) {
+          __is_allowed = true;
+        }
       }
     }
+    if (!__is_allowed) return res.status(403).json({ message: 'Access denied' });
     const pdays = Math.floor((Date.now() - new Date(doc.rcvdDate || doc.entryDate || doc.createdAt).getTime()) / 86400000);
     res.json({ ...doc, branch: doc.branch || (doc.serviceId ? doc.serviceId.branch : ''), dealer: doc.dealer || (doc.serviceId ? doc.serviceId.dealer : '') || '', pdays });
   } catch (err) {
@@ -345,13 +353,21 @@ router.put('/:id/update', protect, async (req, res) => {
     const doc = await Empfrn.findById(req.params.id);
     if (!doc) return res.status(404).json({ message: 'Record not found' });
 
-    if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+    let __is_allowed = false;
+    if (req.user.role === 'admin' || req.user.role === 'superadmin') {
+      __is_allowed = true;
+    } else {
       const { hasDivisionAccessToService } = require('../utils/visibility');
-      const allowed = await hasDivisionAccessToService(req.user, doc.serviceId);
-      if (!allowed) {
-        return res.status(403).json({ message: 'Access denied' });
+      if (doc && doc.serviceId && await hasDivisionAccessToService(req.user, doc.serviceId)) {
+        __is_allowed = true;
+      } else {
+        const _uName = String(req.user.name || '').trim().toLowerCase();
+        if (_uName && [doc.eng, doc.scEng, doc.estRaEng, doc.obRaEng, doc.submittedBy, doc.createdBy].some(v => String(v || '').trim().toLowerCase() === _uName)) {
+          __is_allowed = true;
+        }
       }
     }
+    if (!__is_allowed) return res.status(403).json({ message: 'Access denied' });
 
     // ── Whitelisted fields ────────────────────────────────
     const allowed = [

@@ -213,11 +213,21 @@ router.put('/:id/update', protect, async (req, res) => {
       }
     }
     if (!existing) return res.status(404).json({ message: 'Record not found.' });
-    if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+    let __is_allowed = false;
+    if (req.user.role === 'admin' || req.user.role === 'superadmin') {
+      __is_allowed = true;
+    } else {
       const { hasDivisionAccessToService } = require('../utils/visibility');
-      const allowed = await hasDivisionAccessToService(req.user, existing.serviceId);
-      if (!allowed) return res.status(403).json({ message: 'Access denied.' });
+      if (existing && existing.serviceId && await hasDivisionAccessToService(req.user, existing.serviceId)) {
+        __is_allowed = true;
+      } else {
+        const _uName = String(req.user.name || '').trim().toLowerCase();
+        if (_uName && [existing.eng, existing.scEng, existing.estRaEng, existing.obRaEng, existing.submittedBy, existing.createdBy].some(v => String(v || '').trim().toLowerCase() === _uName)) {
+          __is_allowed = true;
+        }
+      }
     }
+    if (!__is_allowed) return res.status(403).json({ message: 'Access denied.' });
 
     const doc = await UnderRepair.findByIdAndUpdate(existing._id, update, { new: true });
     if (!doc) return res.status(404).json({ message: 'Record not found.' });

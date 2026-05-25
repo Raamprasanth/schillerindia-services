@@ -80,11 +80,6 @@ router.get('/employee', protect, async (req, res) => {
       filter.division = { $in: divisions };
     }
 
-    // Filter to records submitted by this engineer
-    if (req.user && req.user.name) {
-      filter.scEng = req.user.name;
-    }
-
     const docs = await Ecall.find(filter).sort({ createdAt: -1 }).lean();
     res.json(docs);
   } catch (err) {

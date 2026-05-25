@@ -566,11 +566,21 @@ router.post('/:id/to', async (req, res) => {
     const rawItems = Array.isArray(req.body?.items) ? req.body.items : [];
 
     const { role, name } = req.user;
-    if (role !== 'admin' && role !== 'superadmin') {
+    let __is_allowed = false;
+    if (role === 'admin' || role === 'superadmin') {
+      __is_allowed = true;
+    } else {
       const { hasDivisionAccessToService } = require('../utils/visibility');
-      const allowed = await hasDivisionAccessToService(req.user, record.serviceId);
-      if (!allowed) return res.status(403).json({ message: 'Access denied' });
+      if (record && record.serviceId && await hasDivisionAccessToService(req.user, record.serviceId)) {
+        __is_allowed = true;
+      } else {
+        const _uName = String(req.user.name || '').trim().toLowerCase();
+        if (_uName && [record.eng, record.scEng, record.estRaEng, record.obRaEng, record.submittedBy, record.createdBy].some(v => String(v || '').trim().toLowerCase() === _uName)) {
+          __is_allowed = true;
+        }
+      }
     }
+    if (!__is_allowed) return res.status(403).json({ message: 'Access denied' });
 
     if (record.toEscalationQueuedAt) {
       return res.json({
@@ -620,11 +630,21 @@ router.delete('/:id', async (req, res) => {
     if (!record) return res.status(404).json({ message: 'Record not found' });
 
     const { role } = req.user;
-    if (role !== 'admin' && role !== 'superadmin') {
+    let __is_allowed = false;
+    if (role === 'admin' || role === 'superadmin') {
+      __is_allowed = true;
+    } else {
       const { hasDivisionAccessToService } = require('../utils/visibility');
-      const allowed = await hasDivisionAccessToService(req.user, record.serviceId);
-      if (!allowed) return res.status(403).json({ message: 'Access denied' });
+      if (record && record.serviceId && await hasDivisionAccessToService(req.user, record.serviceId)) {
+        __is_allowed = true;
+      } else {
+        const _uName = String(req.user.name || '').trim().toLowerCase();
+        if (_uName && [record.eng, record.scEng, record.estRaEng, record.obRaEng, record.submittedBy, record.createdBy].some(v => String(v || '').trim().toLowerCase() === _uName)) {
+          __is_allowed = true;
+        }
+      }
     }
+    if (!__is_allowed) return res.status(403).json({ message: 'Access denied' });
 
     await EstimationPending.findByIdAndDelete(req.params.id);
     res.json({ message: 'Record deleted successfully', id: req.params.id });

@@ -5,6 +5,22 @@ const ScPrfOb  = require('../models/ScPrfOb');
 const Ecr      = require('../models/Ecr');
 const { protect } = require('../middleware/authMiddleware');
 
+function isAdminUser(user) {
+  const role = String(user?.role || '').toLowerCase();
+  return role === 'admin' || role === 'superadmin';
+}
+
+function getUserDivisions(user) {
+  const values = user?.activeDivision
+    ? [user.activeDivision]
+    : (Array.isArray(user?.divisions) && user.divisions.length ? [...user.divisions] : [user?.division]);
+  return [...new Set(values.map(v => String(v || '').trim()).filter(Boolean))];
+}
+
+function getWriteDivision(req) {
+  return String(req.user?.activeDivision || req.user?.division || req.body.division || '').trim();
+}
+
 // GET /api/emp/eprfob
 router.get('/', protect, async (req, res) => {
   try {
@@ -12,7 +28,13 @@ router.get('/', protect, async (req, res) => {
     const filter = {};
     if (type)     filter.type     = type;
     if (status)   filter.status   = status;
-    if (division) filter.division = division;
+    if (isAdminUser(req.user)) {
+      if (division) filter.division = division;
+    } else {
+      const divisions = getUserDivisions(req.user);
+      if (!divisions.length) return res.json([]);
+      filter.division = { $in: divisions };
+    }
     if (eng)      filter.eng      = eng;
     if (from || to) {
       filter.entryDate = {};
@@ -30,8 +52,10 @@ router.get('/', protect, async (req, res) => {
 // POST /api/emp/eprfob
 router.post('/', protect, async (req, res) => {
   try {
+    const body = { ...req.body };
+    if (!isAdminUser(req.user)) body.division = getWriteDivision(req);
     const doc = new EPrfOb({
-      ...req.body,
+      ...body,
       createdBy: req.user._id,
     });
     const saved = await doc.save();

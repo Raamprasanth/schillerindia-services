@@ -5,12 +5,17 @@ const UnderRepair = require('../models/UnderRepair');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 
 // ── GET ALL ───────────────────────────────────────────────
-// Admin sees all; employee sees only their region's records
+// Admin sees all; employee sees all records in their assigned division.
 router.get('/', protect, async (req, res) => {
   try {
-    const filter = req.user.role === 'admin'
-      ? {}
-      : { eng: req.user.name };   // employees filtered by their name
+    let filter = {};
+    if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+      const { getServiceIdsFilter } = require('../utils/visibility');
+      filter = await getServiceIdsFilter(req.user, [
+        { eng: req.user.name },
+        { scEng: req.user.name },
+      ]);
+    }
     const records = await UnderRepair.find(filter).sort({ createdAt: -1 });
     res.json(records);
   } catch (err) {

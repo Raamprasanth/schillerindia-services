@@ -41,7 +41,6 @@ router.get('/employee', protect, async (req, res) => {
 
     const divisions = getUserDivisions(req.user);
     if (divisions.length) filter.division = { $in: divisions };
-    if (req.user && req.user.name) filter.scEngg = req.user.name;
 
     const docs = await PtClose.find(filter).sort({ closeDate: -1 }).lean();
     res.json(docs);

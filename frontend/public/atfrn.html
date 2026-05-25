@@ -550,6 +550,7 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
           <thead><tr>
             <th onclick="sortBy('entryDate')" class="sorted">Entry Date <span class="si">&#8693;</span></th>
             <th>Update</th>
+            <th>Del</th>
             <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
             <th onclick="sortBy('scRefNo')">SC Ref No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('defGirNo')">DEF GIR No <span class="si">&#8693;</span></th>
@@ -709,6 +710,7 @@ function renderTable() {
       return `<tr>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
         <td><button class="btn-xs upd" onclick="openUpdate('${id}')" title="Update">&#9999;&#65039;</button></td>
+        <td><button class="btn-xs del" onclick="confirmDelete('${id}','${esc(d.scRefNo||id)}')" title="Delete">&#128465;</button></td>
         <td><span class="div-tag">${esc(d.division||'-')}</span></td>
         <td style="font-size:13.5px;font-weight:800;color:var(--accent);">${esc(d.scRefNo||'-')}</td>
         <td style="font-size:13.5px;font-weight:900;color:var(--purple);font-family:monospace;">${esc(d.defGirNo||'-')}</td>
@@ -875,6 +877,24 @@ async function submitUpdate() {
     }
   } finally {
     btn.disabled = false; btn.innerHTML = '&#128190; Save Update';
+  }
+}
+
+// -- DELETE RECORD ---------------------------------------
+function confirmDelete(id, ref) {
+  if (!confirm(`Delete record "${ref}"?\n\nThis action cannot be undone.`)) return;
+  deleteRecord(id, ref);
+}
+async function deleteRecord(id, ref) {
+  try {
+    const res = await fetch(`${API}${ATFRN_API}/${id}`, { method: 'DELETE', headers: authHeaders() });
+    handleUnauth(res);
+    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete failed'); }
+    allData = allData.filter(x => (x._id||x.id) !== id);
+    applyFilters(); updateStats();
+    showToast(`Record "${ref}" deleted.`, 'ok');
+  } catch(e) {
+    if (e.message !== 'Unauthorized') showToast('Delete failed: ' + e.message, 'err');
   }
 }
 

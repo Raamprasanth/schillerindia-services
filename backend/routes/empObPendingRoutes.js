@@ -110,12 +110,21 @@ router.get('/:id', protect, async (req, res) => {
     if (!record)
       return res.status(404).json({ success: false, message: 'Record not found.' });
 
-    if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+    let __is_allowed = false;
+    if (req.user.role === 'admin' || req.user.role === 'superadmin') {
+      __is_allowed = true;
+    } else {
       const { hasDivisionAccessToService } = require('../utils/visibility');
-      const allowed = await hasDivisionAccessToService(req.user, record.serviceId);
-      if (!allowed)
-        return res.status(403).json({ success: false, message: 'Access denied.' });
+      if (record && record.serviceId && await hasDivisionAccessToService(req.user, record.serviceId)) {
+        __is_allowed = true;
+      } else {
+        const _uName = String(req.user.name || '').trim().toLowerCase();
+        if (_uName && [record.eng, record.scEng, record.estRaEng, record.obRaEng, record.submittedBy, record.createdBy].some(v => String(v || '').trim().toLowerCase() === _uName)) {
+          __is_allowed = true;
+        }
+      }
     }
+    if (!__is_allowed) return res.status(403).json({ success: false, message: 'Access denied.' });
 
     res.json({ ...record, pdOb: calcPendingDays(record.entryDate) });
   } catch (err) {
@@ -176,12 +185,21 @@ router.put('/:id', protect, async (req, res) => {
     if (!record)
       return res.status(404).json({ success: false, message: 'Record not found.' });
 
-    if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+    let __is_allowed = false;
+    if (req.user.role === 'admin' || req.user.role === 'superadmin') {
+      __is_allowed = true;
+    } else {
       const { hasDivisionAccessToService } = require('../utils/visibility');
-      const allowed = await hasDivisionAccessToService(req.user, record.serviceId);
-      if (!allowed)
-        return res.status(403).json({ success: false, message: 'Access denied.' });
+      if (record && record.serviceId && await hasDivisionAccessToService(req.user, record.serviceId)) {
+        __is_allowed = true;
+      } else {
+        const _uName = String(req.user.name || '').trim().toLowerCase();
+        if (_uName && [record.eng, record.scEng, record.estRaEng, record.obRaEng, record.submittedBy, record.createdBy].some(v => String(v || '').trim().toLowerCase() === _uName)) {
+          __is_allowed = true;
+        }
+      }
     }
+    if (!__is_allowed) return res.status(403).json({ success: false, message: 'Access denied.' });
 
     // Only allow OB-specific fields to be updated
     const allowed = [
