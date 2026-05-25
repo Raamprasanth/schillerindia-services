@@ -199,7 +199,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           <div class="kb-title" id="kb-date-title">Select a Date</div>
           <div class="kb-subtitle" id="kb-count">0 entries found</div>
         </div>
-        <button class="btn btn-primary" onclick="openDwModal()">&#43; Add Entry Here</button>
       </div>
       <div class="kb-grid" id="kb-grid">
         <!-- Cards injected here -->
@@ -352,7 +351,7 @@ function renderKanban() {
     grid.innerHTML = `<div class="kb-empty" style="grid-column:1/-1;">
       <div class="kb-empty-ico">&#128198;</div>
       <div class="kb-empty-txt">No entries for this date</div>
-      <div class="kb-empty-sub">Click "Add Entry Here" to log your work.</div>
+      <div class="kb-empty-sub">Click "Add Entry" at the top to log your work.</div>
     </div>`;
     grid.style.display = 'block';
     return;
