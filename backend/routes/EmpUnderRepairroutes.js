@@ -473,6 +473,70 @@ router.put('/:id/update', protect, async (req, res) => {
 // ══════════════════════════════════════════════════════════
 //  PUT /api/under-repair/:id  — full admin update
 // ══════════════════════════════════════════════════════════
+// Employee action from empunderep.html: send an under-repair service to RT UR.
+router.post('/:id/send-rtur', protect, async (req, res) => {
+  try {
+    const service = await Service.findById(req.params.id).lean();
+    if (!service) return res.status(404).json({ message: 'Service record not found.' });
+    if (service.repType !== 'TO/ADV SO') {
+      return res.status(400).json({ message: 'Only TO/ADV SO under-repair records can be sent to RT UR.' });
+    }
+    if (service.rturSent || service.rtfrnSent) {
+      return res.status(409).json({ message: 'This record is already sent to repair team.' });
+    }
+
+    const { hasDivisionAccessToService } = require('../utils/visibility');
+    const role = String(req.user.role || '').toLowerCase();
+    const isAdmin = role === 'admin' || role === 'superadmin';
+    const hasDivisionAccess = await hasDivisionAccessToService(req.user, service._id);
+    const userName = String(req.user.name || '').trim().toLowerCase();
+    const ownsRecord = userName && [service.eng, service.scEng, service.raEng, service.submittedBy, service.createdBy]
+      .some(v => String(v || '').trim().toLowerCase() === userName);
+    if (!isAdmin && !hasDivisionAccess && !ownsRecord) {
+      return res.status(403).json({ message: 'Access denied.' });
+    }
+
+    const techRemarks = String(req.body.techRemarks || '').trim();
+    const sentAt = new Date();
+    const existing = await RTUR.findOne({ sourceServiceId: String(service._id) }).lean();
+    const rtur = existing || await RTUR.create({
+      entryDate: service.entryDate || service.createdAt || sentAt,
+      division: req.body.division || service.divisionName || service.branch || service.reg || 'OTHER',
+      scRefNo: String(service.scReNo || service.scRno || req.body.scRefNo || '').trim() || 'NA',
+      defGirNo: String(service.defGir || req.body.defGirNo || '').trim() || 'NA',
+      category: 'UR',
+      model: String(service.model || req.body.model || '').trim() || 'NA',
+      defBrdModName: String(service.defMod || req.body.defBrdModName || '').trim() || 'NA',
+      status: 'pending',
+      submittedBy: req.user.name || req.body.submittedBy || '',
+      submittedAt: sentAt,
+      sourceServiceId: String(service._id),
+      doi: service.doi || '',
+      fieldRemarks: service.fieldRemarks || '',
+      techRemarks,
+    });
+
+    const updatedService = await Service.findByIdAndUpdate(
+      service._id,
+      { $set: { rturSent: true, rturSentAt: sentAt, techRemarks } },
+      { new: true }
+    ).lean();
+
+    return res.status(existing ? 200 : 201).json({
+      success: true,
+      message: existing ? 'Record was already available in RT UR.' : 'Sent to RT UR successfully.',
+      data: rtur,
+      service: updatedService,
+    });
+  } catch (e) {
+    if (e.name === 'ValidationError') {
+      const messages = Object.values(e.errors).map(v => v.message).join(', ');
+      return res.status(400).json({ message: messages });
+    }
+    return res.status(500).json({ message: e.message });
+  }
+});
+
 router.put('/:id', protect, adminOnly, async (req, res) => {
   try {
     const doc = await UnderRepair.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });

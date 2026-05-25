@@ -786,12 +786,11 @@ async function confirmSendToRtUr() {
     fieldRemarks: current.fieldRemarks||'',
   };
   try {
-    const createRes = await fetch(`${API}/api/rtur`,{ method:'POST',headers:authHeaders(),body:JSON.stringify(rtPayload) });
+    const createRes = await fetch(`${API}/api/emp/underrepair/${id}/send-rtur`,{ method:'POST',headers:authHeaders(),body:JSON.stringify(rtPayload) });
     handleUnauth(createRes);
     if (!createRes.ok) { const e=await createRes.json().catch(()=>({})); throw new Error(e.message||'HTTP '+createRes.status); }
-    const flagRes = await fetch(`${API}/api/emp/services/${id}`,{ method:'PUT',headers:authHeaders(),body:JSON.stringify({ rturSent:true,rturSentAt:sentAt,techRemarks:techRemarks }) });
-    handleUnauth(flagRes);
-    const updated = await flagRes.json().catch(()=>null);
+    const created = await createRes.json().catch(()=>({}));
+    const updated = created.service || {};
     const idx = UR_DATA.findIndex(d=>(d._id||d.id)===id);
     if (idx!==-1) UR_DATA[idx] = { ...UR_DATA[idx],...(updated||{}),rturSent:true,rturSentAt:sentAt,techRemarks:techRemarks };
     applyFilters(); updateStats();
@@ -1229,7 +1228,6 @@ function logout(){localStorage.clear();window.location.href='login.html';}
 <script src="tab-fix.js"></script>
 </body>
 </html>
-
 
 
 
