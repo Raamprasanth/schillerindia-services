@@ -812,6 +812,17 @@ function populateEngFilter() {
   });
   fetchFormData();
   loadServices();
+  
+  // Setup enter to fetch today's date for all date inputs
+  document.querySelectorAll('input[type="date"]').forEach(el => {
+    el.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+        this.value = (new Date(Date.now() - tzoffset)).toISOString().slice(0, 10);
+      }
+    });
+  });
 })();
 
 let sfOpen = true;

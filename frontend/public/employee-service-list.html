@@ -938,6 +938,17 @@ function populateEngFilter() {
   ['f-frndate','f-sercomm','f-rcvdatesc','f-doi','f-entrydate','fl-from','fl-to'].forEach(id=>{ const el=document.getElementById(id); if(el) el.max=today; });
   fetchFormData();
   loadServices();
+  
+  // Setup enter to fetch today's date for all date inputs
+  document.querySelectorAll('input[type="date"]').forEach(el => {
+    el.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+        this.value = (new Date(Date.now() - tzoffset)).toISOString().slice(0, 10);
+      }
+    });
+  });
 })();
 
 function mergeAddFormGroups() {

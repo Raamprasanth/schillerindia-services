@@ -5,6 +5,7 @@ const CompletedFRN = require('../models/CompletedFRN');
 const SCCompletedFRN = require('../models/SCCompletedFRN');
 const Scrap = require('../models/Scrap');
 const Service = require('../models/Service');
+const RTUR = require('../models/rturModel');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 const {
   buildUrEscalationRow,
