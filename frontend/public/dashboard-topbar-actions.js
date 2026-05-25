@@ -44,7 +44,6 @@
     group.setAttribute('data-dashboard-actions', 'true');
     group.innerHTML = [
       '<button type="button" class="dashboard-topbar-action" data-dashboard-theme-btn onclick="window.toggleDashboardTheme()" aria-label="Toggle dark mode"></button>',
-      '<button type="button" class="dashboard-topbar-action" onclick="window.location.href=&quot;notifications.html&quot;" title="Notifications" aria-label="Notifications">&#128276;<span class="notif-dot"></span></button>',
     ].join('');
 
     target.prepend(group);
