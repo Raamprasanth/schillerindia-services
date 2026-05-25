@@ -12,6 +12,20 @@ function normalizeDivisions(input, fallback = '') {
 // ── GET /api/users/me — logged-in user's profile ─────────
 router.get('/me', protect, (req, res) => res.json(req.user));
 
+// ── GET /api/users/repair-team — get repair team members ──────
+router.get('/repair-team', protect, async (req, res) => {
+  try {
+    const users = await User.find({ role: { $in: ['repair', 'repair_team', 'admin'] } })
+      .select('name role')
+      .sort({ name: 1 });
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
+
 // ── GET /api/users — all users (admin only) ──────────────
 router.get('/', protect, adminOnly, async (req, res) => {
   try {

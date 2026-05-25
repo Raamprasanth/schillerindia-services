@@ -307,7 +307,7 @@ table.oa-table tbody tr:last-child td{border-bottom:none;}
         
         <div class="fg-4">
           <!-- Row 1: 4 columns -->
-          <div class="ff"><label>Repaired By <span class="req">*</span></label><input type="text" id="f-repairedBy" placeholder="Engineer / technician name"/></div>
+          <div class="ff"><label>Repaired By <span class="req">*</span></label><select id="f-repairedBy"><option value="">Select Repair Engineer</option></select></div>
           <div class="ff"><label>Entry Date <span class="req">*</span></label><input type="date" id="f-entryDate"/></div>
           <div class="ff"><label>Division <span class="req">*</span></label><select id="f-division2"><option value="">Select Division</option></select></div>
           <div class="ff"><label>Model</label><input type="text" id="f-model" placeholder="Equipment model"/></div>
@@ -364,10 +364,27 @@ let editId = null;
     new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   loadData();
   loadDivisionOptions();
+  loadRepairEngineers();
 })();
 
 function getToken()    { return localStorage.getItem('schiller_token') || ''; }
 function authHeaders() { return { 'Content-Type':'application/json', Authorization:'Bearer '+getToken() }; }
+
+async function loadRepairEngineers() {
+  try {
+    const res = await fetch(`${API}/api/users/repair-team`, { headers: authHeaders() });
+    if (!res.ok) return;
+    const users = await res.json();
+    const sel = document.getElementById('f-repairedBy');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Select Repair Engineer</option>';
+    (Array.isArray(users) ? users : []).forEach(u => {
+      const o = document.createElement('option');
+      o.value = u.name; o.textContent = u.name;
+      sel.appendChild(o);
+    });
+  } catch (_) {}
+}
 
 async function loadDivisionOptions() {
   try {
