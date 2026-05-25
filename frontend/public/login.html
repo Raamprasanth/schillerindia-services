@@ -102,6 +102,10 @@
     }
     .field select{cursor:pointer;}
     .select-arrow{position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:10px;color:var(--muted);}
+    .field input.has-toggle{padding-right:44px;}
+    .pass-toggle{position:absolute;right:9px;top:50%;transform:translateY(-50%);width:30px;height:30px;border:none;border-radius:6px;background:transparent;color:#5f7f99;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s,color 0.2s;}
+    .pass-toggle:hover,.pass-toggle:focus-visible{background:rgba(0,104,181,0.1);color:var(--blue);outline:none;}
+    .pass-toggle svg{width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
     .field input::placeholder{color:#a0b8cc;}
     .field input:focus,.field select:focus{border-color:var(--blue);background:#eef5fc;box-shadow:0 0 0 3px rgba(0,104,181,0.1);}
     .field input.err{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(204,0,0,0.1)!important;}
@@ -245,7 +249,13 @@
       <label>Password</label>
       <div class="field-wrap">
         <span class="ico">&#128274;</span>
-        <input type="password" id="f-pass" placeholder="Enter your password" autocomplete="current-password"/>
+        <input type="password" id="f-pass" class="has-toggle" placeholder="Enter your password" autocomplete="current-password"/>
+        <button type="button" class="pass-toggle" id="pass-toggle" onclick="togglePassword()" aria-label="Show password" title="Show password">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -337,6 +347,18 @@
     const msg = document.getElementById('msg');
     msg.className = type === 'err' ? 'msg show-err' : 'msg show-ok';
     msg.innerHTML = text;
+  }
+  function togglePassword() {
+    const passEl = document.getElementById('f-pass');
+    const btn = document.getElementById('pass-toggle');
+    const visible = passEl.type === 'text';
+    passEl.type = visible ? 'password' : 'text';
+    btn.setAttribute('aria-label', visible ? 'Show password' : 'Hide password');
+    btn.setAttribute('title', visible ? 'Show password' : 'Hide password');
+    btn.innerHTML = visible
+      ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"></path><circle cx="12" cy="12" r="3"></circle></svg>'
+      : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"></path><circle cx="12" cy="12" r="3"></circle><path d="M4 4l16 16"></path></svg>';
+    passEl.focus();
   }
   function _esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function getAssignedDivisions(user) {
