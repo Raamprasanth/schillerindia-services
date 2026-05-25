@@ -1184,151 +1184,6 @@ function previewEstimatePDF(){
   }
 }
 
-async function submitEstimation(){
-  const errEl=document.getElementById('modal-err');
-  const okEl=document.getElementById('modal-ok');
-  errEl.classList.remove('show'); okEl.classList.remove('show');
-
-  const estno     =document.getElementById('u-estno').value.trim();
-  const estdate   =document.getElementById('u-estdate').value;
-  const estamount =document.getElementById('u-estamount').value;
-  const eststatus =document.getElementById('u-eststatus').value;
-  const raeng     =document.getElementById('u-raeng').value;
-  const missing=[];
-  if(!estno)      missing.push('Estimation No');
-  if(!estdate)    missing.push('Estimation Date');
-  if(!estamount)  missing.push('Estimation Amount');
-  if(!eststatus)  missing.push('Order Type');
-  if(!raeng)      missing.push('RA Engineer');
-  if(missing.length){errEl.textContent='Required: '+missing.join(', ');errEl.classList.add('show');return;}
-
-  const btn=document.getElementById('est-save-btn');
-  btn.disabled=true; btn.textContent='\uD83D\uDCBE Saving...';
-
-  try {
-    const existing=allRecords.find(x=>(x._id||x.id)===editingId);
-    const techRem  =document.getElementById('u-techremarks').value.trim();
-    const partNo   =document.getElementById('u-partno').value.trim();
-    const qty      =parseInt(document.getElementById('u-qty').value)||1;
-    const validDate=document.getElementById('u-validdate').value;
-
-    // -- STEP 1: Mark service as moved to estimation --------------------
-    const svcPayload={
-      estNo:             estno,
-      estDate:           estdate,
-      estValidDate:      validDate,
-      estAmount:         parseFloat(estamount)||0,
-      estStatus:         eststatus,
-      orderType:         eststatus,
-      estRaEng:          raeng,
-      defUnitGir:        document.getElementById('u-defunitgir').value.trim(),
-      techRemarks:       techRem,
-      partNo,
-      qty,
-      estUpdatedBy:      EMP_NAME,
-      estUpdatedAt:      new Date().toISOString(),
-      movedToEstimation: true,    // ? THIS is what keeps it off OB Pending on refresh
-      obStatus:          'Estimation',
-    };
-
-    const svcRes=await fetch(API_BASE+'/api/emp/services/'+editingId,{method:'PUT',headers:authHeaders(),body:JSON.stringify(svcPayload)});
-    if(svcRes.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
-    if(!svcRes.ok){const e=await svcRes.json().catch(()=>({}));throw new Error('Service update failed: '+(e.message||svcRes.status));}
-
-    // -- STEP 2: Create EstimationPending record ------------------------
-    const estPayload={
-      serviceId:    editingId,
-      entryDate:    existing.entryDate   || '',
-      scReNo:       existing.scReNo      || '',
-      scEng:        existing.scEng       || '',
-      frnNo:        existing.frnNo       || '',
-      frnDate:      existing.frnDate     || '',
-      reg:          existing.reg         || '',
-      branch:       existing.branch      || '',
-      eng:          existing.eng         || '',
-      dealer:       existing.dealer      || '',
-      custName:     existing.custName    || existing.customer || '',
-      customer:     existing.custName    || existing.customer || '',
-      model:        existing.model       || '',
-      unitSts:      existing.unitSts     || '',
-      defMod:       existing.defMod      || '',
-      defGir:       existing.defGir      || '',
-      typeWork:     existing.typeWork    || existing.type || '',
-      estNo:        estno,
-      estDate:      estdate,
-      estValidDate: validDate,
-      estAmount:    parseFloat(estamount)||0,
-      estStatus:    eststatus,
-      orderType:    eststatus,
-      estRaEng:     raeng,
-      defUnitGir:   document.getElementById('u-defunitgir').value.trim(),
-      techRemarks:  techRem,
-      partNo,
-      qty,
-      submittedBy:  EMP_NAME,
-      submittedAt:  new Date().toISOString(),
-    };
-
-    const estRes=await fetch(API_BASE+'/api/emp/estimation',{method:'POST',headers:authHeaders(),body:JSON.stringify(estPayload)});
-    if(estRes.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
-    if(!estRes.ok){const e=await estRes.json().catch(()=>({}));throw new Error('Estimation save failed: '+(e.message||estRes.status));}
-
-    // -- STEP 3: Both saves confirmed - remove from local list ----------
-    allRecords=allRecords.filter(x=>(x._id||x.id)!==editingId);
-    updateStats(); applyFilters();
-
-    okEl.textContent='Saved & moved to Estimation Pending!'; okEl.classList.add('show');
-    showToast('Moved to Estimation Pending.','ok');
-
-    try { generatePDFData({...existing,...svcPayload}); } catch(pdfErr){ console.warn('[PDF]',pdfErr.message); }
-
-    setTimeout(closeModal,1400);
-
-  } catch(e){
-    errEl.textContent=e.message; errEl.classList.add('show');
-    showToast('Save failed: '+e.message,'err');
-  } finally {
-    btn.disabled=false; btn.innerHTML ='&#128190; Save Estimation';
-  }
-}
-
-function generatePDFData(s, mode='download'){
-  const jsPDFLib=(window.jspdf&&window.jspdf.jsPDF)||window.jsPDF;
-  if(!jsPDFLib){showToast('PDF library not loaded','err');return;}
-  const doc=new jsPDFLib('p','mm','a4');
-  const W=210,H=297,L=14,R=196,CW=(R-L)/2;let y=0;
-  doc.setFillColor(0,104,181);doc.rect(0,0,W,20,'F');
-  doc.setTextColor(255,255,255);doc.setFontSize(13);doc.setFont('helvetica','bold');
-  doc.text('SchillerIndia - Estimation Record',L,13);
-  doc.setFontSize(8);doc.setFont('helvetica','normal');
-  doc.text(new Date().toLocaleDateString('en-IN'),R,13,{align:'right'});y=26;
-  doc.setFillColor(254,243,199);doc.rect(L,y,R-L,10,'F');
-  doc.setTextColor(146,64,14);doc.setFontSize(9);doc.setFont('helvetica','bold');
-  doc.text('SC Ref: '+(s.scReNo||'-')+'   |   FRN: '+(s.frnNo||'-')+'   |   Customer: '+(s.custName||s.customer||'-'),L+2,y+6.5);y+=16;
-  const bar=(title,r,g,b)=>{doc.setFillColor(r,g,b);doc.rect(L,y,R-L,6,'F');doc.setTextColor(255,255,255);doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.text(title,L+2,y+4.2);y+=9;doc.setTextColor(30,30,30);};
-  const row2=(la,va,lb,vb)=>{doc.setFontSize(7);doc.setFont('helvetica','bold');doc.setTextColor(120,140,160);doc.text((la||'').toUpperCase(),L,y);doc.text((lb||'').toUpperCase(),L+CW,y);doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(15,34,54);doc.text(String(va||'-'),L,y+4.5);doc.text(String(vb||'-'),L+CW,y+4.5);y+=12;};
-  const rupee=amt=>amt?'Rs. '+Number(amt).toLocaleString('en-IN'):'-';
-  bar('Estimation Details',180,83,9);
-  row2('Estimation No',s.estNo||'-','Estimation Date',fmtDate(s.estDate));
-  row2('Valid Date',fmtDate(s.estValidDate),'Order Type',s.estStatus||s.orderType||'-');
-  row2('Amount',rupee(s.estAmount),'RA Engineer',s.estRaEng||'-');
-  bar('Device Details',0,104,181);
-  row2('Model',s.model||'-','Def Mod / Brd',s.defMod||'-');
-  row2('Unit Status',s.unitSts||'-','DEF GIR No',s.defGir||'-');
-  row2('Part Number',s.partNo||'-','Quantity',String(s.qty||1));
-  bar('Service Details',14,116,144);
-  row2('SC Engineer',s.scEng||'-','Branch',s.branch||s.reg||'-');
-  row2('FRN No',s.frnNo||'-','FRN Date',fmtDate(s.frnDate));
-  row2('Pending Days',(s.pdOb||0)+' days','Order Type',s.estStatus||s.orderType||'-');
-  doc.setDrawColor(200,215,225);doc.line(L,H-14,R,H-14);
-  doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(150,160,175);
-  doc.text('SchillerIndia Services Portal  |  Confidential',W/2,H-9,{align:'center'});
-  const fname='estimation-'+(s.scReNo||editingId||'rec')+'-'+new Date().toISOString().slice(0,10)+'.pdf';
-  doc.save(fname);
-  showToast('&#128196; PDF downloaded: '+fname,'ok');
-}
-
-function generatePDF(id){const s=allRecords.find(x=>(x._id||x.id)===id);if(!s){showToast('Record not found','err');return;}generatePDFData(s);}
 
 async function submitEstimation(){
   const errEl=document.getElementById('modal-err');
@@ -1513,30 +1368,26 @@ function generatePDFData(s, mode='download'){
   const serviceCharge=Math.max(0, Number(s.serviceCharge) || 0);
   const groupTotal=itemsTotal + serviceCharge;
   const money=amt=>Number(amt||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
-  const drawBox=(x,top,w,h)=>{doc.setDrawColor(110,110,110);doc.rect(x,top,w,h);};
-  const SCH_BLUE=[0,93,170], SCH_RED=[227,6,19];
+
+  const drawBox=(x,top,w,h)=>{doc.setLineWidth(0.2);doc.setDrawColor(0,0,0);doc.rect(x,top,w,h);};
   const setRgb=(method,rgb)=>doc[method](rgb[0],rgb[1],rgb[2]);
   const drawSchillerHeader=()=>{
-    doc.setLineWidth(0.45);
-    setRgb('setDrawColor',SCH_BLUE);
+    doc.setLineWidth(0.3);
+    setRgb('setDrawColor',[0,0,0]);
     doc.rect(8,8,194,281);
-    setRgb('setFillColor',SCH_BLUE);
-    doc.rect(8,8,194,4,'F');
-    setRgb('setFillColor',SCH_RED);
-    doc.rect(8,12,194,1.6,'F');
     
-      try { doc.addImage(SCHILLER_PDF_LOGO, 'PNG', 16, 17, 54, 10); } catch(e){}
-    setRgb('setTextColor',SCH_BLUE);
+    try { doc.addImage(SCHILLER_PDF_LOGO, 'PNG', 16, 12, 54, 10); } catch(e){}
     doc.setFont('helvetica','bold');
     doc.setFontSize(12);
-    doc.text('REPAIR ESTIMATION',190,24,{align:'right'});
-    setRgb('setDrawColor',SCH_BLUE);
-    doc.line(14,34,196,34);
+    doc.text('REPAIR ESTIMATION',190,19,{align:'right'});
+    setRgb('setDrawColor',[0,0,0]);
+    doc.setLineWidth(0.3);
+    doc.line(14,28,196,28);
   };
   const labelValue=(x,top,label,value,labelW=32)=>{
     doc.setFontSize(8);
     doc.setFont('helvetica','normal');
-    doc.text(String(label||''),x,top);
+    if(label) doc.text(String(label),x,top);
     doc.text(String(value||'-'),x+labelW,top);
   };
   const writeWrapped=(text,x,top,width,lineHeight=4.7)=>{
@@ -1549,36 +1400,32 @@ function generatePDFData(s, mode='download'){
 
   const leftBoxX=L;
   const rightBoxX=102;
-  const topBoxY=39;
-  doc.setFillColor(240,247,253);
-  doc.rect(leftBoxX, topBoxY, 68, 32, 'F');
-  doc.rect(rightBoxX, topBoxY, 80, 32, 'F');
+  const topBoxY=33;
   drawBox(leftBoxX, topBoxY, 68, 32);
   drawBox(rightBoxX, topBoxY, 80, 32);
-  labelValue(leftBoxX+2, topBoxY+7, 'Estimate Reference', s.estNo || '-');
+  labelValue(leftBoxX+2, topBoxY+7, 'Estimation No', s.estNo || '-');
   labelValue(leftBoxX+2, topBoxY+15, 'Date', fmtDate(s.estDate));
   labelValue(leftBoxX+2, topBoxY+23, 'Quote Valid Until', fmtDate(s.estValidDate));
   labelValue(leftBoxX+2, topBoxY+31, 'Order Type', s.estStatus||s.orderType||'-');
-  labelValue(rightBoxX+2, topBoxY+7, 'Customer Name', s.custName||s.customer||'-', 34);
+  labelValue(rightBoxX+2, topBoxY+7, 'Customer Name', s.customer||s.custName||'-', 34);
   labelValue(rightBoxX+2, topBoxY+15, 'Dealer Name', s.dealer||'-', 34);
 
-  y=80;
-  doc.setFillColor(255,246,246);
-  doc.rect(L, y, R-L, 24, 'F');
+  y=72;
   drawBox(L, y, R-L, 24);
-  labelValue(L+2, y+7, 'Engineer Name and Contact', s.estRaEng || s.eng || '-', 45);
+  labelValue(L+2, y+7, 'Engineer Name', s.estRaEng || s.eng || '-', 45);
   labelValue(104, y+7, 'FRN', s.frnNo || '-', 20);
   labelValue(104, y+14, 'DATE', fmtDate(s.frnDate), 20);
   labelValue(104, y+21, 'Service Centre Rcvd Date', fmtDate(s.rcvdDate || s.entryDate), 45);
 
-  y=111;
+  y=104;
   doc.setFont('helvetica','bold');
   doc.setFontSize(8.8);
   doc.text('Received Item:',L,y);
   doc.setFont('helvetica','normal');
   y+=8;
   labelValue(L, y, '', (s.model||'-') + '    Unit', 0);
-  labelValue(104, y, 'Unit S/N', s.defUnitGir||s.defGir||'-', 22);
+  labelValue(104, y, 'Unit S/N', s.defUnitGir||s.defGir||s.unitSl||'-', 22);
+  labelValue(150, y, 'Unit Status', s.unitStatus || s.unitSts || '-', 22);
 
   y+=13;
   doc.setFont('helvetica','bold');
@@ -1675,6 +1522,7 @@ function generatePDFData(s, mode='download'){
   const fname='estimation-'+(s.scReNo||editingId||'rec')+'-'+new Date().toISOString().slice(0,10)+'.pdf';
   handleEstimatePdfOutput(doc, fname, mode);
 }
+
 
 function generatePDF(id){
   const s=allRecords.find(x=>(x._id||x.id)===id);
