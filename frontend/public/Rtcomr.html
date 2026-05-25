@@ -505,7 +505,7 @@ function renderTable() {
         <td><span style="font-size:10px;background:rgba(91,33,182,0.08);color:#5b21b6;border:1px solid rgba(91,33,182,0.18);border-radius:8px;padding:2px 8px;font-weight:700;">${esc(d.division||'-')}</span></td>
         <td style="font-size:11.5px;">${esc(d.model||'-')}</td>
         <td style="font-weight:600;">${esc(d.description||'-')}</td>
-        <td><span style="font-family:monospace;font-size:10.5px;color:var(--muted);">${esc(d.partNumber || d.mpnNumber || '-')}</span></td>
+        <td><span style="font-family:monospace;font-size:14px;font-weight:800;color:var(--text);">${esc(d.partNumber || d.mpnNumber || '-')}</span></td>
         <td style="font-weight:700;text-align:center;">${d.requiredQty||'-'}</td>
         <td style="font-size:11.5px;">${d.price != null && d.price !== '' ? d.price : '-'}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.piRaisedDate)}</td>
