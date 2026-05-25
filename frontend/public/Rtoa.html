@@ -258,7 +258,7 @@ table.oa-table tbody tr:last-child td{border-bottom:none;}
           </div>
           <div class="srch-wrap">
             <span class="srch-ico">&#128269;</span>
-            <input type="text" id="tbl-search" placeholder="Search activities..." oninput="applyFilters()"/>
+            <input type="text" id="tbl-search" oninput="applyFilters()"/>
           </div>
         </div>
       </div>
@@ -307,21 +307,27 @@ table.oa-table tbody tr:last-child td{border-bottom:none;}
         
         <div class="fg-4">
           <!-- Row 1: 4 columns -->
-          <div class="ff"><label>Repaired By <span class="req">*</span></label><select id="f-repairedBy"><option value="">Select Repair Engineer</option></select></div>
+          <div class="ff"><label>Repaired By <span class="req">*</span></label><select id="f-repairedBy">
+              <option value="">Select Repair Engineer</option>
+              <option value="Gajenthiran">Gajenthiran</option>
+              <option value="Vaasougi">Vaasougi</option>
+              <option value="Pradap">Pradap</option>
+              <option value="Thilipan">Thilipan</option>
+            </select></div>
           <div class="ff"><label>Entry Date <span class="req">*</span></label><input type="date" id="f-entryDate"/></div>
           <div class="ff"><label>Division <span class="req">*</span></label><select id="f-division2"><option value="">Select Division</option></select></div>
-          <div class="ff"><label>Model</label><input type="text" id="f-model" placeholder="Equipment model"/></div>
+          <div class="ff"><label>Model</label><input type="text" id="f-model"/></div>
           
           <!-- Row 2: Description (Full width) -->
-          <div class="ff span4"><label>Description</label><textarea id="f-description" placeholder="Brief description..."></textarea></div>
+          <div class="ff span4"><label>Description</label><textarea id="f-description"></textarea></div>
           
           <!-- Row 3: Part No & Problem Observed -->
-          <div class="ff span2"><label>Part Number</label><input type="text" id="f-partNumber" placeholder="Part / component number"/></div>
-          <div class="ff span2"><label>Problem Observed <span class="req">*</span></label><textarea id="f-problemObserved" placeholder="Problem observed..."></textarea></div>
+          <div class="ff span2"><label>Part Number</label><input type="text" id="f-partNumber"/></div>
+          <div class="ff span2"><label>Problem Observed <span class="req">*</span></label><textarea id="f-problemObserved"></textarea></div>
 
           <!-- Row 4: Components & Final Remarks -->
-          <div class="ff span2"><label>Components Used to Repair</label><textarea id="f-componentsUsed" placeholder="Components used..."></textarea></div>
-          <div class="ff span2"><label>Final Remarks</label><textarea id="f-finalRemarks" placeholder="Final remarks..."></textarea></div>
+          <div class="ff span2"><label>Components Used to Repair</label><textarea id="f-componentsUsed"></textarea></div>
+          <div class="ff span2"><label>Final Remarks</label><textarea id="f-finalRemarks"></textarea></div>
 
           <!-- Row 5: Repaired Date & Status -->
           <div class="ff span2"><label>Repaired Date</label><input type="date" id="f-repairedDate"/></div>
@@ -335,7 +341,7 @@ table.oa-table tbody tr:last-child td{border-bottom:none;}
           </div>
 
           <!-- Extra Row: Remarks -->
-          <div class="ff span4"><label>Remarks</label><textarea id="f-remarks" placeholder="Additional remarks..."></textarea></div>
+          <div class="ff span4"><label>Remarks</label><textarea id="f-remarks"></textarea></div>
         </div>
 
       </div>
@@ -364,7 +370,7 @@ let editId = null;
     new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   loadData();
   loadDivisionOptions();
-  loadRepairEngineers();
+  
 })();
 
 function getToken()    { return localStorage.getItem('schiller_token') || ''; }
