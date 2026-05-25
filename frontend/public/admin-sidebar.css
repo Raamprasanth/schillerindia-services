@@ -57,58 +57,6 @@
   font-weight: 800 !important;
 }
 
-.organ-logo {
-  display: flex !important;
-  gap: 3px !important;
-  width: 84px !important;
-  height: 32px !important;
-  min-width: 84px !important;
-  border-radius: 10px !important;
-  overflow: hidden !important;
-  flex-shrink: 0 !important;
-  background: transparent !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.20) !important;
-  border: 0 !important;
-}
-
-.organ-logo > * {
-  display: flex !important;
-}
-
-.organ-panel {
-  width: 28px !important;
-  height: 32px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-.op-yellow { background: #F5C518 !important; }
-.op-orange { background: #F4845F !important; }
-.op-red { background: #C0392B !important; }
-
-@keyframes heartpulse {
-  0%,65%,100% { transform: scale(1); }
-  15% { transform: scale(1.30); }
-  35% { transform: scale(1.10); }
-  50% { transform: scale(1.22); }
-}
-
-@keyframes lungbreathe {
-  0%,100% { transform: scale(1); }
-  50% { transform: scaleX(1.10) scaleY(1.08); }
-}
-
-@keyframes anabeat {
-  0%,60%,100% { transform: scale(1) rotate(-4deg); }
-  18% { transform: scale(1.26) rotate(-4deg); }
-  38% { transform: scale(1.08) rotate(-4deg); }
-}
-
-.anim-heart { animation: heartpulse 1.4s ease-in-out infinite !important; transform-origin: center !important; }
-.anim-lungs { animation: lungbreathe 2.8s ease-in-out infinite !important; transform-origin: center bottom !important; }
-.anim-ana { animation: anabeat 1.4s ease-in-out infinite 0.2s !important; transform-origin: center !important; }
-
 .sidebar-logo-text,
 .logo-text {
   font-family: 'Syne', 'Plus Jakarta Sans', sans-serif !important;

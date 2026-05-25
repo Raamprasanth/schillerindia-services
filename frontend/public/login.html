@@ -64,42 +64,6 @@
 
     /* LOGO */
     .logo{display:flex;align-items:center;gap:12px;position:relative;z-index:1;}
-    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:52px;flex-shrink:0;box-shadow:0 4px 16px rgba(0,0,0,0.35);}
-    .organ-panel{width:48px;height:52px;display:flex;align-items:center;justify-content:center;}
-    .op-yellow{background:#F5C518;}
-    .op-orange{background:#F4845F;}
-    .op-red{background:#C0392B;}
-    @keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}
-    @keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}
-    @keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}
-    .anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center;}
-    .anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom;}
-    .anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center;}
-    .logo-text .name{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:#fff;letter-spacing:0.06em;}
-    .logo-text .name span{color:rgba(14,165,233,0.9);}
-    .logo-text .sub{font-size:10px;color:rgba(255,255,255,0.55);letter-spacing:0.18em;text-transform:uppercase;margin-top:2px;}
-
-    /* HEADING inside top banner */
-    .card-top h1{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;color:#fff;margin:18px 0 4px;position:relative;z-index:1;}
-    .card-top .subtitle{font-size:12.5px;color:rgba(255,255,255,0.6);position:relative;z-index:1;}
-
-    /* CARD BODY */
-    .card-body{padding:28px 36px 32px;background:#ffffff;}
-
-    /* FIELDS */
-    .field{margin-bottom:16px;}
-    .field label{display:block;font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
-    .field-wrap{position:relative;}
-    .field-wrap .ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:14px;opacity:0.35;pointer-events:none;}
-    .field input,.field select{
-      width:100%;padding:11px 14px 11px 38px;
-      background:#f4f8fc;
-      border:1.5px solid #ccdde8;
-      border-radius:7px;color:var(--text);
-      font-family:'DM Sans',sans-serif;font-size:14px;
-      outline:none;transition:border-color 0.2s,box-shadow 0.2s,background 0.2s;
-      appearance:none;-webkit-appearance:none;
-    }
     .field select{cursor:pointer;}
     .select-arrow{position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:10px;color:var(--muted);}
     .field input.has-toggle{padding-right:44px;}
@@ -174,35 +138,7 @@
     <!-- Blue top banner -->
     <div class="card-top">
       <div class="logo">
-      <div class="organ-logo">
-        <div class="organ-panel op-yellow">
-          <svg class="anim-heart" viewBox="0 0 40 38" width="30" height="28" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/>
-            <ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/>
-          </svg>
-        </div>
-        <div class="organ-panel op-orange">
-          <svg class="anim-lungs" viewBox="0 0 40 38" width="30" height="28" xmlns="http://www.w3.org/2000/svg">
-            <rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/>
-            <path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-            <path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-            <ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/>
-            <ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/>
-            <ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/>
-            <ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/>
-          </svg>
-        </div>
-        <div class="organ-panel op-red">
-          <svg class="anim-ana" viewBox="0 0 40 38" width="30" height="28" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/>
-            <path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-            <path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/>
-            <line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/>
-            <ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/>
-          </svg>
-        </div>
-      </div>
+      <img class="brand-logo-img" src="logo.png" alt="SCHILLER - The Art of Diagnostics">
       <div class="logo-text">
         <div class="name">Schiller<span>India</span></div>
         <div class="sub">Services Portal</div>

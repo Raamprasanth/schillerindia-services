@@ -14,10 +14,6 @@
   }
 
   function normalizeLogos() {
-    document.querySelectorAll('.organ-logo').forEach((logo) => {
-      const container = logo.closest('.logo, .sidebar-logo, .logo-wrap') || logo.parentElement;
-      replaceLogo(container);
-    });
 
     document.querySelectorAll('.sidebar-logo-icon, .logo-icon').forEach((logo) => {
       const container = logo.closest('.sidebar-logo, .logo-wrap') || logo.parentElement;
