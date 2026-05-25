@@ -997,7 +997,11 @@ async function loadData(){
     populateFilters();applyFilters();updateStats();
     const b=document.getElementById('sidebar-frn-count');if(b)b.textContent=FRN_DATA.length;
     showToast('Loaded '+FRN_DATA.length+' record'+(FRN_DATA.length!==1?'s':''),'info');
-  }catch(e){if(e.message==='Unauthorized')return;showToast('Load failed: '+e.message,'err');}
+  }catch(e){
+    if(e.message==='Unauthorized')return;
+    setError('Load failed: '+e.message);
+    showToast('Load failed: '+e.message,'err');
+  }
 }
 
 function populateFilters(){}

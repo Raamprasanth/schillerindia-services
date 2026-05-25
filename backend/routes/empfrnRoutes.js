@@ -90,7 +90,7 @@ async function hasQueueAccess(user, doc) {
 // ─────────────────────────────────────────────────────────
 router.get('/', protect, adminOnly, async (req, res) => {
   try {
-    await syncMissingPendingFrn(req.user);
+    syncMissingPendingFrn(req.user).catch(err => console.error('[EmpFRN sync]', err.message));
     const { region, unitStatus, eng, from, to } = req.query;
     const filter = { status: 'pending' };
     if (region)     filter.region     = region;
@@ -163,7 +163,7 @@ router.put('/:id/escalate', protect, adminOnly, async (req, res) => {
 // ─────────────────────────────────────────────────────────
 router.get('/employee', protect, async (req, res) => {
   try {
-    await syncMissingPendingFrn(req.user);
+    syncMissingPendingFrn(req.user).catch(err => console.error('[EmpFRN employee sync]', err.message));
     const { getServiceIdsFilter } = require('../utils/visibility');
     const visibilityFilter = await getServiceIdsFilter(req.user, [
       { eng: req.user.name },
