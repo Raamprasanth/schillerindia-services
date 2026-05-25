@@ -288,7 +288,7 @@ table.comr-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('division')">Division &#8597;</th>
             <th onclick="sortBy('model')">Model &#8597;</th>
             <th onclick="sortBy('description')">Description &#8597;</th>
-            <th onclick="sortBy('mpnNumber')">MPN/Part no &#8597;</th>
+            <th onclick="sortBy('partNumber')">MPN/Part no &#8597;</th>
             <th onclick="sortBy('requiredQty')">Req Qty &#8597;</th>
             <th onclick="sortBy('price')">Price &#8597;</th>
             <th onclick="sortBy('piRaisedDate')">PI Raised &#8597;</th>
@@ -505,7 +505,7 @@ function renderTable() {
         <td><span style="font-size:10px;background:rgba(91,33,182,0.08);color:#5b21b6;border:1px solid rgba(91,33,182,0.18);border-radius:8px;padding:2px 8px;font-weight:700;">${esc(d.division||'-')}</span></td>
         <td style="font-size:11.5px;">${esc(d.model||'-')}</td>
         <td style="font-weight:600;">${esc(d.description||'-')}</td>
-        <td><span style="font-family:monospace;font-size:10.5px;color:var(--muted);">${esc(d.mpnNumber||'-')}</span></td>
+        <td><span style="font-family:monospace;font-size:10.5px;color:var(--muted);">${esc(d.partNumber || d.mpnNumber || '-')}</span></td>
         <td style="font-weight:700;text-align:center;">${d.requiredQty||'-'}</td>
         <td style="font-size:11.5px;">${d.price != null && d.price !== '' ? d.price : '-'}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.piRaisedDate)}</td>
@@ -549,7 +549,7 @@ function openEdit(id) {
   document.getElementById('fm-division').value = d.division || '';
   document.getElementById('f-model').value = d.model || '';
   document.getElementById('f-description').value = d.description || '';
-  document.getElementById('f-mpnno').value = d.mpnNumber || '';
+  document.getElementById('f-mpnno').value = d.partNumber || d.mpnNumber || '';
   document.getElementById('f-requiredQty').value = d.requiredQty || '';
   document.getElementById('f-price').value = d.price != null ? d.price : '';
   document.getElementById('f-piRaisedDate').value = isoDate(d.piRaisedDate);
@@ -573,7 +573,7 @@ async function saveRecord() {
   const division               = document.getElementById('fm-division').value.trim();
   const model                  = document.getElementById('f-model').value.trim();
   const description            = document.getElementById('f-description').value.trim();
-  const mpnNumber              = document.getElementById('f-mpnno').value.trim();
+  const partNumber             = document.getElementById('f-mpnno').value.trim();
   const requiredQty            = parseInt(document.getElementById('f-requiredQty').value) || 0;
   const price                  = parseFloat(document.getElementById('f-price').value) || 0;
   const piRaisedDate           = document.getElementById('f-piRaisedDate').value;
@@ -584,7 +584,7 @@ async function saveRecord() {
   if (!requestedDate || !division || !description || !requiredQty) {
     showToast('Please fill all required fields.', 'err'); return;
   }
-  const body = { requestedDate, division, model, description, mpnNumber, requiredQty, price,
+  const body = { requestedDate, division, model, description, partNumber, requiredQty, price,
     piRaisedDate: piRaisedDate || null, piApprovedDate: piApprovedDate || null,
     componentsReceivedDate: componentsReceivedDate || null, remarks };
   const btn = document.getElementById('save-btn');

@@ -45,7 +45,7 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const {
-      requestedDate, division, model, description, partNumber,
+      requestedDate, division, model, description, partNumber, mpnNumber,
       requiredQty, price, piRaisedDate, piApprovedDate, componentsReceivedDate, remarks,
     } = req.body;
 
@@ -58,7 +58,7 @@ router.post('/', async (req, res) => {
       division,
       model:                  model || '',
       description,
-      partNumber:             partNumber             || '',
+      partNumber:             partNumber || mpnNumber || '',
       requiredQty:            parseInt(requiredQty)  || 1,
       price:                  parseFloat(price)      || 0,
       piRaisedDate:           piRaisedDate           ? new Date(piRaisedDate)           : null,
@@ -86,6 +86,7 @@ router.put('/:id', async (req, res) => {
     if (b.model                  !== undefined) record.model                  = b.model;
     if (b.description            !== undefined) record.description            = b.description;
     if (b.partNumber             !== undefined) record.partNumber             = b.partNumber;
+    if (b.mpnNumber              !== undefined && b.partNumber === undefined) record.partNumber = b.mpnNumber;
     if (b.requiredQty            !== undefined) record.requiredQty            = parseInt(b.requiredQty) || 1;
     if (b.price                  !== undefined) record.price                  = parseFloat(b.price) || 0;
     if (b.piRaisedDate           !== undefined) record.piRaisedDate           = b.piRaisedDate ? new Date(b.piRaisedDate) : null;
