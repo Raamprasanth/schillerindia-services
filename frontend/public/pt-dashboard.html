@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <script>(function(){
-  const t=localStorage.getItem('schiller_token');
+  const t=sessionStorage.getItem('schiller_token');
   if(!t) window.location.href='login.html';
 })();</script>
 <title>SchillerIndia - Dashboard</title>
@@ -494,7 +494,7 @@ let STATS = { calls:0, closedCalls:0, pendingAct:0, closedAct:0, bir:0, closedBi
 
 /* ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ INIT ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ */
 (function init(){
-  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   const name = u.name || 'User';
   (document.getElementById('user-nm')||{}).textContent = name;
   (document.getElementById('user-av')||{}).textContent = name.charAt(0).toUpperCase();
@@ -503,7 +503,7 @@ let STATS = { calls:0, closedCalls:0, pendingAct:0, closedAct:0, bir:0, closedBi
   loadAllData();
 })();
 
-function getToken(){ return localStorage.getItem('schiller_token') || ''; }
+function getToken(){ return sessionStorage.getItem('schiller_token') || ''; }
 function authHeaders(){ return { 'Content-Type':'application/json', Authorization:'Bearer '+getToken() }; }
 function handleUnauth(res){
   if(res.status===401||res.status===403){
@@ -795,7 +795,7 @@ function exportSummary(){
   showToast('Summary exported.','ok');
 }
 
-function logout(){ localStorage.clear(); window.location.href='login.html'; }
+function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; }
 
 /* ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ NOTIFICATION PANEL ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ */
 const NOTIF_READ_KEY='si_notif_read_pt';
@@ -804,7 +804,7 @@ function getReadIds(){try{return JSON.parse(localStorage.getItem(NOTIF_READ_KEY)
 function saveReadIds(ids){localStorage.setItem(NOTIF_READ_KEY,JSON.stringify(ids));}
 async function loadNotifications(){
   try{
-    const token=localStorage.getItem('schiller_token');
+    const token=sessionStorage.getItem('schiller_token');
     const res=await fetch('/api/admin/notifications',{headers:{'Authorization':'Bearer '+token}});
     if(!res.ok)return;
     const all=await res.json();

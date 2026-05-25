@@ -775,8 +775,8 @@
 <script>
   // -- AUTH GUARD: redirect to login if not employee --
   (async function() {
-    const token = localStorage.getItem('schiller_token');
-    const localUser = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+    const token = sessionStorage.getItem('schiller_token');
+    const localUser = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
 
     if (!token) {
       window.location.href = 'login.html';
@@ -795,14 +795,14 @@
       const payload = await res.json().catch(() => ({}));
       if (res.ok && payload && payload.data) {
         user = payload.data;
-        localStorage.setItem('schiller_user', JSON.stringify(user));
-        localStorage.setItem('schiller_role', String(user.role || 'employee').toLowerCase());
+        sessionStorage.setItem('schiller_user', JSON.stringify(user));
+        sessionStorage.setItem('schiller_role', String(user.role || 'employee').toLowerCase());
       }
     } catch (err) {
       console.warn('Dashboard user fetch failed:', err);
     }
 
-    const normalizedRole = String(user.role || localStorage.getItem('schiller_role') || '').toLowerCase();
+    const normalizedRole = String(user.role || sessionStorage.getItem('schiller_role') || '').toLowerCase();
     if (normalizedRole && normalizedRole !== 'employee') {
       window.location.href = 'login.html';
       return;
@@ -983,7 +983,7 @@
   }
 
   function renderEmpChat(thread){
-    const current = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+    const current = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
     const currentId = String(current._id || current.id || '');
     (document.getElementById('emp-chat-title')||{}).textContent = String(thread.coordinatorId) === currentId ? (thread.employeeName || 'Recipient') : (thread.coordinatorName || 'Service Coordinator');
     (document.getElementById('emp-chat-sub')||{}).textContent = thread.division || 'Service coordination';
@@ -1045,7 +1045,7 @@
   }
 
   function empAuthHeaders(){
-    return { 'Content-Type':'application/json', Authorization:'Bearer ' + (localStorage.getItem('schiller_token') || '') };
+    return { 'Content-Type':'application/json', Authorization:'Bearer ' + (sessionStorage.getItem('schiller_token') || '') };
   }
 
   function fmtEmpMsgTime(value){
@@ -1204,14 +1204,14 @@
   }
 
   function logout() {
-    localStorage.removeItem('schiller_token');
-    localStorage.removeItem('schiller_user');
-    localStorage.removeItem('schiller_role');
+    sessionStorage.removeItem('schiller_token');
+    sessionStorage.removeItem('schiller_user');
+    sessionStorage.removeItem('schiller_role');
     window.location.href = 'login.html';
   }
 
   // TOUR SUMMARY
-  const TOUR_KEY = () => 'tour_summaries_' + (JSON.parse(localStorage.getItem('schiller_user')||'{}').name||'emp');
+  const TOUR_KEY = () => 'tour_summaries_' + (JSON.parse(sessionStorage.getItem('schiller_user')||'{}').name||'emp');
   function loadTourSummaries() { try { return JSON.parse(localStorage.getItem(TOUR_KEY()) || '[]'); } catch(_){ return []; } }
   function saveTourSummaries(list) { localStorage.setItem(TOUR_KEY(), JSON.stringify(list)); }
   function esc2(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -1355,7 +1355,7 @@
     if(!date) missing.push('Start Date');
     if(!customers) missing.push('Customer Name');
     if(missing.length){msgEl.textContent='Required: '+missing.join(', ');msgEl.style.display='block';return;}
-    var user=JSON.parse(localStorage.getItem('schiller_user')||'{}');
+    var user=JSON.parse(sessionStorage.getItem('schiller_user')||'{}');
     var entry={date:date,customers:customers,branch:branch,model:model,unitSts:unitSts,unitSl:unitSl,probReported:probReported,probObserved:probObserved,action:action,imgs:_tourImgs.slice(),addedBy:user.name||'Employee',createdAt:new Date().toISOString()};
     try {
       var list=loadTourSummaries(); list.unshift(entry); saveTourSummaries(list); renderTourTable(); closeTourModal();
@@ -1996,7 +1996,7 @@
 
   async function loadNotifications(){
     try {
-      const token = localStorage.getItem('schiller_token');
+      const token = sessionStorage.getItem('schiller_token');
       const res = await fetch('/api/admin/notifications', {headers:{'Authorization':'Bearer '+token}});
       if(!res.ok) return;
       const all = await res.json();

@@ -14,7 +14,7 @@
 
   function readUser() {
     try {
-      return JSON.parse(localStorage.getItem('schiller_user') || '{}') || {};
+      return JSON.parse(sessionStorage.getItem('schiller_user') || '{}') || {};
     } catch (_err) {
       return {};
     }
@@ -28,7 +28,7 @@
   }
 
   function isServiceUser(user = readUser()) {
-    const role = String(user.role || localStorage.getItem('schiller_role') || '').toLowerCase();
+    const role = String(user.role || sessionStorage.getItem('schiller_role') || '').toLowerCase();
     return role === 'employee' || role === 'service_team' || String(user._collection || '') === 'Employee';
   }
 

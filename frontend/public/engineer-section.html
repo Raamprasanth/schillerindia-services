@@ -595,7 +595,7 @@ async function loadData() {
   new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
 (function initUser(){
-  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   const name = u.name || 'Admin';
   (document.getElementById('admin-name')||{}).textContent = name;
   (document.getElementById('admin-avatar')||{}).textContent = name.charAt(0).toUpperCase();
@@ -952,7 +952,7 @@ function showToast(msg, type='success'){
   setTimeout(() => el.remove(), 3500);
 }
 
-function logout(){ localStorage.clear(); window.location.href = 'login.html'; }
+function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href = 'login.html'; }
 </script>
 </body>
 </html>

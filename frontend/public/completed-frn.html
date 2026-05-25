@@ -459,7 +459,7 @@ let DATA = [], filtered = [], sortKey = 'serviceId', sortDir = -1, currentPage =
 
 // -- INIT --------------------------------------------------
 (function init() {
-  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   if (u.name) {
     (document.getElementById('u-name')||{}).textContent = u.name;
     (document.getElementById('u-avatar')||{}).textContent = u.name.charAt(0).toUpperCase();
@@ -472,7 +472,7 @@ let DATA = [], filtered = [], sortKey = 'serviceId', sortDir = -1, currentPage =
   loadData();
 })();
 
-function getToken() { return localStorage.getItem('schiller_token') || ''; }
+function getToken() { return sessionStorage.getItem('schiller_token') || ''; }
 function authHeaders() { return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getToken() }; }
 function handleUnauth(res) {
   if (res.status === 401) {
@@ -702,7 +702,7 @@ function toggleTheme() {
   localStorage.setItem('si_theme', next);
   (document.getElementById('theme-btn')||{}).textContent = next === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
 }
-function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+function logout() { sessionStorage.clear(); localStorage.clear(); window.location.href = 'login.html'; }
 </script>
 <script src="tab-fix.js"></script>
 </body>

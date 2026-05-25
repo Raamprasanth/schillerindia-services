@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <script>(function(){
   document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light');
-  const token = localStorage.getItem('schiller_token');
-  const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
+  const token = sessionStorage.getItem('schiller_token');
+  const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
   if (!token || !['fqc','admin','superadmin'].includes(role)) window.location.href = 'login.html';
   })();</script>
   <title>SchillerIndia |- FQC Dashboard</title>
@@ -548,7 +548,7 @@
 const CHECKLISTS={generic:['Visual inspection','Power on test','Functional test','Calibration check','Safety check','Documentation complete','Customer sign-off','Engineer sign-off']};
 const pageTitles={'fqc-dashboard':'FQC Dashboard','pending-activity':'Pending Activity','closed-activity':'Closed Activity','non-saleable':'Non Saleable','saleables':'Saleables','bir-list':'BIR LIST','closed-bir-list':'Closed BIR LIST'};
 let fqcData=[];
-function getToken(){return localStorage.getItem('schiller_token')||'';}
+function getToken(){return sessionStorage.getItem('schiller_token')||'';}
 function authHeaders(){return{'Content-Type':'application/json',Authorization:'Bearer '+getToken()};}
 function handleUnauth(res){if(res.status===401){showToast('Session expired.','err');setTimeout(()=>window.location.href='login.html',1500);throw new Error('Unauthorized');}}
 async function loadData(){
@@ -576,7 +576,7 @@ function goTo(page){
   renderPageData(page);
 }
 (document.getElementById('admin-date')||{}).textContent =new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-(function(){const u=JSON.parse(localStorage.getItem('schiller_user')||'{}');const n=u.name||'Admin';(document.getElementById('admin-name')||{}).textContent =n;(document.getElementById('admin-avatar')||{}).textContent =n.charAt(0).toUpperCase();})();
+(function(){const u=JSON.parse(sessionStorage.getItem('schiller_user')||'{}');const n=u.name||'Admin';(document.getElementById('admin-name')||{}).textContent =n;(document.getElementById('admin-avatar')||{}).textContent =n.charAt(0).toUpperCase();})();
 const themeBtn=document.getElementById('theme-btn');
 themeBtn.addEventListener('click',()=>{const next=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',next);localStorage.setItem('si_theme',next);themeBtn.innerHTML =next==='dark'?'&#9728;&#65039;':'&#127769;';});
 themeBtn.innerHTML =document.documentElement.getAttribute('data-theme')==='dark'?'&#9728;&#65039;':'&#127769;';
@@ -720,7 +720,7 @@ function showConfirm(msg,cb){(document.getElementById('confirm-msg')||{}).textCo
 function closeConfirm(){document.getElementById('confirm-modal').classList.remove('show');}
 document.getElementById('confirm-modal').addEventListener('click',e=>{if(e.target===document.getElementById('confirm-modal'))closeConfirm();});
 function exportData(){const csv=['FQC ID,Device,Serial,Division,Customer,Type,Engineer,Date,Score,Result,Remarks',...fqcData.map(e=>[(e.fqcNo||e._id),e.device,e.serial,e.division,e.customer,e.type,e.engineer,e.date,e.score,e.result,'"'+(e.remarks||'').replace(/"/g,'""')+'"'].join(','))].join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='fqc-export-'+Date.now()+'.csv';a.click();showToast('Exported as CSV.','ok');}
-function logout(){localStorage.clear();window.location.href='login.html';}
+function logout(){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';}
 (function(){const cur=new URLSearchParams(window.location.search).get('page')||'fqc-dashboard';goTo(cur);})();
 
 /* ── NOTIFICATION PANEL ── */
@@ -730,7 +730,7 @@ function getReadIds(){try{return JSON.parse(localStorage.getItem(NOTIF_READ_KEY)
 function saveReadIds(ids){localStorage.setItem(NOTIF_READ_KEY,JSON.stringify(ids));}
 async function loadNotifications(){
   try{
-    const token=localStorage.getItem('schiller_token');
+    const token=sessionStorage.getItem('schiller_token');
     const res=await fetch('/api/admin/notifications',{headers:{'Authorization':'Bearer '+token}});
     if(!res.ok)return;
     const all=await res.json();

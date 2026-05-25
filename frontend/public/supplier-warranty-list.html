@@ -461,7 +461,7 @@ let SCRAP = [], filtered = [], sortKey = 'entryDate', sortDir = -1, currentPage 
 
 // -- INIT --------------------------------------------------
 (function init() {
-  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   if (u.name) {
     (document.getElementById('admin-name')||{}).textContent = u.name;
     (document.getElementById('admin-avatar')||{}).textContent = u.name.charAt(0).toUpperCase();
@@ -489,7 +489,7 @@ function populateYears() {
   }
 }
 
-function getToken() { return localStorage.getItem('schiller_token') || ''; }
+function getToken() { return sessionStorage.getItem('schiller_token') || ''; }
 function authHeaders() { return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getToken() }; }
 function handleUnauth(res) {
   if (res.status === 401) {
@@ -778,7 +778,7 @@ function showToast(msg,type='ok'){const w=document.getElementById('toast-wrap');
 function showJSMsg(msg,type){const el=document.getElementById('js-msg');el.textContent=msg;el.className='fm-msg '+type;}
 function clearJSMsg(){const el=document.getElementById('js-msg');el.textContent='';el.className='fm-msg';}
 document.getElementById('js-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeJS();});
-function logout(){localStorage.clear();window.location.href='login.html';}
+function logout(){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';}
 </script>
 <script src="tab-fix.js"></script>
 </body>

@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <script>(function(){
   document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light');
-  const token = localStorage.getItem('schiller_token');
-  const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
+  const token = sessionStorage.getItem('schiller_token');
+  const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
   if (!token || !['service_coordinator','admin','superadmin'].includes(role)) window.location.href = 'login.html';
 })();</script>
 <title>SchillerIndia - Loan Item</title>
@@ -321,7 +321,7 @@ const API = '';
 let DATA = [], filtered = [], divisions = [], sortKey = 'date', sortDir = -1, currentPage = 1;
 
 (function init(){
-  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   if(u.name){
     (document.getElementById('admin-name')||{}).textContent = u.name;
     (document.getElementById('admin-avatar')||{}).textContent = u.name.charAt(0).toUpperCase();
@@ -338,7 +338,7 @@ function todayISO(){
   const day = String(d.getDate()).padStart(2, '0');
   return d.getFullYear() + '-' + m + '-' + day;
 }
-function getToken(){ return localStorage.getItem('schiller_token') || ''; }
+function getToken(){ return sessionStorage.getItem('schiller_token') || ''; }
 function authHeaders(){ return {'Content-Type':'application/json', Authorization:'Bearer '+getToken()}; }
 function handleUnauth(res){
   if(res.status===401){
@@ -621,7 +621,7 @@ function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
 function showToast(msg,type='ok'){ const w=document.getElementById('toast-wrap'); const el=document.createElement('div'); el.className='toast '+type; el.innerHTML='<span class="td"></span>'+esc(msg); w.appendChild(el); setTimeout(()=>el.remove(),3400); }
 function showFormMsg(msg,type){ const el=document.getElementById('form-msg'); el.textContent=msg; el.className='form-msg '+type; }
 function clearFormMsg(){ const el=document.getElementById('form-msg'); el.textContent=''; el.className='form-msg'; }
-function logout(){ localStorage.clear(); window.location.href='login.html'; }
+function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; }
 Object.assign(window, {
   loadData,
   renderTable,

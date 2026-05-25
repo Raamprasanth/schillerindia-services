@@ -6,8 +6,8 @@
   <script>
     (function(){
       document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme') || 'light');
-      const token = localStorage.getItem('schiller_token');
-      const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
+      const token = sessionStorage.getItem('schiller_token');
+      const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
       if (!token || !['admin','superadmin'].includes(role)) window.location.href = 'login.html';
     })();
   </script>
@@ -247,9 +247,9 @@
 const API = '';
 let allData = [];
 
-function authH(){return {'Content-Type':'application/json',Authorization:'Bearer '+localStorage.getItem('schiller_token')}}
+function authH(){return {'Content-Type':'application/json',Authorization:'Bearer '+sessionStorage.getItem('schiller_token')}}
 function go(url){window.location.href=url}
-function logout(){localStorage.clear();window.location.href='login.html'}
+function logout(){sessionStorage.clear(); localStorage.clear();window.location.href='login.html'}
 function toggleNav(key){document.getElementById(key+'-children').classList.toggle('open');document.getElementById(key+'-toggle').classList.toggle('open')}
 function esc(v){const d=document.createElement('div');d.textContent=String(v??'');return d.innerHTML}
 function toast(msg,type='ok'){const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="tdot"></span>'+esc(msg);w.appendChild(el);setTimeout(()=>el.remove(),3400)}
@@ -380,11 +380,11 @@ async function delRow(id){
 (async function init(){
   let name = 'Admin';
   try {
-    const token = localStorage.getItem('schiller_token');
+    const token = sessionStorage.getItem('schiller_token');
     const res = await fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } });
     if (res.ok) { const d = await res.json(); if (d.name) name = d.name; }
-    else { const u = JSON.parse(localStorage.getItem('schiller_user')||'{}'); if (u.name) name = u.name; }
-  } catch(e) { const u = JSON.parse(localStorage.getItem('schiller_user')||'{}'); if (u.name) name = u.name; }
+    else { const u = JSON.parse(sessionStorage.getItem('schiller_user')||'{}'); if (u.name) name = u.name; }
+  } catch(e) { const u = JSON.parse(sessionStorage.getItem('schiller_user')||'{}'); if (u.name) name = u.name; }
   document.getElementById('admin-name').textContent = name;
   document.getElementById('admin-avatar').textContent = name.charAt(0).toUpperCase();
   document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});

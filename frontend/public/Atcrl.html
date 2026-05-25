@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <script>(function(){
-  const token = localStorage.getItem('schiller_token');
+  const token = sessionStorage.getItem('schiller_token');
   if (!token) { window.location.href = 'login.html'; }
 })();</script>
 <title>SchillerIndia - Admin CRL</title>
@@ -368,7 +368,7 @@ function toggleGroup(toggleId, childId) {
   var panel = document.getElementById(childId);
   if (btn && panel) { btn.classList.toggle('open'); panel.classList.toggle('open'); }
 }
-function logout(){localStorage.clear();window.location.href='login.html';}
+function logout(){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';}
 
 document.getElementById('modal-detail').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });

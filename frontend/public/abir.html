@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<script>(function(){const token=localStorage.getItem('schiller_token');const role=String(localStorage.getItem('schiller_role')||'').toLowerCase();if(!token||!['admin','superadmin'].includes(role))window.location.href='login.html';})();</script>
+<script>(function(){const token=sessionStorage.getItem('schiller_token');const role=String(sessionStorage.getItem('schiller_role')||'').toLowerCase();if(!token||!['admin','superadmin'].includes(role))window.location.href='login.html';})();</script>
 <title>SchillerIndia - Admin BIR List</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
 <style>
@@ -134,11 +134,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
 <script>
 const API='';let DATA=[],filtered=[],sortKey='unitInwardDate',sortDir=-1,currentPage=1;
-(function init(){const u=JSON.parse(localStorage.getItem('schiller_user')||'{}');if(u.name){uName('u-name',u.name);uName('u-avatar',u.name.charAt(0).toUpperCase())}loadData();})();
+(function init(){const u=JSON.parse(sessionStorage.getItem('schiller_user')||'{}');if(u.name){uName('u-name',u.name);uName('u-avatar',u.name.charAt(0).toUpperCase())}loadData();})();
 function uName(id,v){const el=document.getElementById(id);if(el)el.textContent=v}
 function toggleSF(){document.getElementById('sf-toggle').classList.toggle('open');document.getElementById('sf-children').classList.toggle('open')}
 function toggleAR(){document.getElementById('ar-toggle').classList.toggle('open');document.getElementById('ar-children').classList.toggle('open')}
-function authHeaders(){return{'Content-Type':'application/json',Authorization:'Bearer '+(localStorage.getItem('schiller_token')||'')}}
+function authHeaders(){return{'Content-Type':'application/json',Authorization:'Bearer '+(sessionStorage.getItem('schiller_token')||'')}}
 function handleUnauth(r){if(r.status===401){showToast('Session expired. Please log in.');setTimeout(()=>location.href='login.html',900);throw new Error('Unauthorized')}}
 async function loadData(){setLoading();try{const r=await fetch(API+'/api/admin/bir',{headers:authHeaders()});handleUnauth(r);if(!r.ok)throw new Error('HTTP '+r.status);DATA=(await r.json()).map(d=>({...d,id:d.id||d._id}));applyFilters();updateStats();showToast('Loaded '+DATA.length+' BIR records.')}catch(e){if(e.message==='Unauthorized')return;setError('Could not load BIR records.');showToast('Load failed: '+e.message)}}
 function updateStats(){uName('s-total',DATA.length);uName('s-fqc',DATA.filter(d=>d._source==='ADMIN'||d._source==='FQC').length);uName('s-emp',DATA.filter(d=>d._source==='EMP').length);uName('s-pt',DATA.filter(d=>d._source==='PT').length);uName('s-pending',DATA.filter(d=>String(d.status||d.finalStatus)==='Pending').length)}
@@ -159,7 +159,7 @@ function setLoading(){document.getElementById('tbody').innerHTML='<tr><td colspa
 function fmtDate(d){if(!d)return'-';const p=String(d).split('T')[0].split('-');return p.length===3?p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0]:String(d)}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}function escAttr(s){return esc(s).replace(/'/g,'&#39;')}
 function showToast(msg){const w=document.getElementById('toast-wrap'),e=document.createElement('div');e.className='toast';e.textContent=msg;w.appendChild(e);setTimeout(()=>e.remove(),3200)}
-function logout(){localStorage.clear();location.href='login.html'}
+function logout(){sessionStorage.clear(); localStorage.clear();location.href='login.html'}
 </script>
 <script src="tab-fix.js"></script>
 </body>

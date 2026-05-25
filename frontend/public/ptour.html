@@ -6,8 +6,8 @@
 <script>
 (function(){
   document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme') || 'light');
-  const token = localStorage.getItem('schiller_token');
-  const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
+  const token = sessionStorage.getItem('schiller_token');
+  const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
   if (!token || !['pt','product team','product_team','product','admin','superadmin','administrator'].includes(role)) window.location.href = 'login.html';
 })();
 </script>
@@ -111,10 +111,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   </div>
 </div>
 <script>
-const token = localStorage.getItem('schiller_token') || '';
+const token = sessionStorage.getItem('schiller_token') || '';
 let tours = [], tourImgs = [null, null, null];
 (function init(){
-  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   const name = u.name || 'User';
   setText('user-nm', name); setText('user-av', name.charAt(0).toUpperCase());
   setText('topbar-date', new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'}));
@@ -360,7 +360,7 @@ function fmtDate(d){ if(!d)return'-'; const p=String(d).split('T')[0].split('-')
 function clip(s){ s=String(s||'-'); return esc(s.length>55?s.slice(0,55)+'...':s); }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function escAttr(s){ return esc(s).replace(/'/g,'&#39;'); }
-function logout(){ localStorage.clear(); window.location.href='login.html'; }
+function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; }
 document.getElementById('tour-overlay').addEventListener('click',e=>{ if(e.target.id==='tour-overlay') closeTourModal(); });
 </script>
 </body>

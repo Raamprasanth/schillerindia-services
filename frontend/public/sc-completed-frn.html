@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <script>(function(){
   document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light');
-  const token = localStorage.getItem('schiller_token');
-  const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
+  const token = sessionStorage.getItem('schiller_token');
+  const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
   if (!token || !['employee','service_coordinator','admin','superadmin'].includes(role)) window.location.href = 'login.html';
 })();</script>
 <title>SchillerIndia - External Repair</title>
@@ -474,7 +474,7 @@ let mailAckVisible = localStorage.getItem(MAIL_ACK_KEY) === '1';
 
 // -- INIT ------------------------------------------------------------------
 (function init(){
-  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   if(u.name){
     (document.getElementById('emp-name')||{}).textContent = u.name;
     (document.getElementById('emp-avatar')||{}).textContent = u.name.charAt(0).toUpperCase();
@@ -523,7 +523,7 @@ async function loadMailAckStatus(){
   }
 }
 
-function getToken(){ return localStorage.getItem('schiller_token') || ''; }
+function getToken(){ return sessionStorage.getItem('schiller_token') || ''; }
 function authHeaders(){ return {'Content-Type':'application/json', Authorization:'Bearer '+getToken()}; }
 function handleUnauth(res){
   if(res.status===401){
@@ -786,7 +786,7 @@ function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
 function showToast(msg, type='ok'){ const w = document.getElementById('toast-wrap'); const el = document.createElement('div'); el.className = 'toast '+type; el.innerHTML = '<span class="td"></span>'+msg; w.appendChild(el); setTimeout(()=>el.remove(), 3400); }
 function showUpdMsg(msg, type){ const el = document.getElementById('upd-msg'); el.textContent = msg; el.className = 'form-msg '+type; }
 function clearUpdMsg(){ const el = document.getElementById('upd-msg'); el.textContent = ''; el.className = 'form-msg'; }
-function logout(){ localStorage.clear(); window.location.href = 'login.html'; }
+function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href = 'login.html'; }
 
 document.addEventListener('keydown', e => { if(e.key === 'Escape') closeUpdateModal(); });
 </script>

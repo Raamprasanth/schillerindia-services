@@ -4,8 +4,8 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <script>(function(){
-  const token = localStorage.getItem('schiller_token');
-  const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
+  const token = sessionStorage.getItem('schiller_token');
+  const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
   if (!token || !['admin','superadmin'].includes(role)) window.location.href = 'login.html';
 })();</script>
 <title>SchillerIndia - SO Pending</title>
@@ -564,7 +564,7 @@ table.est-table tbody tr:last-child td{border-bottom:none;}
 
 <script>
 const API_BASE    = '';
-const LOGGED_USER = JSON.parse(localStorage.getItem('schiller_user')||'{}');
+const LOGGED_USER = JSON.parse(sessionStorage.getItem('schiller_user')||'{}');
 const EMP_NAME    = LOGGED_USER.name || '';
 const USER_ROLE   = (LOGGED_USER.role||'').toLowerCase();
 const IS_ADMIN    = USER_ROLE === 'admin' || USER_ROLE === 'superadmin';
@@ -574,7 +574,7 @@ let sortKey='entryDate', sortDir=-1, editingId=null;
 let currentToRecord=null, currentToRows=[];
 
 (function init(){
-  const u=JSON.parse(localStorage.getItem('schiller_user')||'{}');
+  const u=JSON.parse(sessionStorage.getItem('schiller_user')||'{}');
   if(u.name){
     (document.getElementById('admin-name')||{}).textContent =u.name;
     (document.getElementById('admin-avatar')||{}).textContent =u.name.charAt(0).toUpperCase();
@@ -599,8 +599,8 @@ function toggleSF(forceOpen){
 }
 function toggleAR(){ var btn=document.getElementById('ar-toggle'); var panel=document.getElementById('ar-children'); if(!btn||!panel)return; btn.classList.toggle('open'); panel.classList.toggle('open'); }
 
-function logout(){ localStorage.clear(); window.location.href='login.html'; }
-function getToken(){ return localStorage.getItem('schiller_token')||''; }
+function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; }
+function getToken(){ return sessionStorage.getItem('schiller_token')||''; }
 function authHeaders(){ return{'Content-Type':'application/json','Authorization':'Bearer '+getToken()}; }
 function esc(v){ return String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 function fmtDate(v){ if(!v) return '-'; const d=new Date(v); return Number.isNaN(d.getTime()) ? esc(v) : d.toLocaleDateString('en-CA'); }
@@ -673,7 +673,7 @@ async function openRepairModal(id){
   };
   try{
     const createRes=await fetch(API_BASE+'/api/rtob',{method:'POST',headers:authHeaders(),body:JSON.stringify(rtPayload)});
-    if(createRes.status===401){localStorage.clear();window.location.href='login.html';return;}
+    if(createRes.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
     if(!createRes.ok){const e=await createRes.json().catch(()=>({}));throw new Error(e.message||'HTTP '+createRes.status);}
     const idx=allRecords.findIndex(x=>(x._id||x.id)===id);
     if(idx!==-1)allRecords[idx]={...allRecords[idx],rtobSent:true,rtobSentAt:sentAt};
@@ -690,7 +690,7 @@ async function queueSrEscalation(id){
   if(current.srEscalationQueuedAt){showToast('Already queued for SR escalation.','info');return;}
   try{
     const res=await fetch(API_BASE+'/api/emp/estimation/'+id+'/sr',{method:'POST',headers:authHeaders()});
-    if(res.status===401){localStorage.clear();window.location.href='login.html';return;}
+    if(res.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
     const data=await res.json().catch(()=>({}));
     if(!res.ok) throw new Error(data.message||('HTTP '+res.status));
     const patch={srEscalationQueuedAt:data.srEscalationQueuedAt||new Date().toISOString(),srEscalationQueuedBy:data.srEscalationQueuedBy||''};
@@ -765,7 +765,7 @@ async function submitToEscalationQueue(){
   try{
     const id=currentToRecord._id||currentToRecord.id;
     const res=await fetch(API_BASE+'/api/emp/estimation/'+id+'/to',{method:'POST',headers:authHeaders(),body:JSON.stringify({items:cleanItems})});
-    if(res.status===401){localStorage.clear();window.location.href='login.html';return;}
+    if(res.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
     const data=await res.json().catch(()=>({}));
     if(!res.ok) throw new Error(data.message||('HTTP '+res.status));
     const patch={toEscalationQueuedAt:data.toEscalationQueuedAt||new Date().toISOString(),toEscalationQueuedBy:data.toEscalationQueuedBy||''};
@@ -791,7 +791,7 @@ async function loadData(){
   try {
     const endpoint = IS_ADMIN ? API_BASE+'/api/emp/estimation' : API_BASE+'/api/emp/estimation';
     const res=await fetch(endpoint,{headers:authHeaders()});
-    if(res.status===401){localStorage.clear();window.location.href='login.html';return;}
+    if(res.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
     if(!res.ok) throw new Error('HTTP '+res.status);
     const data=await res.json();
     allRecords=data.map(s=>({...s,id:s._id||s.id,pdEst:calcPendingDays(s.rcvdDate || s.entryDate)}));
@@ -950,7 +950,7 @@ async function submitUpdate(){
     };
     delete payload._id; delete payload.id; delete payload.pdEst;
     const res=await fetch(API_BASE+'/api/emp/estimation/'+editingId,{method:'PUT',headers:authHeaders(),body:JSON.stringify(payload)});
-    if(res.status===401){localStorage.clear();window.location.href='login.html';return;}
+    if(res.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
     if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'HTTP '+res.status);}
     const updated=await res.json();
     if(updated && updated.externalRepair){
@@ -1187,7 +1187,7 @@ async function loadEscalationStatus(moduleKey){
   const countEl=document.getElementById(`esc-banner-count-${moduleKey}`);
   try{
     const res=await fetch(API_BASE+'/api/escalation/status',{headers:authHeaders()});
-    if(res.status===401){localStorage.clear();window.location.href='login.html';return;}
+    if(res.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
     if(!res.ok) throw new Error('Unable to fetch escalation status');
     const data=await res.json();
     const log=data&&data.latest?data.latest:null;
@@ -1328,7 +1328,7 @@ async function loadSrEscalationStatus(moduleKey){
   const countEl=document.getElementById(`sr-banner-count-${moduleKey}`);
   try{
     const res=await fetch(API_BASE+'/api/escalation/status/sr',{headers:authHeaders()});
-    if(res.status===401){localStorage.clear();window.location.href='login.html';return;}
+    if(res.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
     if(!res.ok) throw new Error('Unable to fetch SR escalation status');
     const data=await res.json();
     const recipients=Array.isArray(data&&data.recipients)?data.recipients:[];
@@ -1373,7 +1373,7 @@ async function loadToEscalationStatus(moduleKey){
   const countEl=document.getElementById(`to-banner-count-${moduleKey}`);
   try{
     const res=await fetch(API_BASE+'/api/escalation/status/to',{headers:authHeaders()});
-    if(res.status===401){localStorage.clear();window.location.href='login.html';return;}
+    if(res.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
     if(!res.ok) throw new Error('Unable to fetch TO escalation status');
     const data=await res.json();
     const recipients=Array.isArray(data&&data.recipients)?data.recipients:[];

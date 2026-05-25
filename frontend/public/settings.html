@@ -518,7 +518,7 @@
   new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
 (function initUser(){
-  const u=JSON.parse(localStorage.getItem('schiller_user')||'{}');
+  const u=JSON.parse(sessionStorage.getItem('schiller_user')||'{}');
   const name=u.name||'Admin'; const role=u.role||'admin';
   (document.getElementById('admin-name')||{}).textContent =name;
   (document.getElementById('admin-avatar')||{}).textContent =name.charAt(0).toUpperCase();
@@ -526,7 +526,7 @@
 })();
 
 const API='';
-function getToken(){return localStorage.getItem('schiller_token')||'';}
+function getToken(){return sessionStorage.getItem('schiller_token')||'';}
 function authHeaders(){return{'Content-Type':'application/json',Authorization:'Bearer '+getToken()};}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
@@ -743,7 +743,7 @@ function gp(p){currentPage=p;renderTable();}
 function setTableLoading(){document.getElementById('mail-tbody').innerHTML='<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted);"><span class="spin"></span>Loading mail IDs...</td></tr>';}
 
 // ?"??"? SIDEBAR ?"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"??"?
-function logout(){localStorage.clear();window.location.href='login.html';}
+function logout(){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';}
 let sfOpen=false;
 function toggleSF(){sfOpen=!sfOpen;document.getElementById('sf-children').classList.toggle('open',sfOpen);document.getElementById('sf-toggle').classList.toggle('open',sfOpen);}
 function toggleAR(){ var btn=document.getElementById('ar-toggle'); var panel=document.getElementById('ar-children'); if(!btn||!panel)return; btn.classList.toggle('open'); panel.classList.toggle('open'); }

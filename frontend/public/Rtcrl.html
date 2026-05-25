@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <script>(function(){
-  const token = localStorage.getItem('schiller_token');
+  const token = sessionStorage.getItem('schiller_token');
   if (!token) { window.location.href = 'login.html'; }
 })();</script>
 <title>SchillerIndia - RT CRL</title>
@@ -371,9 +371,9 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
 
 <script>
 const API      = '';
-const LUSER    = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+const LUSER    = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
 const EMP_NAME = LUSER.name || '';
-const RAW_ROLE = (LUSER.role || localStorage.getItem('schiller_role') || '').toLowerCase();
+const RAW_ROLE = (LUSER.role || sessionStorage.getItem('schiller_role') || '').toLowerCase();
 
 let allData = [], filtered = [], sortKey = 'closedDate', sortDir = -1, currentPage = 1;
 let activeCat = '';
@@ -387,12 +387,12 @@ let activeCat = '';
   loadData();
 })();
 
-function getToken()    { return localStorage.getItem('schiller_token') || ''; }
+function getToken()    { return sessionStorage.getItem('schiller_token') || ''; }
 function authHeaders() { return { 'Content-Type':'application/json', Authorization:'Bearer '+getToken() }; }
 function handleUnauth(r) {
   if (r.status === 401) {
     showToast('Session expired - please log in again.', 'err');
-    setTimeout(() => { localStorage.clear(); window.location.href = 'login.html'; }, 1800);
+    setTimeout(() => { sessionStorage.clear(); localStorage.clear(); window.location.href = 'login.html'; }, 1800);
     throw new Error('Unauthorized');
   }
   if (r.status === 403) {
@@ -619,7 +619,7 @@ function gp(p) { currentPage = p; renderTable(); }
 function fmtDate(d){if(!d)return'-';const p=String(d).split('T')[0].split('-');if(p.length<3)return String(d);return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0];}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function showToast(msg,type='ok'){const w=document.getElementById('toast-wrap'),el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="td"></span>'+msg;w.appendChild(el);setTimeout(()=>el.remove(),3500);}
-function logout(){localStorage.clear();window.location.href='login.html';}
+function logout(){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';}
 
 document.getElementById('modal-detail').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });

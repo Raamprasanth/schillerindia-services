@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light'); const token = localStorage.getItem('schiller_token'); if (!token) window.location.href = 'login.html'; })();</script>
+<script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light'); const token = sessionStorage.getItem('schiller_token'); if (!token) window.location.href = 'login.html'; })();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>SchillerIndia - Admin Closed Calls</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
@@ -379,7 +379,7 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
 let CALL_DATA = [], filtered = [], sortKey = 'closeDate', sortDir = -1, currentPage = 1;
 
 (function init(){
-  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   if (u.name) {
     document.getElementById('admin-name').textContent = u.name;
     document.getElementById('admin-avatar').textContent = u.name.charAt(0).toUpperCase();
@@ -390,7 +390,7 @@ let CALL_DATA = [], filtered = [], sortKey = 'closeDate', sortDir = -1, currentP
 async function loadData(){
   try {
     const res = await fetch('/api/admin/calls/closed', {
-      headers: { Authorization: 'Bearer ' + localStorage.getItem('schiller_token') }
+      headers: { Authorization: 'Bearer ' + sessionStorage.getItem('schiller_token') }
     });
     if(!res.ok) throw new Error('Status ' + res.status);
     CALL_DATA = await res.json();
@@ -514,7 +514,7 @@ async function deleteRecord(id){
   try {
     const res = await fetch('/api/admin/calls/closed/' + id, {
       method: 'DELETE',
-      headers: { Authorization: 'Bearer ' + localStorage.getItem('schiller_token') }
+      headers: { Authorization: 'Bearer ' + sessionStorage.getItem('schiller_token') }
     });
     if(res.ok){
       showToast('Record deleted');
@@ -547,7 +547,7 @@ function showToast(m, t='ok'){
   setTimeout(()=>el.remove(), 3000);
 }
 
-function logout(){ localStorage.clear(); window.location.href='login.html'; }
+function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; }
 function exportCSV(){
   const headers = ['#','Source','Division','Close Date','Customer','Model','Engineer','SC Engg','Type','Remarks'];
   const rows = filtered.map((d,i)=>[i+1, d.source, d.division, d.closeDate, d.customer, d.model, d.engineer, d.scEngg, d.typeCall, d.remarks]);

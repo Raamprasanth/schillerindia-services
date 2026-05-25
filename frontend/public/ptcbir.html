@@ -4,8 +4,8 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <script>(function(){
-    const token = localStorage.getItem('schiller_token');
-    const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
+    const token = sessionStorage.getItem('schiller_token');
+    const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
     if (!token || !['pt','admin','superadmin'].includes(role)) window.location.href = 'login.html';
   })();</script>
   <title>SchillerIndia |- PT Closed BIR List</title>
@@ -390,7 +390,7 @@ let currentPage = 1;
 
 // -- HELPERS -------------------------------------------------------------------
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function getToken(){return localStorage.getItem('schiller_token')||'';}
+function getToken(){return sessionStorage.getItem('schiller_token')||'';}
 function authHeaders(){return{'Content-Type':'application/json',Authorization:'Bearer '+getToken()};}
 function handleUnauth(r){if(r.status===401){showToast('Session expired.','err');setTimeout(()=>window.location.href='login.html',1500);throw new Error('Unauthorized');}}
 function showToast(msg,type='ok'){const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="tdot"></span>'+msg;w.appendChild(el);setTimeout(()=>el.remove(),3200);}
@@ -656,9 +656,9 @@ function exportCSV(){
 
 // -- THEME / USER --------------------------------------------------------------
 (document.getElementById('admin-date')||{}).textContent =new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-(function(){const u=JSON.parse(localStorage.getItem('schiller_user')||'{}');const n=u.name||'Admin';(document.getElementById('admin-name')||{}).textContent =n;(document.getElementById('admin-avatar')||{}).textContent =n.charAt(0).toUpperCase();})();
+(function(){const u=JSON.parse(sessionStorage.getItem('schiller_user')||'{}');const n=u.name||'Admin';(document.getElementById('admin-name')||{}).textContent =n;(document.getElementById('admin-avatar')||{}).textContent =n.charAt(0).toUpperCase();})();
 
-function logout(){localStorage.clear();window.location.href='login.html';}
+function logout(){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';}
 
 // -- INIT ----------------------------------------------------------------------
 loadData();

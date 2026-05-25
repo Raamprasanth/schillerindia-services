@@ -625,7 +625,7 @@ function loadFromLocalStorage() {
 
 // API helpers - graceful fallback on network error
 async function apiFetch(method, path, body) {
-  const token = localStorage.getItem('schiller_token') || '';
+  const token = sessionStorage.getItem('schiller_token') || '';
   const opts = {
     method,
     headers:{
@@ -671,7 +671,7 @@ async function loadData() {
   new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
 (function initUser(){
-  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   const name = u.name || 'Admin';
   (document.getElementById('admin-name')||{}).textContent = name;
   (document.getElementById('admin-avatar')||{}).textContent = name.charAt(0).toUpperCase();
@@ -1142,7 +1142,7 @@ function showToast(msg, type='success') {
   setTimeout(() => el.remove(), 4000);
 }
 
-function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+function logout() { sessionStorage.clear(); localStorage.clear(); window.location.href = 'login.html'; }
 </script>
 </body>
 </html>

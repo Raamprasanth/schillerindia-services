@@ -836,7 +836,7 @@ SCHILLER_PDF_LOGO.src = 'shc.webp';
 let FRN_DATA = [], filtered = [], sortKey = 'pdays', sortDir = -1, currentPage = 1;
 let ALL_ENGINEERS = [];
 let engineersReadyPromise = null;
-const LOGGED_USER = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+const LOGGED_USER = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
 
 function getDivisionName(value) {
   return String(value?.name || value?.divisionName || value?.division || value || '').trim();
@@ -965,7 +965,7 @@ function removeLegacyAutoMailUi(){
 }
 
 (function init(){
-  const u=JSON.parse(localStorage.getItem('schiller_user')||'{}');
+  const u=JSON.parse(sessionStorage.getItem('schiller_user')||'{}');
   if(u.name){(document.getElementById('emp-name')||{}).textContent =u.name;(document.getElementById('emp-avatar')||{}).textContent =u.name.charAt(0).toUpperCase();(document.getElementById('emp-desig')||{}).textContent =u.designation||'Field Engineer';}
   (document.getElementById('topbar-date')||{}).textContent =new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   removeLegacyAutoMailUi();
@@ -973,7 +973,7 @@ function removeLegacyAutoMailUi(){
   loadData();
 })();
 
-function getToken(){return localStorage.getItem('schiller_token')||'';}
+function getToken(){return sessionStorage.getItem('schiller_token')||'';}
 function authHeaders(){return{'Content-Type':'application/json',Authorization:'Bearer '+getToken()};}
 function handleUnauth(res){if(res.status===401){showToast('Session expired - please log in again.','err');setTimeout(()=>window.location.href='login.html',1500);throw new Error('Unauthorized');}}
 
@@ -982,7 +982,7 @@ async function loadData(){
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 20000);
   try{
-    const u=JSON.parse(localStorage.getItem('schiller_user')||'{}');
+    const u=JSON.parse(sessionStorage.getItem('schiller_user')||'{}');
     const url=u.role==='admin'?`${API}/api/emp/frn`:`${API}/api/emp/frn/employee`;
     const res=await fetch(url,{headers:authHeaders(), signal: controller.signal});
     handleUnauth(res);
@@ -1596,7 +1596,7 @@ async function submitSelectedEstimation(){
   const btn=document.getElementById('frn-est-save-btn');
   btn.disabled=true;
   btn.textContent='Saving...';
-  const activeUser=JSON.parse(localStorage.getItem('schiller_user')||'{}');
+  const activeUser=JSON.parse(sessionStorage.getItem('schiller_user')||'{}');
   const savedAt=new Date().toISOString();
   try{
     for(const line of header.lineItems){
@@ -1803,7 +1803,7 @@ async function submitEstimation(){
   ['est-estno','est-estdate','est-estamount','est-eststatus','est-raeng'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.classList.toggle('err',!el.value.trim());});
   if(missing.length){showUpdMsg('Required: '+missing.join(', '),'err');return;}
   const current=FRN_DATA.find(x=>(x._id||x.id)===id)||{};
-  const activeUser=JSON.parse(localStorage.getItem('schiller_user')||'{}');
+  const activeUser=JSON.parse(sessionStorage.getItem('schiller_user')||'{}');
   const savedAt=new Date().toISOString();
   const techRem=document.getElementById('est-techremarks').value.trim();
   const partNo=document.getElementById('est-partno').value.trim();
@@ -1926,7 +1926,7 @@ async function confirmSendToRtFrn(){
       defBrdModName:current.defMod||'',
       status:'pending',
       techRemarks:techRemarks,
-      submittedBy:JSON.parse(localStorage.getItem('schiller_user')||'{}').name||'',
+      submittedBy:JSON.parse(sessionStorage.getItem('schiller_user')||'{}').name||'',
       submittedAt:new Date().toISOString(),
       sourceEmpFrnId:id,
       doi:current.doi||'',
@@ -2477,7 +2477,7 @@ function triggerAutoMail(win){if(!FRN_DATA.length)return;const key=getWindowKey(
 function checkAutoMail(){const win=getMailWindow(new Date());if(!win)return;const key=getWindowKey(win,new Date());if(localStorage.getItem(key)!=='sent'&&FRN_DATA.length>0)triggerAutoMail(win);}
 function startAutoMailScheduler(){setInterval(checkAutoMail,60_000);}
 
-function logout(){localStorage.clear();window.location.href='login.html';}
+function logout(){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';}
 </script>
 <script src="tab-fix.js"></script>
 </body>

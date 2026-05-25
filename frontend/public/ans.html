@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light'); const token = localStorage.getItem('schiller_token'); if (!token) window.location.href = 'login.html'; })();</script>
+<script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light'); const token = sessionStorage.getItem('schiller_token'); if (!token) window.location.href = 'login.html'; })();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>SchillerIndia - Admin Non Saleable Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
@@ -382,14 +382,14 @@ const API = '';
 let ALL_DATA = [], filtered = [];
 
 (function init(){
-  const user = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const user = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   const name = user.name || 'Admin';
   document.getElementById('admin-name-side').textContent = name;
   document.getElementById('admin-avatar-side').textContent = name.charAt(0).toUpperCase();
   loadData();
 })();
 
-function getToken(){ return localStorage.getItem('schiller_token'); }
+function getToken(){ return sessionStorage.getItem('schiller_token'); }
 function authHeaders(){ return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() }; }
 
 async function loadData(){
@@ -553,7 +553,7 @@ function showToast(msg, type){
   setTimeout(() => t.remove(), 3000);
 }
 
-function logout(){ localStorage.clear(); location.href='login.html'; }
+function logout(){ sessionStorage.clear(); localStorage.clear(); location.href='login.html'; }
 </script>
 <script>
 function toggleSF(){var btn=document.getElementById('sf-toggle');var panel=document.getElementById('sf-children');if(!btn||!panel)return;btn.classList.toggle('open');panel.classList.toggle('open');}

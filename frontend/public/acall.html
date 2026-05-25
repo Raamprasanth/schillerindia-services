@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light'); const token = localStorage.getItem('schiller_token'); if (!token) window.location.href = 'login.html'; })();</script>
+<script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light'); const token = sessionStorage.getItem('schiller_token'); if (!token) window.location.href = 'login.html'; })();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<script>(function(){const t=localStorage.getItem('schiller_token');if(!t)window.location.href='login.html';})();</script>
+<script>(function(){const t=sessionStorage.getItem('schiller_token');if(!t)window.location.href='login.html';})();</script>
 <title>SchillerIndia - Admin Call Register</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
 <style>
@@ -211,16 +211,16 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 const API='';
 let allCalls=[], filtered=[];
 (function init(){
-  const role=(localStorage.getItem('schiller_role')||'').toLowerCase();
+  const role=(sessionStorage.getItem('schiller_role')||'').toLowerCase();
   if(role && role!=='admin' && role!=='superadmin'){window.location.href='login.html';return;}
-  const u=JSON.parse(localStorage.getItem('schiller_user')||'{}');
+  const u=JSON.parse(sessionStorage.getItem('schiller_user')||'{}');
   if(u.name){document.getElementById('admin-name').textContent=u.name;document.getElementById('admin-avatar').textContent=u.name.charAt(0).toUpperCase();}
   document.getElementById('topbar-date').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   loadData();
 })();
-function getToken(){return localStorage.getItem('schiller_token')||'';}
+function getToken(){return sessionStorage.getItem('schiller_token')||'';}
 function authHeaders(){return {'Content-Type':'application/json',Authorization:'Bearer '+getToken()};}
-function handleUnauth(res){if(res.status===401){localStorage.clear();window.location.href='login.html';throw new Error('Unauthorized');}}
+function handleUnauth(res){if(res.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';throw new Error('Unauthorized');}}
 async function loadData(){
   document.getElementById('call-tbody').innerHTML='<tr><td colspan="14" style="text-align:center;padding:40px;color:var(--muted);">Loading...</td></tr>';
   try{
@@ -302,7 +302,7 @@ function exportCSV(){const headers=['Source','Call Date','Division','Region','SC
 function showToast(msg){const wrap=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast';el.textContent=msg;wrap.appendChild(el);setTimeout(()=>el.remove(),3200);}
 function toggleSF(){const btn=document.getElementById('sf-toggle');const panel=document.getElementById('sf-children');if(!btn||!panel)return;btn.classList.toggle('open');panel.classList.toggle('open');}
 function toggleAR(){const btn=document.getElementById('ar-toggle');const panel=document.getElementById('ar-children');if(!btn||!panel)return;btn.classList.toggle('open');panel.classList.toggle('open');}
-function logout(){localStorage.clear();window.location.href='login.html';}
+function logout(){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';}
 </script>
 </body>
 </html>

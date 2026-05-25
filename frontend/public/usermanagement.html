@@ -528,9 +528,9 @@ function roleLabel(role){
 
 // AUTH GUARD: redirect to login if not admin
 (async function initUser() {
-  const token = localStorage.getItem('schiller_token');
-  const role  = localStorage.getItem('schiller_role');
-  const u     = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const token = sessionStorage.getItem('schiller_token');
+  const role  = sessionStorage.getItem('schiller_role');
+  const u     = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   
   const normalizedRole = (role || '').toLowerCase();
   if (!token || (normalizedRole !== 'admin' && normalizedRole !== 'superadmin')) {
@@ -544,7 +544,7 @@ function roleLabel(role){
   (document.getElementById('sb-role-badge')||{}).textContent = (u.role || role).charAt(0).toUpperCase() + (u.role || role).slice(1);
 })();
 
-function getToken()    { return localStorage.getItem('schiller_token') || ''; }
+function getToken()    { return sessionStorage.getItem('schiller_token') || ''; }
 function authHeaders() { return { 'Content-Type':'application/json', Authorization:'Bearer ' + getToken() }; }
 
 // Centralized fetch: on 401 (expired/missing token) → clear session & redirect to login
@@ -556,9 +556,9 @@ async function apiFetch(url, options = {}) {
   };
   const res = await fetch(url, mergedOptions);
   if (res.status === 401) {
-    localStorage.removeItem('schiller_token');
-    localStorage.removeItem('schiller_user');
-    localStorage.removeItem('schiller_role');
+    sessionStorage.removeItem('schiller_token');
+    sessionStorage.removeItem('schiller_user');
+    sessionStorage.removeItem('schiller_role');
     window.location.href = 'login.html';
     throw new Error('Session expired — please log in again.');
   }
@@ -727,7 +727,7 @@ function renderRows(users) {
     tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">&#128100;</div><h3>No users found</h3><p>Try adjusting your search or add a new user.</p></div></td></tr>`;
     return;
   }
-  const me = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const me = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   tbody.innerHTML = users.map((u, i) => {
     const uid      = u._id;
     const isMe     = String(uid) === String(me.id || me._id);
@@ -1020,9 +1020,9 @@ async function saveEdit() {
     const idx = allUsers.findIndex(u => String(u._id) === editingUser.id);
     if (idx !== -1) allUsers[idx] = updated;
 
-    const me = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+    const me = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
     if (String(me.id || me._id) === editingUser.id) {
-      localStorage.setItem('schiller_user', JSON.stringify({
+      sessionStorage.setItem('schiller_user', JSON.stringify({
         ...me,
         name:     updated.name,
         email:    updated.email,
@@ -1109,7 +1109,7 @@ function showToast(msg, type = 'ok') {
   setTimeout(() => el.remove(), 3500);
 }
 
-function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+function logout() { sessionStorage.clear(); localStorage.clear(); window.location.href = 'login.html'; }
 
 let sfOpen = false;
 function toggleSF() {

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <script>(function(){
   document.documentElement.setAttribute('data-theme',localStorage.getItem('si_theme')||'light');
-  const t=localStorage.getItem('schiller_token');
+  const t=sessionStorage.getItem('schiller_token');
   if(!t)window.location.href='login.html';
 })();</script>
 <title>SchillerIndia  AI Reports</title>
@@ -936,10 +936,10 @@ body{
 // -- NAV HELPERS -----------------------------------------------
 function toggleSF(){document.getElementById('sf-children').classList.toggle('open');document.getElementById('sf-toggle').classList.toggle('open');}
 function toggleAR(){document.getElementById('ar-children').classList.toggle('open');document.getElementById('ar-toggle').classList.toggle('open');}
-function logout(){localStorage.clear();window.location.href='login.html';}
+function logout(){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';}
 
 // -- AUTH ------------------------------------------------------
-const token=localStorage.getItem('schiller_token')||'';
+const token=sessionStorage.getItem('schiller_token')||'';
 function hdrs(){return{'Content-Type':'application/json','Authorization':'Bearer '+token};}
 
 // -- TAB SWITCHING ---------------------------------------------

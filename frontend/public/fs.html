@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <script>(function(){
   document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light');
-  const token = localStorage.getItem('schiller_token');
-  const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
+  const token = sessionStorage.getItem('schiller_token');
+  const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
   if (!token || !['fqc','admin','superadmin'].includes(role)) window.location.href = 'login.html';
 })();</script>
 <title>SchillerIndia | - Saleables List</title>
@@ -554,7 +554,7 @@ const API = '';
 let NS_DATA = [], filtered = [], sortKey = 'entryDate', sortDir = -1, currentPage = 1;
 let editingId = null;
 
-const LOGGED_USER = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+const LOGGED_USER = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
 const USER_NAME   = LOGGED_USER.name || 'Admin';
 
 // -- INIT ---------------------------------------------------------
@@ -567,13 +567,13 @@ const USER_NAME   = LOGGED_USER.name || 'Admin';
   loadData();
 })();
 
-function getToken()    { return localStorage.getItem('schiller_token') || ''; }
+function getToken()    { return sessionStorage.getItem('schiller_token') || ''; }
 function authHeaders() { return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getToken() }; }
 function setLoading(on){ document.getElementById('loading-bar').className = on ? 'loading-bar active' : 'loading-bar'; }
 function handleUnauth(res){
   if (res.status === 401) {
     showToast('Session expired - logging out.', 'err');
-    setTimeout(() => { localStorage.clear(); window.location.href = 'login.html'; }, 1500);
+    setTimeout(() => { sessionStorage.clear(); localStorage.clear(); window.location.href = 'login.html'; }, 1500);
     throw new Error('Unauthorized');
   }
 }
@@ -942,7 +942,7 @@ function showToast(msg, type='ok'){
   el.className='toast '+type;el.innerHTML='<span class="tdot"></span>'+msg;
   w.appendChild(el);setTimeout(()=>el.remove(),3400);
 }
-function logout(){ localStorage.clear(); window.location.href = 'login.html'; }
+function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href = 'login.html'; }
 
 // Close modal on backdrop click
 document.getElementById('update-modal').addEventListener('click', e => {

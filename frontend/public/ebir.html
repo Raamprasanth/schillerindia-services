@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light'); const token = localStorage.getItem('schiller_token'); if (!token) window.location.href = 'login.html'; })();</script>
+<script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light'); const token = sessionStorage.getItem('schiller_token'); if (!token) window.location.href = 'login.html'; })();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>SchillerIndia - BIR LIST</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
@@ -539,7 +539,7 @@ let activeTab = 'update';
 
 /* ?"??"? INIT ?"??"? */
 (function init(){
-  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   if(u.name){
     (document.getElementById('admin-name')||{}).textContent = u.name;
     (document.getElementById('admin-avatar')||{}).textContent = u.name.charAt(0).toUpperCase();
@@ -549,7 +549,7 @@ let activeTab = 'update';
   loadData();
 })();
 
-function getToken(){ return localStorage.getItem('schiller_token') || ''; }
+function getToken(){ return sessionStorage.getItem('schiller_token') || ''; }
 function authHeaders(){ return { 'Content-Type':'application/json', Authorization:'Bearer '+getToken() }; }
 function handleUnauth(res){
   if(res.status===401||res.status===403){
@@ -760,7 +760,7 @@ function openModal(id){
   set('upd-final-status', d.finalStatus||'Pending');
 
   // Service Section (unlocked - editable)
-  const currentUser = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const currentUser = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   set('upd-sc-engineer', d.scEngineer || currentUser.name || '');
   set('upd-sc-inward', d.scInwardDate);
   set('upd-sc-obs', d.scObservation);
@@ -811,7 +811,7 @@ async function submitUpdate(){
     defUnitReceivedDate: document.getElementById('upd-def-recv').value,
     replacementShipDate: document.getElementById('upd-rep-ship').value,
     fqcObservation:      document.getElementById('upd-fqc-obs').value.trim(),
-    scEngineer:          document.getElementById('upd-sc-engineer').value.trim() || (JSON.parse(localStorage.getItem('schiller_user') || '{}').name || ''),
+    scEngineer:          document.getElementById('upd-sc-engineer').value.trim() || (JSON.parse(sessionStorage.getItem('schiller_user') || '{}').name || ''),
     serviceManualUpdate: document.getElementById('upd-service-manual').value,
     techRemarks:         document.getElementById('upd-tech-remarks').value.trim(),
   };
@@ -921,7 +921,7 @@ function fmtDate(d){
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function showToast(msg,type='ok'){ const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="td"></span>'+msg;w.appendChild(el);setTimeout(()=>el.remove(),3400); }
 function clearMsg(){ const el=document.getElementById('upd-msg');el.textContent='';el.className='form-msg'; }
-function logout(){ localStorage.clear(); window.location.href='login.html'; }
+function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; }
 document.addEventListener('keydown',e=>{if(e.key==='Escape') closeModal();});
 </script>
 <script>

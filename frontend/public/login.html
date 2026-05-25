@@ -427,9 +427,9 @@
       // ── SUCCESS ──
       const roleRaw = data.data.role || '';
       const role = roleRaw.toLowerCase();
-      localStorage.setItem('schiller_token', data.data.token);
-      localStorage.setItem('schiller_user',  JSON.stringify(data.data));
-      localStorage.setItem('schiller_role',  role);
+      sessionStorage.setItem('schiller_token', data.data.token);
+      sessionStorage.setItem('schiller_user',  JSON.stringify(data.data));
+      sessionStorage.setItem('schiller_role',  role);
 
       showMsg(`&#10004; Welcome, ${_esc(data.data.name)}! Redirecting...`, 'ok');
       btn.innerHTML = '&#10004; Authenticated';

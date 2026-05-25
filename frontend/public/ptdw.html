@@ -6,8 +6,8 @@
 <script>
 (function(){
   document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme') || 'light');
-  const token = localStorage.getItem('schiller_token');
-  const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
+  const token = sessionStorage.getItem('schiller_token');
+  const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
   if (!token || !['pt','product team','product_team','product','admin','superadmin','administrator'].includes(role)) window.location.href = 'login.html';
 })();
 </script>
@@ -227,7 +227,7 @@ const offsetToday = currentDate.getTimezoneOffset() * 60000;
 let selectedDateStr = new Date(currentDate.getTime() - offsetToday).toISOString().split('T')[0];
 
 (function init(){
-  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   const name = u.name || 'Employee';
   
   const els = ['user-nm', 'tb-name'];
@@ -245,7 +245,7 @@ let selectedDateStr = new Date(currentDate.getTime() - offsetToday).toISOString(
   renderCalendar();
 })();
 
-function hdrs(){ return {"Content-Type":"application/json", "Authorization":"Bearer "+(localStorage.getItem("schiller_token")||"")}; }
+function hdrs(){ return {"Content-Type":"application/json", "Authorization":"Bearer "+(sessionStorage.getItem('schiller_token')||"")}; }
 let DW_LIST = [];
 
 async function fetchDwList() {
@@ -407,7 +407,7 @@ async function deleteDw(id){
 function val(id){ return (document.getElementById(id)?.value || "").trim(); }
 function showMsg(m){ const el=document.getElementById("dw-msg"); if(!el) return; el.textContent=m; el.style.display=m?"block":"none"; }
 function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-function logout(){ localStorage.clear(); window.location.href="login.html"; }
+function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href="login.html"; }
 
 document.getElementById("dw-overlay").addEventListener("click", e => {
   if (e.target.id === "dw-overlay") closeDwModal();

@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <script>(function(){
   document.documentElement.setAttribute('data-theme', 'light');
-  const token = localStorage.getItem('schiller_token');
-  const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
+  const token = sessionStorage.getItem('schiller_token');
+  const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
   if (!token || (role && role !== 'employee')) window.location.href = 'login.html';
 })();</script>
 <title>SchillerIndia - Employee Saleables</title>
@@ -322,7 +322,7 @@ const API = '';
 let SALE_DATA = [], filtered = [], sortKey = 'entryDate', sortDir = -1, currentPage = 1;
 
 (function init(){
-  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   if (u.name) {
     (document.getElementById('emp-name')||{}).textContent = u.name;
     (document.getElementById('emp-avatar')||{}).textContent = u.name.charAt(0).toUpperCase();
@@ -334,7 +334,7 @@ let SALE_DATA = [], filtered = [], sortKey = 'entryDate', sortDir = -1, currentP
   loadData();
 })();
 
-function getToken(){ return localStorage.getItem('schiller_token') || ''; }
+function getToken(){ return sessionStorage.getItem('schiller_token') || ''; }
 function authHeaders(){ return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getToken() }; }
 function handleUnauth(res){
   if (res.status === 401){
@@ -542,7 +542,7 @@ function showToast(msg, type = 'ok'){
 }
 
 function logout(){
-  localStorage.clear();
+  sessionStorage.clear(); localStorage.clear();
   window.location.href = 'login.html';
 }
 </script>

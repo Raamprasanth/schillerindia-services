@@ -4,8 +4,8 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <script>(function(){
-  const token = localStorage.getItem('schiller_token');
-  const role  = (localStorage.getItem('schiller_role')||'').toLowerCase();
+  const token = sessionStorage.getItem('schiller_token');
+  const role  = (sessionStorage.getItem('schiller_role')||'').toLowerCase();
   if (!token || !['admin','superadmin'].includes(role)) window.location.href = 'login.html';
 })();</script>
 <title>SchillerIndia - Under Repair</title>
@@ -582,7 +582,7 @@ body.panel-open .main{display:none;}
 <script>
 const API = '';
 let UR_DATA = [], filtered = [], sortKey = 'entryDate', sortDir = -1, currentPage = 1;
-const LOGGED_USER = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+const LOGGED_USER = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
 const EMP_NAME    = LOGGED_USER.name || '';
 
 (function init() {
@@ -595,7 +595,7 @@ const EMP_NAME    = LOGGED_USER.name || '';
   loadData();
 })();
 
-function getToken()    { return localStorage.getItem('schiller_token') || ''; }
+function getToken()    { return sessionStorage.getItem('schiller_token') || ''; }
 function authHeaders() { return { 'Content-Type':'application/json', Authorization:'Bearer '+getToken() }; }
 function setLoading(on){ document.getElementById('loading-bar').className = on ? 'loading-bar active' : 'loading-bar'; }
 
@@ -609,7 +609,7 @@ function normalizeRtDivision(record){
 function handleUnauth(res){
   if (res.status===401) {
     showToast('Session expired - logging out.','err');
-    setTimeout(()=>{ localStorage.clear(); window.location.href='login.html'; },1500);
+    setTimeout(()=>{ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; },1500);
     throw new Error('Unauthorized');
   }
 }
@@ -963,7 +963,7 @@ async function deleteRecord(id, btn){
       method: 'DELETE', 
       headers: authHeaders() 
     });
-    if(res.status===401){ localStorage.clear(); window.location.href='login.html'; return; }
+    if(res.status===401){ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; return; }
     if(!res.ok){
       const e = await res.json().catch(()=>({}));
       throw new Error(e.message || 'HTTP ' + res.status);
@@ -1087,7 +1087,7 @@ function configureUnderRepairStatCards(){
   cards[3].innerHTML='<div class="stat-ico ico-red">&#128308;</div><div class="stat-lbl">Critical (&gt;15 days)</div><div class="stat-val" id="st-overdue">-</div><div class="stat-sub">Needs immediate action</div>';
 }
 configureUnderRepairStatCards();
-function logout(){localStorage.clear();window.location.href='login.html';}
+function logout(){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';}
 </script>
 <script src="tab-fix.js"></script>
 </body>

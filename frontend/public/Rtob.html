@@ -8,8 +8,8 @@
   // Do NOT check role here - let the API decide authorization.
   // The role stored in localStorage may be 'repair_team', 'repair', or 'employee'
   // depending on which login endpoint was used. We accept all of them.
-  const token = localStorage.getItem('schiller_token');
-  const role  = (localStorage.getItem('schiller_role')||'').toLowerCase();
+  const token = sessionStorage.getItem('schiller_token');
+  const role  = (sessionStorage.getItem('schiller_role')||'').toLowerCase();
   if (!token || !['repair','repair_team','admin'].includes(role)) {
     window.location.href = 'login.html';
   }
@@ -505,10 +505,10 @@ table.ob-table tbody tr:last-child td{border-bottom:none;}
 <script>
 const API      = '';
 // -- Read user from localStorage - try both possible key names --
-const LUSER    = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+const LUSER    = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
 const EMP_NAME = LUSER.name || '';
 // Normalise role - the DB may store 'repair_team', 'repair', 'employee', or 'admin'
-const RAW_ROLE = (LUSER.role || localStorage.getItem('schiller_role') || '').toLowerCase();
+const RAW_ROLE = (LUSER.role || sessionStorage.getItem('schiller_role') || '').toLowerCase();
 const IS_ADMIN = RAW_ROLE === 'admin';
 
 let allData = [], filtered = [], sortKey = 'entryDate', sortDir = -1, currentPage = 1;
@@ -538,7 +538,7 @@ async function syncRepairSessionUser(){
   loadData();
 })();
 
-function getToken()    { return localStorage.getItem('schiller_token') || ''; }
+function getToken()    { return sessionStorage.getItem('schiller_token') || ''; }
 function authHeaders() { return { 'Content-Type':'application/json', Authorization:'Bearer '+getToken() }; }
 // -- FIXED handleUnauth:
 //    - Only clears localStorage and redirects on 401 (truly expired/invalid token)
@@ -549,7 +549,7 @@ function handleUnauth(r) {
   if (r.status === 401) {
     // Genuinely expired or invalid token - log out
     showToast('Session expired - please log in again.', 'err');
-    setTimeout(() => { localStorage.clear(); window.location.href = 'login.html'; }, 1800);
+    setTimeout(() => { sessionStorage.clear(); localStorage.clear(); window.location.href = 'login.html'; }, 1800);
     throw new Error('Unauthorized');
   }
   if (r.status === 403) {
@@ -820,7 +820,7 @@ function gp(p){currentPage=p;renderTable();}
 function fmtDate(d){if(!d)return'-';const p=String(d).split('T')[0].split('-');if(p.length<3)return String(d);return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0];}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function showToast(msg,type='ok'){const w=document.getElementById('toast-wrap'),el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="td"></span>'+msg;w.appendChild(el);setTimeout(()=>el.remove(),3500);}
-function logout(){localStorage.clear();window.location.href='login.html';}
+function logout(){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';}
 document.getElementById('modal-update').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
 document.getElementById('modal-ai-diagnostics').addEventListener('click',e=>{if(e.target===e.currentTarget)closeAIModal();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeAIModal();}});

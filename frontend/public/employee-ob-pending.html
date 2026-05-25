@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <script>(function(){
-  const token = localStorage.getItem('schiller_token');
+  const token = sessionStorage.getItem('schiller_token');
   if (!token) window.location.href = 'login.html';
 })();</script>
 <title>SchillerIndia - OB Pending</title>
@@ -558,7 +558,7 @@ table.ob-table tbody tr:last-child td{border-bottom:none;}
 
 <script>
 const API_BASE    = '';
-const LOGGED_USER = JSON.parse(localStorage.getItem('schiller_user')||'{}');
+const LOGGED_USER = JSON.parse(sessionStorage.getItem('schiller_user')||'{}');
 const EMP_NAME    = LOGGED_USER.name || '';
 const SCHILLER_PDF_LOGO = new Image();
 SCHILLER_PDF_LOGO.src = 'shc.webp';
@@ -638,7 +638,7 @@ function fillEngSelect(selId, division, selected) {
 }
 
 (function init(){
-  const u = JSON.parse(localStorage.getItem('schiller_user')||'{}');
+  const u = JSON.parse(sessionStorage.getItem('schiller_user')||'{}');
   if (u.name) {
     (document.getElementById('emp-name')||{}).textContent = u.name;
     (document.getElementById('emp-avatar')||{}).textContent = u.name.charAt(0).toUpperCase();
@@ -649,8 +649,8 @@ function fillEngSelect(selId, division, selected) {
   loadOBPending();
 })();
 
-function logout(){ localStorage.clear(); window.location.href='login.html'; }
-function getToken(){ return localStorage.getItem('schiller_token')||''; }
+function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; }
+function getToken(){ return sessionStorage.getItem('schiller_token')||''; }
 function authHeaders(){ return {'Content-Type':'application/json','Authorization':'Bearer '+getToken()}; }
 
 // ? KEY FIX: Use the dedicated /ob-pending endpoint which filters
@@ -661,7 +661,7 @@ async function loadOBPending() {
   const timeoutId = setTimeout(() => controller.abort(), 20000);
   try {
     const res = await fetch(API_BASE + '/api/emp/services/ob-pending', { headers: authHeaders(), signal: controller.signal });
-    if (res.status===401){ localStorage.clear(); window.location.href='login.html'; return; }
+    if (res.status===401){ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; return; }
     if (!res.ok) throw new Error('HTTP '+res.status);
     const data = await res.json();
     allRecords = data.map(s => ({...s, id: s._id||s.id, pdOb: s.pdOb || calcPendingDays(s.rcvdDate || s.entryDate)}));
@@ -1232,7 +1232,7 @@ async function submitEstimation(){
     };
 
     const svcRes=await fetch(API_BASE+'/api/emp/services/'+editingId,{method:'PUT',headers:authHeaders(),body:JSON.stringify(svcPayload)});
-    if(svcRes.status===401){localStorage.clear();window.location.href='login.html';return;}
+    if(svcRes.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
     if(!svcRes.ok){const e=await svcRes.json().catch(()=>({}));throw new Error('Service update failed: '+(e.message||svcRes.status));}
 
     // -- STEP 2: Create EstimationPending record ------------------------
@@ -1270,7 +1270,7 @@ async function submitEstimation(){
     };
 
     const estRes=await fetch(API_BASE+'/api/emp/estimation',{method:'POST',headers:authHeaders(),body:JSON.stringify(estPayload)});
-    if(estRes.status===401){localStorage.clear();window.location.href='login.html';return;}
+    if(estRes.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
     if(!estRes.ok){const e=await estRes.json().catch(()=>({}));throw new Error('Estimation save failed: '+(e.message||estRes.status));}
 
     // -- STEP 3: Both saves confirmed - remove from local list ----------
@@ -1427,7 +1427,7 @@ async function submitEstimation(){
           rtobCompletedAt: source.rtobCompletedAt || existing.rtobCompletedAt || '',
         })
       });
-      if(estRes.status===401){localStorage.clear();window.location.href='login.html';return;}
+      if(estRes.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
       if(!estRes.ok){
         const e=await estRes.json().catch(()=>({}));
         throw new Error('Estimation save failed: '+(e.message||estRes.status));
@@ -1443,7 +1443,7 @@ async function submitEstimation(){
             obStatus: 'Estimation',
           })
         });
-        if(svcRes.status===401){localStorage.clear();window.location.href='login.html';return;}
+        if(svcRes.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
         if(!svcRes.ok){
           const e=await svcRes.json().catch(()=>({}));
           throw new Error('Service update failed: '+(e.message||svcRes.status));
@@ -1831,7 +1831,7 @@ async function confirmSendToRtOb(){
   };
   try{
     const createRes=await fetch(API_BASE+'/api/rtob',{method:'POST',headers:authHeaders(),body:JSON.stringify(rtPayload)});
-    if(createRes.status===401){localStorage.clear();window.location.href='login.html';return;}
+    if(createRes.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
     if(!createRes.ok){const e=await createRes.json().catch(()=>({}));throw new Error(e.message||'HTTP '+createRes.status);}
     const idx=allRecords.findIndex(x=>(x._id||x.id)===id);
     if(idx!==-1) allRecords[idx]={...allRecords[idx],rtobSent:true,rtobSentAt:sentAt,techRemarks};

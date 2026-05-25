@@ -597,7 +597,7 @@ table.svc-table tbody tr:last-child td{border-bottom:none;}
 
 <script>
 const API_BASE_URL = '';
-const LOGGED_USER  = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+const LOGGED_USER  = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
 const EMP_NAME     = LOGGED_USER.name       || '';
 const EMP_DIVISION = LOGGED_USER.division   || LOGGED_USER.department || '';
 
@@ -757,10 +757,10 @@ function checkAutoTriggers() {
 
 function isOwner(s) { return s.isOwner || s.scEng===EMP_NAME || s.eng===EMP_NAME || s.submittedBy===EMP_NAME || LOGGED_USER.role==='admin'; }
 function setLoading(on) { document.getElementById('loading-bar').className = on ? 'loading-bar active' : 'loading-bar'; }
-function getToken()     { return localStorage.getItem('schiller_token') || ''; }
+function getToken()     { return sessionStorage.getItem('schiller_token') || ''; }
 function authHeaders()  { return { 'Content-Type':'application/json', 'Authorization':'Bearer '+getToken() }; }
 function handleUnauth(res) {
-  if (res.status===401) { showToast('Session expired  logging out.','err'); setTimeout(()=>{ localStorage.clear(); window.location.href='login.html'; },1500); throw new Error('Unauthorized'); }
+  if (res.status===401) { showToast('Session expired  logging out.','err'); setTimeout(()=>{ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; },1500); throw new Error('Unauthorized'); }
 }
 
 async function apiGetAll() { const res = await fetch(API_BASE_URL+'/api/services',{headers:authHeaders()}); handleUnauth(res); if(!res.ok) throw new Error('HTTP '+res.status); return res.json(); }
@@ -794,7 +794,7 @@ function populateEngFilter() {
 
 (function init() {
   
-  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   const name = u.name || 'Admin';
   const elName = document.getElementById('admin-name');
   if(elName) elName.textContent = name;
@@ -833,7 +833,7 @@ function toggleSF() {
 }
 function toggleAR(){ var btn=document.getElementById('ar-toggle'); var panel=document.getElementById('ar-children'); if(!btn||!panel)return; btn.classList.toggle('open'); panel.classList.toggle('open'); }
 
-function logout() { localStorage.clear(); window.location.href='login.html'; }
+function logout() { sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; }
 
 async function autoFillFromLogin() {
   const todayISO   = new Date().toISOString().split('T')[0];
@@ -850,14 +850,14 @@ async function autoFillFromLogin() {
   (document.getElementById('strip-entrydate')||{}).textContent = todayLocal;
   document.getElementById('f-entrydate').value           = todayISO;
   try {
-    const token = localStorage.getItem('schiller_token');
+    const token = sessionStorage.getItem('schiller_token');
     const r = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
     if (!r.ok) throw new Error();
     const json = await r.json();
     const divName = (json.data && json.data.division) || EMP_DIVISION || '';
     (document.getElementById('strip-division')||{}).textContent = divName || '';
     document.getElementById('f-division').value           = divName;
-    try { localStorage.setItem('schiller_user', JSON.stringify({ ...LOGGED_USER, division: divName })); } catch(_){}
+    try { sessionStorage.setItem('schiller_user', JSON.stringify({ ...LOGGED_USER, division: divName })); } catch(_){}
   } catch (_) {
     (document.getElementById('strip-division')||{}).textContent = EMP_DIVISION || '';
     document.getElementById('f-division').value           = EMP_DIVISION || '';

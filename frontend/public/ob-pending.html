@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <script>
 (function(){
-  const token = localStorage.getItem('schiller_token');
-  const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
+  const token = sessionStorage.getItem('schiller_token');
+  const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
   if (!token || !['admin','superadmin'].includes(role)) {
     window.location.href = 'login.html';
   }
@@ -407,8 +407,8 @@ function toggleSF(){
 }
 function toggleAR(){ var btn=document.getElementById('ar-toggle'); var panel=document.getElementById('ar-children'); if(!btn||!panel)return; btn.classList.toggle('open'); panel.classList.toggle('open'); }
 
-function logout(){ localStorage.clear(); window.location.href='login.html'; }
-function getToken(){ return localStorage.getItem('schiller_token') || ''; }
+function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; }
+function getToken(){ return sessionStorage.getItem('schiller_token') || ''; }
 function authHeaders(){ return { 'Content-Type':'application/json', 'Authorization':'Bearer ' + getToken() }; }
 function esc(v){ return String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 function fmtDate(v){ if(!v) return '-'; const d=new Date(v); return Number.isNaN(d.getTime()) ? esc(v) : d.toLocaleDateString('en-CA'); }
@@ -436,7 +436,7 @@ async function loadOBPending(){
   setLoading();
   try{
     const res = await fetch(API_BASE + '/api/ob-pending', { headers: authHeaders() });
-    if(res.status === 401){ localStorage.clear(); window.location.href='login.html'; return; }
+    if(res.status === 401){ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; return; }
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     allRecords = data.map(normalizeRecord);

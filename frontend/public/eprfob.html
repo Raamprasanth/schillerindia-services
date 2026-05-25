@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script>(function () {
       document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme') || 'light');
-      const t = localStorage.getItem('schiller_token');
+      const t = sessionStorage.getItem('schiller_token');
       if (!t) window.location.href = 'login.html';
     })();</script>
   <title>SchillerIndia - PRF/OB Register</title>
@@ -1972,13 +1972,13 @@
 
     function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
     function showToast(msg, type = 'ok') { const w = document.getElementById('toast-wrap'); const el = document.createElement('div'); el.className = 'toast ' + type; el.innerHTML = '<span class="tdot"></span>' + esc(msg); w.appendChild(el); setTimeout(() => el.remove(), 3400); }
-    function getToken() { return localStorage.getItem('schiller_token') || ''; }
+    function getToken() { return sessionStorage.getItem('schiller_token') || ''; }
     function authH() { return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getToken() }; }
 
     /* ----------- INIT ----------- */
     document.getElementById('admin-date') && ((document.getElementById('admin-date')||{}).textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }));
     (function () {
-      const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+      const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
       const n = u.name || 'Admin';
       (document.getElementById('user-nm')||{}).textContent = n;
       (document.getElementById('user-av')||{}).textContent = n.charAt(0).toUpperCase();
@@ -2338,7 +2338,7 @@
     }
     function exportFiltered(ctx) { exportAll(); }
     function downloadCSV(csv, fname) { const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = fname; a.click(); }
-    function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+    function logout() { sessionStorage.clear(); localStorage.clear(); window.location.href = 'login.html'; }
 
     /* ----------- BOOTSTRAP ----------- */
     (function () {

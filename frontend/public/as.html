@@ -4,8 +4,8 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <script>(function(){
-  const token = localStorage.getItem('schiller_token');
-  const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
+  const token = sessionStorage.getItem('schiller_token');
+  const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
   if (!token || !['admin','superadmin'].includes(role)) window.location.href = 'login.html';
   document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme') || 'light');
 })();</script>
@@ -410,7 +410,7 @@ let DATA = [], filtered = [], sortKey = 'entryDate', sortDir = -1, currentPage =
 let selectedIds = new Set(), pendingConfirmFn = null;
 
 (function init() {
-  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   if (u.name) { document.getElementById('u-name').textContent = u.name; document.getElementById('u-avatar').textContent = u.name.charAt(0).toUpperCase(); }
   document.getElementById('u-role').textContent = 'Administrator';
   document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('en-IN', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
@@ -419,7 +419,7 @@ let selectedIds = new Set(), pendingConfirmFn = null;
 
 function toggleSF() { var b=document.getElementById('sf-toggle'),p=document.getElementById('sf-children'); if(!b||!p)return; b.classList.toggle('open'); p.classList.toggle('open'); }
 function toggleAR() { var b=document.getElementById('ar-toggle'),p=document.getElementById('ar-children'); if(!b||!p)return; b.classList.toggle('open'); p.classList.toggle('open'); }
-function getToken() { return localStorage.getItem('schiller_token') || ''; }
+function getToken() { return sessionStorage.getItem('schiller_token') || ''; }
 function authHeaders() { return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getToken() }; }
 function handleUnauth(res) { if (res.status === 401) { showToast('Session expired  please log in.', 'err'); setTimeout(() => window.location.href = 'login.html', 1500); throw new Error('Unauthorized'); } }
 
@@ -631,7 +631,7 @@ async function doDelete(items) {
 }
 
 function toggleTheme() { const cur=document.documentElement.getAttribute('data-theme')||'light'; const next=cur==='light'?'dark':'light'; document.documentElement.setAttribute('data-theme',next); localStorage.setItem('si_theme',next); document.getElementById('theme-btn').textContent=next==='dark'?'??':'??'; }
-function logout() { localStorage.clear(); window.location.href='login.html'; }
+function logout() { sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; }
 </script>
 <script src="tab-fix.js"></script>
 </body>

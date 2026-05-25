@@ -6,8 +6,8 @@
 <script>
 (function(){
   document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme') || 'light');
-  const token = localStorage.getItem('schiller_token');
-  const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
+  const token = sessionStorage.getItem('schiller_token');
+  const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
   if (!token || !['employee','admin','superadmin','administrator'].includes(role)) window.location.href = 'login.html';
 })();
 </script>
@@ -231,7 +231,7 @@ const offsetToday = currentDate.getTimezoneOffset() * 60000;
 let selectedDateStr = new Date(currentDate.getTime() - offsetToday).toISOString().split('T')[0];
 
 (function init(){
-  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   const name = u.name || 'Employee';
   
   const els = ['emp-name', 'tb-name'];
@@ -249,7 +249,7 @@ let selectedDateStr = new Date(currentDate.getTime() - offsetToday).toISOString(
   renderCalendar();
 })();
 
-const DW_KEY = () => 'daily_work_' + (JSON.parse(localStorage.getItem('schiller_user')||'{}').name || 'emp');
+const DW_KEY = () => 'daily_work_' + (JSON.parse(sessionStorage.getItem('schiller_user')||'{}').name || 'emp');
 function getDwList() { try { return JSON.parse(localStorage.getItem(DW_KEY()) || '[]'); } catch(e){ return []; } }
 function setDwList(list) { localStorage.setItem(DW_KEY(), JSON.stringify(list)); }
 
@@ -375,7 +375,7 @@ function saveDw(){
   const btn=document.getElementById('save-btn'); btn.disabled=true; btn.textContent='Saving...';
   try{
     const list = getDwList();
-    const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+    const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
     payload.addedBy = u.name || 'Employee';
     payload.createdAt = new Date().toISOString();
     
@@ -406,7 +406,7 @@ function deleteDw(origIdx){
 function val(id){ return (document.getElementById(id)?.value || '').trim(); }
 function showMsg(m){ const el=document.getElementById('dw-msg'); if(!el) return; el.textContent=m; el.style.display=m?'block':'none'; }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function logout(){ localStorage.clear(); window.location.href='login.html'; }
+function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; }
 
 // allow closing modal by clicking outside
 document.getElementById('dw-overlay').addEventListener('click', e => {

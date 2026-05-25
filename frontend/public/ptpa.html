@@ -6,8 +6,8 @@
 <script>
 (function(){
   document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme') || 'light');
-  const token = localStorage.getItem('schiller_token');
-  const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
+  const token = sessionStorage.getItem('schiller_token');
+  const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
   if (!token || !['pt','product team','product_team','product','admin','superadmin','administrator'].includes(role)) window.location.href = 'login.html';
 })();
 </script>
@@ -209,7 +209,7 @@ tr:hover td{background:var(--surface3);}
 let currentData = [];
 
 (function init(){
-  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   const name = u.name || 'Employee';
   
   const els = ['user-nm', 'tb-name'];
@@ -224,7 +224,7 @@ let currentData = [];
   fetchData();
 })();
 
-function hdrs(){ return {"Content-Type":"application/json", "Authorization":"Bearer "+(localStorage.getItem("schiller_token")||"")}; }
+function hdrs(){ return {"Content-Type":"application/json", "Authorization":"Bearer "+(sessionStorage.getItem('schiller_token')||"")}; }
 
 async function fetchData() {
   try {
@@ -275,7 +275,7 @@ function renderTable() {
 function openModal(){ 
   clearForm(); 
   document.getElementById('modal-title').innerHTML = '&#128221; Add Pending Activity';
-  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   document.getElementById('f-engineer').value = u.name || 'Employee';
   document.getElementById('f-initiated').value = new Date().toISOString().split('T')[0];
   document.getElementById('app-modal').classList.add('open'); 
@@ -363,7 +363,7 @@ function formatDate(dStr){
   if(!dStr) return '--';
   try{ return new Date(dStr).toLocaleDateString('en-IN'); } catch(e){ return dStr; }
 }
-function logout(){ localStorage.clear(); window.location.href="login.html"; }
+function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href="login.html"; }
 
 document.getElementById("app-modal").addEventListener("click", e => {
   if (e.target.id === "app-modal") closeModal();

@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <script>(function(){
   document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme')||'light');
-  const token = localStorage.getItem('schiller_token');
-  const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
+  const token = sessionStorage.getItem('schiller_token');
+  const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
   if (!token || !['admin','superadmin'].includes(role)) window.location.href = 'login.html';
 })();</script>
 <title>SchillerIndia - External Repair</title>
@@ -492,7 +492,7 @@ let DATA = [], filtered = [], sortKey = 'scRno', sortDir = -1, currentPage = 1;
 
 // -- INIT ------------------------------------------------------------------
 (function init(){
-  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   if(u.name){
     (document.getElementById('admin-name')||{}).textContent = u.name;
     (document.getElementById('admin-avatar')||{}).textContent = u.name.charAt(0).toUpperCase();
@@ -502,7 +502,7 @@ let DATA = [], filtered = [], sortKey = 'scRno', sortDir = -1, currentPage = 1;
   loadData();
 })();
 
-function getToken(){ return localStorage.getItem('schiller_token') || ''; }
+function getToken(){ return sessionStorage.getItem('schiller_token') || ''; }
 function authHeaders(){ return {'Content-Type':'application/json', Authorization:'Bearer '+getToken()}; }
 function handleUnauth(res){
   if(res.status===401){
@@ -765,7 +765,7 @@ function showToast(msg, type='ok'){ const w = document.getElementById('toast-wra
 function showUpdMsg(msg, type){ const el = document.getElementById('upd-msg'); el.textContent = msg; el.className = 'form-msg '+type; }
 function clearUpdMsg(){ const el = document.getElementById('upd-msg'); el.textContent = ''; el.className = 'form-msg'; }
 function toggleSF(){ const toggle = document.getElementById('sf-toggle'); const children = document.getElementById('sf-children'); toggle.classList.toggle('open'); children.classList.toggle('open'); }
-function logout(){ localStorage.clear(); window.location.href = 'login.html'; }
+function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href = 'login.html'; }
 
 document.addEventListener('keydown', e => { if(e.key === 'Escape') closeUpdateModal(); });
 </script>

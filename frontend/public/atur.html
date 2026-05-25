@@ -4,8 +4,8 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <script>(function(){
-  const token = localStorage.getItem('schiller_token');
-  const role  = (localStorage.getItem('schiller_role')||'').toLowerCase();
+  const token = sessionStorage.getItem('schiller_token');
+  const role  = (sessionStorage.getItem('schiller_role')||'').toLowerCase();
   if (!token || !['admin','superadmin','administrator'].includes(role)) window.location.href = 'login.html';
 })();</script>
 <title>SchillerIndia - Admin RT UR</title>
@@ -490,9 +490,9 @@ table.ur-table tbody tr:last-child td{border-bottom:none;}
 <script>
 const API = '';
 const ATUR_API = '/api/atur';
-const LUSER    = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+const LUSER    = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
 const EMP_NAME = LUSER.name || '';
-const RAW_ROLE = (LUSER.role || localStorage.getItem('schiller_role') || '').toLowerCase();
+const RAW_ROLE = (LUSER.role || sessionStorage.getItem('schiller_role') || '').toLowerCase();
 
 let allData = [], filtered = [], sortKey = 'entryDate', sortDir = -1, currentPage = 1;
 let editingId = null;
@@ -521,12 +521,12 @@ async function syncRepairSessionUser(){
   loadData();
 })();
 
-function getToken()    { return localStorage.getItem('schiller_token') || ''; }
+function getToken()    { return sessionStorage.getItem('schiller_token') || ''; }
 function authHeaders() { return { 'Content-Type':'application/json', Authorization:'Bearer '+getToken() }; }
 function handleUnauth(r) {
   if (r.status === 401) {
     showToast('Session expired - please log in again.', 'err');
-    setTimeout(() => { localStorage.clear(); window.location.href = 'login.html'; }, 1800);
+    setTimeout(() => { sessionStorage.clear(); localStorage.clear(); window.location.href = 'login.html'; }, 1800);
     throw new Error('Unauthorized');
   }
   if (r.status === 403) {
@@ -804,7 +804,7 @@ function toggleRTA() {
   document.getElementById('rta-toggle').classList.toggle('open');
   document.getElementById('rta-children').classList.toggle('open');
 }
-function logout(){localStorage.clear();window.location.href='login.html';}
+function logout(){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';}
 document.getElementById('modal-update').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 </script>
