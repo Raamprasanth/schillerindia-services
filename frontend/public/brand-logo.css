@@ -9,13 +9,11 @@
 
 .brand-logo-img {
   display: block;
-  width: 154px;
-  height: 54px;
-  max-width: 100%;
-  max-height: 54px;
-  object-fit: cover;
-  object-position: left center;
-  flex: 0 0 auto;
+  width: min(100%, 270px);
+  height: auto;
+  max-height: 58px;
+  object-fit: contain;
+  flex: 0 1 auto;
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.14));
 }
 
@@ -24,34 +22,29 @@
 }
 
 .sidebar .brand-logo-img {
-  width: 142px;
-  height: 50px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 200px;
   max-height: 54px;
 }
 
 nav .brand-logo-img,
 .topbar .brand-logo-img {
-  width: 154px;
-  height: 54px;
+  width: 270px;
   max-width: 32vw;
-  max-height: 54px;
+  max-height: 58px;
 }
 
 .card-top .brand-logo-img {
-  width: 170px;
-  height: 60px;
+  width: 310px;
   max-width: 100%;
-  max-height: 60px;
+  max-height: 76px;
   filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.24));
 }
 
 @media (max-width: 760px) {
   nav .brand-logo-img,
   .topbar .brand-logo-img {
-    width: 136px;
-    height: 48px;
-    max-width: 42vw;
+    max-width: 210px;
     max-height: 48px;
   }
 }
