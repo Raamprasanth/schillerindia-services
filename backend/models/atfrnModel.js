@@ -3,7 +3,7 @@
 // (`rtfrns`) so Rtfrn and Atfrn always show the same data.
 
 const mongoose = require('mongoose');
-const RTFRN = require('./RTFRN');
+const RTFRN = require('./RTFRN.JS');
 
 const atfrnSchema = RTFRN.schema.clone();
 
