@@ -383,7 +383,6 @@ table.ur-table tbody tr:last-child td{border-bottom:none;}
       <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
       <button class="btn btn-outline btn-sm" onclick="loadData()">&#128260; Refresh</button>
       <button class="btn btn-success btn-sm" onclick="exportCSV()">&#128228; Export</button>
-      <button class="btn btn-ur btn-sm" onclick="toggleAddPanel()">+ Add Record</button>
     </div>
   </div>
 
@@ -626,7 +625,7 @@ function renderTable(){
     tbody.innerHTML=`<tr><td colspan="12"><div class="empty-st">
       <div class="ei">&#128196;</div>
       <div class="et">${allData.length?'No records match filters':'No RT UR Records'}</div>
-      <div class="es">${allData.length?'Try clearing the filters.':'Click + Add Record to create the first UR entry.'}</div>
+      <div class="es">${allData.length?'Try clearing the filters.':'No RT UR records available.'}</div>
     </div></td></tr>`;
   } else {
     tbody.innerHTML=slice.map(d=>{

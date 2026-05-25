@@ -432,7 +432,6 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
       <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
       <button class="btn btn-outline btn-sm" onclick="loadData()">&#128260; Refresh</button>
       <button class="btn btn-success btn-sm" onclick="exportCSV()">&#128228; Export</button>
-      <button class="btn btn-primary btn-sm" onclick="toggleAddPanel()">+ Add Record</button>
     </div>
   </div>
 
@@ -711,7 +710,7 @@ function renderTable() {
     tbody.innerHTML = `<tr><td colspan="13"><div class="empty-st">
       <div class="ei">&#128196;</div>
       <div class="et">${allData.length ? 'No records match filters' : 'No RT FRN Records'}</div>
-      <div class="es">${allData.length ? 'Try clearing the filters.' : 'Click + Add Record to create the first entry.'}</div>
+      <div class="es">${allData.length ? 'Try clearing the filters.' : 'No RT FRN records available.'}</div>
     </div></td></tr>`;
   } else {
     tbody.innerHTML = slice.map(d => {
