@@ -21,6 +21,11 @@ function getWriteDivision(req) {
   return String(req.user?.activeDivision || req.user?.division || req.body.division || '').trim();
 }
 
+function canAccessDivision(user, division) {
+  const target = String(division || '').trim().toLowerCase();
+  return Boolean(target) && getUserDivisions(user).some(value => value.toLowerCase() === target);
+}
+
 // GET /api/emp/eprfob
 router.get('/', protect, async (req, res) => {
   try {
@@ -74,12 +79,18 @@ router.put('/:id', protect, async (req, res) => {
   try {
     const existing = await EPrfOb.findById(req.params.id);
     if (!existing) return res.status(404).json({ message: 'Record not found' });
+    if (!isAdminUser(req.user) && !canAccessDivision(req.user, existing.division)) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    const body = { ...req.body };
+    if (!isAdminUser(req.user)) delete body.division;
 
     const update = {
-      ...req.body,
+      ...body,
       updatedAt: new Date(),
       status: 'Closed',
-      executedDate: req.body.executedDate || existing.executedDate || new Date().toISOString().slice(0, 10),
+      executedDate: body.executedDate || existing.executedDate || new Date().toISOString().slice(0, 10),
     };
 
     const doc = await EPrfOb.findByIdAndUpdate(
@@ -151,8 +162,12 @@ router.put('/:id', protect, async (req, res) => {
 // DELETE /api/emp/eprfob/:id
 router.delete('/:id', protect, async (req, res) => {
   try {
-    const doc = await EPrfOb.findByIdAndDelete(req.params.id);
-    if (!doc) return res.status(404).json({ message: 'Record not found' });
+    const existing = await EPrfOb.findById(req.params.id).lean();
+    if (!existing) return res.status(404).json({ message: 'Record not found' });
+    if (!isAdminUser(req.user) && !canAccessDivision(req.user, existing.division)) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+    await EPrfOb.findByIdAndDelete(req.params.id);
     res.json({ message: 'Deleted successfully' });
   } catch (err) {
     console.error('[DELETE /api/emp/eprfob/:id]', err);
