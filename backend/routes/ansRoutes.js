@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const Ans = require('../models/Ans');
 const EmpNonSaleable = require('../models/EmpNonSaleable');
-const FqcNonsaleable = require('../models/FqcNonSaleable');
+const FqcNonsaleable = require('../models/FqcNonsaleable');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 
 /**
