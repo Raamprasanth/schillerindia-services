@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Todr = require('../models/Todr');
-const auth = require('../middleware/auth'); // assuming an auth middleware exists
+const { protect } = require('../middleware/authMiddleware');
 
 // GET all TODR entries
-router.get('/', auth, async (req, res) => {
+router.get('/', protect, async (req, res) => {
   try {
     const records = await Todr.find().sort({ entryDate: -1, createdAt: -1 });
     res.json(records);
@@ -15,7 +15,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // POST new TODR entry
-router.post('/', auth, async (req, res) => {
+router.post('/', protect, async (req, res) => {
   try {
     const newRecord = new Todr({
       ...req.body,
@@ -31,7 +31,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // PUT update a TODR entry
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', protect, async (req, res) => {
   try {
     const record = await Todr.findByIdAndUpdate(
       req.params.id,
@@ -47,7 +47,7 @@ router.put('/:id', auth, async (req, res) => {
 });
 
 // DELETE a TODR entry
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', protect, async (req, res) => {
   try {
     const record = await Todr.findByIdAndDelete(req.params.id);
     if (!record) return res.status(404).json({ message: 'Record not found' });
