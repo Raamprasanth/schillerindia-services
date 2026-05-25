@@ -40,10 +40,14 @@ async function resolveDivisions(user) {
 async function getDivisionFilter(user, fallbackOr) {
   if (isPrivileged(user)) return {};
 
+  const fallback = Array.isArray(fallbackOr) ? fallbackOr.filter(Boolean) : [];
   const divisions = await resolveDivisions(user);
-  if (divisions.length) return { division: { $in: divisions.map(d => d._id) } };
+  if (divisions.length) {
+    const divisionFilter = { division: { $in: divisions.map(d => d._id) } };
+    return fallback.length ? { $or: [divisionFilter, ...fallback] } : divisionFilter;
+  }
 
-  return { _id: null };
+  return fallback.length ? { $or: fallback } : { _id: null };
 }
 
 async function getServiceIdsFilter(user, fallbackOr) {

@@ -659,8 +659,10 @@ function authHeaders(){ return {'Content-Type':'application/json','Authorization
 //    movedToEstimation !== true server-side - no client-side guessing needed.
 async function loadOBPending() {
   setLoading();
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 20000);
   try {
-    const res = await fetch(API_BASE + '/api/emp/services/ob-pending', { headers: authHeaders() });
+    const res = await fetch(API_BASE + '/api/emp/services/ob-pending', { headers: authHeaders(), signal: controller.signal });
     if (res.status===401){ localStorage.clear(); window.location.href='login.html'; return; }
     if (!res.ok) throw new Error('HTTP '+res.status);
     const data = await res.json();
@@ -670,8 +672,11 @@ async function loadOBPending() {
     updateStats();
     showToast('Loaded '+allRecords.length+' record'+(allRecords.length!==1?'s':''),'info');
   } catch(e) {
-    document.getElementById('ob-tbody').innerHTML=`<tr class="loading-row"><td colspan="15" style="color:var(--red);">&#9888; Could not load: ${esc(e.message)}</td></tr>`;
-    showToast('Load failed: '+e.message,'err');
+    const message = e.name === 'AbortError' ? 'Request timed out. Please refresh after a few seconds.' : 'Load failed: '+e.message;
+    setError(message);
+    showToast(message,'err');
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
@@ -1528,7 +1533,6 @@ function generatePDFData(s, mode='download'){
       doc.setFont('helvetica','bold');
       doc.setFontSize(9);
       doc.text('S',21.5,24.7,{align:'center'});
-    }
     setRgb('setTextColor',SCH_BLUE);
     doc.setFontSize(22);
     doc.text('SCHILLER',58,24);
@@ -1707,10 +1711,20 @@ function exportCSV(){
 function renderPagination(pages){const el=document.getElementById('tbl-pagination');if(pages<=1){el.innerHTML='';return;}let h=`<button class="pager" ${currentPage===1?'disabled':''} onclick="gp(${currentPage-1})">&#8249; Prev</button>`;getRange(currentPage,pages).forEach(p=>{if(p==='-')h+=`<button class="pager" disabled>-</button>`;else h+=`<button class="pager ${p===currentPage?'active':''}" onclick="gp(${p})">${p}</button>`;});h+=`<button class="pager" ${currentPage===pages?'disabled':''} onclick="gp(${currentPage+1})">Next &#8250;</button>`;el.innerHTML=h;}
 function getRange(c,t){if(t<=7)return Array.from({length:t},(_,i)=>i+1);if(c<=4)return[1,2,3,4,5,'-',t];if(c>=t-3)return[1,'-',t-4,t-3,t-2,t-1,t];return[1,'-',c-1,c,c+1,'-',t];}
 function gp(p){currentPage=p;renderTable();}
-function setLoading(){document.getElementById('ob-tbody').innerHTML='<tr class="loading-row"><td colspan="15"><span class="spin"></span>Loading from database...</td></tr>';['stat-total','stat-high','stat-mid','stat-low'].forEach(id=>document.getElementById(id).textContent='-');}
+function setLoading(){
+  const tbody=document.getElementById('ob-tbody');
+  if(tbody) tbody.innerHTML='<tr class="loading-row"><td colspan="15"><span class="spin"></span>Loading from database...</td></tr>';
+  ['stat-total','stat-high','stat-mid','stat-low'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='-';});
+}
+function setError(msg){
+  const tbody=document.getElementById('ob-tbody');
+  if(tbody) tbody.innerHTML=`<tr class="loading-row"><td colspan="15" style="color:var(--red);">&#9888; ${esc(msg)}</td></tr>`;
+  const info=document.getElementById('tbl-info'); if(info) info.textContent='Load failed';
+  const count=document.getElementById('count-badge'); if(count) count.textContent='0 entries';
+}
 function fmtDate(d){if(!d)return'-';const p=String(d).split('T')[0].split('-');if(p.length<3)return String(d);return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0];}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function showToast(msg,type='ok'){const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="td"></span>'+msg;w.appendChild(el);setTimeout(()=>el.remove(),3400);}
+function showToast(msg,type='ok'){let w=document.getElementById('toast-wrap');if(!w){w=document.createElement('div');w.id='toast-wrap';w.className='toast-wrap';document.body.appendChild(w);}const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="td"></span>'+msg;w.appendChild(el);setTimeout(()=>el.remove(),3400);}
 function configureObStatCards(){
   const cards=document.querySelectorAll('.stats-row .stat-card');
   if(cards.length<4) return;

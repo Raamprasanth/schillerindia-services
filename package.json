@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "check:html": "node scripts/check-html-scripts.js",
     "install:backend": "npm install --prefix backend",
     "start": "npm start --prefix backend"
   },
