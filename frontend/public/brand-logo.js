@@ -1,6 +1,6 @@
 (function () {
   const LOGO_SRC = 'logo.png';
-  const LOGO_ALT = 'SCHILLER - The Art of Diagnostics';
+  const LOGO_ALT = 'SCHILLER';
 
   function logoMarkup() {
     return '<img class="brand-logo-img" src="' + LOGO_SRC + '" alt="' + LOGO_ALT + '">';
