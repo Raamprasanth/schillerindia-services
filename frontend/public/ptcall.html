@@ -948,7 +948,7 @@ async function saveEntry(){
         const closePayload = {
           division:  ALLOWED_DIV.includes(div) ? div : 'OTHER',
           callDate:  payload.callDate || orig.callDate || '',
-          entryDate: payload.entryDate || orig.entryDate || '',
+          entryDate: payload.callDate || orig.callDate || '',
           closeDate: new Date().toISOString().split('T')[0],
           scEngg:    payload.scEng || orig.scEng || '',
           engineer:  payload.engineer || orig.engineer || '-',
@@ -1064,5 +1064,4 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeAddModal();
 <script src="tab-fix.js"></script>
 </body>
 </html>
-
 

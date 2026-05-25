@@ -353,6 +353,7 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
             <th style="width:40px;">#</th>
             <th onclick="sortBy('source')">Source <span class="si">&#8693;</span></th>
             <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('entryDate')">Entry Date <span class="si">&#8693;</span></th>
             <th onclick="sortBy('closeDate')">Close Date <span class="si">&#8693;</span></th>
             <th onclick="sortBy('customer')">Customer <span class="si">&#8693;</span></th>
             <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
@@ -363,7 +364,7 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
             <th>Actions</th>
           </tr></thead>
           <tbody id="call-tbody">
-            <tr class="loading-row"><td colspan="11"><span class="spin"></span>Fetching unified records...</td></tr>
+            <tr class="loading-row"><td colspan="12"><span class="spin"></span>Fetching unified records...</td></tr>
           </tbody>
         </table>
       </div>
@@ -398,7 +399,7 @@ async function loadData(){
     applyFilters();
   } catch(e) {
     console.error(e);
-    document.getElementById('call-tbody').innerHTML = `<tr><td colspan="11" style="text-align:center;padding:40px;color:var(--red);">Error: ${e.message}</td></tr>`;
+    document.getElementById('call-tbody').innerHTML = `<tr><td colspan="12" style="text-align:center;padding:40px;color:var(--red);">Error: ${e.message}</td></tr>`;
   }
 }
 
@@ -433,7 +434,8 @@ function applyFilters(){
 function sortBy(k){ if(sortKey===k) sortDir*=-1; else {sortKey=k; sortDir=-1;} sortArr(); renderTable(); }
 function sortArr(){
   filtered.sort((a,b)=>{
-    const av = a[sortKey]??'', bv = b[sortKey]??'';
+    const av = sortKey === 'entryDate' ? entryDateForClosedCall(a) : (a[sortKey]??'');
+    const bv = sortKey === 'entryDate' ? entryDateForClosedCall(b) : (b[sortKey]??'');
     return String(av).toLowerCase() < String(bv).toLowerCase() ? -sortDir : sortDir;
   });
 }
@@ -448,13 +450,14 @@ function renderTable(){
   const tbody = document.getElementById('call-tbody');
   
   if(!total){
-    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:50px;color:var(--muted);">No records found</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:50px;color:var(--muted);">No records found</td></tr>';
   } else {
     tbody.innerHTML = slice.map((d,i)=>`
       <tr>
         <td class="mono">${(currentPage-1)*per+i+1}</td>
         <td><span class="src-tag src-${(d.source||'Admin').toLowerCase()}">${d.source||'Admin'}</span></td>
         <td><span class="div-tag">${d.division||'-'}</span></td>
+        <td style="font-weight:600;">${fmtDate(entryDateForClosedCall(d))}</td>
         <td style="font-weight:600;">${fmtDate(d.closeDate)}</td>
         <td style="font-weight:500;">${d.customer||'-'}</td>
         <td style="color:var(--accent); font-weight:600;">${d.model||'-'}</td>
@@ -494,7 +497,7 @@ function openDetailModal(id){
   document.getElementById('d-source').textContent = d.source || 'Admin';
   document.getElementById('d-status').textContent = d.status || 'Closed';
   document.getElementById('d-division').textContent = d.division || '-';
-  document.getElementById('d-entrydate').textContent = fmtDate(d.entryDate);
+  document.getElementById('d-entrydate').textContent = fmtDate(entryDateForClosedCall(d));
   document.getElementById('d-calldate').textContent = fmtDate(d.callDate);
   document.getElementById('d-closedate').textContent = fmtDate(d.closeDate);
   document.getElementById('d-scengg').textContent = d.scEngg || '-';
@@ -538,6 +541,10 @@ function fmtDate(d){
   return s.length===3 ? `${s[2]}/${s[1]}/${s[0]}` : d;
 }
 
+function entryDateForClosedCall(d){
+  return d.callDate || d.entryDate || '';
+}
+
 function showToast(m, t='ok'){
   const w = document.getElementById('toast-wrap');
   const el = document.createElement('div');
@@ -549,8 +556,8 @@ function showToast(m, t='ok'){
 
 function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; }
 function exportCSV(){
-  const headers = ['#','Source','Division','Close Date','Customer','Model','Engineer','SC Engg','Type','Remarks'];
-  const rows = filtered.map((d,i)=>[i+1, d.source, d.division, d.closeDate, d.customer, d.model, d.engineer, d.scEngg, d.typeCall, d.remarks]);
+  const headers = ['#','Source','Division','Entry Date','Close Date','Customer','Model','Engineer','SC Engg','Type','Remarks'];
+  const rows = filtered.map((d,i)=>[i+1, d.source, d.division, entryDateForClosedCall(d), d.closeDate, d.customer, d.model, d.engineer, d.scEngg, d.typeCall, d.remarks]);
   const csv = [headers, ...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
@@ -563,4 +570,3 @@ function toggleSF(){var btn=document.getElementById('sf-toggle');var panel=docum
 function toggleAR(){var btn=document.getElementById('ar-toggle');var panel=document.getElementById('ar-children');if(!btn||!panel)return;btn.classList.toggle('open');panel.classList.toggle('open');}</script>
 </body>
 </html>
-

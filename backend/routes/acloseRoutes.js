@@ -49,7 +49,11 @@ router.get('/:id', protect, adminOnly, async (req, res) => {
 
 router.post('/', protect, adminOnly, async (req, res) => {
   try {
-    const doc = await AClose.create({ ...req.body, createdBy: req.user._id });
+    const doc = await AClose.create({
+      ...req.body,
+      entryDate: req.body.callDate || req.body.entryDate || '',
+      createdBy: req.user._id
+    });
     res.status(201).json(doc);
   } catch (e) { res.status(400).json({ message: e.message }); }
 });

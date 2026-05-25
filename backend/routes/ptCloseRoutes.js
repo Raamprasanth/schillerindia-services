@@ -65,6 +65,7 @@ router.post('/', protect, async (req, res) => {
   try {
     const doc = new PtClose({
       ...req.body,
+      entryDate: req.body.callDate || req.body.entryDate || '',
       createdBy: req.user._id,
     });
     const saved = await doc.save();

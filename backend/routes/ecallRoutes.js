@@ -140,6 +140,7 @@ router.put('/:id', protect, async (req, res) => {
     if (String(req.body.status || '').trim() === 'Closed') {
       const today = new Date().toISOString().split('T')[0];
       await Eclose.create({
+        entryDate: doc.callDate || today,
         callDate:  doc.callDate  || today,
         closeDate: today,
         division:  doc.division  || '',

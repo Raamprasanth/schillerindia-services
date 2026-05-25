@@ -526,7 +526,8 @@ function sortBy(k){
 }
 function sortArr(){
   filtered.sort((a, b) => {
-    const av = a[sortKey] ?? '', bv = b[sortKey] ?? '';
+    const av = sortKey === 'entryDate' ? entryDateForClosedCall(a) : (a[sortKey] ?? '');
+    const bv = sortKey === 'entryDate' ? entryDateForClosedCall(b) : (b[sortKey] ?? '');
     if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * sortDir;
     return String(av).toLowerCase() < String(bv).toLowerCase() ? -sortDir
          : String(av).toLowerCase() > String(bv).toLowerCase() ? sortDir : 0;
@@ -559,7 +560,7 @@ function renderTable(){
       return `<tr>
         <td class="mono" style="color:var(--muted);">${(currentPage - 1) * perPage + i + 1}</td>
         <td><span class="div-tag">${esc(d.division || '-')}</span></td>
-        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
+        <td style="font-size:11px;color:var(--soft);">${fmtDate(entryDateForClosedCall(d))}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.callDate)}</td>
         <td style="font-size:11px;font-weight:700;color:var(--green);">${fmtDate(d.closeDate)}</td>
         <td>${esc(d.scEngg || '-')}</td>
@@ -592,12 +593,16 @@ function statusPill(s){
   return `<span class="s-pill ${cls}">${esc(label)}</span>`;
 }
 
+function entryDateForClosedCall(d){
+  return d.callDate || d.entryDate || '';
+}
+
 // -- DETAIL MODAL ----------------------------------------------------------
 function openDetailModal(id){
   const d = CALL_DATA.find(x => (x._id || x.id) === id);
   if (!d) return;
   (document.getElementById('d-division')||{}).textContent = d.division   || '-';
-  (document.getElementById('d-entrydate')||{}).textContent = fmtDate(d.entryDate);
+  (document.getElementById('d-entrydate')||{}).textContent = fmtDate(entryDateForClosedCall(d));
   (document.getElementById('d-calldate')||{}).textContent = fmtDate(d.callDate);
   (document.getElementById('d-closedate')||{}).textContent = fmtDate(d.closeDate) || '-';
   (document.getElementById('d-scengg')||{}).textContent = d.scEngg     || '-';
@@ -619,7 +624,7 @@ function closeDetailModal(){
 function exportCSV(){
   const headers = ['#','Division','Entry Date','Call Date','Close Date','SC Engg','Engineer','Customer','Model','Type of Call','Status','Remarks'];
   const rows = filtered.map((d, i) => [
-    i + 1, d.division, fmtDate(d.entryDate), fmtDate(d.callDate), fmtDate(d.closeDate),
+    i + 1, d.division, fmtDate(entryDateForClosedCall(d)), fmtDate(d.callDate), fmtDate(d.closeDate),
     d.scEngg, d.engineer, d.customer, d.model, d.typeCall, d.status, d.remarks
   ]);
   const csv = [headers, ...rows].map(r => r.map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(',')).join('\n');
@@ -680,8 +685,6 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetailM
 <script src="tab-fix.js"></script>
 </body>
 </html>
-
-
 
 
 

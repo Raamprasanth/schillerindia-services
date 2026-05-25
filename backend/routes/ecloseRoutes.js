@@ -84,6 +84,7 @@ router.post('/', protect, async (req, res) => {
         : (req.body.division || '');
     const doc = new Eclose({
       ...req.body,
+      entryDate: req.body.callDate || req.body.entryDate || '',
       division,
       createdBy: req.user._id,
     });
