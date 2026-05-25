@@ -528,7 +528,7 @@ body.panel-open .main{display:none;}
             <input type="text" id="m-defunitgir" placeholder="Auto-fetched" readonly style="background-color: var(--surface2); cursor: not-allowed;"/>
           </div>
           <div class="field">
-            <label>Repaired BRD STK Date</label>
+            <label>Repaired BRD STK Date<span class="field-req">*</span></label>
             <input type="date" id="m-repbrd"/>
           </div>
           <div class="field">
@@ -980,10 +980,11 @@ async function saveUpdate(){
   const typeWork     = document.getElementById('m-typework').value;
   const raEng        = document.getElementById('m-raeng').value;
   const revalue      = document.getElementById('m-revalue').value;
+  const repBrd       = document.getElementById('m-repbrd').value;
   const msgEl        = document.getElementById('modal-msg');
 
-  if(!finalRemarks||!typeWork||!revalue){
-    msgEl.textContent='Final Remarks, Type of Work, and Revalue are required.';
+  if(!raEng||!repBrd||!finalRemarks||!typeWork||!revalue){
+    msgEl.textContent='RA Engineer, Repaired BRD STK Date, Final Remarks, Type of Work, and Revalue are required.';
     msgEl.className='fm-msg err'; return;
   }
 
