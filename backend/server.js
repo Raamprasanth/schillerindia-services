@@ -63,6 +63,7 @@ const tourSummaryRoutes = require('./routes/tourSummaryRoutes');
 const ptourSummaryRoutes = require('./routes/ptourSummaryRoutes');
 const ptDailyWorkRoutes = require('./routes/ptDailyWorkRoutes');
 const ptPendingActivityRoutes = require('./routes/ptPendingActivityRoutes');
+const ptClosedActivityRoutes = require('./routes/ptClosedActivityRoutes');
 const ecrRoutes      = require('./routes/ecrRoutes');
 const ecallRoutes    = require('./routes/ecallRoutes');
 const ecloseRoutes           = require('./routes/ecloseRoutes');
@@ -211,6 +212,9 @@ app.use('/api/pt/call-register',      ptCallRegisterRoutes);
 app.use('/api/pt/calls',              ptCallRoutes);
 app.use('/api/pt/closed-calls',       ptCloseRoutes);
 app.use('/api/pt/activity',           ptActivityRoutes);
+app.use('/api/ptdw',                  ptDailyWorkRoutes);
+app.use('/api/ptpa',                  ptPendingActivityRoutes);
+app.use('/api/ptca',                  ptClosedActivityRoutes);
 app.use('/api/pt/bir/closed',         ptClosedBirRoutes);
 app.use('/api/pt/bir',                ptBirRoutes);
 

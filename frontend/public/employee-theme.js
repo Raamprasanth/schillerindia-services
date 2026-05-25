@@ -147,7 +147,7 @@
       document.querySelectorAll(selector).forEach((node) => {
         const anchor = node.tagName === 'A' ? node : node.querySelector('a');
         const href = anchor ? (anchor.getAttribute('href') || '') : '';
-        if (anchor && (/^Rt[a-z]/i.test(href) || href.includes('ptpa.html'))) return;
+        if (anchor && (/^Rt[a-z]/i.test(href) || href.includes('ptpa.html') || href.includes('ptca.html'))) return;
         const text = (node.textContent || '').replace(/\s+/g, ' ').trim();
         if (!text) return;
         if (!labels.some((label) => text.includes(label))) return;

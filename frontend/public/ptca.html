@@ -11,7 +11,7 @@
   if (!token || !['pt','product team','product_team','product','admin','superadmin','administrator'].includes(role)) window.location.href = 'login.html';
 })();
 </script>
-<title>SchillerIndia - Pending Activity</title>
+<title>SchillerIndia - Closed Activity</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="global-typography.css">
 <link rel="stylesheet" href="employee-theme.css">
@@ -97,8 +97,8 @@ tr:hover td{background:var(--surface3);}
     <a class="nav-item" href="ptclose.html"><span class="ico">&#9989;</span> Closed Calls</a>
     <a class="nav-item" href="ptour.html"><span class="ico">&#128663;</span> Tour Summary</a>
     <a class="nav-item" href="ptdw.html"><span class="ico">&#128197;</span> Daily Work</a>
-    <a class="nav-item active" href="ptpa.html"><span class="ico">&#128221;</span> Pending Activity</a>
-      <a class="nav-item" href="ptca.html"><span class="ico">&#9989;</span> Closed Activity</a>
+    <a class="nav-item" href="ptpa.html"><span class="ico">&#128221;</span> Pending Activity</a>
+      <a class="nav-item active" href="ptca.html"><span class="ico">&#9989;</span> Closed Activity</a>
     <div class="nav-sec">Inventory</div>
     <a class="nav-item" href="ptbir.html"><span class="ico">&#128203;</span> BIR LIST</a>
     <a class="nav-item" href="ptcbir.html"><span class="ico">&#128193;</span> Closed BIR</a>
@@ -118,8 +118,8 @@ tr:hover td{background:var(--surface3);}
 <main class="main">
   <div class="topbar">
     <div class="topbar-left">
-      <div class="breadcrumb"><a href="pt-dashboard.html">Dashboard</a><span class="sep">&#8250;</span><span>Records</span><span class="sep">&#8250;</span><span>Pending Activity</span></div>
-      <div class="page-title">Pending Activity</div>
+      <div class="breadcrumb"><a href="pt-dashboard.html">Dashboard</a><span class="sep">&#8250;</span><span>Records</span><span class="sep">&#8250;</span><span>Closed Activity</span></div>
+      <div class="page-title">Closed Activity</div>
     </div>
     <div class="topbar-actions">
       <button class="btn btn-outline" onclick="fetchData()">&#10227; Refresh</button>
@@ -162,7 +162,7 @@ tr:hover td{background:var(--surface3);}
   <div class="add-modal-box">
     <div class="modal-head">
       <div>
-        <div class="modal-title" id="modal-title">&#128221; Add Pending Activity</div>
+        <div class="modal-title" id="modal-title">&#128221; Add Closed Activity</div>
         <div class="modal-sub">Create or update a pending activity record</div>
       </div>
       <button class="modal-close" type="button" onclick="closeModal()">&#10005;</button>
@@ -229,7 +229,7 @@ function hdrs(){ return {"Content-Type":"application/json", "Authorization":"Bea
 
 async function fetchData() {
   try {
-    const res = await fetch("/api/ptpa", { headers: hdrs() });
+    const res = await fetch("/api/ptca", { headers: hdrs() });
     if(res.status === 401 || res.status === 403) {
       window.location.href = "login.html"; return;
     }
@@ -275,7 +275,7 @@ function renderTable() {
 
 function openModal(){ 
   clearForm(); 
-  document.getElementById('modal-title').innerHTML = '&#128221; Add Pending Activity';
+  document.getElementById('modal-title').innerHTML = '&#128221; Add Closed Activity';
   const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   document.getElementById('f-engineer').value = u.name || 'Employee';
   document.getElementById('f-initiated').value = new Date().toISOString().split('T')[0];
@@ -295,7 +295,7 @@ function editData(id){
   const doc = currentData.find(x => x._id === id);
   if(!doc) return;
   clearForm();
-  document.getElementById('modal-title').innerHTML = '&#128394;&#65039; Edit Pending Activity';
+  document.getElementById('modal-title').innerHTML = '&#128394;&#65039; Edit Closed Activity';
   document.getElementById('entry-id').value = doc._id;
   document.getElementById('f-engineer').value = doc.scEngineer || '';
   document.getElementById('f-initiated').value = doc.initiatedDate || '';
@@ -330,7 +330,7 @@ async function saveData(){
   
   const id = val('entry-id');
   const method = id ? 'PUT' : 'POST';
-  const url = id ? '/api/ptpa/'+id : '/api/ptpa';
+  const url = id ? '/api/ptca/'+id : '/api/ptca';
   
   const btn = document.getElementById('save-btn'); 
   btn.disabled=true; btn.textContent='Saving...';
@@ -352,7 +352,7 @@ async function saveData(){
 async function deleteData(id){ 
   if(!confirm("Are you sure you want to delete this record?")) return; 
   try {
-    await fetch("/api/ptpa/"+id, { method: "DELETE", headers: hdrs() });
+    await fetch("/api/ptca/"+id, { method: "DELETE", headers: hdrs() });
     await fetchData(); 
   } catch(e) { alert("Failed to delete"); }
 }
