@@ -1187,24 +1187,20 @@ function generateEstimationPDFData(s, mode='download'){
   const serviceCharge=Math.max(0, Number(s.serviceCharge) || 0);
   const groupTotal=itemsTotal + serviceCharge;
   const money=amt=>Number(amt||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
-  const drawBox=(x,top,w,h)=>{doc.setDrawColor(110,110,110);doc.rect(x,top,w,h);};
-  const SCH_BLUE=[0,93,170], SCH_RED=[227,6,19];
+  const drawBox=(x,top,w,h)=>{doc.setLineWidth(0.2);doc.setDrawColor(0,0,0);doc.rect(x,top,w,h);};
   const setRgb=(method,rgb)=>doc[method](rgb[0],rgb[1],rgb[2]);
   const drawSchillerHeader=()=>{
-    doc.setLineWidth(0.45);
-    setRgb('setDrawColor',SCH_BLUE);
+    doc.setLineWidth(0.3);
+    setRgb('setDrawColor',[0,0,0]);
     doc.rect(8,8,194,281);
-    setRgb('setFillColor',SCH_BLUE);
-    doc.rect(8,8,194,4,'F');
-    setRgb('setFillColor',SCH_RED);
-    doc.rect(8,12,194,1.6,'F');
     
-      try { doc.addImage(SCHILLER_PDF_LOGO, 'PNG', 16, 17, 54, 10); } catch(e){}
+    try { doc.addImage(SCHILLER_PDF_LOGO, 'PNG', 16, 12, 54, 10); } catch(e){}
     doc.setFont('helvetica','bold');
     doc.setFontSize(12);
-    doc.text('REPAIR ESTIMATION',190,24,{align:'right'});
-    setRgb('setDrawColor',SCH_BLUE);
-    doc.line(14,34,196,34);
+    doc.text('REPAIR ESTIMATION',190,19,{align:'right'});
+    setRgb('setDrawColor',[0,0,0]);
+    doc.setLineWidth(0.3);
+    doc.line(14,28,196,28);
   };
   const labelValue=(x,top,label,value,labelW=32)=>{
     doc.setFontSize(8);
@@ -1222,36 +1218,31 @@ function generateEstimationPDFData(s, mode='download'){
 
   const leftBoxX=L;
   const rightBoxX=102;
-  const topBoxY=39;
-  doc.setFillColor(240,247,253);
-  doc.rect(leftBoxX, topBoxY, 68, 32, 'F');
-  doc.rect(rightBoxX, topBoxY, 80, 32, 'F');
+  const topBoxY=33;
   drawBox(leftBoxX, topBoxY, 68, 32);
   drawBox(rightBoxX, topBoxY, 80, 32);
-  labelValue(leftBoxX+2, topBoxY+7, 'Estimate Reference', s.estNo || '-');
+  labelValue(leftBoxX+2, topBoxY+7, 'Estimation No', s.estNo || '-');
   labelValue(leftBoxX+2, topBoxY+15, 'Date', fmtDate(s.estDate));
   labelValue(leftBoxX+2, topBoxY+23, 'Quote Valid Until', fmtDate(s.estValidDate));
   labelValue(leftBoxX+2, topBoxY+31, 'Order Type', s.estStatus||s.orderType||'-');
   labelValue(rightBoxX+2, topBoxY+7, 'Customer Name', s.customer||s.custName||'-', 34);
   labelValue(rightBoxX+2, topBoxY+15, 'Dealer Name', s.dealer||'-', 34);
 
-  y=80;
-  doc.setFillColor(255,246,246);
-  doc.rect(L, y, R-L, 24, 'F');
+  y=72;
   drawBox(L, y, R-L, 24);
-  labelValue(L+2, y+7, 'Engineer Name and Contact', s.estRaEng || s.raEng || s.eng || '-', 45);
+  labelValue(L+2, y+7, 'Engineer Name and Contact', s.eng || '-', 45);
   labelValue(104, y+7, 'FRN', s.frnNo || '-', 20);
   labelValue(104, y+14, 'DATE', fmtDate(s.frnDate), 20);
   labelValue(104, y+21, 'Service Centre Rcvd Date', fmtDate(s.rcvdDate || s.entryDate), 45);
 
-  y=111;
+  y=104;
   doc.setFont('helvetica','bold');
   doc.setFontSize(8.8);
   doc.text('Received Item:',L,y);
   doc.setFont('helvetica','normal');
   y+=8;
   labelValue(L, y, '', (s.model||'-') + '    Unit', 0);
-  labelValue(104, y, 'Unit S/N', s.defUnitGir||s.defGir||'-', 22);
+  labelValue(104, y, 'Unit S/N', s.unitSl || '-', 22);
 
   y+=13;
   doc.setFont('helvetica','bold');
