@@ -68,20 +68,40 @@ async function hasQueueAccess(user, doc) {
   if (!user) return false;
   if (user.role === 'admin' || user.role === 'superadmin') return true;
 
-  const { hasDivisionAccessToService } = require('../utils/visibility');
+  const { hasDivisionAccessToRecord, hasDivisionAccessToService } = require('../utils/visibility');
   if (doc.serviceId) {
     const allowed = await hasDivisionAccessToService(user, doc.serviceId);
     if (allowed) return true;
   }
 
-  const userName = String(user.name || '').trim().toLowerCase();
-  return [
+  if (doc.division && await hasDivisionAccessToRecord(user, doc.division)) return true;
+
+  const userDivisions = [
+    user.activeDivision,
+    user.division,
+    user.divisionName,
+    ...(Array.isArray(user.divisions) ? user.divisions : []),
+  ].map(value => String(value || '').trim().toLowerCase()).filter(Boolean);
+  const docDivision = String(doc.divisionName || '').trim().toLowerCase();
+  if (docDivision && userDivisions.includes(docDivision)) return true;
+
+  const userNames = [
+    user.name,
+    user.employeeName,
+    user.fullName,
+    user.email,
+    user.employeeId,
+  ].map(value => String(value || '').trim().toLowerCase()).filter(Boolean);
+
+  const recordNames = [
     doc.eng,
     doc.scEng,
     doc.raEng,
     doc.submittedBy,
     doc.estRaEng,
-  ].some((value) => String(value || '').trim().toLowerCase() === userName);
+  ].map(value => String(value || '').trim().toLowerCase()).filter(Boolean);
+
+  return recordNames.some(value => userNames.includes(value));
 }
 
 // ─────────────────────────────────────────────────────────
