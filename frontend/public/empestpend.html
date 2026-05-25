@@ -505,7 +505,7 @@ table.est-table tbody tr:last-child td{border-bottom:none;}
               </select>
             </div>
             <div class="ff">
-              <label>Same GIR No?</label>
+              <label>Same GIR No</label>
               <select id="u-same-gir" onchange="handleEstimateSameGir(this.value)">
                 <option value="">Select...</option>
                 <option value="yes">Yes - same as DEF GIR</option>
@@ -861,14 +861,29 @@ function normalizeRtDivision(record){
 }
 
 function handleEstimateSameGir(val){
-  const defGir=document.getElementById('ri-defgir').textContent.trim();
-  currentToRecord=current;
-  currentToRows=[{partNo:'',qty:1}];
-  (document.getElementById('to-modal-badge')||{}).textContent =current.scReNo||current.frnNo||'-';
-  const err=document.getElementById('to-modal-err');
-  if(err){err.textContent='';err.classList.remove('show');}
-  renderToEscalationRows();
-  document.getElementById('to-overlay').classList.add('open');
+  const id=editingId;
+  const current=allRecords.find(x=>(x._id||x.id)===id)||{};
+  const defGir=String(current.defGir||'').trim();
+  const input=document.getElementById('u-defunitgir');
+  const revalue=document.getElementById('u-revalue');
+  const safeDefGir=defGir;
+  if(!input) return;
+  if(val==='yes'){
+    input.value=safeDefGir;
+    input.readOnly=true;
+    input.classList.add('gir-autofill');
+    if(revalue){revalue.readOnly=false;revalue.classList.remove('gir-autofill');}
+  }else if(val==='no'){
+    input.value='';
+    input.readOnly=false;
+    input.classList.remove('gir-autofill');
+    if(revalue){revalue.readOnly=false;revalue.classList.remove('gir-autofill');}
+  }else{
+    input.value='';
+    input.readOnly=false;
+    input.classList.remove('gir-autofill');
+    if(revalue){revalue.readOnly=false;revalue.classList.remove('gir-autofill');}
+  }
 }
 function closeToEscalationModal(){
   document.getElementById('to-overlay').classList.remove('open');

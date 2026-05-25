@@ -307,7 +307,7 @@ table.est-table tbody tr:last-child td{border-bottom:none;}
               </select>
             </div>
             <div class="ff">
-              <label>Same GIR No?</label>
+              <label>Same GIR No</label>
               <select id="u-same-gir" onchange="handleEstimateSameGir(this.value)">
                 <option value="">Select...</option>
                 <option value="yes">Yes - same as DEF GIR</option>
@@ -628,7 +628,7 @@ function handleEstimateSameGir(val){
   const input=document.getElementById('u-defunitgir');
   const revalue=document.getElementById('u-revalue');
   const revalueLabel=revalue?revalue.closest('.ff')?.querySelector('label'):null;
-  const safeDefGir=/[A-Za-z0-9]/.test(defGir)?defGir:'';
+  const safeDefGir=defGir;
   if(!input) return;
   if(val==='yes'){
     input.value=safeDefGir;
