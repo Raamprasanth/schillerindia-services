@@ -163,15 +163,48 @@ router.put('/:id/escalate', protect, adminOnly, async (req, res) => {
 // ─────────────────────────────────────────────────────────
 router.get('/employee', protect, async (req, res) => {
   try {
-    syncMissingPendingFrn(req.user).catch(err => console.error('[EmpFRN employee sync]', err.message));
-    const { getServiceIdsFilter } = require('../utils/visibility');
-    const visibilityFilter = await getServiceIdsFilter(req.user, [
-      { eng: req.user.name },
-      { scEng: req.user.name }
-    ]);
+    const names = [
+      req.user.name,
+      req.user.employeeName,
+      req.user.fullName,
+      req.user.email,
+      req.user.employeeId,
+    ].map(v => String(v || '').trim()).filter(Boolean);
+
+    const divisionNames = [
+      req.user.activeDivision,
+      req.user.division,
+      req.user.divisionName,
+      ...(Array.isArray(req.user.divisions) ? req.user.divisions : []),
+    ].map(v => String(v || '').trim()).filter(Boolean);
+
+    const divisionIds = [];
+    if (divisionNames.length) {
+      const escaped = divisionNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+      const divisions = await Division.find({
+        $or: escaped.flatMap(name => [
+          { name: new RegExp('^' + name + '$', 'i') },
+          { displayName: new RegExp('^' + name + '$', 'i') },
+        ]),
+      }).select('_id').lean();
+      divisionIds.push(...divisions.map(d => d._id));
+    }
+
+    const accessOr = [
+      ...names.flatMap(name => [
+        { eng: name },
+        { scEng: name },
+        { raEng: name },
+        { submittedBy: name },
+        { estRaEng: name },
+      ]),
+      ...divisionNames.map(name => ({ divisionName: new RegExp('^' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i') })),
+      ...(divisionIds.length ? [{ division: { $in: divisionIds } }] : []),
+    ];
+
     const filter = {
       status: 'pending',
-      ...visibilityFilter
+      ...(accessOr.length ? { $or: accessOr } : { _id: null }),
     };
     const docs = await Empfrn.find(filter)
       .populate({

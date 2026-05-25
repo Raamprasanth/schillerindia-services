@@ -370,7 +370,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
               </select>
             </div>
             <div class="ff">
-              <label>Same GIR No?</label>
+              <label>Same GIR No</label>
               <select id="same-gir" onchange="handleSameGir(this.value)">
                 <option value="">Select...</option>
                 <option value="yes">Yes - same as DEF GIR</option>
@@ -981,10 +981,12 @@ function handleUnauth(res){if(res.status===401){showToast('Session expired - ple
 
 async function loadData(){
   setLoading();
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 20000);
   try{
     const u=JSON.parse(localStorage.getItem('schiller_user')||'{}');
     const url=u.role==='admin'?`${API}/api/emp/frn`:`${API}/api/emp/frn/employee`;
-    const res=await fetch(url,{headers:authHeaders()});
+    const res=await fetch(url,{headers:authHeaders(), signal: controller.signal});
     handleUnauth(res);
     if(!res.ok)throw new Error('HTTP '+res.status);
     const data=await res.json();
@@ -999,8 +1001,11 @@ async function loadData(){
     showToast('Loaded '+FRN_DATA.length+' record'+(FRN_DATA.length!==1?'s':''),'info');
   }catch(e){
     if(e.message==='Unauthorized')return;
-    setError('Load failed: '+e.message);
-    showToast('Load failed: '+e.message,'err');
+    const message = e.name === 'AbortError' ? 'Request timed out. Please refresh after a few seconds.' : 'Load failed: '+e.message;
+    setError(message);
+    showToast(message,'err');
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
@@ -1714,7 +1719,7 @@ function handleSameGir(val){
   const defGir=String(current.defGir||'').trim();
   const input=document.getElementById('upd-defunitgir');
   const revalue=document.getElementById('upd-revalue');
-  const safeDefGir=/[A-Za-z0-9]/.test(defGir)?defGir:'';
+  const safeDefGir=defGir;
   if(!input) return;
   if(val==='yes'){
     input.value=safeDefGir;
