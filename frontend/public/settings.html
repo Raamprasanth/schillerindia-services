@@ -527,7 +527,7 @@
   (document.getElementById('sb-role-badge')||{}).textContent =role.charAt(0).toUpperCase()+role.slice(1);
 })();
 
-const API=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'http://127.0.0.1:5000':'';
+const API='';
 function getToken(){return localStorage.getItem('schiller_token')||'';}
 function authHeaders(){return{'Content-Type':'application/json',Authorization:'Bearer '+getToken()};}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}

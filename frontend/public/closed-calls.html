@@ -193,7 +193,7 @@ table.dt tbody tr:hover td{background:var(--surface2);}
 </div>
 <div class="toast-wrap" id="toast-wrap"></div>
 <script>
-const API_BASE='http://localhost:5000/api';
+const API_BASE='/api';
 let items=[],filtered=[],editingId=null,isAdmin=false,currentUser={};
 (function init(){
   const token=localStorage.getItem('schiller_token');

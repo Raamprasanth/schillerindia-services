@@ -277,7 +277,7 @@
 </div>
 
 <script>
-  const API = 'http://localhost:5000/api';
+  const API = '/api';
   const ACTIVE_DIVISION_KEY = 'schiller_active_division';
   let currentRole = 'employee';
   let pendingLoginRedirect = '';
@@ -490,7 +490,7 @@
       }, 1000);
 
     } catch (e) {
-      showMsg('&#9888; Cannot reach server. Make sure the backend is running on port 5000.', 'err');
+      showMsg('&#9888; Cannot reach server. Please check the deployed backend and try again.', 'err');
       btn.disabled    = false;
       btn.textContent = btnLabel();
     }
