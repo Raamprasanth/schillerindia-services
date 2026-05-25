@@ -64,6 +64,20 @@
 
     /* LOGO */
     .logo{display:flex;align-items:center;gap:12px;position:relative;z-index:1;}
+    .card-top .logo .brand-logo-img{width:170px!important;max-width:100%!important;max-height:48px!important;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.2));}
+    .logo-text{display:none;}
+    .card-top h1{position:relative;z-index:1;margin-top:18px;font-family:'Rajdhani',sans-serif;font-size:32px;font-weight:700;line-height:1;color:#fff;letter-spacing:0.02em;}
+    .subtitle{position:relative;z-index:1;margin-top:6px;font-size:13.5px;color:rgba(255,255,255,0.72);}
+
+    /* FORM */
+    .card-body{padding:28px 36px 34px;background:#fff;}
+    .field{margin-bottom:16px;}
+    .field label{display:block;margin-bottom:7px;font-size:12px;font-weight:700;color:var(--text);}
+    .field-wrap{position:relative;}
+    .field .ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);z-index:1;font-size:14px;color:var(--muted);line-height:1;}
+    .field input,.field select{width:100%;height:44px;border:1.5px solid #ccdde8;border-radius:8px;background:#f8fbff;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s,background 0.2s,box-shadow 0.2s;}
+    .field input{padding:0 14px 0 40px;}
+    .field select{appearance:none;padding:0 38px 0 40px;}
     .field select{cursor:pointer;}
     .select-arrow{position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:10px;color:var(--muted);}
     .field input.has-toggle{padding-right:44px;}
@@ -138,12 +152,8 @@
     <!-- Blue top banner -->
     <div class="card-top">
       <div class="logo">
-      <img class="brand-logo-img" src="logo.png" alt="SCHILLER - The Art of Diagnostics">
-      <div class="logo-text">
-        <div class="name">Schiller<span>India</span></div>
-        <div class="sub">Services Portal</div>
-      </div>
-    </div><!-- /logo -->
+        <img class="brand-logo-img" src="logo.png" alt="SCHILLER - The Art of Diagnostics">
+      </div><!-- /logo -->
 
       <h1>Sign In</h1>
       <p class="subtitle">Select your role and enter your credentials</p>
