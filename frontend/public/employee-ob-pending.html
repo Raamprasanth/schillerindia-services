@@ -1181,10 +1181,6 @@ function previewEstimatePDF(){
   }
 }
 
-// ? FIXED submitEstimation:
-//    Step 1 - PUT /api/emp/services/:id  with movedToEstimation:true
-//    Step 2 - POST /api/emp/estimation   to create the EstimationPending record
-//    Step 3 - Remove from local array ONLY after both succeed
 async function submitEstimation(){
   const errEl=document.getElementById('modal-err');
   const okEl=document.getElementById('modal-ok');
@@ -1525,15 +1521,14 @@ function generatePDFData(s, mode='download'){
     doc.rect(8,8,194,4,'F');
     setRgb('setFillColor',SCH_RED);
     doc.rect(8,12,194,1.6,'F');
-    if(SCHILLER_PDF_LOGO.complete && SCHILLER_PDF_LOGO.naturalWidth){
-      doc.addImage(SCHILLER_PDF_LOGO, 'WEBP', 16, 16, 38, 15);
-    } else {
+    
       setRgb('setFillColor',SCH_RED);
       doc.rect(16,17,11,11,'F');
       doc.setTextColor(255,255,255);
       doc.setFont('helvetica','bold');
       doc.setFontSize(9);
       doc.text('S',21.5,24.7,{align:'center'});
+    );
     }
     setRgb('setTextColor',SCH_BLUE);
     doc.setFontSize(22);
