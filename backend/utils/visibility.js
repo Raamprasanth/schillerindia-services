@@ -49,13 +49,15 @@ async function getDivisionFilter(user, fallbackOr) {
 async function getServiceIdsFilter(user, fallbackOr) {
   if (isPrivileged(user)) return {};
 
+  const fallback = Array.isArray(fallbackOr) ? fallbackOr.filter(Boolean) : [];
   const divisions = await resolveDivisions(user);
   if (divisions.length) {
     const services = await Service.find({ division: { $in: divisions.map(d => d._id) } }, '_id').lean();
-    return { serviceId: { $in: services.map(s => s._id) } };
+    const serviceFilter = { serviceId: { $in: services.map(s => s._id) } };
+    return fallback.length ? { $or: [serviceFilter, ...fallback] } : serviceFilter;
   }
 
-  return { _id: null };
+  return fallback.length ? { $or: fallback } : { _id: null };
 }
 
 async function hasDivisionAccessToService(user, serviceId) {

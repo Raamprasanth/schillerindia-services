@@ -1135,7 +1135,10 @@
 
       // 1. Pending FRN
       const frnUrl = isAdmin ? '/api/emp/frn' : '/api/emp/frn/employee';
-      fetch(frnUrl, { headers: authHeaders }).then(r=>r.json()).then(data=>{
+      fetch(frnUrl, { headers: authHeaders }).then(async r=>{
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      }).then(data=>{
         if(!Array.isArray(data)) return;
         let c=0, w=0, n=0;
         data.forEach(d => {
@@ -1146,7 +1149,13 @@
         (document.getElementById('frn-n')||{}).textContent = n;
         (document.getElementById('frn-w')||{}).textContent = w;
         (document.getElementById('frn-c')||{}).textContent = c;
-      }).catch(e=>console.warn('FRN err:',e));
+      }).catch(e=>{
+        console.warn('FRN err:', e);
+        (document.getElementById('val-frn')||{}).textContent = '0';
+        (document.getElementById('frn-n')||{}).textContent = '0';
+        (document.getElementById('frn-w')||{}).textContent = '0';
+        (document.getElementById('frn-c')||{}).textContent = '0';
+      });
 
       // 2. OB Pending
       fetch('/api/emp/services/ob-pending', { headers: authHeaders }).then(r=>r.json()).then(data=>{
