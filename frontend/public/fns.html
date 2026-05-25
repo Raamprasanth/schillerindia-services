@@ -578,6 +578,8 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
   </div>
 </div>
 
+<div class="toast-wrap" id="toast-wrap"></div>
+
 <script>
 const API = '';
 let NS_DATA = [], filtered = [], sortKey = 'fqcInDate', sortDir = -1, currentPage = 1;
@@ -1233,7 +1235,13 @@ function fmtDate(d){
 }
 function esc(s){ return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function showToast(msg, type = 'ok'){
-  const w = document.getElementById('toast-wrap');
+  let w = document.getElementById('toast-wrap');
+  if (!w) {
+    w = document.createElement('div');
+    w.id = 'toast-wrap';
+    w.className = 'toast-wrap';
+    document.body.appendChild(w);
+  }
   const el = document.createElement('div');
   el.className = 'toast ' + type;
   el.innerHTML = '<span class="tdot"></span>' + msg;
