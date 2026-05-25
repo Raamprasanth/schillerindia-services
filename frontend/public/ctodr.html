@@ -9,7 +9,7 @@
   const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
   if (!token || !['employee','service_coordinator','admin','superadmin'].includes(role)) window.location.href = 'login.html';
 })();</script>
-<title>SchillerIndia   Closed PRF/OB Register</title>
+<title>SchillerIndia - Closed TO/DR</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
@@ -236,6 +236,19 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   <link rel="stylesheet" href="topbar-alignment.css">
   <link rel="stylesheet" href="brand-logo.css">
   <script src="brand-logo.js" defer></script>
+
+<style>
+.modal-overlay{position:fixed;inset:0;background:rgba(5,18,38,0.6);backdrop-filter:blur(5px);z-index:2000;display:none;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.add-modal-box{background:var(--surface);width:90%;max-width:650px;border-radius:14px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;animation:fadeUp 0.2s ease;}
+.modal-head{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface3);border-radius:14px 14px 0 0;}
+.modal-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;}
+.modal-sub{font-size:11px;color:var(--muted);}
+.modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--muted);}
+.modal-close:hover{color:var(--red);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+</style>
+
 </head>
 <body>
 
@@ -330,9 +343,9 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
     <div class="nav-sec">Work Orders</div>
     <a class="nav-item" href="todr.html"><span class="ico">&#128196;</span> TO/DR</a>
-    <a class="nav-item" href="ctodr.html"><span class="ico">&#128274;</span> Closed TO/DR</a>
+    <a class="nav-item active" href="ctodr.html"><span class="ico">&#128274;</span> Closed TO/DR</a>
     <a class="nav-item" href="scprfob.html"><span class="ico">&#128203;</span> PRF/OB Register</a>
-    <a class="nav-item active" href="sccr.html"><span class="ico">&#128274;</span> Closed PRF/OB Register</a>
+    <a class="nav-item" href="sccr.html"><span class="ico">&#128274;</span> Closed PRF/OB Register</a>
     <a class="nav-item" href="lt.html"><span class="ico">&#128230;</span> Loan Item</a>
     <a class="nav-item" href="cli.html"><span class="ico">&#128274;</span> Closed Loan</a>
   </nav>
@@ -366,383 +379,196 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     </div>
   </div>
 
+  
   <div class="content">
-
-    <!-- STATS -->
-    <div class="stats-row">
-      <div class="stat-card sc-blue">
-        <div class="stat-icon si-blue">&#128196;</div>
-        <div class="stat-label">Total Closed</div>
-        <div class="stat-value" id="s-total"> </div>
-        <div class="stat-sub">Closed PRF/OB entries</div>
-      </div>
-      <div class="stat-card sc-green">
-        <div class="stat-icon si-green">&#128221;</div>
-        <div class="stat-label">Completed</div>
-        <div class="stat-value" id="s-completed"> </div>
-        <div class="stat-sub">Successfully executed</div>
-      </div>
-      <div class="stat-card sc-purple">
-        <div class="stat-icon si-purple">&#128230;</div>
-        <div class="stat-label">PRF Closed</div>
-        <div class="stat-value" id="s-prf"> </div>
-        <div class="stat-sub">Purchase requisitions</div>
-      </div>
-      <div class="stat-card sc-amber">
-        <div class="stat-icon si-amber">&#9989;</div>
-        <div class="stat-label">OB Closed</div>
-        <div class="stat-value" id="s-ob"> </div>
-        <div class="stat-sub">Order bookings</div>
-      </div>
-    </div>
-
-    <!-- TABLE -->
     <div class="table-card">
       <div class="table-top">
-        <div class="table-title">
-          Closed PRF/OB Details
-          <span class="count-chip" id="count-chip">&#8600; entries</span>
-          <span class="closed-chip">&#10005; Closed Register</span>
-        </div>
-        <div class="toolbar-r">
-          <div class="show-row">Show
-            <select class="f-select" id="per-page" onchange="renderTable()">
-              <option>10</option><option>25</option><option>50</option><option>100</option>
-            </select>
-            entries
-          </div>
-          <div class="srch-wrap">
-            <span class="srch-ico">&#128269;</span>
-            <input type="text" id="tbl-search" placeholder="Search ref no, model, engineer, branch" oninput="applyFilters()"/>
-          </div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;">Closed TO/DR Register</div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-primary btn-sm" onclick="openAddModal()">&#43; Add New Entry</button>
+          <button class="btn btn-outline btn-sm" onclick="loadData()">&#10227; Refresh</button>
         </div>
       </div>
-
-      <!-- Filter strip -->
-      <div class="filter-strip">
-        <label>From</label>
-        <input type="date" class="f-inp" id="fl-from" onchange="applyFilters()"/>
-        <label>To</label>
-        <input type="date" class="f-inp" id="fl-to" onchange="applyFilters()"/>
-        <div class="f-divider"></div>
-        <label>Division</label>
-        <select class="f-select" id="fl-division" onchange="applyFilters()">
-          <option value="">All Divisions</option>
-          <option>PATIENT MONITORS</option><option>SAG</option><option>VENTILATOR</option>
-          <option>DEFIBRILLATOR</option><option>ECG</option><option>SYRINGE PUMP</option>
-          <option>INFUSION PUMP</option><option>ULTRASOUND</option><option>ANAESTHESIA</option>
-          <option>RADIOLOGY</option><option>OTHER</option>
-        </select>
-        <label>Type</label>
-        <select class="f-select" id="fl-type" onchange="applyFilters()">
-          <option value="">All Types</option>
-          <option>PRF</option><option>OB</option>
-        </select>
-        <label>Warranty</label>
-        <select class="f-select" id="fl-warranty" onchange="applyFilters()">
-          <option value="">All</option>
-          <option>OW</option><option>LAMC</option><option>CAMC</option>
-          <option>EW</option><option>STOCK</option><option>IW</option>
-        </select>
-        <button class="btn btn-outline btn-sm" onclick="clearFilters()" style="margin-left:auto;">&#10060; Clear</button>
-      </div>
-
+      
       <div class="table-wrap">
         <table class="frn-table">
-          <thead><tr>
-            <th onclick="sortBy('_id')" class="sorted" style="width:46px;">Id <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('entryDate')">Entry Date <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('scEng')">Sc Engg <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('type')">Type <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('receivedDate')">Received Date <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('branch')">Branch <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('eng')">Engineer <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('warrantyStatus')">Warranty Status <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('refNo')">PRF/OB Ref No. <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('crmRefNo')">CRM Ref no. <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('status')">Status <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('executedDate')">Executed Date <span class="si">&#8693;</span></th>
-            <th class="no-sort">Action</th>
-          </tr></thead>
-          <tbody id="cr-tbody">
-            <tr class="loading-row"><td colspan="15"><span class="spin"></span>Loading from database </td></tr>
+          <thead>
+            <tr>
+              <th>Entry Date</th>
+              <th>FRN No</th>
+              <th>Part No</th>
+              <th>Description</th>
+              <th>Action</th>
+              <th style="width:70px;text-align:center;">Edit</th>
+              <th style="width:70px;text-align:center;">Del</th>
+            </tr>
+          </thead>
+          <tbody id="tb">
+            <tr><td colspan="7" style="text-align:center;padding:30px;">Loading...</td></tr>
           </tbody>
         </table>
       </div>
+    </div>
+  </div>
+</main>
 
-      <div class="table-foot">
-        <span id="tbl-info"> </span>
-        <div class="pager-row" id="tbl-pagination"></div>
+<!-- ADD / UPDATE MODAL -->
+<div class="modal-overlay" id="ctodr-modal">
+  <div class="add-modal-box">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="m-title">Add Closed TO/DR</div>
+        <div class="modal-sub">Fill out the form below</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">&#10005;</button>
+    </div>
+    <div class="modal-body" style="background:#fff;">
+      <input type="hidden" id="f-id">
+      
+      <div class="detail-item">
+        <div class="detail-section-title">Record Details</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;" class="ff">
+          <div><label style="font-size:10px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">Entry Date</label><input type="date" id="f-date"></div>
+          <div><label style="font-size:10px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">FRN No</label><input type="text" id="f-frn" placeholder="Enter FRN"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;" class="ff">
+          <div><label style="font-size:10px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">Part No</label><input type="text" id="f-part" placeholder="Enter Part No"></div>
+          <div><label style="font-size:10px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">Action</label><input type="text" id="f-action" placeholder="Enter Action"></div>
+        </div>
+        <div style="margin-top:14px;" class="ff">
+          <label style="font-size:10px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">Description</label>
+          <textarea id="f-desc" rows="3" placeholder="Enter Description"></textarea>
+        </div>
       </div>
     </div>
-
+    <div class="modal-foot" style="background:var(--surface3);padding:16px 28px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;">
+      <div id="m-msg" class="form-msg"></div>
+      <button class="btn btn-outline btn-sm" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="save-btn" onclick="saveRecord()">&#128190; Save Record</button>
+    </div>
   </div>
 </div>
 
 <script>
-const API = '';
-let DATA = [], filtered = [], sortKey = '_id', sortDir = 1, currentPage = 1;
-
-// -- INIT ------------------------------------------------------------------
-(function init(){
+  // Topbar dates and user
   const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
-  if(u.name){
-    (document.getElementById('admin-name')||{}).textContent = u.name;
-    (document.getElementById('admin-avatar')||{}).textContent = u.name.charAt(0).toUpperCase();
-    (document.getElementById('admin-role')||{}).textContent = u.role === 'admin' ? 'Administrator' : 'Service Coordinator';
+  const dstr = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const tbd = document.getElementById('topbar-date'); if(tbd) tbd.textContent = dstr;
+  const nms = document.querySelectorAll('#admin-name, #user-nm'); nms.forEach(e => { if(e) e.textContent = u.name || 'User'; });
+  const avs = document.querySelectorAll('#admin-avatar, #user-av'); avs.forEach(e => { if(e) e.textContent = (u.name||'U').charAt(0).toUpperCase(); });
+  const rls = document.querySelectorAll('#admin-role, #user-rl'); rls.forEach(e => { if(e) e.textContent = u.designation || 'Coordinator'; });
+
+  function hdrs(){ return {"Content-Type":"application/json", "Authorization":"Bearer "+(sessionStorage.getItem('schiller_token')||"")}; }
+  function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href="login.html"; }
+
+  let records = [];
+
+  async function loadData() {
+    try {
+      const res = await fetch('/api/ctodr', { headers: hdrs() });
+      if(res.status===401||res.status===403) return logout();
+      const data = await res.json();
+      if(res.ok) { records = data; renderTable(); }
+    } catch(e) { console.error(e); }
   }
-  (document.getElementById('topbar-date')||{}).textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  function renderTable() {
+    const tb = document.getElementById('tb');
+    if(!records.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;">No Closed TO/DR entries found.</td></tr>'; return; }
+    
+    tb.innerHTML = records.map(r => `
+      <tr>
+        <td>${r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-'}</td>
+        <td><span style="font-weight:700;color:var(--accent);">${esc(r.frnNo)}</span></td>
+        <td>${esc(r.partNo)}</td>
+        <td class="wrap-cell">${esc(r.description)}</td>
+        <td><span style="background:var(--surface2);padding:3px 8px;border-radius:10px;font-size:10px;font-weight:700;">${esc(r.action)}</span></td>
+        <td style="text-align:center;"><button class="btn-xs update" onclick="openEdit('${r._id}')">&#9999;&#65039;</button></td>
+        <td style="text-align:center;"><button class="btn-xs" style="color:var(--red);" onclick="delRecord('${r._id}')">&#128465;</button></td>
+      </tr>
+    `).join('');
+  }
+
+  function openAddModal() {
+    document.getElementById('f-id').value = '';
+    document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('f-frn').value = '';
+    document.getElementById('f-part').value = '';
+    document.getElementById('f-desc').value = '';
+    document.getElementById('f-action').value = '';
+    document.getElementById('m-title').innerHTML = '&#10133; Add TO/DR';
+    msg('');
+    document.getElementById('ctodr-modal').classList.add('open');
+  }
+
+  function openEdit(id) {
+    const r = records.find(x => x._id === id);
+    if(!r) return;
+    document.getElementById('f-id').value = r._id;
+    document.getElementById('f-date').value = r.entryDate ? new Date(r.entryDate).toISOString().split('T')[0] : '';
+    document.getElementById('f-frn').value = r.frnNo || '';
+    document.getElementById('f-part').value = r.partNo || '';
+    document.getElementById('f-desc').value = r.description || '';
+    document.getElementById('f-action').value = r.action || '';
+    document.getElementById('m-title').innerHTML = '&#9998; Edit Closed TO/DR';
+    msg('');
+    document.getElementById('ctodr-modal').classList.add('open');
+  }
+
+  function closeModal() { document.getElementById('ctodr-modal').classList.remove('open'); }
+  function msg(m, err=false) { 
+    const e=document.getElementById('m-msg'); 
+    e.textContent=m; 
+    e.style.display=m?'block':'none';
+    if(err) { e.style.background='rgba(185,28,28,0.1)'; e.style.color='var(--red)'; }
+    else { e.style.background='rgba(4,120,87,0.1)'; e.style.color='var(--green)'; }
+  }
+
+  async function saveRecord() {
+    const id = document.getElementById('f-id').value;
+    const payload = {
+      entryDate: document.getElementById('f-date').value,
+      frnNo: document.getElementById('f-frn').value,
+      partNo: document.getElementById('f-part').value,
+      description: document.getElementById('f-desc').value,
+      action: document.getElementById('f-action').value
+    };
+    if(!payload.entryDate || !payload.frnNo || !payload.partNo || !payload.description || !payload.action) {
+      return msg('All fields are required.', true);
+    }
+    
+    const btn = document.getElementById('save-btn');
+    btn.disabled=true; btn.textContent='Saving...';
+    try {
+      const url = id ? `/api/ctodr/${id}` : '/api/ctodr';
+      const method = id ? 'PUT' : 'POST';
+      const res = await fetch(url, { method, headers: hdrs(), body: JSON.stringify(payload) });
+      const json = await res.json().catch(()=>{});
+      if(!res.ok) throw new Error(json?.message || 'Server error');
+      closeModal();
+      loadData();
+    } catch(e) {
+      msg(e.message, true);
+    } finally {
+      btn.disabled=false; btn.innerHTML='&#128190; Save Record';
+    }
+  }
+
+  async function delRecord(id) {
+    if(!confirm('Delete this record permanently?')) return;
+    try {
+      await fetch(`/api/ctodr/${id}`, { method: 'DELETE', headers: hdrs() });
+      loadData();
+    } catch(e) { alert('Failed to delete'); }
+  }
+
+  function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  
+  // Close modal when clicking outside
+  document.getElementById('ctodr-modal').addEventListener('click', e => { if(e.target.id==='ctodr-modal') closeModal(); });
+  document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
   loadData();
-})();
-
-function getToken(){ return sessionStorage.getItem('schiller_token') || ''; }
-function authHeaders(){ return {'Content-Type':'application/json', Authorization:'Bearer '+getToken()}; }
-function handleUnauth(res){
-  if(res.status===401){
-    showToast('Session expired   please log in again.','err');
-    setTimeout(()=>window.location.href='login.html',1500);
-    throw new Error('Unauthorized');
-  }
-}
-
-// -- LOAD DATA -------------------------------------------------------------
-async function loadData(){
-  setLoading();
-  try{
-    const res = await fetch(API + '/api/sccr', {headers: authHeaders()});
-    handleUnauth(res);
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    DATA = await res.json();
-    DATA = DATA.map(d => ({...d, id: d._id || d.id}));
-    applyFilters();
-    updateStats();
-    // Update sidebar badges
-    const b = document.getElementById('sidebar-count');
-    if(b) b.textContent = DATA.length;
-    showToast('Loaded ' + DATA.length + ' record'+(DATA.length!==1?'s':''), 'info');
-  }catch(e){
-    if(e.message === 'Unauthorized') return;
-    showToast('Load failed: ' + e.message, 'err');
-    document.getElementById('cr-tbody').innerHTML = `<tr class="loading-row"><td colspan="15" style="color:var(--red);">&#9888; ${esc(e.message)}</td></tr>`;
-  }
-}
-
-function updateStats(){
-  (document.getElementById('s-total')||{}).textContent = DATA.length;
-  (document.getElementById('s-completed')||{}).textContent = DATA.filter(d=>d.status==='Completed').length;
-  (document.getElementById('s-prf')||{}).textContent = DATA.filter(d=>d.type==='PRF').length;
-  (document.getElementById('s-ob')||{}).textContent = DATA.filter(d=>d.type==='OB').length;
-}
-
-// -- FILTERS ---------------------------------------------------------------
-function clearFilters(){
-  ['fl-from','fl-to','fl-division','fl-type','fl-warranty','tbl-search'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.value='';
-  });
-  applyFilters();
-}
-
-function applyFilters(){
-  const q    = document.getElementById('tbl-search').value.toLowerCase();
-  const from = document.getElementById('fl-from').value;
-  const to   = document.getElementById('fl-to').value;
-  const div  = document.getElementById('fl-division').value;
-  const type = document.getElementById('fl-type').value;
-  const war  = document.getElementById('fl-warranty').value;
-
-  filtered = DATA.filter(d =>
-    (!q    || ((d.refNo||'')+' '+(d.scEng||'')+' '+(d.eng||'')+' '+(d.model||'')+' '+(d.crmRefNo||'')+' '+(d.branch||'')+' '+(d.division||'')).toLowerCase().includes(q)) &&
-    (!from || (d.entryDate||'') >= from) &&
-    (!to   || (d.entryDate||'') <= to) &&
-    (!div  || d.division === div) &&
-    (!type || d.type === type) &&
-    (!war  || d.warrantyStatus === war)
-  );
-  sortArr(); currentPage = 1; renderTable();
-}
-
-function sortBy(k){
-  if(sortKey===k) sortDir*=-1; else{sortKey=k;sortDir=1;}
-  sortArr(); renderTable();
-}
-function sortArr(){
-  filtered.sort((a,b)=>{
-    const av=a[sortKey]??'', bv=b[sortKey]??'';
-    if(typeof av==='number'&&typeof bv==='number') return (av-bv)*sortDir;
-    return String(av).toLowerCase()<String(bv).toLowerCase()?-sortDir:String(av).toLowerCase()>String(bv).toLowerCase()?sortDir:0;
-  });
-}
-
-// -- RENDER TABLE ----------------------------------------------------------
-function renderTable(){
-  const perPage = parseInt(document.getElementById('per-page').value)||10;
-  const total   = filtered.length;
-  const pages   = Math.max(1,Math.ceil(total/perPage));
-  if(currentPage>pages) currentPage=pages;
-  const slice   = filtered.slice((currentPage-1)*perPage, currentPage*perPage);
-
-  (document.getElementById('count-chip')||{}).textContent = total+' entr'+(total===1?'y':'ies');
-  const tbody = document.getElementById('cr-tbody');
-
-  if(!total){
-    tbody.innerHTML=`<tr><td colspan="15"><div class="empty-st"><div class="ei">&#128196;</div><div class="et">${DATA.length?'No records match the current filters':'No Closed PRF/OB entries'}</div><div class="es">${DATA.length?'Try adjusting the filters.':'Closed records will appear here once PRF/OB entries are completed.'}</div></div></td></tr>`;
-  } else {
-    tbody.innerHTML = slice.map((d,i)=>{
-      const rid = d._id||d.id;
-      return `<tr>
-        <td class="mono" style="color:var(--muted);">${(currentPage-1)*perPage+i+1}</td>
-        <td><span class="div-tag">${esc(d.division||' ')}</span></td>
-        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
-        <td style="font-weight:600;">${esc(d.scEng||' ')}</td>
-        <td>${typePill(d.type)}</td>
-        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.receivedDate)}</td>
-        <td><span class="branch-tag">${esc(d.branch||' ')}</span></td>
-        <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.eng||'')}">${esc(d.eng||' ')}</td>
-        <td style="font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.model||'')}">${esc(d.model||' ')}</td>
-        <td>${warrantyPill(d.warrantyStatus)}</td>
-        <td style="font-weight:600;">${esc(d.refNo||' ')}</td>
-        <td class="wrap-cell" style="max-width:200px;font-size:11px;color:var(--soft);" title="${esc(d.crmRefNo||'')}">${esc((d.crmRefNo||' ').slice(0,40))}${(d.crmRefNo||'').length>40?' ':''}</td>
-        <td>${statusPill(d.status)}</td>
-        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.executedDate)}</td>
-        <td><button class="btn-xs update" onclick="openUpdateModal('${rid}')" title="Update">&#9999;&#65039;</button></td>
-      </tr>`;
-    }).join('');
-  }
-
-  const fr = total?(currentPage-1)*perPage+1:0;
-  (document.getElementById('tbl-info')||{}).textContent = total
-    ? `Showing ${fr} to ${Math.min(currentPage*perPage,total)} of ${total} entr${total===1?'y':'ies'}`
-    : '0 entries';
-  renderPagination(pages);
-}
-
-function typePill(t){
-  const cls = t==='PRF'?'sp-prf':'sp-ob';
-  return `<span class="s-pill ${cls}">${esc(t||' ')}</span>`;
-}
-function statusPill(s){
-  const m = {Completed:'sp-completed',Closed:'sp-closed',Rejected:'sp-rejected'};
-  return `<span class="s-pill ${m[s]||'sp-completed'}">${esc(s||' ')}</span>`;
-}
-function warrantyPill(s){
-  const m = {OW:'sp-ow',LAMC:'sp-lamc',CAMC:'sp-camc',EW:'sp-ew',STOCK:'sp-stock',IW:'sp-iw'};
-  return s ? `<span class="s-pill ${m[s]||'sp-iw'}">${esc(s)}</span>` : '<span style="color:var(--muted);font-size:11px;"> </span>';
-}
-
-// -- UPDATE MODAL ----------------------------------------------------------
-function openUpdateModal(id){
-  const d = DATA.find(x=>(x._id||x.id)===id);
-  if(!d) return;
-
-  (document.getElementById('ri-refno')||{}).textContent = d.refNo||' ';
-  (document.getElementById('ri-sceng')||{}).textContent = d.scEng||' ';
-  (document.getElementById('ri-division')||{}).textContent = d.division||' ';
-  (document.getElementById('ri-branch')||{}).textContent = d.branch||' ';
-  (document.getElementById('ri-type')||{}).textContent = d.type||' ';
-  (document.getElementById('ri-model')||{}).textContent = d.model||' ';
-  (document.getElementById('ri-eng')||{}).textContent = d.eng||' ';
-  (document.getElementById('ri-warranty')||{}).textContent = d.warrantyStatus||' ';
-  (document.getElementById('ri-crmref')||{}).textContent = d.crmRefNo||' ';
-  (document.getElementById('ri-entrydate')||{}).textContent = fmtDate(d.entryDate);
-
-  document.getElementById('upd-id').value = id;
-  const set=(elId,val)=>{const el=document.getElementById(elId);if(el)el.value=val||'';};
-  set('upd-status',       d.status||'Completed');
-  set('upd-executeddate', d.executedDate||'');
-  set('upd-receiveddate', d.receivedDate||'');
-  set('upd-crmrefno',     d.crmRefNo||'');
-  set('upd-remarks',      d.remarks||'');
-
-  clearUpdMsg();
-  document.getElementById('update-overlay').classList.add('open');
-  document.querySelector('.modal-scroll').scrollTop = 0;
-}
-
-function closeModal(){
-  document.getElementById('update-overlay').classList.remove('open');
-}
-
-// -- SUBMIT UPDATE ---------------------------------------------------------
-async function submitUpdate(){
-  const id = document.getElementById('upd-id').value;
-  const status = document.getElementById('upd-status').value;
-  if(!status){ document.getElementById('upd-status').classList.add('err'); showUpdMsg('Status is required.','err'); return; }
-  document.getElementById('upd-status').classList.remove('err');
-
-  const payload = {
-    status,
-    executedDate: document.getElementById('upd-executeddate').value,
-    receivedDate: document.getElementById('upd-receiveddate').value,
-    crmRefNo:     document.getElementById('upd-crmrefno').value.trim(),
-    remarks:      document.getElementById('upd-remarks').value.trim(),
-    updatedAt:    new Date().toISOString(),
-  };
-
-  const btn = document.getElementById('upd-save-btn');
-  btn.disabled = true; btn.innerHTML = '&#9203; Saving...';
-
-  try{
-    const res = await fetch(`${API}/api/sccr/${id}`, {
-      method: 'PUT', headers: authHeaders(), body: JSON.stringify(payload)
-    });
-    handleUnauth(res);
-    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'HTTP '+res.status);}
-    const saved = await res.json().catch(()=>({}));
-    const idx = DATA.findIndex(x=>(x._id||x.id)===id);
-    if(idx!==-1) DATA[idx]={...DATA[idx],...payload,...saved};
-    applyFilters();
-    showUpdMsg('&#10004; Record updated successfully!','ok');
-    showToast('PRF/OB record updated.','ok');
-    setTimeout(closeModal, 1100);
-  }catch(e){
-    if(e.message!=='Unauthorized'){showUpdMsg('Save failed: '+e.message,'err');showToast('Update failed: '+e.message,'err');}
-  }finally{
-    btn.disabled=false; btn.innerHTML ='&#128190; Save Update';
-  }
-}
-
-// -- EXPORT CSV ------------------------------------------------------------
-function exportCSV(){
-  const headers=['#','Division','Entry Date','SC Engg','Type','Received Date','Branch','Engineer','Model','Warranty Status','PRF/OB Ref No','CRM Ref No','Status','Executed Date','Remarks'];
-  const rows=filtered.map((d,i)=>[i+1,d.division,d.entryDate,d.scEng,d.type,d.receivedDate,d.branch,d.eng,d.model,d.warrantyStatus,d.refNo,d.crmRefNo,d.status,d.executedDate,d.remarks]);
-  const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');
-  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
-  a.download='closed-prfob-'+new Date().toISOString().split('T')[0]+'.csv';
-  a.click();
-  showToast('Exported '+filtered.length+' records.','ok');
-}
-
-// -- PAGINATION ------------------------------------------------------------
-function renderPagination(pages){
-  const el=document.getElementById('tbl-pagination');
-  if(pages<=1){el.innerHTML='';return;}
-  let h=`<button class="pager" ${currentPage===1?'disabled':''} onclick="gp(${currentPage-1})">&#8249; Prev</button>`;
-  getRange(currentPage,pages).forEach(p=>{
-    if(p===' ') h+=`<button class="pager" disabled> </button>`;
-    else h+=`<button class="pager ${p===currentPage?'active':''}" onclick="gp(${p})">${p}</button>`;
-  });
-  h+=`<button class="pager" ${currentPage===pages?'disabled':''} onclick="gp(${currentPage+1})">Next &#8250;</button>`;
-  el.innerHTML=h;
-}
-function getRange(c,t){if(t<=7)return Array.from({length:t},(_,i)=>i+1);if(c<=4)return[1,2,3,4,5,' ',t];if(c>=t-3)return[1,' ',t-4,t-3,t-2,t-1,t];return[1,' ',c-1,c,c+1,' ',t];}
-function gp(p){currentPage=p;renderTable();}
-
-// -- HELPERS ---------------------------------------------------------------
-function setLoading(){
-  document.getElementById('cr-tbody').innerHTML='<tr class="loading-row"><td colspan="15"><span class="spin"></span>Loading from database </td></tr>';
-  ['s-total','s-completed','s-prf','s-ob'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=' ';});
-}
-function fmtDate(d){if(!d)return' ';const p=String(d).split('T')[0].split('-');if(p.length<3)return String(d);return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0];}
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function showToast(msg,type='ok'){const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="td"></span>'+msg;w.appendChild(el);setTimeout(()=>el.remove(),3400);}
-function showUpdMsg(msg,type){const el=document.getElementById('upd-msg');el.textContent=msg;el.className='form-msg '+type;}
-function clearUpdMsg(){const el=document.getElementById('upd-msg');el.textContent='';el.className='form-msg';}
-function logout(){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';}
-document.addEventListener('keydown',e=>{if(e.key==='Escape') closeModal();});
 </script>
-<script src="tab-fix.js"></script>
 </body>
 </html>

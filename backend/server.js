@@ -82,6 +82,7 @@ const ptActivityRoutes         = require('./routes/ptActivityRoutes');
 const ptBirRoutes              = require('./routes/ptBirRoutes');
 const ptClosedBirRoutes        = require('./routes/ptClosedBirRoutes');
 const todrRoutes               = require('./routes/todrRoutes');
+const ctodrRoutes              = require('./routes/ctodrRoutes');
 
 // Ã¢â€â‚¬Ã¢â€â‚¬ ADMIN ACTIVITY REGISTER ROUTES Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 const acallRoutes  = require('./routes/acallRoutes');
@@ -219,6 +220,7 @@ app.use('/api/ptca',                  ptClosedActivityRoutes);
 app.use('/api/pt/bir/closed',         ptClosedBirRoutes);
 app.use('/api/pt/bir',                ptBirRoutes);
 app.use('/api/todr',                  todrRoutes);
+app.use('/api/ctodr',                 ctodrRoutes);
 
 // Ã¢â€â‚¬Ã¢â€â‚¬ ADMIN ACTIVITY REGISTER ROUTES Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 app.use('/api/admin/calls/closed',    acloseRoutes);   // must be BEFORE /api/admin/calls
