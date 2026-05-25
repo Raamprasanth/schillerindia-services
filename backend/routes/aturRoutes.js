@@ -1,5 +1,5 @@
 // routes/aturRoutes.js
-// Admin RT UR API — same collection as /api/rtur (`rturs`).
+// Admin RT UR API â€” same collection as /api/rtur (`rturs`).
 //
 //  GET    /api/atur/stats       ? summary stats (admin)
 //  GET    /api/atur/export/csv ? CSV export (admin)
@@ -222,6 +222,14 @@ router.put('/:id', protect, adminOnly, async (req, res) => {
               rturCompletedAt: completionStamp,
               components: saved.compUsedToRepair || '',
               techRemarks: saved.techRemarks || '',
+          repairRemarks:    saved.repairRemarks || '',
+          cost:             saved.cost || '',
+          timeTaken:        saved.timeTaken || '',
+          repairStatus:     saved.repairStatus || '',
+          doi:              saved.doi || '',
+          repairedDate:     saved.repairedDate || '',
+          components:       saved.components || saved.compUsedToRepair || '',
+
               finalRemarks: saved.finalRemarks || '',
             },
           }
@@ -245,6 +253,14 @@ router.put('/:id', protect, adminOnly, async (req, res) => {
           repairedBy: saved.repairedBy || '',
           compUsedToRepair: saved.compUsedToRepair || '',
           techRemarks: saved.techRemarks || '',
+          repairRemarks:    saved.repairRemarks || '',
+          cost:             saved.cost || '',
+          timeTaken:        saved.timeTaken || '',
+          repairStatus:     saved.repairStatus || '',
+          doi:              saved.doi || '',
+          repairedDate:     saved.repairedDate || '',
+          components:       saved.components || saved.compUsedToRepair || '',
+
           finalRemarks: saved.finalRemarks || '',
           submittedBy: saved.submittedBy || '',
           submittedAt: saved.submittedAt || null,

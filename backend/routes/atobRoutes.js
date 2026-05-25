@@ -1,5 +1,5 @@
 // routes/atobRoutes.js
-// Admin RT OB API — same collection as /api/rtob (`rtob`).
+// Admin RT OB API â€” same collection as /api/rtob (`rtob`).
 //
 //  GET    /api/atob/stats   ? summary counts (admin)
 //  GET    /api/atob         ? all records (admin)
@@ -236,6 +236,14 @@ router.put('/:id', protect, adminOnly, async (req, res) => {
           repairedBy: updated.repairedBy || '',
           compUsedToRepair: updated.components || '',
           techRemarks: updated.techRemarks || '',
+          repairRemarks:    updated.repairRemarks || '',
+          cost:             updated.cost || '',
+          timeTaken:        updated.timeTaken || '',
+          repairStatus:     updated.repairStatus || '',
+          doi:              updated.doi || '',
+          repairedDate:     updated.repairedDate || '',
+          components:       updated.components || updated.compUsedToRepair || '',
+
           finalRemarks: updated.finalRemarks || '',
           submittedBy: updated.submittedBy || '',
           submittedAt: updated.submittedAt || null,

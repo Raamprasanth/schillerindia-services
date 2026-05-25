@@ -96,6 +96,14 @@ const rtcrlSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    
+    repairRemarks: { type: String, trim: true, default: '' },
+    cost: { type: String, trim: true, default: '' },
+    timeTaken: { type: String, trim: true, default: '' },
+    repairStatus: { type: String, trim: true, default: '' },
+    doi: { type: String, trim: true, default: '' },
+    repairedDate: { type: String, trim: true, default: '' },
+    components: { type: String, trim: true, default: '' },
 
     compUsedToRepair: {
       type: String,

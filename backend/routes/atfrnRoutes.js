@@ -1,5 +1,5 @@
 // routes/atfrnRoutes.js
-// Admin Repair Team FRN API — same MongoDB collection as /api/rtfrn (`rtfrns`).
+// Admin Repair Team FRN API â€” same MongoDB collection as /api/rtfrn (`rtfrns`).
 //
 //  GET    /api/atfrn           ? list (admin)
 //  GET    /api/atfrn/:id       ? one record (admin)
@@ -216,6 +216,14 @@ router.put('/:id', protect, adminOnly, async (req, res) => {
             repBrd: updated.repBrd || '',
             typeReport: updated.typeReport || '',
             techRemarks: updated.techRemarks || '',
+          repairRemarks:    updated.repairRemarks || '',
+          cost:             updated.cost || '',
+          timeTaken:        updated.timeTaken || '',
+          repairStatus:     updated.repairStatus || '',
+          doi:              updated.doi || '',
+          repairedDate:     updated.repairedDate || '',
+          components:       updated.components || updated.compUsedToRepair || '',
+
             finalRemarks: updated.finalRemarks || '',
             components: updated.components || '',
             shipSc: updated.shipSc || '',
@@ -248,6 +256,14 @@ router.put('/:id', protect, adminOnly, async (req, res) => {
           repairedBy: updated.repairedBy || '',
           compUsedToRepair: updated.components || '',
           techRemarks: updated.techRemarks || '',
+          repairRemarks:    updated.repairRemarks || '',
+          cost:             updated.cost || '',
+          timeTaken:        updated.timeTaken || '',
+          repairStatus:     updated.repairStatus || '',
+          doi:              updated.doi || '',
+          repairedDate:     updated.repairedDate || '',
+          components:       updated.components || updated.compUsedToRepair || '',
+
           finalRemarks: updated.finalRemarks || '',
           submittedBy: updated.submittedBy || '',
           submittedAt: updated.submittedAt || null,
