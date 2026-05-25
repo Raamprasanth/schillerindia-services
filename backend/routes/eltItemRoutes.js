@@ -13,6 +13,18 @@ function canUseEltItems(user) {
   return ['employee', 'field_engineer', 'service_coordinator', 'admin', 'superadmin', 'administrator'].includes(role);
 }
 
+function isPrivileged(user) {
+  const role = String(user?.role || '').toLowerCase();
+  return ['service_coordinator', 'admin', 'superadmin', 'administrator'].includes(role);
+}
+
+function getUserDivisions(user) {
+  const values = user?.activeDivision
+    ? [user.activeDivision]
+    : (Array.isArray(user?.divisions) && user.divisions.length ? [...user.divisions] : [user?.division]);
+  return [...new Set(values.map(v => String(v || '').trim()).filter(Boolean))];
+}
+
 router.use((req, res, next) => {
   if (!canUseEltItems(req.user)) {
     return res.status(403).json({ message: 'Not allowed to access ELT items.' });
@@ -30,6 +42,15 @@ router.get('/', async (req, res) => {
       if (to) filter.date.$lte = to;
     }
     if (division) filter.division = division;
+
+    if (!isPrivileged(req.user)) {
+      const userDivisions = getUserDivisions(req.user);
+      if (!userDivisions.length) return res.json([]);
+      if (division && !userDivisions.some(d => d.toLowerCase() === String(division).trim().toLowerCase())) {
+        return res.json([]);
+      }
+      if (!division) filter.division = { $in: userDivisions };
+    }
 
     const docs = await EltItem.find(filter).sort({ date: -1, createdAt: -1 }).lean();
     res.json(docs);
