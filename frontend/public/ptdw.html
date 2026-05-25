@@ -283,6 +283,43 @@ tr:hover td{background:var(--surface3);}
 .btn-sm{padding:4px 10px;font-size:11px;border-radius:6px;}
 .btn-danger{background:var(--red);color:#fff}.btn-danger:hover{background:#991b1b;}
 
+.grid-layout{display:grid;grid-template-columns:340px 1fr;gap:24px;padding:20px 24px;}
+@media(max-width:1000px){.grid-layout{grid-template-columns:1fr;}}
+
+/* CALENDAR PANEL */
+.cal-panel{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-md);overflow:hidden;align-self:start;position:sticky;top:90px;}
+.cal-head{background:linear-gradient(135deg,#0068b5,#005a9e);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;color:#fff;}
+.cal-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;}
+.cal-nav-btn{background:rgba(255,255,255,0.15);border:none;color:#fff;width:28px;height:28px;border-radius:8px;cursor:pointer;font-weight:bold;transition:background 0.2s;display:flex;align-items:center;justify-content:center;}
+.cal-nav-btn:hover{background:rgba(255,255,255,0.3);}
+.cal-body{padding:16px 20px;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+.cal-day-lbl{text-align:center;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;padding-bottom:8px;}
+.cal-cell{aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;position:relative;transition:all 0.2s;border:1.5px solid transparent;background:var(--surface);}
+.cal-cell:hover:not(.empty-cell){background:var(--surface2);border-color:var(--border);}
+.cal-cell.empty-cell{cursor:default;}
+.cal-cell.today{color:var(--accent);font-weight:800;}
+.cal-cell.selected{background:var(--accent);color:#fff;box-shadow:0 4px 12px rgba(0,104,181,0.25);border-color:var(--accent);}
+.has-entry-dot{width:5px;height:5px;background:var(--green);border-radius:50%;position:absolute;bottom:4px;left:50%;transform:translateX(-50%);}
+.cal-cell.selected .has-entry-dot{background:#fff;}
+
+/* KANBAN PANEL */
+.kanban-wrap{display:flex;flex-direction:column;gap:16px;}
+.kanban-header{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--border);padding-bottom:12px;}
+.kb-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);}
+.kb-subtitle{font-size:12px;color:var(--muted);margin-top:2px;}
+.kb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+.kb-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow);transition:transform 0.2s, box-shadow 0.2s;display:flex;flex-direction:column;position:relative;overflow:hidden;}
+.kb-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--accent);}
+.kb-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--green);border-radius:4px 0 0 4px;}
+.kb-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.kb-num{font-size:10px;font-weight:800;color:var(--accent);background:var(--accent3);padding:3px 8px;border-radius:12px;}
+.kb-time{font-size:11.5px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:4px;}
+.kb-time .ico{color:var(--soft);font-size:13px;}
+.kb-activity{font-size:13.5px;font-weight:600;color:var(--text);line-height:1.5;flex:1;}
+.kb-foot{margin-top:14px;padding-top:12px;border-top:1px dashed var(--border);display:flex;justify-content:space-between;align-items:center;}
+.kb-user{font-size:10.5px;color:var(--muted);display:flex;align-items:center;gap:5px;}
+.kb-user span{background:var(--surface2);padding:2px 6px;border-radius:6px;color:var(--soft);font-weight:600;}
 </style>
 </head>
 <body>
