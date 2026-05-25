@@ -1243,6 +1243,7 @@ function generateEstimationPDFData(s, mode='download'){
   y+=8;
   labelValue(L, y, '', (s.model||'-') + '    Unit', 0);
   labelValue(104, y, 'Unit S/N', s.unitSl || '-', 22);
+  labelValue(150, y, 'Unit Status', s.unitStatus || s.unitSts || '-', 22);
 
   y+=13;
   doc.setFont('helvetica','bold');
