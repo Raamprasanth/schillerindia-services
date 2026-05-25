@@ -1718,7 +1718,7 @@ function handleSameGir(val){
 async function submitUpdate(){
   const id=document.getElementById('upd-id').value;
   let err=false;
-  const requiredFields=['upd-raeng','upd-finalremarks','upd-destination','upd-techremarks'];
+  const requiredFields=['upd-raeng','upd-finalremarks','upd-destination','upd-techremarks','upd-shipsc'];
   requiredFields.forEach(fid=>{const el=document.getElementById(fid);if(!el)return;if(!el.value.trim()){el.classList.add('err');err=true;}else el.classList.remove('err');});
   const selectedTypeWork=document.getElementById('upd-typework').value;
   const isUpgrade=selectedTypeWork==='Upgrade';
@@ -1727,7 +1727,7 @@ async function submitUpdate(){
   if(!isUpgrade && !sameGir){showUpdMsg('Please select Same GIR No.','err');return;}
   if(!isUpgrade && sameGir==='no' && !repGirNo){document.getElementById('upd-defunitgir').classList.add('err');showUpdMsg('Please enter REP GIR No when Same GIR No is set to No.','err');return;}
   document.getElementById('upd-defunitgir').classList.remove('err');
-  if(err){showUpdMsg('Please fill all required fields: RA Engineer, Destination, Technical Remarks, Final Remarks.','err');return;}
+  if(err){showUpdMsg('Please fill all required fields: RA Engineer, Ship Date, Destination, Technical Remarks, Final Remarks.','err');return;}
   // Yes ? Completed FRN | No ? Under Repair
   const statusVal=(selectedTypeWork==='Upgrade' || sameGir==='yes')?'completed':'under_repair';
   const payload={raEng:document.getElementById('upd-raeng').value,defUnitGir:repGirNo,repGirNo:repGirNo,finalRemarks:document.getElementById('upd-finalremarks').value.trim(),techRemarks:document.getElementById('upd-techremarks').value,components:document.getElementById('upd-components').value,revalue:document.getElementById('upd-revalue').value?Number(document.getElementById('upd-revalue').value):0,shipSc:document.getElementById('upd-shipsc').value,destination:document.getElementById('upd-destination').value,typeWork:selectedTypeWork,status:statusVal,updatedAt:new Date().toISOString()};
