@@ -146,7 +146,8 @@
     removableSelectors.forEach((selector) => {
       document.querySelectorAll(selector).forEach((node) => {
         const anchor = node.tagName === 'A' ? node : node.querySelector('a');
-        if (anchor && /^Rt[a-z]/i.test(anchor.getAttribute('href') || '')) return;
+        const href = anchor ? (anchor.getAttribute('href') || '') : '';
+        if (anchor && (/^Rt[a-z]/i.test(href) || href.includes('ptpa.html'))) return;
         const text = (node.textContent || '').replace(/\s+/g, ' ').trim();
         if (!text) return;
         if (!labels.some((label) => text.includes(label))) return;
