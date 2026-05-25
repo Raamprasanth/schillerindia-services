@@ -46,6 +46,8 @@ router.post('/', async (req, res) => {
       activity: body.activity,
       fromTime: body.fromTime,
       toTime: body.toTime,
+      team: body.team,
+      dayTotal: body.dayTotal,
       addedBy: req.user?.name || req.user?.email || 'User',
       userId: req.user?._id,
     });
