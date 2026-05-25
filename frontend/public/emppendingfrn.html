@@ -1275,7 +1275,7 @@ function generateEstimationPDFData(s, mode='download'){
     const rowHeight = Math.max(10, Math.ceil(doc.splitTextToSize(String(row.itemDescription||'-'), cols[1]-2).length) * 4.5 + 2);
     let cellX=tableX;
     const values=[
-      row.partNo || '-',
+      row.estPartNo || row.partNo || '-',
       String(row.itemDescription || '-'),
       String(row.qty || 1),
       money(row.pricePerUnit),
@@ -1590,6 +1590,7 @@ async function submitSelectedEstimation(){
         defUnitGir:header.defUnitGir,
         techRemarks:header.techRemarks,
         partNo:line.partNo,
+        estPartNo:line.estPartNo,
         qty:line.qty,
         pricePerUnit:line.pricePerUnit,
         status:'estimation',
@@ -1630,6 +1631,7 @@ async function submitSelectedEstimation(){
         defUnitGir:header.defUnitGir,
         techRemarks:header.techRemarks,
         partNo:line.partNo,
+        estPartNo:line.estPartNo,
         qty:line.qty,
         pricePerUnit:line.pricePerUnit,
         submittedBy:activeUser.name||'',
@@ -1650,6 +1652,7 @@ async function submitSelectedEstimation(){
         dealer:records[0].dealer||'',
         lineItems:header.lineItems.map(line=>({
           partNo:line.partNo,
+        estPartNo:line.estPartNo,
           itemDescription:line.itemDescription,
           qty:line.qty,
           pricePerUnit:line.pricePerUnit,

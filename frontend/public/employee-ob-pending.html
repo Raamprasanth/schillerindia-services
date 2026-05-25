@@ -1259,6 +1259,7 @@ async function submitEstimation(){
         defUnitGir: header.defUnitGir,
         techRemarks: header.techRemarks,
         partNo: line.partNo,
+        estPartNo: line.estPartNo,
         qty: line.qty,
         estGroupId: groupId,
         estLineNo: line.lineNo,
@@ -1351,6 +1352,7 @@ function generatePDFData(s, mode='download'){
   let y=12;
   const lineItems=(Array.isArray(s.lineItems)&&s.lineItems.length?s.lineItems:[{
     partNo:s.partNo||'',
+    estPartNo:s.estPartNo||'',
     itemDescription:s.defMod||'',
     qty:Math.max(1, parseInt(s.qty,10) || 1),
     pricePerUnit:(Math.max(1, parseInt(s.qty,10) || 1) > 0 ? Math.max(0, Number(s.estAmount) || 0) / Math.max(1, parseInt(s.qty,10) || 1) : Math.max(0, Number(s.estAmount) || 0)),
@@ -1358,6 +1360,7 @@ function generatePDFData(s, mode='download'){
     lineNo:1,
   }]).map((row,index)=>({
     partNo:row.partNo||'',
+    estPartNo:row.estPartNo||'',
     itemDescription:row.itemDescription||row.defMod||'',
     qty:Math.max(1, parseInt(row.qty,10) || 1),
     pricePerUnit:Math.max(0, Number(row.pricePerUnit) || 0),
@@ -1457,7 +1460,7 @@ function generatePDFData(s, mode='download'){
     const rowHeight = Math.max(10, Math.ceil(doc.splitTextToSize(String(row.itemDescription||'-'), cols[1]-2).length) * 4.5 + 2);
     let cellX=tableX;
     const values=[
-      row.partNo || '-',
+      row.estPartNo || row.partNo || '-',
       String(row.itemDescription || '-'),
       String(row.qty || 1),
       money(row.pricePerUnit),
