@@ -561,7 +561,7 @@ const API_BASE    = '';
 const LOGGED_USER = JSON.parse(sessionStorage.getItem('schiller_user')||'{}');
 const EMP_NAME    = LOGGED_USER.name || '';
 const SCHILLER_PDF_LOGO = new Image();
-SCHILLER_PDF_LOGO.src = 'shc.webp';
+SCHILLER_PDF_LOGO.src = 'logo.png';
 
 let allRecords = [], filtered = [], currentPage = 1;
 let sortKey = 'entryDate', sortDir = -1;
@@ -1530,14 +1530,7 @@ function generatePDFData(s, mode='download'){
       doc.setTextColor(255,255,255);
       doc.setFont('helvetica','bold');
       doc.setFontSize(9);
-      doc.text('S',21.5,24.7,{align:'center'});
-    setRgb('setTextColor',SCH_BLUE);
-    doc.setFontSize(22);
-    doc.text('SCHILLER',58,24);
-    setRgb('setTextColor',SCH_RED);
-    doc.setFontSize(7.5);
-    doc.setFont('helvetica','normal');
-    doc.text('',58,29);
+      try { doc.addImage(SCHILLER_PDF_LOGO, 'PNG', 16, 17, 54, 10); } catch(e){}
     setRgb('setTextColor',SCH_BLUE);
     doc.setFont('helvetica','bold');
     doc.setFontSize(12);
