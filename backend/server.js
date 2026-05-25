@@ -218,6 +218,7 @@ app.use('/api/ptpa',                  ptPendingActivityRoutes);
 app.use('/api/ptca',                  ptClosedActivityRoutes);
 app.use('/api/pt/bir/closed',         ptClosedBirRoutes);
 app.use('/api/pt/bir',                ptBirRoutes);
+app.use('/api/todr',                  todrRoutes);
 
 // Ã¢â€â‚¬Ã¢â€â‚¬ ADMIN ACTIVITY REGISTER ROUTES Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 app.use('/api/admin/calls/closed',    acloseRoutes);   // must be BEFORE /api/admin/calls
