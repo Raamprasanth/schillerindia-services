@@ -549,6 +549,24 @@ function roleLabel(role){
 function getToken()    { return localStorage.getItem('schiller_token') || ''; }
 function authHeaders() { return { 'Content-Type':'application/json', Authorization:'Bearer ' + getToken() }; }
 
+// Centralized fetch: on 401 (expired/missing token) → clear session & redirect to login
+async function apiFetch(url, options = {}) {
+  const defaultHeaders = authHeaders();
+  const mergedOptions = {
+    ...options,
+    headers: { ...defaultHeaders, ...(options.headers || {}) },
+  };
+  const res = await fetch(url, mergedOptions);
+  if (res.status === 401) {
+    localStorage.removeItem('schiller_token');
+    localStorage.removeItem('schiller_user');
+    localStorage.removeItem('schiller_role');
+    window.location.href = 'login.html';
+    throw new Error('Session expired — please log in again.');
+  }
+  return res;
+}
+
 function setDbStatus(online, label) {
   const b = document.getElementById('db-status-badge');
   b.className = 'db-badge' + (online ? '' : ' offline');
@@ -602,7 +620,7 @@ function fillDivisionSelect(selectId, selectedValue = '') {
 
 async function loadDivisionOptions() {
   try {
-    const res = await fetch(API_BASE + '/divisions', { headers: authHeaders(), signal: AbortSignal.timeout(8000) });
+    const res = await apiFetch(API_BASE + '/divisions', { signal: AbortSignal.timeout(8000) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || `HTTP ${res.status}`);
     divisionOptions = (Array.isArray(data) ? data : [])
@@ -610,6 +628,7 @@ async function loadDivisionOptions() {
       .filter(d => d.name)
       .sort((a, b) => (a.displayName || a.name).localeCompare(b.displayName || b.name));
   } catch (err) {
+    if (err.message && err.message.includes('Session expired')) return;
     divisionOptions = [];
     showToast('Could not load divisions from database.', 'err');
   }
@@ -621,7 +640,7 @@ async function loadUsers() {
   setDbStatus(false, 'Connecting...');
   document.getElementById('error-banner').classList.remove('show');
   try {
-    const res  = await fetch(API_BASE + '/auth/users', { headers: authHeaders(), signal: AbortSignal.timeout(8000) });
+    const res  = await apiFetch(API_BASE + '/auth/users', { signal: AbortSignal.timeout(8000) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || `HTTP ${res.status}`);
     allUsers = data.data || [];
@@ -871,8 +890,8 @@ async function submitAddUser() {
       payload  = { name, email, userId, password: pass, division };
     }
 
-    const res  = await fetch(API_BASE + endpoint, {
-      method: 'POST', headers: authHeaders(), body: JSON.stringify(payload)
+    const res  = await apiFetch(API_BASE + endpoint, {
+      method: 'POST', body: JSON.stringify(payload)
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Failed to create user.');
@@ -993,8 +1012,8 @@ async function saveEdit() {
   }
 
   try {
-    const res  = await fetch(API_BASE + '/auth/users/' + editingUser.id, {
-      method: 'PUT', headers: authHeaders(), body: JSON.stringify(updates)
+    const res  = await apiFetch(API_BASE + '/auth/users/' + editingUser.id, {
+      method: 'PUT', body: JSON.stringify(updates)
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Update failed.');
@@ -1039,7 +1058,7 @@ function confirmDelete(id, name) {
 async function doDelete(id, name) {
   closeModal('confirm-modal');
   try {
-    const res  = await fetch(API_BASE + '/auth/users/' + id, { method: 'DELETE', headers: authHeaders() });
+    const res  = await apiFetch(API_BASE + '/auth/users/' + id, { method: 'DELETE' });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Delete failed.');
     allUsers = allUsers.filter(u => String(u._id) !== String(id));

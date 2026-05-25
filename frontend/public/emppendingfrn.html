@@ -1207,6 +1207,7 @@ function generateEstimationPDFData(s, mode='download'){
       doc.setFont('helvetica','bold');
       doc.setFontSize(9);
       doc.text('S',21.5,24.7,{align:'center'});
+    }
     setRgb('setTextColor',SCH_BLUE);
     doc.setFontSize(22);
     doc.text('SCHILLER',58,24);
@@ -1692,7 +1693,7 @@ async function submitSelectedEstimation(){
     msg.textContent='Estimation saved and moved to Estimation Pending.';
     msg.className='form-msg ok';
     showToast('Estimation saved and moved to Estimation Pending.','ok');
-    setTimeout(()=>{closeEstimateModal();window.location.href='Empestpend.html';},1200);
+    setTimeout(()=>{closeEstimateModal();window.location.href='empestpend.html';},1200);
   }catch(e){
     if(e.message!=='Unauthorized'){
       msg.textContent='Save failed: '+e.message;
@@ -1870,7 +1871,7 @@ async function submitEstimation(){
     updateStats();renderTable();
     showUpdMsg('? Estimation saved - moving to Estimation Pending.','ok');
     showToast('Estimation saved and moved to Estimation Pending.','ok');
-    setTimeout(()=>{closeUpdateModal();window.location.href='Empestpend.html';},1200);
+    setTimeout(()=>{closeUpdateModal();window.location.href='empestpend.html';},1200);
   }catch(e){if(e.message!=='Unauthorized'){showUpdMsg('Save failed: '+e.message,'err');showToast('Estimation save failed: '+e.message,'err');}}
   finally{btn.disabled=false;btn.innerHTML ='&#128190; Save Estimation';}
 }
