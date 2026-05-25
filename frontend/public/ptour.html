@@ -8,7 +8,7 @@
   document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme') || 'light');
   const token = localStorage.getItem('schiller_token');
   const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
-  if (!token || !['product team','product_team','product','admin','superadmin','administrator'].includes(role)) window.location.href = 'login.html';
+  if (!token || !['pt','product team','product_team','product','admin','superadmin','administrator'].includes(role)) window.location.href = 'login.html';
 })();
 </script>
 <title>SchillerIndia - Tour Summary</title>

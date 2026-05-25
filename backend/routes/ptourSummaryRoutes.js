@@ -8,7 +8,7 @@ router.use(protect);
 
 function canUsePtTours(user) {
   const role = String(user?.role || '').toLowerCase();
-  return ['product team', 'product', 'product_team', 'admin', 'superadmin', 'administrator'].includes(role);
+  return ['pt', 'product team', 'product', 'product_team', 'admin', 'superadmin', 'administrator'].includes(role);
 }
 
 router.use((req, res, next) => {
