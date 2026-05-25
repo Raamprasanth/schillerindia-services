@@ -290,7 +290,7 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
         <div class="form-sec">
           <div class="form-sec-title">&#128172; Remarks & Findings</div>
           <div class="fg-3">
-            <div class="ff"><label>Technical Remarks <span class="req">*</span></label><textarea id="u-techremarks" rows="1" style="height:38px;min-height:38px;resize:none;background-color:var(--surface2);cursor:not-allowed;" readonly></textarea></div>
+            <div class="ff"><label>Technical Remarks</label><textarea id="u-techremarks" rows="1" style="height:38px;min-height:38px;resize:none;background-color:var(--surface2);cursor:not-allowed;" readonly></textarea></div>
             <div class="ff"><label>Repair Team Remarks <span class="req">*</span></label><textarea id="u-repairremarks" rows="1" style="height:38px;min-height:38px;resize:none;"></textarea></div>
             <div class="ff"><label>Components Used to Repaired <span class="req">*</span></label><textarea id="u-components" rows="1" style="height:38px;min-height:38px;resize:none;"></textarea></div>
             <div class="ff"><label>Cost in INR <span class="req">*</span></label><input type="number" id="u-cost" min="0" step="0.01" inputmode="decimal"/></div>
@@ -303,7 +303,7 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
         <div class="form-sec">
           <div class="form-sec-title">&#128196; Details</div>
           <div class="fg-4">
-            <div class="ff"><label>DOI (Date of Installation) <span class="req">*</span></label><input type="text" id="u-doi" readonly style="background-color:var(--surface2);cursor:not-allowed;" /></div>
+            <div class="ff"><label>DOI (Date of Installation)</label><input type="text" id="u-doi" readonly style="background-color:var(--surface2);cursor:not-allowed;" /></div>
             <div class="ff">
               <label>Repaired By <span class="req">*</span></label>
               <select id="u-repairedby">
@@ -838,13 +838,11 @@ async function submitUpdate() {
   errEl.classList.remove('show'); okEl.classList.remove('show');
 
   const requiredFields = [
-    ['u-techremarks', 'Technical Remarks'],
     ['u-repairremarks', 'Repair Team Remarks'],
     ['u-components', 'Components Used to Repaired'],
     ['u-cost', 'Cost in INR'],
     ['u-timetaken', 'Time Taken to Repair'],
     ['u-repairstatus', 'Repair Status'],
-    ['u-doi', 'DOI'],
     ['u-repairedby', 'Repaired By'],
     ['u-repaireddate', 'Repaired Date'],
     ['u-status', 'Status'],
