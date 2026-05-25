@@ -6,6 +6,7 @@ const eltItemSchema = new mongoose.Schema(
     division: { type: String, trim: true, required: true },
     partNo: { type: String, trim: true, required: true },
     description: { type: String, trim: true, required: true },
+    revalue: { type: Number, default: 0 },
     girNo: { type: String, trim: true, required: true },
     opt: { type: String, trim: true, default: '' },
     remarks: { type: String, trim: true, default: '' },
