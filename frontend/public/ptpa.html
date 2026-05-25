@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+(function(){
+  document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme') || 'light');
+  const token = localStorage.getItem('schiller_token');
+  const role = String(localStorage.getItem('schiller_role') || '').toLowerCase();
+  if (!token || !['pt','product team','product_team','product','admin','superadmin','administrator'].includes(role)) window.location.href = 'login.html';
+})();
+</script>
+<title>SchillerIndia - Pending Activity</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="global-typography.css">
+<link rel="stylesheet" href="employee-theme.css">
+<script src="employee-theme.js"></script>
+<link rel="stylesheet" href="topbar-alignment.css">
+<link rel="stylesheet" href="brand-logo.css">
+<link rel="stylesheet" href="dashboard-topbar-actions.css">
+<script src="dashboard-topbar-actions.js" defer></script>
+<script src="brand-logo.js" defer></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f0f4f8;--surface:#fff;--surface2:#e8f0f7;--surface3:#f8fafc;--border:#ccdde8;--accent:#0068b5;--accent3:rgba(0,104,181,0.08);--green:#059669;--green2:#047857;--red:#b91c1c;--text:#0f2236;--muted:#6b8ca8;--soft:#3d6480;--card:#fff;--shadow:0 1px 8px rgba(0,60,120,.07);--shadow-md:0 4px 12px rgba(0,60,120,.1);--shadow-lg:0 8px 24px rgba(0,60,120,.15)}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+.sidebar{width:225px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 14px rgba(0,60,120,0.07)}
+.sidebar-header{padding:16px 16px 12px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#002d5c,#0068b5)}
+.logo-wrap{display:flex;align-items:center;gap:9px}
+.logo-text{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#fff;line-height:1.2}
+.logo-text span{display:block;font-size:10px;color:rgba(255,255,255,0.55);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400}
+.sidebar-nav{flex:1;padding:8px 6px}
+.nav-sec{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;padding:9px 8px 4px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;color:var(--soft);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.18s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accent3);color:var(--accent);font-weight:700;border-left:3px solid var(--accent);padding-left:8px}
+.nav-item .ico{font-size:12px;width:17px;text-align:center;flex-shrink:0}
+.sidebar-footer{padding:11px 12px;border-top:1px solid var(--border);background:var(--surface3)}
+.user-row{display:flex;align-items:center;gap:8px}
+.user-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#0ea5e9);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;flex-shrink:0}
+.user-nm{font-size:12px;font-weight:600;color:var(--text)}
+.user-rl{font-size:10px;color:var(--muted)}
+.logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:10.5px;font-weight:600;transition:all 0.2s}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{padding:13px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:var(--shadow);gap:14px}
+.topbar-left{min-width:0}
+.breadcrumb{display:flex;align-items:center;gap:5px;font-size:10.5px;margin-bottom:2px;color:var(--muted);flex-wrap:wrap}
+.breadcrumb a{color:var(--muted);text-decoration:none}
+.breadcrumb a:hover{color:var(--accent)}
+.breadcrumb .sep{color:#b8cad8}
+.page-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);line-height:1.2}
+.topbar-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+
+.content{padding:20px 24px;overflow:auto;flex:1;}
+.btn{border:none;border-radius:8px;padding:8px 15px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;display:inline-flex;align-items:center;gap:6px}.btn-primary{background:var(--green);color:#fff}.btn-primary:hover{background:var(--green2)}.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--soft)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{padding:4px 10px;font-size:11px;border-radius:6px;}
+.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{background:#991b1b;}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;}
+.card-head{padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface3);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-weight:700;font-size:14px;color:var(--text);}
+.table-responsive{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+th{background:var(--surface2);padding:12px 16px;text-align:left;font-weight:700;color:var(--soft);text-transform:uppercase;font-size:10px;letter-spacing:.05em;border-bottom:2px solid var(--border);white-space:nowrap;}
+td{padding:12px 16px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top;}
+tr:hover td{background:var(--surface3);}
+.empty-state{padding:40px;text-align:center;color:var(--muted);font-size:13px;}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(5,18,38,0.6);backdrop-filter:blur(5px);z-index:2000;display:none;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.add-modal-box{background:var(--surface);width:90%;max-width:700px;max-height:90vh;border-radius:16px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;overflow:hidden;animation:fadeUp 0.2s ease;}
+.modal-head{padding:18px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0}.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800}.modal-sub{font-size:11.5px;color:var(--muted);margin-top:3px}.modal-close{width:34px;height:34px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:15px}.modal-body{padding:22px 28px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;flex:1}.section-title{padding-bottom:8px;border-bottom:1px solid var(--border);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.fg2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:flex;flex-direction:column;gap:5px}.field label{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}.req{color:var(--red)}.field input,.field textarea,.field select{border:1.5px solid var(--border);border-radius:10px;padding:9px 13px;font-size:13px;color:var(--text);background:var(--surface);font-family:'Plus Jakarta Sans',sans-serif;outline:none;width:100%}.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(5,150,105,.1)}.modal-foot{padding:16px 28px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;background:var(--surface3);flex-shrink:0}.msg{font-size:12px;font-weight:700;color:var(--red);display:none;padding:8px 12px;background:rgba(185,28,28,.06);border-radius:8px;border:1px solid rgba(185,28,28,.15);margin-right:auto}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+.badge{padding:4px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+.badge.pending{background:rgba(217,119,6,0.15);color:#b45309;border:1px solid rgba(217,119,6,0.3);}
+.badge.open{background:rgba(0,104,181,0.15);color:#0068b5;border:1px solid rgba(0,104,181,0.3);}
+.badge.closed,.badge.completed{background:rgba(5,150,105,0.15);color:#059669;border:1px solid rgba(5,150,105,0.3);}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-wrap">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="logo-text">SchillerIndia<span>Services Portal</span></div>
+    </div>
+  </div>
+  <div style="padding:7px 12px 0;"><span class="pt-badge" style="margin:8px 12px 0;padding:3px 10px;border-radius:20px;font-size:9.5px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;display:inline-block;background:rgba(91,33,182,0.12);color:#7c3aed;border:1px solid rgba(91,33,182,0.22);">&#9733; Product Team</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-sec">My Dashboard</div>
+    <a class="nav-item" href="pt-dashboard.html"><span class="ico">&#128202;</span> Dashboard</a>
+    <div class="nav-sec">Service Records</div>
+    <a class="nav-item" href="ptcall.html"><span class="ico">&#128222;</span> Call Register</a>
+    <a class="nav-item" href="ptclose.html"><span class="ico">&#9989;</span> Closed Calls</a>
+    <a class="nav-item" href="ptour.html"><span class="ico">&#128663;</span> Tour Summary</a>
+    <a class="nav-item" href="ptdw.html"><span class="ico">&#128197;</span> Daily Work</a>
+    <a class="nav-item active" href="ptpa.html"><span class="ico">&#128221;</span> Pending Activity</a>
+    <div class="nav-sec">Inventory</div>
+    <a class="nav-item" href="ptbir.html"><span class="ico">&#128203;</span> BIR LIST</a>
+    <a class="nav-item" href="ptcbir.html"><span class="ico">&#128193;</span> Closed BIR</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="user-av" id="user-av" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#5b21b6,#7c3aed);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;">K</div>
+      <div>
+        <div class="user-nm" id="user-nm" style="font-size:12px;font-weight:600;color:var(--text);">User</div>
+        <div class="user-rl" id="user-rl" style="font-size:10px;color:var(--muted);">Product Team Engineer</div>
+      </div>
+      <button class="logout-btn" onclick="logout()" style="margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:10.5px;font-weight:600;transition:all 0.2s;">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="breadcrumb"><a href="pt-dashboard.html">Dashboard</a><span class="sep">&#8250;</span><span>Records</span><span class="sep">&#8250;</span><span>Pending Activity</span></div>
+      <div class="page-title">Pending Activity</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-outline" onclick="fetchData()">&#10227; Refresh</button>
+      <button class="btn btn-primary" onclick="openModal()">&#43; Add Activity</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Activity List</div>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>SC Engineer</th>
+              <th>Initiated Date</th>
+              <th>Activity</th>
+              <th>Description</th>
+              <th>Responsible</th>
+              <th>Pending From</th>
+              <th>Target Date</th>
+              <th>Remarks</th>
+              <th>SC Incharge Remarks</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <!-- Data will be loaded here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="modal-overlay" id="app-modal">
+  <div class="add-modal-box">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="modal-title">&#128221; Add Pending Activity</div>
+        <div class="modal-sub">Create or update a pending activity record</div>
+      </div>
+      <button class="modal-close" type="button" onclick="closeModal()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="entry-id">
+      
+      <div class="fg2">
+        <div class="field"><label>SC Engineer <span class="req">*</span></label><input type="text" id="f-engineer" readonly style="background:var(--surface2);"></div>
+        <div class="field"><label>Initiated Date <span class="req">*</span></label><input type="date" id="f-initiated"></div>
+      </div>
+
+      <div class="field"><label>Activity <span class="req">*</span></label><input type="text" id="f-activity" placeholder="Brief activity name..."></div>
+      <div class="field"><label>Description</label><textarea id="f-description" rows="2" placeholder="Details..."></textarea></div>
+
+      <div class="fg2">
+        <div class="field"><label>Responsible</label><input type="text" id="f-responsible"></div>
+        <div class="field"><label>Pending From</label><input type="date" id="f-pending-from"></div>
+      </div>
+
+      <div class="fg2">
+        <div class="field"><label>Target Date</label><input type="date" id="f-target-date"></div>
+        <div class="field"><label>Status <span class="req">*</span></label>
+          <select id="f-status">
+            <option value="Pending">Pending</option>
+            <option value="Open">Open</option>
+            <option value="Completed">Completed</option>
+            <option value="Closed">Closed</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field"><label>Remarks</label><input type="text" id="f-remarks"></div>
+      <div class="field"><label>SC Incharge Remarks</label><input type="text" id="f-incharge-remarks"></div>
+    </div>
+    <div class="modal-foot">
+      <div class="msg" id="modal-msg"></div>
+      <button class="btn btn-outline" type="button" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" type="button" id="save-btn" onclick="saveData()">&#128190; Save Entry</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentData = [];
+
+(function init(){
+  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  const name = u.name || 'Employee';
+  
+  const els = ['user-nm', 'tb-name'];
+  els.forEach(id => { const el = document.getElementById(id); if(el) el.textContent = name; });
+  
+  const avs = ['user-av', 'tb-avatar'];
+  avs.forEach(id => { const el = document.getElementById(id); if(el) el.textContent = name.charAt(0).toUpperCase(); });
+  
+  const rls = ['user-rl', 'tb-role'];
+  rls.forEach(id => { const el = document.getElementById(id); if(el) el.textContent = u.designation || 'Product Team Engineer'; });
+  
+  fetchData();
+})();
+
+function hdrs(){ return {"Content-Type":"application/json", "Authorization":"Bearer "+(localStorage.getItem("schiller_token")||"")}; }
+
+async function fetchData() {
+  try {
+    const res = await fetch("/api/ptpa", { headers: hdrs() });
+    if(res.status === 401 || res.status === 403) {
+      window.location.href = "login.html"; return;
+    }
+    const data = await res.json();
+    if(res.ok) { 
+      currentData = Array.isArray(data) ? data : []; 
+      renderTable();
+    }
+  } catch(e) { console.error(e); }
+}
+
+function renderTable() {
+  const tbody = document.getElementById('table-body');
+  if(!currentData.length){
+    tbody.innerHTML = `<tr><td colspan="11" class="empty-state">No pending activities found.</td></tr>`;
+    return;
+  }
+  
+  tbody.innerHTML = currentData.map(t => {
+    let statCls = 'pending';
+    const s = (t.status||'').toLowerCase();
+    if(s==='open') statCls='open';
+    if(s==='closed'||s==='completed') statCls='closed';
+    
+    return `<tr>
+      <td><b>${esc(t.scEngineer)}</b></td>
+      <td>${formatDate(t.initiatedDate)}</td>
+      <td><b>${esc(t.activity)}</b></td>
+      <td>${esc(t.description)}</td>
+      <td>${esc(t.responsible)}</td>
+      <td>${formatDate(t.pendingFrom)}</td>
+      <td>${formatDate(t.targetDate)}</td>
+      <td>${esc(t.remarks)}</td>
+      <td>${esc(t.scInchargeRemarks)}</td>
+      <td><span class="badge ${statCls}">${esc(t.status)}</span></td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="editData('${t._id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteData('${t._id}')">Del</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function openModal(){ 
+  clearForm(); 
+  document.getElementById('modal-title').innerHTML = '&#128221; Add Pending Activity';
+  const u = JSON.parse(localStorage.getItem('schiller_user') || '{}');
+  document.getElementById('f-engineer').value = u.name || 'Employee';
+  document.getElementById('f-initiated').value = new Date().toISOString().split('T')[0];
+  document.getElementById('app-modal').classList.add('open'); 
+}
+
+function closeModal(){ document.getElementById('app-modal').classList.remove('open'); }
+function clearForm(){ 
+  ['entry-id','f-initiated','f-activity','f-description','f-responsible','f-pending-from','f-target-date','f-remarks','f-incharge-remarks'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  }); 
+  document.getElementById('f-status').value='Pending';
+  showMsg(''); 
+}
+
+function editData(id){
+  const doc = currentData.find(x => x._id === id);
+  if(!doc) return;
+  clearForm();
+  document.getElementById('modal-title').innerHTML = '&#128394;&#65039; Edit Pending Activity';
+  document.getElementById('entry-id').value = doc._id;
+  document.getElementById('f-engineer').value = doc.scEngineer || '';
+  document.getElementById('f-initiated').value = doc.initiatedDate || '';
+  document.getElementById('f-activity').value = doc.activity || '';
+  document.getElementById('f-description').value = doc.description || '';
+  document.getElementById('f-responsible').value = doc.responsible || '';
+  document.getElementById('f-pending-from').value = doc.pendingFrom || '';
+  document.getElementById('f-target-date').value = doc.targetDate || '';
+  document.getElementById('f-status').value = doc.status || 'Pending';
+  document.getElementById('f-remarks').value = doc.remarks || '';
+  document.getElementById('f-incharge-remarks').value = doc.scInchargeRemarks || '';
+  document.getElementById('app-modal').classList.add('open'); 
+}
+
+async function saveData(){
+  const payload = {
+    scEngineer: val('f-engineer'),
+    initiatedDate: val('f-initiated'),
+    activity: val('f-activity'),
+    description: val('f-description'),
+    responsible: val('f-responsible'),
+    pendingFrom: val('f-pending-from'),
+    targetDate: val('f-target-date'),
+    status: val('f-status'),
+    remarks: val('f-remarks'),
+    scInchargeRemarks: val('f-incharge-remarks'),
+  };
+  
+  if(!payload.initiatedDate || !payload.activity || !payload.status){ 
+    showMsg('Required: Initiated Date, Activity, and Status.'); return; 
+  }
+  
+  const id = val('entry-id');
+  const method = id ? 'PUT' : 'POST';
+  const url = id ? '/api/ptpa/'+id : '/api/ptpa';
+  
+  const btn = document.getElementById('save-btn'); 
+  btn.disabled=true; btn.textContent='Saving...';
+  
+  try {
+    const res = await fetch(url, { method, headers: hdrs(), body: JSON.stringify(payload) });
+    const json = await res.json().catch(()=>{});
+    if(!res.ok) throw new Error(json?.message || "HTTP "+res.status);
+    
+    closeModal(); 
+    await fetchData(); 
+  } catch(e) { 
+    showMsg("Save failed: "+e.message); 
+  } finally { 
+    btn.disabled=false; btn.innerHTML="&#128190; Save Entry"; 
+  }
+}
+
+async function deleteData(id){ 
+  if(!confirm("Are you sure you want to delete this record?")) return; 
+  try {
+    await fetch("/api/ptpa/"+id, { method: "DELETE", headers: hdrs() });
+    await fetchData(); 
+  } catch(e) { alert("Failed to delete"); }
+}
+
+function val(id){ return (document.getElementById(id)?.value || "").trim(); }
+function showMsg(m){ const el=document.getElementById("modal-msg"); if(!el) return; el.textContent=m; el.style.display=m?"block":"none"; }
+function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function formatDate(dStr){
+  if(!dStr) return '--';
+  try{ return new Date(dStr).toLocaleDateString('en-IN'); } catch(e){ return dStr; }
+}
+function logout(){ localStorage.clear(); window.location.href="login.html"; }
+
+document.getElementById("app-modal").addEventListener("click", e => {
+  if (e.target.id === "app-modal") closeModal();
+});
+</script>
+</body>
+</html>
