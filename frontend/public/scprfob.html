@@ -692,7 +692,7 @@ let ALL_DIV_MODELS = [];   // {divisionName, supplier, model} objects
 const REGION_FALLBACK = ['North','East','West 1','West 2','South 1 TN','South 1 KL','South 2 KA','South 2 AP/TL','Puducherry','CG'];
 
 // -- INIT ------------------------------------------------------------------
-(function init(){
+(async function init(){
   const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   CURRENT_USER = u || {};
   if(u.name){
@@ -703,10 +703,10 @@ const REGION_FALLBACK = ['North','East','West 1','West 2','South 1 TN','South 1 
   (document.getElementById('topbar-date')||{}).textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   applyMailAckState();
   loadBranchOptions();
-  loadDivisionOptions();
   loadRegionOptions();
   loadDealerOptions();
   loadEngineerOptions();
+  await loadDivisionOptions();
   loadSupplierModelOptions();
   hydrateExactPrfObOptions();
   loadData();
@@ -891,19 +891,32 @@ function onBranchChange(){ syncEngineerOptions(); }
 
 // -- LOAD SUPPLIER & MODEL (from division models) -------------------------
 async function loadSupplierModelOptions(){
-  await new Promise(r => setTimeout(r, 500));
   ALL_DIV_MODELS = DIVISION_OPTIONS.flatMap(d =>
-    (d.models || []).map(m => ({ ...m, divisionName: d.name }))
+    (d.models || []).map(m => ({
+      supplier: String(m.supplier || m.supplierName || m.vendor || '').trim(),
+      model: String(m.model || m.modelName || m.name || '').trim(),
+      desc: String(m.desc || m.description || '').trim(),
+      divisionName: d.name,
+      divisionDisplayName: d.displayName || '',
+    }))
   );
   SUPPLIER_OPTIONS = [...new Set(ALL_DIV_MODELS.map(m => m.supplier).filter(Boolean))];
   MODEL_OPTIONS = [...new Set(ALL_DIV_MODELS.map(m => m.model).filter(Boolean))];
   syncSupplierOptions();
 }
 
+function sameText(a,b){
+  return String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
+}
+
+function divisionMatchesModel(item, division){
+  return !division || sameText(item.divisionName, division) || sameText(item.divisionDisplayName, division);
+}
+
 function syncSupplierOptions(selectedValue = ''){
   const division = (document.getElementById('x-division') || {}).value || '';
   const pool = division
-    ? ALL_DIV_MODELS.filter(m => m.divisionName === division)
+    ? ALL_DIV_MODELS.filter(m => divisionMatchesModel(m, division))
     : ALL_DIV_MODELS;
   const candidates = [...new Set(pool.map(m => m.supplier).filter(Boolean))];
   const values = selectedValue ? [...new Set([...candidates, selectedValue])] : candidates;
@@ -921,7 +934,7 @@ function onSupplierChange(){
   const modelSel = document.getElementById('x-model');
   modelSel.innerHTML = '<option value="">Select Model</option>';
   const pool = division
-    ? ALL_DIV_MODELS.filter(m => m.divisionName === division)
+    ? ALL_DIV_MODELS.filter(m => divisionMatchesModel(m, division))
     : ALL_DIV_MODELS;
   if(!supplier){
     [...new Set(pool.map(m => m.model).filter(Boolean))].forEach(name => {
@@ -932,7 +945,7 @@ function onSupplierChange(){
     return;
   }
   const filtered = [...new Set(
-    pool.filter(m => m.supplier === supplier).map(m => m.model).filter(Boolean)
+    pool.filter(m => sameText(m.supplier, supplier)).map(m => m.model).filter(Boolean)
   )];
   filtered.forEach(name => {
     const opt = document.createElement('option');
