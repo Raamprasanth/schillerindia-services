@@ -55,6 +55,8 @@ const estimationPendingSchema = new mongoose.Schema(
     obDestination:  { type: String, trim: true, default: '' },
     obComponents:   { type: String, trim: true, default: '' },
     obTypeReport:   { type: String, trim: true, default: '' },
+    obd:            { type: String, trim: true, default: '' },
+    obDetails:      { type: String, trim: true, default: '' },
 
     // ── Estimation Details (filled in empestpend.html) ───
     estNo:        { type: String, trim: true, default: '' },
