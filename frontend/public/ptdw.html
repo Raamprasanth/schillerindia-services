@@ -325,6 +325,16 @@ tr:hover td{background:var(--surface3);}
 .kb-foot{margin-top:14px;padding-top:12px;border-top:1px dashed var(--border);display:flex;justify-content:space-between;align-items:center;}
 .kb-user{font-size:10.5px;color:var(--muted);display:flex;align-items:center;gap:5px;}
 .kb-user span{background:var(--surface2);padding:2px 6px;border-radius:6px;color:var(--soft);font-weight:600;}
+.kb-view{background:rgba(0,104,181,0.08);color:var(--accent);border:1px solid rgba(0,104,181,0.15);height:30px;border-radius:7px;padding:0 12px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;font-size:11.5px;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;}
+.kb-view:hover{background:var(--accent);color:#fff;}
+.view-overlay{position:fixed;inset:0;background:rgba(5,18,38,0.45);backdrop-filter:blur(4px);z-index:2100;display:none;align-items:center;justify-content:center;padding:20px}
+.view-overlay.open{display:flex}
+.view-box{background:var(--surface);width:min(680px,96vw);max-height:90vh;border-radius:16px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;overflow:hidden}
+.view-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.view-detail{border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--surface3)}
+.view-detail.full{grid-column:1/-1}
+.view-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:5px}
+.view-value{font-size:13.5px;font-weight:700;color:var(--text);white-space:pre-wrap;line-height:1.5}
 </style>
 </head>
 <body>
@@ -429,6 +439,14 @@ tr:hover td{background:var(--surface3);}
       <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:5px;" id="add-row-btn" onclick="addDwRow()">+ Add Row</button>
     </div>
     <div class="modal-foot"><div class="msg" id="dw-msg"></div><button class="btn btn-outline" onclick="closeDwModal()">Cancel</button><button class="btn btn-primary" id="save-btn" onclick="saveDw()">&#128190; Save Entry</button></div>
+  </div>
+</div>
+
+<div class="view-overlay" id="dw-view-overlay">
+  <div class="view-box">
+    <div class="modal-head"><div><div class="modal-title">Daily Work Detail</div><div class="modal-sub" id="view-sub">Read-only entry</div></div><button class="modal-close" onclick="closeDwView()">&#10005;</button></div>
+    <div class="modal-body" id="dw-view-body"></div>
+    <div class="modal-foot"><button class="btn btn-outline" onclick="closeDwView()">Close</button></div>
   </div>
 </div>
 
@@ -573,14 +591,30 @@ function renderKanban() {
       <div class="kb-activity">${esc(t.activity||"")}</div>
       <div class="kb-foot">
         <div class="kb-user">By <span>${esc(t.addedBy||"User")}</span></div>
-        <div style="display:flex;gap:6px;">
-          <button class="kb-edit" onclick="editDw(` + "`" + `${t._id}` + "`" + `)" title="Edit Entry">&#9998;</button>
-          <button class="kb-del" onclick="deleteDw(` + "`" + `${t._id}` + "`" + `)" title="Delete Entry">&#128465;</button>
-        </div>
+        <button class="kb-view" onclick="viewDw(` + "`" + `${t._id}` + "`" + `)" title="View Entry">View</button>
       </div>
     </div>
   `).join("");
 }
+
+function viewDw(id){
+  const entry = DW_LIST.find(t => t._id === id);
+  if(!entry) return;
+  const date = entry.date ? new Date(entry.date).toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}) : "-";
+  document.getElementById("view-sub").textContent = date;
+  document.getElementById("dw-view-body").innerHTML = `
+    <div class="view-detail-grid">
+      <div class="view-detail"><div class="view-label">Date</div><div class="view-value">${esc(date)}</div></div>
+      <div class="view-detail"><div class="view-label">Team / Division</div><div class="view-value">${esc(entry.team || "-")}</div></div>
+      <div class="view-detail"><div class="view-label">From</div><div class="view-value">${esc(entry.fromTime || "-")}</div></div>
+      <div class="view-detail"><div class="view-label">To</div><div class="view-value">${esc(entry.toTime || "-")}</div></div>
+      <div class="view-detail"><div class="view-label">Total</div><div class="view-value">${esc(entry.dayTotal || "-")}</div></div>
+      <div class="view-detail"><div class="view-label">Added By</div><div class="view-value">${esc(entry.addedBy || "User")}</div></div>
+      <div class="view-detail full"><div class="view-label">Activity</div><div class="view-value">${esc(entry.activity || "-")}</div></div>
+    </div>`;
+  document.getElementById("dw-view-overlay").classList.add("open");
+}
+function closeDwView(){ document.getElementById("dw-view-overlay").classList.remove("open"); }
 
 function openDwModal(){ 
   editId = null;
@@ -771,6 +805,9 @@ function logout(){ sessionStorage.clear(); localStorage.clear(); window.location
 
 document.getElementById("dw-overlay").addEventListener("click", e => {
   if (e.target.id === "dw-overlay") closeDwModal();
+});
+document.getElementById("dw-view-overlay").addEventListener("click", e => {
+  if (e.target.id === "dw-view-overlay") closeDwView();
 });
 </script>
 </body>
