@@ -601,7 +601,7 @@ function openEdit(id) {
   document.getElementById('f-componentsUsed').value  = d.componentsUsed || '';
   document.getElementById('f-finalRemarks').value    = d.finalRemarks || '';
   document.getElementById('f-repairedDate').value  = d.repairedDate ? d.repairedDate.split('T')[0] : '';
-  document.getElementById('f-remarks').value       = d.remarks || '';
+  // document.getElementById('f-remarks') removed
   lockDateRules();
   document.getElementById('modal-form').classList.add('open');
 }
@@ -610,7 +610,7 @@ function closeModal() { document.getElementById('modal-form').classList.remove('
 
 function clearForm() {
   ['f-repairedBy','f-entryDate','f-division2','f-model','f-partNumber',
-   'f-description','f-problemObserved','f-componentsUsed','f-finalRemarks','f-repairedDate','f-remarks','f-status'
+   'f-description','f-problemObserved','f-componentsUsed','f-finalRemarks','f-repairedDate','f-status'
   ].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
 }
 
@@ -625,7 +625,7 @@ async function saveRecord() {
   const componentsUsed  = document.getElementById('f-componentsUsed').value.trim();
   const finalRemarks    = document.getElementById('f-finalRemarks').value.trim();
   const repairedDate    = document.getElementById('f-repairedDate').value;
-  const remarks         = document.getElementById('f-remarks').value.trim();
+  const remarks         = ''; // field removed
   const status          = document.getElementById('f-status').value;
   if (!repairedBy || !entryDate || !division || !problemObserved) {
     showToast('Please fill: Repaired By, Entry Date, Division, Problem Observed.', 'err'); return;
