@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const RTUR = require('../models/rturModel');
 const RTOB = require('../models/RTOB');
 const RTFRN = require('../models/RTFRN.JS');
+const EmpFRN = require('../models/EmpFRN');
 const RTCRL = require('../models/rtcrlModel');
 const Service = require('../models/Service');
 const EstimationPending = require('../models/EstimationPending');
@@ -15,6 +16,8 @@ router.use(protect, repairTeamOrEmployeeOrAdmin);
 router.post('/:id', async (req, res) => {
   try {
     const serviceId = req.params.id;
+    const problemObserved = (req.body && req.body.problemObserved) ? String(req.body.problemObserved).trim() : '';
+
     let service = await Service.findById(serviceId);
     let isEstimation = false;
 
@@ -43,18 +46,20 @@ router.post('/:id', async (req, res) => {
       crlFilter.$or.push({ defGirNo: { $regex: new RegExp('^' + escapeRegex(cleanGir) + '$', 'i') } });
     }
     
-    // Find the deleted source ID from RTCRL if possible
+    // Find the RTCRL record to carry over all its fields
     let deletedSourceId = null;
     let deletedSourceCollection = null;
     let crlCategory = 'UR';
+    let crlDoc = null;
     
     if (crlFilter.$or.length > 0) {
       const crlDocs = await RTCRL.find(crlFilter).sort({ closedDate: -1 }).limit(1);
       if (crlDocs.length > 0) {
-        deletedSourceId = crlDocs[0].sourceId;
-        deletedSourceCollection = crlDocs[0].sourceCollection;
-        crlCategory = crlDocs[0].category || 'UR';
-        await RTCRL.findByIdAndDelete(crlDocs[0]._id);
+        crlDoc = crlDocs[0];
+        deletedSourceId = crlDoc.sourceId;
+        deletedSourceCollection = crlDoc.sourceCollection;
+        crlCategory = crlDoc.category || 'UR';
+        await RTCRL.findByIdAndDelete(crlDoc._id);
       }
     }
 
@@ -62,17 +67,14 @@ router.post('/:id', async (req, res) => {
     service.rturCompleted = false;
     service.rtfrnCompleted = false;
     service.rtobCompleted = false;
-    
-    if (service.repairStatus) {
-      service.repairStatus = 're repair product';
-    } else {
-      service.repairStatus = 're repair product';
-    }
-    
-    service.finalRemarks = (service.finalRemarks ? service.finalRemarks + ' | ' : '') + 'Re-repair requested';
+    service.repairStatus = 're repair product';
+
+    let remarkParts = ['Re-repair requested'];
+    if (problemObserved) remarkParts.push('Problem Observed: ' + problemObserved);
+    service.finalRemarks = (service.finalRemarks ? service.finalRemarks + ' | ' : '') + remarkParts.join(' | ');
     await service.save({ validateBeforeSave: false });
 
-    // 3. Re-create the RTUR/RTFRN/RTOB record so the repair team sees it again
+    // 3. Re-create the RTUR/RTFRN/RTOB record with all fields restored from RTCRL
     const ModelToRecreate = 
       deletedSourceCollection === 'rtob' ? RTOB :
       deletedSourceCollection === 'rtfrn' ? RTFRN : RTUR;
@@ -87,23 +89,47 @@ router.post('/:id', async (req, res) => {
     const mapDiv = { 'PATIENT MONITOR':'PATIENT MONITORS','PATIENT MONITORS':'PATIENT MONITORS','SAG':'SAG','VENTILATOR':'VENTILATOR','DEFIBRILLATOR':'DEFIBRILLATOR','ECG':'ECG','SYRINGE PUMP':'SYRINGE PUMP','INFUSION PUMP':'INFUSION PUMP','ULTRASOUND':'ULTRASOUND','ANAESTHESIA':'ANAESTHESIA' };
     const safeDivision = mapDiv[rawDiv] || 'OTHER';
 
-    // Set `_id` back to the deletedSourceId if possible, else let mongoose generate one
+    // Build final remarks for the new doc
+    let newDocRemarks = 'Re-repair requested';
+    if (problemObserved) newDocRemarks += ' | Problem Observed: ' + problemObserved;
+
+    // Find matching EmpFRN if category is PFRN/rtfrn
+    let sourceEmpFrnId = null;
+    if (deletedSourceCollection === 'rtfrn') {
+      const empfrnDoc = await EmpFRN.findOne({ serviceId: service._id }).lean();
+      if (empfrnDoc) {
+        sourceEmpFrnId = empfrnDoc._id;
+      }
+    }
+
+    // Carry over all view-tab fields from RTCRL so no data is lost
     const newDocPayload = {
-      entryDate: service.rturSentAt || service.rtfrnSentAt || service.rtobSentAt || new Date(),
-      division: safeDivision,
-      scRefNo: scRefNo || '',
-      defGirNo: defGirNo || '',
-      category: category,
-      model: service.model || '',
-      defBrdModName: service.defMod || '',
-      status: 'pending',
-      repairStatus: 're repair product',
-      finalRemarks: 'Re-repair requested',
-      submittedBy: req.user?.name || '',
-      submittedAt: new Date(),
-      sourceServiceId: serviceId,
-      doi: service.doi || '',
-      fieldRemarks: service.fieldRemarks || ''
+      entryDate:        service.rturSentAt || service.rtfrnSentAt || service.rtobSentAt || new Date(),
+      division:         safeDivision,
+      scRefNo:          scRefNo || '',
+      defGirNo:         defGirNo || '',
+      category:         category,
+      model:            (crlDoc && crlDoc.model)            || service.model       || '',
+      defBrdModName:    (crlDoc && crlDoc.defBrdModName)     || service.defMod      || '',
+      techRemarks:      (crlDoc && crlDoc.techRemarks)       || '',
+      repairRemarks:    (crlDoc && crlDoc.repairRemarks)     || '',
+      compUsedToRepair: (crlDoc && (crlDoc.compUsedToRepair || crlDoc.components)) || '',
+      cost:             (crlDoc && crlDoc.cost)              || '',
+      timeTaken:        (crlDoc && crlDoc.timeTaken)         || '',
+      doi:              (crlDoc && crlDoc.doi)               || service.doi         || '',
+      repairedBy:       (crlDoc && crlDoc.repairedBy)        || '',
+      repairedDate:     (crlDoc && crlDoc.closedDate)        || null,
+      problemObserved:  problemObserved,
+      status:           'pending',
+      repairStatus:     're repair product',
+      finalRemarks:     newDocRemarks,
+      fieldRemarks:     (crlDoc && crlDoc.fieldRemarks)      || service.fieldRemarks || '',
+      submittedBy:      req.user?.name || '',
+      submittedAt:      new Date(),
+      sourceServiceId:  serviceId,
+      sourceEmpFrnId:   sourceEmpFrnId,
+      sourceId:         serviceId,
+      sourceCollection: isEstimation ? 'estimation' : 'service',
     };
 
     if (deletedSourceId && mongoose.Types.ObjectId.isValid(deletedSourceId)) {
@@ -204,6 +230,15 @@ router.post('/crl/:id', async (req, res) => {
     let newDocRemarks = 'Re-repair requested';
     if (problemObserved) newDocRemarks += ' | Problem Observed: ' + problemObserved;
 
+    // Find matching EmpFRN if category is PFRN/rtfrn
+    let sourceEmpFrnId = null;
+    if (deletedSourceCollection === 'rtfrn') {
+      const empfrnDoc = await EmpFRN.findOne({ serviceId: service._id }).lean();
+      if (empfrnDoc) {
+        sourceEmpFrnId = empfrnDoc._id;
+      }
+    }
+
     // Carry over all view-tab fields from RTCRL so no data is lost
     const newDocPayload = {
       entryDate:        service.rturSentAt || service.rtfrnSentAt || service.rtobSentAt || new Date(),
@@ -231,6 +266,9 @@ router.post('/crl/:id', async (req, res) => {
       submittedBy:      req.user?.name           || '',
       submittedAt:      new Date(),
       sourceServiceId:  service._id,
+      sourceEmpFrnId:   sourceEmpFrnId,
+      sourceId:         service._id,
+      sourceCollection: isEstimation ? 'estimation' : 'service',
     };
 
     if (crlDoc.sourceId) {

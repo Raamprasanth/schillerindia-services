@@ -598,7 +598,6 @@ function renderTable() {
         <td style="font-size:11.5px;">${esc(d.repairedBy || '-')}</td>
         <td>
           <button class="btn-xs view" onclick="openDetail('${id}')">View</button>
-          <button class="btn-xs repair-state repair-complete" onclick="openRecheckModal('${id}')" title="Repair completed (RC) - Click to verify" style="margin-left:4px; padding:3px 8px; min-width:32px;">RC</button>
         </td>
       </tr>`;
     }).join('');
@@ -832,7 +831,8 @@ async function broadcastProblemToRepairTeam(d, problemText) {
       headers: authHeaders()
     });
     if (!rRes.ok) return;
-    const recipients = await rRes.json();
+    const json = await rRes.json();
+    const recipients = json.data || json || [];
     if (!Array.isArray(recipients) || recipients.length === 0) return;
 
     const senderName = EMP_NAME || 'Repair Team';

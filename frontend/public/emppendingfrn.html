@@ -1880,7 +1880,7 @@ let _rpCurrentId=null;
 function openRepairModal(id){
   const current=FRN_DATA.find(x=>(x._id||x.id)===id);
   if(!current){showToast('Record not found.','err');return;}
-  if(current.rtfrnCompleted){showToast('Repair completed - entry moved to RTCRL.','info');return;}
+  if(current.rtfrnCompleted){openRecheckModal(id);return;}
   if(current.rtfrnSent){showToast('Already sent to RT FRN.','info');return;}
   _rpCurrentId=id;
   document.getElementById('rp-tech-remarks').value='';
@@ -2466,56 +2466,199 @@ function logout(){sessionStorage.clear(); localStorage.clear();window.location.h
 </script>
 <script src="tab-fix.js"></script>
 
-<!-- RECHECK MODAL -->
+<!-- RECHECK MODAL (WF / NW) -->
 <div class="update-panel" id="recheck-modal" style="z-index: 9999; display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center;">
-  <div style="background: var(--surface); padding: 24px; border-radius: 12px; width: 340px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
-    <h3 style="margin-top:0; font-size: 16px; color: var(--text);">Re-check Repair Status</h3>
-    <p style="font-size: 13px; color: var(--soft); margin-bottom: 20px;">This item is marked as Repair Completed (RC). Please verify its status.</p>
-    <div style="display: flex; gap: 10px; justify-content: flex-end;">
-      <button class="btn btn-outline" style="flex:1;" onclick="closeRecheckModal()">WF (Working Fine)</button>
-      <button class="btn btn-danger" style="flex:1;" id="nw-btn">NW (Not Working)</button>
+  <div style="background: var(--surface); padding: 30px; border-radius: 16px; width: 400px; box-shadow: 0 12px 40px rgba(0,60,120,0.2); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 18px; position: relative;">
+    <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #059669, #dc2626); border-radius: 16px 16px 0 0;"></div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(5,150,105,0.1); display: flex; align-items: center; justify-content: center; font-size: 20px; color: #059669;">&#128269;</div>
+      <div>
+        <h3 style="font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--text); margin: 0 0 3px;">Recheck Repair Status</h3>
+        <p style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0;" id="recheck-scref-display">SC Ref: -</p>
+      </div>
     </div>
+    <div style="font-size: 13px; color: var(--soft); line-height: 1.5; background: var(--surface3); padding: 12px; border-radius: 8px; border: 1px solid var(--border2);">
+      This item is marked as <strong>Repair Completed (RC)</strong>. Verify: is it <strong>Working Fine (WF)</strong> or <strong>Not Working (NW)</strong>?
+    </div>
+    <div style="display: flex; gap: 12px;">
+      <button class="btn btn-outline" style="flex:1; justify-content:center; border-color: #059669; color: #059669;" onclick="handleWF()">WF (Working Fine)</button>
+      <button class="btn" style="flex:1; justify-content:center; background: #dc2626; color: #fff; box-shadow: 0 2px 8px rgba(185,28,28,0.3);" onclick="handleNW()">NW (Not Working)</button>
+    </div>
+    <button onclick="closeRecheckModal()" style="position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 16px; color: var(--muted); cursor: pointer;" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='var(--muted)'">&times;</button>
   </div>
 </div>
+
+<!-- PROBLEM OBSERVED MODAL -->
+<div class="update-panel" id="problem-modal" style="z-index: 10000; display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); align-items: center; justify-content: center;">
+  <div style="background: var(--surface); padding: 30px; border-radius: 16px; width: 480px; box-shadow: 0 12px 40px rgba(0,60,120,0.25); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 18px; position: relative;">
+    <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #dc2626, #f97316); border-radius: 16px 16px 0 0;"></div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="width: 42px; height: 42px; border-radius: 50%; background: rgba(185,28,28,0.1); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink:0;">&#9888;&#65039;</div>
+      <div>
+        <h3 style="font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--text); margin: 0 0 3px;">Problem Observed &mdash; NW Report</h3>
+        <p style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0;" id="problem-scref-display">SC Ref: -</p>
+      </div>
+    </div>
+    <div style="background: rgba(185,28,28,0.06); border: 1px solid rgba(185,28,28,0.18); border-radius: 9px; padding: 11px 14px; font-size: 12.5px; color: var(--soft); line-height: 1.55;">
+      &#128308; You are about to send this item <strong>back to the repair team</strong>. Please describe the problem so the team knows what to fix.
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <label style="font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em;">Problem Observed <span style="color:#dc2626;">*</span></label>
+      <textarea id="problem-text" rows="4" style="border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 13px; font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); background: var(--surface); outline: none; width: 100%; resize: vertical; transition: border-color 0.2s; box-sizing: border-box;" placeholder="Describe the issue in detail..."
+        oninput="this.style.borderColor='var(--border)'; document.getElementById('problem-err').style.display='none';"></textarea>
+      <span id="problem-err" style="display:none; font-size: 11px; color: #dc2626; font-weight: 600;">&#9888; Please describe the problem before confirming.</span>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <button class="btn btn-outline" style="flex:1; justify-content:center;" onclick="closeProblemModal()">&#8617; Cancel</button>
+      <button class="btn" id="confirm-revert-btn" style="flex:1; justify-content:center; background: #dc2626; color: #fff; box-shadow: 0 2px 8px rgba(185,28,28,0.3);" onclick="confirmNWRevert()">&#128228; Confirm &amp; Revert</button>
+    </div>
+    <button onclick="closeProblemModal()" style="position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 16px; color: var(--muted); cursor: pointer;" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='var(--muted)'">&times;</button>
+  </div>
+</div>
+
 <script>
 let currentRecheckId = null;
+let currentRecheckRecord = null;
+
 function openRecheckModal(id) {
   currentRecheckId = id;
-  const modal = document.getElementById('recheck-modal');
-  if (modal) {
-    modal.style.display = 'flex';
+  currentRecheckRecord = FRN_DATA.find(x => (x._id || x.id) === id) || null;
+  if (currentRecheckRecord) {
+    document.getElementById('recheck-scref-display').textContent =
+      'SC Ref: ' + (currentRecheckRecord.scRno || currentRecheckRecord.scRefNo || currentRecheckRecord.defGir || '-');
   }
+  document.getElementById('recheck-modal').style.display = 'flex';
 }
+
 function closeRecheckModal() {
-  const modal = document.getElementById('recheck-modal');
-  if (modal) {
-    modal.style.display = 'none';
-  }
-  currentRecheckId = null;
+  document.getElementById('recheck-modal').style.display = 'none';
 }
-document.getElementById('nw-btn')?.addEventListener('click', async () => {
+
+function handleWF() {
+  if (typeof showToast === 'function') showToast('Verified: Item is Working Fine (WF). Status remains Repair Completed.', 'info');
+  closeRecheckModal();
+  currentRecheckId = null;
+  currentRecheckRecord = null;
+}
+
+function handleNW() {
   if (!currentRecheckId) return;
-  const btn = document.getElementById('nw-btn');
+  closeRecheckModal();
+  openProblemModal();
+}
+
+function openProblemModal() {
+  const d = currentRecheckRecord;
+  document.getElementById('problem-scref-display').textContent =
+    'SC Ref: ' + ((d && (d.scRno || d.scRefNo || d.defGir)) || '-');
+  document.getElementById('problem-text').value = '';
+  document.getElementById('problem-text').style.borderColor = 'var(--border)';
+  document.getElementById('problem-err').style.display = 'none';
+  document.getElementById('confirm-revert-btn').disabled = false;
+  document.getElementById('confirm-revert-btn').innerHTML = '&#128228; Confirm &amp; Revert';
+  document.getElementById('problem-modal').style.display = 'flex';
+}
+
+function closeProblemModal() {
+  document.getElementById('problem-modal').style.display = 'none';
+  currentRecheckId = null;
+  currentRecheckRecord = null;
+}
+
+async function confirmNWRevert() {
+  const problemText = (document.getElementById('problem-text').value || '').trim();
+  if (!problemText) {
+    document.getElementById('problem-text').style.borderColor = '#dc2626';
+    document.getElementById('problem-err').style.display = 'block';
+    return;
+  }
+
+  const btn = document.getElementById('confirm-revert-btn');
   btn.disabled = true;
-  btn.textContent = 'Processing...';
+  btn.innerHTML = '<span class="spin" style="margin-right:5px;"></span>Reverting...';
+
+  const idToRevert = currentRecheckId;
+  const recordSnapshot = currentRecheckRecord;
+
   try {
-    const res = await fetch(`${API || ''}/api/revert-repair/${currentRecheckId}`, {
+    const res = await fetch(`${API || ''}/api/revert-repair/${idToRevert}`, {
       method: 'POST',
-      headers: typeof authHeaders === 'function' ? authHeaders() : { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (sessionStorage.getItem('schiller_token')||'') }
+      headers: typeof authHeaders === 'function' ? authHeaders() : { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (sessionStorage.getItem('schiller_token') || '') },
+      body: JSON.stringify({ problemObserved: problemText })
     });
-    if (!res.ok) throw new Error('Failed to revert repair');
-    if (typeof showToast === 'function') showToast('Reverted to Repair Started (RS).', 'ok');
-    closeRecheckModal();
+    if (!res.ok) throw new Error('Failed to revert repair: HTTP ' + res.status);
+
+    if (typeof showToast === 'function') showToast('Reverted to Repair Started (RS). Problem reported to repair team.', 'ok');
+
+    // Broadcast problem to all repair team recipients
+    if (recordSnapshot) {
+      broadcastProblemToRepairTeam(recordSnapshot, problemText);
+    }
+
+    closeProblemModal();
     if (typeof loadData === 'function') loadData();
+    else if (typeof renderTable === 'function') {
+      FRN_DATA = FRN_DATA.filter(x => (x._id || x.id) !== idToRevert);
+      filtered = filtered.filter(x => (x._id || x.id) !== idToRevert);
+      updateStats();
+      renderTable();
+    }
   } catch (err) {
     console.error(err);
     if (typeof showToast === 'function') showToast('Error: ' + err.message, 'err');
     else alert('Error: ' + err.message);
-  } finally {
     btn.disabled = false;
-    btn.textContent = 'NW (Not Working)';
+    btn.innerHTML = '&#128228; Confirm &amp; Revert';
   }
-});
+}
+
+async function broadcastProblemToRepairTeam(d, problemText) {
+  try {
+    const hdr = typeof authHeaders === 'function' ? authHeaders() : { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (sessionStorage.getItem('schiller_token') || '') };
+    const division = (d.branch || d.reg || d.division || '').trim();
+    const params = new URLSearchParams({ team: 'repair_team' });
+    if (division) params.append('division', division);
+
+    const rRes = await fetch(`${API || ''}/api/service-messages/recipients?${params.toString()}`, { headers: hdr });
+    if (!rRes.ok) return;
+    const json = await rRes.json();
+    const recipients = json.data || json || [];
+    if (!Array.isArray(recipients) || recipients.length === 0) return;
+
+    const senderName = EMP_NAME || LOGGED_USER.name || 'Service Engineer';
+    const msgText =
+      `\u{1F534} NW Re-Repair Alert\n` +
+      `SC Ref: ${d.scRno || d.scRefNo || '-'}  |  DEF GIR: ${d.defGir || d.defGirNo || '-'}\n` +
+      `Model: ${d.model || '-'}  |  Division: ${division || '-'}\n` +
+      `\nProblem Observed:\n${problemText}\n` +
+      `\nReported by: ${senderName}`;
+
+    for (const recipient of recipients) {
+      const recipientId = recipient._id || recipient.id;
+      const recipientModel = recipient.model || 'RepairTeam';
+      if (!recipientId) continue;
+      try {
+        await fetch(`${API || ''}/api/service-messages/threads`, {
+          method: 'POST',
+          headers: hdr,
+          body: JSON.stringify({
+            recipientId: recipientId,
+            recipientModel: recipientModel,
+            division: division || 'General',
+            message: msgText
+          })
+        });
+      } catch (_) { /* non-fatal */ }
+    }
+  } catch (e) {
+    console.warn('[broadcastProblemToRepairTeam] Failed:', e.message);
+  }
+}
+
+// Close modals on overlay click
+document.getElementById('recheck-modal')?.addEventListener('click', e => { if (e.target === e.currentTarget) closeRecheckModal(); });
+document.getElementById('problem-modal')?.addEventListener('click', e => { if (e.target === e.currentTarget) closeProblemModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeRecheckModal(); closeProblemModal(); } });
 </script>
 </body>
 </html>
