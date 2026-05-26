@@ -288,53 +288,48 @@ async function deleteTour(id){ if(!confirm('Delete this tour summary?')) return;
 async function exportAllTourExcel(){
   if(!filteredTours.length){ alert('No tour summaries to export.'); return; }
   const items = filteredTours.slice().sort((a,b) => String(a.startDate||'').localeCompare(String(b.startDate||'')));
-  const data = items.map((t, i) => ({
-    "S.No": i+1,
-    "Tour Name": t.tourName || t.customerName || 'Tour Summary',
-    "Day": t.dayNo || 1,
-    "Start Date": fmtDate(t.startDate),
-    "Customer Name": t.customerName,
-    "Branch": t.branch,
-    "Model": t.model,
-    "Unit Status": t.unitStatus,
-    "Unit SL No": t.unitSlNo,
-    "Problem Reported": t.problemReported,
-    "Problem Observed": t.problemObserved,
-    "Action Taken": t.actionTaken,
-    "Added By": t.addedBy?.name || 'Unknown'
-  }));
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "All_Tours");
-  XLSX.writeFile(wb, "PT_Tour_Summary_Export.xlsx");
+  downloadTourWorkbook(items, 'PT_Tour_Summary_Export');
 }
 
 async function generateTourExcel(tourName){
   const sameTour = tours.filter(t => String(t.tourName || t.customerName || 'Tour Summary') === String(tourName));
   if(!sameTour.length){ alert('No tour days found.'); return; }
   const items = sameTour.sort((a,b) => (Number(a.dayNo||1)-Number(b.dayNo||1)) || String(a.startDate||'').localeCompare(String(b.startDate||'')));
-  
-  const data = items.map(t => ({
-    "Tour Name": tourName,
-    "Day": t.dayNo || 1,
-    "Start Date": fmtDate(t.startDate),
-    "Customer Name": t.customerName,
-    "Branch": t.branch,
-    "Model": t.model,
-    "Unit Status": t.unitStatus,
-    "Unit SL No": t.unitSlNo,
-    "Problem Reported": t.problemReported,
-    "Problem Observed": t.problemObserved,
-    "Action Taken": t.actionTaken,
-    "Added By": t.createdBy,
-    "Images Count": (t.images || []).filter(Boolean).length
-  }));
-
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Tour Summary");
-  const fname = safeFileName(tourName + '-summary-' + (new Date().toISOString().slice(0,10))) + '.xlsx';
-  XLSX.writeFile(wb, fname);
+  downloadTourWorkbook(items, safeFileName(tourName + '-summary-' + (new Date().toISOString().slice(0,10))));
+}
+function downloadTourWorkbook(items, fileBase){
+  const rows = items.map((t, i) => {
+    const photos = (t.images || []).filter(Boolean);
+    const photoHtml = photos.length
+      ? photos.map((src, idx) => '<div style="margin-bottom:6px;"><div style="font-size:10px;font-weight:700;color:#4b5563;margin-bottom:3px;">Photo ' + (idx + 1) + '</div><img src="' + escAttr(src) + '" style="max-width:140px;max-height:100px;border:1px solid #cbd5e1;border-radius:4px;" /></div>').join('')
+      : '<span style="color:#64748b;">No photos</span>';
+    return '<tr>'
+      + '<td>' + (i + 1) + '</td>'
+      + '<td>' + esc(t.tourName || t.customerName || 'Tour Summary') + '</td>'
+      + '<td>' + esc(String(t.dayNo || 1)) + '</td>'
+      + '<td>' + esc(fmtDate(t.startDate)) + '</td>'
+      + '<td>' + esc(t.customerName || '') + '</td>'
+      + '<td>' + esc(t.branch || '') + '</td>'
+      + '<td>' + esc(t.model || '') + '</td>'
+      + '<td>' + esc(t.unitStatus || '') + '</td>'
+      + '<td>' + esc(t.unitSlNo || '') + '</td>'
+      + '<td>' + esc(t.problemReported || '') + '</td>'
+      + '<td>' + esc(t.problemObserved || '') + '</td>'
+      + '<td>' + esc(t.actionTaken || '') + '</td>'
+      + '<td>' + esc(t.createdBy || t.addedBy?.name || '') + '</td>'
+      + '<td>' + photoHtml + '</td>'
+      + '</tr>';
+  }).join('');
+  const html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Tour Summary</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--><style>table{border-collapse:collapse;width:100%;font-family:Arial,sans-serif}th,td{border:1px solid #cbd5e1;padding:8px;vertical-align:top;text-align:left}th{background:#e8f0f7;font-weight:700}.photos{min-width:180px}</style></head><body><table><thead><tr><th>S.No</th><th>Tour Name</th><th>Day</th><th>Start Date</th><th>Customer Name</th><th>Branch</th><th>Model</th><th>Unit Status</th><th>Unit SL No</th><th>Problem Reported</th><th>Problem Observed</th><th>Action Taken</th><th>Added By</th><th class="photos">Photos</th></tr></thead><tbody>' + rows + '</tbody></table></body></html>';
+  const blob = new Blob(['\ufeff', html], { type: 'application/vnd.ms-excel' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = safeFileName(fileBase) + '.xls';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 function safeFileName(s){ return String(s||'tour-summary').toLowerCase().replace(/[^a-z0-9\-]+/g,'-').replace(/^-+|-+$/g,'').slice(0,80) || 'tour-summary'; }
 function viewImg(src){ const ov=document.createElement('div'); ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out'; ov.onclick=()=>ov.remove(); const img=document.createElement('img'); img.src=src; img.style.cssText='max-width:90vw;max-height:88vh;border-radius:12px'; ov.appendChild(img); document.body.appendChild(ov); }
