@@ -348,20 +348,30 @@ table.mini-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
         </div>
         <div class="msg-compose">
           <div class="msg-field">
+            <label>Team</label>
+            <select id="sc-msg-team" onchange="onScMsgTeamChange()">
+              <option value="">Select team</option>
+              <option value="service_team">Service Team</option>
+              <option value="repair_team">Repair Team</option>
+              <option value="product_team">Product Team</option>
+              <option value="service_coordinator">Service Coordinator</option>
+            </select>
+          </div>
+          <div class="msg-field">
             <label>Division</label>
-            <select id="sc-msg-division" onchange="loadScMessageEmployees()">
+            <select id="sc-msg-division" onchange="loadScMessageEmployees()" disabled>
               <option value="">All divisions</option>
             </select>
           </div>
           <div class="msg-field">
-            <label>Employee</label>
+            <label>Recipient</label>
             <select id="sc-msg-employee">
-              <option value="">Select employee</option>
+              <option value="">Select recipient</option>
             </select>
           </div>
           <div class="msg-field">
             <label>Message</label>
-            <textarea id="sc-msg-new" placeholder="Type message to service team..."></textarea>
+            <textarea id="sc-msg-new" placeholder="Type message..."></textarea>
           </div>
           <button class="btn btn-primary btn-sm" onclick="sendScNewMessage()">Send Message</button>
         </div>
@@ -678,24 +688,49 @@ async function loadScMessageDivisions(){
   }catch(_){}
 }
 
+function onScMsgTeamChange() {
+  const team = document.getElementById('sc-msg-team')?.value || '';
+  const divSel = document.getElementById('sc-msg-division');
+  if (divSel) {
+    if (team === 'service_team') {
+      divSel.disabled = false;
+    } else {
+      divSel.value = '';
+      divSel.disabled = true;
+    }
+  }
+  loadScMessageEmployees();
+}
+
 async function loadScMessageEmployees(){
+  const team = document.getElementById('sc-msg-team')?.value || '';
   const division = document.getElementById('sc-msg-division')?.value || '';
   const empSel = document.getElementById('sc-msg-employee');
   if (!empSel) return;
   empSel.innerHTML = '<option value="">Loading...</option>';
   try{
-    const res = await fetch('/api/service-messages/employees?division=' + encodeURIComponent(division), { headers: authHeaders() });
+    const params = new URLSearchParams();
+    if (team) params.append('team', team);
+    if (division) params.append('division', division);
+    const res = await fetch('/api/service-messages/recipients?' + params.toString(), { headers: authHeaders() });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
     const list = json.data || [];
-    empSel.innerHTML = '<option value="">Select employee</option>' + list.map(emp => {
+    
+    let html = '<option value="">Select recipient</option>';
+    if (list.length > 1) {
+      html += '<option value="ALL">📢 Send to all in list</option>';
+    }
+    html += list.map(emp => {
       const value = `${emp.source}:${emp.id}`;
-      const label = `${emp.name}${emp.division ? ' - ' + emp.division : ''}`;
+      const role = String(emp.role || '').replace(/_/g, ' ');
+      const label = `${emp.name}${emp.division ? ' - ' + emp.division : ''}${role ? ' (' + role + ')' : ''}`;
       return `<option value="${esc(value)}">${esc(label)}</option>`;
     }).join('');
+    empSel.innerHTML = html;
   }catch(e){
-    empSel.innerHTML = '<option value="">Could not load employees</option>';
-    showToast('Employee load failed: ' + e.message, 'err');
+    empSel.innerHTML = '<option value="">Could not load recipients</option>';
+    showToast('Recipient load failed: ' + e.message, 'err');
   }
 }
 
@@ -779,7 +814,33 @@ async function sendScNewMessage(){
   const empVal = document.getElementById('sc-msg-employee')?.value || '';
   const msgEl = document.getElementById('sc-msg-new');
   const message = msgEl?.value.trim() || '';
-  if (!empVal || !message) return showToast('Select employee and type message.', 'err');
+  if (!empVal || !message) return showToast('Select recipient and type message.', 'err');
+
+  if (empVal === 'ALL') {
+    const options = Array.from(document.getElementById('sc-msg-employee').options)
+      .map(o => o.value)
+      .filter(val => val && val !== 'ALL');
+    if (!options.length) return showToast('No recipients available in the list to send to.', 'err');
+    
+    let sentCount = 0;
+    showToast('Broadcasting message to all recipients...', 'info');
+    for (const val of options) {
+      const [employeeModel, employeeId] = val.split(':');
+      try {
+        const res = await fetch('/api/service-messages/threads', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ employeeId, employeeModel, division: document.getElementById('sc-msg-division')?.value || '', message })
+        });
+        if (res.ok) sentCount++;
+      } catch (_) {}
+    }
+    msgEl.value = '';
+    await loadScMessageThreads();
+    showToast(`Broadcast message sent to ${sentCount} recipients.`, 'ok');
+    return;
+  }
+
   const [employeeModel, employeeId] = empVal.split(':');
   try{
     const res = await fetch('/api/service-messages/threads', {
@@ -1041,7 +1102,7 @@ function getDemoPRF(){
 // -- UTILS -------------------------------------------------
 function fmtDate(d){if(!d)return'-';const p=String(d).split('T')[0].split('-');if(p.length<3)return String(d);return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0];}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function showToast(msg,type='ok'){const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="td"></span>'+msg;w.appengdChild(el);setTimeout(()=>el.remove(),3500);}
+function showToast(msg,type='ok'){const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="td"></span>'+msg;w.appendChild(el);setTimeout(()=>el.remove(),3500);}
 function logout(){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';}
 </script>
 </body>

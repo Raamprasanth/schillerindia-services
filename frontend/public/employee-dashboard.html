@@ -455,8 +455,18 @@
         </div>
         <div class="msg-compose">
           <div class="msg-field">
+            <label>Team</label>
+            <select id="emp-msg-team" onchange="onEmpMsgTeamChange()">
+              <option value="">Select team</option>
+              <option value="service_team">Service Team</option>
+              <option value="repair_team">Repair Team</option>
+              <option value="product_team">Product Team</option>
+              <option value="service_coordinator">Service Coordinator</option>
+            </select>
+          </div>
+          <div class="msg-field">
             <label>Division</label>
-            <select id="emp-msg-division" onchange="loadEmpMessageRecipients()">
+            <select id="emp-msg-division" onchange="loadEmpMessageRecipients()" disabled>
               <option value="">All divisions</option>
             </select>
           </div>
@@ -928,21 +938,45 @@
     }catch(_){}
   }
 
+  function onEmpMsgTeamChange() {
+    const team = document.getElementById('emp-msg-team')?.value || '';
+    const divSel = document.getElementById('emp-msg-division');
+    if (divSel) {
+      if (team === 'service_team') {
+        divSel.disabled = false;
+      } else {
+        divSel.value = '';
+        divSel.disabled = true;
+      }
+    }
+    loadEmpMessageRecipients();
+  }
+
   async function loadEmpMessageRecipients(){
+    const team = document.getElementById('emp-msg-team')?.value || '';
     const division = document.getElementById('emp-msg-division')?.value || '';
     const sel = document.getElementById('emp-msg-recipient');
     if (!sel) return;
     sel.innerHTML = '<option value="">Loading...</option>';
     try{
-      const res = await fetch('/api/service-messages/recipients?division=' + encodeURIComponent(division), { headers: empAuthHeaders() });
+      const params = new URLSearchParams();
+      if (team) params.append('team', team);
+      if (division) params.append('division', division);
+      const res = await fetch('/api/service-messages/recipients?' + params.toString(), { headers: empAuthHeaders() });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const json = await res.json();
       const list = json.data || [];
-      sel.innerHTML = '<option value="">Select recipient</option>' + list.map(r => {
+      
+      let html = '<option value="">Select recipient</option>';
+      if (list.length > 1) {
+        html += '<option value="ALL">📢 Send to all in list</option>';
+      }
+      html += list.map(r => {
         const role = String(r.role || '').replace(/_/g, ' ');
         const label = `${r.name}${r.division ? ' - ' + r.division : ''}${role ? ' (' + role + ')' : ''}`;
         return `<option value="${escapeHtml(r.source + ':' + r.id)}">${escapeHtml(label)}</option>`;
       }).join('');
+      sel.innerHTML = html;
     }catch(e){
       sel.innerHTML = '<option value="">Could not load recipients</option>';
     }
@@ -1038,6 +1072,32 @@
     const msgEl = document.getElementById('emp-msg-new');
     const message = msgEl?.value.trim() || '';
     if (!recVal || !message) return showEmpMessageToast('Select recipient and type message.');
+
+    if (recVal === 'ALL') {
+      const options = Array.from(document.getElementById('emp-msg-recipient').options)
+        .map(o => o.value)
+        .filter(val => val && val !== 'ALL');
+      if (!options.length) return showEmpMessageToast('No recipients available in the list to send to.');
+      
+      let sentCount = 0;
+      showEmpMessageToast('Broadcasting message to all recipients...', true);
+      for (const val of options) {
+        const [recipientModel, recipientId] = val.split(':');
+        try {
+          const res = await fetch('/api/service-messages/threads', {
+            method: 'POST',
+            headers: empAuthHeaders(),
+            body: JSON.stringify({ recipientId, recipientModel, division: document.getElementById('emp-msg-division')?.value || '', message })
+          });
+          if (res.ok) sentCount++;
+        } catch (_) {}
+      }
+      msgEl.value = '';
+      await loadEmpMessageThreads();
+      showEmpMessageToast(`Broadcast message sent to ${sentCount} recipients.`, true);
+      return;
+    }
+
     const [recipientModel, recipientId] = recVal.split(':');
     try{
       const res = await fetch('/api/service-messages/threads', {
