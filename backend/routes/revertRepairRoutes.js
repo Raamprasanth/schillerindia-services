@@ -31,9 +31,17 @@ router.post('/:id', async (req, res) => {
     const scRefNo = service.scReNo || service.scRno || service.scRefNo;
     const defGirNo = service.defGir || service.defGirNo;
     
+    const escapeRegex = (string) => string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
     let crlFilter = { $or: [] };
-    if (scRefNo) crlFilter.$or.push({ scRefNo: scRefNo });
-    if (defGirNo) crlFilter.$or.push({ defGirNo: defGirNo });
+    
+    const cleanSc = scRefNo && typeof scRefNo === 'string' ? scRefNo.trim() : '';
+    if (cleanSc && cleanSc !== '-') {
+      crlFilter.$or.push({ scRefNo: { $regex: new RegExp('^' + escapeRegex(cleanSc) + '$', 'i') } });
+    }
+    const cleanGir = defGirNo && typeof defGirNo === 'string' ? defGirNo.trim() : '';
+    if (cleanGir && cleanGir !== '-') {
+      crlFilter.$or.push({ defGirNo: { $regex: new RegExp('^' + escapeRegex(cleanGir) + '$', 'i') } });
+    }
     
     // Find the deleted source ID from RTCRL if possible
     let deletedSourceId = null;
@@ -129,16 +137,22 @@ router.post('/crl/:id', async (req, res) => {
     const scRefNo = crlDoc.scRefNo;
     const defGirNo = crlDoc.defGirNo;
 
-    // Find the corresponding Service or EstimationPending record
+    const escapeRegex = (string) => string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
     let serviceFilter = { $or: [] };
-    if (scRefNo) {
-      serviceFilter.$or.push({ scReNo: scRefNo });
-      serviceFilter.$or.push({ scRno: scRefNo });
-      serviceFilter.$or.push({ scRefNo: scRefNo });
+    
+    const cleanScRef = scRefNo && typeof scRefNo === 'string' ? scRefNo.trim() : '';
+    if (cleanScRef && cleanScRef !== '-') {
+      const scRegex = { $regex: new RegExp('^' + escapeRegex(cleanScRef) + '$', 'i') };
+      serviceFilter.$or.push({ scReNo: scRegex });
+      serviceFilter.$or.push({ scRno: scRegex });
+      serviceFilter.$or.push({ scRefNo: scRegex });
     }
-    if (defGirNo) {
-      serviceFilter.$or.push({ defGir: defGirNo });
-      serviceFilter.$or.push({ defGirNo: defGirNo });
+    
+    const cleanGir = defGirNo && typeof defGirNo === 'string' ? defGirNo.trim() : '';
+    if (cleanGir && cleanGir !== '-') {
+      const girRegex = { $regex: new RegExp('^' + escapeRegex(cleanGir) + '$', 'i') };
+      serviceFilter.$or.push({ defGir: girRegex });
+      serviceFilter.$or.push({ defGirNo: girRegex });
     }
 
     let service = null;
