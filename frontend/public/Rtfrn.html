@@ -676,10 +676,38 @@ function clearAllFilters() {
   applyFilters();
 }
 
+function norm(v) {
+  return String(v ?? '').toLowerCase().trim();
+}
+
+function rtSearchText(d) {
+  return [
+    d.entryDate,
+    d.division,
+    d.scRefNo,
+    d.scRno,
+    d.scRef,
+    d.scReferenceNo,
+    d.defGirNo,
+    d.defGir,
+    d.girNo,
+    d.category,
+    d.model,
+    d.defBrdModName,
+    d.status,
+    d.submittedBy,
+    d.customer,
+    d.eng,
+    d.scEng,
+    d.frnNo,
+    d.noOfDays
+  ].map(norm).join(' ');
+}
+
 function applyFilters() {
-  const q = document.getElementById('tbl-search').value.toLowerCase();
+  const q = norm(document.getElementById('tbl-search').value);
   filtered = allData.filter(d => {
-    return !q || ((d.scRno||'')+' '+(d.customer||'')+' '+(d.eng||'')+' '+(d.scEng||'')+' '+(d.frnNo||'')+' '+(d.model||'')+' '+(d.defGir||'')).toLowerCase().includes(q);
+    return !q || rtSearchText(d).includes(q);
   });
   sortArr(); currentPage = 1; renderTable();
 }
@@ -1134,4 +1162,3 @@ async function runAIDiagnostics() {
 <script src="tab-fix.js"></script>
 </body>
 </html>
-
