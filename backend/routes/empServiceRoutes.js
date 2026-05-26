@@ -42,8 +42,8 @@ function calcPendingDays(dateStr) {
   return isNaN(diff) ? 0 : Math.max(0, diff);
 }
 
-function assertOwner(req, svc) {
-  if (req.user.role === 'admin') return;
+async function assertCanModifyService(req, svc) {
+  if (req.user.role === 'admin' || req.user.role === 'superadmin') return;
   const name   = req.user.name || '';
   const userId = String(req.user._id || '');
   const isOwner =
@@ -51,11 +51,15 @@ function assertOwner(req, svc) {
     svc.eng         === name ||
     svc.submittedBy === name ||
     String(svc.engineer || '') === userId;
-  if (!isOwner) {
-    const err = new Error('You can only modify your own records.');
-    err.status = 403;
-    throw err;
-  }
+  if (isOwner) return;
+
+  const { hasDivisionAccessToRecord } = require('../utils/visibility');
+  const hasDivisionAccess = await hasDivisionAccessToRecord(req.user, svc.division);
+  if (hasDivisionAccess) return;
+
+  const err = new Error('You can only modify records in your assigned division.');
+  err.status = 403;
+  throw err;
 }
 
 function normalizeDivisionName(value) {
@@ -294,7 +298,7 @@ router.put('/:id', protect, async (req, res) => {
     const svc = await Service.findById(req.params.id);
     if (!svc) return res.status(404).json({ message: 'Service record not found.' });
 
-    try { assertOwner(req, svc); } catch (e) {
+    try { await assertCanModifyService(req, svc); } catch (e) {
       return res.status(e.status || 403).json({ message: e.message });
     }
 
@@ -365,7 +369,7 @@ router.delete('/:id', protect, async (req, res) => {
     const svc = await Service.findById(req.params.id);
     if (!svc) return res.status(404).json({ message: 'Service record not found.' });
 
-    try { assertOwner(req, svc); } catch (e) {
+    try { await assertCanModifyService(req, svc); } catch (e) {
       return res.status(e.status || 403).json({ message: e.message });
     }
 
