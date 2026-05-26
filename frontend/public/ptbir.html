@@ -503,7 +503,7 @@
               <label>CNR/Technews Circulation</label>
               <select id="f-cnr-circ" disabled>
                 <option value="">Select</option>
-                <option>Yes</option><option>No</option><option>NA</option>
+                <option>Yes</option><option>No</option>
               </select>
             </div>
             <div class="form-group">
@@ -916,10 +916,10 @@ function syncCnrTechnewsLock(){
   const ref = document.getElementById('f-cnr-ref');
   const date = document.getElementById('f-cnr-date');
   if(!circ || !ref || !date) return;
-  const isNa = ['NA','N/A'].includes(String(circ.value || '').trim().toUpperCase());
+  const isNo = String(circ.value || '').trim().toUpperCase() === 'NO';
   [ref, date].forEach(el => {
-    if(isNa) el.value = '';
-    el.disabled = isNa;
+    if(isNo) el.value = '';
+    el.disabled = isNo;
   });
 }
 
