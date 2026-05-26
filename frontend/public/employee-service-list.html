@@ -516,7 +516,7 @@ table.svc-table tbody tr:last-child td{border-bottom:none;}
             </div>
             <div class="fg-field"><label>DOI (Date of Installation)</label><input type="date" id="f-doi"/></div>
             <div class="fg-field"><label>DEF Part SNO <span class="req">*</span></label><input type="text" id="f-defpartsno" placeholder="" required/></div>
-            <div class="fg-field"><label>DEF GIR No <span class="req">*</span></label><input type="text" id="f-defgirno" placeholder="" required style="text-transform:uppercase;"/></div>
+            <div class="fg-field"><label>DEF GIR No <span class="req">*</span></label><input type="text" id="f-defgirno" placeholder="" required style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase();"/></div>
             <div class="fg-field"><label>REP Type <span class="req">*</span></label>
               <select id="f-reptype" required onchange="onRepTypeChange(); checkAutoTriggers();">
                 <option value="">Select REP Type...</option>
@@ -1259,6 +1259,9 @@ function printJobSheet(id){showToast('Generating JobSheet for #'+id+' ','ok');}
 document.getElementById('f-screfno')?.addEventListener('input', (e) => {
   e.target.value = String(e.target.value || '').toUpperCase();
 });
+document.getElementById('f-defgirno')?.addEventListener('input', (e) => {
+  e.target.value = String(e.target.value || '').toUpperCase();
+});
 
 async function createSoPendingFromService(serviceRecord) {
   const serviceId = serviceRecord._id || serviceRecord.id;
@@ -1355,7 +1358,7 @@ async function submitForm() {
     defPartSno:   document.getElementById('f-defpartsno').value.trim(),
     defType:      document.getElementById('f-deftype').value,
     typeAcc:      document.getElementById('f-typeacc').value,
-    defGir:       document.getElementById('f-defgirno').value.trim(),
+    defGir:       document.getElementById('f-defgirno').value.trim().toUpperCase(),
     repType:      repTypeVal,
     repGirNo:     document.getElementById('f-repgirno').value.trim().toUpperCase(),
     typeWork:     typeWorkVal, type:typeWorkVal, typeReport:'Service Center',

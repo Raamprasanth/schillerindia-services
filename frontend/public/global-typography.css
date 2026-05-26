@@ -235,6 +235,7 @@ h3 {
   color: #5b21b6;
   border: 1px solid rgba(109, 40, 217, 0.22);
   font-family: Calibri, Carlito, "Segoe UI", Arial, sans-serif !important;
+  text-transform: uppercase;
 }
 
 html[data-emp-theme="dark"] .gir-badge {
