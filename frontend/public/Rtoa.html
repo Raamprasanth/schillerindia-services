@@ -327,7 +327,6 @@ table.oa-table tbody tr:last-child td{border-bottom:none;}
           <div class="ff"><label>Repaired Date</label><input type="date" id="f-repairedDate"/></div>
           <div class="ff"><label>Status <span class="req">*</span></label>
             <select id="f-status">
-              <option value="">Select Status...</option>
               <option value="Open">Open</option>
               <option value="In Progress">In Progress</option>
               <option value="Closed">Closed</option>
@@ -580,6 +579,7 @@ function openModal() {
   document.getElementById('save-btn').innerHTML = '&#128190; Save Activity';
   clearForm();
   document.getElementById('f-entryDate').value = todayISO();
+  document.getElementById('f-status').value = 'Open';
   lockDateRules();
   document.getElementById('modal-form').classList.add('open');
 }
@@ -627,14 +627,14 @@ async function saveRecord() {
   const repairedDate    = document.getElementById('f-repairedDate').value;
   const remarks         = document.getElementById('f-remarks').value.trim();
   const status          = document.getElementById('f-status').value;
-  if (!repairedBy || !entryDate || !division || !problemObserved || !status) {
-    showToast('Please fill: Repaired By, Entry Date, Division, Problem Observed, Status.', 'err'); return;
+  if (!repairedBy || !entryDate || !division || !problemObserved) {
+    showToast('Please fill: Repaired By, Entry Date, Division, Problem Observed.', 'err'); return;
   }
   if (repairedDate && repairedDate < todayISO()) {
     showToast('Repaired Date cannot be a back date.', 'err'); return;
   }
   const body = { repairedBy, entryDate, division, model, partNumber, description,
-                 problemObserved, componentsUsed, finalRemarks, repairedDate, remarks, status };
+                 problemObserved, componentsUsed, finalRemarks, repairedDate, remarks, status: status || 'Open' };
   const btn = document.getElementById('save-btn');
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
@@ -642,7 +642,10 @@ async function saveRecord() {
     const method = editId ? 'PUT' : 'POST';
     const res = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(body) });
     handleUnauth(res);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || err.error || ('HTTP ' + res.status));
+    }
     showToast(editId ? 'Activity updated.' : 'Activity created.', 'ok');
     closeModal(); loadData();
   } catch (e) {
