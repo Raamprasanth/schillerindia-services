@@ -64,6 +64,7 @@ const birSchema = new mongoose.Schema(
     fqcFinalRemarks:    { type: String, trim: true, default: '' },
     tsVerificationDate: { type: String, default: '' },
     psVerificationDate: { type: String, default: '' },
+    productTeamRemarks: { type: String, trim: true, default: '' },
 
     // ── CNR / Technews ────────────────────────────────────────
     cnrCirculation: { type: String, trim: true, default: '' },   // Yes / No / NA

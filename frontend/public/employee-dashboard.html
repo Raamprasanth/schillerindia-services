@@ -501,6 +501,7 @@
           </div>
           <div style="display:flex;gap:8px;align-items:center;">
             <span class="tour-ws-badge" id="tour-count-badge">0 entries</span>
+            <button class="tour-create-btn" id="tour-export-btn" type="button" style="background:#0068b5;" onclick="exportTourExcel()">&#128196; Export Excel</button>
             <button class="tour-create-btn" id="tour-add-btn" type="button" onclick="openTourModal()">&#43; Add New</button>
           </div>
         </div>
@@ -606,7 +607,7 @@
             <label class="tour-lbl">&#128247; Upload Images</label>
             <div class="tour-img-upload-area" id="tour-img-area">
               <div class="tour-img-note">
-                <strong>Attach up to 3 images</strong>
+                <strong>Attach up to 5 images</strong>
                 <span>Each image must be 3 MB or smaller.</span>
               </div>
               <div class="tour-img-slots">
@@ -620,6 +621,14 @@
                 </div>
                 <div class="tour-img-slot" id="tour-slot-2" onclick="document.getElementById('tour-img-2').click()">
                   <input type="file" id="tour-img-2" accept="image/*" style="display:none" onchange="handleTourImg(2,this)" />
+                  <div class="tour-img-placeholder"><span>&#128247;</span><span>Add Photo</span></div>
+                </div>
+                <div class="tour-img-slot" id="tour-slot-3" onclick="document.getElementById('tour-img-3').click()">
+                  <input type="file" id="tour-img-3" accept="image/*" style="display:none" onchange="handleTourImg(3,this)" />
+                  <div class="tour-img-placeholder"><span>&#128247;</span><span>Add Photo</span></div>
+                </div>
+                <div class="tour-img-slot" id="tour-slot-4" onclick="document.getElementById('tour-img-4').click()">
+                  <input type="file" id="tour-img-4" accept="image/*" style="display:none" onchange="handleTourImg(4,this)" />
                   <div class="tour-img-placeholder"><span>&#128247;</span><span>Add Photo</span></div>
                 </div>
               </div>
@@ -1221,7 +1230,7 @@
   }
 
   // Image slots state
-  var _tourImgs = [null, null, null]; // base64 strings
+  var _tourImgs = [null, null, null, null, null]; // base64 strings
 
   function handleTourImg(idx, input) {
     var file = input.files && input.files[0];
@@ -1313,8 +1322,8 @@
       var today=new Date().toISOString().slice(0,10);
       var dateEl=document.getElementById('tour-date'); if(dateEl) dateEl.value=today;
       var msgEl=document.getElementById('tour-modal-msg'); if(msgEl){msgEl.textContent='';msgEl.style.display='none';}
-      _tourImgs=[null,null,null];
-      [0,1,2].forEach(function(idx){
+      _tourImgs=[null,null,null,null,null];
+      [0,1,2,3,4].forEach(function(idx){
         var slot=document.getElementById('tour-slot-'+idx);
         if(slot){
           slot.classList.remove('has-img');
@@ -1369,6 +1378,32 @@
     if(!confirm('Delete this tour entry?')) return;
     var list=loadTourSummaries(); list.splice(idx,1); saveTourSummaries(list); renderTourTable();
   }
+
+  function exportTourExcel() {
+    var list=loadTourSummaries();
+    if(!list || !list.length) { alert('No tour summaries to export.'); return; }
+    if(typeof XLSX === 'undefined') { alert('Excel export library not loaded. Please refresh and try again.'); return; }
+    
+    var data = list.map(function(r, i){ return {
+      "S.No": i+1,
+      "Date": r.date||'',
+      "Customer Name": r.customers||'',
+      "Branch": r.branch||'',
+      "Model": r.model||'',
+      "Unit Status": r.unitSts||'',
+      "Unit SL No": r.unitSl||'',
+      "Problem Reported": r.probReported||'',
+      "Problem Observed": r.probObserved||'',
+      "Action Taken": r.action||'',
+      "Added By": r.addedBy||''
+    }});
+    
+    var ws = XLSX.utils.json_to_sheet(data);
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "TourSummary");
+    XLSX.writeFile(wb, "Tour_Summary_Export.xlsx");
+  }
+
   (function(){var ov=document.getElementById('tour-overlay');if(ov)ov.addEventListener('click',function(e){if(e.target===ov)closeTourModal();});})();
   Object.assign(window, {
     showTourSummary,
@@ -1378,6 +1413,7 @@
     handleTourImg,
     removeTourImg,
     deleteTourEntry,
+    exportTourExcel,
     viewTourImg,
     renderTourTable
   });

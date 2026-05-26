@@ -3,17 +3,32 @@ const router   = express.Router();
 const Eclose   = require('../models/Eclose');
 const { protect } = require('../middleware/authMiddleware');
 
+function normalizeDivision(value) {
+  const v = String(value || '').trim();
+  const key = v.toLowerCase();
+  const map = {
+    'schiller ag': 'SAG',
+    'sag': 'SAG',
+    'patient monitors': 'PATIENT MONITORS',
+    'patient monitor': 'PATIENT MONITORS',
+    'monitors': 'PATIENT MONITORS',
+    'anaesthesia': 'ANAESTHESIA',
+    'anesthesia': 'ANAESTHESIA',
+  };
+  return map[key] || v;
+}
+
 function getUserDivisions(user) {
   const values = user?.activeDivision
     ? [user.activeDivision]
     : (Array.isArray(user?.divisions) && user.divisions.length ? [...user.divisions] : [user?.division]);
-  return [...new Set(values.map(v => String(v || '').trim()).filter(Boolean))];
+  return [...new Set(values.map(normalizeDivision).filter(Boolean))];
 }
 
 function canAccessDivision(user, division) {
   const allowed = getUserDivisions(user);
   if (!allowed.length) return false;
-  return allowed.some(value => value.toLowerCase() === String(division || '').trim().toLowerCase());
+  return allowed.some(value => value.toLowerCase() === normalizeDivision(division).toLowerCase());
 }
 
 // ── GET /api/emp/calls/closed  (admin: all closed-call records)

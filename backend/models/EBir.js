@@ -67,6 +67,7 @@ const eBirSchema = new mongoose.Schema(
     tsVerificationDate: { type: String, default: '' },
     psEngineer:         { type: String, trim: true, default: '' },
     psVerificationDate: { type: String, default: '' },
+    productTeamRemarks: { type: String, trim: true, default: '' },
     approvedDate:       { type: String, default: '' },
 
     // ── Status ────────────────────────────────────────────────

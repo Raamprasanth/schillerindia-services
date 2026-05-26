@@ -53,6 +53,7 @@ const ptClosedBirSchema = new mongoose.Schema(
     fqcFinalRemarks: { type: String, trim: true, default: '' },
     tsVerificationDate: { type: String, default: '' },
     psVerificationDate: { type: String, default: '' },
+    productTeamRemarks: { type: String, trim: true, default: '' },
 
     cnrCirculation: { type: String, trim: true, default: '' },
     cnrRefNo: { type: String, trim: true, default: '' },

@@ -1175,6 +1175,9 @@ async function sendScNewMessage(){
     if (!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
     msgEl.value = '';
     await loadScMessageThreads();
+    if(json && json.data && json.data._id) {
+      await openScThread(json.data._id);
+    }
     showToast('Message sent.', 'ok');
   }catch(e){ showToast('Send failed: ' + e.message, 'err'); }
 }

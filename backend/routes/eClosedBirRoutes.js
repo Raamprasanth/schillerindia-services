@@ -45,6 +45,7 @@ function buildMirrorUpdate(doc) {
     fqcFinalRemarks: doc.fqcFinalRemarks || '',
     tsVerificationDate: doc.tsVerificationDate || '',
     psVerificationDate: doc.psVerificationDate || '',
+    productTeamRemarks: doc.productTeamRemarks || '',
     cnrCirculation: doc.cnrCirculation || '',
     cnrRefNo: doc.cnrRefNo || '',
     cnrReleaseDate: doc.cnrReleaseDate || '',

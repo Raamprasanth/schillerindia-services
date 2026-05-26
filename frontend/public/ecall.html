@@ -664,6 +664,13 @@ async function loadDivisionModels(divisionName = '', selectedModel = '', selecte
     
     ALL_MODELS_DATA = models;
     
+    if (selectedModel && !selectedSupplier) {
+      const matched = models.find(m => String(m.model||m.name||'').trim().toLowerCase() === String(selectedModel).trim().toLowerCase());
+      if (matched && matched.supplier) {
+        selectedSupplier = matched.supplier;
+      }
+    }
+    
     renderSupplierOptions(selectedSupplier);
     onSupplierChange(selectedModel);
   }catch(e){

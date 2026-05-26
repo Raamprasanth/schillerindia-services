@@ -483,6 +483,10 @@
               <input type="date" id="f-ps-date" disabled/>
             </div>
             <div class="form-group">
+              <label>Product Team Remarks</label>
+              <input type="text" id="f-pt-remarks" disabled/>
+            </div>
+            <div class="form-group">
               <label>Approved Date</label>
               <input type="date" id="f-approved-date" disabled/>
             </div>
@@ -853,7 +857,7 @@ function viewBIR(id){
     ['Accessory Details',e.accDetails],['Accessory Change Remarks',e.accChangeRemarks],['User Manual Update',e.userManualUpdate],
     ['Service Manual Update',e.serviceManualUpdate],['FQC Remarks',e.fqcRemarks],['Technical Remarks',e.techRemarks],
     ['SC Engineer',e.scEngineer],['PS Engineer',e.psEngineer],['TS Verification Date',fmtDate(e.tsVerificationDate)],
-    ['PS Verification Date',fmtDate(e.psVerificationDate)],['CNR/Technews Circulation',e.cnrCirculation],['CNR Ref No.',e.cnrRefNo],
+    ['PS Verification Date',fmtDate(e.psVerificationDate)],['Product Team Remarks',e.productTeamRemarks],['CNR/Technews Circulation',e.cnrCirculation],['CNR Ref No.',e.cnrRefNo],
     ['CNR Release Date',fmtDate(e.cnrReleaseDate)],['Approved Date',fmtDate(e.approvedDate)],
   ];
   document.getElementById('view-modal-content').innerHTML=`<div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;"><div class="detail-grid">${fields.map(([l,v,cls])=>`<div class="detail-cell"><div class="detail-label">${esc(l)}</div><div class="detail-val ${cls||''}">${esc(v||'-')}</div></div>`).join('')}</div></div>`;
@@ -864,11 +868,11 @@ function closeViewModal(){document.getElementById('view-modal').classList.remove
 document.getElementById('view-modal').addEventListener('click',e=>{if(e.target===document.getElementById('view-modal'))closeViewModal();});
 
 // -- ADD/EDIT MODAL ------------------------------------------------------------
-const FIELDS=['division','unitInwardDate','fqcInwardDate','birRef','supplier','model','configuration','receivedQty','serial','invoiceNo','invoiceDate','prevSwVersion','presSwVersion','accChanges','accDetails','userManualUpdate','fqcRemarks','status','scEngineer','scInwardDate','scObservation','scActionPlan','tentativeDate','shipDateToFqc','defUnitReceivedDate','replacementShipDate','fqcFinalRemarks','fqcObservation','accChangeRemarks','hwChanges','hwChangeRemarks','serviceManualUpdate','techRemarks','tsVerificationDate','psEngineer','swChangeRemarks','cnrCirculation','cnrRefNo','cnrReleaseDate','psVerificationDate','approvedDate'];
-const FIELD_MAP={'division':'f-division','unitInwardDate':'f-unit-inward','fqcInwardDate':'f-fqc-inward','birRef':'f-bir-ref','supplier':'f-supplier','model':'f-model','configuration':'f-configuration','receivedQty':'f-qty','serial':'f-serial','invoiceNo':'f-invoice-no','invoiceDate':'f-invoice-date','prevSwVersion':'f-prev-sw','presSwVersion':'f-pres-sw','accChanges':'f-acc-changes','accDetails':'f-acc-details','userManualUpdate':'f-manual-update','fqcRemarks':'f-fqc-remarks','status':'f-status','scEngineer':'f-sc-engineer','scInwardDate':'f-sc-inward','scObservation':'f-sc-obs','scActionPlan':'f-sc-action','tentativeDate':'f-tent-date','shipDateToFqc':'f-ship-fqc','defUnitReceivedDate':'f-def-recv','replacementShipDate':'f-rep-ship','fqcFinalRemarks':'f-fqc-final-remarks','fqcObservation':'f-fqc-obs','accChangeRemarks':'f-acc-remarks','hwChanges':'f-hw-changes','hwChangeRemarks':'f-hw-remarks','serviceManualUpdate':'f-service-manual','techRemarks':'f-tech-remarks','tsVerificationDate':'f-ts-date','psEngineer':'f-ps-engineer','swChangeRemarks':'f-sw-remarks','cnrCirculation':'f-cnr-circ','cnrRefNo':'f-cnr-ref','cnrReleaseDate':'f-cnr-date','psVerificationDate':'f-ps-date','approvedDate':'f-approved-date'};
+const FIELDS=['division','unitInwardDate','fqcInwardDate','birRef','supplier','model','configuration','receivedQty','serial','invoiceNo','invoiceDate','prevSwVersion','presSwVersion','accChanges','accDetails','userManualUpdate','fqcRemarks','status','scEngineer','scInwardDate','scObservation','scActionPlan','tentativeDate','shipDateToFqc','defUnitReceivedDate','replacementShipDate','fqcFinalRemarks','fqcObservation','accChangeRemarks','hwChanges','hwChangeRemarks','serviceManualUpdate','techRemarks','tsVerificationDate','psEngineer','swChangeRemarks','cnrCirculation','cnrRefNo','cnrReleaseDate','psVerificationDate','productTeamRemarks','approvedDate'];
+const FIELD_MAP={'division':'f-division','unitInwardDate':'f-unit-inward','fqcInwardDate':'f-fqc-inward','birRef':'f-bir-ref','supplier':'f-supplier','model':'f-model','configuration':'f-configuration','receivedQty':'f-qty','serial':'f-serial','invoiceNo':'f-invoice-no','invoiceDate':'f-invoice-date','prevSwVersion':'f-prev-sw','presSwVersion':'f-pres-sw','accChanges':'f-acc-changes','accDetails':'f-acc-details','userManualUpdate':'f-manual-update','fqcRemarks':'f-fqc-remarks','status':'f-status','scEngineer':'f-sc-engineer','scInwardDate':'f-sc-inward','scObservation':'f-sc-obs','scActionPlan':'f-sc-action','tentativeDate':'f-tent-date','shipDateToFqc':'f-ship-fqc','defUnitReceivedDate':'f-def-recv','replacementShipDate':'f-rep-ship','fqcFinalRemarks':'f-fqc-final-remarks','fqcObservation':'f-fqc-obs','accChangeRemarks':'f-acc-remarks','hwChanges':'f-hw-changes','hwChangeRemarks':'f-hw-remarks','serviceManualUpdate':'f-service-manual','techRemarks':'f-tech-remarks','tsVerificationDate':'f-ts-date','psEngineer':'f-ps-engineer','swChangeRemarks':'f-sw-remarks','cnrCirculation':'f-cnr-circ','cnrRefNo':'f-cnr-ref','cnrReleaseDate':'f-cnr-date','psVerificationDate':'f-ps-date','productTeamRemarks':'f-pt-remarks','approvedDate':'f-approved-date'};
 
 // Frozen section fields (always disabled)
-const FROZEN_FIELDS=['f-sc-engineer','f-sc-inward','f-sc-obs','f-sc-action','f-tent-date','f-ship-fqc','f-def-recv','f-rep-ship','f-fqc-final-remarks','f-fqc-obs','f-acc-remarks','f-hw-changes','f-hw-remarks','f-service-manual','f-tech-remarks','f-ts-date','f-ps-engineer','f-sw-remarks','f-cnr-circ','f-cnr-ref','f-cnr-date','f-ps-date','f-approved-date'];
+const FROZEN_FIELDS=['f-sc-engineer','f-sc-inward','f-sc-obs','f-sc-action','f-tent-date','f-ship-fqc','f-def-recv','f-rep-ship','f-fqc-final-remarks','f-fqc-obs','f-acc-remarks','f-hw-changes','f-hw-remarks','f-service-manual','f-tech-remarks','f-ts-date','f-ps-engineer','f-sw-remarks','f-cnr-circ','f-cnr-ref','f-cnr-date','f-ps-date','f-pt-remarks','f-approved-date'];
 function lockFrozenSections(){
   FROZEN_FIELDS.forEach(id => {
     const el = document.getElementById(id);
@@ -952,7 +956,7 @@ function editBIR(id){
   // Always unlock PT section so product team can fill in their details and save
   const ptSec = document.getElementById('product-section');
   if(ptSec) ptSec.className = 'section-unlocked';
-  ['f-ts-date','f-ps-engineer','f-cnr-circ','f-cnr-ref','f-cnr-date','f-ps-date','f-approved-date'].forEach(fid=>{
+  ['f-ts-date','f-ps-engineer','f-cnr-circ','f-cnr-ref','f-cnr-date','f-ps-date','f-pt-remarks','f-approved-date'].forEach(fid=>{
     const el=document.getElementById(fid); if(el) el.disabled = false;
   });
   syncCnrTechnewsLock();
@@ -982,6 +986,7 @@ async function saveBIR(){
         cnrRefNo:           payload.cnrRefNo           || '',
         cnrReleaseDate:     payload.cnrReleaseDate     || '',
         psVerificationDate: payload.psVerificationDate || '',
+        productTeamRemarks: payload.productTeamRemarks || '',
         approvedDate:       payload.approvedDate       || todayStr(),
         status:             'Approved',
         finalStatus:        'Approved',

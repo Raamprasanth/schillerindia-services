@@ -86,6 +86,7 @@ function buildMirrorUpdate(doc) {
     fqcFinalRemarks: doc.fqcFinalRemarks || '',
     tsVerificationDate: doc.tsVerificationDate || '',
     psVerificationDate: doc.psVerificationDate || '',
+    productTeamRemarks: doc.productTeamRemarks || '',
     cnrCirculation: doc.cnrCirculation || '',
     cnrRefNo: doc.cnrRefNo || '',
     cnrReleaseDate: doc.cnrReleaseDate || '',
@@ -241,7 +242,7 @@ router.put('/:id', protect, async (req, res) => {
       'fqcInwardDate', 'userManualUpdate', 'fqcRemarks',
       'hwChanges', 'hwChangeRemarks', 'cnrRefNo', 'cnrReleaseDate', 'swChangeRemarks',
       // Product Team fields
-      'tsVerificationDate', 'psEngineer', 'psVerificationDate', 'approvedDate',
+      'tsVerificationDate', 'psEngineer', 'psVerificationDate', 'productTeamRemarks', 'approvedDate',
     ];
     const update = {};
     allowed.forEach(f => { if (req.body[f] !== undefined) update[f] = req.body[f]; });

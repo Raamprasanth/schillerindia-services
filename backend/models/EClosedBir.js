@@ -53,6 +53,7 @@ const eClosedBirSchema = new mongoose.Schema(
     fqcFinalRemarks:     { type: String, trim: true, default: '' },
     tsVerificationDate:  { type: String, default: '' },
     psVerificationDate:  { type: String, default: '' },
+    productTeamRemarks:  { type: String, trim: true, default: '' },
 
     finalStatus: {
       type: String,

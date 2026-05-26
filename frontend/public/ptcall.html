@@ -726,6 +726,13 @@ async function loadDivisionModels(divisionName = '', selectedModel = '', selecte
     
     ALL_MODELS_DATA = models;
     
+    if (selectedModel && !selectedSupplier) {
+      const matched = models.find(m => String(m.model||m.name||'').trim().toLowerCase() === String(selectedModel).trim().toLowerCase());
+      if (matched && matched.supplier) {
+        selectedSupplier = matched.supplier;
+      }
+    }
+    
     renderSupplierOptions(selectedSupplier);
     onSupplierChange(selectedModel);
   }catch(e){
@@ -892,8 +899,7 @@ async function openEditModal(id){
   const set = (elId,val) => { const el=document.getElementById(elId); if(el) el.value=val||''; };
   set('m-division', d.division);
   (document.getElementById('top-division')||{}).textContent = d.division || '-';
-  set('m-supplier', d.supplier);
-  set('m-model', d.model);
+  await loadDivisionModels(d.division, d.model);
   const recordBranch = d.branch || d.region || '';
   const recordRegion = getRecordRegion(recordBranch, d.region);
   renderRegionOptions(recordRegion);

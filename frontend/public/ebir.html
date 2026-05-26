@@ -335,6 +335,7 @@ table.bir-table tbody tr:last-child td{border-bottom:none;}
             <div class="ff"><label>CNR/Technews Reference No.</label><input type="text" id="upd-cnr-ref" disabled/></div>
             <div class="ff"><label>CNR/Technews Release Date</label><input type="date" id="upd-cnr-date" disabled/></div>
             <div class="ff"><label>PS Team Verification Date</label><input type="date" id="upd-ps-date" disabled/></div>
+            <div class="ff"><label>Product Team Remarks</label><input type="text" id="upd-pt-remarks" disabled/></div>
             <div class="ff"><label>Approved Date</label><input type="date" id="upd-approved-date" disabled/></div>
           </div>
         </div>
@@ -773,6 +774,7 @@ function openModal(id){
   set('upd-cnr-ref', d.cnrRefNo);
   set('upd-cnr-date', d.cnrReleaseDate);
   set('upd-ps-date', d.psVerificationDate);
+  set('upd-pt-remarks', d.productTeamRemarks);
   set('upd-approved-date', d.approvedDate);
 
   clearMsg();

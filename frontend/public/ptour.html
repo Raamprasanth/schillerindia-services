@@ -75,7 +75,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 <main class="main">
   <div class="topbar">
     <div class="topbar-left"><div class="breadcrumb"><a href="pt-dashboard.html">Dashboard</a><span class="sep">&#8250;</span><span>Records</span><span class="sep">&#8250;</span><span>Tour Summary</span></div><div class="page-title">Tour Summary</div></div>
-    <div class="topbar-actions"><span class="topbar-date-pill" id="topbar-date"></span><button class="btn btn-outline" onclick="const b=this; const o=b.innerHTML; b.innerHTML='&#8635; Refreshing...'; Promise.resolve(loadTours()).then(()=>{b.innerHTML='&#10004; Refreshed!'; setTimeout(()=>b.innerHTML=o,2000);}).catch(()=>{b.innerHTML='&#10008; Error'; setTimeout(()=>b.innerHTML=o,2000);})">&#10227; Refresh</button><button class="btn btn-primary" onclick="openTourModal()">&#43; Add New</button></div>
+    <div class="topbar-actions"><span class="topbar-date-pill" id="topbar-date"></span><button class="btn btn-outline" onclick="const b=this; const o=b.innerHTML; b.innerHTML='&#8635; Refreshing...'; Promise.resolve(loadTours()).then(()=>{b.innerHTML='&#10004; Refreshed!'; setTimeout(()=>b.innerHTML=o,2000);}).catch(()=>{b.innerHTML='&#10008; Error'; setTimeout(()=>b.innerHTML=o,2000);})">&#10227; Refresh</button><button class="btn btn-primary" style="background:#0068b5;" onclick="exportAllTourExcel()">&#128196; Export Excel</button><button class="btn btn-primary" onclick="openTourModal()">&#43; Add New</button></div>
   </div>
   <div class="content">
     <section class="panel">
@@ -262,6 +262,30 @@ async function saveTour(){
   finally{ btn.disabled=false; btn.innerHTML='&#128190; Save Entry'; }
 }
 async function deleteTour(id){ if(!confirm('Delete this tour summary?')) return; const res=await fetch('/api/ptours/'+id,{method:'DELETE',headers:hdrs()}); handleAuth(res); await loadTours(); }
+async function exportAllTourExcel(){
+  if(!tours || !tours.length){ alert('No tour summaries to export.'); return; }
+  const items = tours.slice().sort((a,b) => String(a.startDate||'').localeCompare(String(b.startDate||'')));
+  const data = items.map((t, i) => ({
+    "S.No": i+1,
+    "Tour Name": t.tourName || t.customerName || 'Tour Summary',
+    "Day": t.dayNo || 1,
+    "Start Date": fmtDate(t.startDate),
+    "Customer Name": t.customerName,
+    "Branch": t.branch,
+    "Model": t.model,
+    "Unit Status": t.unitStatus,
+    "Unit SL No": t.unitSlNo,
+    "Problem Reported": t.problemReported,
+    "Problem Observed": t.problemObserved,
+    "Action Taken": t.actionTaken,
+    "Added By": t.addedBy?.name || 'Unknown'
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "All_Tours");
+  XLSX.writeFile(wb, "PT_Tour_Summary_Export.xlsx");
+}
+
 async function generateTourExcel(tourName){
   const sameTour = tours.filter(t => String(t.tourName || t.customerName || 'Tour Summary') === String(tourName));
   if(!sameTour.length){ alert('No tour days found.'); return; }
