@@ -248,6 +248,7 @@ table.frn-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
             <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
             <th onclick="sortBy('partNo')">Part No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('description')">Description <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('revalue')">Revalue <span class="si">&#8693;</span></th>
             <th onclick="sortBy('girNo')">GIR No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('opt')">Opt <span class="si">&#8693;</span></th>
             <th onclick="sortBy('remarks')">Remarks <span class="si">&#8693;</span></th>
@@ -303,6 +304,23 @@ table.frn-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
             <div class="ff">
               <label>GIR No <span class="req">*</span></label>
               <input type="text" id="m-girno" required/>
+            </div>
+            <div class="ff">
+              <label>Revalue</label>
+              <input type="number" id="m-revalue" min="0" step="0.01" placeholder="Amount"/>
+            </div>
+            <div class="ff">
+              <label>Opt</label>
+              <select id="m-opt">
+                <option value="">-</option>
+                <option value="scrap">Scrap</option>
+                <option value="stock">Stock</option>
+                <option value="dispatch">Dispatch</option>
+              </select>
+            </div>
+            <div class="ff">
+              <label>Remarks</label>
+              <input type="text" id="m-remarks" placeholder="Remarks..."/>
             </div>
           </div>
         </div>
@@ -407,7 +425,7 @@ function applyFilters(){
   const to = document.getElementById('fl-to')?.value || '';
   const division = document.getElementById('fl-division')?.value || '';
   filtered = DATA.filter(d =>
-    (!q || ((d.partNo||'')+' '+(d.description||'')+' '+(d.girNo||'')+' '+(d.division||'')).toLowerCase().includes(q)) &&
+    (!q || ((d.partNo||'')+' '+(d.description||'')+' '+(d.revalue||'')+' '+(d.girNo||'')+' '+(d.division||'')).toLowerCase().includes(q)) &&
     (!from || (d.date||'') >= from) &&
     (!to || (d.date||'') <= to) &&
     (!division || d.division === division)
@@ -426,6 +444,7 @@ function sortBy(k){
 function sortArr(){
   filtered.sort((a,b)=>{
     const av = a[sortKey] ?? '', bv = b[sortKey] ?? '';
+    if(sortKey === 'revalue') return ((Number(av) || 0) - (Number(bv) || 0)) * sortDir;
     return String(av).toLowerCase() < String(bv).toLowerCase() ? -sortDir : String(av).toLowerCase() > String(bv).toLowerCase() ? sortDir : 0;
   });
 }
@@ -450,6 +469,7 @@ function renderTable(){
         <td><span class="div-tag">${esc(d.division || '-')}</span></td>
         <td class="mono" style="font-weight:700;">${esc(d.partNo || '-')}</td>
         <td class="wrap-cell" title="${esc(d.description || '')}">${esc(d.description || '-')}</td>
+        <td class="mono" style="font-weight:700;">${esc(d.revalue ? d.revalue.toLocaleString('en-IN') : '-')}</td>
         <td class="mono">${esc(d.girNo || '-')}</td>
         <td><span class="div-tag" style="background:${d.opt==='scrap'?'#fecaca':(d.opt==='stock'?'#bbf7d0':(d.opt==='dispatch'?'#bfdbfe':'#e2e8f0'))}; color:#1e293b;">${esc((d.opt||'-').toUpperCase())}</span></td>
         <td class="wrap-cell" title="${esc(d.remarks || '')}">${esc(d.remarks || '-')}</td>
@@ -500,6 +520,9 @@ function openEditModal(id){
   document.getElementById('m-partno').value = d.partNo || '';
   document.getElementById('m-description').value = d.description || '';
   document.getElementById('m-girno').value = d.girNo || '';
+  document.getElementById('m-revalue').value = d.revalue || '';
+  document.getElementById('m-opt').value = d.opt || '';
+  document.getElementById('m-remarks').value = d.remarks || '';
   document.getElementById('item-overlay').classList.add('open');
   document.querySelector('.modal-scroll').scrollTop = 0;
 }
@@ -509,7 +532,7 @@ function closeModal(){
 }
 
 function clearForm(){
-  ['m-id','m-date','m-division','m-partno','m-description','m-girno'].forEach(id => {
+  ['m-id','m-date','m-division','m-partno','m-description','m-girno','m-revalue','m-opt','m-remarks'].forEach(id => {
     const el = document.getElementById(id);
     if(el){ el.value = ''; el.classList.remove('err'); }
   });
@@ -523,6 +546,9 @@ function readPayload(){
     partNo: document.getElementById('m-partno').value.trim(),
     description: document.getElementById('m-description').value.trim(),
     girNo: document.getElementById('m-girno').value.trim(),
+    revalue: Number(document.getElementById('m-revalue').value || 0),
+    opt: document.getElementById('m-opt').value,
+    remarks: document.getElementById('m-remarks').value.trim(),
   };
 }
 
