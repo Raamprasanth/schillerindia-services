@@ -70,7 +70,7 @@ router.post('/:id', async (req, res) => {
     }
     
     service.finalRemarks = (service.finalRemarks ? service.finalRemarks + ' | ' : '') + 'Re-repair requested';
-    await service.save();
+    await service.save({ validateBeforeSave: false });
 
     // 3. Re-create the RTUR/RTFRN/RTOB record so the repair team sees it again
     const ModelToRecreate = 
@@ -179,7 +179,7 @@ router.post('/crl/:id', async (req, res) => {
     service.rtobCompleted = false;
     service.repairStatus = 're repair product';
     service.finalRemarks = (service.finalRemarks ? service.finalRemarks + ' | ' : '') + 'Re-repair requested';
-    await service.save();
+    await service.save({ validateBeforeSave: false });
 
     // 3. Re-create the RTUR/RTFRN/RTOB record
     const deletedSourceCollection = crlDoc.sourceCollection || '';
