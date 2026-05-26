@@ -55,11 +55,5 @@
   });
 
   /* ── 4. After picking a date: auto-advance in Tab direction ── */
-  document.addEventListener('change', function (e) {
-    if (e.target.type !== 'date' || tabPickEl !== e.target) return;
-    var el = e.target;
-    var bk = tabPickBk;
-    tabPickEl = null;
-    setTimeout(function () { advance(el, bk); }, 50);
-  });
+  // Removed auto-advance on 'change' to prevent distracting focus jumps while typing dates with the keyboard.
 })();
