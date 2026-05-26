@@ -341,7 +341,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           <div class="np-foot"><a href="#">View all</a></div>
         </div>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="loadAllData()">&#8635; Refresh</button>
+      <button class="btn btn-outline btn-sm" onclick="const b=this; const o=b.innerHTML; b.innerHTML='&#8635; Refreshing...'; Promise.resolve(loadAllData()).then(()=>{b.innerHTML='&#10004; Refreshed!'; setTimeout(()=>b.innerHTML=o,2000);}).catch(()=>{b.innerHTML='&#10008; Error'; setTimeout(()=>b.innerHTML=o,2000);})">&#8635; Refresh</button>
       <button class="btn btn-primary btn-sm" onclick="exportSummary()">&#128228; Export Summary</button>
     </div>
   </div>
@@ -357,7 +357,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
             <div class="msg-title">Service Messages</div>
             <div class="msg-sub">Select a division and employee</div>
           </div>
-          <button class="btn btn-outline btn-sm" onclick="loadScMessageThreads()">Refresh</button>
+          <button class="btn btn-outline btn-sm" onclick="const b=this; const o=b.innerHTML; b.innerHTML='&#8635; Refreshing...'; Promise.resolve(loadScMessageThreads()).then(()=>{b.innerHTML='&#10004; Refreshed!'; setTimeout(()=>b.innerHTML=o,2000);}).catch(()=>{b.innerHTML='&#10008; Error'; setTimeout(()=>b.innerHTML=o,2000);})">Refresh</button>
         </div>
         <div class="msg-compose">
           <div class="msg-field">

@@ -378,7 +378,7 @@ tr:hover td{background:var(--surface3);}
     </div>
     <div class="topbar-actions">
       <span class="topbar-date-pill" id="topbar-date"></span>
-      <button class="btn btn-outline" onclick="renderCalendar()">&#10227; Refresh</button>
+      <button class="btn btn-outline" onclick="const b=this; const o=b.innerHTML; b.innerHTML='&#8635; Refreshing...'; Promise.resolve(renderCalendar()).then(()=>{b.innerHTML='&#10004; Refreshed!'; setTimeout(()=>b.innerHTML=o,2000);}).catch(()=>{b.innerHTML='&#10008; Error'; setTimeout(()=>b.innerHTML=o,2000);})">&#10227; Refresh</button>
       <button class="btn btn-primary" style="background:#047857;" onclick="exportToExcel()">&#128229; Export</button>
       <button class="btn btn-primary" onclick="openDwModal()">&#43; Add Entry</button>
     </div>

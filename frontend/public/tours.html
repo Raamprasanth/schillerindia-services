@@ -17,7 +17,7 @@
 <link rel="stylesheet" href="employee-theme.css">
 <link rel="stylesheet" href="brand-logo.css">
 <script src="brand-logo.js" defer></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#f0f4f8;--surface:#fff;--surface2:#e8f0f7;--surface3:#f8fafc;--border:#ccdde8;--accent:#0068b5;--green:#059669;--green2:#047857;--red:#b91c1c;--text:#0f2236;--muted:#6b8ca8;--soft:#3d6480;--card:#fff;--shadow:0 1px 8px rgba(0,60,120,.07)}
@@ -35,7 +35,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .btn{border:none;border-radius:8px;padding:8px 15px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;display:inline-flex;align-items:center;gap:6px}.btn-primary{background:var(--green);color:#fff}.btn-primary:hover{background:var(--green2)}.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--soft)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
 .tour-list{padding:18px;display:flex;flex-direction:column;gap:18px}.tour-group{position:relative;padding-left:22px}.tour-group::before{content:'';position:absolute;left:7px;top:38px;bottom:6px;width:2px;background:linear-gradient(#9bd6c2,#d7e8f5);border-radius:4px}.tour-group-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;flex-wrap:wrap}.tour-group-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px}.tour-group-title::before{content:'';width:14px;height:14px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px rgba(5,150,105,.12);margin-left:-21px}.tour-group-meta{font-size:11.5px;color:var(--muted);font-weight:700}.tour-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.tour-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 7px rgba(0,60,120,.06);overflow:hidden}.tour-card-top{padding:12px 14px;background:linear-gradient(135deg,#f8fbff,#f0fdf8);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.tour-card-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.tour-day{display:inline-flex;align-items:center;gap:5px;background:rgba(5,150,105,.1);color:#047857;border:1px solid rgba(5,150,105,.2);border-radius:999px;padding:3px 9px;font-size:11px;font-weight:800}.tour-date{font-size:11.5px;color:var(--accent);font-weight:800;margin-top:5px}.tour-customer{font-size:14px;font-weight:800;color:var(--text);line-height:1.35}.tour-card-body{padding:13px 14px;display:flex;flex-direction:column;gap:12px}.tour-meta-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.tour-meta{background:var(--surface3);border:1px solid rgba(0,60,120,.07);border-radius:9px;padding:8px}.tour-meta-label{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:800;margin-bottom:3px}.tour-meta-val{font-size:11.5px;color:var(--text);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tour-notes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.tour-note{border:1px solid rgba(0,60,120,.08);border-radius:9px;padding:9px;background:#fbfdff}.tour-note-title{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:800;margin-bottom:4px}.tour-note-text{font-size:11.5px;line-height:1.45;color:var(--soft);max-height:52px;overflow:hidden}.tour-photos{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.pill{display:inline-block;padding:2px 8px;border-radius:9px;font-size:11px;font-weight:700;background:rgba(0,104,181,.08);color:var(--accent)}.thumb{width:42px;height:42px;object-fit:cover;border-radius:7px;border:1px solid var(--border);cursor:pointer}.del,.add-day,.pdf-day{background:none;border:1px solid rgba(185,28,28,.25);color:var(--red);border-radius:6px;padding:4px 9px;font-size:11px;font-weight:700;cursor:pointer}.add-day{border-color:rgba(5,150,105,.28);color:#047857;background:rgba(5,150,105,.06)}.pdf-day{border-color:rgba(0,104,181,.28);color:var(--accent);background:rgba(0,104,181,.06)}.empty{text-align:center;padding:55px 20px;color:var(--muted)}
 .overlay{position:fixed;top:0;left:230px;right:0;bottom:0;background:rgba(5,18,38,.54);backdrop-filter:blur(4px);z-index:1200;display:none;align-items:stretch;justify-content:stretch;padding:0}.overlay.open{display:flex}.modal{background:var(--surface);border:none;border-radius:0;width:100%;max-width:none;height:100%;max-height:none;overflow:hidden;display:flex;flex-direction:column;box-shadow:none}.modal-head{padding:18px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0}.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800}.modal-sub{font-size:11.5px;color:var(--muted);margin-top:3px}.modal-close{width:34px;height:34px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:15px}.modal-body{padding:22px 28px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;flex:1}.section-title{padding-bottom:8px;border-bottom:1px solid var(--border);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.fg2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.visit-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.field{display:flex;flex-direction:column;gap:5px}.field label{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}.req{color:var(--red)}.field input,.field textarea,.field select{border:1.5px solid var(--border);border-radius:10px;padding:9px 13px;font-size:13px;color:var(--text);background:var(--surface);font-family:'Plus Jakarta Sans',sans-serif;outline:none;width:100%;min-width:0}.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(5,150,105,.1)}.field textarea{resize:vertical;min-height:82px}
-.img-area{background:linear-gradient(180deg,#f8fbff,#eef7f3);border:1.5px dashed #9fbdd3;border-radius:12px;padding:14px}.img-note{display:flex;justify-content:space-between;gap:10px;margin-bottom:10px;font-size:11.5px;color:var(--soft);flex-wrap:wrap}.img-note strong{color:var(--text);font-size:12px}.img-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.img-slot{border:1.5px dashed var(--border);border-radius:10px;aspect-ratio:4/3;overflow:hidden;cursor:pointer;background:var(--surface);display:flex;align-items:center;justify-content:center;position:relative}.img-slot:hover{border-color:var(--green);background:rgba(5,150,105,.04)}.img-placeholder{text-align:center;color:var(--muted);font-size:11px;font-weight:700;pointer-events:none}.img-placeholder span{display:block;font-size:24px;margin-bottom:5px}.img-preview{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}.img-remove{position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;background:rgba(185,28,28,.9);color:#fff;border:none;cursor:pointer;z-index:2}.modal-foot{padding:16px 28px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;background:var(--surface3);flex-shrink:0}.msg{font-size:12px;font-weight:700;color:var(--red);display:none;padding:8px 12px;background:rgba(185,28,28,.06);border-radius:8px;border:1px solid rgba(185,28,28,.15);margin-right:auto}
+.img-area{background:linear-gradient(180deg,#f8fbff,#eef7f3);border:1.5px dashed #9fbdd3;border-radius:12px;padding:14px}.img-note{display:flex;justify-content:space-between;gap:10px;margin-bottom:10px;font-size:11.5px;color:var(--soft);flex-wrap:wrap}.img-note strong{color:var(--text);font-size:12px}.img-slots{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.img-slot{border:1.5px dashed var(--border);border-radius:10px;aspect-ratio:4/3;overflow:hidden;cursor:pointer;background:var(--surface);display:flex;align-items:center;justify-content:center;position:relative}.img-slot:hover{border-color:var(--green);background:rgba(5,150,105,.04)}.img-placeholder{text-align:center;color:var(--muted);font-size:11px;font-weight:700;pointer-events:none}.img-placeholder span{display:block;font-size:24px;margin-bottom:5px}.img-preview{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}.img-remove{position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;background:rgba(185,28,28,.9);color:#fff;border:none;cursor:pointer;z-index:2}.modal-foot{padding:16px 28px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;background:var(--surface3);flex-shrink:0}.msg{font-size:12px;font-weight:700;color:var(--red);display:none;padding:8px 12px;background:rgba(185,28,28,.06);border-radius:8px;border:1px solid rgba(185,28,28,.15);margin-right:auto}
 @media(max-width:1200px){.visit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tour-cards{grid-template-columns:1fr}.tour-meta-grid,.tour-notes{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:900px){.sidebar{display:none}.overlay{left:0}.fg2,.visit-grid,.tour-meta-grid,.tour-notes{grid-template-columns:1fr}.img-slots{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}.content{padding:14px}.tour-list{padding:12px}.tour-group{padding-left:0}.tour-group::before,.tour-group-title::before{display:none}}
 </style>
@@ -91,7 +91,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 </main>
 <div class="overlay" id="tour-overlay">
   <div class="modal">
-    <div class="modal-head"><div><div class="modal-title">&#128205; Add New Tour Summary</div><div class="modal-sub">Record the visit details and attach up to 3 supporting photos</div></div><button class="modal-close" onclick="closeTourModal()">&#10005;</button></div>
+    <div class="modal-head"><div><div class="modal-title">&#128205; Add New Tour Summary</div><div class="modal-sub">Record the visit details and attach up to 5 supporting photos</div></div><button class="modal-close" onclick="closeTourModal()">&#10005;</button></div>
     <div class="modal-body">
       <div class="section-title">Visit Details</div>
       <div class="visit-grid">
@@ -109,14 +109,14 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <div class="field"><label>Problem Observed</label><textarea id="tour-observed"></textarea></div>
       <div class="field"><label>Action Taken</label><textarea id="tour-action"></textarea></div>
       <div class="section-title">Photos</div>
-      <div class="field"><label>Upload Images</label><div class="img-area"><div class="img-note"><strong>Attach up to 3 images</strong><span>Each image must be 3 MB or smaller.</span></div><div class="img-slots" id="img-slots"></div></div></div>
+      <div class="field"><label>Upload Images</label><div class="img-area"><div class="img-note"><strong>Attach up to 5 images</strong><span>Each image must be 3 MB or smaller.</span></div><div class="img-slots" id="img-slots"></div></div></div>
     </div>
     <div class="modal-foot"><div class="msg" id="tour-msg"></div><button class="btn btn-outline" onclick="closeTourModal()">Cancel</button><button class="btn btn-primary" id="save-btn" onclick="saveTour()">&#128190; Save Entry</button></div>
   </div>
 </div>
 <script>
 const token = sessionStorage.getItem('schiller_token') || '';
-let tours = [], tourImgs = [null, null, null];
+let tours = [], tourImgs = [null, null, null, null, null];
 (function init(){
   const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   const name = u.name || 'Employee';
@@ -170,7 +170,7 @@ function renderTourCardGroup(name, items, tourNum){
     + '<div class="tour-card-top" onclick="toggleTourBody(this)" style="cursor: pointer; user-select: none; border-bottom: none;"><div><div class="tour-day">' + esc(name) + '</div><div class="tour-date">' + dateText + ' (' + items.length + ' day' + (items.length === 1 ? '' : 's') + ' logged)</div></div>'
     + '<div class="tour-card-actions" onclick="event.stopPropagation()">'
     + '  <button class="add-day" onclick="openNextDay(&quot;' + tourKey + '&quot;)">&#43; Add Day</button>'
-    + '  <button class="pdf-day" onclick="generateTourPdf(&quot;' + tourKey + '&quot;)">&#128196; PDF</button>'
+    + '  <button class="pdf-day" onclick="generateTourExcel(&quot;' + tourKey + '&quot;)">&#128196; Excel</button>'
     + '</div></div>'
     + '<div class="tour-card-body" style="display: none; flex-direction: column; gap: 16px;">';
     
@@ -250,8 +250,8 @@ function openNextDay(tourName){
   });
 }
 function closeTourModal(){ document.getElementById('tour-overlay').classList.remove('open'); }
-function clearForm(){ ['tour-name','tour-day','tour-date','tour-customer','tour-branch','tour-model','tour-status','tour-slno','tour-reported','tour-observed','tour-action'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';}); const day=document.getElementById('tour-day'); if(day) day.value='1'; tourImgs=[null,null,null]; renderSlots(); showMsg(''); }
-function renderSlots(){ const wrap=document.getElementById('img-slots'); if(!wrap) return; wrap.innerHTML=[0,1,2].map(i=>'<div class="img-slot" onclick="document.getElementById(&quot;tour-img-'+i+'&quot;).click()"><input type="file" id="tour-img-'+i+'" accept="image/*" style="display:none" onchange="handleImg('+i+',this)">'+(tourImgs[i]?'<img class="img-preview" src="'+tourImgs[i]+'"><button class="img-remove" onclick="removeImg('+i+',event)">&#10005;</button>':'<div class="img-placeholder"><span>&#128247;</span>Add Photo</div>')+'</div>').join(''); }
+function clearForm(){ ['tour-name','tour-day','tour-date','tour-customer','tour-branch','tour-model','tour-status','tour-slno','tour-reported','tour-observed','tour-action'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';}); const day=document.getElementById('tour-day'); if(day) day.value='1'; tourImgs=[null,null,null,null,null]; renderSlots(); showMsg(''); }
+function renderSlots(){ const wrap=document.getElementById('img-slots'); if(!wrap) return; wrap.innerHTML=[0,1,2,3,4].map(i=>'<div class="img-slot" onclick="document.getElementById(&quot;tour-img-'+i+'&quot;).click()"><input type="file" id="tour-img-'+i+'" accept="image/*" style="display:none" onchange="handleImg('+i+',this)">'+(tourImgs[i]?'<img class="img-preview" src="'+tourImgs[i]+'"><button class="img-remove" onclick="removeImg('+i+',event)">&#10005;</button>':'<div class="img-placeholder"><span>&#128247;</span>Add Photo</div>')+'</div>').join(''); }
 function handleImg(i,input){ const file=input.files&&input.files[0]; if(!file) return; if(!/^image\//.test(file.type||'')){ alert('Please upload an image file.'); input.value=''; return; } if(file.size > 3*1024*1024){ alert('Image '+(i+1)+' exceeds 3 MB limit.'); input.value=''; return; } const reader=new FileReader(); reader.onload=e=>{ tourImgs[i]=e.target.result; renderSlots(); }; reader.readAsDataURL(file); }
 function removeImg(i,event){ event.stopPropagation(); tourImgs[i]=null; renderSlots(); }
 async function saveTour(){
@@ -267,93 +267,32 @@ async function saveTour(){
   finally{ btn.disabled=false; btn.innerHTML='&#128190; Save Entry'; }
 }
 async function deleteTour(id){ if(!confirm('Delete this tour summary?')) return; const res=await fetch('/api/tours/'+id,{method:'DELETE',headers:hdrs()}); handleAuth(res); await loadTours(); }
-async function generateTourPdf(tourName){
+async function generateTourExcel(tourName){
   const sameTour = tours.filter(t => String(t.tourName || t.customerName || 'Tour Summary') === String(tourName));
   if(!sameTour.length){ alert('No tour days found.'); return; }
   const items = sameTour.sort((a,b) => (Number(a.dayNo||1)-Number(b.dayNo||1)) || String(a.startDate||'').localeCompare(String(b.startDate||'')));
-  const jsPDFLib = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
-  if(!jsPDFLib){ printTourFallback(tourName, items); return; }
-  const doc = new jsPDFLib('p','mm','a4');
-  const pageW = 210, pageH = 297, margin = 14;
-  let y = 16;
-  const addText = (text, x, yy, opts={}) => {
-    doc.setFont('helvetica', opts.bold ? 'bold' : 'normal');
-    doc.setFontSize(opts.size || 10);
-    doc.setTextColor(opts.color || '#0f2236');
-    const lines = doc.splitTextToSize(String(text || '-'), opts.width || (pageW - margin*2));
-    doc.text(lines, x, yy);
-    return yy + (lines.length * ((opts.size || 10) * 0.42)) + (opts.gap || 4);
-  };
-  const ensure = (need) => { if(y + need > pageH - 16){ doc.addPage(); y = 16; } };
   
-  items.forEach((t, index) => {
-    if(index > 0) {
-      doc.addPage();
-      y = 16;
-    }
-    doc.setFillColor(0,104,181); doc.rect(0,0,pageW,30,'F');
-    doc.setTextColor('#ffffff'); doc.setFont('helvetica','bold'); doc.setFontSize(17); doc.text('SchillerIndia Tour Summary', margin, 13);
-    doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.text(tourName + ' - Day ' + (t.dayNo || 1), margin, 22);
-    y = 40;
-    doc.setDrawColor(204,221,232); doc.setLineWidth(0.2);
-    const details = [
-      ['Start Date', fmtDate(t.startDate)], ['Customer Name', t.customerName], ['Branch', t.branch], ['Model', t.model],
-      ['Unit Status', t.unitStatus], ['Unit SL No', t.unitSlNo], ['Added By', t.createdBy], ['Generated', new Date().toLocaleDateString('en-IN')]
-    ];
-    details.forEach((row, i) => {
-      const col = i % 2, x = margin + col * 92;
-      if(col === 0 && i) y += 16;
-      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor('#6b8ca8'); doc.text(row[0], x, y);
-      doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor('#0f2236'); doc.text(doc.splitTextToSize(String(row[1] || '-'), 78), x, y + 5);
-    });
-    y += 23;
-    [['Problem Reported', t.problemReported], ['Problem Observed', t.problemObserved], ['Action Taken', t.actionTaken]].forEach(([title, body]) => {
-      ensure(32);
-      doc.setFillColor(248,250,252); doc.roundedRect(margin, y - 5, pageW - margin*2, 8, 1.5, 1.5, 'F');
-      y = addText(title, margin + 2, y, { bold:true, size:10, color:'#0068b5', gap:3 });
-      y = addText(body || '-', margin + 2, y, { size:10, width:pageW - margin*2 - 4, gap:8 });
-    });
-    const imgs = (t.images || []).filter(Boolean);
-    if(imgs.length){
-      ensure(60);
-      y = addText('Photos', margin, y, { bold:true, size:11, color:'#0068b5', gap:4 });
-      let x = margin;
-      for(let i=0;i<imgs.length;i++){
-        ensure(52);
-        try{
-          const format = imageFormat(imgs[i]);
-          doc.addImage(imgs[i], format, x, y, 54, 42, undefined, 'FAST');
-          x += 60;
-          if(x + 54 > pageW - margin){ x = margin; y += 48; }
-        }catch(_){}
-      }
-    }
-  });
-  const fname = safeFileName(tourName + '-complete-summary-' + (new Date().toISOString().slice(0,10))) + '.pdf';
-  doc.save(fname);
-}
-function imageFormat(src){
-  const m = String(src).match(/^data:image\/(png|jpeg|jpg|webp)/i);
-  if(!m) return 'JPEG';
-  return m[1].toLowerCase() === 'png' ? 'PNG' : m[1].toLowerCase() === 'webp' ? 'WEBP' : 'JPEG';
-}
-function printTourFallback(tourName, items){
-  const w = window.open('', '_blank');
-  let html = '<html><head><title>Tour Summary PDF</title><style>body{font-family:Arial;padding:24px;color:#102336}h1{color:#0068b5}.day-block{page-break-after:always;margin-bottom:20px;border-bottom:2px solid #ccc;padding-bottom:20px;}.box{border:1px solid #ccd;padding:12px;margin:10px 0;border-radius:8px}label{font-weight:bold;color:#60758a}</style></head><body><h1>SchillerIndia Tour Summary - ' + esc(tourName) + '</h1>';
-  items.forEach((t) => {
-    const imgs = (t.images || []).filter(Boolean).map(src => '<img src="'+src+'" style="width:160px;height:120px;object-fit:cover;margin:6px;border:1px solid #ccd;">').join('');
-    html += '<div class="day-block">'
-      + '<h2>Day ' + esc(t.dayNo || 1) + ' (' + fmtDate(t.startDate) + ')</h2>'
-      + '<div class="box"><label>Customer:</label> '+esc(t.customerName||'-')+'<br><label>Branch:</label> '+esc(t.branch||'-')+'<br><label>Model:</label> '+esc(t.model||'-')+'<br><label>Unit Status:</label> '+esc(t.unitStatus||'-')+'<br><label>Unit SL No:</label> '+esc(t.unitSlNo||'-')+'</div>'
-      + '<div class="box"><label>Problem Reported</label><p>'+esc(t.problemReported||'-')+'</p></div>'
-      + '<div class="box"><label>Problem Observed</label><p>'+esc(t.problemObserved||'-')+'</p></div>'
-      + '<div class="box"><label>Action Taken</label><p>'+esc(t.actionTaken||'-')+'</p></div>'
-      + '<div>'+imgs+'</div>'
-      + '</div>';
-  });
-  html += '</body></html>';
-  w.document.write(html);
-  w.document.close(); w.print();
+  const data = items.map(t => ({
+    "Tour Name": tourName,
+    "Day": t.dayNo || 1,
+    "Start Date": fmtDate(t.startDate),
+    "Customer Name": t.customerName,
+    "Branch": t.branch,
+    "Model": t.model,
+    "Unit Status": t.unitStatus,
+    "Unit SL No": t.unitSlNo,
+    "Problem Reported": t.problemReported,
+    "Problem Observed": t.problemObserved,
+    "Action Taken": t.actionTaken,
+    "Added By": t.createdBy,
+    "Images Count": (t.images || []).filter(Boolean).length
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Tour Summary");
+  const fname = safeFileName(tourName + '-summary-' + (new Date().toISOString().slice(0,10))) + '.xlsx';
+  XLSX.writeFile(wb, fname);
 }
 function safeFileName(s){ return String(s||'tour-summary').toLowerCase().replace(/[^a-z0-9\-]+/g,'-').replace(/^-+|-+$/g,'').slice(0,80) || 'tour-summary'; }
 function viewImg(src){ const ov=document.createElement('div'); ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out'; ov.onclick=()=>ov.remove(); const img=document.createElement('img'); img.src=src; img.style.cssText='max-width:90vw;max-height:88vh;border-radius:12px'; ov.appendChild(img); document.body.appendChild(ov); }

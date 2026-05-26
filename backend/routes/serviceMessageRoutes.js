@@ -21,7 +21,7 @@ function normalizeRole(user) {
 
 function canUseMessages(user) {
   const role = normalizeRole(user);
-  return role === 'service_coordinator' || role === 'employee' || role === 'admin' || role === 'superadmin';
+  return role === 'service_coordinator' || role === 'employee' || role === 'admin' || role === 'superadmin' || role === 'pt' || role === 'fqc';
 }
 
 function isCoordinator(user) {

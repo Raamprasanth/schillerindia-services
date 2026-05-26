@@ -539,7 +539,7 @@ table.svc-table tbody tr:last-child td{border-bottom:none;}
             <div class="fg-field"><label>Model Configuration</label><input type="text" id="f-modelconfig" placeholder=""/></div>
             <div class="fg-field"><label>Unit SL No <span class="req">*</span></label><input type="text" id="f-unitsl" placeholder="" required/></div>
             <div class="fg-field"><label>Unit Status <span class="req">*</span></label>
-              <select id="f-unitstatus" required onchange="checkAutoTriggers()">
+              <select id="f-unitstatus" required onchange="updateRepTypeOptions(); checkAutoTriggers()">
                 <option value="">Select Status...</option>
                 <option value="Repeat">Repeat</option>
                 <option value="Demo">Demo</option><option value="OW">OW</option>
@@ -747,7 +747,19 @@ function getAutoRoutes() {
     isSO: EST_UNIT_STATUSES.includes(unitSts) && repType === 'BS/SO'
   };
 }
+function updateRepTypeOptions() {
+  const unitSts = document.getElementById('f-unitstatus')?.value || '';
+  const repType = document.getElementById('f-reptype');
+  if (!repType) return;
+  const bsSoOption = Array.from(repType.options).find(o => o.value === 'BS/SO');
+  if (!bsSoOption) return;
+  const allowBsSo = EST_UNIT_STATUSES.includes(unitSts);
+  bsSoOption.hidden = !allowBsSo;
+  bsSoOption.disabled = !allowBsSo;
+  if (!allowBsSo && repType.value === 'BS/SO') repType.value = 'NA';
+}
 function checkAutoTriggers() {
+  updateRepTypeOptions();
   const { isFRN, isEST, isUR, isSO } = getAutoRoutes();
   document.getElementById('frn-notice').classList.toggle('show', isFRN);
   document.getElementById('est-notice').classList.toggle('show', isEST);
@@ -812,6 +824,7 @@ function populateEngFilter() {
   });
   fetchFormData();
   loadServices();
+  updateRepTypeOptions();
   
   // Setup enter to fetch today's date for all date inputs
   document.querySelectorAll('input[type="date"]').forEach(el => {
@@ -1094,7 +1107,7 @@ function editService(id) {
     set('f-reptype',s.repType); set('f-repgirno',s.repGirNo);
     set('f-fieldremarks',s.fieldRemarks);
     set('f-commwarrdetails',s.commWarrDetails);
-    onRepTypeChange(); checkAutoTriggers();
+    updateRepTypeOptions(); onRepTypeChange(); checkAutoTriggers();
   },150);
   window.scrollTo(0,0);
 }
@@ -1169,6 +1182,13 @@ async function submitForm() {
   const existingSvc  = editingId?services.find(s=>(s._id||s.id)===editingId):null;
   const unitStsVal   = document.getElementById('f-unitstatus').value;
   const repTypeVal   = document.getElementById('f-reptype').value;
+  if (repTypeVal === 'BS/SO' && !EST_UNIT_STATUSES.includes(unitStsVal)) {
+    msg.textContent=' BS/SO is allowed only when Unit Status is OW or LAMC.';
+    msg.className='form-validate-msg show-err';
+    document.getElementById('f-reptype').classList.add('err');
+    document.getElementById('f-reptype').scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
   const willCreateFRN= !editingId&&FRN_UNIT_STATUSES.includes(unitStsVal)&&repTypeVal==='NA';
   const willCreateEST= !editingId&&EST_UNIT_STATUSES.includes(unitStsVal)&&repTypeVal==='NA';
   const willCreateUR = !editingId&&repTypeVal==='TO/ADV SO';

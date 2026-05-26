@@ -355,7 +355,8 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
       <div class="page-title">Pending Activity</div>
     </div>
     <div class="topbar-actions">
-      <button class="btn btn-outline" onclick="fetchData()">&#10227; Refresh</button>
+      <button class="btn btn-outline" onclick="const b=this; const o=b.innerHTML; b.innerHTML='&#8635; Refreshing...'; Promise.resolve(fetchData()).then(()=>{b.innerHTML='&#10004; Refreshed!'; setTimeout(()=>b.innerHTML=o,2000);}).catch(()=>{b.innerHTML='&#10008; Error'; setTimeout(()=>b.innerHTML=o,2000);})">&#10227; Refresh</button>
+      <button class="btn btn-outline" onclick="exportCSV()">&#128190; Export</button>
       <button class="btn btn-primary" onclick="openModal()">&#43; Add Activity</button>
     </div>
   </div>
@@ -670,6 +671,20 @@ function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;")
 function formatDate(dStr){
   if(!dStr) return '--';
   try{ return new Date(dStr).toLocaleDateString('en-IN'); } catch(e){ return dStr; }
+}
+function exportCSV() {
+  if (!currentData.length) { alert('No data to export.'); return; }
+  const headers = ['SC Engineer','Initiated Date','Activity','Description','Responsible','Pending From','Target Date','Remarks','SC Incharge Remarks','Status'];
+  const keys = ['scEngineer','initiatedDate','activity','description','responsible','pendingFrom','targetDate','remarks','scInchargeRemarks','status'];
+  let csv = headers.join(',') + '\n';
+  currentData.forEach(r => {
+    csv += keys.map(k => '"' + String(r[k]||'').replace(/"/g,'""') + '"').join(',') + '\n';
+  });
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'pending_activity_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click(); URL.revokeObjectURL(url);
 }
 function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href="login.html"; }
 
