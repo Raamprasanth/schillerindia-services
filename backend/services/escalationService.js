@@ -704,6 +704,7 @@ async function clearToEscalationQueue(queueDocs = []) {
   const queueIds = queueDocs.map((doc) => doc._id).filter(Boolean);
   const frnIds = [...new Set(queueDocs.filter((doc) => doc.module === 'to_frn' && doc.sourceId).map((doc) => doc.sourceId))];
   const estIds = [...new Set(queueDocs.filter((doc) => doc.module === 'to_est' && doc.sourceId).map((doc) => doc.sourceId))];
+  const urIds = [...new Set(queueDocs.filter((doc) => doc.module === 'to_ur' && doc.sourceId).map((doc) => doc.sourceId))];
 
   const ops = [];
   if (queueIds.length) ops.push(EscalationQueue.deleteMany({ _id: { $in: queueIds } }));
@@ -716,6 +717,12 @@ async function clearToEscalationQueue(queueDocs = []) {
   if (estIds.length) {
     ops.push(EstimationPending.updateMany(
       { _id: { $in: estIds } },
+      { $set: { toEscalationQueuedAt: null, toEscalationQueuedBy: '' } }
+    ));
+  }
+  if (urIds.length) {
+    ops.push(Service.updateMany(
+      { _id: { $in: urIds } },
       { $set: { toEscalationQueuedAt: null, toEscalationQueuedBy: '' } }
     ));
   }
@@ -807,16 +814,19 @@ function buildCustomMailPayload(slotWindow, data) {
 
 async function collectToEscalationData(slotWindow) {
   const rows = await EscalationQueue.find({
-    module: { $in: ['to_frn', 'to_est'] },
+    module: { $in: ['to_frn', 'to_est', 'to_ur'] },
     queuedAt: { $gte: slotWindow.windowStart, $lte: slotWindow.windowEnd },
   }).sort({ queuedAt: 1 }).lean();
 
   const frnRows = rows.filter((item) => item.module === 'to_frn').map((item) => item.row || {});
   const estimationRows = rows.filter((item) => item.module === 'to_est').map((item) => item.row || {});
+  const underRepairRows = rows.filter((item) => item.module === 'to_ur').map((item) => item.row || {});
 
   return {
     frnRows,
     estimationRows,
+    underRepairRows,
+    queueDocs: rows,
   };
 }
 
@@ -869,7 +879,7 @@ function buildSrMailPayload(slotWindow, data) {
 }
 
 function buildToMailPayload(slotWindow, data) {
-  const sourceRows = [...data.frnRows, ...data.estimationRows];
+  const sourceRows = [...data.frnRows, ...data.estimationRows, ...(data.underRepairRows || [])];
   const rows = [];
   sourceRows.forEach((row) => {
     const items = normalizeToItems(row?.TO_ITEMS);
@@ -1222,11 +1232,11 @@ async function runToEscalationSlot(slot, options = {}) {
     }
 
     const data = await collectToEscalationData(slotWindow);
-    const totalCount = data.frnRows.length + data.estimationRows.length;
+    const totalCount = data.frnRows.length + data.estimationRows.length + (data.underRepairRows || []).length;
     if (!totalCount) {
       log = await EscalationRunLog.findByIdAndUpdate(
         log._id,
-        { $set: { status: 'no_records', frnCount: 0, estCount: 0, totalCount: 0, sentAt: new Date() } },
+        { $set: { status: 'no_records', frnCount: 0, estCount: 0, urCount: 0, totalCount: 0, sentAt: new Date() } },
         { new: true }
       );
       return { ok: true, skipped: true, message: 'No records found for this TO escalation window.', log };
@@ -1246,6 +1256,7 @@ async function runToEscalationSlot(slot, options = {}) {
           status: 'success',
           frnCount: data.frnRows.length,
           estCount: data.estimationRows.length,
+          urCount: (data.underRepairRows || []).length,
           totalCount,
           reportPath,
           sentAt: new Date(),

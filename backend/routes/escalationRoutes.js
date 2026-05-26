@@ -460,17 +460,18 @@ router.get('/status/to', protect, async (req, res) => {
     EscalationRunLog.findOne({ slot: 'to_evening', category: 'to' }).sort({ createdAt: -1 }).lean(),
   ]);
   const activeQueueWindow = getActiveToQueueWindow(new Date());
-  const [activeFrn, activeEst] = await Promise.all([
+  const [activeFrn, activeEst, activeUr] = await Promise.all([
     EscalationQueue.countDocuments({ module: 'to_frn', queuedAt: { $gte: activeQueueWindow.windowStart, $lte: activeQueueWindow.windowEnd } }),
     EscalationQueue.countDocuments({ module: 'to_est', queuedAt: { $gte: activeQueueWindow.windowStart, $lte: activeQueueWindow.windowEnd } }),
+    EscalationQueue.countDocuments({ module: 'to_ur', queuedAt: { $gte: activeQueueWindow.windowStart, $lte: activeQueueWindow.windowEnd } }),
   ]);
-  const activeTotal = activeFrn + activeEst;
+  const activeTotal = activeFrn + activeEst + activeUr;
   const morningData = activeQueueWindow.queueKey === 'morning'
-    ? { frnCount: activeFrn, estCount: activeEst, totalCount: activeTotal, windowDate: activeQueueWindow.windowDate }
-    : { frnCount: 0, estCount: 0, totalCount: 0, windowDate: getToSlotWindow('to_morning', new Date()).jobDate };
+    ? { frnCount: activeFrn, estCount: activeEst, urCount: activeUr, totalCount: activeTotal, windowDate: activeQueueWindow.windowDate }
+    : { frnCount: 0, estCount: 0, urCount: 0, totalCount: 0, windowDate: getToSlotWindow('to_morning', new Date()).jobDate };
   const eveningData = activeQueueWindow.queueKey === 'evening'
-    ? { frnCount: activeFrn, estCount: activeEst, totalCount: activeTotal, windowDate: activeQueueWindow.windowDate }
-    : { frnCount: 0, estCount: 0, totalCount: 0, windowDate: getToSlotWindow('to_evening', new Date()).jobDate };
+    ? { frnCount: activeFrn, estCount: activeEst, urCount: activeUr, totalCount: activeTotal, windowDate: activeQueueWindow.windowDate }
+    : { frnCount: 0, estCount: 0, urCount: 0, totalCount: 0, windowDate: getToSlotWindow('to_evening', new Date()).jobDate };
   res.json({
     recipients,
     morning: {
@@ -482,6 +483,7 @@ router.get('/status/to', protect, async (req, res) => {
         windowDate: morningData.windowDate,
         frnCount: morningData.frnCount,
         estCount: morningData.estCount,
+        urCount: morningData.urCount,
         totalCount: morningData.totalCount,
       },
     },
@@ -494,6 +496,7 @@ router.get('/status/to', protect, async (req, res) => {
         windowDate: eveningData.windowDate,
         frnCount: eveningData.frnCount,
         estCount: eveningData.estCount,
+        urCount: eveningData.urCount,
         totalCount: eveningData.totalCount,
       },
     },

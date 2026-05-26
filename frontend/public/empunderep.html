@@ -100,7 +100,36 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .btn-xs:hover{border-color:var(--accent);color:var(--accent);}
 .btn-xs.update{color:var(--accent);border-color:rgba(0,104,181,0.3);background:var(--accent3);}
 .btn-xs.update:hover{background:rgba(0,104,181,0.1);}
+.btn-xs.to-action{color:#7c3aed;border-color:rgba(124,58,237,0.25);background:rgba(124,58,237,0.08);}
+.btn-xs.to-action:hover{background:rgba(124,58,237,0.14);border-color:rgba(124,58,237,0.35);color:#6d28d9;}
+.btn-xs.to-queued{color:#166534;border-color:rgba(22,101,52,0.22);background:rgba(22,101,52,0.10);}
+.btn-xs.to-queued:hover{background:rgba(22,101,52,0.14);color:#166534;border-color:rgba(22,101,52,0.28);}
 .btn:disabled{opacity:0.5;cursor:not-allowed;}
+.overlay{position:fixed;top:0;left:225px;right:0;bottom:0;background:rgba(5,18,38,0.55);backdrop-filter:blur(4px);z-index:500;display:none;align-items:stretch;}
+.overlay.open{display:flex;animation:fadeIn 0.18s ease;}
+.modal{background:var(--surface);width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;}
+.modal-header{padding:16px 28px;border-bottom:1px solid var(--border);background:var(--surface);z-index:2;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.modal-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;}
+.modal-close{width:34px;height:34px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);font-size:16px;color:var(--muted);cursor:pointer;}
+.modal-scroll{flex:1;overflow:auto;background:linear-gradient(180deg,#f8fbff 0%,#fff 60%);}
+.modal-body{padding:18px 28px 22px;display:flex;flex-direction:column;gap:18px;}
+.modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:14px 28px;border-top:1px solid var(--border);background:var(--surface);}
+.line-items-wrap{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--surface3);}
+.to-line-items-table{width:100%;min-width:760px;border-collapse:collapse;font-size:11.5px;}
+.to-line-items-table th,.to-line-items-table td{padding:8px 10px;border-bottom:1px solid rgba(0,60,120,0.08);text-align:left;vertical-align:middle;}
+.to-line-items-table th{background:#eef4f9;color:var(--muted);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;}
+.to-line-items-table td{background:#fff;}
+.to-line-items-table tr:last-child td{border-bottom:none;}
+.to-line-items-table tbody tr:hover td{background:#f8fbff;}
+.to-line-items-table .to-static{display:block;font-size:12.5px;font-weight:700;color:#17324d;line-height:1.2;}
+.to-line-items-table .to-ref{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;background:#eef6ff;border:1px solid #c8dbef;color:#0f5ea8;font-size:12px;font-weight:800;letter-spacing:0.01em;}
+.to-line-items-table .to-soft{color:#5f7390;font-weight:600;}
+.to-line-items-table .to-action{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:30px;padding:0 10px;border-radius:7px;border:1px solid rgba(185,28,28,0.16);background:#fff5f5;color:#b91c1c;font-size:11px;font-weight:700;cursor:pointer;transition:all .18s ease;}
+.to-line-items-table .to-action:hover{background:#fee2e2;border-color:rgba(185,28,28,0.28);}
+.to-line-items-table input{padding:7px 9px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;width:100%;background:var(--surface);color:var(--text);}
+.to-line-items-table input:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 3px rgba(180,83,9,0.08);}
+.line-items-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:#fff;}
+.line-items-meta{font-size:11.5px;color:var(--muted);}
 
 /* -- TABLE CARD -- */
 .table-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);}
@@ -324,6 +353,52 @@ body.panel-open .main{display:none;}
 
 <div class="toast-wrap" id="toast-wrap"></div>
 
+<div class="overlay" id="to-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">TO Escalation <span id="to-modal-badge" style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:10px;background:rgba(124,58,237,0.10);color:#7c3aed;border:1px solid rgba(124,58,237,0.22);margin-left:8px;">-</span></div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:3px;">Add one or more TO rows, then queue this under-repair entry to TO escalation.</div>
+      </div>
+      <button class="modal-close" onclick="closeToEscalationModal()" title="Close (Esc)">&#10005;</button>
+    </div>
+    <div class="modal-scroll">
+      <div class="modal-body">
+        <div class="fm-msg" id="to-msg"></div>
+        <div class="form-section-title" style="color:var(--amber);border-bottom-color:rgba(180,83,9,0.2);margin-bottom:12px;">TO Escalation Line Items</div>
+        <div class="line-items-wrap">
+          <div style="overflow-x:auto;">
+            <table class="to-line-items-table">
+              <thead>
+                <tr>
+                  <th style="width:130px;">SC Ref No</th>
+                  <th style="width:110px;">FRN No</th>
+                  <th style="width:170px;">Mod / Brd Name</th>
+                  <th style="width:140px;">Model</th>
+                  <th style="width:150px;">Part No</th>
+                  <th style="width:90px;">Quantity</th>
+                  <th style="width:72px;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="to-lineitems-body">
+                <tr><td colspan="7" style="text-align:center;color:var(--muted);">No TO rows added.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="line-items-summary">
+            <div class="line-items-meta"><span id="to-lineitems-note">Add the required part numbers and quantities here.</span></div>
+            <button class="btn btn-outline btn-sm" type="button" onclick="addToEscalationRow()">+ Add Row</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeToEscalationModal()">Cancel</button>
+      <button class="btn btn-success" id="to-queue-btn" onclick="submitToEscalationQueue()">Queue to TO ES</button>
+    </div>
+  </div>
+</div>
+
 <!-- --- SIDEBAR - always visible --- -->
 <aside class="sidebar">
   <div class="sidebar-header">
@@ -464,9 +539,10 @@ body.panel-open .main{display:none;}
             <th onclick="sortBy('urTypeWork')">Type of Work <span class="si">&#8693;</span></th>
             <th onclick="sortBy('pdays')">Pend Days <span class="si">&#8693;</span></th>
             <th>Repair</th>
+            <th>TO</th>
           </tr></thead>
           <tbody id="ur-tbody">
-            <tr class="loading-row"><td colspan="17"><span class="spin"></span>Loading from database...</td></tr>
+            <tr class="loading-row"><td colspan="18"><span class="spin"></span>Loading from database...</td></tr>
           </tbody>
         </table>
       </div>
@@ -592,6 +668,8 @@ body.panel-open .main{display:none;}
 <script>
 const API = '';
 let UR_DATA = [], filtered = [], sortKey = 'entryDate', sortDir = -1, currentPage = 1;
+let currentToRecord = null;
+let currentToRows = [];
 const LOGGED_USER = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
 const EMP_NAME    = LOGGED_USER.name || '';
 let ALL_ENGINEERS = [];
@@ -671,6 +749,7 @@ function fillEngSelect(selId, division, selected) {
   (document.getElementById('panel-date-label')||{}).textContent = dateStr;
   engineersReadyPromise = fetchAllEngineers();
   loadUrEscalationStatus();
+  loadToEscalationStatus();
   loadData();
 })();
 
@@ -807,6 +886,9 @@ function renderRepairStateButton(id,isSent,isCompleted,titlePrefix='RT UR'){
   const stateTitle=isCompleted?'Repair completed':isSent?`Sent to ${titlePrefix}`:`Send to ${titlePrefix}`;
   return `<button class="btn-xs repair-state ${stateClass}" onclick="openRepairModal('${id}')" title="${stateTitle}">${stateLabel}</button>`;
 }
+function renderToEscalationButton(id,isQueued){
+  return `<button class="btn-xs ${isQueued?'to-queued':'to-action'}" onclick="openToEscalationModal('${id}')" title="${isQueued?'Already queued for TO escalation':'Queue to TO escalation'}">TO</button>`;
+}
 
 function updateStats() {
   const total   = UR_DATA.length;
@@ -879,7 +961,7 @@ function renderTable(){
   (document.getElementById('count-pill')||{}).textContent = total+' entr'+(total===1?'y':'ies');
   const tbody = document.getElementById('ur-tbody');
   if(!total){
-    tbody.innerHTML=`<tr><td colspan="17"><div class="empty-st">
+    tbody.innerHTML=`<tr><td colspan="18"><div class="empty-st">
       <div class="ei">&#128196;</div>
       <div class="et">${UR_DATA.length?'No records match the filters':'No Under Repair records yet'}</div>
       <div class="es">${UR_DATA.length?'Try clearing the filters.':'Records appear here when a service is saved with REP Type = TO/ADV SO.'}</div>
@@ -891,6 +973,7 @@ function renderTable(){
       const isOwn = d.eng===EMP_NAME||d.scEng===EMP_NAME||(d.raEng&&d.raEng===EMP_NAME);
       const isCompleted= d.rturCompleted||d.rtfrnCompleted;
       const isSent= d.rturSent||d.rtfrnSent;
+      const isToQueued= !!d.toEscalationQueuedAt;
       return `<tr>
         <td class="mono" style="color:var(--muted);font-size:11px;">${(currentPage-1)*perPage+i+1}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
@@ -909,6 +992,7 @@ function renderTable(){
         <td><span class="work-tag">${esc(d.urTypeWork||'UNDER REPAIR')}</span></td>
         <td style="font-weight:600;">${d.pdays}</td>
         <td>${renderRepairStateButton(rid,isSent,isCompleted,'RT UR')}</td>
+        <td>${renderToEscalationButton(rid,isToQueued)}</td>
       </tr>`;
     }).join('');
   }
@@ -1116,7 +1200,10 @@ function toggleMailAcknowledgements(){
   localStorage.setItem(MAIL_ACK_KEY,mailAcknowledgementsVisible?'1':'0');
   ensureUrEscalationBanners();
   syncMailAcknowledgementsVisibility();
-  if(mailAcknowledgementsVisible) loadUrEscalationStatus();
+  if(mailAcknowledgementsVisible){
+    loadUrEscalationStatus();
+    loadToEscalationStatus();
+  }
 }
 function ensureUrEscalationBanners(){
   if(document.getElementById('ur-escalation-banners')) return;
@@ -1133,6 +1220,7 @@ function ensureUrEscalationBanners(){
     .esc-banner-meta{font-size:11px;color:var(--text);margin-top:4px;font-weight:700;}
     .esc-banner-count{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--accent);white-space:nowrap;text-align:right;}
     .esc-banner-count.scrap{color:#b45309;}
+    .esc-banner.to-banner{border-color:rgba(124,58,237,0.18);background:linear-gradient(135deg,rgba(124,58,237,0.10),rgba(168,85,247,0.06));}
   `;
   document.head.appendChild(style);
   const stats=document.querySelector('.stats-row');
@@ -1147,6 +1235,9 @@ function ensureUrEscalationBanners(){
     </div>
     <div class="esc-banner" id="ur-esc-banner-followup">
       <div class="esc-banner-left"><div class="esc-banner-dot"></div><div><div class="esc-banner-title">Stock / Follow-up Escalation</div><div class="esc-banner-text" id="ur-esc-text-followup">Checking latest mail status...</div><div class="esc-banner-sub" id="ur-esc-sub-followup">Receivers: -</div><div class="esc-banner-meta" id="ur-esc-meta-followup">Queued records: -</div></div></div><div class="esc-banner-count" id="ur-esc-count-followup">-</div>
+    </div>
+    <div class="esc-banner to-banner" id="ur-esc-banner-to">
+      <div class="esc-banner-left"><div class="esc-banner-dot" style="background:#7c3aed;box-shadow:0 0 0 4px rgba(124,58,237,0.14);"></div><div><div class="esc-banner-title">TO Escalation</div><div class="esc-banner-text" id="ur-esc-text-to">Checking latest TO mail status...</div><div class="esc-banner-sub" id="ur-esc-sub-to">Receivers: -</div><div class="esc-banner-meta" id="ur-esc-meta-to">Morning: - | Evening: - | Total: -</div></div></div><div class="esc-banner-count" id="ur-esc-count-to" style="color:#7c3aed;">-</div>
     </div>`;
   stats.insertAdjacentElement('afterend',wrap);
   syncMailAcknowledgementsVisibility();
@@ -1210,6 +1301,170 @@ async function loadUrEscalationStatus(){
       if(metaEl) metaEl.textContent='Queued records: -';
       if(countEl) countEl.textContent='-';
     });
+  }
+}
+function getPreferredToLatest(morning,evening){
+  const now=new Date();
+  const minutes=now.getHours()*60+now.getMinutes();
+  if(minutes<990) return (morning&&morning.latest)||(evening&&evening.latest)||null;
+  return (evening&&evening.latest)||(morning&&morning.latest)||null;
+}
+function getNextToRunLabel(){
+  const now=new Date();
+  const minutes=now.getHours()*60+now.getMinutes();
+  if(minutes<660) return 'Morning 11:00 AM';
+  if(minutes<990) return 'Evening 4:30 PM';
+  return 'Morning 11:00 AM';
+}
+function bumpToEscalationQueue(delta=1){
+  const countEl=document.getElementById('ur-esc-count-to');
+  const metaEl=document.getElementById('ur-esc-meta-to');
+  const textEl=document.getElementById('ur-esc-text-to');
+  const current=parseInt(countEl?.textContent||'0',10)||0;
+  const next=Math.max(0,current+delta);
+  if(countEl) countEl.textContent=String(next);
+  if(textEl && next>0) textEl.textContent=`${next} TO entr${next===1?'y is':'ies are'} queued for ${getNextToRunLabel()}.`;
+  if(metaEl){
+    const parts=(metaEl.textContent.match(/\d+/g)||['0','0','0']).map(v=>parseInt(v,10)||0);
+    const minutes=new Date().getHours()*60+new Date().getMinutes();
+    let morning=parts[0]||0, evening=parts[1]||0;
+    if(minutes<660) morning=Math.max(0,morning+delta);
+    else if(minutes<990) evening=Math.max(0,evening+delta);
+    else morning=Math.max(0,morning+delta);
+    metaEl.textContent=`Morning: ${morning} | Evening: ${evening} | Total: ${Math.max(0,morning+evening)}`;
+  }
+}
+async function loadToEscalationStatus(){
+  ensureUrEscalationBanners();
+  const textEl=document.getElementById('ur-esc-text-to');
+  const subEl=document.getElementById('ur-esc-sub-to');
+  const metaEl=document.getElementById('ur-esc-meta-to');
+  const countEl=document.getElementById('ur-esc-count-to');
+  try{
+    const res=await fetch(`${API}/api/escalation/status/to`,{headers:authHeaders()});
+    handleUnauth(res);
+    if(!res.ok) throw new Error('Unable to fetch TO escalation status');
+    const data=await res.json();
+    const recipients=Array.isArray(data&&data.recipients)?data.recipients:[];
+    const morning=data&&data.morning?data.morning:null;
+    const evening=data&&data.evening?data.evening:null;
+    const morningCount=morning&&morning.queue?Number(morning.queue.totalCount||0):0;
+    const eveningCount=evening&&evening.queue?Number(evening.queue.totalCount||0):0;
+    const totalCount=morningCount+eveningCount;
+    if(totalCount===0){
+      UR_DATA=UR_DATA.map(item=>item&&item.toEscalationQueuedAt?{...item,toEscalationQueuedAt:null,toEscalationQueuedBy:''}:item);
+      filtered=filtered.map(item=>item&&item.toEscalationQueuedAt?{...item,toEscalationQueuedAt:null,toEscalationQueuedBy:''}:item);
+      renderTable();
+    }
+    const latest=getPreferredToLatest(morning,evening);
+    if(textEl){
+      if(totalCount>0){
+        textEl.textContent=`${totalCount} TO entr${totalCount===1?'y is':'ies are'} queued for ${getNextToRunLabel()}.`;
+      }else if(latest){
+        const slotLabel=String(latest.slot||'TO').replace(/_/g,' ').replace(/\b\w/g,m=>m.toUpperCase());
+        const statusLabel=(latest.status||'pending').replace(/_/g,' ');
+        textEl.textContent=`${slotLabel} escalation ${statusLabel} on ${fmtEscalationTs(latest.sentAt||latest.createdAt)}.`;
+      }else{
+        textEl.textContent='No TO escalation mail has been sent yet.';
+      }
+    }
+    if(subEl) subEl.textContent=`Receivers: ${recipients.length?recipients.join(', '):'-'} | Excel queued for 11:00 AM and 4:30 PM`;
+    if(metaEl) metaEl.textContent=`Morning: ${morningCount} | Evening: ${eveningCount} | Total: ${totalCount}`;
+    if(countEl) countEl.textContent=String(totalCount);
+  }catch(e){
+    if(textEl) textEl.textContent='TO escalation status unavailable right now.';
+    if(subEl) subEl.textContent='Receivers: -';
+    if(metaEl) metaEl.textContent='Morning: - | Evening: - | Total: -';
+    if(countEl) countEl.textContent='-';
+  }
+}
+function getToMsgEl(){ return document.getElementById('to-msg'); }
+function openToEscalationModal(id){
+  const current=UR_DATA.find(x=>(x._id||x.id)===id);
+  if(!current) return;
+  if(current.toEscalationQueuedAt){ showToast('Already queued for TO escalation.','info'); return; }
+  currentToRecord=current;
+  currentToRows=[{ partNo:String(current.partNo||'').trim(), qty:1 }];
+  const badge=document.getElementById('to-modal-badge');
+  if(badge) badge.textContent=`${current.scReNo||'-'} / ${current.model||'-'}`;
+  const msgEl=getToMsgEl();
+  if(msgEl){ msgEl.textContent=''; msgEl.className='fm-msg'; }
+  renderToEscalationRows();
+  document.getElementById('to-overlay').classList.add('open');
+}
+function closeToEscalationModal(){
+  document.getElementById('to-overlay').classList.remove('open');
+  currentToRecord=null;
+  currentToRows=[];
+}
+function addToEscalationRow(){
+  currentToRows.push({ partNo:'', qty:1 });
+  renderToEscalationRows();
+}
+function removeToEscalationRow(index){
+  currentToRows.splice(index,1);
+  if(!currentToRows.length) currentToRows=[{ partNo:'', qty:1 }];
+  renderToEscalationRows();
+}
+function updateToEscalationRow(index,field,value){
+  if(!currentToRows[index]) return;
+  currentToRows[index][field]=field==='qty'?Math.max(1,parseInt(value,10)||1):value;
+}
+function renderToEscalationRows(){
+  const body=document.getElementById('to-lineitems-body');
+  const note=document.getElementById('to-lineitems-note');
+  const current=currentToRecord;
+  if(!body) return;
+  if(!current || !currentToRows.length){
+    body.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);">No TO rows added.</td></tr>';
+    if(note) note.textContent='Add the required part numbers and quantities here.';
+    return;
+  }
+  body.innerHTML=currentToRows.map((row,index)=>`
+    <tr>
+      <td><span class="to-ref">${esc(current.scReNo||'-')}</span></td>
+      <td><span class="to-static">${esc(String(current.frnNo||'-'))}</span></td>
+      <td><span class="to-soft">${esc(current.defMod||'-')}</span></td>
+      <td><span class="to-static">${esc(current.model||'-')}</span></td>
+      <td><input type="text" value="${esc(row.partNo||'')}" placeholder="Enter part no" oninput="updateToEscalationRow(${index},'partNo',this.value)"></td>
+      <td><input type="number" min="1" value="${Math.max(1,parseInt(row.qty,10)||1)}" oninput="updateToEscalationRow(${index},'qty',this.value)"></td>
+      <td><button class="to-action" type="button" onclick="removeToEscalationRow(${index})">Remove</button></td>
+    </tr>`).join('');
+  if(note) note.textContent=`${currentToRows.length} TO row${currentToRows.length===1?'':'s'} ready for queue.`;
+}
+async function submitToEscalationQueue(){
+  const current=currentToRecord;
+  if(!current) return;
+  const msgEl=getToMsgEl();
+  const btn=document.getElementById('to-queue-btn');
+  const cleanItems=currentToRows
+    .map((item)=>({ partNo:String(item?.partNo||'').trim().toUpperCase(), qty:Math.max(1,parseInt(item?.qty,10)||1) }))
+    .filter((item)=>item.partNo);
+  if(!cleanItems.length){
+    if(msgEl){ msgEl.textContent='Add at least one TO row with Part No and Quantity.'; msgEl.className='fm-msg err'; }
+    return;
+  }
+  btn.disabled=true;
+  btn.textContent='Queueing...';
+  try{
+    const id=current._id||current.id;
+    const res=await fetch(`${API}/api/emp/underrepair/${id}/to`,{method:'POST',headers:{'Content-Type':'application/json',...authHeaders()},body:JSON.stringify({items:cleanItems})});
+    handleUnauth(res);
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(data.message||'Unable to queue TO escalation');
+    const patch={toEscalationQueuedAt:data.toEscalationQueuedAt||new Date().toISOString(),toEscalationQueuedBy:data.toEscalationQueuedBy||''};
+    UR_DATA=UR_DATA.map(item=>(item&&((item._id||item.id)===id))?{...item,...patch}:item);
+    filtered=filtered.map(item=>(item&&((item._id||item.id)===id))?{...item,...patch}:item);
+    renderTable();
+    bumpToEscalationQueue(1);
+    if(msgEl){ msgEl.textContent='Queued for TO escalation successfully.'; msgEl.className='fm-msg ok'; }
+    showToast('Queued for TO escalation.','ok');
+    setTimeout(closeToEscalationModal,900);
+  }catch(e){
+    if(msgEl){ msgEl.textContent=e.message; msgEl.className='fm-msg err'; }
+  }finally{
+    btn.disabled=false;
+    btn.textContent='Queue to TO ES';
   }
 }
 function configureUnderRepairStatCards(){
@@ -1281,9 +1536,3 @@ document.getElementById('nw-btn')?.addEventListener('click', async () => {
 </script>
 </body>
 </html>
-
-
-
-
-
-

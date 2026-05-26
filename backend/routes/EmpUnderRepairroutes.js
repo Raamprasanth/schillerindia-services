@@ -8,9 +8,11 @@ const Service = require('../models/Service');
 const RTUR = require('../models/rturModel');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 const {
+  buildToEscalationRow,
   buildUrEscalationRow,
   buildExternalRepairEscalationRow,
   buildSupplierWarrantyEscalationRow,
+  enqueueEscalationSnapshot,
   enqueueLatestEscalationSnapshot,
 } = require('../services/escalationService');
 
@@ -533,6 +535,66 @@ router.post('/:id/send-rtur', protect, async (req, res) => {
       const messages = Object.values(e.errors).map(v => v.message).join(', ');
       return res.status(400).json({ message: messages });
     }
+    return res.status(500).json({ message: e.message });
+  }
+});
+
+router.post('/:id/to', protect, async (req, res) => {
+  try {
+    const service = await Service.findById(req.params.id);
+    if (!service) return res.status(404).json({ message: 'Service record not found.' });
+    if (service.repType !== 'TO/ADV SO') {
+      return res.status(400).json({ message: 'Only TO/ADV SO under-repair records can be queued to TO escalation.' });
+    }
+
+    const { hasDivisionAccessToService } = require('../utils/visibility');
+    const role = String(req.user.role || '').toLowerCase();
+    const isAdmin = role === 'admin' || role === 'superadmin';
+    const hasDivisionAccess = await hasDivisionAccessToService(req.user, service._id);
+    const userName = String(req.user.name || '').trim().toLowerCase();
+    const ownsRecord = userName && [service.eng, service.scEng, service.raEng, service.submittedBy, service.createdBy]
+      .some(v => String(v || '').trim().toLowerCase() === userName);
+    if (!isAdmin && !hasDivisionAccess && !ownsRecord) {
+      return res.status(403).json({ message: 'Access denied.' });
+    }
+
+    if (service.toEscalationQueuedAt) {
+      return res.json({
+        success: true,
+        alreadyQueued: true,
+        toEscalationQueuedAt: service.toEscalationQueuedAt,
+        toEscalationQueuedBy: service.toEscalationQueuedBy || '',
+      });
+    }
+
+    const cleanItems = (Array.isArray(req.body?.items) ? req.body.items : [])
+      .map((item) => ({
+        partNo: String(item?.partNo || '').trim(),
+        qty: Math.max(1, parseInt(item?.qty, 10) || 1),
+      }))
+      .filter((item) => item.partNo);
+    if (!cleanItems.length) {
+      return res.status(400).json({ message: 'Add at least one TO row with Part No and Quantity.' });
+    }
+
+    service.toEscalationQueuedAt = new Date();
+    service.toEscalationQueuedBy = req.user?.name || '';
+    await service.save({ validateBeforeSave: false });
+
+    await enqueueEscalationSnapshot(
+      'to_ur',
+      service._id,
+      req.user?.name || '',
+      buildToEscalationRow(service.toObject(), cleanItems)
+    );
+
+    return res.json({
+      success: true,
+      message: 'Queued for TO escalation.',
+      toEscalationQueuedAt: service.toEscalationQueuedAt,
+      toEscalationQueuedBy: service.toEscalationQueuedBy,
+    });
+  } catch (e) {
     return res.status(500).json({ message: e.message });
   }
 });

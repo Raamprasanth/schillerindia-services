@@ -133,6 +133,8 @@ const serviceSchema = new mongoose.Schema(
     rturCompletedAt:    { type: String,  default: null },
     rtfrnCompleted:     { type: Boolean, default: false },
     rtfrnCompletedAt:   { type: String,  default: null },
+    toEscalationQueuedAt: { type: Date, default: null },
+    toEscalationQueuedBy: { type: String, trim: true, default: '' },
 
     // ── Audit ─────────────────────────────────────────────────
     submittedBy:  { type: String, default: '' },
