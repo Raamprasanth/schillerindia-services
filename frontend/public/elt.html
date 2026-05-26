@@ -601,7 +601,7 @@ function renderTable(){
           </select>
         </td>
         <td>
-          <input type="text" id="rmk-${id}" value="${esc(d.remarks || '')}" placeholder="Remarks..." style="padding:5px; border-radius:5px; border:1px solid #ccc; width:100%; min-width:120px;">
+          <input type="text" id="rmk-${id}" value="${esc(d.remarks || '')}" readonly tabindex="-1" style="padding:5px; border:none; background:transparent; color:var(--text); width:100%; min-width:120px; outline:none; cursor:default;" title="${esc(d.remarks || '')}">
         </td>
         <td>
           <button class="btn-xs btn-primary" onclick="sendToScod('${id}', this)">&#10148; to Scod</button>

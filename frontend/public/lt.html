@@ -285,7 +285,7 @@ table.frn-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
           <div class="fg-4">
             <div class="ff">
               <label>Date <span class="req">*</span></label>
-              <input type="date" id="m-date" required/>
+              <input type="date" id="m-date" required readonly tabindex="-1" style="background:var(--surface3); color:var(--soft); cursor:not-allowed; border-color:transparent;"/>
             </div>
             <div class="ff">
               <label>Division <span class="req">*</span></label>
@@ -475,7 +475,7 @@ function renderTable(){
         <td class="wrap-cell" title="${esc(d.remarks || '')}">${esc(d.remarks || '-')}</td>
         <td>
           <button class="btn-xs" onclick="openEditModal('${id}')">&#9998; Edit</button>
-          <button class="btn-xs danger" onclick="deleteItem('${id}')">&#128465; Delete</button>
+          
         </td>
       </tr>`;
     }).join('');
