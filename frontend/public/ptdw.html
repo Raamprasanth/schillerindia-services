@@ -275,8 +275,7 @@ tr:hover td{background:var(--surface3);}
 .field input,.field textarea,.field select{border:1.5px solid var(--border);border-radius:10px;padding:9px 13px;font-size:13px;color:var(--text);background:var(--surface);font-family:'Plus Jakarta Sans',sans-serif;outline:none;width:100%}
 .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(5,150,105,.1)}
 .field input[type=date]::-webkit-calendar-picker-indicator{width:14px;height:14px;opacity:.72}
-.dw-team-field{max-width:420px}
-.dw-row{display:grid;grid-template-columns:minmax(360px,3fr) 150px 150px 40px;gap:12px;margin-bottom:12px;align-items:end}
+.dw-row{display:grid;grid-template-columns:210px minmax(360px,3fr) 150px 150px 40px;gap:12px;margin-bottom:12px;align-items:end}
 .dw-row .row-act{min-height:72px;resize:vertical}
 .modal-foot{padding:16px 28px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;background:var(--surface3);flex-shrink:0}
 .msg{font-size:12px;font-weight:700;color:var(--red);display:none;padding:8px 12px;background:rgba(185,28,28,.06);border-radius:8px;border:1px solid rgba(185,28,28,.15);margin-right:auto}
@@ -421,15 +420,11 @@ tr:hover td{background:var(--surface3);}
         <span>Activities</span>
         <span id="dw-total-hours" style="color:var(--accent);">Total: 0h 0m</span>
       </div>
-      <div class="field dw-team-field">
-        <label>Team / Division <span class="req">*</span></label>
-        <input type="text" id="dw-team" list="team-options" placeholder="e.g. Production, FQC...">
-        <datalist id="team-options">
-          <option value="Production"></option>
-          <option value="FQC"></option>
-          <option value="Field Support"></option>
-        </datalist>
-      </div>
+      <datalist id="team-options">
+        <option value="Production"></option>
+        <option value="FQC"></option>
+        <option value="Field Support"></option>
+      </datalist>
       <div id="dw-rows-container"></div>
       <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:5px;" id="add-row-btn" onclick="addDwRow()">+ Add Row</button>
     </div>
@@ -597,7 +592,7 @@ function openDwModal(){
   document.getElementById("save-btn").innerHTML = "&#128190; Save Entry";
   document.getElementById("add-row-btn").style.display = "flex";
   document.getElementById("dw-overlay").classList.add("open"); 
-  setTimeout(()=>document.querySelector(".row-act")?.focus(),50); 
+  setTimeout(()=>document.querySelector(".row-team")?.focus(),50); 
 }
 
 function editDw(id) {
@@ -607,11 +602,11 @@ function editDw(id) {
   
   clearForm();
   document.getElementById("dw-date").value = entry.date;
-  document.getElementById("dw-team").value = entry.team || "";
   document.getElementById("dw-rows-container").innerHTML = "";
   addDwRow();
   
   setTimeout(() => {
+    document.querySelector(".row-team").value = entry.team || "";
     document.querySelector(".row-act").value = entry.activity;
     document.querySelector(".row-from").value = entry.fromTime;
     document.querySelector(".row-to").value = entry.toTime;
@@ -623,23 +618,23 @@ function editDw(id) {
   }, 50);
 }
 function closeDwModal(){ document.getElementById("dw-overlay").classList.remove("open"); }
-function clearForm(){ ["dw-date","dw-team"].forEach(id=>{const el=document.getElementById(id); if(el) el.value="";}); document.getElementById("dw-rows-container").innerHTML=""; document.getElementById("dw-total-hours").textContent="Total: 0h 0m"; showMsg(""); }
+function clearForm(){ ["dw-date"].forEach(id=>{const el=document.getElementById(id); if(el) el.value="";}); document.getElementById("dw-rows-container").innerHTML=""; document.getElementById("dw-total-hours").textContent="Total: 0h 0m"; showMsg(""); }
 
 async function saveDw(){
   const date = val("dw-date");
-  const team = val("dw-team");
-  if(!date || !team){ showMsg("Date and Team/Division are required."); return; }
+  if(!date){ showMsg("Date is required."); return; }
   
+  const teams = document.querySelectorAll(".row-team");
   const acts = document.querySelectorAll(".row-act");
   const froms = document.querySelectorAll(".row-from");
   const tos = document.querySelectorAll(".row-to");
   
   let entries = [];
   for(let i=0; i<acts.length; i++){
-    if(!acts[i].value || !froms[i].value || !tos[i].value){
-       showMsg("All activity rows must have an activity, from time, and to time."); return;
+    if(!teams[i].value || !acts[i].value || !froms[i].value || !tos[i].value){
+       showMsg("All activity rows must have Team/Division, Activity, From time, and To time."); return;
     }
-    entries.push({ activity: acts[i].value, fromTime: froms[i].value, toTime: tos[i].value });
+    entries.push({ team: teams[i].value, activity: acts[i].value, fromTime: froms[i].value, toTime: tos[i].value });
   }
   if(!entries.length){ showMsg("Please add at least one activity row."); return; }
   
@@ -649,7 +644,7 @@ async function saveDw(){
     
     if (editId !== null) {
       const payload = {
-        date, team,
+        date, team: entries[0].team,
         activity: entries[0].activity,
         fromTime: entries[0].fromTime,
         toTime: entries[0].toTime,
@@ -665,7 +660,7 @@ async function saveDw(){
       // Save each row sequentially
       for (const ent of entries) {
         const payload = {
-          date, team,
+          date, team: ent.team,
           activity: ent.activity,
           fromTime: ent.fromTime,
           toTime: ent.toTime,
@@ -697,6 +692,7 @@ function addDwRow() {
   const rowId = Date.now() + Math.floor(Math.random()*1000);
   const rowHtml = `
     <div class="dw-row" id="row-${rowId}">
+       <div class="field"><label>Team / Division</label><input type="text" class="row-team" list="team-options" placeholder="Team / Division"></div>
        <div class="field"><label>Activity</label><textarea class="row-act" placeholder="Activity done" rows="3"></textarea></div>
        <div class="field"><label>From</label><input type="time" class="row-from" onchange="calcTotalHours()"></div>
        <div class="field"><label>To</label><input type="time" class="row-to" onchange="calcTotalHours()"></div>
