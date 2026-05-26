@@ -1856,6 +1856,20 @@ async function confirmNWRevert() {
     });
     if (!res.ok) throw new Error('Failed to revert repair: HTTP ' + res.status);
     if (typeof showToast === 'function') showToast('Reverted to Repair Started (RS). Problem reported to repair team.', 'ok');
+
+    // Update local state instantly so RC changes to RS immediately
+    const idx = allRecords.findIndex(x => (x._id || x.id) === idToRevert);
+    if (idx !== -1) {
+      allRecords[idx].rtfrnCompleted = false;
+      allRecords[idx].rtobCompleted = false;
+      allRecords[idx].rturCompleted = false;
+      allRecords[idx].rtfrnSent = true;
+      allRecords[idx].rtobSent = true;
+      allRecords[idx].rturSent = true;
+    }
+    if (typeof applyFilters === 'function') applyFilters();
+    else if (typeof renderTable === 'function') renderTable();
+
     if (recordSnapshot) broadcastProblemToRepairTeam(recordSnapshot, problemText);
     closeProblemModal();
     if (typeof loadData === 'function') loadData();
@@ -1869,44 +1883,7 @@ async function confirmNWRevert() {
 }
 
 async function broadcastProblemToRepairTeam(d, problemText) {
-  try {
-    const hdr = typeof authHeaders === 'function' ? authHeaders() : { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (sessionStorage.getItem('schiller_token') || '') };
-    let division = '';
-    if (d) {
-      const rawDiv = d.branch || d.reg || d.division || d.divisionName || '';
-      if (typeof rawDiv === 'object' && rawDiv !== null) {
-        division = rawDiv.name || rawDiv.division || rawDiv.divisionName || '';
-      } else {
-        division = String(rawDiv);
-      }
-    }
-    division = division.trim();
-    const params = new URLSearchParams({ team: 'repair_team' });
-    if (division) params.append('division', division);
-    const rRes = await fetch(`${API_BASE || ''}/api/service-messages/recipients?${params.toString()}`, { headers: hdr });
-    if (!rRes.ok) return;
-    const json = await rRes.json();
-    const recipients = json.data || json || [];
-    if (!Array.isArray(recipients) || recipients.length === 0) return;
-    const senderName = EMP_NAME || LOGGED_USER.name || 'Service Engineer';
-    const msgText =
-      `\u{1F534} NW Re-Repair Alert\n` +
-      `SC Ref: ${d.scReNo || d.scRefNo || '-'}  |  DEF GIR: ${d.defGir || d.defGirNo || '-'}\n` +
-      `Model: ${d.model || '-'}  |  Division: ${division || '-'}\n` +
-      `\nProblem Observed:\n${problemText}\n` +
-      `\nReported by: ${senderName}`;
-    for (const recipient of recipients) {
-      const recipientId = recipient._id || recipient.id;
-      const recipientModel = recipient.model || 'RepairTeam';
-      if (!recipientId) continue;
-      try {
-        await fetch(`${API_BASE || ''}/api/service-messages/threads`, {
-          method: 'POST', headers: hdr,
-          body: JSON.stringify({ recipientId, recipientModel, division: division || 'General', message: msgText })
-        });
-      } catch (_) {}
-    }
-  } catch (e) { console.warn('[broadcastProblemToRepairTeam] Failed:', e.message); }
+  console.log('[broadcastProblemToRepairTeam] Handled by backend revert API');
 }
 
 document.getElementById('recheck-modal')?.addEventListener('click', e => { if (e.target === e.currentTarget) closeRecheckModal(); });

@@ -13,6 +13,111 @@ const { protect, repairTeamOrEmployeeOrAdmin } = require('../middleware/authMidd
 // Mount at /api/revert-repair
 router.use(protect, repairTeamOrEmployeeOrAdmin);
 
+async function resolveDivisionName(service) {
+  if (!service) return 'OTHER';
+  
+  // 1. Try divisionName field
+  let name = String(service.divisionName || '').trim();
+  if (name) return name;
+  
+  // 2. Try division field
+  let div = service.division;
+  if (div) {
+    if (typeof div === 'object' && div !== null) {
+      if (div.name) return String(div.name).trim();
+    } else if (typeof div === 'string' || div instanceof mongoose.Types.ObjectId) {
+      try {
+        const Division = require('../models/Division');
+        const divDoc = await Division.findById(div).lean();
+        if (divDoc && divDoc.name) return String(divDoc.name).trim();
+      } catch (_) {}
+    }
+  }
+  
+  // 3. Fallback to branch or region
+  return String(service.branch || service.reg || 'OTHER').trim();
+}
+
+async function backendBroadcastProblem(req, record, problemText, safeDivision) {
+  try {
+    const ServiceMessageThread = require('../models/ServiceMessageThread');
+    const RepairTeam = require('../models/Repairteam');
+
+    const repairFilter = { isActive: { $ne: false } };
+    if (safeDivision && safeDivision !== 'OTHER') {
+      repairFilter.$or = [
+        { division: safeDivision },
+        { divisions: safeDivision }
+      ];
+    }
+    
+    let recipients = await RepairTeam.find(repairFilter).select('name email division divisions role').lean();
+    if (recipients.length === 0) {
+      recipients = await RepairTeam.find({ isActive: { $ne: false } }).select('name email division divisions role').lean();
+    }
+
+    if (recipients.length === 0) return;
+
+    const senderId = String(req.user._id || req.user.id || '');
+    let senderModel = 'User';
+    if (req.user._collection === 'Employee') senderModel = 'Employee';
+    else if (req.user._collection === 'RepairTeam') senderModel = 'RepairTeam';
+    
+    const senderName = req.user.name || 'Service Engineer';
+    const senderRole = String(req.user.role || '').toLowerCase();
+
+    const scRefNo = record.scReNo || record.scRno || record.scRefNo || '-';
+    const defGirNo = record.defGir || record.defGirNo || '-';
+    const model = record.model || '-';
+
+    const msgText =
+      `🔴 NW Re-Repair Alert\n` +
+      `SC Ref: ${scRefNo}  |  DEF GIR: ${defGirNo}\n` +
+      `Model: ${model}  |  Division: ${safeDivision}\n` +
+      `\nProblem Observed:\n${problemText}\n` +
+      `\nReported by: ${senderName}`;
+
+    const message = {
+      senderId,
+      senderModel,
+      senderName,
+      senderRole,
+      text: msgText,
+      readBy: [senderId],
+    };
+
+    for (const recipient of recipients) {
+      const employeeId = String(recipient._id || recipient.id);
+      const employeeModel = 'RepairTeam';
+      const employeeName = recipient.name || 'Recipient';
+      const employeeEmail = recipient.email || '';
+
+      const coordinatorId = senderId;
+      const coordinatorName = senderName;
+
+      await ServiceMessageThread.findOneAndUpdate(
+        { coordinatorId, employeeId, employeeModel },
+        {
+          $setOnInsert: {
+            coordinatorId,
+            coordinatorName,
+            employeeId,
+            employeeModel,
+            employeeName,
+            employeeEmail,
+            division: safeDivision || 'General',
+          },
+          $set: { lastMessage: msgText, lastMessageAt: new Date() },
+          $push: { messages: message },
+        },
+        { new: true, upsert: true, setDefaultsOnInsert: true }
+      );
+    }
+  } catch (err) {
+    console.error('[backendBroadcastProblem] Error:', err.message);
+  }
+}
+
 router.post('/:id', async (req, res) => {
   try {
     const serviceId = req.params.id;
@@ -103,10 +208,13 @@ router.post('/:id', async (req, res) => {
       }
     }
 
-    // 2. Clear the completion flags on the service record
+    // 2. Clear the completion flags and ensure sent flags are true on the service/estimation record
     service.rturCompleted = false;
     service.rtfrnCompleted = false;
     service.rtobCompleted = false;
+    service.rturSent = true;
+    service.rtfrnSent = true;
+    service.rtobSent = true;
     service.repairStatus = 're repair product';
 
     let remarkParts = ['Re-repair requested'];
@@ -116,6 +224,7 @@ router.post('/:id', async (req, res) => {
 
     if (empfrnDoc) {
       empfrnDoc.rtfrnCompleted = false;
+      empfrnDoc.rtfrnSent = true;
       await empfrnDoc.save({ validateBeforeSave: false });
     }
 
@@ -130,7 +239,8 @@ router.post('/:id', async (req, res) => {
     else if (deletedSourceCollection === 'rtob') category = 'OB';
 
     // Normalize Division
-    const rawDiv = String(service.division?.name || service.divisionName || service.division || service.branch || service.reg || '').trim().toUpperCase();
+    const rawDivName = await resolveDivisionName(service);
+    const rawDiv = rawDivName.toUpperCase();
     const mapDiv = { 'PATIENT MONITOR':'PATIENT MONITORS','PATIENT MONITORS':'PATIENT MONITORS','SAG':'SAG','VENTILATOR':'VENTILATOR','DEFIBRILLATOR':'DEFIBRILLATOR','ECG':'ECG','SYRINGE PUMP':'SYRINGE PUMP','INFUSION PUMP':'INFUSION PUMP','ULTRASOUND':'ULTRASOUND','ANAESTHESIA':'ANAESTHESIA' };
     const safeDivision = mapDiv[rawDiv] || 'OTHER';
 
@@ -190,6 +300,10 @@ router.post('/:id', async (req, res) => {
       }
     }
 
+    if (problemObserved) {
+      await backendBroadcastProblem(req, service, problemObserved, safeDivision);
+    }
+
     return res.json({ success: true, message: 'Repair reverted to RS successfully.' });
   } catch (error) {
     console.error('[Revert Repair]', error);
@@ -246,22 +360,26 @@ router.post('/crl/:id', async (req, res) => {
     // 1. Delete corresponding RTCRL record
     await RTCRL.findByIdAndDelete(crlId);
 
-    // 2. Clear completion flags
+    // 2. Clear completion flags and ensure sent flags are true
     service.rturCompleted = false;
     service.rtfrnCompleted = false;
     service.rtobCompleted = false;
+    service.rturSent = true;
+    service.rtfrnSent = true;
+    service.rtobSent = true;
     service.repairStatus = 're repair product';
     let remarkParts = ['Re-repair requested'];
     if (problemObserved) remarkParts.push('Problem Observed: ' + problemObserved);
     service.finalRemarks = (service.finalRemarks ? service.finalRemarks + ' | ' : '') + remarkParts.join(' | ');
     await service.save({ validateBeforeSave: false });
 
-    // Also clear rtfrnCompleted on the associated EmpFRN if category is rtfrn/PFRN
+    // Also clear rtfrnCompleted and ensure rtfrnSent is true on the associated EmpFRN if category is rtfrn/PFRN
     const deletedSourceCollection = crlDoc.sourceCollection || '';
     if (deletedSourceCollection === 'rtfrn') {
       const empfrnDoc = await EmpFRN.findOne({ serviceId: service._id });
       if (empfrnDoc) {
         empfrnDoc.rtfrnCompleted = false;
+        empfrnDoc.rtfrnSent = true;
         await empfrnDoc.save({ validateBeforeSave: false });
       }
     }
@@ -276,7 +394,8 @@ router.post('/crl/:id', async (req, res) => {
     else if (deletedSourceCollection === 'rtob') category = 'OB';
 
     // Normalize Division
-    const rawDiv = String(service.division?.name || service.divisionName || service.division || service.branch || service.reg || '').trim().toUpperCase();
+    const rawDivName = await resolveDivisionName(service);
+    const rawDiv = rawDivName.toUpperCase();
     const mapDiv = { 'PATIENT MONITOR':'PATIENT MONITORS','PATIENT MONITORS':'PATIENT MONITORS','SAG':'SAG','VENTILATOR':'VENTILATOR','DEFIBRILLATOR':'DEFIBRILLATOR','ECG':'ECG','SYRINGE PUMP':'SYRINGE PUMP','INFUSION PUMP':'INFUSION PUMP','ULTRASOUND':'ULTRASOUND','ANAESTHESIA':'ANAESTHESIA' };
     const safeDivision = mapDiv[rawDiv] || 'OTHER';
 
@@ -335,6 +454,10 @@ router.post('/crl/:id', async (req, res) => {
       if (err.code !== 11000) {
         console.error('Failed to recreate repair record:', err.message);
       }
+    }
+
+    if (problemObserved) {
+      await backendBroadcastProblem(req, service, problemObserved, safeDivision);
     }
 
     return res.json({ success: true, message: 'Repair reverted to RS successfully.' });
