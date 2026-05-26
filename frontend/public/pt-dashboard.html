@@ -596,6 +596,7 @@ let STATS = { calls:0, closedCalls:0, pendingAct:0, closedAct:0, bir:0, closedBi
   (document.getElementById('hero-name')||{}).textContent = name.split(' ')[0];
   (document.getElementById('topbar-date')||{}).textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   loadAllData();
+  initScMessages();
 })();
 
 function getToken(){ return sessionStorage.getItem('schiller_token') || ''; }
@@ -622,6 +623,7 @@ async function loadAllData(){
     loadClosedActivity(),
     loadBIR(),
     loadClosedBIR(),
+    loadScMessageThreads(),
   ]);
   updateHero();
   updatePerformance();

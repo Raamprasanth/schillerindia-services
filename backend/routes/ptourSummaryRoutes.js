@@ -40,7 +40,7 @@ router.post('/', async (req, res) => {
     if (!body.startDate || !body.customerName) {
       return res.status(400).json({ message: 'Required: start date and customer name.' });
     }
-    const images = Array.isArray(body.images) ? body.images.filter(Boolean).slice(0, 3) : [];
+    const images = Array.isArray(body.images) ? body.images.filter(Boolean).slice(0, 5) : [];
     const tooLarge = images.some((img) => Buffer.byteLength(String(img), 'utf8') > 4.2 * 1024 * 1024);
     if (tooLarge) return res.status(400).json({ message: 'Each image must be 3 MB or smaller.' });
 
