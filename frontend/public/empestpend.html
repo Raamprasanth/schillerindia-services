@@ -934,7 +934,7 @@ function removeToEscalationRow(index){
 }
 function updateToEscalationRow(index,field,value){
   if(!currentToRows[index]) return;
-  if(field==='partNo') currentToRows[index].partNo=String(value||'').replace(/\D/g,'');
+  if(field==='partNo') currentToRows[index].partNo=String(value||'');
   if(field==='qty') currentToRows[index].qty=Math.max(1,parseInt(value,10)||1);
 }
 function renderToEscalationRows(){
@@ -946,7 +946,7 @@ function renderToEscalationRows(){
     <td><span class="to-static to-soft">${esc(currentToRecord.frnNo||'-')}</span></td>
     <td><span class="to-static">${esc(currentToRecord.defMod||'-')}</span></td>
     <td><span class="to-static to-soft">${esc(currentToRecord.model||'-')}</span></td>
-    <td><input type="text" inputmode="numeric" value="${esc(row.partNo||'')}" oninput="this.value=this.value.replace(/\\D/g,'');updateToEscalationRow(${index},'partNo',this.value)" placeholder="Part no"/></td>
+    <td><input type="text" value="${esc(row.partNo||'')}" oninput="updateToEscalationRow(${index},'partNo',this.value)" placeholder="Part no"/></td>
     <td><input type="number" min="1" step="1" value="${row.qty||1}" onchange="updateToEscalationRow(${index},'qty',this.value)"/></td>
     <td><button class="to-action" type="button" onclick="removeToEscalationRow(${index})">Del</button></td>
   </tr>`).join('');
@@ -954,7 +954,7 @@ function renderToEscalationRows(){
 }
 async function submitToEscalationQueue(){
   if(!currentToRecord){showToast('Record not found.','err');return;}
-  const cleanItems=currentToRows.map(row=>({partNo:String(row.partNo||'').replace(/\D/g,''),qty:Math.max(1,parseInt(row.qty,10)||1)})).filter(row=>row.partNo);
+  const cleanItems=currentToRows.map(row=>({partNo:String(row.partNo||'').trim(),qty:Math.max(1,parseInt(row.qty,10)||1)})).filter(row=>row.partNo);
   const err=document.getElementById('to-modal-err');
   if(!cleanItems.length){
     if(err){err.textContent='Add at least one TO row with Part No and Quantity.';err.classList.add('show');}
@@ -1876,7 +1876,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 <script src="tab-fix.js"></script>
 </body>
 </html>
-
 
 
 
