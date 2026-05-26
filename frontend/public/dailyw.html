@@ -66,12 +66,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .topbar-date-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:var(--surface3);font-size:11.5px;font-weight:700;color:var(--soft);white-space:nowrap}
 .content{padding:20px 24px;overflow:auto}
 .btn{border:none;border-radius:8px;padding:8px 15px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;display:inline-flex;align-items:center;gap:6px}.btn-primary{background:var(--green);color:#fff}.btn-primary:hover{background:var(--green2)}.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--soft)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
-.modal-overlay{position:fixed;inset:0;background:rgba(5,18,38,0.6);backdrop-filter:blur(5px);z-index:2000;display:none;align-items:center;justify-content:center;}
+.modal-overlay{position:fixed;inset:0 0 0 225px;background:rgba(5,18,38,0.18);backdrop-filter:blur(3px);z-index:2000;display:none;align-items:stretch;justify-content:stretch;}
 .modal-overlay.open{display:flex;}
-.add-modal-box{background:var(--surface);width:90%;max-width:480px;border-radius:16px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;overflow:hidden;animation:fadeUp 0.2s ease;}
-.modal-head{padding:18px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0}.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800}.modal-sub{font-size:11.5px;color:var(--muted);margin-top:3px}.modal-close{width:34px;height:34px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:15px}.modal-body{padding:22px 28px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;flex:1}.section-title{padding-bottom:8px;border-bottom:1px solid var(--border);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.fg2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:flex;flex-direction:column;gap:5px}.field label{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}.req{color:var(--red)}.field input,.field textarea,.field select{border:1.5px solid var(--border);border-radius:10px;padding:9px 13px;font-size:13px;color:var(--text);background:var(--surface);font-family:'Plus Jakarta Sans',sans-serif;outline:none;width:100%}.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(5,150,105,.1)}.modal-foot{padding:16px 28px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;background:var(--surface3);flex-shrink:0}.msg{font-size:12px;font-weight:700;color:var(--red);display:none;padding:8px 12px;background:rgba(185,28,28,.06);border-radius:8px;border:1px solid rgba(185,28,28,.15);margin-right:auto}
+.add-modal-box{background:var(--surface);width:100%;height:100vh;max-width:none;border-radius:0;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;overflow:hidden;animation:fadeUp 0.2s ease;}
+.modal-head{padding:18px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0}.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800}.modal-sub{font-size:11.5px;color:var(--muted);margin-top:3px}.modal-close{width:34px;height:34px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:15px}.modal-body{padding:22px 28px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;flex:1}.section-title{padding-bottom:8px;border-bottom:1px solid var(--border);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.fg2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:flex;flex-direction:column;gap:5px}.field label{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}.req{color:var(--red)}.field input,.field textarea,.field select{border:1.5px solid var(--border);border-radius:10px;padding:9px 13px;font-size:13px;color:var(--text);background:var(--surface);font-family:'Plus Jakarta Sans',sans-serif;outline:none;width:100%}.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(5,150,105,.1)}.field input[type=date]::-webkit-calendar-picker-indicator{width:14px;height:14px;opacity:.72}.dw-team-field{max-width:420px}.dw-row{display:grid;grid-template-columns:minmax(360px,3fr) 150px 150px 40px;gap:12px;margin-bottom:12px;align-items:end}.dw-row .row-act{min-height:72px;resize:vertical}.modal-foot{padding:16px 28px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;background:var(--surface3);flex-shrink:0}.msg{font-size:12px;font-weight:700;color:var(--red);display:none;padding:8px 12px;background:rgba(185,28,28,.06);border-radius:8px;border:1px solid rgba(185,28,28,.15);margin-right:auto}
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-@media(max-width:900px){.sidebar{display:none}.overlay{left:0}.fg2{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}.content{padding:14px}}
+@media(max-width:900px){.sidebar{display:none}.modal-overlay{left:0}.fg2{grid-template-columns:1fr}.dw-row{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}.content{padding:14px}}
 
 /* CALENDAR & KANBAN LAYOUT */
 .grid-layout{display:grid;grid-template-columns:340px 1fr;gap:24px;padding:20px 24px;}
@@ -214,19 +214,19 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <div class="section-title">Work Details</div>
       <div class="fg2">
         <div class="field"><label>Date <span class="req">*</span></label><input type="date" id="dw-date"></div>
-        <div class="field">
-          <label>Team / Division <span class="req">*</span></label>
-          <input type="text" id="dw-team" list="team-options" placeholder="e.g. Production, FQC...">
-          <datalist id="team-options">
-            <option value="Production"></option>
-            <option value="FQC"></option>
-            <option value="Field Support"></option>
-          </datalist>
-        </div>
       </div>
       <div class="section-title" style="margin-top:15px;display:flex;justify-content:space-between;border-bottom:none;">
         <span>Activities</span>
         <span id="dw-total-hours" style="color:var(--accent);">Total: 0h 0m</span>
+      </div>
+      <div class="field dw-team-field">
+        <label>Team / Division <span class="req">*</span></label>
+        <input type="text" id="dw-team" list="team-options" placeholder="e.g. Production, FQC...">
+        <datalist id="team-options">
+          <option value="Production"></option>
+          <option value="FQC"></option>
+          <option value="Field Support"></option>
+        </datalist>
       </div>
       <div id="dw-rows-container"></div>
       <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:5px;" id="add-row-btn" onclick="addDwRow()">+ Add Row</button>
@@ -485,8 +485,8 @@ function addDwRow() {
   const container = document.getElementById('dw-rows-container');
   const rowId = Date.now() + Math.floor(Math.random()*1000);
   const rowHtml = `
-    <div class="dw-row" id="row-${rowId}" style="display:grid;grid-template-columns:2fr 1fr 1fr 34px;gap:8px;margin-bottom:10px;align-items:end;">
-       <div class="field"><label>Activity</label><input type="text" class="row-act" placeholder="Activity done"></div>
+    <div class="dw-row" id="row-${rowId}">
+       <div class="field"><label>Activity</label><textarea class="row-act" placeholder="Activity done" rows="3"></textarea></div>
        <div class="field"><label>From</label><input type="time" class="row-from" onchange="calcTotalHours()"></div>
        <div class="field"><label>To</label><input type="time" class="row-to" onchange="calcTotalHours()"></div>
        <button class="kb-del" style="height:35px;width:34px;margin-bottom:2px;" onclick="document.getElementById('row-${rowId}').remove(); calcTotalHours();" title="Remove">&#128465;</button>
