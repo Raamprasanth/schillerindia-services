@@ -313,7 +313,7 @@ table.oa-table tbody tr:last-child td{border-bottom:none;}
               <option value="Pradap">Pradap</option>
               <option value="Thilipan">Thilipan</option>
             </select></div>
-          <div class="ff"><label>Entry Date <span class="req">*</span></label><input type="date" id="f-entryDate"/></div>
+          <div class="ff"><label>Entry Date <span class="req">*</span></label><input type="date" id="f-entryDate" disabled/></div>
           <div class="ff"><label>Division <span class="req">*</span></label><select id="f-division2"><option value="">Select Division</option></select></div>
           <div class="ff"><label>Model</label><input type="text" id="f-model"/></div>
           
@@ -366,6 +366,16 @@ let editId = null;
 
 function getToken()    { return sessionStorage.getItem('schiller_token') || ''; }
 function authHeaders() { return { 'Content-Type':'application/json', Authorization:'Bearer '+getToken() }; }
+function todayISO() {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().split('T')[0];
+}
+
+function lockDateRules() {
+  const repairedDate = document.getElementById('f-repairedDate');
+  if (repairedDate) repairedDate.min = todayISO();
+}
 
 async function loadRepairEngineers() {
   try {
@@ -541,7 +551,8 @@ function openModal() {
   document.getElementById('modal-title').innerHTML = '&#10133; Add Other Activity';
   document.getElementById('save-btn').innerHTML = '&#128190; Save Activity';
   clearForm();
-  document.getElementById('f-entryDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('f-entryDate').value = todayISO();
+  lockDateRules();
   document.getElementById('modal-form').classList.add('open');
 }
 
@@ -563,6 +574,7 @@ function openEdit(id) {
   document.getElementById('f-finalRemarks').value    = d.finalRemarks || '';
   document.getElementById('f-repairedDate').value  = d.repairedDate ? d.repairedDate.split('T')[0] : '';
   document.getElementById('f-remarks').value       = d.remarks || '';
+  lockDateRules();
   document.getElementById('modal-form').classList.add('open');
 }
 
@@ -589,6 +601,9 @@ async function saveRecord() {
   const status          = document.getElementById('f-status').value;
   if (!repairedBy || !entryDate || !division || !problemObserved || !status) {
     showToast('Please fill: Repaired By, Entry Date, Division, Problem Observed, Status.', 'err'); return;
+  }
+  if (repairedDate && repairedDate < todayISO()) {
+    showToast('Repaired Date cannot be a back date.', 'err'); return;
   }
   const body = { repairedBy, entryDate, division, model, partNumber, description,
                  problemObserved, componentsUsed, finalRemarks, repairedDate, remarks, status };
