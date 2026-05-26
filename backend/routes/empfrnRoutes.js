@@ -238,6 +238,7 @@ router.put('/:id/escalate', protect, adminOnly, async (req, res) => {
 // ─────────────────────────────────────────────────────────
 router.get('/employee', protect, async (req, res) => {
   try {
+    const { resolveDivisions } = require('../utils/visibility');
     const names = [
       req.user.name,
       req.user.employeeName,
@@ -246,36 +247,29 @@ router.get('/employee', protect, async (req, res) => {
       req.user.employeeId,
     ].map(v => String(v || '').trim()).filter(Boolean);
 
-    const divisionNames = [
-      req.user.activeDivision,
-      req.user.division,
-      req.user.divisionName,
-      ...(Array.isArray(req.user.divisions) ? req.user.divisions : []),
-    ].map(v => String(v || '').trim()).filter(Boolean);
+    const divisions = await resolveDivisions(req.user);
+    const divisionIds = divisions.map(d => d._id);
+    const divisionNames = divisions
+      .flatMap(d => [d.name, d.displayName])
+      .map(v => String(v || '').trim())
+      .filter(Boolean);
+    const serviceIds = divisionIds.length
+      ? (await Service.find({ division: { $in: divisionIds } }).select('_id').lean()).map(s => s._id)
+      : [];
 
-    const divisionIds = [];
-    if (divisionNames.length) {
-      const escaped = divisionNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-      const divisions = await Division.find({
-        $or: escaped.flatMap(name => [
-          { name: new RegExp('^' + name + '$', 'i') },
-          { displayName: new RegExp('^' + name + '$', 'i') },
-        ]),
-      }).select('_id').lean();
-      divisionIds.push(...divisions.map(d => d._id));
-    }
-
-    const accessOr = [
-      ...names.flatMap(name => [
-        { eng: name },
-        { scEng: name },
-        { raEng: name },
-        { submittedBy: name },
-        { estRaEng: name },
-      ]),
+    const divisionAccessOr = [
+      ...(serviceIds.length ? [{ serviceId: { $in: serviceIds } }] : []),
       ...divisionNames.map(name => ({ divisionName: new RegExp('^' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i') })),
       ...(divisionIds.length ? [{ division: { $in: divisionIds } }] : []),
     ];
+    const nameAccessOr = names.flatMap(name => [
+      { eng: name },
+      { scEng: name },
+      { raEng: name },
+      { submittedBy: name },
+      { estRaEng: name },
+    ]);
+    const accessOr = divisionAccessOr.length ? divisionAccessOr : nameAccessOr;
 
     const filter = {
       status: 'pending',

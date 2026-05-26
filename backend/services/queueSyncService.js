@@ -2,6 +2,7 @@ const Service = require('../models/Service');
 const EmpFRNPending = require('../models/EmpFRN');
 const UnderRepair = require('../models/UnderRepair');
 const EstimationPending = require('../models/EstimationPending');
+const Division = require('../models/Division');
 
 const FRN_UNIT_STATUSES = ['IW', 'EW', 'CAMC', 'STOCK', 'Demo', 'Repeat', 'Buy Back'];
 const EST_UNIT_STATUSES = ['OW', 'LAMC'];
@@ -34,12 +35,36 @@ function calcPendingDays(dateStr) {
   return isNaN(diff) ? 0 : Math.max(0, diff);
 }
 
+async function resolveServiceDivision(svc) {
+  const rawDivision = svc.division;
+  const divisionId = rawDivision && rawDivision._id ? rawDivision._id : rawDivision;
+  const divisionName = svc.divisionName
+    || svc.divisionDisplayName
+    || (rawDivision && (rawDivision.name || rawDivision.displayName))
+    || '';
+
+  if (divisionName || !divisionId) {
+    return { division: divisionId || null, divisionName };
+  }
+
+  try {
+    const div = await Division.findById(divisionId).select('name displayName').lean();
+    return {
+      division: divisionId,
+      divisionName: div ? (div.name || div.displayName || '') : '',
+    };
+  } catch (_) {
+    return { division: divisionId, divisionName: '' };
+  }
+}
+
 async function tryCreateFRNPending(svc, user) {
   try {
     const unitStatus = normalizeUnitStatus(svc.unitSts || svc.unitStatus);
     const repType = normalizeRepType(svc.repType);
     const eligible = FRN_UNIT_STATUSES.includes(unitStatus) && repType === 'NA';
     if (!eligible) return;
+    const serviceDivision = await resolveServiceDivision(svc);
 
     const exists = await EmpFRNPending.findOne({ serviceId: svc._id });
     if (exists) {
@@ -51,6 +76,8 @@ async function tryCreateFRNPending(svc, user) {
           frnNo:      svc.frnNo  || '',
           region:     svc.reg    || '',
           branch:     svc.branch || '',
+          division:   serviceDivision.division,
+          divisionName: serviceDivision.divisionName,
           eng:        svc.eng    || '',
           dealer:     svc.dealer || '',
           customer:   svc.custName || svc.customer || '',
@@ -76,6 +103,8 @@ async function tryCreateFRNPending(svc, user) {
       frnNo:       svc.frnNo      || '',
       region:      svc.reg        || '',
       branch:      svc.branch     || '',
+      division:    serviceDivision.division,
+      divisionName: serviceDivision.divisionName,
       eng:         svc.eng        || '',
       dealer:      svc.dealer     || '',
       customer:    svc.custName || svc.customer || '',
@@ -89,6 +118,7 @@ async function tryCreateFRNPending(svc, user) {
       remarks:     svc.finalRemarks || '',
       status:      'pending',
       submittedBy: svc.submittedBy || (user ? user.name : ''),
+      submittedAt: svc.submittedAt || new Date(),
       pdays:       calcPendingDays(svc.rcvdDate || svc.entryDate),
     });
   } catch (e) {

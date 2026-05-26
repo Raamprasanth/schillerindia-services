@@ -21,6 +21,8 @@ const empfrnSchema = new mongoose.Schema(
     branch:      { type: String, trim: true },
     dealer:      { type: String, trim: true, default: '' },
     destination: { type: String, trim: true },
+    division:    { type: mongoose.Schema.Types.ObjectId, ref: 'Division', default: null },
+    divisionName:{ type: String, trim: true, default: '' },
 
     // ── Unit / Product ────────────────────────────────────
     model:       { type: String, trim: true },
@@ -84,6 +86,8 @@ const empfrnSchema = new mongoose.Schema(
 
     // ── Audit ─────────────────────────────────────────────
     createdBy:   { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    submittedBy: { type: String, trim: true, default: '' },
+    submittedAt: { type: Date, default: null },
     updatedAt:   { type: Date },
     escalationQueuedAt: { type: Date, default: null },
     escalationQueuedBy: { type: String, trim: true, default: '' },
@@ -105,6 +109,8 @@ empfrnSchema.index({ eng: 1 });
 empfrnSchema.index({ scEng: 1 });
 empfrnSchema.index({ entryDate: 1 });
 empfrnSchema.index({ unitStatus: 1 });
+empfrnSchema.index({ division: 1 });
+empfrnSchema.index({ divisionName: 1 });
 
 // ── Virtual: recalculate pending days on read ─────────────
 empfrnSchema.virtual('pendingDays').get(function () {
