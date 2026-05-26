@@ -327,7 +327,6 @@ table.oa-table tbody tr:last-child td{border-bottom:none;}
           <div class="ff"><label>Repaired Date</label><input type="date" id="f-repairedDate"/></div>
           <div class="ff"><label>Status <span class="req">*</span></label>
             <select id="f-status">
-              <option value="Open">Open</option>
               <option value="In Progress">In Progress</option>
               <option value="Closed">Closed</option>
             </select>
@@ -579,7 +578,7 @@ function openModal() {
   document.getElementById('save-btn').innerHTML = '&#128190; Save Activity';
   clearForm();
   document.getElementById('f-entryDate').value = todayISO();
-  document.getElementById('f-status').value = 'Open';
+  document.getElementById('f-status').value = 'In Progress';
   lockDateRules();
   document.getElementById('modal-form').classList.add('open');
 }
@@ -634,7 +633,7 @@ async function saveRecord() {
     showToast('Repaired Date cannot be a back date.', 'err'); return;
   }
   const body = { repairedBy, entryDate, division, model, partNumber, description,
-                 problemObserved, componentsUsed, finalRemarks, repairedDate, remarks, status: status || 'Open' };
+                 problemObserved, componentsUsed, finalRemarks, repairedDate, remarks, status: status || 'In Progress' };
   const btn = document.getElementById('save-btn');
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
