@@ -3,10 +3,31 @@ const router = express.Router();
 const PtClose = require('../models/PtClose');
 const { protect } = require('../middleware/authMiddleware');
 
+function normalizeDivision(value) {
+  const v = String(value || '').trim();
+  const key = v.toLowerCase();
+  const map = {
+    'schiller ag': 'SAG',
+    'sag': 'SAG',
+    'patient monitors': 'PATIENT MONITORS',
+    'patient monitor': 'PATIENT MONITORS',
+    'monitors': 'PATIENT MONITORS',
+    'anaesthesia': 'ANAESTHESIA',
+    'anesthesia': 'ANAESTHESIA',
+  };
+  return map[key] || v;
+}
+
 function getUserDivisions(user) {
   const values = Array.isArray(user?.divisions) ? [...user.divisions] : [];
   if (user?.division) values.push(user.division);
-  return [...new Set(values.map(v => String(v || '').trim()).filter(Boolean))];
+  return [...new Set(values.map(normalizeDivision).filter(Boolean))];
+}
+
+function canAccessDivision(user, division) {
+  const allowed = getUserDivisions(user);
+  if (!allowed.length) return false;
+  return allowed.some(val => val.toLowerCase() === normalizeDivision(division).toLowerCase());
 }
 
 router.get('/', protect, async (req, res) => {
@@ -14,7 +35,7 @@ router.get('/', protect, async (req, res) => {
     const { division, typeCall, status, scEngg, engineer, customer, from, to } = req.query;
     const filter = {};
 
-    if (division) filter.division = division;
+    if (division) filter.division = normalizeDivision(division);
     if (typeCall) filter.typeCall = typeCall;
     if (status) filter.status = status;
     if (scEngg) filter.scEngg = scEngg;
