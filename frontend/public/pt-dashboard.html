@@ -60,6 +60,16 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .topbar-left h1{font-family:'Syne',sans-serif;font-size:19px;font-weight:700;color:var(--text);}
 .topbar-date{font-size:11.5px;color:var(--muted);margin-top:2px;}
 .topbar-right{display:flex;align-items:center;gap:10px;}
+.topbar-link{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:8px;border:1.5px solid var(--accent);background:var(--accent3);color:var(--accent);font-size:12px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;transition:all 0.2s;white-space:nowrap;}
+.topbar-link:hover{background:var(--accent);color:#fff;}
+.topbar-link.pulse{border-color:#7c3aed;background:rgba(124,58,237,0.08);color:#7c3aed;}
+.topbar-link.pulse:hover{background:#7c3aed;color:#fff;}
+.topbar-link.shipl{border-color:#0e7490;background:rgba(14,116,144,0.08);color:#0e7490;}
+.topbar-link.shipl:hover{background:#0e7490;color:#fff;}
+.topbar-link.bc{border-color:#b45309;background:rgba(180,83,9,0.08);color:#b45309;}
+.topbar-link.bc:hover{background:#b45309;color:#fff;}
+.topbar-link.hr{border-color:#059669;background:rgba(5,150,105,0.08);color:#059669;}
+.topbar-link.hr:hover{background:#059669;color:#fff;}
 .notif-wrap{position:relative;}
 .notif-btn{position:relative;padding:8px 14px;border-radius:8px;font-size:15px;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--soft);display:flex;align-items:center;gap:6px;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;}
 .notif-btn:hover{border-color:var(--accent);color:var(--accent);}
@@ -227,6 +237,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
 @media(max-width:1100px){.stats-grid{grid-template-columns:1fr 1fr;}.grid-2,.grid-3{grid-template-columns:1fr;}}
+@media(max-width:1300px){.topbar-right{flex-wrap:wrap;justify-content:flex-end;}.topbar-link{padding:6px 10px;font-size:11.5px;}}
 
   /* -- MESSAGING -- */
   .msg-workspace{display:none;grid-template-columns:310px 1fr;gap:16px;min-height:calc(100vh - 130px);}
@@ -319,6 +330,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <div class="topbar-date" id="topbar-date"></div>
     </div>
     <div class="topbar-right">
+      <a class="topbar-link" href="https://synergycrm.net/schillerservice/" target="_blank" rel="noopener">&#128196; CRM</a>
+      <a class="topbar-link pulse" href="https://schillerind.sharepoint.com/sites/ThePulse?CT=1732090698772&amp;OR=OWA-NT-Mail&amp;CID=a273cbbf-296c-cff8-1ec7-bbcd2eda733e" target="_blank" rel="noopener">&#9889; Pulse</a>
+      <a class="topbar-link shipl" href="https://schillerindia.com/" target="_blank" rel="noopener">&#127760; SHIPL</a>
+      <a class="topbar-link bc" href="https://login.microsoftonline.com/d00c8e15-3cb0-41be-8ebc-6409b4bb4071/oauth2/authorize?client_id=996def3d-b36c-4153-8607-a6fd3c01b89f&amp;redirect_uri=https%3a%2f%2fbusinesscentral.dynamics.com%2fremote-sign-in&amp;response_type=code&amp;scope=openid+profile&amp;response_mode=form_post&amp;nonce=639139546970225078.ZWM5YmUyYTQtZjhlYS00YTE3LTlkM2QtODYyN2NhNTA0ZGQ4NDViYzc3N2EtNmQ3ZC00YTViLTg2YjUtNjc3NGRjY2RmYzc3&amp;nux=1&amp;msafed=0&amp;state=CfDJ8F-vQQ3rsSJJohUfN6O5rJ-6hQ0r1teBSrWXOyTg0-IhdpFy2KFYUuGUArRNhpmYE7VW2t522rHvMdzjraEPjoEldXRXsraq7qJ1To-RYDhEqIzBIZ4eZUiUzUKzihfWTwhiqjDpW69vgISTvDwgYDInwV0Kkkg3IXRMtZ1IbVfznDnrO3IRR9WQfK-knqE_CO3_yi3l7oaJB4WMhm_3tfSOiDJXexnA0UDKVbt9ozL8wjWWhURUhSxdGLCY2hAV1T3CvE3mfWmVm1lR6ufvH8oI8mM5plU-PF2fVYmbcL6Cigak4AuDBkz5OYGh2z4xybfRnF8PueHEdBWikjUGhL__M4PFbniZ71Lb9pTNhKX7lwiRZoVForosQxMQs3P8Cb4HkIyJJdw8fv6bRbLQgrmsH9Wtroty3DF5OI1BIu-CAbcZZ0Wy-B6A2lu97BfxCHmRHmr8stW30lYWEhJSeAIPw3MkKwqqptZcwNqS549akRLXnaxdBkQGHI61ZqYqvev8pKMsPIcOWLAqpnUnlEnZeKwryYseQH2spvIdWiN1HxXjhqLzoJtB9cqj_8JTWg&amp;x-client-SKU=ID_NET8_0&amp;x-client-ver=8.14.0.0&amp;sso_nonce=AwABEgEAAAADAOz_BQD0_0V2b1N0c0FydGlmYWN0cwUAAAAAAGmKpIqua_uwY9_4CtR4zX98qQrZlWY80nDwbHBr5BmzHniU-TeETTXGRRhBXeFFQffVFc5rPqbBSX-tiQ4kIb4gAA&amp;client-request-id=01d80231-9da5-4b99-a8d4-ee6c12b8577e&amp;mscrid=01d80231-9da5-4b99-a8d4-ee6c12b8577e" target="_blank" rel="noopener">&#128200; BC</a>
+      <a class="topbar-link hr" href="https://app.hrone.cloud/app" target="_blank" rel="noopener">&#128101; HR 1</a>
       <div class="notif-wrap">
         
         <div class="notif-panel" id="notif-panel">
