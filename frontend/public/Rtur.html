@@ -399,7 +399,6 @@ table.ur-table tbody tr:last-child td{border-bottom:none;}
       <div class="stat-card sc-blue" onclick="setSummaryFilter('all')"><div class="stat-ico si-blue">&#128736;&#65039;</div><div class="stat-lbl">Total RT UR</div><div class="stat-val" id="st-total">-</div><div class="stat-sub">Active UR records</div></div>
       <div class="stat-card sc-amber" onclick="setSummaryFilter('pending')"><div class="stat-ico si-amber">&#9203;</div><div class="stat-lbl">Pending</div><div class="stat-val" id="st-pending">-</div><div class="stat-sub">Awaiting repair</div></div>
       <div class="stat-card sc-red" onclick="setSummaryFilter('critical')"><div class="stat-ico si-red">&#9888;&#65039;</div><div class="stat-lbl">Critical (&gt;30 days)</div><div class="stat-val" id="st-critical">-</div><div class="stat-sub">Needs immediate action</div></div>
-      <div class="stat-card sc-green" onclick="setSummaryFilter('completed')"><div class="stat-ico si-green">&#9989;</div><div class="stat-lbl">Completed</div><div class="stat-val" id="st-completed">-</div><div class="stat-sub">Repaired &amp; returned</div></div>
     </div>
 
     <!-- ADD PANEL -->
@@ -597,11 +596,9 @@ function calcDays(d) {
 function updateStats() {
   const total=allData.length, pending=allData.filter(d=>d.status==='pending').length;
   const critical=allData.filter(d=>d.noOfDays>30&&d.status!=='completed').length;
-  const completed=allData.filter(d=>d.status==='completed').length;
   document.getElementById('st-total').textContent=total;
   document.getElementById('st-pending').textContent=pending;
   document.getElementById('st-critical').textContent=critical;
-  document.getElementById('st-completed').textContent=completed;
 }
 
 function clearDates(){ applyFilters(); }
@@ -612,7 +609,6 @@ function setSummaryFilter(type){ activeSummary=type||'all'; applyFilters(); }
 function summaryMatches(d){
   if(activeSummary==='pending') return d.status==='pending';
   if(activeSummary==='critical') return d.noOfDays>30&&d.status!=='completed';
-  if(activeSummary==='completed') return d.status==='completed';
   return true;
 }
 
