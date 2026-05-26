@@ -345,6 +345,7 @@ table.oa-table tbody tr:last-child td{border-bottom:none;}
   </div>
 </div>
 
+<script src="repair-suggestions.js"></script>
 <script>
 const API      = '';
 const LUSER    = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
@@ -362,11 +363,24 @@ let editId = null;
     new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   loadData();
   loadDivisionOptions();
+  setupRepairSuggestions();
   
 })();
 
 function getToken()    { return sessionStorage.getItem('schiller_token') || ''; }
 function authHeaders() { return { 'Content-Type':'application/json', Authorization:'Bearer '+getToken() }; }
+function setupRepairSuggestions() {
+  if (!window.RepairSuggestions) return;
+  RepairSuggestions.bind({
+    'f-model': ['model'],
+    'f-description': ['description'],
+    'f-partNumber': ['partNumber'],
+    'f-problemObserved': ['problemObserved'],
+    'f-componentsUsed': ['componentsUsed'],
+    'f-finalRemarks': ['finalRemarks'],
+    'f-remarks': ['remarks']
+  }, () => allData);
+}
 function todayISO() {
   const d = new Date();
   d.setMinutes(d.getMinutes() - d.getTimezoneOffset());

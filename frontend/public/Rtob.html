@@ -153,9 +153,9 @@ table.ob-table tbody tr:last-child td{border-bottom:none;}
 .info-strip{display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface3);border-bottom:1px solid var(--border);}
 .info-cell{padding:14px 20px;border-right:1px solid var(--border);}
 .info-cell:last-child{border-right:none;}
-.info-lbl{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:5px;}
-.info-val{font-size:17px;font-weight:900;color:var(--ob);line-height:1.2;word-break:break-word;}
-.info-val.dark{color:var(--text);font-weight:900;}
+.info-lbl{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:5px;}
+.info-val{font-size:13px;font-weight:500;color:var(--ob);line-height:1.2;word-break:break-word;}
+.info-val.dark{color:var(--text);font-weight:600;}
 .modal-scroll{flex:1;overflow-y:auto;}
 .modal-body{padding:24px 28px;}
 .form-sec{margin-bottom:22px;}
@@ -502,6 +502,7 @@ table.ob-table tbody tr:last-child td{border-bottom:none;}
   </div>
 </div>
 
+<script src="repair-suggestions.js"></script>
 <script>
 const API      = '';
 // -- Read user from localStorage - try both possible key names --
@@ -536,10 +537,22 @@ async function syncRepairSessionUser(){
   document.getElementById('a-entrydate').value = new Date().toISOString().split('T')[0];
   syncRepairSessionUser();
   loadData();
+  setupRepairSuggestions();
 })();
 
 function getToken()    { return sessionStorage.getItem('schiller_token') || ''; }
 function authHeaders() { return { 'Content-Type':'application/json', Authorization:'Bearer '+getToken() }; }
+function setupRepairSuggestions() {
+  if (!window.RepairSuggestions) return;
+  RepairSuggestions.bind({
+    'a-screfno': ['scRefNo','scRno','scRef','scReferenceNo'],
+    'a-defgirno': ['defGirNo','defGir','girNo'],
+    'a-defbrdmod': ['defBrdModName'],
+    'u-repairremarks': ['repairRemarks'],
+    'u-components': ['components'],
+    'u-cost': ['cost']
+  }, () => allData);
+}
 // -- FIXED handleUnauth:
 //    - Only clears localStorage and redirects on 401 (truly expired/invalid token)
 //    - On 403 (forbidden - role not allowed): shows a warning banner instead of
@@ -983,4 +996,3 @@ async function runAIDiagnostics() {
 <script src="tab-fix.js"></script>
 </body>
 </html>
-
