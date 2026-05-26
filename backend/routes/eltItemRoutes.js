@@ -1,6 +1,7 @@
 const express = require('express');
 const EltItem = require('../models/EltItem');
 const ClosedLoan = require('../models/ClosedLoan');
+const LoanItem = require('../models/LoanItem');
 const EmpClosedLoan = require('../models/EmpClosedLoan');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -124,7 +125,7 @@ router.post('/:id/to-scod', async (req, res) => {
     if (!doc) return res.status(404).json({ message: 'ELT item not found.' });
     
     // Create new ClosedLoan
-    const closedDoc = await ClosedLoan.create({
+    const loanDoc = await LoanItem.create({
       date: doc.date,
       division: doc.division,
       partNo: doc.partNo,
@@ -132,6 +133,7 @@ router.post('/:id/to-scod', async (req, res) => {
       girNo: doc.girNo,
       opt: req.body.opt || doc.opt,
       remarks: req.body.remarks || doc.remarks,
+      revalue: req.body.revalue || doc.revalue,
       createdBy: doc.createdBy,
       updatedBy: req.user?.name || req.user?.email || '',
     });
@@ -144,6 +146,7 @@ router.post('/:id/to-scod', async (req, res) => {
       girNo: doc.girNo,
       opt: req.body.opt || doc.opt,
       remarks: req.body.remarks || doc.remarks,
+      revalue: req.body.revalue || doc.revalue,
       createdBy: doc.createdBy,
       updatedBy: req.user?.name || req.user?.email || '',
     });
@@ -151,7 +154,7 @@ router.post('/:id/to-scod', async (req, res) => {
     // Delete from EltItem
     await EltItem.findByIdAndDelete(req.params.id);
     
-    res.json({ success: true, closedLoan: closedDoc });
+    res.json({ success: true, loanItem: loanDoc });
   } catch (err) {
     console.error('[POST /api/elt-items/:id/to-scod]', err);
     res.status(500).json({ message: 'Server error', error: err.message });
