@@ -252,11 +252,43 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .breadcrumb .sep{color:#b8cad8;}
 .page-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);line-height:1.2;}
 .topbar-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap;}
-.table-responsive{overflow-x:auto;}
-table{width:100%;border-collapse:collapse;font-size:12.5px;}
-th{background:var(--surface2);padding:12px 16px;text-align:left;font-weight:700;color:var(--soft);text-transform:uppercase;font-size:10px;letter-spacing:.05em;border-bottom:2px solid var(--border);white-space:nowrap;}
-td{padding:12px 16px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top;}
-tr:hover td{background:var(--surface3);}
+/* -- TABLE CARD -- */
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);}
+.table-top{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--surface3);}
+.table-title{font-family:'Syne',sans-serif;font-size:13.5px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+.count-chip{background:var(--accent3);color:var(--accent);font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:10px;border:1px solid rgba(0,104,181,0.15);}
+.toolbar-r{display:flex;align-items:center;gap:9px;}
+.show-row{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted);}
+.srch-wrap{position:relative;}
+.srch-wrap input{padding:7px 12px 7px 30px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;width:220px;transition:border-color 0.2s;}
+.srch-wrap input:focus{border-color:var(--accent);}
+.srch-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);}
+.filter-strip{padding:11px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fafcfe;}
+.filter-strip label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;}
+.f-input,.f-select{padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s;cursor:pointer;}
+.f-input{cursor:text;}
+.f-input:focus,.f-select:focus{border-color:var(--accent);}
+.f-divider{width:1px;height:24px;background:var(--border);flex-shrink:0;}
+.table-wrap{overflow-x:auto;}
+table.call-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:1300px;}
+table.call-table thead th{padding:9px 12px;font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;text-align:left;border-bottom:2px solid var(--border);background:var(--surface3);white-space:nowrap;cursor:pointer;user-select:none;transition:color 0.2s;}
+table.call-table thead th:hover{color:var(--accent);}
+table.call-table thead th.sorted{color:var(--accent);}
+table.call-table thead th .si{font-size:8px;margin-left:2px;opacity:0.45;}
+table.call-table thead th.sorted .si{opacity:1;}
+table.call-table tbody td{padding:9px 12px;border-bottom:1px solid rgba(0,60,120,0.05);vertical-align:middle;white-space:nowrap;}
+table.call-table tbody tr{transition:background 0.13s;}
+table.call-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
+table.call-table tbody tr:last-child td{border-bottom:none;}
+.table-foot{padding:11px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--muted);flex-wrap:wrap;gap:8px;background:var(--surface3);}
+.pager-row{display:flex;align-items:center;gap:3px;}
+.pager{min-width:28px;height:28px;padding:0 7px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--soft);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.18s;font-family:'Plus Jakarta Sans',sans-serif;}
+.pager:hover{border-color:var(--accent);color:var(--accent);}
+.pager.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.pager:disabled{opacity:0.3;cursor:not-allowed;}
+
+/*
+
 .empty-state{padding:40px;text-align:center;color:var(--muted);font-size:13px;}
 .modal-overlay{position:fixed;inset:0;background:rgba(5,18,38,0.6);backdrop-filter:blur(5px);z-index:2000;display:none;align-items:center;justify-content:center;}
 .modal-overlay.open{display:flex;}
@@ -331,31 +363,47 @@ tr:hover td{background:var(--surface3);}
   </div>
 
   <div class="content">
-    <div class="card">
-      <div class="card-head">
-        <div class="card-title">Activity List</div>
+    <div class="table-card">
+      <div class="table-top">
+        <div class="table-title">Activity List <span class="count-chip" id="count-chip">- entries</span></div>
+        <div class="toolbar-r">
+          <div class="show-row">Show
+            <select class="f-select" id="per-page" style="padding:5px 8px;min-width:60px;" onchange="renderTable()">
+              <option>10</option><option>25</option><option>50</option><option>100</option>
+            </select>
+            entries
+          </div>
+          <div class="srch-wrap">
+            <span class="srch-ico">&#128269;</span>
+            <input type="text" id="tbl-search" placeholder="Search activities..." oninput="applyFilters()"/>
+          </div>
+        </div>
       </div>
-      <div class="table-responsive">
-        <table>
+      <div class="table-wrap">
+        <table class="call-table">
           <thead>
             <tr>
-              <th>SC Engineer</th>
-              <th>Initiated Date</th>
-              <th>Activity</th>
-              <th>Description</th>
-              <th>Responsible</th>
-              <th>Pending From</th>
-              <th>Target Date</th>
-              <th>Remarks</th>
-              <th>SC Incharge Remarks</th>
-              <th>Status</th>
+              <th onclick="sortBy('scEngineer')">SC Engineer &#8597;</th>
+              <th onclick="sortBy('initiatedDate')">Initiated Date &#8597;</th>
+              <th onclick="sortBy('activity')">Activity &#8597;</th>
+              <th onclick="sortBy('description')">Description &#8597;</th>
+              <th onclick="sortBy('responsible')">Responsible &#8597;</th>
+              <th onclick="sortBy('pendingFrom')">Pending From &#8597;</th>
+              <th onclick="sortBy('targetDate')">Target Date &#8597;</th>
+              <th onclick="sortBy('remarks')">Remarks &#8597;</th>
+              <th onclick="sortBy('scInchargeRemarks')">SC Incharge Remarks &#8597;</th>
+              <th onclick="sortBy('status')">Status &#8597;</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody id="table-body">
-            <!-- Data will be loaded here -->
+            <tr><td colspan="11" style="text-align:center;padding:30px;color:var(--muted);">Loading...</td></tr>
           </tbody>
         </table>
+      </div>
+      <div class="table-foot">
+        <span id="tbl-info">-</span>
+        <div class="pager-row" id="tbl-pagination"></div>
       </div>
     </div>
   </div>
@@ -439,42 +487,100 @@ async function fetchData() {
     const data = await res.json();
     if(res.ok) { 
       currentData = Array.isArray(data) ? data : []; 
-      renderTable();
+      applyFilters();
     }
   } catch(e) { console.error(e); }
 }
 
 function renderTable() {
+  const perPage = parseInt(document.getElementById('per-page')?.value) || 10;
+  const total = filteredData.length;
+  const pages = Math.max(1, Math.ceil(total / perPage));
+  if (currentPage > pages) currentPage = pages;
+  const slice = filteredData.slice((currentPage - 1) * perPage, currentPage * perPage);
+  
+  const cp = document.getElementById('count-chip');
+  if (cp) cp.textContent = total + ' entr' + (total === 1 ? 'y' : 'ies');
+
   const tbody = document.getElementById('table-body');
-  if(!currentData.length){
-    tbody.innerHTML = `<tr><td colspan="11" class="empty-state">No pending activities found.</td></tr>`;
-    return;
+  if(!slice.length){
+    tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:30px;color:var(--muted);">No matching activities found.</td></tr>`;
+  } else {
+    tbody.innerHTML = slice.map(t => {
+      let statCls = 'sp-pending';
+      const s = (t.status||'').toLowerCase();
+      if(s==='open') statCls='sp-open';
+      if(s==='closed'||s==='completed') statCls='sp-closed';
+      
+      return `<tr>
+        <td style="font-weight:600;">${esc(t.scEngineer)}</td>
+        <td>${formatDate(t.initiatedDate)}</td>
+        <td style="font-weight:600;">${esc(t.activity)}</td>
+        <td style="max-width:180px;white-space:normal;">${esc(t.description)}</td>
+        <td>${esc(t.responsible)}</td>
+        <td>${formatDate(t.pendingFrom)}</td>
+        <td>${formatDate(t.targetDate)}</td>
+        <td style="max-width:150px;white-space:normal;">${esc(t.remarks)}</td>
+        <td style="max-width:150px;white-space:normal;">${esc(t.scInchargeRemarks)}</td>
+        <td><span class="s-pill ${statCls}">${esc(t.status)}</span></td>
+        <td>
+          <button class="btn btn-outline btn-sm" onclick="editData('${t._id}')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteData('${t._id}')">Del</button>
+        </td>
+      </tr>`;
+    }).join('');
   }
   
-  tbody.innerHTML = currentData.map(t => {
-    let statCls = 'pending';
-    const s = (t.status||'').toLowerCase();
-    if(s==='open') statCls='open';
-    if(s==='closed'||s==='completed') statCls='closed';
-    
-    return `<tr>
-      <td><b>${esc(t.scEngineer)}</b></td>
-      <td>${formatDate(t.initiatedDate)}</td>
-      <td><b>${esc(t.activity)}</b></td>
-      <td>${esc(t.description)}</td>
-      <td>${esc(t.responsible)}</td>
-      <td>${formatDate(t.pendingFrom)}</td>
-      <td>${formatDate(t.targetDate)}</td>
-      <td>${esc(t.remarks)}</td>
-      <td>${esc(t.scInchargeRemarks)}</td>
-      <td><span class="badge ${statCls}">${esc(t.status)}</span></td>
-      <td>
-        <button class="btn btn-outline btn-sm" onclick="editData('${t._id}')">Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteData('${t._id}')">Del</button>
-      </td>
-    </tr>`;
-  }).join('');
+  const fr = total ? (currentPage - 1) * perPage + 1 : 0;
+  const tInfo = document.getElementById('tbl-info');
+  if(tInfo) tInfo.textContent = total ? `Showing ${fr} to ${Math.min(currentPage * perPage, total)} of ${total} entries` : '0 entries';
+  
+  renderPagination(pages);
 }
+
+let filteredData = [];
+let sortKey = 'initiatedDate', sortDir = -1, currentPage = 1;
+
+function applyFilters() {
+  const q = (document.getElementById('tbl-search')?.value || '').toLowerCase();
+  filteredData = currentData.filter(d => {
+    return !q || Object.values(d).some(v => String(v||'').toLowerCase().includes(q));
+  });
+  sortArr();
+  currentPage = 1;
+  renderTable();
+}
+
+function sortBy(k) {
+  if (sortKey === k) sortDir *= -1;
+  else { sortKey = k; sortDir = -1; }
+  sortArr();
+  renderTable();
+}
+
+function sortArr() {
+  filteredData.sort((a, b) => {
+    const av = a[sortKey] ?? '', bv = b[sortKey] ?? '';
+    return String(av).toLowerCase() < String(bv).toLowerCase() ? -sortDir
+         : String(av).toLowerCase() > String(bv).toLowerCase() ? sortDir : 0;
+  });
+}
+
+function renderPagination(pages) {
+  const el = document.getElementById('tbl-pagination');
+  if (pages <= 1) { el.innerHTML = ''; return; }
+  let h = `<button class="pager" ${currentPage===1?'disabled':''} onclick="gp(${currentPage-1})">&#8249; Prev</button>`;
+  getRange(currentPage, pages).forEach(p => {
+    h += p === '...'
+      ? `<button class="pager" disabled>...</button>`
+      : `<button class="pager ${p===currentPage?'active':''}" onclick="gp(${p})">${p}</button>`;
+  });
+  h += `<button class="pager" ${currentPage===pages?'disabled':''} onclick="gp(${currentPage+1})">Next &#8250;</button>`;
+  el.innerHTML = h;
+}
+function getRange(c,t){if(t<=7)return Array.from({length:t},(_,i)=>i+1);if(c<=4)return[1,2,3,4,5,'...',t];if(c>=t-3)return[1,'...',t-4,t-3,t-2,t-1,t];return[1,'...',c-1,c,c+1,'...',t];}
+function gp(p) { currentPage = p; renderTable(); }
+
 
 function openModal(){ 
   clearForm(); 

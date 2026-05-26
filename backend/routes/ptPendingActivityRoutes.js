@@ -18,8 +18,8 @@ router.use((req, res, next) => {
 });
 
 function ownerFilter(user) {
-  const role = String(user?.role || '').toLowerCase();
-  if (['admin', 'superadmin', 'administrator'].includes(role)) return {};
+  return {};
+};
   return { createdBy: user?._id };
 }
 
