@@ -345,6 +345,8 @@ html[data-emp-theme="dark"] .repair-state-badge.repair-complete {
   min-height: 54px !important;
   padding: 8px 10px !important;
   border-radius: 9px !important;
+  font-family: Calibri, Carlito, "Segoe UI", Arial, sans-serif !important;
+  font-weight: 700 !important;
 }
 
 .stat-card,
@@ -356,22 +358,37 @@ html[data-emp-theme="dark"] .repair-state-badge.repair-complete {
 
 .stat-label,
 .stat-lbl,
+.sc-lbl,
+.hstat-lbl,
+.kpi-label,
+.card-lbl,
+.metric-label,
 .rr-metric small {
   display: block !important;
   margin-bottom: 4px !important;
-  font-size: 9px !important;
+  font-family: Calibri, Carlito, "Segoe UI", Arial, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
   line-height: 1.15 !important;
-  white-space: nowrap !important;
+  letter-spacing: 0 !important;
+  white-space: normal !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
 }
 
 .stat-value,
 .stat-val,
+.sc-val,
+.hstat-val,
+.kpi-val,
+.card-val,
+.metric-value,
 .rr-metric strong {
   display: block !important;
   margin-bottom: 0 !important;
+  font-family: Calibri, Carlito, "Segoe UI", Arial, sans-serif !important;
   font-size: 18px !important;
+  font-weight: 700 !important;
   line-height: 1 !important;
   white-space: nowrap !important;
 }
