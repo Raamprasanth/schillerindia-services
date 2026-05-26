@@ -305,13 +305,7 @@ table.bir-table tbody tr:last-child td{border-bottom:none;}
           <div class="ebir-section-title"><span class="ebir-dot" style="background:var(--green)"></span> Service Section</div>
           <div class="fg-4">
             <div class="ff"><label>SC Engineer</label><input type="text" id="upd-sc-engineer" placeholder="SC engineer name" required/></div>
-            <div class="ff"><label>SC Inward Date</label><input type="date" id="upd-sc-inward" required/></div>
             <div class="ff"><label>SC Observation</label><input type="text" id="upd-sc-obs" placeholder="Observation notes..." required/></div>
-            <div class="ff"><label>SC Action Plan</label><input type="text" id="upd-sc-action" placeholder="Action plan details..." required/></div>
-            <div class="ff"><label>Tentative Date</label><input type="date" id="upd-tent-date" required/></div>
-            <div class="ff"><label>Ship Date to FQC</label><input type="date" id="upd-ship-fqc" required/></div>
-            <div class="ff"><label>Defective Unit Received Date</label><input type="date" id="upd-def-recv" required/></div>
-            <div class="ff"><label>Replacement Ship Date</label><input type="date" id="upd-rep-ship" required/></div>
             <div class="ff"><label>Hardware Changes</label><input type="text" id="upd-hw-changes" placeholder="Hardware change status" required/></div>
             <div class="ff"><label>Hardware Change Remarks</label><input type="text" id="upd-hw-remarks" placeholder="Hardware change details" required/></div>
             <div class="ff"><label>Service Manual Update</label>
@@ -320,9 +314,7 @@ table.bir-table tbody tr:last-child td{border-bottom:none;}
               </select>
             </div>
             <div class="ff"><label>Technical Remarks</label><input type="text" id="upd-tech-remarks" placeholder="Technical notes" required/></div>
-            <div class="ff"><label>Software Change Remarks</label><input type="text" id="upd-sw-remarks" placeholder="Software change details" required/></div>
-            <div class="ff"><label>SC Final Remarks</label><input type="text" id="upd-fqc-remarks" placeholder="SC final remarks..." required/></div>
-            <div class="ff"><label>FQC Observation</label><input type="text" id="upd-fqc-obs" placeholder="FQC observation notes..." required/></div>
+            <div class="ff"><label>TS Verification Date</label><input type="date" id="upd-ts-date" required/></div>
           </div>
         </div>
 
@@ -330,7 +322,6 @@ table.bir-table tbody tr:last-child td{border-bottom:none;}
         <div class="ebir-section-frozen" id="product-section">
           <div class="ebir-section-title"><span class="ebir-dot" style="background:var(--purple)"></span> Product Team Section</div>
           <div class="fg-4">
-            <div class="ff"><label>TS Team Verification Date</label><input type="date" id="upd-ts-date" disabled/></div>
             <div class="ff"><label>PS Engineer</label><input type="text" id="upd-ps-engineer" disabled/></div>
             <div class="ff"><label>CNR / Technews Circulation</label>
               <select id="upd-cnr" disabled>
@@ -799,20 +790,12 @@ async function submitUpdate(){
   const requiredFields = [
     ['upd-final-status','Status'],
     ['upd-sc-engineer','SC Engineer'],
-    ['upd-sc-inward','SC Inward Date'],
     ['upd-sc-obs','SC Observation'],
-    ['upd-sc-action','SC Action Plan'],
-    ['upd-tent-date','Tentative Date'],
-    ['upd-ship-fqc','Ship Date to FQC'],
-    ['upd-def-recv','Defective Unit Received Date'],
-    ['upd-rep-ship','Replacement Ship Date'],
     ['upd-hw-changes','Hardware Changes'],
     ['upd-hw-remarks','Hardware Change Remarks'],
     ['upd-service-manual','Service Manual Update'],
     ['upd-tech-remarks','Technical Remarks'],
-    ['upd-sw-remarks','Software Change Remarks'],
-    ['upd-fqc-remarks','SC Final Remarks'],
-    ['upd-fqc-obs','FQC Observation'],
+    ['upd-ts-date','TS Verification Date'],
   ];
   const missing = [];
   requiredFields.forEach(([fieldId, label]) => {
@@ -832,28 +815,18 @@ async function submitUpdate(){
   }
 
   const editPayload = {
-    scInwardDate:        document.getElementById('upd-sc-inward').value,
     scObservation:       document.getElementById('upd-sc-obs').value.trim(),
-    scActionPlan:        document.getElementById('upd-sc-action').value.trim(),
-    tentativeDate:       document.getElementById('upd-tent-date').value,
-    shipDateToFqc:       document.getElementById('upd-ship-fqc').value,
     hwChanges:           document.getElementById('upd-hw-changes').value.trim(),
     hwChangeRemarks:     document.getElementById('upd-hw-remarks').value.trim(),
-    swChangeRemarks:     document.getElementById('upd-sw-remarks').value.trim(),
-    fqcFinalRemarks:     document.getElementById('upd-fqc-remarks').value.trim(),
     finalStatus:         finalStatus,
-    defUnitReceivedDate: document.getElementById('upd-def-recv').value,
-    replacementShipDate: document.getElementById('upd-rep-ship').value,
-    fqcObservation:      document.getElementById('upd-fqc-obs').value.trim(),
+    tsVerificationDate:  document.getElementById('upd-ts-date').value,
     scEngineer:          document.getElementById('upd-sc-engineer').value.trim() || (JSON.parse(sessionStorage.getItem('schiller_user') || '{}').name || ''),
     serviceManualUpdate: document.getElementById('upd-service-manual').value,
     techRemarks:         document.getElementById('upd-tech-remarks').value.trim(),
   };
   const hasServiceUpdate = [
-    'scInwardDate', 'scObservation', 'scActionPlan', 'tentativeDate', 'shipDateToFqc', 'fqcFinalRemarks',
-    'defUnitReceivedDate', 'replacementShipDate', 'fqcObservation',
-    'hwChanges', 'hwChangeRemarks', 'swChangeRemarks',
-    'serviceManualUpdate', 'techRemarks'
+    'scObservation', 'hwChanges', 'hwChangeRemarks',
+    'serviceManualUpdate', 'techRemarks', 'tsVerificationDate'
   ].some(key => String(editPayload[key] || '').trim());
   if(finalStatus === 'Pending' && hasServiceUpdate){
     finalStatus = 'Closed';
