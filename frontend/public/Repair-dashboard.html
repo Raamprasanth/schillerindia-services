@@ -192,6 +192,39 @@
     .item-link:hover{border-color:var(--accent);background:var(--accent-soft);}
     .item-error{border:1px solid rgba(204,0,0,0.25);background:rgba(204,0,0,0.06);color:var(--red);border-radius:9px;padding:12px;font-size:12.5px;line-height:1.5;}
     @media(max-width:900px){.item-ai-body{grid-template-columns:1fr;}.item-links{grid-template-columns:1fr;}}
+
+    /* -- MESSAGING -- */
+    .msg-workspace{display:none;grid-template-columns:310px 1fr;gap:16px;min-height:calc(100vh - 130px);}
+    .msg-workspace.open{display:grid;}
+    .msg-panel{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);}
+    .msg-head{padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:space-between;gap:10px;}
+    .msg-title{font-family:Calibri,'Segoe UI',Arial,sans-serif;font-size:16px;font-weight:800;color:var(--text);}
+    .msg-sub{font-size:13px;color:var(--muted);margin-top:2px;}
+    .msg-compose{padding:14px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--border);}
+    .msg-field{display:flex;flex-direction:column;gap:5px;}
+    .msg-field label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);}
+    .msg-field select,.msg-field textarea{width:100%;border:1.5px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text);font-family:Calibri,'Segoe UI',Arial,sans-serif;font-size:14px;padding:9px 11px;outline:none;}
+    .msg-field textarea{min-height:72px;resize:vertical;}
+    .msg-thread-list{max-height:calc(100vh - 465px);overflow:auto;}
+    .msg-thread{padding:12px 14px;border-bottom:1px solid rgba(0,60,120,0.06);cursor:pointer;transition:background 0.15s;}
+    .msg-thread:hover,.msg-thread.active{background:rgba(5,150,105,0.08);color:var(--accent);}
+    .msg-thread-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+    .msg-thread-name{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;justify-content:space-between;width:100%;}
+    .msg-thread-time{font-size:12px;color:var(--muted);white-space:nowrap;}
+    .msg-thread-last{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px;}
+    .msg-unread{background:var(--red);color:#fff;border-radius:999px;padding:1px 6px;font-size:10px;font-weight:800;margin-left:6px;}
+    .msg-chat{display:flex;flex-direction:column;min-height:calc(100vh - 130px);}
+    .msg-chat-body{flex:1;padding:18px;overflow:auto;background:linear-gradient(180deg,#f7fbff,#eef6fb);}
+    .msg-empty{text-align:center;color:var(--muted);font-size:14px;padding:40px 16px;}
+    .msg-bubble-row{display:flex;margin-bottom:10px;}
+    .msg-bubble-row.mine{justify-content:flex-end;}
+    .msg-bubble{max-width:70%;padding:9px 12px;border-radius:14px;background:#fff;border:1px solid var(--border);box-shadow:0 1px 5px rgba(0,60,120,0.06);}
+    .msg-bubble-row.mine .msg-bubble{background:#d1fae5;border-color:#a7f3d0;}
+    .msg-meta{font-size:11px;color:var(--muted);margin-bottom:3px;font-weight:700;}
+    .msg-text{font-size:14px;color:var(--text);line-height:1.45;white-space:pre-wrap;word-break:break-word;}
+    .msg-chat-foot{display:flex;gap:10px;padding:12px;border-top:1px solid var(--border);background:var(--surface);}
+    .msg-chat-foot textarea{flex:1;min-height:42px;max-height:110px;resize:vertical;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-family:Calibri,'Segoe UI',Arial,sans-serif;font-size:14px;outline:none;}
+    .nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:10px;line-height:1;}
     </style>
   <link rel="stylesheet" href="global-typography.css">
   <link rel="stylesheet" href="employee-theme.css">
@@ -277,6 +310,7 @@
   <nav class="sidebar-nav">
     <div class="nav-sec">Main</div>
     <a class="nav-item active" href="Repair-dashboard.html"><span class="ico">&#128202;</span> Dashboard</a>
+    <a class="nav-item" id="rep-msg-nav" href="#messages" onclick="showRepMessages(event)"><span class="ico">&#128172;</span> Messaging <span class="nav-badge" id="rep-msg-badge" style="display:none;">0</span></a>
     <div class="nav-sec">Repair Work</div>
     <a class="nav-item" href="Rtfrn.html"><span class="ico">&#128221;</span> PFRN</a>
     <a class="nav-item" href="Rtob.html"><span class="ico">&#128230;</span> OB</a>
@@ -314,6 +348,56 @@
   </div>
 
   <div class="content">
+
+    <!-- MESSAGING WORKSPACE -->
+    <div class="msg-workspace" id="rep-msg-workspace">
+      <div class="msg-panel">
+        <div class="msg-head">
+          <div>
+            <div class="msg-title">Service Messages</div>
+            <div class="msg-sub">Select a division and recipient</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="loadRepMessageThreads()">Refresh</button>
+        </div>
+        <div class="msg-compose">
+          <div class="msg-field">
+            <label>Division</label>
+            <select id="rep-msg-division" onchange="loadRepMessageRecipients()">
+              <option value="">All divisions</option>
+            </select>
+          </div>
+          <div class="msg-field">
+            <label>Recipient</label>
+            <select id="rep-msg-recipient">
+              <option value="">Select recipient</option>
+            </select>
+          </div>
+          <div class="msg-field">
+            <label>Message</label>
+            <textarea id="rep-msg-new" placeholder="Type message..."></textarea>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="sendRepNewMessage()">Send Message</button>
+        </div>
+        <div class="msg-thread-list" id="rep-msg-thread-list">
+          <div class="msg-empty">No conversations loaded.</div>
+        </div>
+      </div>
+      <div class="msg-panel msg-chat">
+        <div class="msg-head">
+          <div>
+            <div class="msg-title" id="rep-chat-title">Select a conversation</div>
+            <div class="msg-sub" id="rep-chat-sub">Messages with service team</div>
+          </div>
+        </div>
+        <div class="msg-chat-body" id="rep-chat-body">
+          <div class="msg-empty">Choose a recipient thread or send a new message.</div>
+        </div>
+        <div class="msg-chat-foot">
+          <textarea id="rep-msg-reply" placeholder="Type reply..." disabled></textarea>
+          <button class="btn btn-primary" id="rep-msg-reply-btn" onclick="sendRepReply()" disabled>Send</button>
+        </div>
+      </div>
+    </div>
 
     <!-- WELCOME STRIP -->
     <div class="welcome-strip">
@@ -586,7 +670,8 @@ async function loadDashboard() {
     loadPFRN(),
     loadOB(),
     loadUR(),
-    loadClosed()
+    loadClosed(),
+    loadRepMessageThreads()
   ]);
   updatePerformance();
   (document.getElementById('last-sync')||{}).textContent =
@@ -789,6 +874,208 @@ async function analyzeItemImage(){
   }
 }
 
+// ── REPAIR MESSAGING SYSTEM ──────────────────────────────
+let repMsgThreads = [];
+let repMsgActiveId = '';
+let repMsgUnreadLast = 0;
+
+function initRepMessages(){
+  loadRepMessageDivisions();
+  loadRepMessageRecipients();
+  loadRepMessageThreads();
+  setInterval(loadRepMessageThreads, 30000);
+  if (location.hash === '#messages') showRepMessages();
+  window.addEventListener('hashchange', () => {
+    if (location.hash === '#messages') showRepMessages();
+    else showRepDashboard();
+  });
+}
+
+function showRepMessages(event){
+  if (event) event.preventDefault();
+  location.hash = 'messages';
+  const workspace = document.getElementById('rep-msg-workspace');
+  document.querySelectorAll('.content > *').forEach(el => {
+    if (el !== workspace) el.style.display = 'none';
+  });
+  if (workspace) workspace.classList.add('open');
+  document.querySelectorAll('.sidebar .nav-item').forEach(a => a.classList.remove('active'));
+  (document.getElementById('rep-msg-nav')||{}).classList.add('active');
+  loadRepMessageThreads();
+}
+
+function showRepDashboard(){
+  const workspace = document.getElementById('rep-msg-workspace');
+  if (workspace) workspace.classList.remove('open');
+  document.querySelectorAll('.content > *').forEach(el => {
+    if (el !== workspace) el.style.display = '';
+  });
+  document.querySelectorAll('.sidebar .nav-item').forEach(a => a.classList.remove('active'));
+  const dash = document.querySelector('.sidebar .nav-item[href="Repair-dashboard.html"]');
+  if (dash) dash.classList.add('active');
+}
+
+async function loadRepMessageDivisions(){
+  const sel = document.getElementById('rep-msg-division');
+  if (!sel) return;
+  try{
+    const res = await fetch('/api/divisions', { headers: authHeaders() });
+    const data = await res.json().catch(()=>[]);
+    const list = Array.isArray(data) ? data : (data.data || []);
+    const names = [...new Set(list.map(d => d.name || d.division || d.divisionName || d).filter(Boolean).map(String))].sort();
+    sel.innerHTML = '<option value="">All divisions</option>' + names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+  }catch(_){}
+}
+
+async function loadRepMessageRecipients(){
+  const division = document.getElementById('rep-msg-division')?.value || '';
+  const empSel = document.getElementById('rep-msg-recipient');
+  if (!empSel) return;
+  empSel.innerHTML = '<option value="">Loading...</option>';
+  try{
+    const res = await fetch('/api/service-messages/recipients?division=' + encodeURIComponent(division), { headers: authHeaders() });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    const list = json.data || [];
+    empSel.innerHTML = '<option value="">Select recipient</option>' + list.map(emp => {
+      const value = `${emp.source}:${emp.id}`;
+      const role = String(emp.role || '').replace(/_/g, ' ');
+      const label = `${emp.name}${emp.division ? ' - ' + emp.division : ''}${role ? ' (' + role + ')' : ''}`;
+      return `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`;
+    }).join('');
+  }catch(e){
+    empSel.innerHTML = '<option value="">Could not load recipients</option>';
+    showToast('Recipient load failed: ' + e.message, 'err');
+  }
+}
+
+async function loadRepMessageThreads(){
+  try{
+    const res = await fetch('/api/service-messages/threads', { headers: authHeaders() });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    repMsgThreads = json.data || [];
+    renderRepMessageThreads();
+    updateRepMessageNotification();
+  }catch(e){
+    const list = document.getElementById('rep-msg-thread-list');
+    if (list) list.innerHTML = '<div class="msg-empty">Could not load conversations.</div>';
+  }
+}
+
+function updateRepMessageNotification(){
+  const count = repMsgThreads.reduce((sum, t) => sum + Number(t.unreadCount || 0), 0);
+  const badge = document.getElementById('rep-msg-badge');
+  if (badge) {
+    badge.textContent = count;
+    badge.style.display = count ? 'inline-flex' : 'none';
+  }
+  if (count > repMsgUnreadLast && location.hash !== '#messages') {
+    showToast('New service message received.', 'info');
+  }
+  repMsgUnreadLast = count;
+}
+
+function renderRepMessageThreads(){
+  const list = document.getElementById('rep-msg-thread-list');
+  if (!list) return;
+  if (!repMsgThreads.length) {
+    list.innerHTML = '<div class="msg-empty">No conversations yet.</div>';
+    return;
+  }
+  list.innerHTML = repMsgThreads.map(t => `
+    <div class="msg-thread ${t._id === repMsgActiveId ? 'active' : ''}" onclick="openRepThread('${t._id}')">
+      <div class="msg-thread-top">
+        <div class="msg-thread-name">${escapeHtml(t.peerName || t.coordinatorName || 'Service Coordinator')}${t.unreadCount ? `<span class="msg-unread">${t.unreadCount}</span>` : ''}</div>
+        <div class="msg-thread-time">${fmtRepMsgTime(t.lastMessageAt)}</div>
+      </div>
+      <div class="msg-thread-last">${escapeHtml(t.lastMessage || '')}</div>
+    </div>
+  `).join('');
+}
+
+async function openRepThread(id){
+  repMsgActiveId = id;
+  renderRepMessageThreads();
+  try{
+    const res = await fetch('/api/service-messages/threads/' + id, { headers: authHeaders() });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    renderRepChat(json.data);
+    loadRepMessageThreads();
+  }catch(e){ showToast('Conversation load failed: ' + e.message, 'err'); }
+}
+
+function renderRepChat(thread){
+  const userStr = sessionStorage.getItem('schiller_user');
+  const u = userStr ? JSON.parse(userStr) : {};
+  const currentId = String(u._id || u.id || '');
+  
+  (document.getElementById('rep-chat-title')||{}).textContent = String(thread.coordinatorId) === currentId ? (thread.employeeName || 'Recipient') : (thread.coordinatorName || 'Service Coordinator');
+  (document.getElementById('rep-chat-sub')||{}).textContent = thread.division || 'Service coordination';
+  const body = document.getElementById('rep-chat-body');
+  body.innerHTML = (thread.messages || []).map(m => {
+    const mine = String(m.senderId) === currentId;
+    return `<div class="msg-bubble-row ${mine ? 'mine' : ''}">
+      <div class="msg-bubble">
+        <div class="msg-meta">${escapeHtml(m.senderName || '')} - ${fmtRepMsgTime(m.createdAt || m.timestamp)}</div>
+        <div class="msg-text">${escapeHtml(m.text || '')}</div>
+      </div>
+    </div>`;
+  }).join('') || '<div class="msg-empty">No messages yet.</div>';
+  body.scrollTop = body.scrollHeight;
+  document.getElementById('rep-msg-reply').disabled = false;
+  document.getElementById('rep-msg-reply-btn').disabled = false;
+}
+
+async function sendRepNewMessage(){
+  const empVal = document.getElementById('rep-msg-recipient')?.value || '';
+  const msgEl = document.getElementById('rep-msg-new');
+  const message = msgEl?.value.trim() || '';
+  if (!empVal || !message) return showToast('Select recipient and type message.', 'err');
+  const [recipientModel, recipientId] = empVal.split(':');
+  try{
+    const res = await fetch('/api/service-messages/threads', {
+      method:'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ recipientId, recipientModel, division: document.getElementById('rep-msg-division')?.value || '', message })
+    });
+    const json = await res.json().catch(()=>({}));
+    if (!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
+    msgEl.value = '';
+    await loadRepMessageThreads();
+    if(json && json.data && json.data._id) {
+      await openRepThread(json.data._id);
+    }
+    showToast('Message sent.', 'ok');
+  }catch(e){ showToast('Send failed: ' + e.message, 'err'); }
+}
+
+async function sendRepReply(){
+  const msgEl = document.getElementById('rep-msg-reply');
+  const message = msgEl?.value.trim() || '';
+  if (!repMsgActiveId || !message) return;
+  try{
+    const res = await fetch('/api/service-messages/threads/' + repMsgActiveId + '/messages', {
+      method:'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ message })
+    });
+    const json = await res.json().catch(()=>({}));
+    if (!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
+    msgEl.value = '';
+    loadRepMessageThreads();
+    openRepThread(repMsgActiveId);
+  }catch(e){ showToast('Reply failed: ' + e.message, 'err'); }
+}
+
+function fmtRepMsgTime(value){
+  if (!value) return '';
+  const d = new Date(value);
+  return isNaN(d) ? '' : d.toLocaleString('en-IN', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+initRepMessages();
 loadDashboard();
 </script>
 </body>

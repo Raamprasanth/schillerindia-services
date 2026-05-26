@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Employee = require('../models/Employee');
+const RepairTeam = require('../models/Repairteam');
 const ServiceMessageThread = require('../models/ServiceMessageThread');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -12,7 +13,9 @@ function userKey(user) {
 }
 
 function userModel(user) {
-  return user?._collection === 'Employee' ? 'Employee' : 'User';
+  if (user?._collection === 'Employee') return 'Employee';
+  if (user?._collection === 'RepairTeam') return 'RepairTeam';
+  return 'User';
 }
 
 function normalizeRole(user) {
@@ -21,7 +24,7 @@ function normalizeRole(user) {
 
 function canUseMessages(user) {
   const role = normalizeRole(user);
-  return role === 'service_coordinator' || role === 'employee' || role === 'admin' || role === 'superadmin' || role === 'pt' || role === 'fqc';
+  return role === 'service_coordinator' || role === 'employee' || role === 'admin' || role === 'superadmin' || role === 'pt' || role === 'fqc' || role === 'repair' || role === 'repair_team';
 }
 
 function isCoordinator(user) {
@@ -82,16 +85,23 @@ router.get('/employees', async (req, res) => {
     const division = String(req.query.division || '').trim();
     const userFilter = { role: 'employee', isActive: { $ne: false } };
     const employeeFilter = { isActive: { $ne: false } };
+    const repairFilter = { isActive: { $ne: false } };
     if (division) {
       userFilter.$or = [{ division }, { divisions: division }];
       employeeFilter.$or = [{ division }, { divisions: division }];
+      repairFilter.$or = [{ division }, { divisions: division }];
     }
-    const [users, employees] = await Promise.all([
+    const [users, employees, repairs] = await Promise.all([
       User.find(userFilter).select('name email division divisions role').sort({ name: 1 }).lean(),
       Employee.find(employeeFilter).select('name email division divisions role employeeId designation').sort({ name: 1 }).lean(),
+      RepairTeam.find(repairFilter).select('name email division divisions role designation').sort({ name: 1 }).lean(),
     ]);
     const seen = new Set();
-    const list = [...users.map(u => ({ ...u, source: 'User' })), ...employees.map(e => ({ ...e, source: 'Employee' }))]
+    const list = [
+      ...users.map(u => ({ ...u, source: 'User' })),
+      ...employees.map(e => ({ ...e, source: 'Employee' })),
+      ...repairs.map(r => ({ ...r, source: 'RepairTeam' }))
+    ]
       .filter(emp => {
         const key = `${emp.source}:${emp._id}`;
         if (seen.has(key)) return false;
@@ -120,17 +130,21 @@ router.get('/recipients', async (req, res) => {
     const currentId = userKey(req.user);
     const userFilter = { role: { $in: ['employee', 'service_coordinator'] }, isActive: { $ne: false } };
     const employeeFilter = { isActive: { $ne: false } };
+    const repairFilter = { isActive: { $ne: false } };
     if (division) {
       userFilter.$or = [{ division }, { divisions: division }];
       employeeFilter.$or = [{ division }, { divisions: division }];
+      repairFilter.$or = [{ division }, { divisions: division }];
     }
-    const [users, employees] = await Promise.all([
+    const [users, employees, repairs] = await Promise.all([
       User.find(userFilter).select('name email division divisions role').sort({ name: 1 }).lean(),
       Employee.find(employeeFilter).select('name email division divisions role employeeId designation').sort({ name: 1 }).lean(),
+      RepairTeam.find(repairFilter).select('name email division divisions role designation').sort({ name: 1 }).lean(),
     ]);
     const list = [
       ...users.map(u => buildRecipient(u, 'User')),
       ...employees.map(e => buildRecipient(e, 'Employee')),
+      ...repairs.map(r => buildRecipient(r, 'RepairTeam')),
     ].filter(r => String(r.id) !== currentId);
     res.json({ success: true, data: list });
   } catch (err) {
@@ -161,7 +175,10 @@ router.post('/threads', async (req, res) => {
     const text = String(req.body.message || '').trim();
     if (!employeeId || !text) return res.status(400).json({ success: false, message: 'Employee and message are required' });
 
-    const EmployeeModel = employeeModel === 'User' ? User : Employee;
+    let EmployeeModel;
+    if (employeeModel === 'User') EmployeeModel = User;
+    else if (employeeModel === 'RepairTeam') EmployeeModel = RepairTeam;
+    else EmployeeModel = Employee;
     const employee = await EmployeeModel.findById(employeeId).select('name email division divisions designation role').lean();
     if (!employee) return res.status(404).json({ success: false, message: 'Recipient not found' });
 
