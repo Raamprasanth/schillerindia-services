@@ -7,10 +7,10 @@ const RTFRN = require('../models/RTFRN.JS');
 const RTCRL = require('../models/rtcrlModel');
 const Service = require('../models/Service');
 const EstimationPending = require('../models/EstimationPending');
-const { protect, employeeOrAdmin } = require('../middleware/authMiddleware');
+const { protect, repairTeamOrEmployeeOrAdmin } = require('../middleware/authMiddleware');
 
 // Mount at /api/revert-repair
-router.use(protect, employeeOrAdmin);
+router.use(protect, repairTeamOrEmployeeOrAdmin);
 
 router.post('/:id', async (req, res) => {
   try {
