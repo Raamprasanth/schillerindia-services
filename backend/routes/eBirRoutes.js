@@ -133,6 +133,7 @@ async function moveToClosedIfComplete(doc, userId) {
   const payload = doc.toObject();
   delete payload._id;
   delete payload.__v;
+  delete payload.createdBy;
   delete payload.createdAt;
   delete payload.updatedAt;
   payload.updatedBy = userId;
