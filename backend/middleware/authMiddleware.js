@@ -135,4 +135,17 @@ const repairTeamOrAdmin = (req, res, next) => {
   next();
 };
 
-module.exports = { protect, adminOnly, repairTeamOrAdmin };
+// ════════════════════════════════════════════════════════
+//  employeeOrAdmin — must be employee, service_coordinator, or admin
+// ════════════════════════════════════════════════════════
+const employeeOrAdmin = (req, res, next) => {
+  const role = String(req.user?.role || '').toLowerCase();
+  const isAdminCollection = String(req.user?._collection || '') === 'Admin';
+  const isEmployeeCollection = String(req.user?._collection || '') === 'Employee';
+  if (!req.user || (!isAdminCollection && !isEmployeeCollection && role !== 'admin' && role !== 'superadmin' && role !== 'administrator' && role !== 'employee' && role !== 'service_coordinator')) {
+    return res.status(403).json({ success: false, message: 'Employee or Admin access required' });
+  }
+  next();
+};
+
+module.exports = { protect, adminOnly, repairTeamOrAdmin, employeeOrAdmin };
