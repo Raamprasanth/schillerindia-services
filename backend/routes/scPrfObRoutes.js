@@ -8,7 +8,7 @@ const { buildPrfObEscalationRow, enqueueLatestEscalationSnapshot, removeEscalati
 function buildEmployeePrfObPayload(body, userId, sourceId) {
   return {
     entryDate: body.entryDate || '',
-    type: body.type || 'PRF',
+    type: body.type || 'TO',
     division: body.division || 'OTHER',
     dealer: body.dealer || '',
     refNo: body.refNo || '',

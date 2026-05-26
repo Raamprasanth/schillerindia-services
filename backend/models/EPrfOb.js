@@ -4,7 +4,7 @@ const ePrfObSchema = new mongoose.Schema(
   {
     // ── Basic ─────────────────────────────────────────────────
     entryDate:      { type: String, required: true },
-    type:           { type: String, enum: ['PRF', 'OB'], required: true },
+    type:           { type: String, enum: ['TO', 'SO', 'PRF', 'OB'], required: true },
     division: {
       type: String,
       required: true,

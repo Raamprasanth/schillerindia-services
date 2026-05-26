@@ -235,7 +235,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   <div class="modal">
     <div class="modal-header">
       <div>
-        <div class="modal-title" id="modal-title">&#10133; Add New PRF/OB Entry</div>
+        <div class="modal-title" id="modal-title">&#10133; Add New TO/SO Entry</div>
         <div style="font-size:11.5px;color:var(--muted);margin-top:3px;" id="modal-sub">Fill in all required fields below.</div>
       </div>
       <div style="display:flex;align-items:center;gap:16px;">
@@ -249,7 +249,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
     <!-- Record info strip (shown only in edit mode) -->
     <div class="rec-info" id="edit-info-strip" style="display:none;">
-      <div class="rec-info-item"><div class="rec-info-label">PRF/OB Ref No</div><div class="rec-info-val" id="ri-refno">-</div></div>
+      <div class="rec-info-item"><div class="rec-info-label">TO/DO Ref No</div><div class="rec-info-val" id="ri-refno">-</div></div>
       <div class="rec-info-item"><div class="rec-info-label">SC Engineer</div><div class="rec-info-val normal" id="ri-sceng">-</div></div>
       <div class="rec-info-item"><div class="rec-info-label">Division</div><div class="rec-info-val" id="ri-division">-</div></div>
       <div class="rec-info-item"><div class="rec-info-label">Branch</div><div class="rec-info-val normal" id="ri-branch">-</div></div>
@@ -266,27 +266,24 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <input type="hidden" id="form-id"/>
 
         <div class="exact-prfob-form">
-          <div class="form-section-title">PRF/OB Register Form</div>
+          <div class="form-section-title">TO/SO Register Form</div>
           <div class="fg-4">
             <div class="ff">
-              <label>Division <span class="req">*</span></label>
-              <select id="x-division" onchange="onDivisionChange()">
-                <option value="">Select Division</option>
-              </select>
+              <label>TO/DO Ref No <span class="req">*</span></label>
+              <input type="text" id="x-refNo" placeholder="TO/DO Ref No"/>
+            </div>
+            <div class="ff">
+              <label>TO/SO Date <span class="req">*</span></label>
+              <input type="date" id="x-entryDate"/>
             </div>
             <div class="ff">
               <label>Type <span class="req">*</span></label>
               <select id="x-type">
                 <option value="">Select Type</option>
-                <option value="PRF">PRF</option>
-                <option value="OB">OB</option>
+                <option value="TO">TO</option>
+                <option value="SO">SO</option>
               </select>
             </div>
-            <div class="ff">
-              <label>TO/SO Raised Date <span class="req">*</span></label>
-              <input type="date" id="x-entryDate"/>
-            </div>
-
             <div class="ff">
               <label>Region <span class="req">*</span></label>
               <select id="x-region" onchange="onRegionChange()">
@@ -300,18 +297,17 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
               </select>
             </div>
             <div class="ff">
-              <label>Dealer</label>
-              <select id="x-dealer">
-                <option value="">Select Dealer</option>
-              </select>
-            </div>
-            <div class="ff">
               <label>Engineer <span class="req">*</span></label>
               <select id="x-eng">
                 <option value="">Select Engineer</option>
               </select>
             </div>
-
+            <div class="ff">
+              <label>Division <span class="req">*</span></label>
+              <select id="x-division" onchange="onDivisionChange()">
+                <option value="">Select Division</option>
+              </select>
+            </div>
             <div class="ff">
               <label>Supplier <span class="req">*</span></label>
               <select id="x-supplier" onchange="onSupplierChange()">
@@ -337,20 +333,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
               </select>
             </div>
             <div class="ff">
-              <label>PRF/OB Reference No. <span class="req">*</span></label>
-              <input type="text" id="x-refNo" placeholder="PRF/OB Reference No."/>
-            </div>
-
-            <div class="ff">
-              <label>Part No</label>
-              <input type="text" id="x-partType" placeholder="Part No"/>
-            </div>
-            <div class="ff">
-              <label>Parts Description</label>
-              <input type="text" id="x-partsDescription" placeholder="Parts description"/>
-            </div>
-            <div class="ff">
-              <label>Spares Received at SVC</label>
+              <label>Spares Rcv Date</label>
               <input type="date" id="x-sparesReceivedAtSvc"/>
             </div>
             <div class="ff">
@@ -364,6 +347,14 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
           <div class="form-section-title" style="margin-top:20px;">Read-Only Fields</div>
           <div class="fg-4">
+            <div class="ff">
+              <label>Part No</label>
+              <input type="text" id="x-partType" class="is-locked" readonly placeholder="Part No"/>
+            </div>
+            <div class="ff">
+              <label>Description</label>
+              <input type="text" id="x-partsDescription" class="is-locked" readonly placeholder="Parts description"/>
+            </div>
             <div class="ff">
               <label>SC Engineer</label>
               <input type="text" id="x-scEng" class="is-locked" readonly/>
@@ -610,15 +601,15 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     <div class="stats-row">
       <div class="stat-card sc-blue">
         <div class="stat-icon si-blue">&#128196;</div><div class="stat-label">Total Entries</div>
-        <div class="stat-value" id="s-total">-</div><div class="stat-sub">PRF/OB records</div>
+        <div class="stat-value" id="s-total">-</div><div class="stat-sub">TO/SO records</div>
       </div>
       <div class="stat-card sc-purple">
-        <div class="stat-icon si-purple">&#128221;</div><div class="stat-label">PRF Entries</div>
-        <div class="stat-value" id="s-prf">-</div><div class="stat-sub">Purchase requisitions</div>
+        <div class="stat-icon si-purple">&#128221;</div><div class="stat-label">TO Entries</div>
+        <div class="stat-value" id="s-prf">-</div><div class="stat-sub">Transfer orders</div>
       </div>
       <div class="stat-card sc-amber">
-        <div class="stat-icon si-amber">&#128230;</div><div class="stat-label">OB Entries</div>
-        <div class="stat-value" id="s-ob">-</div><div class="stat-sub">Order bookings</div>
+        <div class="stat-icon si-amber">&#128230;</div><div class="stat-label">SO Entries</div>
+        <div class="stat-value" id="s-ob">-</div><div class="stat-sub">Sales orders</div>
       </div>
       <div class="stat-card sc-green">
         <div class="stat-icon si-green">&#9989;</div><div class="stat-label">Open Entries</div>
@@ -629,7 +620,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     <!-- TABLE -->
     <div class="table-card">
       <div class="table-top">
-        <div class="table-title">PRF/OB Details <span class="count-chip" id="count-chip">- entries</span></div>
+        <div class="table-title">TO/SO Details <span class="count-chip" id="count-chip">- entries</span></div>
         <div class="toolbar-r">
           <div class="show-row">Show
             <select class="f-select" id="per-page" onchange="renderTable()">
@@ -657,7 +648,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('eng')">Engineer <span class="si">&#8597;</span></th>
             <th onclick="sortBy('model')">Model <span class="si">&#8597;</span></th>
             <th onclick="sortBy('warrantyStatus')">Warranty Status <span class="si">&#8597;</span></th>
-            <th onclick="sortBy('refNo')">PRF/OB Ref No <span class="si">&#8597;</span></th>
+            <th onclick="sortBy('refNo')">TO/DO Ref No <span class="si">&#8597;</span></th>
             <th onclick="sortBy('crmRefNo')">GIR No <span class="si">&#8597;</span></th>
             <th onclick="sortBy('status')">Status <span class="si">&#8597;</span></th>
             <th onclick="sortBy('executedDate')">Executed Date <span class="si">&#8597;</span></th>
@@ -1052,8 +1043,8 @@ async function loadData(){
 
 function updateStats(){
   (document.getElementById('s-total')||{}).textContent = DATA.length;
-  (document.getElementById('s-prf')||{}).textContent = DATA.filter(d => d.type === 'PRF').length;
-  (document.getElementById('s-ob')||{}).textContent = DATA.filter(d => d.type === 'OB').length;
+  (document.getElementById('s-prf')||{}).textContent = DATA.filter(d => normalizeToSoType(d.type) === 'TO').length;
+  (document.getElementById('s-ob')||{}).textContent = DATA.filter(d => normalizeToSoType(d.type) === 'SO').length;
   (document.getElementById('s-open')||{}).textContent = DATA.filter(d => d.status === 'Open').length;
 }
 
@@ -1125,8 +1116,9 @@ function renderTable(){
 }
 
 function typePill(t){
-  const cls = t==='PRF'?'sp-prf':'sp-ob';
-  return `<span class="s-pill ${cls}">${esc(t||'-')}</span>`;
+  const normalized = normalizeToSoType(t);
+  const cls = normalized === 'TO' ? 'sp-prf' : 'sp-ob';
+  return `<span class="s-pill ${cls}">${esc(normalized||'-')}</span>`;
 }
 function statusPill(s){
   const m = {Pending:'sp-pending',Completed:'sp-closed',Closed:'sp-closed'};
@@ -1137,10 +1129,34 @@ function warrantyPill(s){
   return s?`<span class="s-pill ${m[s]||'sp-pending'}">${esc(s)}</span>`:'<span style="color:var(--muted);font-size:11px;">-</span>';
 }
 
+function normalizeToSoType(value){
+  const raw = String(value || '').trim().toUpperCase();
+  if(raw === 'PRF') return 'TO';
+  if(raw === 'OB') return 'SO';
+  return raw;
+}
+
+function setExactFormEditLocks(isEdit){
+  const editableOnUpdate = new Set(['x-sparesReceivedAtSvc','x-status']);
+  const alwaysReadOnly = new Set(['x-partType','x-partsDescription','x-scEng','x-crmRefNo','x-remarks','x-receivedDate']);
+  [
+    'x-refNo','x-entryDate','x-type','x-region','x-branch','x-eng','x-division',
+    'x-supplier','x-model','x-warrantyStatus','x-sparesReceivedAtSvc','x-status',
+    'x-partType','x-partsDescription','x-scEng','x-crmRefNo','x-remarks','x-receivedDate'
+  ].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    const locked = alwaysReadOnly.has(id) || (isEdit && !editableOnUpdate.has(id));
+    el.disabled = locked && el.tagName === 'SELECT';
+    el.readOnly = locked && el.tagName !== 'SELECT';
+    el.classList.toggle('is-locked', locked);
+  });
+}
+
 // -- MODAL: ADD ------------------------------------------------------------
 function openAddModal(){
   editMode = false;
-  (document.getElementById('modal-title')||{}).textContent = '&#10133; Add New PRF/OB Entry';
+  (document.getElementById('modal-title')||{}).innerHTML = '&#10133; Add New TO/SO Entry';
   (document.getElementById('modal-sub')||{}).textContent = 'Fill in all required fields below.';
   document.getElementById('edit-info-strip').style.display = 'none';
   document.getElementById('form-id').value = '';
@@ -1149,7 +1165,6 @@ function openAddModal(){
   document.getElementById('x-entryDate').value = '';
   document.getElementById('x-receivedDate').value = new Date().toISOString().split('T')[0];
   document.getElementById('x-division').value = '';
-  document.getElementById('x-dealer').value = '';
   document.getElementById('x-scEng').value = '';
   document.getElementById('x-type').value = '';
   document.getElementById('x-eng').value = '';
@@ -1168,6 +1183,7 @@ function openAddModal(){
   // Re-sync after all fields are cleared so unfiltered lists are shown
   syncDealerOptions();
   syncEngineerOptions();
+  setExactFormEditLocks(false);
   clearFormMsg();
   document.getElementById('form-overlay').classList.add('open');
   document.querySelector('.modal-scroll').scrollTop = 0;
@@ -1178,8 +1194,8 @@ function openEditModal(id){
   const d = DATA.find(x=>(x._id||x.id)===id);
   if(!d) return;
   editMode = true;
-  (document.getElementById('modal-title')||{}).innerHTML = '&#9999; Edit PRF/OB Entry';
-  (document.getElementById('modal-sub')||{}).textContent = 'Update the record details below.';
+  (document.getElementById('modal-title')||{}).innerHTML = '&#9999; Update TO/SO Entry';
+  (document.getElementById('modal-sub')||{}).textContent = 'Only Spares Rcv Date and Status can be updated here.';
   const strip = document.getElementById('edit-info-strip');
   strip.style.display = 'grid';
   (document.getElementById('ri-refno')||{}).textContent = d.refNo||'-';
@@ -1199,9 +1215,8 @@ function openEditModal(id){
   const set=(elId,val)=>{const el=document.getElementById(elId);if(el)el.value=val||'';};
   set('x-entryDate', d.entryDate || d.raisedDate);
   set('x-division', d.division);
-  set('x-dealer', d.dealer);
   set('x-scEng', d.scEng);
-  set('x-type', d.type);
+  set('x-type', normalizeToSoType(d.type));
   set('x-eng', d.eng);
   set('x-sparesReceivedAtSvc', d.sparesReceivedAtSvc);
   set('x-supplier', d.supplier);
@@ -1216,6 +1231,7 @@ function openEditModal(id){
   set('x-refNo', d.refNo);
   set('x-remarks', d.remarks);
   set('x-status', d.status);
+  setExactFormEditLocks(true);
 
   clearFormMsg();
   document.getElementById('form-overlay').classList.add('open');
@@ -1229,12 +1245,14 @@ function closeFormModal(){
 // -- SAVE (ADD / EDIT) -----------------------------------------------------
 async function handleFormSave(){
   const id = document.getElementById('form-id').value;
-  const requiredMap = {
-    'x-entryDate':'Raised Date','x-type':'Type','x-division':'Division',
-    'x-refNo':'PRF/OB Ref No','x-status':'Status',
-    'x-branch':'Branch','x-model':'Model',
-    'x-region':'Region','x-eng':'Engineer','x-supplier':'Supplier'
-  };
+  const requiredMap = editMode
+    ? {'x-status':'Status'}
+    : {
+      'x-refNo':'TO/DO Ref No','x-entryDate':'TO/SO Date','x-type':'Type','x-division':'Division',
+      'x-status':'Status',
+      'x-branch':'Branch','x-model':'Model',
+      'x-region':'Region','x-eng':'Engineer','x-supplier':'Supplier'
+    };
   let hasErr = false;
   Object.entries(requiredMap).forEach(([fid])=>{
     const el=document.getElementById(fid);
@@ -1243,12 +1261,16 @@ async function handleFormSave(){
   });
   if(hasErr){showFormMsg('Please fill all required fields.','err');return;}
 
-  const payload = {
+  const payload = editMode ? {
+    sparesReceivedAtSvc: document.getElementById('x-sparesReceivedAtSvc').value.trim(),
+    status:        document.getElementById('x-status').value,
+    updatedAt:     new Date().toISOString(),
+  } : {
     entryDate:     document.getElementById('x-entryDate').value,
     raisedDate:    document.getElementById('x-entryDate').value,
-    type:          document.getElementById('x-type').value,
+    type:          normalizeToSoType(document.getElementById('x-type').value),
     division:      document.getElementById('x-division').value,
-    dealer:        document.getElementById('x-dealer').value,
+    dealer:        '',
     refNo:         document.getElementById('x-refNo').value.trim(),
     receivedDate:  document.getElementById('x-receivedDate').value,
     executedDate:  '',
@@ -1298,7 +1320,7 @@ async function handleFormSave(){
   }catch(e){
     if(e.message!=='Unauthorized'){showFormMsg('Save failed: '+e.message,'err');showToast('Save failed: '+e.message,'err');}
   }finally{
-    btn.disabled=false; btn.textContent='&#128190; Save Entry';
+    btn.disabled=false; btn.innerHTML='&#128190; Save Entry';
   }
 }
 
