@@ -990,6 +990,7 @@ async function loadData(){
     const data=await res.json();
     FRN_DATA=data.map(d=>({
       ...d,
+      frnDate: d.frnDate || d.frn_date || d.frnDt || d.entryDate || d.rcvdDate || '',
       partNo: d.partNo || (d.serviceId && d.serviceId.partNo) || '',
       id:d._id||d.id,
       pdays:d.pdays??Math.floor((Date.now()-new Date(d.createdAt).getTime())/86400000)

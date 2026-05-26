@@ -191,6 +191,7 @@ router.get('/', protect, adminOnly, async (req, res) => {
       branch: d.branch || (d.serviceId ? d.serviceId.branch : ''),
       dealer: d.dealer || (d.serviceId ? d.serviceId.dealer : '') || '',
       partNo: d.partNo || (d.serviceId ? d.serviceId.partNo : '') || '',
+      frnDate: d.frnDate || d.entryDate || d.rcvdDate || '',
       doi: d.doi || (d.serviceId ? d.serviceId.doi : '') || '',
       unitSl: d.unitSl || (d.serviceId ? d.serviceId.unitSl : '') || '',
       division: d.division || (d.serviceId && d.serviceId.division ? d.serviceId.division._id : null),
@@ -290,6 +291,7 @@ router.get('/employee', protect, async (req, res) => {
       branch: d.branch || (d.serviceId ? d.serviceId.branch : ''),
       dealer: d.dealer || (d.serviceId ? d.serviceId.dealer : '') || '',
       partNo: d.partNo || (d.serviceId ? d.serviceId.partNo : '') || '',
+      frnDate: d.frnDate || d.entryDate || d.rcvdDate || '',
       doi: d.doi || (d.serviceId ? d.serviceId.doi : '') || '',
       division: d.division || (d.serviceId && d.serviceId.division ? d.serviceId.division._id : null),
       divisionName: d.divisionName || (d.serviceId && d.serviceId.division ? d.serviceId.division.name : ''),
@@ -326,6 +328,7 @@ router.get('/estimation', protect, async (req, res) => {
       branch: d.branch || (d.serviceId ? d.serviceId.branch : ''),
       dealer: d.dealer || (d.serviceId ? d.serviceId.dealer : '') || '',
       partNo: d.partNo || (d.serviceId ? d.serviceId.partNo : '') || '',
+      frnDate: d.frnDate || d.entryDate || d.rcvdDate || '',
       pdays: Math.floor((now - new Date(d.rcvdDate || d.entryDate || d.createdAt).getTime()) / 86400000),
     }));
     res.json(result);
