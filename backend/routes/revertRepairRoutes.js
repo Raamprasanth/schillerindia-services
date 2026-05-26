@@ -129,6 +129,8 @@ router.post('/:id', async (req, res) => {
 router.post('/crl/:id', async (req, res) => {
   try {
     const crlId = req.params.id;
+    const problemObserved = (req.body && req.body.problemObserved) ? String(req.body.problemObserved).trim() : '';
+
     const crlDoc = await RTCRL.findById(crlId);
     if (!crlDoc) {
       return res.status(404).json({ success: false, message: 'Closed repair record not found' });
@@ -178,10 +180,12 @@ router.post('/crl/:id', async (req, res) => {
     service.rtfrnCompleted = false;
     service.rtobCompleted = false;
     service.repairStatus = 're repair product';
-    service.finalRemarks = (service.finalRemarks ? service.finalRemarks + ' | ' : '') + 'Re-repair requested';
+    let remarkParts = ['Re-repair requested'];
+    if (problemObserved) remarkParts.push('Problem Observed: ' + problemObserved);
+    service.finalRemarks = (service.finalRemarks ? service.finalRemarks + ' | ' : '') + remarkParts.join(' | ');
     await service.save({ validateBeforeSave: false });
 
-    // 3. Re-create the RTUR/RTFRN/RTOB record
+    // 3. Re-create the RTUR/RTFRN/RTOB record with all fields restored from RTCRL
     const deletedSourceCollection = crlDoc.sourceCollection || '';
     const ModelToRecreate = 
       deletedSourceCollection === 'rtob' ? RTOB :
@@ -196,22 +200,37 @@ router.post('/crl/:id', async (req, res) => {
     const mapDiv = { 'PATIENT MONITOR':'PATIENT MONITORS','PATIENT MONITORS':'PATIENT MONITORS','SAG':'SAG','VENTILATOR':'VENTILATOR','DEFIBRILLATOR':'DEFIBRILLATOR','ECG':'ECG','SYRINGE PUMP':'SYRINGE PUMP','INFUSION PUMP':'INFUSION PUMP','ULTRASOUND':'ULTRASOUND','ANAESTHESIA':'ANAESTHESIA' };
     const safeDivision = mapDiv[rawDiv] || 'OTHER';
 
+    // Build final remarks for the new doc
+    let newDocRemarks = 'Re-repair requested';
+    if (problemObserved) newDocRemarks += ' | Problem Observed: ' + problemObserved;
+
+    // Carry over all view-tab fields from RTCRL so no data is lost
     const newDocPayload = {
-      entryDate: service.rturSentAt || service.rtfrnSentAt || service.rtobSentAt || new Date(),
-      division: safeDivision,
-      scRefNo: scRefNo || '',
-      defGirNo: defGirNo || '',
-      category: category,
-      model: service.model || '',
-      defBrdModName: service.defMod || '',
-      status: 'pending',
-      repairStatus: 're repair product',
-      finalRemarks: 'Re-repair requested',
-      submittedBy: req.user?.name || '',
-      submittedAt: new Date(),
-      sourceServiceId: service._id,
-      doi: service.doi || '',
-      fieldRemarks: service.fieldRemarks || ''
+      entryDate:        service.rturSentAt || service.rtfrnSentAt || service.rtobSentAt || new Date(),
+      division:         safeDivision,
+      scRefNo:          scRefNo || '',
+      defGirNo:         defGirNo || '',
+      category:         category,
+      // Restored from RTCRL view tab
+      model:            crlDoc.model            || service.model       || '',
+      defBrdModName:    crlDoc.defBrdModName     || service.defMod      || '',
+      techRemarks:      crlDoc.techRemarks       || '',
+      repairRemarks:    crlDoc.repairRemarks     || '',
+      compUsedToRepair: crlDoc.compUsedToRepair  || crlDoc.components   || '',
+      cost:             crlDoc.cost              || '',
+      timeTaken:        crlDoc.timeTaken         || '',
+      doi:              crlDoc.doi               || service.doi         || '',
+      repairedBy:       crlDoc.repairedBy        || '',
+      repairedDate:     crlDoc.closedDate        || null,
+      // Problem + status info
+      problemObserved:  problemObserved,
+      status:           'pending',
+      repairStatus:     're repair product',
+      finalRemarks:     newDocRemarks,
+      fieldRemarks:     crlDoc.fieldRemarks      || service.fieldRemarks || '',
+      submittedBy:      req.user?.name           || '',
+      submittedAt:      new Date(),
+      sourceServiceId:  service._id,
     };
 
     if (crlDoc.sourceId) {
@@ -232,5 +251,6 @@ router.post('/crl/:id', async (req, res) => {
     return res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 });
+
 
 module.exports = router;
