@@ -880,9 +880,43 @@ function handleEstimateSameGir(val){
     input.value='';
     input.readOnly=false;
     input.classList.remove('gir-autofill');
-    if(revalue){revalue.readOnly=false;revalue.classList.remove('gir-autofill');}
+}
+
+async function queueSrEscalation(id){
+  const current=allRecords.find(x=>(x._id||x.id)===id);
+  if(!current){showToast('Record not found.','err');return;}
+  if(current.srEscalationQueuedAt){showToast('Already queued for SR escalation.','info');return;}
+  try{
+    const res=await fetch(API_BASE+'/api/emp/estimation/'+id+'/sr',{method:'POST',headers:authHeaders()});
+    if(res.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(data.message||('HTTP '+res.status));
+    const patch={srEscalationQueuedAt:data.srEscalationQueuedAt||new Date().toISOString(),srEscalationQueuedBy:data.srEscalationQueuedBy||''};
+    const idx=allRecords.findIndex(x=>(x._id||x.id)===id);
+    if(idx!==-1)allRecords[idx]={...allRecords[idx],...patch};
+    filtered=filtered.map(x=>(x._id||x.id)===id?{...x,...patch}:x);
+    renderTable();
+    if(typeof bumpSrEscalationQueue === 'function') bumpSrEscalationQueue(1);
+    if(typeof loadSrEscalationStatus === 'function') loadSrEscalationStatus('est');
+    showToast(data.alreadyQueued?'Already queued for SR escalation.':'Queued for SR escalation.','ok');
+  }catch(e){
+    showToast('SR escalation failed: '+e.message,'err');
   }
 }
+
+function openToEscalationModal(id){
+  const current=allRecords.find(x=>(x._id||x.id)===id);
+  if(!current){showToast('Record not found.','err');return;}
+  if(current.toEscalationQueuedAt){showToast('Already queued for TO escalation.','info');return;}
+  currentToRecord=current;
+  currentToRows=[{partNo:'',qty:1}];
+  (document.getElementById('to-modal-badge')||{}).textContent =current.scReNo||current.frnNo||'-';
+  const err=document.getElementById('to-modal-err');
+  if(err){err.textContent='';err.classList.remove('show');}
+  renderToEscalationRows();
+  document.getElementById('to-overlay').classList.add('open');
+}
+
 function closeToEscalationModal(){
   document.getElementById('to-overlay').classList.remove('open');
   currentToRecord=null;
