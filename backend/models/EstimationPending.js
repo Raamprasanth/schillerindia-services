@@ -84,16 +84,29 @@ const estimationPendingSchema = new mongoose.Schema(
     submittedAt:  { type: Date,   default: null },
     estUpdatedBy: { type: String, trim: true, default: '' },
     estUpdatedAt: { type: Date,   default: null },
-    escalationQueuedAt: { type: Date, default: null },
-    escalationQueuedBy: { type: String, trim: true, default: '' },
-    srEscalationQueuedAt: { type: Date, default: null },
+
+    // ── Escalation queues ─────────────────────────────────
+    escalationQueuedAt:   { type: Date,   default: null },
+    escalationQueuedBy:   { type: String, trim: true, default: '' },
+    srEscalationQueuedAt: { type: Date,   default: null },
     srEscalationQueuedBy: { type: String, trim: true, default: '' },
-    toEscalationQueuedAt: { type: Date, default: null },
+    toEscalationQueuedAt: { type: Date,   default: null },
     toEscalationQueuedBy: { type: String, trim: true, default: '' },
-    rtfrnSent:    { type: Boolean, default: false },
-    rtfrnSentAt:  { type: Date,   default: null },
-    rtobSent:     { type: Boolean, default: false },
-    rtobSentAt:   { type: Date,   default: null },
+
+    // ── Repair team flags ─────────────────────────────────
+    // Set to true when RTFRN/RTOB is created for this estimation
+    rtfrnSent:        { type: Boolean, default: false },
+    rtfrnSentAt:      { type: Date,    default: null },
+    rtfrnCompleted:   { type: Boolean, default: false },  // true when RTFRN marks status=completed
+    rtfrnCompletedAt: { type: Date,    default: null },
+
+    rtobSent:         { type: Boolean, default: false },
+    rtobSentAt:       { type: Date,    default: null },
+    rtobCompleted:    { type: Boolean, default: false },  // true when RTOB marks status=completed → RS button becomes RC
+    rtobCompletedAt:  { type: Date,    default: null },
+
+    rturCompleted:    { type: Boolean, default: false },
+    rturCompletedAt:  { type: Date,    default: null },
   },
   {
     timestamps: true,
