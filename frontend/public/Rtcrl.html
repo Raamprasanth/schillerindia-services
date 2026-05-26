@@ -353,11 +353,10 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('defBrdModName')">Def Brd/Mod Name &#8597;</th>
             <th onclick="sortBy('noOfDays')">No of Days &#8597;</th>
             <th onclick="sortBy('repairedBy')">Repaired By &#8597;</th>
-            <th onclick="sortBy('closedBy')">Closed By &#8597;</th>
             <th>Details</th>
           </tr></thead>
           <tbody id="crl-tbody">
-            <tr><td colspan="12" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
+            <tr><td colspan="11" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -426,7 +425,7 @@ async function loadData() {
 
 function showError(msg) {
   document.getElementById('crl-tbody').innerHTML =
-    `<tr><td colspan="12"><div class="empty-st">
+    `<tr><td colspan="11"><div class="empty-st">
       <div class="ei">&#9888;&#65039;</div><div class="et">Cannot load data</div>
       <div class="es">${msg}</div>
       <div style="margin-top:14px;"><button class="btn btn-crl btn-sm" onclick="loadData()">&#10227; Try Again</button></div>
@@ -497,7 +496,7 @@ function renderTable() {
   const tbody = document.getElementById('crl-tbody');
 
   if (!slice.length) {
-    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-st">
+    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-st">
       <div class="ei">&#9989;</div>
       <div class="et">${allData.length ? 'No records match filters' : 'No Closed Repair Records'}</div>
       <div class="es">${allData.length ? 'Try clearing the filters or changing the category tab.' : 'Records appear here once a repair is marked as completed.'}</div>
@@ -519,7 +518,6 @@ function renderTable() {
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.defBrdModName || '')}">${esc(d.defBrdModName || '-')}</td>
         <td><span class="${dCls}">${days}</span></td>
         <td style="font-size:11.5px;">${esc(d.repairedBy || '-')}</td>
-        <td style="font-size:11px;color:var(--muted);">${esc(d.closedBy || '-')}</td>
         <td><button class="btn-xs view" onclick="openDetail('${id}')">View</button></td>
       </tr>`;
     }).join('');

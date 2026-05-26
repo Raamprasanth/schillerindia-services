@@ -120,22 +120,25 @@ table.coa-table tbody tr:last-child td{border-bottom:none;}
 .overlay{position:fixed;inset:0;background:rgba(5,18,38,0.55);backdrop-filter:blur(5px);z-index:500;display:none;align-items:center;justify-content:center;}
 .overlay.open{display:flex;animation:fadeIn 0.18s ease;}
 @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
-.modal{background:var(--surface);width:640px;max-width:96vw;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.2);display:flex;flex-direction:column;max-height:92vh;}
-.modal-head{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
-.modal-htitle{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);}
+.modal{background:var(--surface);width:100%;height:100%;border-radius:0;overflow:hidden;box-shadow:none;display:flex;flex-direction:column;}
+.modal-head{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative;background:var(--surface);}
+.modal-head-accent{position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--rep),var(--rep2),transparent);}
+.modal-htitle{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);}
 .modal-close{width:30px;height:30px;border-radius:7px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:14px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
 .modal-close:hover{background:var(--red-bg);color:var(--red);}
 .modal-scroll{flex:1;overflow-y:auto;}
-.modal-body{padding:20px 22px;}
-.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-.df{display:flex;flex-direction:column;gap:5px;}
-.df label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
-.df .dval{padding:9px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:12.5px;color:var(--text);background:var(--surface3);min-height:40px;}
-.df .dval.long{min-height:60px;line-height:1.5;}
-.df .dval.hl{color:var(--rep);font-weight:600;}
-.df .dval.empty{color:var(--muted);font-style:italic;}
-.dg-full{grid-column:1/-1;}
-.modal-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;justify-content:flex-end;background:var(--surface3);flex-shrink:0;}
+.modal-body{padding:24px 28px;}
+.form-sec{margin-bottom:22px;}
+.form-sec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:13px;padding-bottom:8px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:7px;}
+.fg-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.span2{grid-column:span 2;}.span4{grid-column:span 4;}
+.ff{display:flex;flex-direction:column;gap:5px;}
+.ff label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
+.ff .dval{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);min-height:38px;line-height:1.45;width:100%;box-sizing:border-box;}
+.ff .dval.long{min-height:38px;white-space:pre-wrap;}
+.ff .dval.hl{color:var(--rep);font-weight:700;}
+.ff .dval.empty{color:var(--muted);font-style:italic;}
+.modal-foot{padding:14px 28px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;justify-content:flex-end;background:var(--surface3);flex-shrink:0;}
 .auth-warn{display:none;background:linear-gradient(90deg,#fef3c7,#fffbeb);border:1px solid #fbbf24;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#92400e;align-items:center;gap:10px;}
 .auth-warn.show{display:flex;}
 
@@ -295,23 +298,32 @@ table.coa-table tbody tr:last-child td{border-bottom:none;}
     <div class="modal-head">
       <div class="modal-htitle">&#9989; Closed Activity Detail</div>
       <button class="modal-close" onclick="closeModal()">&#10005;</button>
+      <div class="modal-head-accent"></div>
     </div>
     <div class="modal-scroll">
       <div class="modal-body">
-        <div class="detail-grid">
-          <div class="df"><label>Entry Date</label><div class="dval" id="d-entryDate">-</div></div>
-          <div class="df"><label>Closed Date</label><div class="dval hl" id="d-closedDate">-</div></div>
-          <div class="df"><label>Repaired By</label><div class="dval" id="d-repairedBy">-</div></div>
-          <div class="df"><label>Division</label><div class="dval" id="d-division">-</div></div>
-          <div class="df"><label>Model</label><div class="dval" id="d-model">-</div></div>
-          <div class="df"><label>Part Number</label><div class="dval" id="d-partNumber">-</div></div>
-          <div class="df"><label>Repaired Date</label><div class="dval" id="d-repairedDate">-</div></div>
-          <div class="df"><label>Closed By</label><div class="dval" id="d-closedBy">-</div></div>
-          <div class="df dg-full"><label>Description</label><div class="dval long" id="d-description">-</div></div>
-          <div class="df dg-full"><label>Problem Observed</label><div class="dval long" id="d-problemObserved">-</div></div>
-          <div class="df dg-full"><label>Components Used</label><div class="dval long" id="d-componentsUsed">-</div></div>
-          <div class="df dg-full"><label>Final Remarks</label><div class="dval long" id="d-finalRemarks">-</div></div>
-          <div class="df dg-full"><label>Remarks</label><div class="dval long" id="d-remarks">-</div></div>
+        <div class="form-sec">
+          <div class="form-sec-title">&#128196; Activity Details</div>
+          <div class="fg-4">
+            <div class="ff"><label>Entry Date</label><div class="dval" id="d-entryDate">-</div></div>
+            <div class="ff"><label>Closed Date</label><div class="dval hl" id="d-closedDate">-</div></div>
+            <div class="ff"><label>Repaired By</label><div class="dval" id="d-repairedBy">-</div></div>
+            <div class="ff"><label>Division</label><div class="dval" id="d-division">-</div></div>
+            <div class="ff"><label>Model</label><div class="dval" id="d-model">-</div></div>
+            <div class="ff"><label>Part Number</label><div class="dval" id="d-partNumber">-</div></div>
+            <div class="ff"><label>Repaired Date</label><div class="dval" id="d-repairedDate">-</div></div>
+            <div class="ff"><label>Closed By</label><div class="dval" id="d-closedBy">-</div></div>
+          </div>
+        </div>
+        <div class="form-sec">
+          <div class="form-sec-title">&#128172; Remarks &amp; Findings</div>
+          <div class="fg-4">
+            <div class="ff span2"><label>Description</label><div class="dval long" id="d-description">-</div></div>
+            <div class="ff span2"><label>Problem Observed</label><div class="dval long" id="d-problemObserved">-</div></div>
+            <div class="ff span2"><label>Components Used</label><div class="dval long" id="d-componentsUsed">-</div></div>
+            <div class="ff span2"><label>Final Remarks</label><div class="dval long" id="d-finalRemarks">-</div></div>
+            <div class="ff span4"><label>Remarks</label><div class="dval long" id="d-remarks">-</div></div>
+          </div>
         </div>
       </div>
     </div>
