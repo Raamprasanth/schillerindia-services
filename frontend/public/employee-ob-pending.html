@@ -1382,7 +1382,7 @@ function generatePDFData(s, mode='download'){
     try { doc.addImage(SCHILLER_PDF_LOGO, 'PNG', 16, 12, 54, 10); } catch(e){}
     doc.setFont('helvetica','bold');
     doc.setFontSize(12);
-    doc.text('REPAIR ESTIMATION',190,19,{align:'right'});
+    doc.text('SERVICE ESTIMATION',190,19,{align:'right'});
     setRgb('setDrawColor',[0,0,0]);
     doc.setLineWidth(0.3);
     doc.line(14,28,196,28);
@@ -1415,7 +1415,7 @@ function generatePDFData(s, mode='download'){
 
   y=72;
   drawBox(L, y, R-L, 24);
-  labelValue(L+2, y+7, 'Engineer Name', s.estRaEng || s.eng || '-', 45);
+  labelValue(L+2, y+7, 'Engineer Name', s.eng || '-', 45);
   labelValue(104, y+7, 'FRN', s.frnNo || '-', 20);
   labelValue(104, y+14, 'DATE', fmtDate(s.frnDate), 20);
   labelValue(104, y+21, 'Service Centre Rcvd Date', fmtDate(s.rcvdDate || s.entryDate), 45);
@@ -1427,7 +1427,7 @@ function generatePDFData(s, mode='download'){
   doc.setFont('helvetica','normal');
   y+=8;
   labelValue(L, y, '', (s.model||'-') + '    Unit', 0);
-  labelValue(104, y, 'Unit S/N', s.defUnitGir||s.defGir||s.unitSl||'-', 22);
+  labelValue(104, y, 'Unit S/N', s.unitSl || '-', 22);
   labelValue(150, y, 'Unit Status', s.unitStatus || s.unitSts || '-', 22);
 
   y+=13;

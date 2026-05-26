@@ -1197,7 +1197,7 @@ function generateEstimationPDFData(s, mode='download'){
     try { doc.addImage(SCHILLER_PDF_LOGO, 'PNG', 16, 12, 54, 10); } catch(e){}
     doc.setFont('helvetica','bold');
     doc.setFontSize(12);
-    doc.text('REPAIR ESTIMATION',190,19,{align:'right'});
+    doc.text('SERVICE ESTIMATION',190,19,{align:'right'});
     setRgb('setDrawColor',[0,0,0]);
     doc.setLineWidth(0.3);
     doc.line(14,28,196,28);
