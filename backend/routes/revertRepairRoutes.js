@@ -118,4 +118,105 @@ router.post('/:id', async (req, res) => {
   }
 });
 
+router.post('/crl/:id', async (req, res) => {
+  try {
+    const crlId = req.params.id;
+    const crlDoc = await RTCRL.findById(crlId);
+    if (!crlDoc) {
+      return res.status(404).json({ success: false, message: 'Closed repair record not found' });
+    }
+
+    const scRefNo = crlDoc.scRefNo;
+    const defGirNo = crlDoc.defGirNo;
+
+    // Find the corresponding Service or EstimationPending record
+    let serviceFilter = { $or: [] };
+    if (scRefNo) {
+      serviceFilter.$or.push({ scReNo: scRefNo });
+      serviceFilter.$or.push({ scRno: scRefNo });
+      serviceFilter.$or.push({ scRefNo: scRefNo });
+    }
+    if (defGirNo) {
+      serviceFilter.$or.push({ defGir: defGirNo });
+      serviceFilter.$or.push({ defGirNo: defGirNo });
+    }
+
+    let service = null;
+    let isEstimation = false;
+
+    if (serviceFilter.$or.length > 0) {
+      service = await Service.findOne(serviceFilter);
+      if (!service) {
+        service = await EstimationPending.findOne(serviceFilter);
+        isEstimation = true;
+      }
+    }
+
+    if (!service) {
+      return res.status(404).json({ success: false, message: 'Matching active Service/Estimation record not found' });
+    }
+
+    // 1. Delete corresponding RTCRL record
+    await RTCRL.findByIdAndDelete(crlId);
+
+    // 2. Clear completion flags
+    service.rturCompleted = false;
+    service.rtfrnCompleted = false;
+    service.rtobCompleted = false;
+    service.repairStatus = 're repair product';
+    service.finalRemarks = (service.finalRemarks ? service.finalRemarks + ' | ' : '') + 'Re-repair requested';
+    await service.save();
+
+    // 3. Re-create the RTUR/RTFRN/RTOB record
+    const deletedSourceCollection = crlDoc.sourceCollection || '';
+    const ModelToRecreate = 
+      deletedSourceCollection === 'rtob' ? RTOB :
+      deletedSourceCollection === 'rtfrn' ? RTFRN : RTUR;
+
+    let category = crlDoc.category || 'UR';
+    if (service.frnNo && deletedSourceCollection === 'rtfrn') category = 'PFRN';
+    else if (deletedSourceCollection === 'rtob') category = 'OB';
+
+    // Normalize Division
+    const rawDiv = String(service.division?.name || service.divisionName || service.division || service.branch || service.reg || '').trim().toUpperCase();
+    const mapDiv = { 'PATIENT MONITOR':'PATIENT MONITORS','PATIENT MONITORS':'PATIENT MONITORS','SAG':'SAG','VENTILATOR':'VENTILATOR','DEFIBRILLATOR':'DEFIBRILLATOR','ECG':'ECG','SYRINGE PUMP':'SYRINGE PUMP','INFUSION PUMP':'INFUSION PUMP','ULTRASOUND':'ULTRASOUND','ANAESTHESIA':'ANAESTHESIA' };
+    const safeDivision = mapDiv[rawDiv] || 'OTHER';
+
+    const newDocPayload = {
+      entryDate: service.rturSentAt || service.rtfrnSentAt || service.rtobSentAt || new Date(),
+      division: safeDivision,
+      scRefNo: scRefNo || '',
+      defGirNo: defGirNo || '',
+      category: category,
+      model: service.model || '',
+      defBrdModName: service.defMod || '',
+      status: 'pending',
+      repairStatus: 're repair product',
+      finalRemarks: 'Re-repair requested',
+      submittedBy: req.user?.name || '',
+      submittedAt: new Date(),
+      sourceServiceId: service._id,
+      doi: service.doi || '',
+      fieldRemarks: service.fieldRemarks || ''
+    };
+
+    if (crlDoc.sourceId) {
+      newDocPayload._id = crlDoc.sourceId;
+    }
+
+    try {
+      await ModelToRecreate.create(newDocPayload);
+    } catch(err) {
+      if (err.code !== 11000) {
+        console.error('Failed to recreate repair record:', err.message);
+      }
+    }
+
+    return res.json({ success: true, message: 'Repair reverted to RS successfully.' });
+  } catch (error) {
+    console.error('[Revert Repair CRL]', error);
+    return res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+});
+
 module.exports = router;

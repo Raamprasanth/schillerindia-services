@@ -247,6 +247,38 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
   </div>
 </div>
 
+<!-- RECHECK STATUS MODAL -->
+<div class="overlay" id="modal-recheck" style="justify-content: center; align-items: center;">
+  <div style="background: var(--surface); padding: 30px; border-radius: 16px; width: 400px; box-shadow: var(--shadow-lg); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 20px; position: relative;">
+    <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--crl), var(--red)); border-radius: 16px 16px 0 0;"></div>
+    
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(5, 150, 105, 0.1); display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--crl);">
+        &#128269;
+      </div>
+      <div>
+        <h3 style="font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 4px;">Recheck Repair Status</h3>
+        <p style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0;" id="recheck-scref-display">SC Ref: -</p>
+      </div>
+    </div>
+
+    <div style="font-size: 13px; color: var(--soft); line-height: 1.5; background: var(--surface3); padding: 12px; border-radius: 8px; border: 1px solid var(--border2);">
+      Do you want to confirm this item is **Working Fine (WF)**, or mark it as **Not Working (NW)** and send it back to the repair team?
+    </div>
+
+    <div style="display: flex; gap: 12px; margin-top: 5px;">
+      <button class="btn btn-outline" style="flex: 1; justify-content: center; border-color: var(--crl); color: var(--crl); background: var(--crl-bg);" onclick="handleWF()">
+        WF (Working Fine)
+      </button>
+      <button class="btn" id="nw-btn" style="flex: 1; justify-content: center; background: var(--red); color: #fff; box-shadow: 0 2px 8px rgba(185, 28, 28, 0.3);" onclick="handleNW()">
+        NW (Not Working)
+      </button>
+    </div>
+    
+    <button onclick="closeRecheckModal()" style="position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 16px; color: var(--muted); cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--muted)'">&#10005;</button>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toast-wrap"></div>
 
 <!-- SIDEBAR -->
@@ -527,7 +559,10 @@ function renderTable() {
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.defBrdModName || '')}">${esc(d.defBrdModName || '-')}</td>
         <td><span class="${dCls}">${days}</span></td>
         <td style="font-size:11.5px;">${esc(d.repairedBy || '-')}</td>
-        <td><button class="btn-xs view" onclick="openDetail('${id}')">View</button></td>
+        <td>
+          <button class="btn-xs view" onclick="openDetail('${id}')">View</button>
+          <button class="btn-xs repair-state repair-complete" onclick="openRecheckModal('${id}')" title="Repair completed (RC) - Click to verify" style="margin-left:4px; padding:3px 8px; min-width:32px;">RC</button>
+        </td>
       </tr>`;
     }).join('');
   }
@@ -628,8 +663,95 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function showToast(msg,type='ok'){const w=document.getElementById('toast-wrap'),el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="td"></span>'+msg;w.appendChild(el);setTimeout(()=>el.remove(),3500);}
 function logout(){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';}
 
+let currentRecheckId = null;
+let currentRecheckButtonEl = null;
+
+function openRecheckModal(id) {
+  currentRecheckId = id;
+  const d = allData.find(x => (x._id || x.id) === id);
+  if (d) {
+    document.getElementById('recheck-scref-display').textContent = 'SC Ref: ' + (d.scRefNo || d.defGirNo || '-');
+  }
+  
+  const buttons = document.querySelectorAll(`button[onclick="openRecheckModal('${id}')"]`);
+  if (buttons.length > 0) {
+    currentRecheckButtonEl = buttons[0];
+  }
+  
+  const modal = document.getElementById('modal-recheck');
+  if (modal) {
+    modal.classList.add('open');
+  }
+}
+
+function closeRecheckModal() {
+  const modal = document.getElementById('modal-recheck');
+  if (modal) {
+    modal.classList.remove('open');
+  }
+  currentRecheckId = null;
+  currentRecheckButtonEl = null;
+}
+
+function handleWF() {
+  showToast('Verified: Item is Working Fine (WF). Status remains Repair Completed.', 'info');
+  closeRecheckModal();
+}
+
+async function handleNW() {
+  if (!currentRecheckId) return;
+  const btn = document.getElementById('nw-btn');
+  const originalBtnText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin" style="margin-right: 5px;"></span>Processing...';
+  
+  if (currentRecheckButtonEl) {
+    currentRecheckButtonEl.textContent = 'RS';
+    currentRecheckButtonEl.style.background = 'var(--red-bg)';
+    currentRecheckButtonEl.style.color = 'var(--red)';
+    currentRecheckButtonEl.style.borderColor = 'rgba(185, 28, 28, 0.3)';
+    currentRecheckButtonEl.title = 'Reverting to Repair Started (RS)...';
+  }
+
+  try {
+    const res = await fetch(`${API}/api/revert-repair/crl/${currentRecheckId}`, {
+      method: 'POST',
+      headers: authHeaders()
+    });
+    handleUnauth(res);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    
+    showToast('Reverted to Repair Started (RS) successfully. Moved to active repair lists.', 'ok');
+    closeRecheckModal();
+    setTimeout(() => {
+      loadData();
+    }, 1000);
+  } catch (err) {
+    if (err.message === 'Unauthorized' || err.message === 'Forbidden') return;
+    showToast('Error reverting repair: ' + err.message, 'err');
+    
+    if (currentRecheckButtonEl) {
+      currentRecheckButtonEl.textContent = 'RC';
+      currentRecheckButtonEl.style.background = '';
+      currentRecheckButtonEl.style.color = '';
+      currentRecheckButtonEl.style.borderColor = '';
+      currentRecheckButtonEl.title = 'Repair completed (RC) - Click to verify';
+    }
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalBtnText;
+  }
+}
+
 document.getElementById('modal-detail').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+document.getElementById('modal-recheck').addEventListener('click', e => { if (e.target === e.currentTarget) closeRecheckModal(); });
+document.addEventListener('keydown', e => { 
+  if (e.key === 'Escape') {
+    closeModal();
+    closeRecheckModal();
+  }
+});
 </script>
 </body>
 </html>
