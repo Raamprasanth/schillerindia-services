@@ -28,6 +28,13 @@ function canManageDelete(user) {
   return role === 'admin' || role === 'repair' || role === 'repair_team';
 }
 
+function cleanDivision(value, fallback = '') {
+  const candidate = String(value || '').trim();
+  const fallbackValue = String(fallback || '').trim();
+  const statusWords = new Set(['closed', 'completed', 'pending', 'inprogress', 'in_progress', 'on_hold', 'hold', 'scrapped']);
+  return candidate && !statusWords.has(candidate.toLowerCase()) ? candidate : fallbackValue;
+}
+
 function adminOnly(req, res, next) {
   if ((req.user?.role||'').toLowerCase() !== 'admin')
     return res.status(403).json({ success:false, message:'Admin access required.' });
@@ -215,6 +222,9 @@ router.post('/', protect, async (req, res) => {
 // ══════════════════════════════════════════════════════════
 router.put('/:id', protect, async (req, res) => {
   try {
+    const existing = await RTFRN.findById(req.params.id).lean();
+    if (!existing) return res.status(404).json({ success:false, message:'Record not found.' });
+
     const allowed = [
       'repairedBy','status',
       'finalRemarks','repairRemarks','techRemarks','components',
@@ -230,6 +240,9 @@ router.put('/:id', protect, async (req, res) => {
     if (updates.repairRemarks !== undefined && updates.finalRemarks === undefined) {
       updates.finalRemarks = updates.repairRemarks;
     }
+    if (updates.division !== undefined) {
+      updates.division = cleanDivision(updates.division, existing.division);
+    }
     updates.updatedAt = new Date();
     if (!updates.updatedBy) updates.updatedBy = req.user?.name || '';
 
@@ -238,8 +251,6 @@ router.put('/:id', protect, async (req, res) => {
       updates,
       { new: true, runValidators: false }
     ).lean();
-
-    if (!updated) return res.status(404).json({ success:false, message:'Record not found.' });
 
     if (updated.sourceEmpFrnId) {
       try {
@@ -307,7 +318,7 @@ router.put('/:id', protect, async (req, res) => {
         await RTCRL.create({
           entryDate:        updated.entryDate ? new Date(updated.entryDate) : new Date(),
           closedDate:       new Date(),
-          division:         updated.division,
+          division:         cleanDivision(updated.division, existing.division),
           scRefNo:          updated.scRefNo,
           defGirNo:         updated.defGirNo,
           category:         updated.category || 'PFRN',

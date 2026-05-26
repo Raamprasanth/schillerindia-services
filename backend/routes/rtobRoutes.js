@@ -28,6 +28,13 @@ const EstimationPending = require('../models/EstimationPending');
 const { protect }       = require('../middleware/authMiddleware');
 const EmpFRN            = require('../models/EmpFRN');
 
+function cleanDivision(value, fallback = '') {
+  const candidate = String(value || '').trim();
+  const fallbackValue = String(fallback || '').trim();
+  const statusWords = new Set(['closed', 'completed', 'pending', 'inprogress', 'in_progress', 'on_hold', 'hold', 'scrapped']);
+  return candidate && !statusWords.has(candidate.toLowerCase()) ? candidate : fallbackValue;
+}
+
 async function attachActualDivisions(records) {
   if (!records || !records.length) return records;
   const scRefNos = records.map(r => r.scRefNo).filter(Boolean);
@@ -286,6 +293,9 @@ router.put('/:id', protect, async (req, res) => {
     if (body.repairRemarks !== undefined && body.finalRemarks === undefined) {
       body.finalRemarks = body.repairRemarks;
     }
+    if (body.division !== undefined) {
+      body.division = cleanDivision(body.division, existing.division);
+    }
 
     // Stamp who updated and when
     body.updatedBy = req.user.name || '';
@@ -312,7 +322,7 @@ router.put('/:id', protect, async (req, res) => {
         await RTCRL.create({
           entryDate:        updated.entryDate ? new Date(updated.entryDate) : new Date(),
           closedDate:       new Date(),
-          division:         updated.division,
+          division:         cleanDivision(updated.division, existing.division),
           scRefNo:          updated.scRefNo,
           defGirNo:         updated.defGirNo,
           category:         'OB',

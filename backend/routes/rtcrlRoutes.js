@@ -19,6 +19,8 @@
 const express = require('express');
 const router  = express.Router();
 const RTCRL   = require('../models/rtcrlModel');
+const EmpFRN  = require('../models/EmpFRN');
+const Service = require('../models/Service');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPER
@@ -27,6 +29,61 @@ const fail = (res, code, message, err = null) => {
   if (err) console.error('[RTCRL]', message, err.message);
   return res.status(code).json({ success: false, message, error: err?.message || null });
 };
+
+function cleanDivision(value, fallback = '') {
+  const candidate = String(value || '').trim();
+  const fallbackValue = String(fallback || '').trim();
+  const statusWords = new Set(['closed', 'completed', 'pending', 'inprogress', 'in_progress', 'on_hold', 'hold', 'scrapped']);
+  return candidate && !statusWords.has(candidate.toLowerCase()) ? candidate : fallbackValue;
+}
+
+async function attachActualDivisions(records) {
+  if (!records || !records.length) return records;
+
+  const scRefNos = records.map(r => r.scRefNo).filter(Boolean);
+  const defGirNos = records.map(r => r.defGirNo).filter(Boolean);
+  if (!scRefNos.length && !defGirNos.length) return records;
+
+  const map = {};
+  try {
+    const empFrns = await EmpFRN.find({
+      $or: [{ scRno: { $in: scRefNos } }, { defGir: { $in: defGirNos } }]
+    }).populate({
+      path: 'serviceId', populate: { path: 'division', select: 'name' }
+    }).lean();
+
+    empFrns.forEach(e => {
+      const divName = e.serviceId?.division?.name || e.divisionName;
+      if (divName) {
+        if (e.scRno) map['SC_' + String(e.scRno).toUpperCase()] = divName;
+        if (e.defGir) map['GIR_' + String(e.defGir).toUpperCase()] = divName;
+      }
+    });
+
+    const svcs = await Service.find({
+      $or: [{ scReNo: { $in: scRefNos } }, { defGir: { $in: defGirNos } }]
+    }).populate('division', 'name').lean();
+
+    svcs.forEach(s => {
+      const divName = s.division?.name;
+      if (divName) {
+        if (s.scReNo) map['SC_' + String(s.scReNo).toUpperCase()] = divName;
+        if (s.defGir) map['GIR_' + String(s.defGir).toUpperCase()] = divName;
+      }
+    });
+  } catch (err) {
+    console.error('RTCRL attachActualDivisions error:', err.message);
+  }
+
+  records.forEach(r => {
+    let actualDiv = null;
+    if (r.scRefNo) actualDiv = map['SC_' + String(r.scRefNo).toUpperCase()];
+    if (!actualDiv && r.defGirNo) actualDiv = map['GIR_' + String(r.defGirNo).toUpperCase()];
+    if (actualDiv) r.division = actualDiv;
+  });
+
+  return records;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SHARED FILTER BUILDER
@@ -90,7 +147,9 @@ router.get('/stats', async (req, res) => {
 router.get('/export/csv', async (req, res) => {
   try {
     const filter  = buildFilter(req.query);
-    const records = await RTCRL.find(filter).sort({ closedDate: -1 }).lean();
+    const records = await attachActualDivisions(
+      await RTCRL.find(filter).sort({ closedDate: -1 }).lean()
+    );
 
     // Column order matches rtcrl.html exportCSV() headers array
     const cols = [
@@ -137,11 +196,12 @@ router.get('/', async (req, res) => {
     const skip  = (Number(page) - 1) * Number(limit);
     const total = await RTCRL.countDocuments(filter);
 
-    const records = await RTCRL
+    const records = await attachActualDivisions(await RTCRL
       .find(filter)
       .sort({ closedDate: -1 })
       .skip(skip)
-      .limit(Number(limit));         // noOfDays virtual included via toJSON
+      .limit(Number(limit))
+      .lean());
 
     return res.json({
       success: true,
@@ -161,7 +221,9 @@ router.get('/', async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/:id', async (req, res) => {
   try {
-    const record = await RTCRL.findById(req.params.id);
+    const [record] = await attachActualDivisions(
+      await RTCRL.find({ _id: req.params.id }).lean()
+    );
     if (!record) return fail(res, 404, 'Record not found');
     return res.json({ success: true, data: record });
   } catch (err) {
@@ -196,7 +258,9 @@ router.post('/', async (req, res) => {
       sourceId, sourceCollection,
     } = req.body;
 
-    if (!entryDate || !division || !scRefNo || !defGirNo || !category || !model || !defBrdModName) {
+    const safeDivision = cleanDivision(division);
+
+    if (!entryDate || !safeDivision || !scRefNo || !defGirNo || !category || !model || !defBrdModName) {
       return fail(res, 400,
         'Required: entryDate, division, scRefNo, defGirNo, category, model, defBrdModName');
     }
@@ -204,7 +268,7 @@ router.post('/', async (req, res) => {
     const doc = await RTCRL.create({
       entryDate:        new Date(entryDate),
       closedDate:       closedDate   ? new Date(closedDate)   : new Date(),
-      division,
+      division:         safeDivision,
       scRefNo,
       defGirNo,
       category,
