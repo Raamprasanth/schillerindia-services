@@ -249,7 +249,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
     <!-- Record info strip (shown only in edit mode) -->
     <div class="rec-info" id="edit-info-strip" style="display:none;">
-      <div class="rec-info-item"><div class="rec-info-label">TO/DO Ref No</div><div class="rec-info-val" id="ri-refno">-</div></div>
+      <div class="rec-info-item"><div class="rec-info-label">TO/SO Ref No</div><div class="rec-info-val" id="ri-refno">-</div></div>
       <div class="rec-info-item"><div class="rec-info-label">SC Engineer</div><div class="rec-info-val normal" id="ri-sceng">-</div></div>
       <div class="rec-info-item"><div class="rec-info-label">Division</div><div class="rec-info-val" id="ri-division">-</div></div>
       <div class="rec-info-item"><div class="rec-info-label">Branch</div><div class="rec-info-val normal" id="ri-branch">-</div></div>
@@ -269,8 +269,8 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
           <div class="form-section-title">TO/SO Register Form</div>
           <div class="fg-4">
             <div class="ff">
-              <label>TO/DO Ref No <span class="req">*</span></label>
-              <input type="text" id="x-refNo" placeholder="TO/DO Ref No"/>
+              <label>TO/SO Ref No <span class="req">*</span></label>
+              <input type="text" id="x-refNo"/>
             </div>
             <div class="ff">
               <label>TO/SO Date <span class="req">*</span></label>
@@ -349,11 +349,11 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
           <div class="fg-4">
             <div class="ff">
               <label>Part No</label>
-              <input type="text" id="x-partType" class="is-locked" readonly placeholder="Part No"/>
+              <input type="text" id="x-partType" class="is-locked" readonly/>
             </div>
             <div class="ff">
               <label>Description</label>
-              <input type="text" id="x-partsDescription" class="is-locked" readonly placeholder="Parts description"/>
+              <input type="text" id="x-partsDescription" class="is-locked" readonly/>
             </div>
             <div class="ff">
               <label>SC Engineer</label>
@@ -403,7 +403,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             </div>
             <div class="ff">
               <label>PRF/OB Ref No <span class="req">*</span></label>
-              <input type="text" id="f-refNo" placeholder=""/>
+              <input type="text" id="f-refNo"/>
             </div>
             <div class="ff">
               <label>Received Date</label>
@@ -458,7 +458,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             </div>
             <div class="ff">
               <label>Engineer</label>
-              <input type="text" id="f-eng" placeholder="Field engineer name"/>
+              <input type="text" id="f-eng"/>
             </div>
             <div class="ff">
               <label>Branch <span class="req">*</span></label>
@@ -471,7 +471,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             </div>
             <div class="ff">
               <label>GIR No</label>
-              <input type="text" id="f-crmRefNo" placeholder=""/>
+              <input type="text" id="f-crmRefNo"/>
             </div>
           </div>
         </div>
@@ -481,27 +481,27 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
           <div class="fg-4">
             <div class="ff">
               <label>Model <span class="req">*</span></label>
-              <input type="text" id="f-model" placeholder=""/>
+              <input type="text" id="f-model"/>
             </div>
             <div class="ff">
               <label>Serial No</label>
-              <input type="text" id="f-serialNo" placeholder="Device serial number"/>
+              <input type="text" id="f-serialNo"/>
             </div>
             <div class="ff">
               <label>Part Number</label>
-              <input type="text" id="f-partNo" placeholder=""/>
+              <input type="text" id="f-partNo"/>
             </div>
             <div class="ff">
               <label>Quantity</label>
-              <input type="number" id="f-qty" placeholder="1" min="1" value="1"/>
+              <input type="number" id="f-qty" min="1" value="1"/>
             </div>
             <div class="ff">
               <label>Unit Price (&#8377;)</label>
-              <input type="number" id="f-unitPrice" placeholder="0.00" min="0" step="0.01"/>
+              <input type="number" id="f-unitPrice" min="0" step="0.01"/>
             </div>
             <div class="ff">
               <label>Total Amount (&#8377;)</label>
-              <input type="number" id="f-totalAmount" placeholder="0.00" min="0" step="0.01" readonly style="background:var(--surface3);color:var(--muted);"/>
+              <input type="number" id="f-totalAmount" min="0" step="0.01" readonly style="background:var(--surface3);color:var(--muted);"/>
             </div>
           </div>
         </div>
@@ -511,7 +511,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
           <div class="fg-2">
             <div class="ff span2">
               <label>Remarks</label>
-              <textarea id="f-remarks" placeholder="Any additional remarks or notes..."></textarea>
+              <textarea id="f-remarks"></textarea>
             </div>
           </div>
         </div>
@@ -630,7 +630,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
           </div>
           <div class="srch-wrap">
             <span class="srch-ico">&#128269;</span>
-            <input type="text" id="tbl-search" placeholder="Search ref no, model, engineer..." oninput="applyFilters()"/>
+            <input type="text" id="tbl-search" oninput="applyFilters()"/>
           </div>
         </div>
       </div>
@@ -648,7 +648,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('eng')">Engineer <span class="si">&#8597;</span></th>
             <th onclick="sortBy('model')">Model <span class="si">&#8597;</span></th>
             <th onclick="sortBy('warrantyStatus')">Warranty Status <span class="si">&#8597;</span></th>
-            <th onclick="sortBy('refNo')">TO/DO Ref No <span class="si">&#8597;</span></th>
+            <th onclick="sortBy('refNo')">TO/SO Ref No <span class="si">&#8597;</span></th>
             <th onclick="sortBy('crmRefNo')">GIR No <span class="si">&#8597;</span></th>
             <th onclick="sortBy('status')">Status <span class="si">&#8597;</span></th>
             <th onclick="sortBy('executedDate')">Executed Date <span class="si">&#8597;</span></th>
@@ -882,8 +882,8 @@ function syncEngineerOptions(selectedValue = ''){
   const candidates = branch
     ? ENGINEER_DATA.filter(e => e.branch && e.branch.toLowerCase() === branch.toLowerCase()).map(e => e.name)
     : ENGINEER_OPTIONS;
-  const extra = (DATA || []).map(d => d.eng).filter(Boolean);
-  hydrateSelect('x-eng', [...new Set([...candidates, ...extra])], 'Select Engineer');
+  const values = selectedValue ? [...new Set([...candidates, selectedValue])] : candidates;
+  hydrateSelect('x-eng', values, 'Select Engineer');
   if(selectedValue){ const el = document.getElementById('x-eng'); if(el) el.value = selectedValue; }
 }
 
@@ -906,8 +906,8 @@ function syncSupplierOptions(selectedValue = ''){
     ? ALL_DIV_MODELS.filter(m => m.divisionName === division)
     : ALL_DIV_MODELS;
   const candidates = [...new Set(pool.map(m => m.supplier).filter(Boolean))];
-  const extra = (DATA || []).map(d => d.supplier).filter(Boolean);
-  hydrateSelect('x-supplier', [...new Set([...candidates, ...extra])], 'Select Supplier');
+  const values = selectedValue ? [...new Set([...candidates, selectedValue])] : candidates;
+  hydrateSelect('x-supplier', values, 'Select Supplier');
   if(selectedValue){ const el = document.getElementById('x-supplier'); if(el) el.value = selectedValue; }
   onSupplierChange();
 }
@@ -917,20 +917,22 @@ function onDivisionChange(){ syncSupplierOptions(); }
 // -- SUPPLIER -> MODEL AUTO-FILTER ----------------------------------------
 function onSupplierChange(){
   const supplier = document.getElementById('x-supplier').value;
+  const division = (document.getElementById('x-division') || {}).value || '';
   const modelSel = document.getElementById('x-model');
   modelSel.innerHTML = '<option value="">Select Model</option>';
+  const pool = division
+    ? ALL_DIV_MODELS.filter(m => m.divisionName === division)
+    : ALL_DIV_MODELS;
   if(!supplier){
-    // No supplier selected - show all models
-    MODEL_OPTIONS.forEach(name => {
+    [...new Set(pool.map(m => m.model).filter(Boolean))].forEach(name => {
       const opt = document.createElement('option');
       opt.value = name; opt.textContent = name;
       modelSel.appendChild(opt);
     });
     return;
   }
-  // Filter models that belong to the selected supplier
   const filtered = [...new Set(
-    ALL_DIV_MODELS.filter(m => m.supplier === supplier).map(m => m.model).filter(Boolean)
+    pool.filter(m => m.supplier === supplier).map(m => m.model).filter(Boolean)
   )];
   filtered.forEach(name => {
     const opt = document.createElement('option');
@@ -1002,7 +1004,6 @@ function hydrateExactPrfObOptions(record = null){
     syncEngineerOptions();
     syncDealerOptions();
     syncSupplierOptions();
-    hydrateSelect('x-model', [...new Set([...MODEL_OPTIONS, ...existing.map(d => d.model)])], 'Select Model');
   }
 }
 
@@ -1248,7 +1249,7 @@ async function handleFormSave(){
   const requiredMap = editMode
     ? {'x-status':'Status'}
     : {
-      'x-refNo':'TO/DO Ref No','x-entryDate':'TO/SO Date','x-type':'Type','x-division':'Division',
+      'x-refNo':'TO/SO Ref No','x-entryDate':'TO/SO Date','x-type':'Type','x-division':'Division',
       'x-status':'Status',
       'x-branch':'Branch','x-model':'Model',
       'x-region':'Region','x-eng':'Engineer','x-supplier':'Supplier'
