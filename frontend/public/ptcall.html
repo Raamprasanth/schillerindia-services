@@ -311,8 +311,16 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
           </select>
         </div>
         <div class="ff">
-          <label>Model / Reason <span class="req">*</span></label>
-          <input type="text" id="m-model" placeholder="Type model or reason" required/>
+          <label>Supplier <span class="req">*</span></label>
+          <select id="m-supplier" required onchange="onSupplierChange()">
+            <option value="">Select Supplier-</option>
+          </select>
+        </div>
+        <div class="ff">
+          <label>Model / Device <span class="req">*</span></label>
+          <select id="m-model" required>
+            <option value="">Select Model-</option>
+          </select>
         </div>
       </div>
       <div class="form-grid" style="margin-bottom:14px;">
@@ -662,6 +670,30 @@ function onRegionChange(selectedBranch = ''){
   onBranchChange();
 }
 
+let ALL_MODELS_DATA = [];
+
+function renderSupplierOptions(selected = ''){
+  const sel = document.getElementById('m-supplier');
+  if(!sel) return;
+  const suppliers = Array.from(new Set(ALL_MODELS_DATA.map(m => String(m.supplier||'').trim()).filter(Boolean))).sort((a,b)=>a.localeCompare(b));
+  let options = suppliers.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+  if(selected && !suppliers.includes(selected)){
+    options = `<option value="${esc(selected)}">${esc(selected)}</option>` + options;
+  }
+  sel.innerHTML = `<option value="">Select Supplier-</option>` + options;
+  if(selected) sel.value = selected;
+}
+
+function onSupplierChange(selectedModel = '') {
+  const supplier = (document.getElementById('m-supplier')||{}).value || '';
+  let filteredModels = ALL_MODELS_DATA;
+  if (supplier) {
+    filteredModels = ALL_MODELS_DATA.filter(m => String(m.supplier||'').trim() === supplier);
+  }
+  MODEL_OPTIONS = Array.from(new Set(filteredModels.map(getModelName).map(v => String(v||'').trim()).filter(Boolean))).sort((a,b)=>a.localeCompare(b));
+  renderModelOptions(typeof selectedModel === 'string' ? selectedModel : '');
+}
+
 function normalizeDivisionName(value){
   return String(value||'').trim().toLowerCase();
 }
@@ -674,30 +706,34 @@ function renderModelOptions(selected = ''){
   // Unused, changed to text input
 }
 
-async function loadDivisionModels(divisionName = '', selected = ''){
-  // Unused, changed to text input
-}
-
-async function onBranchChange(selectedEngineer = '') {
-  const branch = document.getElementById('m-branch').value;
-  const engSel = document.getElementById('m-engineer');
-  if(!branch) {
-    engSel.innerHTML = '<option value="">Select Engineer-</option>';
-    return;
-  }
-  engSel.innerHTML = '<option value="">Loading...</option>';
-  try {
-    const res = await fetch(`${API}/api/engineers?branch=${encodeURIComponent(branch)}&active=Yes`, { headers: authHeaders() });
+async function loadDivisionModels(divisionName = '', selectedModel = '', selectedSupplier = ''){
+  const targetDivision = divisionName || CURRENT_USER.division || document.getElementById('m-division').value || '';
+  MODEL_OPTIONS = [];
+  ALL_MODELS_DATA = [];
+  renderSupplierOptions(selectedSupplier);
+  renderModelOptions(selectedModel);
+  if(!targetDivision) return;
+  try{
+    const res = await fetch(`${API}/api/divisions`, { headers: authHeaders() });
     handleUnauth(res);
     if(!res.ok) throw new Error('HTTP ' + res.status);
-    const payload = await res.json();
-    const engineers = payload?.data || [];
-    engSel.innerHTML = '<option value="">Select Engineer-</option>' + 
-      engineers.map(e => `<option value="${esc(e.name)}">${esc(e.name)}</option>`).join('');
-    if(selectedEngineer) engSel.value = selectedEngineer;
-  } catch(e) {
+    const divisions = await res.json();
+    const div = (Array.isArray(divisions) ? divisions : []).find(d => {
+      const names = [d.name, d.displayName].map(normalizeDivisionName);
+      return names.includes(normalizeDivisionName(targetDivision));
+    });
+    const models = Array.isArray(div?.models) ? div.models : [];
+    
+    ALL_MODELS_DATA = models;
+    
+    renderSupplierOptions(selectedSupplier);
+    onSupplierChange(selectedModel);
+  }catch(e){
     if(e.message === 'Unauthorized') return;
-    engSel.innerHTML = '<option value="">Error loading</option>';
+    MODEL_OPTIONS = [];
+    renderSupplierOptions(selectedSupplier);
+    renderModelOptions(selectedModel);
+    showToast('Could not load models for this division: ' + e.message, 'err');
   }
 }
 
@@ -856,6 +892,7 @@ async function openEditModal(id){
   const set = (elId,val) => { const el=document.getElementById(elId); if(el) el.value=val||''; };
   set('m-division', d.division);
   (document.getElementById('top-division')||{}).textContent = d.division || '-';
+  set('m-supplier', d.supplier);
   set('m-model', d.model);
   const recordBranch = d.branch || d.region || '';
   const recordRegion = getRecordRegion(recordBranch, d.region);
@@ -881,11 +918,11 @@ function clearModalForm(){
     const el = document.getElementById(id);
     if(el) el.value = '';
   });
-  ['m-model','m-duration','m-remarks'].forEach(id => document.getElementById(id).value = '');
+  ['m-supplier','m-model','m-duration','m-remarks'].forEach(id => {const el=document.getElementById(id);if(el)el.value = '';});
   const div = CURRENT_USER.division || '';
   document.getElementById('m-division').value = div;
   (document.getElementById('top-division')||{}).textContent = div || '-';
-  ['m-division','m-region','m-branch','m-calldate','m-engineer','m-model','m-calltype','m-status','m-remarks'].forEach(id => document.getElementById(id).classList.remove('err'));
+  ['m-division','m-region','m-branch','m-calldate','m-engineer','m-supplier','m-model','m-calltype','m-status','m-remarks'].forEach(id => document.getElementById(id).classList.remove('err'));
 }
 
 function clearModalMsg(){
