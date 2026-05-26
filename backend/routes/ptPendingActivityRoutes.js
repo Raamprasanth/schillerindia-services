@@ -19,8 +19,6 @@ router.use((req, res, next) => {
 
 function ownerFilter(user) {
   return {};
-};
-  return { createdBy: user?._id };
 }
 
 router.get('/', async (req, res) => {
