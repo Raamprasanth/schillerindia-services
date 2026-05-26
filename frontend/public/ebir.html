@@ -869,7 +869,7 @@ async function submitUpdate(){
     if(isClosed){
       const res = await fetch(API+'/api/emp/bir/'+id,{method:'PUT',headers:authHeaders(),body:JSON.stringify(editPayload)});
       handleUnauth(res);
-      if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'HTTP '+res.status);}
+      if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error||e.message||'HTTP '+res.status);}
       const saved = await res.json().catch(()=>({}));
       if(!saved.movedToClosed){throw new Error('Record saved, but closed move was not confirmed.');}
       DATA.splice(DATA.findIndex(x=>(x._id||x.id)===id),1);
@@ -883,7 +883,7 @@ async function submitUpdate(){
       // Update in place
       const res = await fetch(API+'/api/emp/bir/'+id,{method:'PUT',headers:authHeaders(),body:JSON.stringify(editPayload)});
       handleUnauth(res);
-      if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'HTTP '+res.status);}
+      if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error||e.message||'HTTP '+res.status);}
       const saved = await res.json().catch(()=>({}));
       const idx = DATA.findIndex(x=>(x._id||x.id)===id);
       if(idx!==-1) DATA[idx]={...DATA[idx],...editPayload,...saved};

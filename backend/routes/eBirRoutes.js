@@ -133,6 +133,8 @@ async function moveToClosedIfComplete(doc, userId) {
   const payload = doc.toObject();
   delete payload._id;
   delete payload.__v;
+  delete payload.createdAt;
+  delete payload.updatedAt;
   payload.updatedBy = userId;
   payload.finalStatus = doc.finalStatus === 'Approved' ? 'Approved' : 'Closed';
 
@@ -141,7 +143,11 @@ async function moveToClosedIfComplete(doc, userId) {
     { $set: payload, $setOnInsert: { createdBy: doc.createdBy || userId } },
     { new: true, upsert: true, runValidators: false, setDefaultsOnInsert: true }
   );
-  await syncMirrorsFromEBir(closed);
+  try {
+    await syncMirrorsFromEBir(closed);
+  } catch (syncErr) {
+    console.error('[PUT /api/emp/bir/:id] closed mirror sync failed', syncErr);
+  }
   await EBir.findByIdAndDelete(doc._id);
   return { moved: true, doc: closed };
 }
