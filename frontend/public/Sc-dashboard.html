@@ -73,6 +73,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .notif-btn{position:relative;width:34px;height:34px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:all 0.2s;}
 .notif-btn:hover{border-color:var(--accent);}
 .notif-dot{position:absolute;top:5px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--red);border:2px solid var(--surface);}
+.msg-topbar-btn{position:relative;width:36px;height:36px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .2s;color:var(--soft);}
+.msg-topbar-btn:hover,.msg-topbar-btn.has-unread{border-color:var(--accent);color:var(--accent);background:var(--accent3);}
+.msg-topbar-count{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;background:#b91c1c;color:#fff;border-radius:20px;font-size:10px;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 4px;border:2px solid var(--surface);}
+.msg-topbar-count.show{display:flex;}
 
 .content{flex:1;padding:22px 28px;overflow-y:auto;}
 
@@ -330,6 +334,7 @@ table.mini-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
     </div>
     <div class="topbar-right">
       <span class="topbar-date" id="topbar-date"></span>
+      <button class="msg-topbar-btn" id="sc-msg-topbar-btn" onclick="showScMessages()" title="Messages" aria-label="Messages">&#128172;<span class="msg-topbar-count" id="sc-msg-topbar-badge">0</span></button>
       
       <button class="btn btn-outline btn-sm" onclick="refreshAll()">&#10227; Refresh</button>
     </div>
@@ -756,6 +761,13 @@ function updateScMessageNotification(){
     badge.textContent = count;
     badge.style.display = count ? 'inline-flex' : 'none';
   }
+  const topbarBadge = document.getElementById('sc-msg-topbar-badge');
+  const topbarBtn = document.getElementById('sc-msg-topbar-btn');
+  if (topbarBadge) {
+    topbarBadge.textContent = count;
+    topbarBadge.classList.toggle('show', !!count);
+  }
+  if (topbarBtn) topbarBtn.classList.toggle('has-unread', !!count);
   if (scMsgNotificationReady && count > scMsgUnreadLast && location.hash !== '#messages') {
     const delta = count - scMsgUnreadLast;
     showToast(delta > 1 ? 'New broadcast message received.' : 'New service message received.', 'info');

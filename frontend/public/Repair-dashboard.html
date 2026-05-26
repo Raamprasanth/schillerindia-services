@@ -61,6 +61,10 @@
     .topbar-left h1{font-family:Calibri,'Segoe UI',Arial,sans-serif;font-size:24px;font-weight:800;color:var(--text);}
     .topbar-left p{font-size:14px;font-weight:700;color:var(--muted);margin-top:2px;}
     .topbar-right{display:flex;align-items:center;gap:10px;}
+    .msg-topbar-btn{position:relative;width:36px;height:36px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .2s;color:var(--soft);}
+    .msg-topbar-btn:hover,.msg-topbar-btn.has-unread{border-color:var(--rep);color:var(--rep);background:var(--green-bg);}
+    .msg-topbar-count{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;background:#b91c1c;color:#fff;border-radius:20px;font-size:10px;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 4px;border:2px solid var(--surface);}
+    .msg-topbar-count.show{display:flex;}
     .content{flex:1;padding:26px;overflow-y:auto;background:var(--bg);}
 
     /* ── WELCOME STRIP ── */
@@ -343,6 +347,7 @@
     </div>
     <div class="topbar-right">
       <span style="font-size:11px;color:var(--muted);" id="last-sync">-</span>
+      <button class="msg-topbar-btn" id="rep-msg-topbar-btn" onclick="showRepMessages()" title="Messages" aria-label="Messages">&#128172;<span class="msg-topbar-count" id="rep-msg-topbar-badge">0</span></button>
       <button class="btn btn-outline btn-sm" onclick="loadDashboard()">&#10227; Refresh</button>
     </div>
   </div>
@@ -1008,6 +1013,13 @@ function updateRepMessageNotification(){
     badge.textContent = count;
     badge.style.display = count ? 'inline-flex' : 'none';
   }
+  const topbarBadge = document.getElementById('rep-msg-topbar-badge');
+  const topbarBtn = document.getElementById('rep-msg-topbar-btn');
+  if (topbarBadge) {
+    topbarBadge.textContent = count;
+    topbarBadge.classList.toggle('show', !!count);
+  }
+  if (topbarBtn) topbarBtn.classList.toggle('has-unread', !!count);
   if (count > repMsgUnreadLast && location.hash !== '#messages') {
     showToast('New service message received.', 'info');
   }

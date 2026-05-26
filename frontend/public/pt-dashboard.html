@@ -75,6 +75,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .notif-btn:hover{border-color:var(--accent);color:var(--accent);}
 .notif-count{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;background:#b91c1c;color:#fff;border-radius:20px;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center;padding:0 4px;border:2px solid var(--surface);}
 .notif-count.show{display:flex;}
+.msg-topbar-btn{position:relative;width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--soft);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .2s;}
+.msg-topbar-btn:hover,.msg-topbar-btn.has-unread{border-color:var(--accent);color:var(--accent);background:var(--accent3);}
+.msg-topbar-count{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;background:#b91c1c;color:#fff;border-radius:20px;font-size:10px;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 4px;border:2px solid var(--surface);}
+.msg-topbar-count.show{display:flex;}
 .notif-panel{position:absolute;top:calc(100% + 10px);right:0;width:360px;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 16px 48px rgba(0,30,80,0.16);z-index:200;display:none;flex-direction:column;overflow:hidden;}
 .notif-panel.open{display:flex;}
 .np-head{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
@@ -333,6 +337,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <a class="topbar-link pulse" href="https://schillerind.sharepoint.com/sites/ThePulse?CT=1732090698772&amp;OR=OWA-NT-Mail&amp;CID=a273cbbf-296c-cff8-1ec7-bbcd2eda733e" target="_blank" rel="noopener">&#9889; Pulse</a>
       <a class="topbar-link shipl" href="https://schillerindia.com/" target="_blank" rel="noopener">&#127760; SHIPL</a>
       <a class="topbar-link hr" href="https://app.hrone.cloud/app" target="_blank" rel="noopener">&#128101; HR 1</a>
+      <button class="msg-topbar-btn" id="pt-msg-topbar-btn" onclick="showScMessages()" title="Messages" aria-label="Messages">&#128172;<span class="msg-topbar-count" id="pt-msg-topbar-badge">0</span></button>
       <div class="notif-wrap">
         
         <div class="notif-panel" id="notif-panel">
@@ -1137,6 +1142,13 @@ function updateScMessageNotification(){
     badge.textContent = count;
     badge.style.display = count ? 'inline-flex' : 'none';
   }
+  const topbarBadge = document.getElementById('pt-msg-topbar-badge');
+  const topbarBtn = document.getElementById('pt-msg-topbar-btn');
+  if (topbarBadge) {
+    topbarBadge.textContent = count;
+    topbarBadge.classList.toggle('show', !!count);
+  }
+  if (topbarBtn) topbarBtn.classList.toggle('has-unread', !!count);
   if (scMsgNotificationReady && count > scMsgUnreadLast && location.hash !== '#messages') {
     const delta = count - scMsgUnreadLast;
     showToast(delta > 1 ? 'New broadcast message received.' : 'New service message received.', 'info');
