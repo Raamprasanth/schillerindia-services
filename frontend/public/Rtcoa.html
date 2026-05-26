@@ -274,13 +274,12 @@ table.coa-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('description')">Description &#8597;</th>
             <th onclick="sortBy('problemObserved')">Problem Observed &#8597;</th>
             <th onclick="sortBy('componentsUsed')">Components Used &#8597;</th>
-            <th onclick="sortBy('finalRemarks')">Final Remarks &#8597;</th>
             <th onclick="sortBy('repairedDate')">Repaired Date &#8597;</th>
-            <th onclick="sortBy('remarks')">Remarks &#8597;</th>
+            <th onclick="sortBy('finalRemarks')">Final Remarks &#8597;</th>
             <th>View</th>
           </tr></thead>
           <tbody id="coa-tbody">
-            <tr><td colspan="13" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
+            <tr><td colspan="12" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -392,7 +391,7 @@ async function loadData() {
 
 function showError(msg) {
   document.getElementById('coa-tbody').innerHTML =
-    `<tr><td colspan="13"><div class="empty-st">
+    `<tr><td colspan="12"><div class="empty-st">
       <div class="ei">&#9888;&#65039;</div><div class="et">Cannot load data</div>
       <div class="es">${msg}</div>
       <div style="margin-top:14px;"><button class="btn btn-rep btn-sm" onclick="loadData()">&#10227; Try Again</button></div>
@@ -463,7 +462,7 @@ function renderTable() {
   (document.getElementById('count-pill')||{}).textContent = total + ' entr' + (total === 1 ? 'y' : 'ies');
   const tbody = document.getElementById('coa-tbody');
   if (!slice.length) {
-    tbody.innerHTML = `<tr><td colspan="13"><div class="empty-st">
+    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-st">
       <div class="ei">&#9989;</div>
       <div class="et">${allData.length ? 'No records match filters' : 'No Closed Activities'}</div>
       <div class="es">${allData.length ? 'Try clearing filters.' : 'Closed activities will appear here.'}</div>
@@ -482,9 +481,8 @@ function renderTable() {
         <td style="max-width:150px;" title="${esc(d.description||'')}">${trunc(d.description,50)}</td>
         <td style="max-width:150px;" title="${esc(d.problemObserved||'')}">${trunc(d.problemObserved,50)}</td>
         <td style="max-width:150px;" title="${esc(d.componentsUsed||'')}">${trunc(d.componentsUsed,50)}</td>
-        <td style="max-width:150px;" title="${esc(d.finalRemarks||'')}">${trunc(d.finalRemarks,50)}</td>
         <td style="font-size:11px;color:var(--soft);white-space:nowrap;">${fmtDate(d.repairedDate)}</td>
-        <td style="max-width:130px;" title="${esc(d.remarks||'')}">${trunc(d.remarks,40)}</td>
+        <td style="max-width:150px;" title="${esc(d.finalRemarks||'')}">${trunc(d.finalRemarks,50)}</td>
         <td><button class="btn-xs view" onclick="openDetail('${id}')">View</button></td>
       </tr>`;
     }).join('');
