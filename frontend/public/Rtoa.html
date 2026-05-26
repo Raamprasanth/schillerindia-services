@@ -238,10 +238,10 @@ table.oa-table tbody tr:last-child td{border-bottom:none;}
 
     <!-- STATS -->
     <div class="stats-row">
-      <div class="stat-card sc-green"><div class="stat-ico si-green">&#128203;</div><div class="stat-lbl">Total Active</div><div class="stat-val" id="st-total">-</div><div class="stat-sub">Open + In Progress</div></div>
-      <div class="stat-card sc-blue"><div class="stat-ico si-blue">&#128308;</div><div class="stat-lbl">Open</div><div class="stat-val" id="st-open">-</div><div class="stat-sub">Awaiting action</div></div>
-      <div class="stat-card sc-amber"><div class="stat-ico si-amber">&#9203;</div><div class="stat-lbl">In Progress</div><div class="stat-val" id="st-inprog">-</div><div class="stat-sub">Currently active</div></div>
-      <div class="stat-card sc-teal"><div class="stat-ico si-teal">&#9989;</div><div class="stat-lbl">Closed Today</div><div class="stat-val" id="st-today">-</div><div class="stat-sub">Completed today</div></div>
+      <div class="stat-card sc-green" onclick="setSummaryFilter('all')"><div class="stat-ico si-green">&#128203;</div><div class="stat-lbl">Total Active</div><div class="stat-val" id="st-total">-</div><div class="stat-sub">Open + In Progress</div></div>
+      <div class="stat-card sc-blue" onclick="setSummaryFilter('Open')"><div class="stat-ico si-blue">&#128308;</div><div class="stat-lbl">Open</div><div class="stat-val" id="st-open">-</div><div class="stat-sub">Awaiting action</div></div>
+      <div class="stat-card sc-amber" onclick="setSummaryFilter('In Progress')"><div class="stat-ico si-amber">&#9203;</div><div class="stat-lbl">In Progress</div><div class="stat-val" id="st-inprog">-</div><div class="stat-sub">Currently active</div></div>
+      <div class="stat-card sc-teal" onclick="setSummaryFilter('today')"><div class="stat-ico si-teal">&#9989;</div><div class="stat-lbl">Closed Today</div><div class="stat-val" id="st-today">-</div><div class="stat-sub">Completed today</div></div>
     </div>
 
 
@@ -354,6 +354,7 @@ const RAW_ROLE = (LUSER.role || sessionStorage.getItem('schiller_role') || '').t
 
 let allData = [], filtered = [], sortKey = 'date', sortDir = -1, currentPage = 1;
 let editId = null;
+let activeSummary = 'all';
 
 (function init() {
   (document.getElementById('emp-name')||{}).textContent = EMP_NAME || 'Repair User';
@@ -483,15 +484,27 @@ function updateStats() {
 function applyFilters() {
   const q = document.getElementById('tbl-search').value.toLowerCase();
   filtered = allData.filter(d => {
-    return !q || Object.values(d).some(v => String(v||'').toLowerCase().includes(q));
+    const mQ = !q || Object.values(d).some(v => String(v||'').toLowerCase().includes(q));
+    return mQ && summaryMatches(d);
   });
   sortArr(); currentPage = 1; renderTable();
 }
 
 function clearFilters() {
   document.getElementById('tbl-search').value = '';
+  activeSummary = 'all';
   // Filter inputs were removed; no need to clear them.
   applyFilters();
+}
+
+function setSummaryFilter(type) { activeSummary = type || 'all'; applyFilters(); }
+function summaryMatches(d) {
+  if (activeSummary === 'Open' || activeSummary === 'In Progress') return d.status === activeSummary;
+  if (activeSummary === 'today') {
+    const today = new Date().toISOString().split('T')[0];
+    return d.repairedDate && String(d.repairedDate).split('T')[0] === today;
+  }
+  return true;
 }
 
 function sortBy(k) { if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = -1; } sortArr(); renderTable(); }

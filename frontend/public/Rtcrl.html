@@ -309,10 +309,10 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
 
     <!-- STATS ROW -->
     <div class="stats-row">
-      <div class="stat-card sc-green"><div class="stat-ico si-green">&#9989;</div><div class="stat-lbl">Total Closed</div><div class="stat-val" id="st-total">-</div><div class="stat-sub">All categories</div></div>
-      <div class="stat-card sc-purple"><div class="stat-ico si-purple">&#128221;</div><div class="stat-lbl">PFRN Closed</div><div class="stat-val" id="st-pfrn">-</div><div class="stat-sub">Pending FRN closed</div></div>
-      <div class="stat-card sc-blue"><div class="stat-ico si-blue">&#128736;&#65039;</div><div class="stat-lbl">UR Closed</div><div class="stat-val" id="st-ur">-</div><div class="stat-sub">Under repair closed</div></div>
-      <div class="stat-card sc-teal"><div class="stat-ico si-teal">&#128230;</div><div class="stat-lbl">OB Closed</div><div class="stat-val" id="st-ob">-</div><div class="stat-sub">OB pending closed</div></div>
+      <div class="stat-card sc-green" onclick="setSummaryFilter('')"><div class="stat-ico si-green">&#9989;</div><div class="stat-lbl">Total Closed</div><div class="stat-val" id="st-total">-</div><div class="stat-sub">All categories</div></div>
+      <div class="stat-card sc-purple" onclick="setSummaryFilter('PFRN')"><div class="stat-ico si-purple">&#128221;</div><div class="stat-lbl">PFRN Closed</div><div class="stat-val" id="st-pfrn">-</div><div class="stat-sub">Pending FRN closed</div></div>
+      <div class="stat-card sc-blue" onclick="setSummaryFilter('UR')"><div class="stat-ico si-blue">&#128736;&#65039;</div><div class="stat-lbl">UR Closed</div><div class="stat-val" id="st-ur">-</div><div class="stat-sub">Under repair closed</div></div>
+      <div class="stat-card sc-teal" onclick="setSummaryFilter('OB')"><div class="stat-ico si-teal">&#128230;</div><div class="stat-lbl">OB Closed</div><div class="stat-val" id="st-ob">-</div><div class="stat-sub">OB pending closed</div></div>
     </div>
 
     <!-- CATEGORY TABS -->
@@ -455,6 +455,15 @@ function setCatTab(el, cat) {
   document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   activeCat = cat;
+  currentPage = 1;
+  applyFilters();
+}
+
+function setSummaryFilter(cat) {
+  activeCat = cat || '';
+  document.querySelectorAll('.cat-tab').forEach(t => {
+    t.classList.toggle('active', (t.dataset.cat || '') === activeCat);
+  });
   currentPage = 1;
   applyFilters();
 }

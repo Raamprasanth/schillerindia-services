@@ -396,10 +396,10 @@ table.ur-table tbody tr:last-child td{border-bottom:none;}
 
 
     <div class="stats-row">
-      <div class="stat-card sc-blue"><div class="stat-ico si-blue">&#128736;&#65039;</div><div class="stat-lbl">Total RT UR</div><div class="stat-val" id="st-total">-</div><div class="stat-sub">Active UR records</div></div>
-      <div class="stat-card sc-amber"><div class="stat-ico si-amber">&#9203;</div><div class="stat-lbl">Pending</div><div class="stat-val" id="st-pending">-</div><div class="stat-sub">Awaiting repair</div></div>
-      <div class="stat-card sc-red"><div class="stat-ico si-red">&#9888;&#65039;</div><div class="stat-lbl">Critical (&gt;30 days)</div><div class="stat-val" id="st-critical">-</div><div class="stat-sub">Needs immediate action</div></div>
-      <div class="stat-card sc-green"><div class="stat-ico si-green">&#9989;</div><div class="stat-lbl">Completed</div><div class="stat-val" id="st-completed">-</div><div class="stat-sub">Repaired &amp; returned</div></div>
+      <div class="stat-card sc-blue" onclick="setSummaryFilter('all')"><div class="stat-ico si-blue">&#128736;&#65039;</div><div class="stat-lbl">Total RT UR</div><div class="stat-val" id="st-total">-</div><div class="stat-sub">Active UR records</div></div>
+      <div class="stat-card sc-amber" onclick="setSummaryFilter('pending')"><div class="stat-ico si-amber">&#9203;</div><div class="stat-lbl">Pending</div><div class="stat-val" id="st-pending">-</div><div class="stat-sub">Awaiting repair</div></div>
+      <div class="stat-card sc-red" onclick="setSummaryFilter('critical')"><div class="stat-ico si-red">&#9888;&#65039;</div><div class="stat-lbl">Critical (&gt;30 days)</div><div class="stat-val" id="st-critical">-</div><div class="stat-sub">Needs immediate action</div></div>
+      <div class="stat-card sc-green" onclick="setSummaryFilter('completed')"><div class="stat-ico si-green">&#9989;</div><div class="stat-lbl">Completed</div><div class="stat-val" id="st-completed">-</div><div class="stat-sub">Repaired &amp; returned</div></div>
     </div>
 
     <!-- ADD PANEL -->
@@ -502,6 +502,7 @@ const IS_ADMIN = RAW_ROLE === 'admin';
 
 let allData = [], filtered = [], sortKey = 'entryDate', sortDir = -1, currentPage = 1;
 let editingId = null;
+let activeSummary = 'all';
 
 async function syncRepairSessionUser(){
   try{
@@ -605,13 +606,21 @@ function updateStats() {
 
 function clearDates(){ applyFilters(); }
 function clearAllFilters(){
-  document.getElementById('tbl-search').value=''; applyFilters();
+  document.getElementById('tbl-search').value=''; activeSummary='all'; applyFilters();
+}
+function setSummaryFilter(type){ activeSummary=type||'all'; applyFilters(); }
+function summaryMatches(d){
+  if(activeSummary==='pending') return d.status==='pending';
+  if(activeSummary==='critical') return d.noOfDays>30&&d.status!=='completed';
+  if(activeSummary==='completed') return d.status==='completed';
+  return true;
 }
 
 function applyFilters(){
   const q=document.getElementById('tbl-search').value.toLowerCase();
   filtered=allData.filter(d=>{
-    return !q||Object.values(d).some(v=>String(v||'').toLowerCase().includes(q));
+    const mQ=!q||Object.values(d).some(v=>String(v||'').toLowerCase().includes(q));
+    return mQ&&summaryMatches(d);
   });
   sortArr(); currentPage=1; renderTable();
 }

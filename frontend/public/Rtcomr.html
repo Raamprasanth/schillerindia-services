@@ -239,10 +239,10 @@ table.comr-table tbody tr:last-child td{border-bottom:none;}
 
     <!-- STATS -->
     <div class="stats-row">
-      <div class="stat-card sc-blue"><div class="stat-ico si-blue">&#128296;</div><div class="stat-lbl">Total Active</div><div class="stat-val" id="st-total">-</div><div class="stat-sub">Pending + Approved</div></div>
-      <div class="stat-card sc-amber"><div class="stat-ico si-amber">&#9203;</div><div class="stat-lbl">Pending</div><div class="stat-val" id="st-pending">-</div><div class="stat-sub">Awaiting approval</div></div>
-      <div class="stat-card sc-teal"><div class="stat-ico si-teal">&#10003;</div><div class="stat-lbl">Approved</div><div class="stat-val" id="st-approved">-</div><div class="stat-sub">Ready to fulfill</div></div>
-      <div class="stat-card sc-green"><div class="stat-ico si-green">&#9989;</div><div class="stat-lbl">Fulfilled</div><div class="stat-val" id="st-fulfilled">-</div><div class="stat-sub">Completed requests</div></div>
+      <div class="stat-card sc-blue" onclick="setSummaryFilter('active')"><div class="stat-ico si-blue">&#128296;</div><div class="stat-lbl">Total Active</div><div class="stat-val" id="st-total">-</div><div class="stat-sub">Pending + Approved</div></div>
+      <div class="stat-card sc-amber" onclick="setSummaryFilter('Pending')"><div class="stat-ico si-amber">&#9203;</div><div class="stat-lbl">Pending</div><div class="stat-val" id="st-pending">-</div><div class="stat-sub">Awaiting approval</div></div>
+      <div class="stat-card sc-teal" onclick="setSummaryFilter('Approved')"><div class="stat-ico si-teal">&#10003;</div><div class="stat-lbl">Approved</div><div class="stat-val" id="st-approved">-</div><div class="stat-sub">Ready to fulfill</div></div>
+      <div class="stat-card sc-green" onclick="setSummaryFilter('Fulfilled')"><div class="stat-ico si-green">&#9989;</div><div class="stat-lbl">Fulfilled</div><div class="stat-val" id="st-fulfilled">-</div><div class="stat-sub">Completed requests</div></div>
     </div>
 
     <!-- FILTER BAR -->
@@ -362,6 +362,7 @@ const RAW_ROLE = (LUSER.role || sessionStorage.getItem('schiller_role') || '').t
 
 let allData = [], filtered = [], sortKey = 'date', sortDir = -1, currentPage = 1;
 let editId = null;
+let activeSummary = '';
 
 (function init() {
   (document.getElementById('emp-name')||{}).textContent = EMP_NAME || 'Repair User';
@@ -474,16 +475,25 @@ function applyFilters() {
     if (fs === 'all') mS = true;
     else if (!fs) mS = (d.status === 'Pending' || d.status === 'Approved');
     else mS = d.status === fs;
+    if (activeSummary === 'active') mS = (d.status === 'Pending' || d.status === 'Approved');
+    else if (activeSummary) mS = d.status === activeSummary;
     const mD = !fd || String(d.division||'').toLowerCase().includes(fd);
     return mQ && mS && mD;
   });
   sortArr(); currentPage = 1; renderTable();
 }
 
+function setSummaryFilter(type) {
+  activeSummary = type || '';
+  document.getElementById('f-status').value = type === 'active' ? '' : (type || '');
+  applyFilters();
+}
+
 function clearFilters() {
   document.getElementById('tbl-search').value = '';
   document.getElementById('f-status').value = '';
   document.getElementById('f-division').value = '';
+  activeSummary = '';
   applyFilters();
 }
 

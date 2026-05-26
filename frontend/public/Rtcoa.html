@@ -226,9 +226,9 @@ table.coa-table tbody tr:last-child td{border-bottom:none;}
 
     <!-- STATS -->
     <div class="stats-row">
-      <div class="stat-card sc-green"><div class="stat-ico si-green">&#9989;</div><div class="stat-lbl">Total Closed</div><div class="stat-val" id="st-total">-</div><div class="stat-sub">All closed activities</div></div>
-      <div class="stat-card sc-blue"><div class="stat-ico si-blue">&#128197;</div><div class="stat-lbl">This Month</div><div class="stat-val" id="st-month">-</div><div class="stat-sub">Closed this month</div></div>
-      <div class="stat-card sc-teal"><div class="stat-ico si-teal">&#9203;</div><div class="stat-lbl">Avg Days to Close</div><div class="stat-val" id="st-avg">-</div><div class="stat-sub">Average turnaround</div></div>
+      <div class="stat-card sc-green" onclick="setSummaryFilter('all')"><div class="stat-ico si-green">&#9989;</div><div class="stat-lbl">Total Closed</div><div class="stat-val" id="st-total">-</div><div class="stat-sub">All closed activities</div></div>
+      <div class="stat-card sc-blue" onclick="setSummaryFilter('month')"><div class="stat-ico si-blue">&#128197;</div><div class="stat-lbl">This Month</div><div class="stat-val" id="st-month">-</div><div class="stat-sub">Closed this month</div></div>
+      <div class="stat-card sc-teal" onclick="setSummaryFilter('all')"><div class="stat-ico si-teal">&#9203;</div><div class="stat-lbl">Avg Days to Close</div><div class="stat-val" id="st-avg">-</div><div class="stat-sub">Average turnaround</div></div>
     </div>
 
     <!-- FILTER BAR -->
@@ -340,6 +340,7 @@ const EMP_NAME = LUSER.name || '';
 const RAW_ROLE = (LUSER.role || sessionStorage.getItem('schiller_role') || '').toLowerCase();
 
 let allData = [], filtered = [], sortKey = 'entryDate', sortDir = -1, currentPage = 1;
+let activeSummary = 'all';
 
 (function init() {
   (document.getElementById('emp-name')||{}).textContent = EMP_NAME || 'Repair User';
@@ -420,19 +421,24 @@ function applyFilters() {
   const q  = document.getElementById('tbl-search').value.toLowerCase();
   const fd = document.getElementById('f-division').value.toLowerCase();
   const fr = document.getElementById('f-repairedby').value.toLowerCase();
+  const monthYear = new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0');
   filtered = allData.filter(d => {
     const mQ = !q  || Object.values(d).some(v => String(v||'').toLowerCase().includes(q));
     const mD = !fd || String(d.division||'').toLowerCase().includes(fd);
     const mR = !fr || String(d.repairedBy||'').toLowerCase().includes(fr);
-    return mQ && mD && mR;
+    const mS = activeSummary !== 'month' || String(d.closedDate||'').startsWith(monthYear);
+    return mQ && mD && mR && mS;
   });
   sortArr(); currentPage = 1; renderTable();
 }
+
+function setSummaryFilter(type) { activeSummary = type || 'all'; applyFilters(); }
 
 function clearFilters() {
   document.getElementById('tbl-search').value = '';
   document.getElementById('f-division').value = '';
   document.getElementById('f-repairedby').value = '';
+  activeSummary = 'all';
   applyFilters();
 }
 
