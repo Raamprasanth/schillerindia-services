@@ -506,12 +506,31 @@ async function loadDashboard() {
 }
 
 // ── PFRN ─────────────────────────────────────────────────
+function dataList(payload) {
+  const list = payload?.data || payload?.records || payload;
+  return Array.isArray(list) ? list : [];
+}
+
+function statPayload(payload) {
+  return payload?.data || payload || {};
+}
+
+async function fetchJson(path) {
+  const res = await fetch(API_BASE + path, { headers: authHeaders() });
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(payload.message || ('HTTP ' + res.status));
+  return payload;
+}
+
+async function setStat(id, key, value) {
+  STATS[key] = Number(value) || 0;
+  (document.getElementById(id)||{}).textContent = STATS[key];
+}
+
 async function loadPFRN() {
   try {
-    const res  = await fetch(API_BASE + '/frn', { headers: authHeaders() });
-    const data = await res.json();
-    STATS.pfrn = (data.data || data || []).length;
-    (document.getElementById('s-pfrn')||{}).textContent = STATS.pfrn;
+    const data = await fetchJson('/rtfrn/employee');
+    setStat('s-pfrn', 'pfrn', dataList(data).length);
   } catch(e) {
     (document.getElementById('s-pfrn')||{}).textContent = '-';
   }
@@ -519,40 +538,50 @@ async function loadPFRN() {
 
 async function loadOB() {
   try {
-    const res  = await fetch(API_BASE + '/ob-pending', { headers: authHeaders() });
-    const data = await res.json();
-    STATS.ob = (data.data || data || []).length;
-    (document.getElementById('s-ob')||{}).textContent = STATS.ob;
+    const stats = statPayload(await fetchJson('/rtob/stats'));
+    setStat('s-ob', 'ob', stats.total);
   } catch(e) {
-    (document.getElementById('s-ob')||{}).textContent = '-';
+    try {
+      const data = await fetchJson('/rtob/employee');
+      setStat('s-ob', 'ob', dataList(data).length);
+    } catch(_) {
+      (document.getElementById('s-ob')||{}).textContent = '-';
+    }
   }
 }
 
 async function loadUR() {
   try {
-    const res  = await fetch(API_BASE + '/under-repair', { headers: authHeaders() });
-    const data = await res.json();
-    STATS.ur = (data.data || data || []).length;
-    (document.getElementById('s-ur')||{}).textContent = STATS.ur;
+    const stats = statPayload(await fetchJson('/rtur/stats'));
+    setStat('s-ur', 'ur', stats.total);
   } catch(e) {
-    (document.getElementById('s-ur')||{}).textContent = '-';
+    try {
+      const data = await fetchJson('/rtur');
+      setStat('s-ur', 'ur', dataList(data).length);
+    } catch(_) {
+      (document.getElementById('s-ur')||{}).textContent = '-';
+    }
   }
 }
 
 async function loadClosed() {
   try {
-    const res  = await fetch(API_BASE + '/emp/sc-completed-frn', { headers: authHeaders() });
-    const data = await res.json();
-    STATS.closed = (data.data || data || []).length;
-    (document.getElementById('s-closed')||{}).textContent = STATS.closed;
+    const stats = statPayload(await fetchJson('/rtcrl/stats'));
+    setStat('s-closed', 'closed', stats.total);
   } catch(e) {
-    (document.getElementById('s-closed')||{}).textContent = '-';
+    try {
+      const data = await fetchJson('/rtcrl');
+      setStat('s-closed', 'closed', dataList(data).length);
+    } catch(_) {
+      (document.getElementById('s-closed')||{}).textContent = '-';
+    }
   }
 }
 
 let STATS = { pfrn: 0, ob: 0, ur: 0, closed: 0 };
 
 async function loadDashboard() {
+  (document.getElementById('last-sync')||{}).textContent = 'Syncing...';
   await Promise.allSettled([
     loadPFRN(),
     loadOB(),
@@ -560,6 +589,8 @@ async function loadDashboard() {
     loadClosed()
   ]);
   updatePerformance();
+  (document.getElementById('last-sync')||{}).textContent =
+    'Synced: ' + new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
 }
 
 function updatePerformance(){
