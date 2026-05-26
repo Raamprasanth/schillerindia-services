@@ -81,6 +81,12 @@
     .np-empty{padding:36px;text-align:center;color:var(--muted);font-size:12.5px;}
     .np-foot{padding:10px 16px;border-top:1px solid var(--border);text-align:center;background:var(--surface);}
     .np-foot a{font-size:11.5px;color:var(--accent);text-decoration:none;font-weight:600;}
+    .toast-wrap{position:fixed;bottom:20px;right:20px;z-index:700;display:flex;flex-direction:column;gap:7px;}
+    .toast{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:11px 15px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:9px;min-width:230px;animation:fadeUp 0.25s ease;box-shadow:0 8px 22px rgba(0,0,0,0.1);}
+    .toast.ok{border-color:rgba(4,120,87,0.35);}.toast.ok .td{background:var(--green);}
+    .toast.err{border-color:rgba(185,28,28,0.35);}.toast.err .td{background:var(--red);}
+    .toast.info{border-color:rgba(0,104,181,0.35);}.toast.info .td{background:var(--accent);}
+    .td{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;}
 
     /* CONTENT */
     .content{flex:1;padding:28px;overflow-y:auto;background:var(--bg);}
@@ -366,6 +372,8 @@
   <div class="spinner"></div>
   <p>Verifying session...</p>
 </div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
 
 <!-- --- SIDEBAR (scrap list style) --- -->
 <aside class="sidebar" id="sidebar" style="display:none;">
@@ -856,6 +864,7 @@
   let empMsgThreads = [];
   let empMsgActiveId = '';
   let empMsgUnreadLast = 0;
+  let empMsgNotificationReady = false;
 
   function initEmpMessages(){
     loadEmpMessageDivisions();
@@ -989,10 +998,12 @@
       badge.textContent = count;
       badge.style.display = count ? 'inline-flex' : 'none';
     }
-    if (count > empMsgUnreadLast && location.hash !== '#messages') {
-      showEmpMessageToast('New service message received.', true);
+    if (empMsgNotificationReady && count > empMsgUnreadLast && location.hash !== '#messages') {
+      const delta = count - empMsgUnreadLast;
+      showEmpMessageToast(delta > 1 ? 'New broadcast message received.' : 'New service message received.', true);
     }
     empMsgUnreadLast = count;
+    empMsgNotificationReady = true;
   }
 
   function renderEmpMessageThreads(){
@@ -1127,8 +1138,17 @@
   }
 
   function showEmpMessageToast(message, passive){
-    console.warn(message);
-    if (!passive) alert(message);
+    const wrap = document.getElementById('toast-wrap');
+    if (!wrap) {
+      console.warn(message);
+      if (!passive) alert(message);
+      return;
+    }
+    const el = document.createElement('div');
+    el.className = 'toast ' + (passive ? 'info' : 'err');
+    el.innerHTML = '<span class="td"></span>' + escapeHtml(message);
+    wrap.appendChild(el);
+    setTimeout(() => el.remove(), 3500);
   }
 
   async function fetchDashboardStats(user, token) {

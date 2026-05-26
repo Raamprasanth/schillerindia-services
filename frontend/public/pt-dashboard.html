@@ -1021,6 +1021,7 @@ function updateWeeklyChart(){
 let scMsgThreads = [];
 let scMsgActiveId = '';
 let scMsgUnreadLast = 0;
+let scMsgNotificationReady = false;
 
 function initScMessages(){
   loadScMessageDivisions();
@@ -1136,10 +1137,12 @@ function updateScMessageNotification(){
     badge.textContent = count;
     badge.style.display = count ? 'inline-flex' : 'none';
   }
-  if (count > scMsgUnreadLast && location.hash !== '#messages') {
-    showToast('New service message received.', 'info');
+  if (scMsgNotificationReady && count > scMsgUnreadLast && location.hash !== '#messages') {
+    const delta = count - scMsgUnreadLast;
+    showToast(delta > 1 ? 'New broadcast message received.' : 'New service message received.', 'info');
   }
   scMsgUnreadLast = count;
+  scMsgNotificationReady = true;
 }
 
 function renderScMessageThreads(){
