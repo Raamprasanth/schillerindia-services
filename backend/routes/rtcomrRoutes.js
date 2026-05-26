@@ -45,16 +45,17 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const {
-      requestedDate, division, model, description, partNumber, mpnNumber,
+      requestedDate, requested, requestedBy, division, model, description, partNumber, mpnNumber,
       requiredQty, price, piRaisedDate, piApprovedDate, componentsReceivedDate, remarks,
     } = req.body;
 
-    if (!requestedDate || !division || !description || !requiredQty) {
-      return fail(res, 400, 'Required: requestedDate, division, description, requiredQty');
+    if (!requestedDate || !requested && !requestedBy || !division || !description || !requiredQty) {
+      return fail(res, 400, 'Required: requestedDate, requested, division, description, requiredQty');
     }
 
     const doc = await RtCOMR.create({
       requestedDate:          new Date(requestedDate),
+      requested:              requested || requestedBy || '',
       division,
       model:                  model || '',
       description,
@@ -82,6 +83,8 @@ router.put('/:id', async (req, res) => {
 
     const b = req.body;
     if (b.requestedDate          !== undefined) record.requestedDate          = new Date(b.requestedDate);
+    if (b.requested              !== undefined) record.requested              = b.requested;
+    if (b.requestedBy            !== undefined && b.requested === undefined) record.requested = b.requestedBy;
     if (b.division               !== undefined) record.division               = b.division;
     if (b.model                  !== undefined) record.model                  = b.model;
     if (b.description            !== undefined) record.description            = b.description;
@@ -103,6 +106,7 @@ router.put('/:id', async (req, res) => {
       try {
         await RtCCR.create({
           requestedDate: saved.requestedDate,
+          requested: saved.requested,
           division: saved.division,
           model: saved.model,
           description: saved.description,
@@ -146,6 +150,7 @@ router.put('/:id/fulfill', async (req, res) => {
     try {
       await RtCCR.create({
         requestedDate: saved.requestedDate,
+        requested: saved.requested,
         division: saved.division,
         model: saved.model,
         description: saved.description,

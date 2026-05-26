@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const rtClosedComponentsRequestSchema = new mongoose.Schema(
   {
     requestedDate: { type: Date, index: true },
+    requested: { type: String, trim: true, default: '' },
     division: { type: String, trim: true, index: true },
     model: { type: String, trim: true, default: '' },
     description: { type: String, trim: true },

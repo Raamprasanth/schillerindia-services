@@ -92,6 +92,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .btn-xs.edit-btn:hover{background:rgba(0,104,181,0.15);border-color:var(--blue);}
 .btn-xs.fulfill-btn{color:var(--rep);border-color:rgba(5,150,105,0.3);background:var(--green-bg);}
 .btn-xs.fulfill-btn:hover{background:rgba(5,150,105,0.15);border-color:var(--rep);}
+.btn-xs.fulfill-btn:disabled{opacity:0.45;cursor:not-allowed;background:var(--surface2);color:var(--muted);border-color:var(--border);}
+.btn-xs.fulfill-btn:disabled:hover{background:var(--surface2);color:var(--muted);border-color:var(--border);}
 .btn:disabled{opacity:0.5;cursor:not-allowed;}
 .table-card{background:var(--card);border:1px solid var(--border);border-radius:13px;overflow:hidden;box-shadow:var(--shadow);}
 .table-top{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--surface3);}
@@ -104,7 +106,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .srch-wrap input:focus{border-color:var(--rep);}
 .srch-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);}
 .table-wrap{overflow-x:auto;}
-table.comr-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:1000px;}
+table.comr-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:1120px;}
 table.comr-table thead th{padding:10px 12px;font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;text-align:left;border-bottom:2px solid var(--border);background:var(--surface3);white-space:nowrap;cursor:pointer;user-select:none;}
 table.comr-table thead th:hover{color:var(--rep);}
 table.comr-table tbody td{padding:10px 12px;border-bottom:1px solid rgba(0,60,120,0.05);vertical-align:middle;color:var(--text);}
@@ -285,6 +287,7 @@ table.comr-table tbody tr:last-child td{border-bottom:none;}
         <table class="comr-table">
           <thead><tr>
             <th onclick="sortBy('requestedDate')">Req Date &#8597;</th>
+            <th onclick="sortBy('requested')">Requested &#8597;</th>
             <th onclick="sortBy('division')">Division &#8597;</th>
             <th onclick="sortBy('model')">Model &#8597;</th>
             <th onclick="sortBy('description')">Description &#8597;</th>
@@ -325,10 +328,11 @@ table.comr-table tbody tr:last-child td{border-bottom:none;}
       <div class="modal-body">
         <div class="fg-4">
           <div class="ff"><label>Requested Date <span class="req">*</span></label><input type="date" id="f-requestedDate"/></div>
+          <div class="ff"><label>Requested <span class="req">*</span></label><select id="f-requested"><option value="">Select Name</option><option value="Vassougui">Vassougui</option><option value="Gajenthiran">Gajenthiran</option><option value="Pradap">Pradap</option><option value="thilipan">thilipan</option></select></div>
           <div class="ff"><label>Division <span class="req">*</span></label><select id="fm-division"><option value="">Select Division</option></select></div>
           <div class="ff"><label>Model</label><input type="text" id="f-model" placeholder="Model name"/></div>
-          <div class="ff"><label>Description <span class="req">*</span></label><input type="text" id="f-description" placeholder="Component description"/></div>
 
+          <div class="ff"><label>Description <span class="req">*</span></label><input type="text" id="f-description" placeholder="Component description"/></div>
           <div class="ff"><label>MPN/Part no</label><input type="text" id="f-mpnno" placeholder="MPN/Part no"/></div>
           <div class="ff"><label>Required Qty <span class="req">*</span></label><input type="number" id="f-requiredQty" placeholder="1" min="1"/></div>
           <div class="ff"><label>Price per Qty</label><input type="number" id="f-price" placeholder="0.00" min="0" step="0.01"/></div>
@@ -482,6 +486,26 @@ function statusClass(s){
   return 'sp-pending';
 }
 
+function hasValue(v) {
+  return v !== undefined && v !== null && String(v).trim() !== '';
+}
+
+function isReadyToFulfill(d) {
+  return [
+    d.requestedDate,
+    d.requested || d.requestedBy,
+    d.division,
+    d.model,
+    d.description,
+    d.partNumber || d.mpnNumber,
+    d.requiredQty,
+    d.price,
+    d.piRaisedDate,
+    d.piApprovedDate,
+    d.componentsReceivedDate
+  ].every(hasValue);
+}
+
 function renderTable() {
   const perPage = parseInt(document.getElementById('per-page').value) || 10;
   const total   = filtered.length;
@@ -499,9 +523,10 @@ function renderTable() {
   } else {
     tbody.innerHTML = slice.map(d => {
       const id = d._id || d.id;
-      const canFulfill = d.status === 'Pending';
+      const canFulfill = d.status === 'Pending' && isReadyToFulfill(d);
       return `<tr>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.requestedDate)}</td>
+        <td style="font-weight:700;">${esc(d.requested || d.requestedBy || '-')}</td>
         <td><span style="font-size:10px;background:rgba(91,33,182,0.08);color:#5b21b6;border:1px solid rgba(91,33,182,0.18);border-radius:8px;padding:2px 8px;font-weight:700;">${esc(d.division||'-')}</span></td>
         <td style="font-size:11.5px;">${esc(d.model||'-')}</td>
         <td style="font-weight:600;">${esc(d.description||'-')}</td>
@@ -515,7 +540,7 @@ function renderTable() {
         <td>
           <div style="display:flex;gap:5px;">
             <button class="btn-xs edit-btn" onclick="openEdit('${id}')">Edit</button>
-            ${canFulfill ? `<button class="btn-xs fulfill-btn" onclick="fulfillRecord('${id}')">Fulfill</button>` : ''}
+            ${d.status === 'Pending' ? `<button class="btn-xs fulfill-btn" ${canFulfill ? '' : 'disabled title="Fill all boxes in Edit before fulfil"'} onclick="${canFulfill ? `fulfillRecord('${id}')` : 'return false'}">Fulfill</button>` : ''}
           </div>
         </td>
       </tr>`;
@@ -546,6 +571,7 @@ function openEdit(id) {
   document.getElementById('save-btn').innerHTML = '&#128190; Update Request';
   const isoDate = v => v ? String(v).split('T')[0] : '';
   document.getElementById('f-requestedDate').value = isoDate(d.requestedDate);
+  document.getElementById('f-requested').value = d.requested || d.requestedBy || '';
   document.getElementById('fm-division').value = d.division || '';
   document.getElementById('f-model').value = d.model || '';
   document.getElementById('f-description').value = d.description || '';
@@ -563,13 +589,14 @@ function closeModal() { document.getElementById('modal-form').classList.remove('
 
 function clearForm() {
   ['f-requestedDate','fm-division','f-model','f-description','f-mpnno','f-requiredQty',
-   'f-price','f-piRaisedDate','f-piApprovedDate','f-componentsReceivedDate','f-remarks'].forEach(id => {
+   'f-requested','f-price','f-piRaisedDate','f-piApprovedDate','f-componentsReceivedDate','f-remarks'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
 }
 
 async function saveRecord() {
   const requestedDate          = document.getElementById('f-requestedDate').value;
+  const requested              = document.getElementById('f-requested').value.trim();
   const division               = document.getElementById('fm-division').value.trim();
   const model                  = document.getElementById('f-model').value.trim();
   const description            = document.getElementById('f-description').value.trim();
@@ -581,10 +608,10 @@ async function saveRecord() {
   const componentsReceivedDate = document.getElementById('f-componentsReceivedDate').value;
   const remarks                = document.getElementById('f-remarks').value.trim();
 
-  if (!requestedDate || !division || !description || !requiredQty) {
+  if (!requestedDate || !requested || !division || !description || !requiredQty) {
     showToast('Please fill all required fields.', 'err'); return;
   }
-  const body = { requestedDate, division, model, description, partNumber, requiredQty, price,
+  const body = { requestedDate, requested, division, model, description, partNumber, requiredQty, price,
     piRaisedDate: piRaisedDate || null, piApprovedDate: piApprovedDate || null,
     componentsReceivedDate: componentsReceivedDate || null, remarks };
   const btn = document.getElementById('save-btn');
