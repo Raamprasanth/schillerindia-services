@@ -288,7 +288,7 @@ table.bir-table tbody tr:last-child td{border-bottom:none;}
             <div class="ff"><label>FQC Remarks</label><input type="text" id="upd-fqc-remarks-disp" disabled/></div>
             <div class="ff">
               <label>Status</label>
-              <select id="upd-final-status">
+              <select id="upd-final-status" required>
                 <option value="Pending">Pending</option>
                 <option value="In Progress">In Progress</option>
                 <option value="Under Review">Under Review</option>
@@ -304,25 +304,25 @@ table.bir-table tbody tr:last-child td{border-bottom:none;}
         <div class="ebir-section-unlocked" id="service-section">
           <div class="ebir-section-title"><span class="ebir-dot" style="background:var(--green)"></span> Service Section</div>
           <div class="fg-4">
-            <div class="ff"><label>SC Engineer</label><input type="text" id="upd-sc-engineer" placeholder="SC engineer name"/></div>
-            <div class="ff"><label>SC Inward Date</label><input type="date" id="upd-sc-inward"/></div>
-            <div class="ff"><label>SC Observation</label><input type="text" id="upd-sc-obs" placeholder="Observation notes..."/></div>
-            <div class="ff"><label>SC Action Plan</label><input type="text" id="upd-sc-action" placeholder="Action plan details..."/></div>
-            <div class="ff"><label>Tentative Date</label><input type="date" id="upd-tent-date"/></div>
-            <div class="ff"><label>Ship Date to FQC</label><input type="date" id="upd-ship-fqc"/></div>
-            <div class="ff"><label>Defective Unit Received Date</label><input type="date" id="upd-def-recv"/></div>
-            <div class="ff"><label>Replacement Ship Date</label><input type="date" id="upd-rep-ship"/></div>
-            <div class="ff"><label>Hardware Changes</label><input type="text" id="upd-hw-changes" placeholder="Hardware change status"/></div>
-            <div class="ff"><label>Hardware Change Remarks</label><input type="text" id="upd-hw-remarks" placeholder="Hardware change details"/></div>
+            <div class="ff"><label>SC Engineer</label><input type="text" id="upd-sc-engineer" placeholder="SC engineer name" required/></div>
+            <div class="ff"><label>SC Inward Date</label><input type="date" id="upd-sc-inward" required/></div>
+            <div class="ff"><label>SC Observation</label><input type="text" id="upd-sc-obs" placeholder="Observation notes..." required/></div>
+            <div class="ff"><label>SC Action Plan</label><input type="text" id="upd-sc-action" placeholder="Action plan details..." required/></div>
+            <div class="ff"><label>Tentative Date</label><input type="date" id="upd-tent-date" required/></div>
+            <div class="ff"><label>Ship Date to FQC</label><input type="date" id="upd-ship-fqc" required/></div>
+            <div class="ff"><label>Defective Unit Received Date</label><input type="date" id="upd-def-recv" required/></div>
+            <div class="ff"><label>Replacement Ship Date</label><input type="date" id="upd-rep-ship" required/></div>
+            <div class="ff"><label>Hardware Changes</label><input type="text" id="upd-hw-changes" placeholder="Hardware change status" required/></div>
+            <div class="ff"><label>Hardware Change Remarks</label><input type="text" id="upd-hw-remarks" placeholder="Hardware change details" required/></div>
             <div class="ff"><label>Service Manual Update</label>
-              <select id="upd-service-manual">
+              <select id="upd-service-manual" required>
                 <option value="">Select</option><option>Yes</option><option>No</option><option>NA</option>
               </select>
             </div>
-            <div class="ff"><label>Technical Remarks</label><input type="text" id="upd-tech-remarks" placeholder="Technical notes"/></div>
-            <div class="ff"><label>Software Change Remarks</label><input type="text" id="upd-sw-remarks" placeholder="Software change details"/></div>
-            <div class="ff"><label>SC Final Remarks</label><input type="text" id="upd-fqc-remarks" placeholder="SC final remarks..."/></div>
-            <div class="ff"><label>FQC Observation</label><input type="text" id="upd-fqc-obs" placeholder="FQC observation notes..."/></div>
+            <div class="ff"><label>Technical Remarks</label><input type="text" id="upd-tech-remarks" placeholder="Technical notes" required/></div>
+            <div class="ff"><label>Software Change Remarks</label><input type="text" id="upd-sw-remarks" placeholder="Software change details" required/></div>
+            <div class="ff"><label>SC Final Remarks</label><input type="text" id="upd-fqc-remarks" placeholder="SC final remarks..." required/></div>
+            <div class="ff"><label>FQC Observation</label><input type="text" id="upd-fqc-obs" placeholder="FQC observation notes..." required/></div>
           </div>
         </div>
 
@@ -796,6 +796,40 @@ async function submitUpdate(){
   const id = document.getElementById('upd-id').value;
   let finalStatus = document.getElementById('upd-final-status').value;
   const msg = document.getElementById('upd-msg');
+  const requiredFields = [
+    ['upd-final-status','Status'],
+    ['upd-sc-engineer','SC Engineer'],
+    ['upd-sc-inward','SC Inward Date'],
+    ['upd-sc-obs','SC Observation'],
+    ['upd-sc-action','SC Action Plan'],
+    ['upd-tent-date','Tentative Date'],
+    ['upd-ship-fqc','Ship Date to FQC'],
+    ['upd-def-recv','Defective Unit Received Date'],
+    ['upd-rep-ship','Replacement Ship Date'],
+    ['upd-hw-changes','Hardware Changes'],
+    ['upd-hw-remarks','Hardware Change Remarks'],
+    ['upd-service-manual','Service Manual Update'],
+    ['upd-tech-remarks','Technical Remarks'],
+    ['upd-sw-remarks','Software Change Remarks'],
+    ['upd-fqc-remarks','SC Final Remarks'],
+    ['upd-fqc-obs','FQC Observation'],
+  ];
+  const missing = [];
+  requiredFields.forEach(([fieldId, label]) => {
+    const el = document.getElementById(fieldId);
+    if(!el) return;
+    const empty = !String(el.value || '').trim();
+    el.classList.toggle('err', empty);
+    if(empty) missing.push(label);
+  });
+  if(missing.length){
+    msg.textContent = 'Please fill all update fields before saving.';
+    msg.className = 'form-msg err';
+    showToast('Please fill all update fields.','err');
+    const firstMissing = document.querySelector('#update-overlay .err');
+    if(firstMissing) firstMissing.focus();
+    return;
+  }
 
   const editPayload = {
     scInwardDate:        document.getElementById('upd-sc-inward').value,
@@ -929,5 +963,3 @@ function toggleSF(){var btn=document.getElementById('sf-toggle');var panel=docum
 function toggleAR(){var btn=document.getElementById('ar-toggle');var panel=document.getElementById('ar-children');if(!btn||!panel)return;btn.classList.toggle('open');panel.classList.toggle('open');}</script>
 </body>
 </html>
-
-
