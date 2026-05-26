@@ -1623,7 +1623,7 @@ function openRepairModal(id){
   const current=allRecords.find(x=>(x._id||x.id)===id);
   if(!current) return;
   if(current.rtobCompleted){
-    showToast('Repair completed.','info');
+    openRecheckModal(id);
     return;
   }
   if(current.rtobSent){
@@ -1734,6 +1734,58 @@ configureObTableColumns();
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 </script>
 <script src="tab-fix.js"></script>
+
+<!-- RECHECK MODAL -->
+<div class="update-panel" id="recheck-modal" style="z-index: 9999; display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center;">
+  <div style="background: var(--surface); padding: 24px; border-radius: 12px; width: 340px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+    <h3 style="margin-top:0; font-size: 16px; color: var(--text);">Re-check Repair Status</h3>
+    <p style="font-size: 13px; color: var(--soft); margin-bottom: 20px;">This item is marked as Repair Completed (RC). Please verify its status.</p>
+    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button class="btn btn-outline" style="flex:1;" onclick="closeRecheckModal()">WF (Working Fine)</button>
+      <button class="btn btn-danger" style="flex:1;" id="nw-btn">NW (Not Working)</button>
+    </div>
+  </div>
+</div>
+<script>
+let currentRecheckId = null;
+function openRecheckModal(id) {
+  currentRecheckId = id;
+  const modal = document.getElementById('recheck-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+}
+function closeRecheckModal() {
+  const modal = document.getElementById('recheck-modal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+  currentRecheckId = null;
+}
+document.getElementById('nw-btn')?.addEventListener('click', async () => {
+  if (!currentRecheckId) return;
+  const btn = document.getElementById('nw-btn');
+  btn.disabled = true;
+  btn.textContent = 'Processing...';
+  try {
+    const res = await fetch(`${API || ''}/api/revert-repair/${currentRecheckId}`, {
+      method: 'POST',
+      headers: typeof authHeaders === 'function' ? authHeaders() : { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (sessionStorage.getItem('schiller_token')||'') }
+    });
+    if (!res.ok) throw new Error('Failed to revert repair');
+    if (typeof showToast === 'function') showToast('Reverted to Repair Started (RS).', 'ok');
+    closeRecheckModal();
+    if (typeof loadData === 'function') loadData();
+  } catch (err) {
+    console.error(err);
+    if (typeof showToast === 'function') showToast('Error: ' + err.message, 'err');
+    else alert('Error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'NW (Not Working)';
+  }
+});
+</script>
 </body>
 </html>
 
