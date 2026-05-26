@@ -127,25 +127,71 @@ router.get('/recipients', async (req, res) => {
   try {
     if (!canUseMessages(req.user)) return res.status(403).json({ success: false, message: 'Not allowed' });
     const division = String(req.query.division || '').trim();
+    const team = String(req.query.team || '').trim();
     const currentId = userKey(req.user);
-    const userFilter = { role: { $in: ['employee', 'service_coordinator'] }, isActive: { $ne: false } };
+
+    let users = [];
+    let employees = [];
+    let repairs = [];
+
+    const userFilter = { isActive: { $ne: false } };
     const employeeFilter = { isActive: { $ne: false } };
     const repairFilter = { isActive: { $ne: false } };
+
     if (division) {
       userFilter.$or = [{ division }, { divisions: division }];
       employeeFilter.$or = [{ division }, { divisions: division }];
       repairFilter.$or = [{ division }, { divisions: division }];
     }
-    const [users, employees, repairs] = await Promise.all([
-      User.find(userFilter).select('name email division divisions role').sort({ name: 1 }).lean(),
-      Employee.find(employeeFilter).select('name email division divisions role employeeId designation').sort({ name: 1 }).lean(),
-      RepairTeam.find(repairFilter).select('name email division divisions role designation').sort({ name: 1 }).lean(),
-    ]);
+
+    let queryUsers = false;
+    let queryEmployees = false;
+    let queryRepairs = false;
+
+    if (!team) {
+      // Default / fallback: query everything
+      queryUsers = true;
+      queryEmployees = true;
+      queryRepairs = true;
+      userFilter.role = { $in: ['employee', 'service_coordinator', 'pt'] };
+    } else if (team === 'service_team') {
+      queryUsers = true;
+      queryEmployees = true;
+      userFilter.role = 'employee';
+    } else if (team === 'repair_team') {
+      queryRepairs = true;
+    } else if (team === 'product_team') {
+      queryUsers = true;
+      userFilter.role = 'pt';
+    } else if (team === 'service_coordinator') {
+      queryUsers = true;
+      userFilter.role = 'service_coordinator';
+    }
+
+    const promises = [];
+    if (queryUsers) {
+      promises.push(User.find(userFilter).select('name email division divisions role').sort({ name: 1 }).lean().then(data => ({ type: 'User', data })));
+    }
+    if (queryEmployees) {
+      promises.push(Employee.find(employeeFilter).select('name email division divisions role employeeId designation').sort({ name: 1 }).lean().then(data => ({ type: 'Employee', data })));
+    }
+    if (queryRepairs) {
+      promises.push(RepairTeam.find(repairFilter).select('name email division divisions role designation').sort({ name: 1 }).lean().then(data => ({ type: 'RepairTeam', data })));
+    }
+
+    const results = await Promise.all(promises);
+    results.forEach(r => {
+      if (r.type === 'User') users = r.data;
+      else if (r.type === 'Employee') employees = r.data;
+      else if (r.type === 'RepairTeam') repairs = r.data;
+    });
+
     const list = [
       ...users.map(u => buildRecipient(u, 'User')),
       ...employees.map(e => buildRecipient(e, 'Employee')),
       ...repairs.map(r => buildRecipient(r, 'RepairTeam')),
     ].filter(r => String(r.id) !== currentId);
+
     res.json({ success: true, data: list });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Failed to load recipients', error: err.message });
