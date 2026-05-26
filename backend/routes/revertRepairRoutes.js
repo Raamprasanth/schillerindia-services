@@ -20,14 +20,54 @@ router.post('/:id', async (req, res) => {
 
     let service = await Service.findById(serviceId);
     let isEstimation = false;
+    let empfrnDoc = null;
 
     if (!service) {
       service = await EstimationPending.findById(serviceId);
-      isEstimation = true;
+      if (service) {
+        isEstimation = true;
+      }
+    }
+
+    if (!service) {
+      // Check if it's an EmpFRN ID
+      empfrnDoc = await EmpFRN.findById(serviceId);
+      if (empfrnDoc) {
+        if (empfrnDoc.serviceId) {
+          service = await Service.findById(empfrnDoc.serviceId);
+        } else {
+          // Fallback search by scRefNo/defGirNo
+          const scRefNo = empfrnDoc.scRno || empfrnDoc.frnNo;
+          const defGirNo = empfrnDoc.defGir;
+          const escapeRegex = (string) => string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+          let serviceFilter = { $or: [] };
+          const cleanScRef = scRefNo && typeof scRefNo === 'string' ? scRefNo.trim() : '';
+          if (cleanScRef && cleanScRef !== '-') {
+            const scRegex = { $regex: new RegExp('^' + escapeRegex(cleanScRef) + '$', 'i') };
+            serviceFilter.$or.push({ scReNo: scRegex });
+            serviceFilter.$or.push({ scRno: scRegex });
+            serviceFilter.$or.push({ scRefNo: scRegex });
+          }
+          const cleanGir = defGirNo && typeof defGirNo === 'string' ? defGirNo.trim() : '';
+          if (cleanGir && cleanGir !== '-') {
+            const girRegex = { $regex: new RegExp('^' + escapeRegex(cleanGir) + '$', 'i') };
+            serviceFilter.$or.push({ defGir: girRegex });
+            serviceFilter.$or.push({ defGirNo: girRegex });
+          }
+          if (serviceFilter.$or.length > 0) {
+            service = await Service.findOne(serviceFilter);
+          }
+        }
+      }
     }
 
     if (!service) {
       return res.status(404).json({ success: false, message: 'Service/Estimation record not found' });
+    }
+
+    // Find the associated EmpFRN record if we haven't already and this is a Service
+    if (!empfrnDoc && !isEstimation) {
+      empfrnDoc = await EmpFRN.findOne({ serviceId: service._id });
     }
 
     // 1. Delete corresponding RTCRL record
@@ -74,6 +114,11 @@ router.post('/:id', async (req, res) => {
     service.finalRemarks = (service.finalRemarks ? service.finalRemarks + ' | ' : '') + remarkParts.join(' | ');
     await service.save({ validateBeforeSave: false });
 
+    if (empfrnDoc) {
+      empfrnDoc.rtfrnCompleted = false;
+      await empfrnDoc.save({ validateBeforeSave: false });
+    }
+
     // 3. Re-create the RTUR/RTFRN/RTOB record with all fields restored from RTCRL
     const ModelToRecreate = 
       deletedSourceCollection === 'rtob' ? RTOB :
@@ -94,11 +139,11 @@ router.post('/:id', async (req, res) => {
     if (problemObserved) newDocRemarks += ' | Problem Observed: ' + problemObserved;
 
     // Find matching EmpFRN if category is PFRN/rtfrn
-    let sourceEmpFrnId = null;
-    if (deletedSourceCollection === 'rtfrn') {
-      const empfrnDoc = await EmpFRN.findOne({ serviceId: service._id }).lean();
-      if (empfrnDoc) {
-        sourceEmpFrnId = empfrnDoc._id;
+    let sourceEmpFrnId = empfrnDoc ? empfrnDoc._id : null;
+    if (!sourceEmpFrnId && deletedSourceCollection === 'rtfrn') {
+      const matchedEmpFrn = await EmpFRN.findOne({ serviceId: service._id }).lean();
+      if (matchedEmpFrn) {
+        sourceEmpFrnId = matchedEmpFrn._id;
       }
     }
 
@@ -126,9 +171,9 @@ router.post('/:id', async (req, res) => {
       fieldRemarks:     (crlDoc && crlDoc.fieldRemarks)      || service.fieldRemarks || '',
       submittedBy:      req.user?.name || '',
       submittedAt:      new Date(),
-      sourceServiceId:  serviceId,
+      sourceServiceId:  service._id,
       sourceEmpFrnId:   sourceEmpFrnId,
-      sourceId:         serviceId,
+      sourceId:         service._id,
       sourceCollection: isEstimation ? 'estimation' : 'service',
     };
 
@@ -211,8 +256,17 @@ router.post('/crl/:id', async (req, res) => {
     service.finalRemarks = (service.finalRemarks ? service.finalRemarks + ' | ' : '') + remarkParts.join(' | ');
     await service.save({ validateBeforeSave: false });
 
-    // 3. Re-create the RTUR/RTFRN/RTOB record with all fields restored from RTCRL
+    // Also clear rtfrnCompleted on the associated EmpFRN if category is rtfrn/PFRN
     const deletedSourceCollection = crlDoc.sourceCollection || '';
+    if (deletedSourceCollection === 'rtfrn') {
+      const empfrnDoc = await EmpFRN.findOne({ serviceId: service._id });
+      if (empfrnDoc) {
+        empfrnDoc.rtfrnCompleted = false;
+        await empfrnDoc.save({ validateBeforeSave: false });
+      }
+    }
+
+    // 3. Re-create the RTUR/RTFRN/RTOB record with all fields restored from RTCRL
     const ModelToRecreate = 
       deletedSourceCollection === 'rtob' ? RTOB :
       deletedSourceCollection === 'rtfrn' ? RTFRN : RTUR;
