@@ -228,6 +228,37 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
 @media(max-width:1100px){.stats-grid{grid-template-columns:1fr 1fr;}.grid-2,.grid-3{grid-template-columns:1fr;}}
 
+  /* -- MESSAGING -- */
+  .msg-workspace{display:none;grid-template-columns:310px 1fr;gap:16px;min-height:calc(100vh - 130px);}
+  .msg-workspace.open{display:grid;}
+  .msg-panel{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);}
+  .msg-head{padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface3);display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .msg-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);}
+  .msg-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+  .msg-compose{padding:14px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--border);}
+  .msg-field{display:flex;flex-direction:column;gap:5px;}
+  .msg-field label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);}
+  .msg-field select,.msg-field textarea{width:100%;border:1.5px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;padding:9px 11px;outline:none;}
+  .msg-field textarea{min-height:72px;resize:vertical;}
+  .msg-thread-list{max-height:calc(100vh - 465px);overflow:auto;}
+  .msg-thread{padding:12px 14px;border-bottom:1px solid rgba(0,60,120,0.06);cursor:pointer;transition:background 0.15s;}
+  .msg-thread:hover,.msg-thread.active{background:var(--accent3);}
+  .msg-thread-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .msg-thread-name{font-size:12.5px;font-weight:700;color:var(--text);}
+  .msg-thread-time{font-size:10px;color:var(--muted);white-space:nowrap;}
+  .msg-thread-last{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px;}
+  .msg-unread{background:var(--red);color:#fff;border-radius:999px;padding:1px 6px;font-size:9px;font-weight:800;margin-left:6px;}
+  .msg-chat{display:flex;flex-direction:column;min-height:calc(100vh - 130px);}
+  .msg-chat-body{flex:1;padding:18px;overflow:auto;background:linear-gradient(180deg,#f7fbff,#eef6fb);}
+  .msg-empty{text-align:center;color:var(--muted);font-size:12.5px;padding:40px 16px;}
+  .msg-bubble-row{display:flex;margin-bottom:10px;}
+  .msg-bubble-row.mine{justify-content:flex-end;}
+  .msg-bubble{max-width:70%;padding:9px 12px;border-radius:14px;background:#fff;border:1px solid var(--border);box-shadow:0 1px 5px rgba(0,60,120,0.06);}
+  .msg-bubble-row.mine .msg-bubble{background:#dcf8c6;border-color:#bde7a8;}
+  .msg-meta{font-size:9.5px;color:var(--muted);margin-bottom:3px;font-weight:700;}
+  .msg-text{font-size:13px;color:var(--text);line-height:1.45;white-space:pre-wrap;word-break:break-word;}
+  .msg-chat-foot{display:flex;gap:10px;padding:12px;border-top:1px solid var(--border);background:var(--surface);}
+  .msg-chat-foot textarea{flex:1;min-height:42px;max-height:110px;resize:vertical;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;outline:none;}
     </style>
   <link rel="stylesheet" href="global-typography.css">
   <link rel="stylesheet" href="employee-theme.css">
@@ -243,7 +274,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
 <div class="toast-wrap" id="toast-wrap"></div>
 
-<!-- ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â SIDEBAR ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â -->
+<!-- ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â  SIDEBAR ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â  -->
 <aside class="sidebar">
   <div class="sidebar-header">
     <div class="logo-wrap">
@@ -254,6 +285,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   <nav class="sidebar-nav">
     <div class="nav-sec">My Dashboard</div>
     <a class="nav-item active" href="pt-dashboard.html"><span class="ico">&#128202;</span> Dashboard</a>
+    <a class="nav-item" id="pt-msg-nav" href="#messages" onclick="showScMessages(event)"><span class="ico">&#128172;</span> Messaging <span class="nav-badge" id="sc-msg-badge" style="display:none;">0</span></a>
     <div class="nav-sec">Service Records</div>
     <a class="nav-item" href="ptbir.html"><span class="ico">&#128203;</span> BIR LIST</a>
     <a class="nav-item" href="ptcbir.html"><span class="ico">&#128193;</span> Closed BIR</a>
@@ -276,7 +308,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   </div>
 </aside>
 
-<!-- ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â MAIN ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â -->
+<!-- ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â  MAIN ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â  -->
 <div class="main">
   <!-- TOPBAR -->
   <div class="topbar">
@@ -302,6 +334,56 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
   <!-- CONTENT -->
   <div class="content">
+
+    <!-- MESSAGING WORKSPACE -->
+    <div class="msg-workspace" id="sc-msg-workspace">
+      <div class="msg-panel">
+        <div class="msg-head">
+          <div>
+            <div class="msg-title">Service Messages</div>
+            <div class="msg-sub">Select a division and employee</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="loadScMessageThreads()">Refresh</button>
+        </div>
+        <div class="msg-compose">
+          <div class="msg-field">
+            <label>Division</label>
+            <select id="sc-msg-division" onchange="loadScMessageEmployees()">
+              <option value="">All divisions</option>
+            </select>
+          </div>
+          <div class="msg-field">
+            <label>Employee</label>
+            <select id="sc-msg-employee">
+              <option value="">Select employee</option>
+            </select>
+          </div>
+          <div class="msg-field">
+            <label>Message</label>
+            <textarea id="sc-msg-new" placeholder="Type message..."></textarea>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="sendScNewMessage()">Send Message</button>
+        </div>
+        <div class="msg-thread-list" id="sc-msg-thread-list">
+          <div class="msg-empty">No conversations loaded.</div>
+        </div>
+      </div>
+      <div class="msg-panel msg-chat">
+        <div class="msg-head">
+          <div>
+            <div class="msg-title" id="sc-chat-title">Select a conversation</div>
+            <div class="msg-sub" id="sc-chat-sub">Messages with service team</div>
+          </div>
+        </div>
+        <div class="msg-chat-body" id="sc-chat-body">
+          <div class="msg-empty">Choose an employee thread or send a new message.</div>
+        </div>
+        <div class="msg-chat-foot">
+          <textarea id="sc-msg-reply" placeholder="Type reply..." disabled></textarea>
+          <button class="btn btn-primary" id="sc-msg-reply-btn" onclick="sendScReply()" disabled>Send</button>
+        </div>
+      </div>
+    </div>
 
     <!-- HERO -->
     <div class="hero anim anim-1">
@@ -907,6 +989,202 @@ function updateWeeklyChart(){
       }
     });
   }
+}
+
+// -- SC MESSAGES PORT --
+let scMsgThreads = [];
+let scMsgActiveId = '';
+let scMsgUnreadLast = 0;
+
+function initScMessages(){
+  loadScMessageDivisions();
+  loadScMessageEmployees();
+  if (location.hash === '#messages') showScMessages();
+  setInterval(loadScMessageThreads, 30000);
+  window.addEventListener('hashchange', () => {
+    if (location.hash === '#messages') showScMessages();
+    else showScDashboard();
+  });
+}
+
+function showScMessages(event){
+  if (event) event.preventDefault();
+  location.hash = 'messages';
+  const workspace = document.getElementById('sc-msg-workspace');
+  document.querySelectorAll('.content > *').forEach(el => {
+    if (el !== workspace) el.style.display = 'none';
+  });
+  if (workspace) workspace.classList.add('open');
+  document.querySelectorAll('.sidebar .nav-item').forEach(a => a.classList.remove('active'));
+  (document.getElementById('pt-msg-nav')||{}).classList.add('active');
+  loadScMessageThreads();
+}
+
+function showScDashboard(){
+  const workspace = document.getElementById('sc-msg-workspace');
+  if (workspace) workspace.classList.remove('open');
+  document.querySelectorAll('.content > *').forEach(el => {
+    if (el !== workspace) el.style.display = '';
+  });
+  document.querySelectorAll('.sidebar .nav-item').forEach(a => a.classList.remove('active'));
+  const dash = document.querySelector('.sidebar .nav-item[href="pt-dashboard.html"]');
+  if (dash) dash.classList.add('active');
+}
+
+async function loadScMessageDivisions(){
+  const sel = document.getElementById('sc-msg-division');
+  if (!sel) return;
+  try{
+    const res = await fetch('/api/divisions', { headers: authHeaders() });
+    const data = await res.json().catch(()=>[]);
+    const list = Array.isArray(data) ? data : (data.data || []);
+    const names = [...new Set(list.map(d => d.name || d.division || d.divisionName || d).filter(Boolean).map(String))].sort();
+    sel.innerHTML = '<option value="">All divisions</option>' + names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
+  }catch(_){}
+}
+
+async function loadScMessageEmployees(){
+  const division = document.getElementById('sc-msg-division')?.value || '';
+  const empSel = document.getElementById('sc-msg-employee');
+  if (!empSel) return;
+  empSel.innerHTML = '<option value="">Loading...</option>';
+  try{
+    const res = await fetch('/api/service-messages/recipients?division=' + encodeURIComponent(division), { headers: authHeaders() });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    const list = json.data || [];
+    empSel.innerHTML = '<option value="">Select recipient</option>' + list.map(emp => {
+      const value = `${emp.source}:${emp.id}`;
+      const label = `${emp.name}${emp.division ? ' - ' + emp.division : ''}`;
+      return `<option value="${esc(value)}">${esc(label)}</option>`;
+    }).join('');
+  }catch(e){
+    empSel.innerHTML = '<option value="">Could not load recipients</option>';
+    showToast('Recipient load failed: ' + e.message, 'err');
+  }
+}
+
+async function loadScMessageThreads(){
+  try{
+    const res = await fetch('/api/service-messages/threads', { headers: authHeaders() });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    scMsgThreads = json.data || [];
+    renderScMessageThreads();
+    updateScMessageNotification();
+  }catch(e){
+    const list = document.getElementById('sc-msg-thread-list');
+    if (list) list.innerHTML = '<div class="msg-empty">Could not load conversations.</div>';
+  }
+}
+
+function updateScMessageNotification(){
+  const count = scMsgThreads.reduce((sum, t) => sum + Number(t.unreadCount || 0), 0);
+  const badge = document.getElementById('sc-msg-badge');
+  if (badge) {
+    badge.textContent = count;
+    badge.style.display = count ? 'inline-flex' : 'none';
+  }
+  if (count > scMsgUnreadLast && location.hash !== '#messages') {
+    showToast('New service message received.', 'info');
+  }
+  scMsgUnreadLast = count;
+}
+
+function renderScMessageThreads(){
+  const list = document.getElementById('sc-msg-thread-list');
+  if (!list) return;
+  if (!scMsgThreads.length) {
+    list.innerHTML = '<div class="msg-empty">No conversations yet.</div>';
+    return;
+  }
+  list.innerHTML = scMsgThreads.map(t => `
+    <div class="msg-thread ${t._id === scMsgActiveId ? 'active' : ''}" onclick="openScThread('${t._id}')">
+      <div class="msg-thread-top">
+        <div class="msg-thread-name">${esc(t.peerName || t.employeeName || 'Employee')}${t.unreadCount ? `<span class="msg-unread">${t.unreadCount}</span>` : ''}</div>
+        <div class="msg-thread-time">${fmtMsgTime(t.lastMessageAt)}</div>
+      </div>
+      <div class="msg-thread-last">${esc(t.lastMessage || '')}</div>
+    </div>
+  `).join('');
+}
+
+async function openScThread(id){
+  scMsgActiveId = id;
+  renderScMessageThreads();
+  try{
+    const res = await fetch('/api/service-messages/threads/' + id, { headers: authHeaders() });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    renderScChat(json.data);
+    loadScMessageThreads();
+  }catch(e){ showToast('Conversation load failed: ' + e.message, 'err'); }
+}
+
+function renderScChat(thread){
+  const userStr = sessionStorage.getItem('schiller_user');
+  const u = userStr ? JSON.parse(userStr) : {};
+  const currentId = String(u._id || u.id || '');
+  
+  (document.getElementById('sc-chat-title')||{}).textContent = String(thread.coordinatorId) === currentId ? (thread.employeeName || 'Employee') : (thread.coordinatorName || 'Service Team');
+  (document.getElementById('sc-chat-sub')||{}).textContent = thread.division || thread.employeeEmail || 'Service team';
+  const body = document.getElementById('sc-chat-body');
+  body.innerHTML = (thread.messages || []).map(m => {
+    const mine = String(m.senderId) === currentId;
+    return `<div class="msg-bubble-row ${mine ? 'mine' : ''}">
+      <div class="msg-bubble">
+        <div class="msg-meta">${esc(m.senderName || '')} - ${fmtMsgTime(m.createdAt || m.timestamp)}</div>
+        <div class="msg-text">${esc(m.text || '')}</div>
+      </div>
+    </div>`;
+  }).join('') || '<div class="msg-empty">No messages yet.</div>';
+  body.scrollTop = body.scrollHeight;
+  document.getElementById('sc-msg-reply').disabled = false;
+  document.getElementById('sc-msg-reply-btn').disabled = false;
+}
+
+async function sendScNewMessage(){
+  const empVal = document.getElementById('sc-msg-employee')?.value || '';
+  const msgEl = document.getElementById('sc-msg-new');
+  const message = msgEl?.value.trim() || '';
+  if (!empVal || !message) return showToast('Select recipient and type message.', 'err');
+  const [employeeModel, employeeId] = empVal.split(':');
+  try{
+    const res = await fetch('/api/service-messages/threads', {
+      method:'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ employeeId, employeeModel, division: document.getElementById('sc-msg-division')?.value || '', message })
+    });
+    const json = await res.json().catch(()=>({}));
+    if (!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
+    msgEl.value = '';
+    await loadScMessageThreads();
+    showToast('Message sent.', 'ok');
+  }catch(e){ showToast('Send failed: ' + e.message, 'err'); }
+}
+
+async function sendScReply(){
+  const msgEl = document.getElementById('sc-msg-reply');
+  const message = msgEl?.value.trim() || '';
+  if (!scMsgActiveId || !message) return;
+  try{
+    const res = await fetch('/api/service-messages/threads/' + scMsgActiveId + '/messages', {
+      method:'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ message })
+    });
+    const json = await res.json().catch(()=>({}));
+    if (!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
+    msgEl.value = '';
+    loadScMessageThreads();
+    openScThread(scMsgActiveId);
+  }catch(e){ showToast('Reply failed: ' + e.message, 'err'); }
+}
+
+function fmtMsgTime(value){
+  if (!value) return '';
+  const d = new Date(value);
+  return isNaN(d) ? '' : d.toLocaleString('en-IN', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
 }
 </script>
 </body>
