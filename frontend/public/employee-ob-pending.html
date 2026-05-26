@@ -1871,7 +1871,16 @@ async function confirmNWRevert() {
 async function broadcastProblemToRepairTeam(d, problemText) {
   try {
     const hdr = typeof authHeaders === 'function' ? authHeaders() : { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (sessionStorage.getItem('schiller_token') || '') };
-    const division = (d.branch || d.reg || d.division || '').trim();
+    let division = '';
+    if (d) {
+      const rawDiv = d.branch || d.reg || d.division || d.divisionName || '';
+      if (typeof rawDiv === 'object' && rawDiv !== null) {
+        division = rawDiv.name || rawDiv.division || rawDiv.divisionName || '';
+      } else {
+        division = String(rawDiv);
+      }
+    }
+    division = division.trim();
     const params = new URLSearchParams({ team: 'repair_team' });
     if (division) params.append('division', division);
     const rRes = await fetch(`${API_BASE || ''}/api/service-messages/recipients?${params.toString()}`, { headers: hdr });
