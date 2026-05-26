@@ -162,30 +162,7 @@
   }
 
   function enableDatePickerTabFlow() {
-    let lastTabTime = 0;
-
-    document.addEventListener(
-      'keydown',
-      (event) => {
-        if (event.key === 'Tab') lastTabTime = Date.now();
-      },
-      true
-    );
-
-    document.addEventListener(
-      'focusin',
-      (event) => {
-        const target = event.target;
-        if (!(target instanceof HTMLInputElement)) return;
-        if (target.type !== 'date') return;
-        if (Date.now() - lastTabTime > 250) return;
-        if (typeof target.showPicker !== 'function') return;
-        try {
-          target.showPicker();
-        } catch (_err) {}
-      },
-      true
-    );
+    // Disabled to prevent forcing open the date picker during keyboard/tab focus.
   }
 
   const style = document.createElement('style');
