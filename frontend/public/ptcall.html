@@ -329,12 +329,12 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
           <label>Call Type <span class="req">*</span></label>
           <select id="m-calltype" required>
             <option value="">Select Type-</option>
-            <option value="Inbound">Inbound</option>
-            <option value="Outbound">Outbound</option>
-            <option value="Service">Service</option>
-            <option value="Complaint">Complaint</option>
-            <option value="Follow-Up">Follow-Up</option>
-            <option value="Enquiry">Enquiry</option>
+            <option value="Application">Application</option>
+            <option value="Software">Software</option>
+            <option value="Technical">Technical</option>
+            <option value="Demo">Demo</option>
+            <option value="CRM">CRM</option>
+            <option value="Training">Training</option>
           </select>
         </div>
         <div class="ff">
@@ -513,8 +513,8 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
         <label>Call Type</label>
         <select class="f-select" id="fl-calltype" onchange="applyFilters()">
           <option value="">All Types</option>
-          <option>Inbound</option><option>Outbound</option><option>Service</option>
-          <option>Complaint</option><option>Follow-Up</option><option>Enquiry</option>
+          <option>Application</option><option>Software</option><option>Technical</option>
+          <option>Demo</option><option>CRM</option><option>Training</option>
         </select>
         <label>Status</label>
         <select class="f-select" id="fl-status" onchange="applyFilters()">
@@ -883,7 +883,7 @@ function sortArr(){
 
 /* -- RENDER -- */
 function callTypeCls(t){
-  const m={Inbound:'ctp-inbound',Outbound:'ctp-outbound',Service:'ctp-service',Complaint:'ctp-complaint','Follow-Up':'ctp-followup',Enquiry:'ctp-enquiry'};
+  const m={Application:'ctp-inbound',Software:'ctp-outbound',Technical:'ctp-service',Demo:'ctp-complaint',CRM:'ctp-followup',Training:'ctp-enquiry'};
   return m[t]||'ctp-default';
 }
 function statusCls(s){

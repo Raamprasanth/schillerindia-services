@@ -12,7 +12,7 @@ const ptCallRegisterSchema = new mongoose.Schema(
     model:      { type: String, trim: true, default: '' },
     callType:   {
       type: String,
-      enum: ['Inbound', 'Outbound', 'Service', 'Complaint', 'Follow-Up', 'Enquiry', ''],
+      enum: ['Application', 'Software', 'Technical', 'Demo', 'CRM', 'Training', ''],
       default: '',
     },
     commType:   {
