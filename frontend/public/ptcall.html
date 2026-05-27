@@ -274,10 +274,6 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
     </div>
     <div class="modal-top-bar">
       <div class="info-group">
-        <div class="info-label">Division</div>
-        <div class="info-val" id="top-division">-</div>
-      </div>
-      <div class="info-group">
         <div class="info-label">SC Engineer</div>
         <div class="info-val" id="top-sceng">-</div>
       </div>
@@ -285,7 +281,6 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
     <div class="modal-body">
       <div class="form-msg" id="modal-msg"></div>
       <input type="hidden" id="edit-id"/>
-      <input type="hidden" id="m-division"/>
       <input type="hidden" id="m-sceng"/>
       <div class="form-grid" style="margin-bottom:14px;">
         <div class="ff">
@@ -308,6 +303,12 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
           <label>Engineer (Field) <span class="req">*</span></label>
           <select id="m-engineer" required>
             <option value="">Select Engineer-</option>
+          </select>
+        </div>
+        <div class="ff">
+          <label>Division <span class="req">*</span></label>
+          <select id="m-division" required onchange="onDivisionChange()">
+            <option value="">Select Division-</option>
           </select>
         </div>
         <div class="ff">
@@ -562,6 +563,7 @@ let CURRENT_USER = {};
 let BRANCH_OPTIONS = [];
 let REGION_OPTIONS = [];
 let MODEL_OPTIONS = [];
+let ALL_DIVISIONS = [];
 
 /* -- INIT -- */
 (function init(){
@@ -577,6 +579,7 @@ let MODEL_OPTIONS = [];
   document.getElementById('m-calldate').value = new Date().toISOString().split('T')[0];
   loadCurrentUser();
   loadBranchOptions();
+  loadAllDivisions();
   loadData();
 })();
 
@@ -597,9 +600,6 @@ async function loadCurrentUser(){
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const payload = await res.json();
     CURRENT_USER = payload?.data || {};
-    document.getElementById('m-division').value = CURRENT_USER.division || '';
-    (document.getElementById('top-division')||{}).textContent = CURRENT_USER.division || '-';
-    await loadDivisionModels(CURRENT_USER.division || '');
     if(CURRENT_USER.name){
       document.getElementById('m-sceng').value = CURRENT_USER.name;
       (document.getElementById('top-sceng')||{}).textContent = CURRENT_USER.name;
@@ -608,6 +608,44 @@ async function loadCurrentUser(){
     if(e.message === 'Unauthorized') return;
     CURRENT_USER = {};
   }
+}
+
+async function loadAllDivisions(){
+  try{
+    const res = await fetch(`${API}/api/divisions`, { headers: authHeaders() });
+    handleUnauth(res);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    ALL_DIVISIONS = await res.json();
+    if(!Array.isArray(ALL_DIVISIONS)) ALL_DIVISIONS = [];
+    renderDivisionOptions();
+  }catch(e){
+    if(e.message === 'Unauthorized') return;
+    ALL_DIVISIONS = [];
+    renderDivisionOptions();
+  }
+}
+
+function renderDivisionOptions(selected = ''){
+  const sel = document.getElementById('m-division');
+  if(!sel) return;
+  const names = ALL_DIVISIONS.map(d => String(d.name || d.displayName || '').trim()).filter(Boolean);
+  const unique = Array.from(new Set(names)).sort((a,b) => a.localeCompare(b));
+  let options = unique.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
+  if(selected && !unique.map(n=>n.toLowerCase()).includes(selected.toLowerCase())){
+    options += `<option value="${esc(selected)}">${esc(selected)}</option>`;
+  }
+  sel.innerHTML = `<option value="">Select Division-</option>` + options;
+  if(selected) sel.value = selected;
+}
+
+async function onDivisionChange(selectedSupplier = '', selectedModel = ''){
+  const division = (document.getElementById('m-division')||{}).value || '';
+  ALL_MODELS_DATA = [];
+  MODEL_OPTIONS = [];
+  renderSupplierOptions(typeof selectedSupplier === 'string' ? selectedSupplier : '');
+  renderModelOptions(typeof selectedModel === 'string' ? selectedModel : '');
+  if(!division) return;
+  await loadDivisionModels(division, typeof selectedModel === 'string' ? selectedModel : '', typeof selectedSupplier === 'string' ? selectedSupplier : '');
 }
 
 async function loadBranchOptions(){
@@ -703,7 +741,38 @@ function getModelName(item){
 }
 
 function renderModelOptions(selected = ''){
-  // Unused, changed to text input
+  const sel = document.getElementById('m-model');
+  if(!sel) return;
+  const selectedValue = String(selected||'').trim();
+  let options = MODEL_OPTIONS.map(name => `<option value="${esc(name)}">${esc(name)}</option>`).join('');
+  if(selectedValue && !MODEL_OPTIONS.includes(selectedValue)){
+    options = `<option value="${esc(selectedValue)}">${esc(selectedValue)}</option>` + options;
+  }
+  sel.innerHTML = `<option value="">${MODEL_OPTIONS.length ? 'Select Model-' : 'No models available'}</option>` + options;
+  if(selectedValue) sel.value = selectedValue;
+}
+
+async function onBranchChange(selectedEngineer = '') {
+  const branch = document.getElementById('m-branch').value;
+  const engSel = document.getElementById('m-engineer');
+  if(!branch) {
+    engSel.innerHTML = '<option value="">Select Engineer-</option>';
+    return;
+  }
+  engSel.innerHTML = '<option value="">Loading...</option>';
+  try {
+    const res = await fetch(`${API}/api/engineers?branch=${encodeURIComponent(branch)}&active=Yes`, { headers: authHeaders() });
+    handleUnauth(res);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const payload = await res.json();
+    const engineers = payload?.data || [];
+    engSel.innerHTML = '<option value="">Select Engineer-</option>' + 
+      engineers.map(e => `<option value="${esc(e.name)}">${esc(e.name)}</option>`).join('');
+    if(typeof selectedEngineer === 'string' && selectedEngineer) engSel.value = selectedEngineer;
+  } catch(e) {
+    if(e.message === 'Unauthorized') return;
+    engSel.innerHTML = '<option value="">Error loading</option>';
+  }
 }
 
 async function loadDivisionModels(divisionName = '', selectedModel = '', selectedSupplier = ''){
@@ -875,17 +944,18 @@ async function openAddModal(){
   document.getElementById('modal-title').innerHTML = '&#9998; Add New Call Entry';
   clearModalForm();
   const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
-  const div = CURRENT_USER.division || u.division || '';
   const nam = CURRENT_USER.name || u.name || '';
   document.getElementById('m-sceng').value = nam;
   (document.getElementById('top-sceng')||{}).textContent = nam || '-';
-  document.getElementById('m-division').value = div;
-  (document.getElementById('top-division')||{}).textContent = div || '-';
   document.getElementById('m-calldate').value = new Date().toISOString().split('T')[0];
   document.getElementById('m-engineer').innerHTML = '<option value="">Select Engineer-</option>';
   renderRegionOptions();
   renderBranchOptions();
-  document.getElementById('m-model').value = '';
+  renderDivisionOptions();
+  ALL_MODELS_DATA = [];
+  MODEL_OPTIONS = [];
+  renderSupplierOptions();
+  renderModelOptions();
   clearModalMsg();
   document.getElementById('add-modal').classList.add('open');
 }
@@ -897,9 +967,8 @@ async function openEditModal(id){
   document.getElementById('edit-id').value = id;
   (document.getElementById('modal-title')||{}).textContent = '? Edit Call Entry';
   const set = (elId,val) => { const el=document.getElementById(elId); if(el) el.value=val||''; };
-  set('m-division', d.division);
-  (document.getElementById('top-division')||{}).textContent = d.division || '-';
-  await loadDivisionModels(d.division, d.model);
+  renderDivisionOptions(d.division || '');
+  await loadDivisionModels(d.division || '', d.model || '', d.supplier || '');
   const recordBranch = d.branch || d.region || '';
   const recordRegion = getRecordRegion(recordBranch, d.region);
   renderRegionOptions(recordRegion);
@@ -920,15 +989,12 @@ async function openEditModal(id){
 function closeAddModal(){ document.getElementById('add-modal').classList.remove('open'); }
 
 function clearModalForm(){
-  ['m-region','m-branch','m-engineer','m-calltype','m-commtype','m-status'].forEach(id => {
+  ['m-division','m-region','m-branch','m-engineer','m-calltype','m-commtype','m-status'].forEach(id => {
     const el = document.getElementById(id);
     if(el) el.value = '';
   });
   ['m-supplier','m-model','m-duration','m-remarks'].forEach(id => {const el=document.getElementById(id);if(el)el.value = '';});
-  const div = CURRENT_USER.division || '';
-  document.getElementById('m-division').value = div;
-  (document.getElementById('top-division')||{}).textContent = div || '-';
-  ['m-division','m-region','m-branch','m-calldate','m-engineer','m-supplier','m-model','m-calltype','m-status','m-remarks'].forEach(id => document.getElementById(id).classList.remove('err'));
+  ['m-division','m-region','m-branch','m-calldate','m-engineer','m-supplier','m-model','m-calltype','m-status','m-remarks'].forEach(id => { const el=document.getElementById(id); if(el) el.classList.remove('err'); });
 }
 
 function clearModalMsg(){
@@ -948,13 +1014,14 @@ async function saveEntry(){
 
   const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   const payload = {
-    division:   CURRENT_USER.division || u.division || document.getElementById('m-division').value || '',
+    division:   document.getElementById('m-division').value || '',
     region:     document.getElementById('m-region').value,
     branch:     document.getElementById('m-branch').value,
     callDate:   document.getElementById('m-calldate').value,
     entryDate:  new Date().toISOString().split('T')[0],
     scEng:      document.getElementById('m-sceng').value,
     engineer:   document.getElementById('m-engineer').value.trim(),
+    supplier:   document.getElementById('m-supplier').value.trim(),
     model:      document.getElementById('m-model').value.trim(),
     callType:   document.getElementById('m-calltype').value,
     commType:   document.getElementById('m-commtype').value,
