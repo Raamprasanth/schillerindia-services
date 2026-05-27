@@ -820,9 +820,9 @@ function renderTable(){
       <td style="font-size:12px;color:var(--soft);max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(e.configuration)}">${esc(e.configuration||'-')}</td>
       <td style="font-family:Calibri, Arial, sans-serif;font-weight:600;">${esc(e.receivedQty||'-')}</td>
       <td style="font-family:Calibri, Arial, sans-serif;font-size:11px;color:var(--soft);">${esc(e.prevSwVersion||'-')}</td>
-      <td>${e.hwChanges&&e.hwChanges!=='NA'&&e.hwChanges.trim()?`<span style="color:var(--amber);font-size:11px;font-weight:600;">&#9888;&#65039; ${esc(e.hwChanges)}</span>`:`<span style="color:var(--muted);font-size:11px;">NA</span>`}</td>
+      <td>${e.hwChanges&&e.hwChanges!=='NA'&&e.hwChanges.trim()?`<span style="color:var(--amber);font-size:11px;font-weight:600;">${esc(e.hwChanges)}</span>`:`<span style="color:var(--muted);font-size:11px;">NA</span>`}</td>
       <td style="font-size:12px;color:var(--soft);max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(e.accDetails)}">${esc(e.accDetails||'-')}</td>
-      <td style="font-size:12px;">${e.cnrCirculation?`<span style="color:var(--purple);font-weight:600;">&#9888;&#65039; ${esc(e.cnrCirculation)}</span>`:`<span style="color:var(--muted);">-</span>`}</td>
+      <td style="font-size:12px;">${e.cnrCirculation?`<span style="color:var(--purple);font-weight:600;">${esc(e.cnrCirculation)}</span>`:`<span style="color:var(--muted);">-</span>`}</td>
       <td><span class="status-badge ${stClass(e.status)}">${esc(e.status)}</span></td>
       <td style="white-space:nowrap;">
         <button class="btn-xs" onclick="viewBIR('${e._id}')" title="View">&#128065;</button>
