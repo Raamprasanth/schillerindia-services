@@ -290,9 +290,6 @@ router.put('/:id', protect, async (req, res) => {
     }
 
     const body = { ...req.body };
-    if (body.repairRemarks !== undefined && body.finalRemarks === undefined) {
-      body.finalRemarks = body.repairRemarks;
-    }
     if (body.division !== undefined) {
       body.division = cleanDivision(body.division, existing.division);
     }

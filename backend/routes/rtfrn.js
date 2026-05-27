@@ -237,9 +237,6 @@ router.put('/:id', protect, async (req, res) => {
 
     const updates = {};
     allowed.forEach(k => { if (req.body[k] !== undefined) updates[k] = req.body[k]; });
-    if (updates.repairRemarks !== undefined && updates.finalRemarks === undefined) {
-      updates.finalRemarks = updates.repairRemarks;
-    }
     if (updates.division !== undefined) {
       updates.division = cleanDivision(updates.division, existing.division);
     }
@@ -252,10 +249,28 @@ router.put('/:id', protect, async (req, res) => {
       { new: true, runValidators: false }
     ).lean();
 
-    if (updated.sourceEmpFrnId) {
+    let targetEmpFrnId = updated.sourceEmpFrnId;
+    if (!targetEmpFrnId) {
+      const escapeRegex = (string) => string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      let filter = { $or: [] };
+      if (updated.scRefNo && updated.scRefNo !== '-') {
+        const scRegex = { $regex: new RegExp('^' + escapeRegex(updated.scRefNo.trim()) + '$', 'i') };
+        filter.$or.push({ scRno: scRegex }, { scReNo: scRegex }, { frnNo: scRegex });
+      }
+      if (updated.defGirNo && updated.defGirNo !== '-') {
+        const girRegex = { $regex: new RegExp('^' + escapeRegex(updated.defGirNo.trim()) + '$', 'i') };
+        filter.$or.push({ defGir: girRegex }, { defGirNo: girRegex });
+      }
+      if (filter.$or.length > 0) {
+        const empFrnDoc = await EmpFRN.findOne(filter).select('_id');
+        if (empFrnDoc) targetEmpFrnId = empFrnDoc._id;
+      }
+    }
+
+    if (targetEmpFrnId) {
       try {
         const empUpdate = await EmpFRN.findByIdAndUpdate(
-          updated.sourceEmpFrnId,
+          targetEmpFrnId,
           {
             raEng: updated.raEng || '',
             repGirNo: updated.repGirNo || '',
@@ -270,7 +285,6 @@ router.put('/:id', protect, async (req, res) => {
           repairedDate:     updated.repairedDate || '',
           components:       updated.components || '',
 
-            finalRemarks: updated.finalRemarks || '',
             components: updated.components || '',
             shipSc: updated.shipSc || '',
             shipComm: updated.shipComm || '',
@@ -295,7 +309,6 @@ router.put('/:id', protect, async (req, res) => {
           repairedDate:     updated.repairedDate || '',
           components:       updated.components || '',
 
-                finalRemarks: updated.finalRemarks || '',
                 components: updated.components || '',
                 rtfrnSent: true,
                 rtfrnSentAt: empUpdate.rtfrnSentAt || updated.submittedAt || new Date(),

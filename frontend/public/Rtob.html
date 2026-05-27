@@ -780,7 +780,7 @@ async function submitUpdate(){
   const timeTakenValue=document.getElementById('u-timetaken').value.trim();
   const normalizedTimeTaken=/^\d{2}:\d{2}$/.test(timeTakenValue)?`${timeTakenValue}:00`:timeTakenValue;
   const repairRemarks=document.getElementById('u-repairremarks').value.trim();
-  const payload={repairedBy,status,doi:document.getElementById('u-doi').value,repairedDate:document.getElementById('u-repaireddate').value,techRemarks:document.getElementById('u-techremarks').value.trim(),repairRemarks,finalRemarks:repairRemarks,components:document.getElementById('u-components').value.trim(),cost:document.getElementById('u-cost').value.trim(),timeTaken:normalizedTimeTaken,repairStatus:document.getElementById('u-repairstatus').value,updatedBy:EMP_NAME,updatedAt:new Date().toISOString()};
+  const payload={repairedBy,status,doi:document.getElementById('u-doi').value,repairedDate:document.getElementById('u-repaireddate').value,techRemarks:document.getElementById('u-techremarks').value.trim(),repairRemarks,components:document.getElementById('u-components').value.trim(),cost:document.getElementById('u-cost').value.trim(),timeTaken:normalizedTimeTaken,repairStatus:document.getElementById('u-repairstatus').value,updatedBy:EMP_NAME,updatedAt:new Date().toISOString()};
   try{
     const res=await fetch(`${API}/api/rtob/${editingId}`,{method:'PUT',headers:authHeaders(),body:JSON.stringify(payload)});
     handleUnauth(res);

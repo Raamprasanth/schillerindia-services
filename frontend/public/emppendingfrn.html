@@ -1111,7 +1111,7 @@ async function openUpdateModal(id){
   fillEngSelect('upd-raeng', recordDivision, d.scEng || d.raEng || '');
   fillEngSelect('est-raeng', recordDivision, d.scEng || d.estRaEng || d.raEng || '');
   setLockedEstimationNo('est-estno', d);
-  set('upd-finalremarks',d.finalRemarks||d.remarks||'');
+  set('upd-finalremarks',d.finalRemarks||'');
   set('upd-techremarks',d.techRemarks||'');
   set('upd-components',d.components||'');
   const lockRtFrn=!!(d.rtfrnSent&&d.techRemarks);

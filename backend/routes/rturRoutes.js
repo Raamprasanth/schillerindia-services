@@ -271,7 +271,6 @@ router.put('/:id', async (req, res) => {
     if (finalRemarks !== undefined) record.finalRemarks      = finalRemarks;
     if (repairRemarks !== undefined) {
       record.repairRemarks = repairRemarks;
-      if (finalRemarks === undefined) record.finalRemarks = repairRemarks;
     }
     if (cost         !== undefined) record.cost              = cost;
     if (timeTaken    !== undefined) record.timeTaken         = timeTaken;
@@ -309,7 +308,6 @@ router.put('/:id', async (req, res) => {
           repairedDate:     saved.repairedDate || '',
           components:       saved.components || saved.compUsedToRepair || '',
 
-              finalRemarks: saved.finalRemarks || '',
             },
           }
         );
