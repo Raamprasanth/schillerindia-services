@@ -621,6 +621,10 @@ function renderTable() {
 }
 
 // -- DETAIL MODAL ------------------------------------------------------------
+function getDisplayRepairedDate(d) {
+  return d?.repairedDate || d?.repBrdDate || d?.closedDate || '';
+}
+
 function openDetail(id) {
   const d = allData.find(x => (x._id || x.id) === id);
   if (!d) return;
@@ -653,7 +657,8 @@ function openDetail(id) {
   
   set('d-doi',           d.doi);
   set('d-repairedby',    d.repairedBy);
-  set('d-repaireddate',  d.repairedDate ? fmtDate(d.repairedDate) : '');
+  const displayRepairedDate = getDisplayRepairedDate(d);
+  set('d-repaireddate',  displayRepairedDate ? fmtDate(displayRepairedDate) : '');
   set('d-status',        d.status);
 
   document.getElementById('modal-detail').classList.add('open');
@@ -675,7 +680,7 @@ function exportCSV() {
   const rows = filtered.map(d => [
     fmtDate(d.entryDate), d.division || '-', d.scRefNo || '-', d.defGirNo || '-', d.category || d.obType || '-', d.model || '-', d.defBrdModName || '-', d.noOfDays || 0, d.status || '-',
     d.techRemarks || '-', d.repairRemarks || '-', d.components || d.compUsedToRepair || '-', d.cost || '-', d.timeTaken || '-', d.repairStatus || '-',
-    d.doi || '-', d.repairedBy || '-', d.repairedDate ? fmtDate(d.repairedDate) : '-', d.typeWork || '-', d.raEng || '-', d.defUnitGir || '-', d.repGirNo || '-', (d.repBrd || d.repBrdDate) ? fmtDate(d.repBrd || d.repBrdDate) : '-',
+    d.doi || '-', d.repairedBy || '-', getDisplayRepairedDate(d) ? fmtDate(getDisplayRepairedDate(d)) : '-', d.typeWork || '-', d.raEng || '-', d.defUnitGir || '-', d.repGirNo || '-', (d.repBrd || d.repBrdDate) ? fmtDate(d.repBrd || d.repBrdDate) : '-',
     d.typeReport || '-', d.dcNo || '-', d.fieldRemarks || '-', d.finalRemarks || '-', d.addNotes || '-', d.returnDcNo || '-', d.destination || '-', d.shipSc ? fmtDate(d.shipSc) : '-', d.shipComm ? fmtDate(d.shipComm) : '-',
     d.prfObNo || '-', d.submittedBy || '-', d.submittedAt ? fmtDate(d.submittedAt) : '-'
   ]);

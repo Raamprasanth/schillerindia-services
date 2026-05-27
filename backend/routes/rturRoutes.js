@@ -314,7 +314,7 @@ router.put('/:id', async (req, res) => {
       compUsedToRepair, repBrdDate, dcNo,
       techRemarks, finalRemarks, repairRemarks, cost, timeTaken, repairStatus, addNotes,
       returnDate, returnDcNo, destination,
-      doi, fieldRemarks,
+      doi, fieldRemarks, repairedDate,
       updatedBy, updatedAt,
     } = req.body;
 
@@ -325,6 +325,7 @@ router.put('/:id', async (req, res) => {
     if (entryDate    !== undefined) record.entryDate         = new Date(entryDate);
     if (compUsedToRepair !== undefined) record.compUsedToRepair = compUsedToRepair;
     if (repBrdDate   !== undefined) record.repBrdDate        = repBrdDate ? new Date(repBrdDate) : null;
+    if (repairedDate !== undefined) record.repairedDate      = repairedDate || '';
     if (dcNo         !== undefined) record.dcNo              = dcNo;
     if (doi          !== undefined) record.doi               = doi;
     if (fieldRemarks !== undefined) record.fieldRemarks      = fieldRemarks;
