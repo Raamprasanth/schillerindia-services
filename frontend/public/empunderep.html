@@ -1041,8 +1041,8 @@ async function openUpdate(id){
   set('m-finalremarks',d.finalRemarks||'');
   set('m-techremarks', d.techRemarks||'');
   set('m-components',  d.components||'');
-  const lockRtUr = !!((d.rturSent||d.rtfrnSent) && d.techRemarks);
-  ['m-techremarks','m-components'].forEach(fid => { const el=document.getElementById(fid); if(!el)return; el.readOnly=lockRtUr; el.classList.toggle('locked-field',lockRtUr); el.title=lockRtUr?'Locked - technical remarks were submitted when sending to RT UR':''; });
+  const lockRtUr = !!(d.rturSent||d.rtfrnSent);
+  ['m-techremarks','m-components'].forEach(fid => { const el=document.getElementById(fid); if(!el)return; el.readOnly=lockRtUr; el.classList.toggle('locked-field',lockRtUr); el.title=lockRtUr?'Locked - submitted through RP to repair team':''; });
   set('m-typework',    d.urTypeWork||d.typeWork||'UNDER REPAIR');
 
   document.getElementById('modal-msg').className = 'fm-msg';
