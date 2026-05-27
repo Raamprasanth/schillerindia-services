@@ -1325,7 +1325,7 @@ function generateEstimationPDFData(s, mode='download'){
 
   if(serviceCharge > 0){
     let cellX=tableX;
-    const chargeValues=['-','Service Charges','1',money(serviceCharge),'INR',money(serviceCharge)];
+    const chargeValues=['-','SERCHGS','1',money(serviceCharge),'INR',money(serviceCharge)];
     chargeValues.forEach((value,idx)=>{
       doc.rect(cellX,tableY,cols[idx],10);
       const alignRight = idx >= 3 && idx !== 4;
