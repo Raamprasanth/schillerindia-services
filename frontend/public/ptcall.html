@@ -1135,7 +1135,7 @@ async function deleteEntry(id){
 
 /* -- EXPORT -- */
 function exportCSV(){
-  const headers = ['#','Entry Date','Call Date','Division','Region','SC Eng','Engineer','Model','Call Type','Comm Type','Duration','Status','Remarks'];
+  const headers = ['S.No.','Entry Date','Call Date','Division','Region','SC Eng','Engineer','Model','Call Type','Comm Type','Duration','Status','Remarks'];
   const rows = filtered.map((d,i)=>[i+1,d.entryDate||d.createdAt,d.callDate,d.division,d.region||d.branch,d.scEng,d.engineer,d.model,d.callType,d.commType||'-',d.duration||'-',d.status,d.remarks]);
   const csv = [headers,...rows].map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
