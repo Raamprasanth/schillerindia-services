@@ -26,7 +26,7 @@ function ownerFilter(user) {
 
 router.get('/', async (req, res) => {
   try {
-    const docs = await PTourSummary.find(ownerFilter(req.user)).sort({ startDate: -1, createdAt: -1 }).lean();
+    const docs = await PTourSummary.find({}).sort({ startDate: -1, createdAt: -1 }).lean();
     res.json(docs);
   } catch (err) {
     console.error('[GET /api/ptours]', err);

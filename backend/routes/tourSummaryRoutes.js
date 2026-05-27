@@ -1,5 +1,8 @@
 const express = require('express');
 const TourSummary = require('../models/TourSummary');
+const Admin = require('../models/Admin');
+const Employee = require('../models/Employee');
+const RepairTeam = require('../models/Repairteam');
 const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -24,9 +27,80 @@ function ownerFilter(user) {
   return { createdById: user?._id };
 }
 
+function normalizeDivision(value) {
+  return String(value || '').trim().replace(/\s+/g, ' ').toUpperCase();
+}
+
+function getDivisionLabel(user) {
+  return String(user?.activeDivision || user?.division || (Array.isArray(user?.divisions) ? user.divisions[0] : '') || '').trim();
+}
+
+function visibilityFilter(user) {
+  const role = String(user?.role || '').toLowerCase();
+  if (['admin', 'superadmin', 'administrator'].includes(role)) return {};
+  const divisionKey = normalizeDivision(getDivisionLabel(user));
+  if (!divisionKey) return { createdById: user?._id };
+  return { createdByDivisionKey: divisionKey };
+}
+
+async function loadCreatorsMap(ids = []) {
+  const uniqueIds = [...new Set(ids.map((id) => String(id || '')).filter(Boolean))];
+  if (!uniqueIds.length) return new Map();
+
+  const [admins, employees, repairs] = await Promise.all([
+    Admin.find({ _id: { $in: uniqueIds } }).select('division divisions').lean(),
+    Employee.find({ _id: { $in: uniqueIds } }).select('division divisions').lean(),
+    RepairTeam.find({ _id: { $in: uniqueIds } }).select('division divisions').lean(),
+  ]);
+
+  let users = [];
+  try {
+    const User = require('../models/User');
+    users = await User.find({ _id: { $in: uniqueIds } }).select('division divisions').lean();
+  } catch (_) {}
+
+  const map = new Map();
+  [...admins, ...employees, ...repairs, ...users].forEach((doc) => {
+    if (!doc?._id) return;
+    const division = String(doc.division || (Array.isArray(doc.divisions) ? doc.divisions[0] : '') || '').trim();
+    if (!division) return;
+    map.set(String(doc._id), {
+      createdByDivision: division,
+      createdByDivisionKey: normalizeDivision(division),
+    });
+  });
+  return map;
+}
+
+async function backfillMissingTourDivisions() {
+  const missing = await TourSummary.find({
+    $or: [
+      { createdByDivisionKey: { $exists: false } },
+      { createdByDivisionKey: '' },
+    ],
+    createdById: { $ne: null },
+  }).select('_id createdById').lean();
+
+  if (!missing.length) return;
+  const creators = await loadCreatorsMap(missing.map((doc) => doc.createdById));
+  const ops = missing.map((doc) => {
+    const resolved = creators.get(String(doc.createdById || ''));
+    if (!resolved) return null;
+    return {
+      updateOne: {
+        filter: { _id: doc._id },
+        update: { $set: resolved },
+      },
+    };
+  }).filter(Boolean);
+
+  if (ops.length) await TourSummary.bulkWrite(ops, { ordered: false });
+}
+
 router.get('/', async (req, res) => {
   try {
-    const docs = await TourSummary.find(ownerFilter(req.user)).sort({ startDate: -1, createdAt: -1 }).lean();
+    await backfillMissingTourDivisions();
+    const docs = await TourSummary.find(visibilityFilter(req.user)).sort({ startDate: -1, createdAt: -1 }).lean();
     res.json(docs);
   } catch (err) {
     console.error('[GET /api/tours]', err);
@@ -59,6 +133,9 @@ router.post('/', async (req, res) => {
       images,
       createdBy: req.user?.name || req.user?.email || '',
       createdById: req.user?._id,
+      createdByDivision: getDivisionLabel(req.user),
+      createdByDivisionKey: normalizeDivision(getDivisionLabel(req.user)),
+      updatedBy: req.user?.name || req.user?.email || '',
     });
     res.status(201).json(doc);
   } catch (err) {
