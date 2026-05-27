@@ -527,7 +527,7 @@ table.est-table tbody tr:last-child td{border-bottom:none;}
             <div class="ff"><label>Ship Date from Service Centre <span class="req">*</span></label><input type="date" id="u-shipsc"/></div>
             <div class="ff"><label>Destination <span class="req">*</span></label><input type="text" id="u-destination" placeholder=""/></div>
             <div class="ff">
-              <label>Type of Work</label>
+              <label>Type of Work <span class="req">*</span></label>
               <select id="u-typework">
                 <option value="">Select Type of Work...</option>
                 <option value="No Fault">No Fault</option>
@@ -539,7 +539,7 @@ table.est-table tbody tr:last-child td{border-bottom:none;}
                 <option value="Replacement given">Replacement given</option>
               </select>
             </div>
-            <div class="ff"><label>Revalue</label><input type="number" id="u-revalue" min="0" step="0.01" placeholder="" data-optional="true"/></div>
+            <div class="ff"><label>Revalue <span class="req">*</span></label><input type="number" id="u-revalue" min="0" step="0.01" placeholder=""/></div>
             <div class="ff"><label>OB Details</label><input type="text" id="u-obd" placeholder="OB notes..."/></div>
           </div>
         </div>
@@ -1322,9 +1322,12 @@ async function submitUpdate(){
   const missing=[];
   const reqList=[
     ['u-upd-raeng','RA Engineer'],
+    ['u-shipsc','Ship Date from Service Centre'],
     ['u-destination','Destination'],
     ['u-upd-techremarks','Technical Remarks'],
     ['u-finalremarks','Final Remarks'],
+    ['u-typework','Type of Work'],
+    ['u-revalue','Revalue'],
   ];
   if(!isUpgrade) reqList.push(['u-same-gir','Same GIR No']);
   reqList.forEach(([fid,label])=>{

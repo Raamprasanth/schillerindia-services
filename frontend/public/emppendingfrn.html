@@ -395,7 +395,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
               <input type="text" id="upd-destination" required placeholder=""/>
             </div>
             <div class="ff">
-              <label>Type of Work</label>
+              <label>Type of Work <span class="req">*</span></label>
               <select id="upd-typework">
                 <option value="">Select Type of Work...</option>
                 <option value="No Fault">No Fault</option>
@@ -408,7 +408,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
               </select>
             </div>
             <div class="ff">
-              <label>Revalue</label>
+              <label>Revalue <span class="req">*</span></label>
               <input type="number" id="upd-revalue" min="0" step="0.01" placeholder=""/>
             </div>
           </div>
@@ -1750,7 +1750,7 @@ function handleSameGir(val){
     input.value='';
     input.readOnly=false;
     input.classList.remove('gir-autofill');
-    if(revalue){revalue.readOnly=true;revalue.classList.add('gir-autofill');}
+    if(revalue){revalue.readOnly=false;revalue.classList.remove('gir-autofill');}
     input.focus();
   }else{
     input.value='';
@@ -1766,13 +1766,17 @@ async function submitUpdate(){
   const requiredFields=['upd-raeng','upd-finalremarks','upd-destination','upd-techremarks','upd-shipsc'];
   requiredFields.forEach(fid=>{const el=document.getElementById(fid);if(!el)return;if(!el.value.trim()){el.classList.add('err');err=true;}else el.classList.remove('err');});
   const selectedTypeWork=document.getElementById('upd-typework').value;
+  const revalueEl=document.getElementById('upd-revalue');
+  const revalueVal=String(revalueEl?.value||'').trim();
+  if(!selectedTypeWork){document.getElementById('upd-typework').classList.add('err');err=true;}else document.getElementById('upd-typework').classList.remove('err');
+  if(!revalueVal){revalueEl?.classList.add('err');err=true;}else revalueEl?.classList.remove('err');
   const isUpgrade=selectedTypeWork==='Upgrade';
   const sameGir=document.getElementById('same-gir').value;
   const repGirNo=document.getElementById('upd-defunitgir').value.trim();
   if(!isUpgrade && !sameGir){showUpdMsg('Please select Same GIR No.','err');return;}
   if(!isUpgrade && sameGir==='no' && !repGirNo){document.getElementById('upd-defunitgir').classList.add('err');showUpdMsg('Please enter REP GIR No when Same GIR No is set to No.','err');return;}
   document.getElementById('upd-defunitgir').classList.remove('err');
-  if(err){showUpdMsg('Please fill all required fields: RA Engineer, Ship Date, Destination, Technical Remarks, Final Remarks.','err');return;}
+  if(err){showUpdMsg('Please fill all required fields: RA Engineer, Ship Date, Destination, Technical Remarks, Final Remarks, Type of Work, Revalue.','err');return;}
   // Yes ? Completed FRN | No ? Under Repair
   const statusVal=(selectedTypeWork==='Upgrade' || sameGir==='yes')?'completed':'under_repair';
   const payload={raEng:document.getElementById('upd-raeng').value,defUnitGir:repGirNo,repGirNo:repGirNo,finalRemarks:document.getElementById('upd-finalremarks').value.trim(),techRemarks:document.getElementById('upd-techremarks').value,components:document.getElementById('upd-components').value,revalue:document.getElementById('upd-revalue').value?Number(document.getElementById('upd-revalue').value):0,shipSc:document.getElementById('upd-shipsc').value,destination:document.getElementById('upd-destination').value,typeWork:selectedTypeWork,status:statusVal,updatedAt:new Date().toISOString()};
