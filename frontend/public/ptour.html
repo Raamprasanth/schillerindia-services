@@ -301,7 +301,7 @@ function downloadTourWorkbook(items, fileBase){
   const rows = items.map((t, i) => {
     const photos = (t.images || []).filter(Boolean);
     const photoHtml = photos.length
-      ? photos.map((src, idx) => '<div style="margin-bottom:6px;"><div style="font-size:10px;font-weight:700;color:#4b5563;margin-bottom:3px;">Photo ' + (idx + 1) + '</div><img src="' + escAttr(src) + '" style="max-width:140px;max-height:100px;border:1px solid #cbd5e1;border-radius:4px;" /></div>').join('')
+      ? photos.map((src, idx) => '<span style="font-size:10px;font-weight:700;color:#4b5563;">Photo ' + (idx + 1) + '</span><br><img src="' + escAttr(src) + '" width="140" height="100" style="border:1px solid #cbd5e1;border-radius:4px;" /><br><br>').join('')
       : '<span style="color:#64748b;">No photos</span>';
     return '<tr>'
       + '<td>' + (i + 1) + '</td>'
