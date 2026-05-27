@@ -1222,6 +1222,15 @@ async function submitEstimation(){
   if(!header.techRemarks) missing.push('Problem Observed');
   const problemObservedEl=document.getElementById('u-techremarks');
   if(problemObservedEl) problemObservedEl.classList.toggle('err',!header.techRemarks);
+  
+  let incompleteLine = false;
+  header.lineItems.forEach((li) => {
+    if (!li.partNo || !li.estPartNo || !li.itemDescription || li.qty === undefined || li.qty === null || li.pricePerUnit === undefined || li.pricePerUnit === null) {
+      incompleteLine = true;
+    }
+  });
+  if (incompleteLine) missing.push('All line item columns (Part No, Est Part No, Item Description) must be filled');
+
   if(!header.lineItems.length) missing.push('Line Items');
   if(missing.length){
     errEl.textContent='Required: '+missing.join(', ');
