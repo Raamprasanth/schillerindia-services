@@ -622,6 +622,8 @@ async function syncRepairSessionUser(){
   (document.getElementById('topbar-date')||{}).textContent =
     new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   const today = new Date().toISOString().split('T')[0];
+  const uRep = document.getElementById('u-repaireddate');
+  if(uRep) { uRep.min = today; uRep.max = today; }
   document.getElementById('a-entrydate').value = today;
   ['fl-from','fl-to'].forEach(id => { const e=document.getElementById(id); if(e) e.max=today; });
   syncRepairSessionUser();
@@ -856,7 +858,7 @@ function openUpdate(id) {
   set('u-doi', d.doi||'');
   set('u-repairedby',  d.repairedBy||'');
   set('u-status',      d.status||'pending');
-  set('u-repaireddate',d.repairedDate||'');
+  set('u-repaireddate', new Date().toISOString().split('T')[0]);
   set('u-techremarks',   d.techRemarks||'');
   set('u-repairremarks', d.repairRemarks||'');
   set('u-components',    d.components||'');

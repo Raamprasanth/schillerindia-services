@@ -740,7 +740,7 @@ function openUpdate(id){
   (document.getElementById('ri-by')||{}).textContent =d.submittedBy||'-';
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
   set('u-doi',d.doi||''); set('u-repairedby',d.repairedBy); set('u-status',d.status||'pending');
-  set('u-repaireddate',  d.repairedDate||'');
+  set('u-repaireddate', new Date().toISOString().split('T')[0]);
   set('u-techremarks',   d.techRemarks||'');
   set('u-repairremarks', d.repairRemarks||'');
   set('u-components',    d.components||'');
