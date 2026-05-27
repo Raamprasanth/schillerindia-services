@@ -868,6 +868,12 @@ function getEngineerDivisions(engineer) {
 
 function engineerMatchesDivision(engineer, division) {
   const div = normalizeDivisionName(division);
+  const showAllBranches = [
+    'SHIPL CHANDIGAR', 'SHIPL CHANDIGARH', 'CHANDIGAR', 'CHANDIGARH',
+    'SALEM', 'TRICHY', 'NAGERCOIL', 'VILLUPURUM', 'VILLUPURAM',
+    'TRIVANDRUM', 'BANGLORE', 'BANGALORE', 'HUBILI', 'HUBLI', 'DELHI'
+  ];
+  if (showAllBranches.includes(div)) return true;
   return div && getEngineerDivisions(engineer).includes(div);
 }
 
