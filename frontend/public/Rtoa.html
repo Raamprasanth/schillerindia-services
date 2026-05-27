@@ -259,6 +259,73 @@ table.oa-table tbody tr:last-child td{border-bottom:none;}
           <div class="srch-wrap">
             <span class="srch-ico">&#128269;</span>
             <input type="text" id="tbl-search" oninput="applyFilters()"/>
+    <a class="nav-item" href="Rtob.html"><span class="ico">&#128230;</span> OB</a>
+    <a class="nav-item" href="Rtur.html"><span class="ico">&#128736;&#65039;</span> UR</a>
+    <a class="nav-item" href="Rtcrl.html"><span class="ico">&#9989;</span> Closed Repair List</a>
+    <div class="nav-sec">Other Activities</div>
+    <a class="nav-item active" href="Rtoa.html"><span class="ico">&#128203;</span> Other Activity</a>
+    <a class="nav-item" href="Rtcoa.html"><span class="ico">&#9989;</span> Closed Activity</a>
+    <a class="nav-item" href="Rtcomr.html"><span class="ico">&#128296;</span> Components Request</a>
+    <a class="nav-item" href="Rtccr.html"><span class="ico">&#128194;</span> Closed Request</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="user-av" id="emp-avatar">R</div>
+      <div><div class="user-nm" id="emp-name">Repair User</div><div class="user-rl" id="emp-role">Repair Team</div></div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="Repair-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
+        <span>Other Activities</span><span class="sep">&#8250;</span><span>Other Activity</span>
+      </div>
+      <div class="topbar-title">Other Activity</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px;">
+      <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
+      <button class="btn btn-outline btn-sm" onclick="loadData()">&#10227; Refresh</button>
+      <button class="btn btn-rep btn-sm" onclick="openModal()">&#43; Add Activity</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="auth-warn" id="auth-warn">
+      &#9888;&#65039; <strong>Access Warning:</strong> The server returned a permission error.
+      Your role (<span id="warn-role">-</span>) may not have access to <code>/api/rtoa</code>.
+      <button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="document.getElementById('auth-warn').classList.remove('show')">Dismiss</button>
+    </div>
+
+
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card sc-green" onclick="setSummaryFilter('all')"><div class="stat-ico si-green">&#128203;</div><div class="stat-lbl">Total Active</div><div class="stat-val" id="st-total">-</div><div class="stat-sub">Open + In Progress</div></div>
+      <div class="stat-card sc-blue" onclick="setSummaryFilter('Open')"><div class="stat-ico si-blue">&#128308;</div><div class="stat-lbl">Open</div><div class="stat-val" id="st-open">-</div><div class="stat-sub">Awaiting action</div></div>
+      <div class="stat-card sc-amber" onclick="setSummaryFilter('In Progress')"><div class="stat-ico si-amber">&#9203;</div><div class="stat-lbl">In Progress</div><div class="stat-val" id="st-inprog">-</div><div class="stat-sub">Currently active</div></div>
+      <div class="stat-card sc-teal" onclick="setSummaryFilter('today')"><div class="stat-ico si-teal">&#9989;</div><div class="stat-lbl">Closed Today</div><div class="stat-val" id="st-today">-</div><div class="stat-sub">Completed today</div></div>
+    </div>
+
+
+
+    <!-- TABLE CARD -->
+    <div class="table-card">
+      <div class="table-top">
+        <div class="table-title">Active Other Activities <span class="count-pill" id="count-pill">- entries</span></div>
+        <div class="toolbar-r">
+          <div class="show-row">Show
+            <select class="fb-sel" id="per-page" style="padding:5px 8px;min-width:60px;" onchange="renderTable()">
+              <option>10</option><option>25</option><option>50</option><option>100</option>
+            </select> entries
+          </div>
+          <div class="srch-wrap">
+            <span class="srch-ico">&#128269;</span>
+            <input type="text" id="tbl-search" oninput="applyFilters()"/>
           </div>
         </div>
       </div>
@@ -266,6 +333,7 @@ table.oa-table tbody tr:last-child td{border-bottom:none;}
         <table class="oa-table">
           <thead><tr>
             <th onclick="sortBy('entryDate')">Entry Date &#8597;</th>
+            <th onclick="sortBy('closedDate')">Closed Date &#8597;</th>
             <th onclick="sortBy('repairedBy')">Repaired By &#8597;</th>
             <th onclick="sortBy('division')">Division &#8597;</th>
             <th onclick="sortBy('model')">Model &#8597;</th>
@@ -273,9 +341,8 @@ table.oa-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('description')">Description &#8597;</th>
             <th onclick="sortBy('problemObserved')">Problem Observed &#8597;</th>
             <th onclick="sortBy('componentsUsed')">Components Used &#8597;</th>
-            <th onclick="sortBy('finalRemarks')">Final Remarks &#8597;</th>
             <th onclick="sortBy('repairedDate')">Repaired Date &#8597;</th>
-            <th onclick="sortBy('remarks')">Remarks &#8597;</th>
+            <th onclick="sortBy('finalRemarks')">Final Remarks &#8597;</th>
             <th>Actions</th>
           </tr></thead>
           <tbody id="oa-tbody">
@@ -330,244 +397,6 @@ table.oa-table tbody tr:last-child td{border-bottom:none;}
               <option value="In Progress">In Progress</option>
               <option value="Closed">Closed</option>
             </select>
-          </div>
-          
-        </div>
-
-      </div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-outline btn-sm" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-rep btn-sm" id="save-btn" onclick="saveRecord()">&#128190; Save Activity</button>
-    </div>
-  </div>
-</div>
-
-<script src="repair-suggestions.js"></script>
-<script>
-const API      = '';
-const LUSER    = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
-const EMP_NAME = LUSER.name || '';
-const RAW_ROLE = (LUSER.role || sessionStorage.getItem('schiller_role') || '').toLowerCase();
-
-let allData = [], filtered = [], sortKey = 'date', sortDir = -1, currentPage = 1;
-let editId = null;
-let activeSummary = 'all';
-
-(function init() {
-  (document.getElementById('emp-name')||{}).textContent = EMP_NAME || 'Repair User';
-  (document.getElementById('emp-avatar')||{}).textContent = (EMP_NAME.charAt(0) || 'R').toUpperCase();
-  (document.getElementById('emp-role')||{}).textContent = RAW_ROLE || 'Repair Team';
-  (document.getElementById('topbar-date')||{}).textContent =
-    new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-  loadData();
-  loadDivisionOptions();
-  setupRepairSuggestions();
-  
-})();
-
-function getToken()    { return sessionStorage.getItem('schiller_token') || ''; }
-function authHeaders() { return { 'Content-Type':'application/json', Authorization:'Bearer '+getToken() }; }
-function setupRepairSuggestions() {
-  if (!window.RepairSuggestions) return;
-  RepairSuggestions.bind({
-    'f-model': ['model'],
-    'f-description': ['description'],
-    'f-partNumber': ['partNumber'],
-    'f-problemObserved': ['problemObserved'],
-    'f-componentsUsed': ['componentsUsed'],
-    'f-finalRemarks': ['finalRemarks'],
-    'f-remarks': ['remarks']
-  }, () => allData);
-}
-function todayISO() {
-  const d = new Date();
-  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-  return d.toISOString().split('T')[0];
-}
-
-function lockDateRules() {
-  const repairedDate = document.getElementById('f-repairedDate');
-  if (repairedDate) repairedDate.min = todayISO();
-}
-
-async function loadRepairEngineers() {
-  try {
-    const res = await fetch(`${API}/api/users/repair-team`, { headers: authHeaders() });
-    if (!res.ok) return;
-    const users = await res.json();
-    const sel = document.getElementById('f-repairedBy');
-    if (!sel) return;
-    sel.innerHTML = '<option value="">Select Repair Engineer</option>';
-    (Array.isArray(users) ? users : []).forEach(u => {
-      const o = document.createElement('option');
-      o.value = u.name; o.textContent = u.name;
-      sel.appendChild(o);
-    });
-  } catch (_) {}
-}
-
-async function loadDivisionOptions() {
-  try {
-    const res = await fetch(`${API}/api/divisions`, { headers: authHeaders() });
-    if (!res.ok) return;
-    const divs = await res.json();
-    const sel = document.getElementById('f-division2');
-    if (!sel) return;
-    sel.innerHTML = '<option value="">Select Division</option>';
-    (Array.isArray(divs) ? divs : []).forEach(d => {
-      const o = document.createElement('option');
-      o.value = d.name; o.textContent = d.name;
-      sel.appendChild(o);
-    });
-  } catch (_) {}
-}
-function handleUnauth(r) {
-  if (r.status === 401) {
-    showToast('Session expired - please log in again.', 'err');
-    setTimeout(() => { sessionStorage.clear(); localStorage.clear(); window.location.href = 'login.html'; }, 1800);
-    throw new Error('Unauthorized');
-  }
-  if (r.status === 403) {
-    (document.getElementById('warn-role')||{}).textContent = RAW_ROLE || 'unknown';
-    document.getElementById('auth-warn').classList.add('show');
-    throw new Error('Forbidden');
-  }
-}
-
-async function loadData() {
-  try {
-    const res = await fetch(`${API}/api/rtoa`, { headers: authHeaders() });
-    handleUnauth(res);
-    if (res.status === 404) {
-      showError('The <code>/api/rtoa</code> route is not configured yet.<br>Add it to server.js and data will appear automatically.');
-      allData = []; applyFilters(); updateStats(); return;
-    }
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    const list = data.data || data;
-    // Filter to show only Open + In Progress
-    allData = list.filter(d => d.status !== 'Closed').map(d => ({ ...d, id: d._id || d.id }));
-    applyFilters(); updateStats();
-    showToast('Loaded ' + allData.length + ' active activit' + (allData.length !== 1 ? 'ies' : 'y'), 'info');
-  } catch (e) {
-    if (e.message === 'Unauthorized' || e.message === 'Forbidden') return;
-    showError('Could not load records: ' + esc(e.message));
-    showToast('Load failed: ' + e.message, 'err');
-    allData = []; applyFilters(); updateStats();
-  } finally { }
-}
-
-function showError(msg) {
-  document.getElementById('oa-tbody').innerHTML =
-    `<tr><td colspan="12"><div class="empty-st">
-      <div class="ei">&#9888;&#65039;</div><div class="et">Cannot load data</div>
-      <div class="es">${msg}</div>
-      <div style="margin-top:14px;"><button class="btn btn-rep btn-sm" onclick="loadData()">&#10227; Try Again</button></div>
-    </div></td></tr>`;
-}
-
-function updateStats() {
-  const today = new Date().toISOString().split('T')[0];
-  const total  = allData.length;
-  const open   = allData.filter(d => d.status === 'Open').length;
-  const inprog = allData.filter(d => d.status === 'In Progress').length;
-  const todayC = allData.filter(d => d.repairedDate && d.repairedDate.split('T')[0] === today).length;
-  document.getElementById('st-total').textContent  = total;
-  document.getElementById('st-open').textContent   = open;
-  document.getElementById('st-inprog').textContent = inprog;
-  document.getElementById('st-today').textContent  = todayC;
-}
-
-function applyFilters() {
-  const q = document.getElementById('tbl-search').value.toLowerCase();
-  filtered = allData.filter(d => {
-    const mQ = !q || Object.values(d).some(v => String(v||'').toLowerCase().includes(q));
-    return mQ && summaryMatches(d);
-  });
-  sortArr(); currentPage = 1; renderTable();
-}
-
-function clearFilters() {
-  document.getElementById('tbl-search').value = '';
-  activeSummary = 'all';
-  // Filter inputs were removed; no need to clear them.
-  applyFilters();
-}
-
-function setSummaryFilter(type) { activeSummary = type || 'all'; applyFilters(); }
-function summaryMatches(d) {
-  if (activeSummary === 'Open' || activeSummary === 'In Progress') return d.status === activeSummary;
-  if (activeSummary === 'today') {
-    const today = new Date().toISOString().split('T')[0];
-    return d.repairedDate && String(d.repairedDate).split('T')[0] === today;
-  }
-  return true;
-}
-
-function sortBy(k) { if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = -1; } sortArr(); renderTable(); }
-function sortArr() {
-  filtered.sort((a, b) => {
-    const av = a[sortKey] ?? '', bv = b[sortKey] ?? '';
-    return String(av).toLowerCase() < String(bv).toLowerCase() ? -sortDir
-         : String(av).toLowerCase() > String(bv).toLowerCase() ?  sortDir : 0;
-  });
-}
-
-function priClass(p) {
-  if (p === 'High') return 'pri-high';
-  if (p === 'Medium') return 'pri-med';
-  return 'pri-low';
-}
-function statusClass(s) {
-  if (s === 'In Progress') return 'sp-inprog';
-  if (s === 'Closed') return 'sp-closed';
-  return 'sp-open';
-}
-
-function renderTable() {
-  const perPage = parseInt(document.getElementById('per-page').value) || 10;
-  const total   = filtered.length;
-  const pages   = Math.max(1, Math.ceil(total / perPage));
-  if (currentPage > pages) currentPage = pages;
-  const slice = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
-  (document.getElementById('count-pill')||{}).textContent = total + ' entr' + (total === 1 ? 'y' : 'ies');
-  const tbody = document.getElementById('oa-tbody');
-  const trunc = (s,n) => { const t = esc(s||'-'); return t.length > n ? t.substring(0,n-2)+'...' : t; };
-  if (!slice.length) {
-    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-st">
-      <div class="ei">&#128203;</div>
-      <div class="et">${allData.length ? 'No records match filters' : 'No Active Other Activities'}</div>
-      <div class="es">${allData.length ? 'Try clearing filters.' : 'Click "+ Add Activity" to create one.'}</div>
-    </div></td></tr>`;
-  } else {
-    tbody.innerHTML = slice.map(d => {
-      const id = d._id || d.id;
-      return `<tr>
-        <td style="font-size:11px;color:var(--soft);white-space:nowrap;">${fmtDate(d.entryDate)}</td>
-        <td style="font-weight:600;white-space:nowrap;">${esc(d.repairedBy||'-')}</td>
-        <td><span style="font-size:10px;background:rgba(91,33,182,0.08);color:#5b21b6;border:1px solid rgba(91,33,182,0.18);border-radius:8px;padding:2px 8px;font-weight:700;">${esc(d.division||'-')}</span></td>
-        <td style="font-weight:600;">${esc(d.model||'-')}</td>
-        <td style="font-family:monospace;font-size:10.5px;">${esc(d.partNumber||'-')}</td>
-        <td style="max-width:150px;" title="${esc(d.description||'')}">${trunc(d.description,50)}</td>
-        <td style="max-width:150px;" title="${esc(d.problemObserved||'')}">${trunc(d.problemObserved,50)}</td>
-        <td style="max-width:150px;" title="${esc(d.componentsUsed||'')}">${trunc(d.componentsUsed,50)}</td>
-        <td style="max-width:150px;" title="${esc(d.finalRemarks||'')}">${trunc(d.finalRemarks,50)}</td>
-        <td style="font-size:11px;color:var(--soft);white-space:nowrap;">${fmtDate(d.repairedDate)}</td>
-        <td style="max-width:130px;" title="${esc(d.remarks||'')}">${trunc(d.remarks,40)}</td>
-        <td>
-          <div style="display:flex;gap:5px;">
-            <button class="btn-xs edit-btn" onclick="openEdit('${id}')">Edit</button>
-            <button class="btn-xs close-btn" onclick="closeRecord('${id}')">Close</button>
-          </div>
-        </td>
-      </tr>`;
-    }).join('');
-  }
-  const fr = total ? (currentPage - 1) * perPage + 1 : 0;
-  (document.getElementById('tbl-info')||{}).textContent = total
-    ? `Showing ${fr} to ${Math.min(currentPage * perPage, total)} of ${total} entries`
-    : '0 entries';
   renderPagination(pages);
 }
 
