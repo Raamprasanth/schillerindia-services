@@ -423,25 +423,26 @@ function mergeClosedLists(primary, secondary){
 async function loadData(){
   try{
     const storedClosed = JSON.parse(localStorage.getItem('si_pt_closed_bir_data')||'[]').map(normalizeClosed);
-    // Try closed BIR API first
-    let res = await fetch('/api/pt/bir/closed',{headers:authHeaders()}).catch(()=>null);
-    if(res&&res.ok){
-      const apiClosed = (await res.json()).map(normalizeClosed);
-      allData = mergeClosedLists(apiClosed, storedClosed);
+    let apiClosed = [];
+    let approvedOpen = [];
+
+    // Try closed BIR API
+    let res1 = await fetch('/api/pt/bir/closed',{headers:authHeaders()}).catch(()=>null);
+    if(res1&&res1.ok){
+      apiClosed = (await res1.json()).map(normalizeClosed);
     }
-    else{
-      // Fallback: filter approved from full BIR data or localStorage
-      res = await fetch('/api/pt/bir',{headers:authHeaders()}).catch(()=>null);
-      if(res&&res.ok){
-        const all = await res.json();
-        const approvedOpen = all.filter(x=>['Approved','Closed'].includes(x.status)).map(normalizeClosed);
-        allData = mergeClosedLists(approvedOpen, storedClosed);
-      } else {
-        const stored = storedClosed.length ? storedClosed : JSON.parse(localStorage.getItem('si_pt_bir_data')||'[]');
-        allData = stored.filter(x=>['Approved','Closed'].includes(x.status)).map(normalizeClosed);
-        if(allData.length===0) allData = demoData();
-      }
+
+    // Always fetch open BIR API to catch any Approved/Closed ones stuck there
+    let res2 = await fetch('/api/pt/bir',{headers:authHeaders()}).catch(()=>null);
+    if(res2&&res2.ok){
+      const all = await res2.json();
+      approvedOpen = all.filter(x=>['Approved','Closed'].includes(x.status)).map(normalizeClosed);
     }
+    
+    // Merge everything
+    allData = mergeClosedLists(mergeClosedLists(apiClosed, approvedOpen), storedClosed);
+    
+    if(allData.length===0) allData = demoData();
   }catch(e){
     const storedClosed = JSON.parse(localStorage.getItem('si_pt_closed_bir_data')||'[]');
     const stored = storedClosed.length ? storedClosed : JSON.parse(localStorage.getItem('si_pt_bir_data')||'[]');
