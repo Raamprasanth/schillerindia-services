@@ -573,9 +573,9 @@ function renderTable(){
       <td style="font-size:12px;color:var(--soft);max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(e.configuration)}">${esc(e.configuration||'-')}</td>
       <td style="font-family:'JetBrains Mono',monospace;font-weight:600;">${esc(e.receivedQty||'-')}</td>
       <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--soft);">${esc(e.prevSwVersion||'-')}</td>
-      <td>${e.hwChanges&&e.hwChanges.toLowerCase()!=='na'&&e.hwChanges.trim()?`<span style="color:var(--amber);font-size:11px;font-weight:600;">! ${esc(e.hwChanges)}</span>`:`<span style="color:var(--muted);font-size:11px;">NA</span>`}</td>
+      <td>${e.hwChanges&&!['na','no','none','no change',''].includes(String(e.hwChanges).trim().toLowerCase())?`<span style="color:var(--amber);font-size:11px;font-weight:600;">&#9888;&#65039; ${esc(e.hwChanges)}</span>`:`<span style="color:var(--muted);font-size:11px;">${esc(e.hwChanges||'NA')}</span>`}</td>
       <td style="font-size:12px;color:var(--soft);max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(e.accDetails)}">${esc(e.accDetails||'-')}</td>
-      <td style="font-size:12px;">${e.cnrCirculation?`<span style="color:var(--purple);font-weight:600;">! ${esc(e.cnrCirculation)}</span>`:`<span style="color:var(--muted);">-</span>`}</td>
+      <td style="font-size:12px;">${String(e.cnrCirculation).trim().toLowerCase()==='yes'?`<span style="color:var(--purple);font-weight:600;">&#9888;&#65039; Yes</span>`:`<span style="color:var(--muted);">${esc(e.cnrCirculation||'-')}</span>`}</td>
       <td><span class="st-approved">Approved</span></td>
       <td><button class="btn-xs" onclick="viewRecord('${e._id}')" title="View">View</button></td>
     </tr>`).join(''):`
