@@ -1251,7 +1251,7 @@ function generateEstimationPDFData(s, mode='download'){
   labelValue(leftBoxX+2, topBoxY+7, 'Estimation No', s.estNo || '-');
   labelValue(leftBoxX+2, topBoxY+15, 'Date', fmtDate(s.estDate));
   labelValue(leftBoxX+2, topBoxY+23, 'Quote Valid Until', fmtDate(s.estValidDate));
-  labelValue(leftBoxX+2, topBoxY+31, 'Order Type', s.estStatus||s.orderType||'-');
+  labelValue(leftBoxX+2, topBoxY+31, 'Type of Work Order', s.estStatus||s.orderType||'-');
   labelValue(rightBoxX+2, topBoxY+7, 'Customer Name', s.customer||s.custName||'-', 34);
   labelValue(rightBoxX+2, topBoxY+15, 'Dealer Name', s.dealer||'-', 34);
 
