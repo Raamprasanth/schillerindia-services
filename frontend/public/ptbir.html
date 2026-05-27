@@ -959,6 +959,12 @@ function editBIR(id){
   ['f-ts-date','f-ps-engineer','f-cnr-circ','f-cnr-ref','f-cnr-date','f-ps-date','f-pt-remarks','f-approved-date'].forEach(fid=>{
     const el=document.getElementById(fid); if(el) el.disabled = false;
   });
+  // Auto-fill PS Engineer with logged-in user's name if not already set
+  const psEngEl = document.getElementById('f-ps-engineer');
+  if (psEngEl && !psEngEl.value.trim()) {
+    const loggedUser = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
+    psEngEl.value = loggedUser.name || '';
+  }
   syncCnrTechnewsLock();
 }
 
