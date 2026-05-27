@@ -5,6 +5,7 @@ const tourSummarySchema = new mongoose.Schema({
   dayNo: { type: Number, default: 1, min: 1 },
   startDate: { type: String, required: true, trim: true },
   customerName: { type: String, required: true, trim: true },
+  region: { type: String, default: '', trim: true },
   branch: { type: String, default: '', trim: true },
   model: { type: String, default: '', trim: true },
   unitStatus: { type: String, default: '', trim: true },

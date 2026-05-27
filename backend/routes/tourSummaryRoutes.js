@@ -123,6 +123,7 @@ router.post('/', async (req, res) => {
       dayNo: Math.max(1, Number(body.dayNo) || 1),
       startDate: body.startDate,
       customerName: body.customerName,
+      region: body.region || '',
       branch: body.branch || '',
       model: body.model || '',
       unitStatus: body.unitStatus || '',

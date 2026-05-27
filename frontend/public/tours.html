@@ -108,7 +108,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         <div class="field"><label>Day</label><input type="number" id="tour-day" min="1" step="1" value="1"></div>
         <div class="field"><label>Start Date <span class="req">*</span></label><input type="date" id="tour-date"></div>
         <div class="field"><label>Customer Name <span class="req">*</span></label><input type="text" id="tour-customer"></div>
-        <div class="field"><label>Branch</label><input type="text" id="tour-branch"></div>
+        <div class="field"><label>Region</label><select id="tour-region" onchange="populateBranchSelect()"><option value="">Loading regions...</option></select></div>
+        <div class="field"><label>Branch</label><select id="tour-branch"><option value="">Select region first</option></select></div>
         <div class="field"><label>Model</label><input type="text" id="tour-model"></div>
         <div class="field"><label>Unit Status</label><select id="tour-status"><option value="">Select status...</option><option>OW</option><option>IW</option><option>EW</option><option>CAMC</option><option>LAMC</option><option>STOCK</option></select></div>
         <div class="field"><label>Unit SL No</label><input type="text" id="tour-slno"></div>
@@ -125,17 +126,61 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 </div>
 <script>
 const token = sessionStorage.getItem('schiller_token') || '';
-let tours = [], filteredTours = [], tourImgs = [null, null, null, null, null];
+let tours = [], filteredTours = [], tourImgs = [null, null, null, null, null], DB_BRANCHES = [];
 (function init(){
   const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   const name = u.name || 'Employee';
   setText('emp-name', name); setText('emp-avatar', name.charAt(0).toUpperCase()); setText('emp-desig', u.designation || 'Field Engineer');
   setText('topbar-date', new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'}));
   renderSlots();
+  loadBranches();
   loadTours();
 })();
 function hdrs(){ return {'Content-Type':'application/json', Authorization:'Bearer '+token}; }
 function handleAuth(res){ if(res.status===401){ window.location.href='login.html'; throw new Error('Unauthorized'); } }
+async function loadBranches(){
+  try{
+    const res = await fetch('/api/branches', { headers: hdrs() }); handleAuth(res);
+    const json = await res.json().catch(()=>[]);
+    if(!res.ok) throw new Error(json.message || 'HTTP '+res.status);
+    DB_BRANCHES = Array.isArray(json) ? json : (json.data || []);
+  }catch(_){
+    DB_BRANCHES = [];
+  }
+  populateRegionSelect();
+}
+function branchRegion(b){ return String(b?.region || b?.reg || '').trim(); }
+function branchName(b){ return String(b?.name || b?.branch || b?.branchName || '').trim(); }
+function findRegionForBranch(name){
+  const target = String(name || '').trim().toLowerCase();
+  if(!target) return '';
+  const hit = DB_BRANCHES.find(b => branchName(b).toLowerCase() === target);
+  return hit ? branchRegion(hit) : '';
+}
+function populateRegionSelect(selected){
+  const sel = document.getElementById('tour-region');
+  if(!sel) return;
+  const current = selected !== undefined ? selected : sel.value;
+  const regions = [...new Set(DB_BRANCHES.map(branchRegion).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  sel.innerHTML = '<option value="">Select region...</option>' + regions.map(r => '<option value="'+escAttr(r)+'">'+esc(r)+'</option>').join('');
+  if(current && !regions.includes(current)) sel.innerHTML += '<option value="'+escAttr(current)+'">'+esc(current)+'</option>';
+  sel.value = current || '';
+  populateBranchSelect();
+}
+function populateBranchSelect(selected){
+  const sel = document.getElementById('tour-branch');
+  if(!sel) return;
+  const current = selected !== undefined ? selected : sel.value;
+  const region = val('tour-region');
+  if(!region){
+    sel.innerHTML = '<option value="">Select region first</option>';
+  }else{
+    const branches = [...new Set(DB_BRANCHES.filter(b => branchRegion(b) === region).map(branchName).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+    sel.innerHTML = branches.length ? '<option value="">Select branch...</option>' + branches.map(b => '<option value="'+escAttr(b)+'">'+esc(b)+'</option>').join('') : '<option value="">No branches for this region</option>';
+    if(current && !branches.includes(current)) sel.innerHTML += '<option value="'+escAttr(current)+'">'+esc(current)+'</option>';
+  }
+  sel.value = current || '';
+}
 async function loadTours(){
   const listEl = document.getElementById('tour-list');
   listEl.innerHTML = '<div class="empty">Loading tour summaries...</div>';
@@ -177,7 +222,9 @@ function applyTourFilters(){
     const name = String(t.tourName || t.customerName || 'Tour Summary').toLowerCase();
     const rawDate = String(t.startDate || '').toLowerCase();
     const displayDate = fmtDate(t.startDate).toLowerCase();
-    return name.includes(query) || rawDate.includes(query) || displayDate.includes(query);
+    const region = String(t.region || '').toLowerCase();
+    const branch = String(t.branch || '').toLowerCase();
+    return name.includes(query) || rawDate.includes(query) || displayDate.includes(query) || region.includes(query) || branch.includes(query);
   });
   setText('tour-filter-summary', query ? ('Showing ' + filteredTours.length + ' of ' + tours.length + ' entries') : 'Showing all entries');
   renderTable();
@@ -218,7 +265,7 @@ function renderTourCardGroup(name, items, tourNum){
       + '  </div>'
       + '  <div class="tour-customer">' + esc(t.customerName || '-') + '</div>'
       + '  <div class="tour-meta-grid">'
-      + '    ' + meta('Branch', t.branch) + meta('Model', t.model) + meta('Unit Status', t.unitStatus) + meta('Unit SL No', t.unitSlNo)
+      + '    ' + meta('Region', t.region) + meta('Branch', t.branch) + meta('Model', t.model) + meta('Unit Status', t.unitStatus) + meta('Unit SL No', t.unitSlNo)
       + '  </div>'
       + '  <div class="tour-notes">'
       + '    ' + note('Problem Reported', t.problemReported) + note('Problem Observed', t.problemObserved) + note('Action Taken', t.actionTaken)
@@ -253,7 +300,9 @@ function openTourModal(defaults){
   if(defaults.tourName) document.getElementById('tour-name').value = defaults.tourName;
   if(defaults.dayNo) document.getElementById('tour-day').value = defaults.dayNo;
   if(defaults.customerName) document.getElementById('tour-customer').value = defaults.customerName;
-  if(defaults.branch) document.getElementById('tour-branch').value = defaults.branch;
+  const defaultRegion = defaults.region || findRegionForBranch(defaults.branch) || '';
+  populateRegionSelect(defaultRegion);
+  populateBranchSelect(defaults.branch || '');
   if(defaults.model) document.getElementById('tour-model').value = defaults.model;
   if(defaults.unitStatus) document.getElementById('tour-status').value = defaults.unitStatus;
   if(defaults.unitSlNo) document.getElementById('tour-slno').value = defaults.unitSlNo;
@@ -268,6 +317,7 @@ function openNextDay(tourName){
     tourName: lastItem.tourName || lastItem.customerName || '',
     dayNo: nextDay,
     customerName: lastItem.customerName || '',
+    region: lastItem.region || '',
     branch: lastItem.branch || '',
     model: lastItem.model || '',
     unitStatus: lastItem.unitStatus || '',
@@ -275,12 +325,12 @@ function openNextDay(tourName){
   });
 }
 function closeTourModal(){ document.getElementById('tour-overlay').classList.remove('open'); }
-function clearForm(){ ['tour-name','tour-day','tour-date','tour-customer','tour-branch','tour-model','tour-status','tour-slno','tour-reported','tour-observed','tour-action'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';}); const day=document.getElementById('tour-day'); if(day) day.value='1'; tourImgs=[null,null,null,null,null]; renderSlots(); showMsg(''); }
+function clearForm(){ ['tour-name','tour-day','tour-date','tour-customer','tour-region','tour-branch','tour-model','tour-status','tour-slno','tour-reported','tour-observed','tour-action'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';}); populateRegionSelect(); const day=document.getElementById('tour-day'); if(day) day.value='1'; tourImgs=[null,null,null,null,null]; renderSlots(); showMsg(''); }
 function renderSlots(){ const wrap=document.getElementById('img-slots'); if(!wrap) return; wrap.innerHTML=[0,1,2,3,4].map(i=>'<div class="img-slot" onclick="document.getElementById(&quot;tour-img-'+i+'&quot;).click()"><input type="file" id="tour-img-'+i+'" accept="image/*" style="display:none" onchange="handleImg('+i+',this)">'+(tourImgs[i]?'<img class="img-preview" src="'+tourImgs[i]+'"><button class="img-remove" onclick="removeImg('+i+',event)">&#10005;</button>':'<div class="img-placeholder"><span>&#128247;</span>Add Photo</div>')+'</div>').join(''); }
 function handleImg(i,input){ const file=input.files&&input.files[0]; if(!file) return; if(!/^image\//.test(file.type||'')){ alert('Please upload an image file.'); input.value=''; return; } if(file.size > 3*1024*1024){ alert('Image '+(i+1)+' exceeds 3 MB limit.'); input.value=''; return; } const reader=new FileReader(); reader.onload=e=>{ tourImgs[i]=e.target.result; renderSlots(); }; reader.readAsDataURL(file); }
 function removeImg(i,event){ event.stopPropagation(); tourImgs[i]=null; renderSlots(); }
 async function saveTour(){
-  const payload = { tourName: val('tour-name'), dayNo: Number(val('tour-day')) || 1, startDate: val('tour-date'), customerName: val('tour-customer'), branch: val('tour-branch'), model: val('tour-model'), unitStatus: val('tour-status'), unitSlNo: val('tour-slno'), problemReported: val('tour-reported'), problemObserved: val('tour-observed'), actionTaken: val('tour-action'), images: tourImgs.filter(Boolean) };
+  const payload = { tourName: val('tour-name'), dayNo: Number(val('tour-day')) || 1, startDate: val('tour-date'), customerName: val('tour-customer'), region: val('tour-region'), branch: val('tour-branch'), model: val('tour-model'), unitStatus: val('tour-status'), unitSlNo: val('tour-slno'), problemReported: val('tour-reported'), problemObserved: val('tour-observed'), actionTaken: val('tour-action'), images: tourImgs.filter(Boolean) };
   if(!payload.startDate || !payload.customerName){ showMsg('Required: Start Date and Customer Name.'); return; }
   const btn=document.getElementById('save-btn'); btn.disabled=true; btn.textContent='Saving...';
   try{
@@ -315,6 +365,7 @@ function downloadTourWorkbook(items, fileBase){
       + '<td>' + esc(String(t.dayNo || 1)) + '</td>'
       + '<td>' + esc(fmtDate(t.startDate)) + '</td>'
       + '<td>' + esc(t.customerName || '') + '</td>'
+      + '<td>' + esc(t.region || '') + '</td>'
       + '<td>' + esc(t.branch || '') + '</td>'
       + '<td>' + esc(t.model || '') + '</td>'
       + '<td>' + esc(t.unitStatus || '') + '</td>'
@@ -326,7 +377,7 @@ function downloadTourWorkbook(items, fileBase){
       + '<td>' + photoHtml + '</td>'
       + '</tr>';
   }).join('');
-  const html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Tour Summary</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--><style>table{border-collapse:collapse;width:100%;font-family:Arial,sans-serif}th,td{border:1px solid #cbd5e1;padding:8px;vertical-align:top;text-align:left}th{background:#e8f0f7;font-weight:700}.photos{min-width:180px}</style></head><body><table><thead><tr><th>S.No</th><th>Tour Name</th><th>Day</th><th>Start Date</th><th>Customer Name</th><th>Branch</th><th>Model</th><th>Unit Status</th><th>Unit SL No</th><th>Problem Reported</th><th>Problem Observed</th><th>Action Taken</th><th>Added By</th><th class="photos">Photos</th></tr></thead><tbody>' + rows + '</tbody></table></body></html>';
+  const html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Tour Summary</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--><style>table{border-collapse:collapse;width:100%;font-family:Arial,sans-serif}th,td{border:1px solid #cbd5e1;padding:8px;vertical-align:top;text-align:left}th{background:#e8f0f7;font-weight:700}.photos{min-width:180px}</style></head><body><table><thead><tr><th>S.No</th><th>Tour Name</th><th>Day</th><th>Start Date</th><th>Customer Name</th><th>Region</th><th>Branch</th><th>Model</th><th>Unit Status</th><th>Unit SL No</th><th>Problem Reported</th><th>Problem Observed</th><th>Action Taken</th><th>Added By</th><th class="photos">Photos</th></tr></thead><tbody>' + rows + '</tbody></table></body></html>';
   const blob = new Blob(['\ufeff', html], { type: 'application/vnd.ms-excel' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
