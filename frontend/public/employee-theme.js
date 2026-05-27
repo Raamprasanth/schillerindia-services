@@ -163,7 +163,49 @@
   }
 
   function enableDatePickerTabFlow() {
-    // Disabled to prevent forcing open the date picker during keyboard/tab focus.
+    if (window.__schillerDateTabFlowEnabled) return;
+    window.__schillerDateTabFlowEnabled = true;
+
+    const focusableSelector = [
+      'input:not([type="hidden"])',
+      'select',
+      'textarea',
+      'button',
+      'a[href]',
+      '[tabindex]:not([tabindex="-1"])',
+    ].join(',');
+
+    function isVisible(el) {
+      if (!el) return false;
+      const style = window.getComputedStyle(el);
+      return style.display !== 'none' && style.visibility !== 'hidden' && !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+    }
+
+    function getFocusableElements() {
+      return Array.from(document.querySelectorAll(focusableSelector))
+        .filter(el => !el.disabled && !el.readOnly && isVisible(el));
+    }
+
+    function focusNextFrom(el, backwards = false) {
+      const focusables = getFocusableElements();
+      const currentIndex = focusables.indexOf(el);
+      if (currentIndex === -1) return false;
+      const next = focusables[currentIndex + (backwards ? -1 : 1)];
+      if (!next) return false;
+      next.focus();
+      if (typeof next.select === 'function' && /^(text|search|tel|url|email|number)$/i.test(next.type || '')) {
+        try { next.select(); } catch (_err) {}
+      }
+      return true;
+    }
+
+    document.addEventListener('keydown', (e) => {
+      const el = e.target;
+      if (!el || el.tagName !== 'INPUT' || el.type !== 'date') return;
+      if (e.key !== 'Tab' || e.altKey || e.ctrlKey || e.metaKey) return;
+      if (!String(el.value || '').trim()) return;
+      if (focusNextFrom(el, e.shiftKey)) e.preventDefault();
+    }, true);
   }
 
   function enableDateEnterShortcut() {
@@ -178,6 +220,7 @@
             active.value = (new Date(Date.now() - tzoffset)).toISOString().slice(0, 10);
             active.dispatchEvent(new Event('change', { bubbles: true }));
             active.dispatchEvent(new Event('input', { bubbles: true }));
+            active.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
           }
         }
       }
