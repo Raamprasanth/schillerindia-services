@@ -266,7 +266,7 @@ router.post('/:id', async (req, res) => {
 
     // Carry over all view-tab fields from RTCRL so no data is lost
     const newDocPayload = {
-      entryDate:        service.rturSentAt || service.rtfrnSentAt || service.rtobSentAt || new Date(),
+      entryDate:        new Date(),
       division:         safeDivision,
       scRefNo:          scRefNo || '',
       defGirNo:         defGirNo || '',
@@ -429,7 +429,7 @@ router.post('/crl/:id', async (req, res) => {
 
     // Carry over all view-tab fields from RTCRL so no data is lost
     const newDocPayload = {
-      entryDate:        service.rturSentAt || service.rtfrnSentAt || service.rtobSentAt || new Date(),
+      entryDate:        new Date(),
       division:         safeDivision,
       scRefNo:          scRefNo || '',
       defGirNo:         defGirNo || '',
