@@ -1575,6 +1575,12 @@ function previewSelectedEstimationPDF(){
   const records = getSelectedEstimateRecords();
   if(!records.length){ showToast('Select at least one entry.','err'); return; }
   const header = buildSelectedEstimateHeader();
+  if(!header.techRemarks){
+    const el=document.getElementById('frn-est-techremarks');
+    if(el){el.classList.add('err');el.focus();}
+    showToast('Problem Observed is required.','err');
+    return;
+  }
   const first = records[0];
   try {
     generateEstimationPDFData({ ...first, ...header, lineItems: header.lineItems, serviceCharge: header.serviceCharge, custName:first.customer||'', customer:first.customer||'', dealer:first.dealer||'' }, 'preview');
@@ -1594,6 +1600,8 @@ async function submitSelectedEstimation(){
   if(!header.estStatus) missing.push('Order Type');
   if(!header.estRaEng) missing.push('RA Engineer');
   if(!header.techRemarks) missing.push('Problem Observed');
+  const problemObservedEl=document.getElementById('frn-est-techremarks');
+  if(problemObservedEl) problemObservedEl.classList.toggle('err',!header.techRemarks);
   if(!header.lineItems.length) missing.push('Line Items');
   if(missing.length){
     msg.textContent='Required: '+missing.join(', ');

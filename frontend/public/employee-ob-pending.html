@@ -351,7 +351,7 @@ table.ob-table tbody tr:last-child td{border-bottom:none;}
         <div class="form-section">
           <div class="form-section-title">&#128221; Problem Observed</div>
           <div class="fg-4">
-            <div class="ff span4"><label>Problem Observed</label><textarea id="u-techremarks" rows="2" placeholder="Observed problem, diagnosis, fault description"></textarea></div>
+            <div class="ff span4"><label>Problem Observed <span class="req">*</span></label><textarea id="u-techremarks" required rows="2" placeholder="Observed problem, diagnosis, fault description"></textarea></div>
           </div>
         </div>
 
@@ -1178,6 +1178,13 @@ function handleEstimatePdfOutput(doc, fname, mode){
 function previewEstimatePDF(){
   const seed = allRecords.find(x => (x._id||x.id)===editingId);
   if(!seed){ showToast('Record not found','err'); return; }
+  const header = buildEstimateHeader(seed);
+  if(!header.techRemarks){
+    const el=document.getElementById('u-techremarks');
+    if(el){el.classList.add('err');el.focus();}
+    showToast('Problem Observed is required.','err');
+    return;
+  }
   try {
     generatePDFData(buildPreviewEstimatePayload(seed), 'preview');
   } catch(pdfErr) {
@@ -1212,6 +1219,9 @@ async function submitEstimation(){
   if(!estamount) missing.push('Estimation Amount');
   if(!eststatus) missing.push('Order Type');
   if(!raeng) missing.push('RA Engineer');
+  if(!header.techRemarks) missing.push('Problem Observed');
+  const problemObservedEl=document.getElementById('u-techremarks');
+  if(problemObservedEl) problemObservedEl.classList.toggle('err',!header.techRemarks);
   if(!header.lineItems.length) missing.push('Line Items');
   if(missing.length){
     errEl.textContent='Required: '+missing.join(', ');
