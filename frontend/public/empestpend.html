@@ -800,6 +800,201 @@ function getLoggedDivision() {
 function getEngineerDivisions(engineer) {
   const values = [];
   if (Array.isArray(engineer?.divisions)) values.push(...engineer.divisions);
+  </div>
+</div>
+
+<div class="rp-over" id="rp-overlay">
+  <div class="rp-card">
+    <div class="rp-head">
+      <div class="rp-htitle">&#128295; Send to Repair Team</div>
+      <button class="modal-close" type="button" onclick="closeRpModal()">&#10005;</button>
+    </div>
+    <div class="rp-body">
+      <span class="rp-lbl">Technical Remarks</span>
+      <textarea id="rp-tech-remarks" placeholder="Enter technical diagnosis, fault description, observed problem..."></textarea>
+    </div>
+    <div class="rp-foot">
+      <button class="btn btn-outline btn-sm" type="button" onclick="closeRpModal()">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="rp-confirm-btn" type="button" onclick="confirmSendToRtOb()">Confirm &amp; Send to RT OB</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<aside class="sidebar">
+  <img class="brand-logo-img" src="logo.png" alt="SCHILLER">
+  <div style="padding:7px 12px 0;"><span class="emp-badge">Employee</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-sec">Operations</div>
+    <a class="nav-item" href="employee-dashboard.html"><span class="icon">&#128202;</span> Dashboard</a>
+    <a class="nav-item" href="employee-service-list.html"><span class="ico">&#128225;</span> Services</a>
+    <a class="nav-item" href="emppendingfrn.html"><span class="ico">&#128221;</span> Pending FRN</a>
+    <a class="nav-item" href="employee-ob-pending.html"><span class="ico">&#128230;</span> Estimation Pending</a>
+    <a class="nav-item active" href="empestpend.html"><span class="ico">&#128203;</span> SO Pending</a>
+    <a class="nav-item" href="empunderep.html"><span class="ico">&#128736;&#65039;</span> Under Repair</a>
+    <a class="nav-item" href="completed-frn.html"><span class="ico">&#9989;</span> Completed FRN</a>
+     <a class="nav-item" href="Emp-scrap-list.html"><span class="ico">&#9888;&#65039;</span> Supplier Warranty</a>
+      <a class="nav-item" href="sc-completed-frn.html"><span class="ico">&#128257;</span> External Repair</a>
+    <button class="nav-group-toggle" type="button" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');"><span class="ico">&#128193;</span><span>Records</span><span class="caret">&#9656;</span></button>
+    <div class="nav-children nav-sub">
+    <a class="nav-item" href="epa.html"><span class="ico">&#128221;</span> Pending Activity</a>
+    <a class="nav-item" href="ecpa.html"><span class="ico">&#9989;</span> Closed Activity</a>
+    <a class="nav-item" href="ecall.html"><span class="ico">&#128222;</span> Call Register</a>
+    <a class="nav-item" href="eclose.html"><span class="ico">&#9989;</span> Closed Calls</a>
+    <a class="nav-item" href="eprfob.html"><span class="ico">&#128203;</span> PRF/OB Register</a>
+    <a class="nav-item" href="ecr.html"><span class="ico">&#128274;</span> Closed PRF/OB Register</a>
+    <a class="nav-item" href="tours.html"><span class="ico">&#128205;</span> Tour Summary</a>
+      <a class="nav-item" href="dailyw.html"><span class="ico">&#128197;</span> Daily Work</a>
+    </div>
+    <button class="nav-group-toggle" type="button" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');"><span class="ico">&#128230;</span><span>Inventory</span><span class="caret">&#9656;</span></button>
+    <div class="nav-children nav-sub">
+    <a class="nav-item" href="emp-non-saleable.html"><span class="ico">&#128230;</span> Non Saleable</a>
+    <a class="nav-item" href="emp-saleables.html"><span class="ico">&#128176;</span> Saleables</a>
+    <a class="nav-item" href="ebir.html"><span class="ico">&#128203;</span> BIR LIST</a>
+    <a class="nav-item" href="ecbir.html"><span class="ico">&#128193;</span> Closed BIR</a>
+      <a class="nav-item" href="elt.html"><span class="ico">&#128451;</span> Loan Items</a>
+      <a class="nav-item" href="ecli.html"><span class="ico">&#128193;</span> Closed Loan Item</a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="user-av" id="emp-avatar">E</div>
+      <div>
+        <div class="user-nm" id="emp-name">Employee</div>
+        <div class="user-rl" id="emp-desig">Field Engineer</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="breadcrumb"><a href="employee-dashboard.html">Dashboard</a><span class="sep">&#8250;</span><span>Operations</span><span class="sep">&#8250;</span><span>SO Pending</span></div>
+      <div class="page-title">SO Pending</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px;">
+      <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
+      <button class="btn btn-outline btn-sm" id="mail-toggle-btn" onclick="toggleMailAcknowledgements()">&#128231; Mail</button>
+      <button class="btn btn-outline btn-sm" onclick="loadData()">&#8635; Refresh</button>
+      <button class="btn btn-primary btn-sm" onclick="exportCSV()">&#128228; Export</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="stats-row">
+      <div class="stat-card sc-blue"><div class="stat-icon si-blue">&#128202;</div><div class="stat-label">Total Estimation</div><div class="stat-value" id="stat-total">-</div><div class="stat-sub">Active records</div></div>
+      <div class="stat-card sc-red"><div class="stat-icon si-red">&#128308;</div><div class="stat-label">Critical (&gt;60 days)</div><div class="stat-value" id="stat-high">-</div><div class="stat-sub">Needs immediate follow-up</div></div>
+      <div class="stat-card sc-amber"><div class="stat-icon si-amber">&#9888;</div><div class="stat-label">Repair Orders</div><div class="stat-value" id="stat-repair">-</div><div class="stat-sub">Order Type: Repair</div></div>
+      <div class="stat-card sc-green"><div class="stat-icon si-green">&#9989;</div><div class="stat-label">New Orders</div><div class="stat-value" id="stat-new">-</div><div class="stat-sub">Order Type: New</div></div>
+    </div>
+    <div class="filter-bar">
+      <div class="fgroup"><label>From</label><input type="date" class="f-input" id="fl-from" style="width:135px;" onchange="applyFilters()"/></div>
+      <div class="fgroup"><label>To</label><input type="date" class="f-input" id="fl-to" style="width:135px;" onchange="applyFilters()"/></div>
+      <button class="btn btn-outline btn-sm" style="align-self:flex-end;" onclick="clearDates()">Clear</button>
+      <div class="f-divider" style="align-self:center;"></div>
+      <div class="fgroup"><label>Order Type</label>
+        <select class="f-select" id="fl-ordertype" onchange="applyFilters()">
+          <option value="">All Types</option>
+          <option value="New">New</option>
+          <option value="Repair">Repair</option>
+          <option value="Exchange">Exchange</option>
+        </select>
+      </div>
+      <div class="fgroup"><label>Pend Days</label>
+        <select class="f-select" id="fl-pdays" onchange="applyFilters()">
+          <option value="">All</option>
+          <option value="high">&gt;60 days</option>
+          <option value="mid">20-60 days</option>
+          <option value="low">&lt;20 days</option>
+        </select>
+      </div>
+      <div class="fgroup"><label>Engineer</label>
+        <select class="f-select" id="fl-eng" onchange="applyFilters()"><option value="">All Engineers</option></select>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-top">
+        <div class="table-title">SO Pending Records <span class="count-chip" id="count-chip">- entries</span></div>
+        <div class="toolbar-r">
+          <div class="show-row">Show
+            <select class="f-select" id="per-page" style="padding:5px 8px;min-width:60px;" onchange="renderTable()">
+              <option>10</option><option>25</option><option>50</option><option>100</option>
+            </select>entries
+          </div>
+          <div class="srch-wrap"><span class="srch-ico">&#128269;</span><input type="text" id="tbl-search" placeholder="Search SC No, customer, engineer" oninput="applyFilters()"/></div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="est-table">
+          <thead><tr>
+            <th onclick="sortBy('entryDate')">Entry Date <span class="si">&#8693;</span></th>
+            <th>Update</th>
+            <th onclick="sortBy('scReNo')">SC Ref No <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('scEng')">SC Eng <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('frnNo')">FRN No <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('branch')">Branch <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('eng')">Engineer <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('custName')">Customer <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('unitSts')">Unit Sts <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('defMod')">Def Mod / Brd <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('defGir')">Def GIR No <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('estAmount')">Est. Amount <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('orderType')">Order Type <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('estRaEng')">RA Engineer <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('pdEst')">Pend Days <span class="si">&#8693;</span></th>
+            <th>Repair</th>
+            <th>Spares Req</th>
+            <th>TO ES</th>
+          </tr></thead>
+          <tbody id="est-tbody">
+            <tr class="loading-row"><td colspan="19"><span class="spin"></span>Loading from database...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-foot">
+        <span id="tbl-info">-</span>
+        <div class="pager-row" id="tbl-pagination"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE    = '';
+const LOGGED_USER = JSON.parse(sessionStorage.getItem('schiller_user')||'{}');
+const EMP_NAME    = LOGGED_USER.name || '';
+const USER_ROLE   = (LOGGED_USER.role||'').toLowerCase();
+const IS_ADMIN    = USER_ROLE === 'admin';
+
+let allRecords=[], filtered=[], currentPage=1;
+let sortKey='entryDate', sortDir=-1, editingId=null;
+let currentToRecord=null, currentToRows=[];
+let ALL_ENGINEERS = [];
+
+function getDivisionName(value) {
+  return String(value?.name || value?.divisionName || value?.division || value || '').trim();
+}
+
+function normalizeDivisionName(value) {
+  return getDivisionName(value).toUpperCase().replace(/\s+/g, ' ');
+}
+
+function getLoggedDivision() {
+  return getDivisionName(
+    localStorage.getItem('schiller_active_division') ||
+    LOGGED_USER.division ||
+    LOGGED_USER.divisionName ||
+    LOGGED_USER.Division ||
+    ''
+  );
+}
+
+function getEngineerDivisions(engineer) {
+  const values = [];
+  if (Array.isArray(engineer?.divisions)) values.push(...engineer.divisions);
   if (engineer?.division) values.push(engineer.division);
   if (engineer?.divisionName) values.push(engineer.divisionName);
   return values.map(normalizeDivisionName).filter(Boolean);
@@ -807,7 +1002,8 @@ function getEngineerDivisions(engineer) {
 
 function engineerMatchesDivision(engineer, division) {
   const div = normalizeDivisionName(division);
-  return div && getEngineerDivisions(engineer).includes(div);
+  const engDivs = getEngineerDivisions(engineer);
+  return !engDivs.length || (div && engDivs.includes(div));
 }
 
 async function fetchAllEngineers() {
@@ -825,16 +1021,21 @@ function fillEngSelect(selId, division, selected) {
   if (!sel) return;
   const div = normalizeDivisionName(getLoggedDivision() || division);
   const engs = ALL_ENGINEERS.filter(e => engineerMatchesDivision(e, div));
+  
+  if (selected && !engs.some(e => String(e.name).trim() === String(selected).trim())) {
+    engs.push({ name: String(selected).trim() });
+  }
+  
   sel.innerHTML = div
     ? '<option value="">Select Engineer...</option>'
     : '<option value="">No login division found</option>';
   engs.forEach(e => {
     const o = document.createElement('option');
     o.value = e.name; o.textContent = e.name;
+    if (selected && String(e.name).trim() === String(selected).trim()) o.selected = true;
     sel.appendChild(o);
   });
   if (div && !engs.length) sel.innerHTML = '<option value="">No engineers found for your division</option>';
-  if (selected && Array.from(sel.options).some(o => o.value === selected)) sel.value = selected;
 }
 
 (function init(){
@@ -1475,49 +1676,6 @@ function configureEstimationStatCards(){
   if(cards.length<4) return;
   cards[0].setAttribute('onclick',"filterByCard('all')");
   cards[0].innerHTML='<div class="stat-icon si-blue">&#128202;</div><div class="stat-label">Total SO Pending</div><div class="stat-value" id="stat-total">-</div><div class="stat-sub">Active records</div>';
-  cards[1].className='stat-card sc-green';
-  cards[1].setAttribute('onclick',"filterByCard('normal')");cards[1].innerHTML='<div class="stat-icon si-green">&#9989;</div><div class="stat-label">Normal (&lt;10 days)</div><div class="stat-value" id="stat-new">-</div><div class="stat-sub">Fresh SO entries</div>';
-  cards[2].className='stat-card sc-amber';
-  cards[2].setAttribute('onclick',"filterByCard('warning')");cards[2].innerHTML='<div class="stat-icon si-amber">&#9888;</div><div class="stat-label">Warning (10-20 days)</div><div class="stat-value" id="stat-repair">-</div><div class="stat-sub">Needs follow-up</div>';
-  cards[3].className='stat-card sc-red';
-  cards[3].setAttribute('onclick',"filterByCard('critical')");cards[3].innerHTML='<div class="stat-icon si-red">&#128308;</div><div class="stat-label">Critical (&gt;20 days)</div><div class="stat-value" id="stat-high">-</div><div class="stat-sub">Needs immediate follow-up</div>';
-}
-configureEstimationStatCards();
-function configureEstimationTableColumns(){}
-function renderTable(){
-  const perPage=parseInt(document.getElementById('per-page').value)||10;
-  const total=filtered.length;
-  const pages=Math.max(1,Math.ceil(total/perPage));
-  if(currentPage>pages) currentPage=pages;
-  const slice=filtered.slice((currentPage-1)*perPage,currentPage*perPage);
-  (document.getElementById('count-chip')||{}).textContent =total+' entr'+(total===1?'y':'ies');
-  const tbody=document.getElementById('est-tbody');
-  if(!slice.length){
-    tbody.innerHTML=`<tr><td colspan="17"><div class="empty-st">
-      <div class="ei">&#128196;</div>
-      <div class="et">${allRecords.length?'No records match the current filters':'No Estimation Pending Records'}</div>
-      <div class="es">${allRecords.length?'Try clearing the filters.':'Records will appear here when saved from OB Pending.'}</div>
-    </div></td></tr>`;
-  } else {
-    tbody.innerHTML=slice.map(s=>{
-      const rowId=s._id||s.id;
-      const pdClass=s.pdEst>60?'pday-high':s.pdEst>=20?'pday-mid':'pday-ok';
-      const displayAmount=getDisplayEstAmount(s);
-      const amt=displayAmount?'Rs. '+displayAmount.toLocaleString('en-IN'):'-';
-      const ot=s.orderType||s.estStatus||'-';
-      const otClass=ot==='Approved'?'sp-approved':ot==='Rejected'?'sp-rejected':ot==='New'?'sp-review':ot==='Repair'?'sp-pending':'sp-hold';
-      return`<tr>
-        <td style="font-size:11px;color:var(--soft);">${fmtDate(s.entryDate)}</td>
-        <td style="font-weight:600;color:var(--accent2);">${esc(s.scReNo||'-')}</td>
-        <td>${esc(s.scEng||'-')}</td>
-        <td class="mono" style="color:var(--accent);">${esc(s.frnNo||'-')}</td>
-        <td><span class="branch-tag">${esc(s.branch||s.reg||'-')}</span></td>
-        <td>${esc(s.eng||'-')}</td>
-        <td style="max-width:170px;overflow:hidden;text-overflow:ellipsis;font-weight:500;">${esc(s.custName||s.customer||'-')}</td>
-        <td style="font-weight:600;color:var(--accent2);">${esc(s.model||'-')}</td>
-        <td><span class="s-pill ${s.unitSts==='OW'?'sp-hold':'sp-pending'}">${esc(s.unitSts||'-')}</span></td>
-        <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;font-size:11px;">${esc(s.defMod||'-')}</td>
-        <td><span class="gir-badge">${esc(s.defGir||'-')}</span></td>
         <td class="amount-cell">${amt}</td>
         <td><span class="s-pill ${otClass}">${esc(ot)}</span></td>
         <td>${esc(s.estRaEng||'-')}</td>
