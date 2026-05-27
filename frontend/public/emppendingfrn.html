@@ -2090,6 +2090,7 @@ function exportCSV(){const headers=['#','Entry Date','SC RNo','SC Eng','FRN No',
 function configurePendingStatCards(){
   const cards=document.querySelectorAll('.stats-row .stat-card');
   if(cards.length<4) return;
+  cards[0].setAttribute('onclick',"filterByCard('all')");
 
   cards[1].className='stat-card sc-green';
   cards[1].setAttribute('onclick',"filterByCard('normal')");cards[1].innerHTML='<div class="stat-icon si-green">&#9989;</div><div class="stat-label">Normal (&lt;3 days)</div><div class="stat-value" id="s-normal">-</div><div class="stat-sub">Fresh pending entries</div>';
