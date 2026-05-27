@@ -34,6 +34,55 @@ const fail = (res, code, message, err = null) => {
   return res.status(code).json({ success: false, message, error: err?.message || null });
 };
 
+function isMongoId(value) {
+  return /^[a-f\d]{24}$/i.test(String(value || '').trim());
+}
+
+function cleanDivisionName(value) {
+  if (value && typeof value === 'object') {
+    return cleanDivisionName(value.name || value.displayName || '');
+  }
+  const text = String(value || '').trim();
+  if (!text || isMongoId(text)) return '';
+  if (/^others?$/i.test(text)) return '';
+  return text.toUpperCase();
+}
+
+async function serviceDivisionMap(records = []) {
+  const ids = [...new Set(records
+    .map((record) => String(record.sourceServiceId || '').trim())
+    .filter((id) => isMongoId(id)))];
+  if (!ids.length) return new Map();
+
+  const services = await Service.find({ _id: { $in: ids } })
+    .select('division divisionName divisionDisplayName branch reg')
+    .populate('division', 'name displayName')
+    .lean();
+
+  return new Map(services.map((svc) => [
+    String(svc._id),
+    cleanDivisionName(svc.division?.name)
+      || cleanDivisionName(svc.division?.displayName)
+      || cleanDivisionName(svc.divisionName)
+      || cleanDivisionName(svc.divisionDisplayName)
+      || cleanDivisionName(svc.branch)
+      || cleanDivisionName(svc.reg),
+  ]));
+}
+
+async function normalizeRecordDivisions(records = []) {
+  const plain = records.map((record) => (record.toObject ? record.toObject() : record));
+  const sourceMap = await serviceDivisionMap(plain);
+  return plain.map((record) => {
+    const current = cleanDivisionName(record.division);
+    const fromService = sourceMap.get(String(record.sourceServiceId || '')) || '';
+    return {
+      ...record,
+      division: current || fromService || record.division || 'OTHER',
+    };
+  });
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/rtur/stats
 // Returns the four numbers shown in the hero banner + stat cards:
@@ -149,13 +198,14 @@ router.get('/', async (req, res) => {
       .sort({ entryDate: -1 })
       .skip(skip)
       .limit(Number(limit));                              // toJSON virtuals include noOfDays
+    const normalizedRecords = await normalizeRecordDivisions(records);
 
     return res.json({
       success: true,
       total,
       page:  Number(page),
       pages: Math.ceil(total / Number(limit)),
-      data:  records,                                     // noOfDays virtual included via toJSON
+      data:  normalizedRecords,
     });
   } catch (err) {
     return fail(res, 500, 'Failed to fetch RTUR records', err);
@@ -170,7 +220,8 @@ router.get('/:id', async (req, res) => {
   try {
     const record = await RTUR.findById(req.params.id);
     if (!record) return fail(res, 404, 'Record not found');
-    return res.json({ success: true, data: record });
+    const [normalizedRecord] = await normalizeRecordDivisions([record]);
+    return res.json({ success: true, data: normalizedRecord });
   } catch (err) {
     return fail(res, 500, 'Failed to fetch record', err);
   }
@@ -200,17 +251,27 @@ router.post('/', async (req, res) => {
 
     let serviceDoi = '';
     let serviceFieldRemarks = '';
-    if ((!doi || !fieldRemarks) && sourceServiceId) {
+    let serviceDivision = '';
+    if (((!doi || !fieldRemarks) || !cleanDivisionName(division)) && sourceServiceId) {
       try {
-        const svc = await Service.findById(sourceServiceId).select('doi fieldRemarks').lean();
+        const svc = await Service.findById(sourceServiceId)
+          .select('doi fieldRemarks division divisionName divisionDisplayName branch reg')
+          .populate('division', 'name displayName')
+          .lean();
         serviceDoi = svc?.doi || '';
         serviceFieldRemarks = svc?.fieldRemarks || '';
+        serviceDivision = cleanDivisionName(svc?.division?.name)
+          || cleanDivisionName(svc?.division?.displayName)
+          || cleanDivisionName(svc?.divisionName)
+          || cleanDivisionName(svc?.divisionDisplayName)
+          || cleanDivisionName(svc?.branch)
+          || cleanDivisionName(svc?.reg);
       } catch (_) {}
     }
 
     const doc = await RTUR.create({
       entryDate:    new Date(entryDate),
-      division,
+      division: cleanDivisionName(division) || serviceDivision || 'OTHER',
       scRefNo,
       defGirNo,
       category:     category  || 'UR',

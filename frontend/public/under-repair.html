@@ -600,9 +600,25 @@ function authHeaders() { return { 'Content-Type':'application/json', Authorizati
 function setLoading(on){ document.getElementById('loading-bar').className = on ? 'loading-bar active' : 'loading-bar'; }
 
 function normalizeRtDivision(record){
-  const raw = String(record?.division?.name || record?.divisionName || record?.division || record?.branch || record?.reg || '').trim().toUpperCase();
-  const map = { 'PATIENT MONITOR':'PATIENT MONITORS','PATIENT MONITORS':'PATIENT MONITORS','SAG':'SAG','VENTILATOR':'VENTILATOR','DEFIBRILLATOR':'DEFIBRILLATOR','ECG':'ECG','SYRINGE PUMP':'SYRINGE PUMP','INFUSION PUMP':'INFUSION PUMP','ULTRASOUND':'ULTRASOUND','ANAESTHESIA':'ANAESTHESIA' };
-  return map[raw] || 'OTHER';
+  const candidates = [
+    record?.division?.name,
+    record?.division?.displayName,
+    record?.divisionName,
+    record?.divisionDisplayName,
+    record?.division,
+    record?.branch,
+    record?.reg
+  ];
+  for (const value of candidates) {
+    if (value && typeof value === 'object') continue;
+    const text = String(value || '').trim();
+    if (!text || /^[a-f\d]{24}$/i.test(text)) continue;
+    const upper = text.toUpperCase();
+    if (upper === 'PATIENT MONITOR') return 'PATIENT MONITORS';
+    if (upper === 'OTHERS') return 'OTHER';
+    return upper;
+  }
+  return 'OTHER';
 }
 
 
@@ -1144,7 +1160,6 @@ document.getElementById('nw-btn')?.addEventListener('click', async () => {
 </script>
 </body>
 </html>
-
 
 
 
