@@ -978,6 +978,18 @@ function removeLegacyAutoMailUi(){
 function getToken(){return sessionStorage.getItem('schiller_token')||'';}
 function authHeaders(){return{'Content-Type':'application/json',Authorization:'Bearer '+getToken()};}
 function handleUnauth(res){if(res.status===401){showToast('Session expired - please log in again.','err');setTimeout(()=>window.location.href='login.html',1500);throw new Error('Unauthorized');}}
+const UNIT_STATUS_VALUES=new Set(['OW','LAMC','CAMC','EW','STOCK','IW','DEMO','REPEAT','BUY BACK','BUYBACK']);
+function isUnitStatusValue(value){
+  return UNIT_STATUS_VALUES.has(String(value||'').trim().toUpperCase());
+}
+function getDisplayTypeWork(record){
+  const candidates=[record?.typeWork,record?.typeOfWork,record?.workType,record?.repairType,record?.type];
+  for(const value of candidates){
+    const text=String(value||'').trim();
+    if(text && !isUnitStatusValue(text)) return text;
+  }
+  return '';
+}
 
 async function loadData(){
   setLoading();
@@ -1054,7 +1066,7 @@ function renderTable(){
     <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;font-size:11px;">${esc(d.defMod||'-')}</td>
     <td><span class="gir-badge">${esc(d.defGir||'-')}</span></td>
     <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--soft);">${esc(d.finalRemarks||d.remarks||'-')}</td>
-    <td style="font-size:11px;">${esc(d.typeWork||'-')}</td>
+    <td style="font-size:11px;">${esc(getDisplayTypeWork(d)||'-')}</td>
     <td style="font-weight:600;">${d.pdays}</td>
     <td>${renderRepairStateButton(rid,!!d.rtfrnSent,!!d.rtfrnCompleted,'RT FRN')}</td>
   </tr>`;}).join('');}
@@ -1097,7 +1109,8 @@ async function openUpdateModal(id){
   (document.getElementById('ri-defmod')||{}).textContent =d.defMod||'-';
   (document.getElementById('ri-frnno')||{}).textContent =d.frnNo||'-';
   (document.getElementById('ri-unitsts')||{}).textContent =d.unitStatus||'-';
-  (document.getElementById('ri-typework')||{}).textContent =d.typeWork||'-';
+  const displayTypeWork=getDisplayTypeWork(d);
+  (document.getElementById('ri-typework')||{}).textContent =displayTypeWork||'-';
   (document.getElementById('ri-branch')||{}).textContent =d.branch||d.region||'-';
   // Store ID
   document.getElementById('upd-id').value=id;
@@ -1117,7 +1130,7 @@ async function openUpdateModal(id){
   const lockRtFrn=!!(d.rtfrnSent&&d.techRemarks);
   ['upd-techremarks','upd-components'].forEach(fid=>{const el=document.getElementById(fid);if(!el)return;el.readOnly=lockRtFrn;el.classList.toggle('locked-field',lockRtFrn);el.title=lockRtFrn?'Locked - technical remarks were submitted when sending to RT FRN':'';});
   set('upd-shipsc',d.shipSc||'');
-  set('upd-typework',(d.typeWork||'')==='Supplier Warrenty'?'Supplier Warranty':(d.typeWork||''));
+  set('upd-typework',displayTypeWork==='Supplier Warrenty'?'Supplier Warranty':displayTypeWork);
   set('upd-revalue',d.revalue||'');
   set('upd-destination',d.destination||'');
   const revalueInput=document.getElementById('upd-revalue');
@@ -2112,7 +2125,7 @@ function renderTable(){
     <td>${esc(d.defMod||'-')}</td>
     <td><span class="gir-badge">${esc(d.defGir||'-')}</span></td>
     <td title="${esc(d.finalRemarks||d.remarks||'-')}">${esc((d.finalRemarks||d.remarks||'-').slice(0,42))}${(d.finalRemarks||d.remarks||'').length>42?'...':''}</td>
-    <td>${esc(d.typeWork||'-')}</td>
+    <td>${esc(getDisplayTypeWork(d)||'-')}</td>
     <td style="font-weight:600;">${d.pdays}</td>
     <td>${renderRepairStateButton(rid,!!d.rtfrnSent,!!d.rtfrnCompleted,'RT FRN')}</td>
     <td><button class="btn-xs ${d.srEscalationQueuedAt?'sr-queued':'repair'}" onclick="queueSrEscalation('${rid}')">DR</button></td>
