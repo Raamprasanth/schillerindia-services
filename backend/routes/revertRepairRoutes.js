@@ -229,14 +229,21 @@ router.post('/:id', async (req, res) => {
     }
 
     // 3. Re-create the RTUR/RTFRN/RTOB record with all fields restored from RTCRL
+    let finalSourceCollection = deletedSourceCollection;
+    if (!finalSourceCollection) {
+      if (isEstimation) finalSourceCollection = 'rtob';
+      else if (empfrnDoc) finalSourceCollection = 'rtfrn';
+      else finalSourceCollection = 'rtur';
+    }
+
     const ModelToRecreate = 
-      deletedSourceCollection === 'rtob' ? RTOB :
-      deletedSourceCollection === 'rtfrn' ? RTFRN : RTUR;
+      finalSourceCollection === 'rtob' ? RTOB :
+      finalSourceCollection === 'rtfrn' ? RTFRN : RTUR;
       
     // Determine the category
     let category = crlCategory;
-    if (service.frnNo && deletedSourceCollection === 'rtfrn') category = 'PFRN';
-    else if (deletedSourceCollection === 'rtob') category = 'OB';
+    if (service.frnNo && finalSourceCollection === 'rtfrn') category = 'PFRN';
+    else if (finalSourceCollection === 'rtob') category = 'OB';
 
     // Normalize Division
     const rawDivName = await resolveDivisionName(service);
@@ -385,13 +392,20 @@ router.post('/crl/:id', async (req, res) => {
     }
 
     // 3. Re-create the RTUR/RTFRN/RTOB record with all fields restored from RTCRL
+    let finalSourceCollection = deletedSourceCollection;
+    if (!finalSourceCollection) {
+      if (isEstimation) finalSourceCollection = 'rtob';
+      else if (service.frnNo) finalSourceCollection = 'rtfrn';
+      else finalSourceCollection = 'rtur';
+    }
+
     const ModelToRecreate = 
-      deletedSourceCollection === 'rtob' ? RTOB :
-      deletedSourceCollection === 'rtfrn' ? RTFRN : RTUR;
+      finalSourceCollection === 'rtob' ? RTOB :
+      finalSourceCollection === 'rtfrn' ? RTFRN : RTUR;
 
     let category = crlDoc.category || 'UR';
-    if (service.frnNo && deletedSourceCollection === 'rtfrn') category = 'PFRN';
-    else if (deletedSourceCollection === 'rtob') category = 'OB';
+    if (service.frnNo && finalSourceCollection === 'rtfrn') category = 'PFRN';
+    else if (finalSourceCollection === 'rtob') category = 'OB';
 
     // Normalize Division
     const rawDivName = await resolveDivisionName(service);
