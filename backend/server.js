@@ -86,6 +86,7 @@ const ptBirRoutes              = require('./routes/ptBirRoutes');
 const ptClosedBirRoutes        = require('./routes/ptClosedBirRoutes');
 const drRoutes                 = require('./routes/drRoutes');
 const todrRoutes               = require('./routes/todrRoutes');
+const cdrRoutes                = require('./routes/cdrRoutes');
 const ctodrRoutes              = require('./routes/ctodrRoutes');
 
 // Ã¢â€â‚¬Ã¢â€â‚¬ ADMIN ACTIVITY REGISTER ROUTES Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
@@ -228,6 +229,7 @@ app.use('/api/pt/bir/closed',         ptClosedBirRoutes);
 app.use('/api/pt/bir',                ptBirRoutes);
 app.use('/api/dr',                    drRoutes);
 app.use('/api/todr',                  todrRoutes);
+app.use('/api/cdr',                   cdrRoutes);
 app.use('/api/ctodr',                 ctodrRoutes);
 
 // Ã¢â€â‚¬Ã¢â€â‚¬ ADMIN ACTIVITY REGISTER ROUTES Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
@@ -278,6 +280,7 @@ app.get('/ob-pending.html',             (req, res) => res.sendFile(path.join(fro
 app.get('/scprfob.html',               (req, res) => res.sendFile(path.join(frontendPath, 'scprfob.html')));
 app.get('/dr.html',                    (req, res) => res.sendFile(path.join(frontendPath, 'dr.html')));
 app.get('/todr.html',                  (req, res) => res.sendFile(path.join(frontendPath, 'todr.html')));
+app.get('/cdr.html',                  (req, res) => res.sendFile(path.join(frontendPath, 'cdr.html')));
 app.get('/ctodr.html',                 (req, res) => res.sendFile(path.join(frontendPath, 'ctodr.html')));
 app.get('/Sc-dashboard.html',         (req, res) => res.sendFile(path.join(frontendPath, 'Sc-dashboard.html')));
 app.get('/sc-dashboard.html',         (req, res) => res.sendFile(path.join(frontendPath, 'Sc-dashboard.html')));
