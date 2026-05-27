@@ -304,7 +304,7 @@ table.bir-table tbody tr:last-child td{border-bottom:none;}
         <div class="ebir-section-unlocked" id="service-section">
           <div class="ebir-section-title"><span class="ebir-dot" style="background:var(--green)"></span> Service Section</div>
           <div class="fg-4">
-            <div class="ff"><label>SC Engineer</label><input type="text" id="upd-sc-engineer" placeholder="SC engineer name" required/></div>
+            <div class="ff"><label>SC Engineer</label><select id="upd-sc-engineer" required><option value="">Select Engineer...</option></select></div>
             <div class="ff"><label>SC Observation</label><input type="text" id="upd-sc-obs" placeholder="Observation notes..." required/></div>
             <div class="ff"><label>Hardware Changes</label><input type="text" id="upd-hw-changes" placeholder="Hardware change status" required/></div>
             <div class="ff"><label>Hardware Change Remarks</label><input type="text" id="upd-hw-remarks" placeholder="Hardware change details" required/></div>
@@ -530,16 +530,87 @@ table.bir-table tbody tr:last-child td{border-bottom:none;}
 const API = '';
 let DATA = [], filtered = [], sortKey = 'inwardDate', sortDir = -1, currentPage = 1;
 let activeTab = 'update';
+const LOGGED_USER = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
+let DB_ENGINEERS = [];
+let engineersReadyPromise = null;
+
+function normalizeDivisionName(value){
+  return String(value?.name || value?.divisionName || value?.division || value || '').trim().toUpperCase();
+}
+function getLoggedDivision(){
+  return localStorage.getItem('schiller_active_division') ||
+    sessionStorage.getItem('schiller_active_division') ||
+    LOGGED_USER.activeDivision ||
+    LOGGED_USER.division ||
+    LOGGED_USER.divisionName ||
+    (Array.isArray(LOGGED_USER.divisions) ? LOGGED_USER.divisions[0] : '') ||
+    '';
+}
+function getEngineerDivisions(engineer){
+  const values = [];
+  if(Array.isArray(engineer?.divisions)) values.push(...engineer.divisions);
+  if(engineer?.division) values.push(engineer.division);
+  if(engineer?.divisionName) values.push(engineer.divisionName);
+  return [...new Set(values.map(normalizeDivisionName).filter(Boolean))];
+}
+function engineerMatchesDivision(engineer, division){
+  const div = normalizeDivisionName(division);
+  return div && getEngineerDivisions(engineer).includes(div);
+}
+async function fetchAllEngineers(){
+  try{
+    const res = await fetch(API + '/api/engineers', { headers: authHeaders() });
+    const json = await res.json().catch(()=>null);
+    const list = Array.isArray(json) ? json : (Array.isArray(json?.data) ? json.data : []);
+    DB_ENGINEERS = list;
+  }catch(_err){
+    DB_ENGINEERS = [];
+  }
+}
+async function ensureEngineersLoaded(){
+  if(engineersReadyPromise) await engineersReadyPromise;
+  if(!DB_ENGINEERS.length){
+    engineersReadyPromise = fetchAllEngineers();
+    await engineersReadyPromise;
+  }
+}
+function fillScEngineerSelect(selected, recordDivision){
+  const sel = document.getElementById('upd-sc-engineer');
+  if(!sel) return;
+  const loginDivision = getLoggedDivision();
+  const div = normalizeDivisionName(loginDivision || recordDivision);
+  sel.innerHTML = div ? '<option value="">Select Engineer...</option>' : '<option value="">No login division found</option>';
+  let engineers = DB_ENGINEERS.filter(e => engineerMatchesDivision(e, div));
+  engineers.sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
+  engineers.forEach(e=>{
+    const name = String(e.name || e.engineerName || '').trim();
+    if(!name) return;
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    sel.appendChild(opt);
+  });
+  const selectedName = String(selected || '').trim();
+  if(selectedName && !Array.from(sel.options).some(o => o.value === selectedName)){
+    const opt = document.createElement('option');
+    opt.value = selectedName;
+    opt.textContent = selectedName + ' (current)';
+    sel.appendChild(opt);
+  }
+  if(selectedName) sel.value = selectedName;
+  if(div && !engineers.length && !selectedName) sel.innerHTML = '<option value="">No engineers found for your division</option>';
+}
 
 /* ?"??"? INIT ?"??"? */
 (function init(){
-  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
+  const u = LOGGED_USER;
   if(u.name){
     (document.getElementById('admin-name')||{}).textContent = u.name;
     (document.getElementById('admin-avatar')||{}).textContent = u.name.charAt(0).toUpperCase();
     (document.getElementById('admin-role')||{}).textContent = u.role === 'admin' ? 'Administrator' : 'Field Engineer';
   }
   (document.getElementById('topbar-date')||{}).textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  engineersReadyPromise = fetchAllEngineers();
   loadData();
 })();
 
@@ -724,8 +795,9 @@ function renderTable(){
 }
 
 /* ?"??"? MODAL ?"??"? */
-function openModal(id){
+async function openModal(id){
   const d = DATA.find(x=>(x._id||x.id)===id); if(!d) return;
+  await ensureEngineersLoaded();
   (document.getElementById('modal-title')||{}).textContent = '&#9998; Update BIR Record';
   (document.getElementById('modal-sub')||{}).textContent = (d.birRefNo||'') + ' - ' + (d.model||'');
   document.getElementById('upd-id').value = id;
@@ -754,8 +826,7 @@ function openModal(id){
   set('upd-final-status', d.finalStatus||'Pending');
 
   // Service Section (unlocked - editable)
-  const currentUser = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
-  set('upd-sc-engineer', d.scEngineer || currentUser.name || '');
+  fillScEngineerSelect(d.scEngineer || LOGGED_USER.name || '', d.division);
   set('upd-sc-inward', d.scInwardDate);
   set('upd-sc-obs', d.scObservation);
   set('upd-sc-action', d.scActionPlan);
