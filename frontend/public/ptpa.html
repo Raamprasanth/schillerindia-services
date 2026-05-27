@@ -280,6 +280,10 @@ table.call-table tbody td{padding:9px 12px;border-bottom:1px solid rgba(0,60,120
 table.call-table tbody tr{transition:background 0.13s;}
 table.call-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
 table.call-table tbody tr:last-child td{border-bottom:none;}
+table.call-table th.action-col,
+table.call-table td.action-col{position:sticky;left:0;z-index:3;background:var(--surface3);box-shadow:1px 0 0 var(--border);white-space:nowrap;}
+table.call-table td.action-col{background:var(--surface);}
+table.call-table tbody tr:hover td.action-col{background:var(--surface2);}
 .compact-cell{width:180px;max-width:180px;white-space:normal !important;vertical-align:top !important;}
 .compact-cell.activity{width:170px;max-width:170px;}
 .compact-text{font-size:11px;line-height:1.35;color:var(--soft);}
@@ -389,7 +393,7 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
       <div class="table-wrap">
         <table class="call-table">
           <thead>
-            <tr>
+            <tr><th class="action-col">Actions</th>
               <th onclick="sortBy('scEngineer')">SC Engineer &#8597;</th>
               <th onclick="sortBy('initiatedDate')">Initiated Date &#8597;</th>
               <th onclick="sortBy('activity')">Activity &#8597;</th>
@@ -400,7 +404,7 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
               <th onclick="sortBy('remarks')">Remarks &#8597;</th>
               <th onclick="sortBy('scInchargeRemarks')">SC Incharge Remarks &#8597;</th>
               <th onclick="sortBy('status')">Status &#8597;</th>
-              <th>Actions</th>
+              
             </tr>
           </thead>
           <tbody id="table-body">
@@ -522,21 +526,21 @@ function renderTable() {
       
       const rid = t._id || t.id || t.serviceId || t.scEngineer || '';
       return `<tr>
-        <td style="font-weight:600;">${esc(t.scEngineer)}</td>
-        <td>${formatDate(t.initiatedDate)}</td>
-        <td class="compact-cell activity">${compactText(t.activity, rid+'-activity', true)}</td>
-        <td class="compact-cell">${compactText(t.description, rid+'-description')}</td>
-        <td>${esc(t.responsible)}</td>
-        <td>${formatDate(t.pendingFrom)}</td>
-        <td>${formatDate(t.targetDate)}</td>
-        <td style="max-width:150px;white-space:normal;">${esc(t.remarks)}</td>
-        <td style="max-width:150px;white-space:normal;">${esc(t.scInchargeRemarks)}</td>
-        <td><span class="s-pill ${statCls}">${esc(t.status)}</span></td>
-        <td>
+      <td class="action-col">
           <button class="btn btn-outline btn-sm" onclick="editData('${t._id}')">Edit</button>
           <button class="btn btn-danger btn-sm" onclick="deleteData('${t._id}')">Del</button>
         </td>
-      </tr>`;
+      <td style="font-weight:600;">${esc(t.scEngineer)}</td>
+      <td>${formatDate(t.initiatedDate)}</td>
+      <td class="compact-cell activity">${compactText(t.activity, rid+'-activity', true)}</td>
+      <td class="compact-cell">${compactText(t.description, rid+'-description')}</td>
+      <td>${esc(t.responsible)}</td>
+      <td>${formatDate(t.pendingFrom)}</td>
+      <td>${formatDate(t.targetDate)}</td>
+      <td style="max-width:150px;white-space:normal;">${esc(t.remarks)}</td>
+      <td style="max-width:150px;white-space:normal;">${esc(t.scInchargeRemarks)}</td>
+      <td><span class="s-pill ${statCls}">${esc(t.status)}</span></td>
+    </tr>`;
     }).join('');
   }
   
