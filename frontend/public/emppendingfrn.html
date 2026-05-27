@@ -349,7 +349,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       <div class="rec-info-item"><div class="rec-info-label">DEF Mod / Brd Name</div><div class="rec-info-val normal" id="ri-defmod">-</div></div>
       <div class="rec-info-item"><div class="rec-info-label">FRN No</div><div class="rec-info-val normal" id="ri-frnno">-</div></div>
       <div class="rec-info-item"><div class="rec-info-label">Unit Status</div><div class="rec-info-val" id="ri-unitsts">-</div></div>
-      <div class="rec-info-item"><div class="rec-info-label">Type of Work</div><div class="rec-info-val normal" id="ri-typework">-</div></div>
+      <div class="rec-info-item"><div class="rec-info-label">Def GIR No.</div><div class="rec-info-val normal" id="ri-defgirno">-</div></div>
       <div class="rec-info-item"><div class="rec-info-label">Branch</div><div class="rec-info-val normal" id="ri-branch">-</div></div>
     </div>
 
@@ -1110,7 +1110,7 @@ async function openUpdateModal(id){
   (document.getElementById('ri-frnno')||{}).textContent =d.frnNo||'-';
   (document.getElementById('ri-unitsts')||{}).textContent =d.unitStatus||'-';
   const displayTypeWork=getDisplayTypeWork(d);
-  (document.getElementById('ri-typework')||{}).textContent =displayTypeWork||'-';
+  (document.getElementById('ri-defgirno')||{}).textContent =d.defGir||'-';
   (document.getElementById('ri-branch')||{}).textContent =d.branch||d.region||'-';
   // Store ID
   document.getElementById('upd-id').value=id;
