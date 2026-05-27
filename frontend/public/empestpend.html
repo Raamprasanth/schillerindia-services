@@ -1195,7 +1195,13 @@ async function confirmSendToRtOb(){
   if(!id) return;
   const current=allRecords.find(x=>(x._id||x.id)===id);
   if(!current){showToast('Record not found.','err');closeRpModal();return;}
-  const techRemarks=document.getElementById('rp-tech-remarks').value.trim();
+  const remarksEl=document.getElementById('rp-tech-remarks');
+  const techRemarks=remarksEl.value.trim();
+  if(!techRemarks){
+    showToast('Technical remarks is required before sending to repair team.','err');
+    remarksEl.focus();
+    return;
+  }
   const btn=document.getElementById('rp-confirm-btn');
   btn.disabled=true;
   btn.textContent='Sending...';
