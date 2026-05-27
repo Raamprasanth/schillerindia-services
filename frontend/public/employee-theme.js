@@ -82,6 +82,7 @@
     sanitizeCorruptTableMarks();
     removeActivityUi();
     enableDatePickerTabFlow();
+    enableDateEnterShortcut();
     initDivisionSwitcher();
     setTimeout(removeActivityUi, 300);
   }
@@ -163,6 +164,24 @@
 
   function enableDatePickerTabFlow() {
     // Disabled to prevent forcing open the date picker during keyboard/tab focus.
+  }
+
+  function enableDateEnterShortcut() {
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const active = document.activeElement;
+        if (active && active.tagName === 'INPUT' && active.type === 'date') {
+          e.preventDefault();
+          // Ensure it's not readonly or disabled
+          if (!active.readOnly && !active.disabled) {
+            const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+            active.value = (new Date(Date.now() - tzoffset)).toISOString().slice(0, 10);
+            active.dispatchEvent(new Event('change', { bubbles: true }));
+            active.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        }
+      }
+    });
   }
 
   const style = document.createElement('style');
