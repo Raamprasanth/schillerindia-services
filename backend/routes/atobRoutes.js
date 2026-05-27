@@ -259,11 +259,22 @@ router.put('/:id', protect, adminOnly, async (req, res) => {
       if (updated.sourceId && mongoose.Types.ObjectId.isValid(updated.sourceId)) {
         const SourceModel = updated.sourceCollection === 'estimation' ? EstimationPending : Service;
         try {
-          await SourceModel.findByIdAndUpdate(updated.sourceId, {
+          const syncPayload = {
             rtobSent: true,
             rtobCompleted: true,
             rtobCompletedAt: new Date().toISOString(),
-          });
+            components: updated.components || updated.compUsedToRepair || '',
+            obComponents: updated.components || updated.compUsedToRepair || '',
+            techRemarks: updated.techRemarks || '',
+            finalRemarks: updated.finalRemarks || '',
+            repairRemarks: updated.repairRemarks || '',
+            cost: updated.cost || '',
+            timeTaken: updated.timeTaken || '',
+            repairStatus: updated.repairStatus || '',
+            doi: updated.doi || '',
+            repairedDate: updated.repairedDate || ''
+          };
+          await SourceModel.findByIdAndUpdate(updated.sourceId, syncPayload);
         } catch (srcErr) {
           console.error('ATOB ? source RC flag failed:', srcErr.message);
         }
