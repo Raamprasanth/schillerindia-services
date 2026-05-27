@@ -1274,7 +1274,7 @@ function generateEstimationPDFData(s, mode='download'){
   doc.text('Received Item:',L,y);
   doc.setFont('helvetica','normal');
   y+=8;
-  labelValue(L, y, 'Def. Board Name', s.defMod || s.defBrdModName || s.itemDescription || '-', 32);
+  labelValue(L, y, '', s.defMod || s.defBrdModName || s.itemDescription || '-', 32);
   labelValue(104, y, 'Unit S/N', s.unitSl || '-', 22);
   labelValue(150, y, 'Unit Status', s.unitStatus || s.unitSts || '-', 22);
 
