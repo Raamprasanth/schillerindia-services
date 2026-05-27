@@ -472,7 +472,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <div class="form-section">
           <div class="form-section-title" style="color:var(--amber);border-bottom-color:rgba(180,83,9,0.2);">&#128221; Problem Observed</div>
           <div class="fg-4">
-            <div class="ff span4"><label>Problem Observed</label><textarea id="est-techremarks" rows="2" placeholder="Observed problem, diagnosis, fault description"></textarea></div>
+            <div class="ff span4"><label>Problem Observed <span class="req">*</span></label><textarea id="est-techremarks" required rows="2" placeholder="Observed problem, diagnosis, fault description"></textarea></div>
           </div>
         </div>
 
@@ -585,7 +585,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <div class="form-section">
           <div class="form-section-title" style="color:var(--amber);border-bottom-color:rgba(180,83,9,0.2);">&#128221; Problem Observed</div>
           <div class="fg-4">
-            <div class="ff span4"><label>Problem Observed</label><textarea id="frn-est-techremarks" rows="2" placeholder="Observed problem, diagnosis, fault description"></textarea></div>
+            <div class="ff span4"><label>Problem Observed <span class="req">*</span></label><textarea id="frn-est-techremarks" required rows="2" placeholder="Observed problem, diagnosis, fault description"></textarea></div>
           </div>
         </div>
       </div>
@@ -1593,6 +1593,7 @@ async function submitSelectedEstimation(){
   if(!header.estDate) missing.push('Estimation Date');
   if(!header.estStatus) missing.push('Order Type');
   if(!header.estRaEng) missing.push('RA Engineer');
+  if(!header.techRemarks) missing.push('Problem Observed');
   if(!header.lineItems.length) missing.push('Line Items');
   if(missing.length){
     msg.textContent='Required: '+missing.join(', ');
@@ -1809,12 +1810,13 @@ async function submitEstimation(){
   if(!estamount) missing.push('Estimation Amount');
   if(!eststatus) missing.push('Order Type');
   if(!raeng) missing.push('RA Engineer');
-  ['est-estno','est-estdate','est-estamount','est-eststatus','est-raeng'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.classList.toggle('err',!el.value.trim());});
+  const techRem=document.getElementById('est-techremarks').value.trim();
+  if(!techRem) missing.push('Problem Observed');
+  ['est-estno','est-estdate','est-estamount','est-eststatus','est-raeng','est-techremarks'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.classList.toggle('err',!el.value.trim());});
   if(missing.length){showUpdMsg('Required: '+missing.join(', '),'err');return;}
   const current=FRN_DATA.find(x=>(x._id||x.id)===id)||{};
   const activeUser=JSON.parse(sessionStorage.getItem('schiller_user')||'{}');
   const savedAt=new Date().toISOString();
-  const techRem=document.getElementById('est-techremarks').value.trim();
   const partNo=document.getElementById('est-partno').value.trim();
   const qty=parseInt(document.getElementById('est-qty').value,10)||1;
   const validDate=document.getElementById('est-validdate').value;
