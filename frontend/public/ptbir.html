@@ -280,6 +280,8 @@
   <script src="employee-theme.js"></script>
   <link rel="stylesheet" href="topbar-alignment.css">
   <link rel="stylesheet" href="brand-logo.css">
+  <link rel="stylesheet" href="dashboard-topbar-actions.css">
+  <script src="dashboard-topbar-actions.js" defer></script>
   <script src="brand-logo.js" defer></script>
 </head>
 <body>
@@ -630,7 +632,7 @@
       <div class="table-wrap">
         <table class="data-table">
           <thead>
-            <tr>
+            <tr><th>Actions</th>
               <th class="sortable" data-col="birRef">BIR Ref No.<span class="sort-icon"></span></th>
               <th class="sortable" data-col="unitInwardDate">Inward Date<span class="sort-icon"></span></th>
               <th class="sortable" data-col="division">Division<span class="sort-icon"></span></th>
@@ -642,7 +644,7 @@
               <th>Accessory Details</th>
               <th>CNR/Technews</th>
               <th class="sortable" data-col="status">Status<span class="sort-icon"></span></th>
-              <th>Actions</th>
+              
             </tr>
           </thead>
           <tbody id="bir-tbody"></tbody>
@@ -809,6 +811,10 @@ function renderTable(){
   const tbody=document.getElementById('bir-tbody');
   tbody.innerHTML=paged.length?paged.map(e=>`
     <tr>
+      <td style="white-space:nowrap;">
+        <button class="btn-xs" onclick="viewBIR('${e._id}')" title="View">&#128065;</button>
+        <button class="btn-xs success" onclick="editBIR('${e._id}')" title="Update">&#9999;&#65039;</button>
+      </td>
       <td><span class="chip-sm">${esc(e.birRef||e._id)}</span></td>
       <td style="color:var(--muted);font-size:12px;">${fmtDate(e.unitInwardDate)}</td>
       <td><span class="badge-pill ${divClass(e.division)}">${esc(e.division)}</span></td>
@@ -820,10 +826,6 @@ function renderTable(){
       <td style="font-size:12px;color:var(--soft);max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(e.accDetails)}">${esc(e.accDetails||'-')}</td>
       <td style="font-size:12px;">${String(e.cnrCirculation).trim().toLowerCase()==='yes'?`<span style="color:var(--purple);font-weight:600;">Yes</span>`:`<span style="color:var(--muted);">${esc(e.cnrCirculation||'-')}</span>`}</td>
       <td><span class="status-badge ${stClass(e.status)}">${esc(e.status)}</span></td>
-      <td style="white-space:nowrap;">
-        <button class="btn-xs" onclick="viewBIR('${e._id}')" title="View">&#128065;</button>
-        <button class="btn-xs success" onclick="editBIR('${e._id}')" title="Update">&#9999;&#65039;</button>
-      </td>
     </tr>`).join(''):`<tr><td colspan="12"><div class="empty-state"><div class="empty-icon">&#128203;</div><p>No BIR entries found.</p></div></td></tr>`;
 
   // pagination

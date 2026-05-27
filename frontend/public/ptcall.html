@@ -258,6 +258,8 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
   <script src="employee-theme.js"></script>
   <link rel="stylesheet" href="topbar-alignment.css">
   <link rel="stylesheet" href="brand-logo.css">
+  <link rel="stylesheet" href="dashboard-topbar-actions.css">
+  <script src="dashboard-topbar-actions.js" defer></script>
   <script src="brand-logo.js" defer></script>
 </head>
 <body>
@@ -526,7 +528,7 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
 
       <div class="table-wrap">
         <table class="call-table">
-          <thead><tr>
+          <thead><tr><th>Actions</th>
             <th style="width:40px;"># <span class="si">&#8597;</span></th>
             <th onclick="sortBy('callDate')">Call Date <span class="si">&#8597;</span></th>
             <th onclick="sortBy('entryDate')">Entry Date <span class="si">&#8597;</span></th>
@@ -538,7 +540,7 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
             <th>Duration</th>
             <th style="max-width:180px;">Remarks</th>
             <th onclick="sortBy('status')">Status <span class="si">&#8597;</span></th>
-            <th>Actions</th>
+            
           </tr></thead>
           <tbody id="call-tbody">
             <tr class="loading-row"><td colspan="12"><span class="spin"></span>Loading from database-</td></tr>
@@ -910,24 +912,24 @@ function renderTable(){
       const rid = d._id || d.id;
       const remark = (d.remarks||'').slice(0,45) + ((d.remarks||'').length>45?'-':'');
       return `<tr>
-        <td class="mono" style="color:var(--muted);">${(currentPage-1)*perPage+i+1}</td>
-        <td style="font-size:11px;font-weight:600;color:var(--soft);">${fmtDate(d.callDate)}</td>
-        <td style="font-size:10.5px;color:var(--muted);">${fmtDate(d.entryDate||d.createdAt)}</td>
-        <td style="font-size:11.5px;font-weight:600;">${esc(d.scEng||'-')}</td>
-        <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;">${esc(d.engineer||'-')}</td>
-        <td style="font-weight:600;">${esc(d.model||'-')}</td>
-        <td><span class="call-type-pill ${callTypeCls(d.callType)}">${esc(d.callType||'-')}</span></td>
-        <td style="font-size:11px;color:var(--soft);">${esc(d.commType||'-')}</td>
-        <td><span class="duration-badge"><span class="dur-ico">&#9201;</span>${esc(d.duration||'-')}</span></td>
-        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--soft);" title="${esc(d.remarks||'')}">${esc(remark||'-')}</td>
-        <td><span class="status-pill ${statusCls(d.status)}">${esc(d.status||'Open')}</span></td>
-        <td>
+      <td>
           <div style="display:flex;gap:5px;">
             <button class="btn-xs view-btn" onclick="openViewModal('${rid}')">&#128065;</button>
             <button class="btn-xs edit" onclick="openEditModal('${rid}')" title="Update">&#9999;&#65039;</button>
           </div>
         </td>
-      </tr>`;
+      <td class="mono" style="color:var(--muted);">${(currentPage-1)*perPage+i+1}</td>
+      <td style="font-size:11px;font-weight:600;color:var(--soft);">${fmtDate(d.callDate)}</td>
+      <td style="font-size:10.5px;color:var(--muted);">${fmtDate(d.entryDate||d.createdAt)}</td>
+      <td style="font-size:11.5px;font-weight:600;">${esc(d.scEng||'-')}</td>
+      <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;">${esc(d.engineer||'-')}</td>
+      <td style="font-weight:600;">${esc(d.model||'-')}</td>
+      <td><span class="call-type-pill ${callTypeCls(d.callType)}">${esc(d.callType||'-')}</span></td>
+      <td style="font-size:11px;color:var(--soft);">${esc(d.commType||'-')}</td>
+      <td><span class="duration-badge"><span class="dur-ico">&#9201;</span>${esc(d.duration||'-')}</span></td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--soft);" title="${esc(d.remarks||'')}">${esc(remark||'-')}</td>
+      <td><span class="status-pill ${statusCls(d.status)}">${esc(d.status||'Open')}</span></td>
+    </tr>`;
     }).join('');
   }
   const fr = total ? (currentPage-1)*perPage+1 : 0;

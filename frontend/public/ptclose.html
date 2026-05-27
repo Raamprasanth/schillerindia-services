@@ -204,6 +204,8 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
   <script src="employee-theme.js"></script>
   <link rel="stylesheet" href="topbar-alignment.css">
   <link rel="stylesheet" href="brand-logo.css">
+  <link rel="stylesheet" href="dashboard-topbar-actions.css">
+  <script src="dashboard-topbar-actions.js" defer></script>
   <script src="brand-logo.js" defer></script>
 </head>
 <body>
@@ -541,20 +543,20 @@ function renderTable(){
         ? esc((d.remarks || '').slice(0, 45)) + '-'
         : esc(d.remarks || '-');
       return `<tr>
-        <td class="mono" style="color:var(--muted);">${(currentPage - 1) * perPage + i + 1}</td>
-        <td><span class="div-tag">${esc(d.division || '-')}</span></td>
-        <td style="font-size:11px;color:var(--soft);">${fmtDate(entryDateForClosedCall(d))}</td>
-        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.callDate)}</td>
-        <td style="font-size:11px;font-weight:700;color:var(--green);">${fmtDate(d.closeDate)}</td>
-        <td>${esc(d.scEngg || '-')}</td>
-        <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.engineer||'')}">${esc(d.engineer || '-')}</td>
-        <td style="max-width:170px;overflow:hidden;text-overflow:ellipsis;font-weight:500;" title="${esc(d.customer||'')}">${esc(d.customer || '-')}</td>
-        <td style="font-weight:600;">${esc(d.model || '-')}</td>
-        <td style="font-size:11px;">${esc(d.typeCall || '-')}</td>
-        <td>${statusPill(d.status)}</td>
-        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--soft);" title="${esc(d.remarks||'')}">${remarksTrunc}</td>
-        <td><button class="btn-xs view" onclick="openDetailModal('${rid}')">View</button></td>
-      </tr>`;
+      <td><button class="btn-xs view" onclick="openDetailModal('${rid}')">View</button></td>
+      <td class="mono" style="color:var(--muted);">${(currentPage - 1) * perPage + i + 1}</td>
+      <td><span class="div-tag">${esc(d.division || '-')}</span></td>
+      <td style="font-size:11px;color:var(--soft);">${fmtDate(entryDateForClosedCall(d))}</td>
+      <td style="font-size:11px;color:var(--soft);">${fmtDate(d.callDate)}</td>
+      <td style="font-size:11px;font-weight:700;color:var(--green);">${fmtDate(d.closeDate)}</td>
+      <td>${esc(d.scEngg || '-')}</td>
+      <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.engineer||'')}">${esc(d.engineer || '-')}</td>
+      <td style="max-width:170px;overflow:hidden;text-overflow:ellipsis;font-weight:500;" title="${esc(d.customer||'')}">${esc(d.customer || '-')}</td>
+      <td style="font-weight:600;">${esc(d.model || '-')}</td>
+      <td style="font-size:11px;">${esc(d.typeCall || '-')}</td>
+      <td>${statusPill(d.status)}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--soft);" title="${esc(d.remarks||'')}">${remarksTrunc}</td>
+    </tr>`;
     }).join('');
   }
 
