@@ -7,6 +7,7 @@ const SCCompletedFRN = require('../models/SCCompletedFRN');
 const Scrap = require('../models/Scrap');
 const Service      = require('../models/Service');
 const Todr         = require('../models/Todr');
+const Dr           = require('../models/Dr');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 const {
   buildFrnEscalationRow,
@@ -70,7 +71,9 @@ async function mirrorFrnToTodr(doc, action, items = [], queuedBy = '') {
           description: buildTodrDescription(doc),
         }];
 
-    await Promise.all(rows.map(row => Todr.findOneAndUpdate(
+    const TargetModel = action === 'DR' ? Dr : Todr;
+
+    await Promise.all(rows.map(row => TargetModel.findOneAndUpdate(
       {
         sourceModule: 'emp_pending_frn',
         sourceId: String(doc._id),
@@ -91,7 +94,7 @@ async function mirrorFrnToTodr(doc, action, items = [], queuedBy = '') {
       { upsert: true, new: true, setDefaultsOnInsert: true }
     )));
   } catch (err) {
-    console.error('[TODR mirror] Failed to mirror pending FRN:', err);
+    console.error(`[TODR/DR mirror] Failed to mirror pending FRN (action=${action}):`, err);
   }
 }
 
