@@ -20,6 +20,27 @@ function divisionFilter(value) {
   return value;
 }
 
+function normalizeAccChanges(value) {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  const allowed = ['No Change', 'Added', 'Removed', 'Replaced'];
+  const match = allowed.find(option => option.toLowerCase() === text.toLowerCase());
+  if (match) return match;
+
+  const compact = text.toLowerCase().replace(/[\s_-]+/g, '');
+  if (['no', 'none', 'nil', 'na', 'n/a', 'nochange', 'unchanged'].includes(compact)) return 'No Change';
+  if (['yes', 'y', 'change', 'changed', 'changes', 'accessorychange', 'accessorychanges'].includes(compact)) return 'Added';
+  return '';
+}
+
+function normalizeBirBody(body = {}) {
+  const next = { ...body };
+  if (Object.prototype.hasOwnProperty.call(next, 'accChanges')) {
+    next.accChanges = normalizeAccChanges(next.accChanges);
+  }
+  return next;
+}
+
 function serviceFieldCount(doc) {
   return SERVICE_FIELDS.filter(field => String(doc?.[field] || '').trim()).length;
 }
@@ -63,7 +84,7 @@ function buildBirMirror(doc) {
     swChangeRemarks: doc.swChangeRemarks || '',
     hwChanges: doc.hwChanges || '',
     hwChangeRemarks: doc.hwChangeRemarks || '',
-    accChanges: doc.accChanges || '',
+    accChanges: normalizeAccChanges(doc.accChanges),
     accDetails: doc.accDetails || '',
     accChangeRemarks: doc.accChangeRemarks || '',
     userManualUpdate: doc.userManualUpdate || '',
@@ -164,6 +185,7 @@ async function moveToClosedIfComplete(doc, userId) {
   delete closedPayload.__v;
   delete closedPayload.createdAt;
   delete closedPayload.updatedAt;
+  closedPayload.accChanges = normalizeAccChanges(closedPayload.accChanges);
 
   const closed = await PtClosedBir.findOneAndUpdate(
     { birRef: doc.birRef },
@@ -209,8 +231,9 @@ router.get('/:id', protect, async (req, res) => {
 
 router.post('/', protect, async (req, res) => {
   try {
+    const body = normalizeBirBody(req.body);
     const doc = new PtBir({
-      ...req.body,
+      ...body,
       createdBy: req.user._id,
     });
     const saved = await doc.save();
@@ -228,9 +251,10 @@ router.post('/', protect, async (req, res) => {
 
 router.put('/:id', protect, async (req, res) => {
   try {
+    const body = normalizeBirBody(req.body);
     const doc = await PtBir.findByIdAndUpdate(
       req.params.id,
-      { ...req.body, updatedBy: req.user._id },
+      { ...body, updatedBy: req.user._id },
       { new: true, runValidators: false }
     );
     if (!doc) return res.status(404).json({ message: 'Record not found' });
