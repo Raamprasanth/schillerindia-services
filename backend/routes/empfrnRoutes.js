@@ -49,12 +49,8 @@ function toDateValue(value) {
 
 function buildTodrDescription(doc, item = {}) {
   const parts = [
-    doc.customer,
     doc.model,
-    doc.defMod,
-    doc.defGir ? `Def GIR: ${doc.defGir}` : '',
-    item.qty ? `Qty: ${item.qty}` : '',
-    doc.finalRemarks || doc.remarks,
+    doc.defMod || doc.defBrdModName || ''
   ];
   return parts.map(v => String(v || '').trim()).filter(Boolean).join(' | ') || 'TO/DR entry';
 }

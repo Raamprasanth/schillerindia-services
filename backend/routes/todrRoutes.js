@@ -3,10 +3,36 @@ const router = express.Router();
 const Todr = require('../models/Todr');
 const { protect } = require('../middleware/authMiddleware');
 
+const EmpFRN = require('../models/EmpFRN');
+const Service = require('../models/Service');
+const EstimationPending = require('../models/EstimationPending');
+
 // GET all TODR entries
 router.get('/', protect, async (req, res) => {
   try {
-    const records = await Todr.find().sort({ entryDate: -1, createdAt: -1 });
+    let records = await Todr.find().sort({ entryDate: -1, createdAt: -1 }).lean();
+    
+    // Dynamically fetch 'mod brd name' for descriptions
+    for (let r of records) {
+      if (r.sourceId) {
+        let doc = null;
+        try {
+           doc = await EmpFRN.findById(r.sourceId).lean();
+           if (!doc) doc = await Service.findById(r.sourceId).lean();
+           if (!doc) doc = await EstimationPending.findById(r.sourceId).lean();
+        } catch(e) {}
+        
+        if (doc) {
+          const mName = doc.model || '';
+          const bName = doc.defMod || doc.defBrdModName || '';
+          const newDesc = [mName, bName].filter(Boolean).join(' | ');
+          if (newDesc) {
+            r.description = newDesc;
+          }
+        }
+      }
+    }
+    
     res.json(records);
   } catch (error) {
     console.error('Error fetching TODR records:', error);
