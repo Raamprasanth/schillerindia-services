@@ -9,7 +9,7 @@
   const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
   if (!token || !['employee','service_coordinator','admin','superadmin'].includes(role)) window.location.href = 'login.html';
 })();</script>
-<title>SchillerIndia - Closed TO/DR</title>
+<title>SchillerIndia - DR Register</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
@@ -343,8 +343,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
     <div class="nav-sec">Work Orders</div>
     <a class="nav-item" href="dr.html"><span class="ico">&#128196;</span> DR</a>
-    <a class="nav-item" href="todr.html"><span class="ico">&#128196;</span> TO/DR</a>
-    <a class="nav-item active" href="ctodr.html"><span class="ico">&#128274;</span> Closed TO/DR</a>
+      <a class="nav-item" href="ctodr.html"><span class="ico">&#128274;</span> Closed DR</a>
     <a class="nav-item" href="scprfob.html"><span class="ico">&#128203;</span> PRF/OB Register</a>
     <a class="nav-item" href="sccr.html"><span class="ico">&#128274;</span> Closed PRF/OB Register</a>
     <a class="nav-item" href="lt.html"><span class="ico">&#128230;</span> Loan Item</a>
@@ -384,7 +383,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   <div class="content">
     <div class="table-card">
       <div class="table-top">
-        <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;">Closed TO/DR Register</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;">DR Register</div>
         <div style="display:flex;gap:10px;">
           <button class="btn btn-primary btn-sm" onclick="openAddModal()">&#43; Add New Entry</button>
           <button class="btn btn-outline btn-sm" onclick="loadData()">&#10227; Refresh</button>
@@ -414,11 +413,11 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 </main>
 
 <!-- ADD / UPDATE MODAL -->
-<div class="modal-overlay" id="ctodr-modal">
+<div class="modal-overlay" id="dr-modal">
   <div class="add-modal-box">
     <div class="modal-head">
       <div>
-        <div class="modal-title" id="m-title">Add Closed TO/DR</div>
+        <div class="modal-title" id="m-title">Add DR</div>
         <div class="modal-sub">Fill out the form below</div>
       </div>
       <button class="modal-close" onclick="closeModal()">&#10005;</button>
@@ -466,7 +465,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   async function loadData() {
     try {
-      const res = await fetch('/api/ctodr', { headers: hdrs() });
+      const res = await fetch('/api/dr', { headers: hdrs() });
       if(res.status===401||res.status===403) return logout();
       const data = await res.json();
       if(res.ok) { records = data; renderTable(); }
@@ -475,7 +474,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   function renderTable() {
     const tb = document.getElementById('tb');
-    if(!records.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;">No Closed TO/DR entries found.</td></tr>'; return; }
+    if(!records.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;">No DR entries found.</td></tr>'; return; }
     
     tb.innerHTML = records.map(r => `
       <tr>
@@ -497,9 +496,9 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     document.getElementById('f-part').value = '';
     document.getElementById('f-desc').value = '';
     document.getElementById('f-action').value = '';
-    document.getElementById('m-title').innerHTML = '&#10133; Add TO/DR';
+    document.getElementById('m-title').innerHTML = '&#10133; Add DR';
     msg('');
-    document.getElementById('ctodr-modal').classList.add('open');
+    document.getElementById('dr-modal').classList.add('open');
   }
 
   function openEdit(id) {
@@ -511,12 +510,12 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     document.getElementById('f-part').value = r.partNo || '';
     document.getElementById('f-desc').value = r.description || '';
     document.getElementById('f-action').value = r.action || '';
-    document.getElementById('m-title').innerHTML = '&#9998; Edit Closed TO/DR';
+    document.getElementById('m-title').innerHTML = '&#9998; Edit DR';
     msg('');
-    document.getElementById('ctodr-modal').classList.add('open');
+    document.getElementById('dr-modal').classList.add('open');
   }
 
-  function closeModal() { document.getElementById('ctodr-modal').classList.remove('open'); }
+  function closeModal() { document.getElementById('dr-modal').classList.remove('open'); }
   function msg(m, err=false) { 
     const e=document.getElementById('m-msg'); 
     e.textContent=m; 
@@ -541,7 +540,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     const btn = document.getElementById('save-btn');
     btn.disabled=true; btn.textContent='Saving...';
     try {
-      const url = id ? `/api/ctodr/${id}` : '/api/ctodr';
+      const url = id ? `/api/dr/${id}` : '/api/dr';
       const method = id ? 'PUT' : 'POST';
       const res = await fetch(url, { method, headers: hdrs(), body: JSON.stringify(payload) });
       const json = await res.json().catch(()=>{});
@@ -558,7 +557,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   async function delRecord(id) {
     if(!confirm('Delete this record permanently?')) return;
     try {
-      await fetch(`/api/ctodr/${id}`, { method: 'DELETE', headers: hdrs() });
+      await fetch(`/api/dr/${id}`, { method: 'DELETE', headers: hdrs() });
       loadData();
     } catch(e) { alert('Failed to delete'); }
   }
@@ -566,7 +565,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
   
   // Close modal when clicking outside
-  document.getElementById('ctodr-modal').addEventListener('click', e => { if(e.target.id==='ctodr-modal') closeModal(); });
+  document.getElementById('dr-modal').addEventListener('click', e => { if(e.target.id==='dr-modal') closeModal(); });
   document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
 
   loadData();

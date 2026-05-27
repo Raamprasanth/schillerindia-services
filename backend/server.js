@@ -84,6 +84,7 @@ const ptCloseRoutes            = require('./routes/ptCloseRoutes');
 const ptActivityRoutes         = require('./routes/ptActivityRoutes');
 const ptBirRoutes              = require('./routes/ptBirRoutes');
 const ptClosedBirRoutes        = require('./routes/ptClosedBirRoutes');
+const drRoutes                 = require('./routes/drRoutes');
 const todrRoutes               = require('./routes/todrRoutes');
 const ctodrRoutes              = require('./routes/ctodrRoutes');
 
@@ -225,6 +226,7 @@ app.use('/api/epa',                   empPendingActivityRoutes);
 app.use('/api/ecpa',                  empCompletedActivityRoutes);
 app.use('/api/pt/bir/closed',         ptClosedBirRoutes);
 app.use('/api/pt/bir',                ptBirRoutes);
+app.use('/api/dr',                    drRoutes);
 app.use('/api/todr',                  todrRoutes);
 app.use('/api/ctodr',                 ctodrRoutes);
 
@@ -274,6 +276,7 @@ app.get('/employee-dashboard.html',     (req, res) => res.sendFile(path.join(fro
 app.get('/employee-service-list.html',  (req, res) => res.sendFile(path.join(frontendPath, 'employee-service-list.html')));
 app.get('/ob-pending.html',             (req, res) => res.sendFile(path.join(frontendPath, 'ob-pending.html')));
 app.get('/scprfob.html',               (req, res) => res.sendFile(path.join(frontendPath, 'scprfob.html')));
+app.get('/dr.html',                    (req, res) => res.sendFile(path.join(frontendPath, 'dr.html')));
 app.get('/todr.html',                  (req, res) => res.sendFile(path.join(frontendPath, 'todr.html')));
 app.get('/ctodr.html',                 (req, res) => res.sendFile(path.join(frontendPath, 'ctodr.html')));
 app.get('/Sc-dashboard.html',         (req, res) => res.sendFile(path.join(frontendPath, 'Sc-dashboard.html')));
