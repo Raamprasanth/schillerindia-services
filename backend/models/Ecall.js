@@ -17,9 +17,11 @@ const ecallSchema = new mongoose.Schema(
     // ── People ────────────────────────────────────────────────
     scEng:    { type: String, trim: true, default: '' },
     engineer: { type: String, trim: true, required: true },
+    customer: { type: String, trim: true, default: '' },
 
     // ── Device ────────────────────────────────────────────────
     model: { type: String, trim: true, required: true },
+    girSno: { type: String, trim: true, default: '' },
 
     // ── Call Details ──────────────────────────────────────────
     callType: {

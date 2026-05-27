@@ -144,7 +144,7 @@ router.put('/:id', protect, async (req, res) => {
         callDate:  doc.callDate  || today,
         closeDate: today,
         division:  doc.division  || '',
-        typeCall:  '',
+        typeCall:  doc.callType || '',
         branch:    doc.branch    || '',
         region:    doc.region    || '',
         scEngg:    doc.scEng     || '',

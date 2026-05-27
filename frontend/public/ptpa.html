@@ -280,6 +280,14 @@ table.call-table tbody td{padding:9px 12px;border-bottom:1px solid rgba(0,60,120
 table.call-table tbody tr{transition:background 0.13s;}
 table.call-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
 table.call-table tbody tr:last-child td{border-bottom:none;}
+.compact-cell{width:180px;max-width:180px;white-space:normal !important;vertical-align:top !important;}
+.compact-cell.activity{width:170px;max-width:170px;}
+.compact-text{font-size:11px;line-height:1.35;color:var(--soft);}
+.compact-text.strong{font-weight:700;color:var(--accent2);}
+.compact-preview{max-height:32px;overflow:hidden;word-break:break-word;}
+.compact-text.expanded .compact-preview{max-height:none;}
+.show-more-btn{margin-top:3px;border:none;background:none;color:var(--accent);font-size:10.5px;font-weight:800;cursor:pointer;padding:0;font-family:'Plus Jakarta Sans',sans-serif;}
+.show-more-btn:hover{text-decoration:underline;}
 .table-foot{padding:11px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--muted);flex-wrap:wrap;gap:8px;background:var(--surface3);}
 .pager-row{display:flex;align-items:center;gap:3px;}
 .pager{min-width:28px;height:28px;padding:0 7px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--soft);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.18s;font-family:'Plus Jakarta Sans',sans-serif;}
@@ -458,6 +466,7 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
 
 <script>
 let currentData = [];
+const expandedTextCells = new Set();
 
 (function init(){
   const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
@@ -511,11 +520,12 @@ function renderTable() {
       if(s==='open') statCls='sp-open';
       if(s==='closed'||s==='completed') statCls='sp-closed';
       
+      const rid = t._id || t.id || t.serviceId || t.scEngineer || '';
       return `<tr>
         <td style="font-weight:600;">${esc(t.scEngineer)}</td>
         <td>${formatDate(t.initiatedDate)}</td>
-        <td style="font-weight:600;">${esc(t.activity)}</td>
-        <td style="max-width:180px;white-space:normal;">${esc(t.description)}</td>
+        <td class="compact-cell activity">${compactText(t.activity, rid+'-activity', true)}</td>
+        <td class="compact-cell">${compactText(t.description, rid+'-description')}</td>
         <td>${esc(t.responsible)}</td>
         <td>${formatDate(t.pendingFrom)}</td>
         <td>${formatDate(t.targetDate)}</td>
@@ -539,6 +549,20 @@ function renderTable() {
 
 let filteredData = [];
 let sortKey = 'initiatedDate', sortDir = -1, currentPage = 1;
+
+function compactText(value,key,strong=false){
+  const text = String(value || '-');
+  const expanded = expandedTextCells.has(key);
+  const needsToggle = text.length > 48;
+  return `<div class="compact-text ${strong?'strong':''} ${expanded?'expanded':''}" title="${esc(text)}">
+    <div class="compact-preview">${esc(text)}</div>
+    ${needsToggle?`<button type="button" class="show-more-btn" onclick="toggleTextCell('${key}')">${expanded?'Show less':'Show more'}</button>`:''}
+  </div>`;
+}
+function toggleTextCell(key){
+  if(expandedTextCells.has(key)) expandedTextCells.delete(key); else expandedTextCells.add(key);
+  renderTable();
+}
 
 function applyFilters() {
   const q = (document.getElementById('tbl-search')?.value || '').toLowerCase();

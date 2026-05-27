@@ -686,6 +686,8 @@ function normalizeForPtView(r){
     status:         r.status         || r.finalStatus || 'Pending',
     accDetails:     r.accDetails     || r.accessoryDetails || '',
     scEngineer:     r.scEngineer     || r.scEng || r.engineer || '',
+    hwChanges:      r.hwChanges === '!' ? 'NA' : (r.hwChanges || ''),
+    cnrCirculation: r.cnrCirculation === '!' ? '' : (r.cnrCirculation || '')
   };
 }
 function isOpenPtBir(r){

@@ -404,6 +404,8 @@ function normalizeClosed(r){
     birRef: r.birRef || r.birRefNo || '',
     status: r.status || r.finalStatus || 'Approved',
     accDetails: r.accDetails || r.accessoryDetails || '',
+    hwChanges: r.hwChanges === '!' ? 'NA' : (r.hwChanges || ''),
+    cnrCirculation: r.cnrCirculation === '!' ? '' : (r.cnrCirculation || '')
   };
 }
 function mergeClosedLists(primary, secondary){
