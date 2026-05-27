@@ -1173,14 +1173,19 @@ function generateEstimationPDFData(s, mode='download'){
   const doc=new jsPDFLib('p','mm','a4');
   const W=210,H=297,L=14,R=196;
   let y=12;
+  const getEstimatePartNo=row=>{
+    const estPartNo=String(row?.estPartNo||'').trim();
+    const partNo=String(row?.partNo||row?.partNumber||row?.estPn||row?.estPN||'').trim();
+    return estPartNo || partNo || '-';
+  };
   const lineItems=(Array.isArray(s.lineItems)&&s.lineItems.length?s.lineItems:[{
-    partNo:s.partNo||'-',
+    partNo:getEstimatePartNo(s),
     itemDescription:s.defMod||'-',
     qty:Math.max(1, parseInt(s.qty,10) || 1),
     pricePerUnit:(Math.max(1, parseInt(s.qty,10) || 1) > 0 ? Math.max(0, Number(s.estAmount) || 0) / Math.max(1, parseInt(s.qty,10) || 1) : Math.max(0, Number(s.estAmount) || 0)),
     lineAmount:Math.max(0, Number(s.estAmount) || 0),
   }]).map(row=>({
-    partNo:row.partNo||'-',
+    partNo:getEstimatePartNo(row),
     itemDescription:row.itemDescription||row.defMod||'-',
     qty:Math.max(1, parseInt(row.qty,10) || 1),
     pricePerUnit:Math.max(0, Number(row.pricePerUnit) || 0),
@@ -1278,7 +1283,7 @@ function generateEstimationPDFData(s, mode='download'){
     const rowHeight = Math.max(10, Math.ceil(doc.splitTextToSize(String(row.itemDescription||'-'), cols[1]-2).length) * 4.5 + 2);
     let cellX=tableX;
     const values=[
-      row.estPartNo || row.partNo || '-',
+      getEstimatePartNo(row),
       String(row.itemDescription || '-'),
       String(row.qty || 1),
       money(row.pricePerUnit),
@@ -1794,7 +1799,7 @@ async function submitEstimation(){
   const partNo=document.getElementById('est-partno').value.trim();
   const qty=parseInt(document.getElementById('est-qty').value,10)||1;
   const validDate=document.getElementById('est-validdate').value;
-  const payload={estNo:estno,estDate:estdate,estAmount:parseFloat(estamount)||0,estStatus:eststatus,estRaEng:raeng,defUnitGir:document.getElementById('est-defunitgir').value.trim(),techRemarks:techRem,status:'estimation',estUpdatedAt:savedAt};
+  const payload={estNo:estno,estDate:estdate,estAmount:parseFloat(estamount)||0,estStatus:eststatus,estRaEng:raeng,defUnitGir:document.getElementById('est-defunitgir').value.trim(),techRemarks:techRem,partNo:partNo,qty:qty,status:'estimation',estUpdatedAt:savedAt};
   const estimationPayload={
     serviceId:current.serviceId||null,
     source:'service',
