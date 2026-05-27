@@ -880,6 +880,18 @@ document.getElementById('view-modal').addEventListener('click',e=>{if(e.target==
 const FIELDS=['division','unitInwardDate','fqcInwardDate','birRef','supplier','model','configuration','receivedQty','serial','invoiceNo','invoiceDate','prevSwVersion','presSwVersion','accChanges','accDetails','userManualUpdate','fqcRemarks','status','scEngineer','scInwardDate','scObservation','scActionPlan','tentativeDate','shipDateToFqc','defUnitReceivedDate','replacementShipDate','fqcFinalRemarks','fqcObservation','accChangeRemarks','hwChanges','hwChangeRemarks','serviceManualUpdate','techRemarks','tsVerificationDate','psEngineer','swChangeRemarks','cnrCirculation','cnrRefNo','cnrReleaseDate','psVerificationDate','productTeamRemarks','approvedDate'];
 const FIELD_MAP={'division':'f-division','unitInwardDate':'f-unit-inward','fqcInwardDate':'f-fqc-inward','birRef':'f-bir-ref','supplier':'f-supplier','model':'f-model','configuration':'f-configuration','receivedQty':'f-qty','serial':'f-serial','invoiceNo':'f-invoice-no','invoiceDate':'f-invoice-date','prevSwVersion':'f-prev-sw','presSwVersion':'f-pres-sw','accChanges':'f-acc-changes','accDetails':'f-acc-details','userManualUpdate':'f-manual-update','fqcRemarks':'f-fqc-remarks','status':'f-status','scEngineer':'f-sc-engineer','scInwardDate':'f-sc-inward','scObservation':'f-sc-obs','scActionPlan':'f-sc-action','tentativeDate':'f-tent-date','shipDateToFqc':'f-ship-fqc','defUnitReceivedDate':'f-def-recv','replacementShipDate':'f-rep-ship','fqcFinalRemarks':'f-fqc-final-remarks','fqcObservation':'f-fqc-obs','accChangeRemarks':'f-acc-remarks','hwChanges':'f-hw-changes','hwChangeRemarks':'f-hw-remarks','serviceManualUpdate':'f-service-manual','techRemarks':'f-tech-remarks','tsVerificationDate':'f-ts-date','psEngineer':'f-ps-engineer','swChangeRemarks':'f-sw-remarks','cnrCirculation':'f-cnr-circ','cnrRefNo':'f-cnr-ref','cnrReleaseDate':'f-cnr-date','psVerificationDate':'f-ps-date','productTeamRemarks':'f-pt-remarks','approvedDate':'f-approved-date'};
 
+function normalizeAccChangesValue(value){
+  const text=String(value||'').trim();
+  if(!text)return '';
+  const allowed=['No Change','Added','Removed','Replaced'];
+  const match=allowed.find(option=>option.toLowerCase()===text.toLowerCase());
+  if(match)return match;
+  const compact=text.toLowerCase().replace(/[\s_-]+/g,'');
+  if(['no','none','nil','na','n/a','nochange','unchanged'].includes(compact))return 'No Change';
+  if(['yes','y','change','changed','changes','accessorychange','accessorychanges'].includes(compact))return 'Added';
+  return '';
+}
+
 // Frozen section fields (always disabled)
 const FROZEN_FIELDS=['f-sc-engineer','f-sc-inward','f-sc-obs','f-sc-action','f-tent-date','f-ship-fqc','f-def-recv','f-rep-ship','f-fqc-final-remarks','f-fqc-obs','f-acc-remarks','f-hw-changes','f-hw-remarks','f-service-manual','f-tech-remarks','f-ts-date','f-ps-engineer','f-sw-remarks','f-cnr-circ','f-cnr-ref','f-cnr-date','f-ps-date','f-pt-remarks','f-approved-date'];
 function lockFrozenSections(){
@@ -989,6 +1001,7 @@ async function saveBIR(){
   const btn=document.getElementById('bir-save-btn');btn.disabled=true;btn.textContent='Saving...';
   const payload={};
   FIELDS.forEach(f=>{const el=document.getElementById(FIELD_MAP[f]);if(el)payload[f]=el.value;});
+  payload.accChanges=normalizeAccChangesValue(payload.accChanges);
   if(!payload.birRef)payload.birRef=genRef(div);
   try{
     if(editingId){

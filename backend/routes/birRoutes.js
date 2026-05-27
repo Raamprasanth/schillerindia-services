@@ -8,6 +8,27 @@ function normalizeStatus(status) {
   return status === 'Completed' ? 'Closed' : status;
 }
 
+function normalizeAccChanges(value) {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  const allowed = ['No Change', 'Added', 'Removed', 'Replaced'];
+  const match = allowed.find(option => option.toLowerCase() === text.toLowerCase());
+  if (match) return match;
+
+  const compact = text.toLowerCase().replace(/[\s_-]+/g, '');
+  if (['no', 'none', 'nil', 'na', 'n/a', 'nochange', 'unchanged'].includes(compact)) return 'No Change';
+  if (['yes', 'y', 'change', 'changed', 'changes', 'accessorychange', 'accessorychanges'].includes(compact)) return 'Added';
+  return '';
+}
+
+function normalizeBirBody(body = {}) {
+  const next = { ...body };
+  if (Object.prototype.hasOwnProperty.call(next, 'accChanges')) {
+    next.accChanges = normalizeAccChanges(next.accChanges);
+  }
+  return next;
+}
+
 function shouldMoveToClosed(status) {
   return status === 'Closed';
 }
@@ -22,6 +43,7 @@ async function moveBirToClosed(doc, userId) {
   delete closedPayload._id;
   delete closedPayload.updatedBy;
   delete closedPayload.__v;
+  closedPayload.accChanges = normalizeAccChanges(closedPayload.accChanges);
 
   const closedDoc = await ClosedBir.findOneAndUpdate(
     { birRef: doc.birRef },
@@ -72,10 +94,11 @@ router.get('/:id', protect, async (req, res) => {
 // ── POST /api/bir
 router.post('/', protect, async (req, res) => {
   try {
+    const body = normalizeBirBody(req.body);
     const payload = {
-      ...req.body,
-      status: normalizeStatus(req.body.status || 'Pending'),
-      finalStatus: req.body.status || req.body.finalStatus || '',
+      ...body,
+      status: normalizeStatus(body.status || 'Pending'),
+      finalStatus: body.status || body.finalStatus || '',
     };
     const doc = new Bir({
       ...payload,
@@ -138,10 +161,11 @@ router.post('/', protect, async (req, res) => {
 // ── PUT /api/bir/:id
 router.put('/:id', protect, async (req, res) => {
   try {
+    const body = normalizeBirBody(req.body);
     const payload = {
-      ...req.body,
-      status: normalizeStatus(req.body.status),
-      finalStatus: req.body.status || req.body.finalStatus || '',
+      ...body,
+      status: normalizeStatus(body.status),
+      finalStatus: body.status || body.finalStatus || '',
       updatedBy: req.user._id,
     };
     const doc = await Bir.findByIdAndUpdate(
