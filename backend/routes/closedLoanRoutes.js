@@ -39,7 +39,7 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const { date, division, partNo, description, girNo } = req.body || {};
+    const { date, division, partNo, description, girNo, revalue, opt, remarks, toRaisedDate } = req.body || {};
     if (!date || !division || !partNo || !description || !girNo) {
       return res.status(400).json({ message: 'Required: date, division, part no, description and GIR no.' });
     }
@@ -50,6 +50,10 @@ router.post('/', async (req, res) => {
       partNo,
       description,
       girNo,
+      revalue,
+      opt,
+      remarks,
+      toRaisedDate,
       createdBy: req.user?.name || req.user?.email || '',
     });
     res.status(201).json(doc);
@@ -63,7 +67,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const updates = {};
-    ['date', 'division', 'partNo', 'description', 'girNo'].forEach((field) => {
+    ['date', 'division', 'partNo', 'description', 'girNo', 'revalue', 'opt', 'remarks', 'toRaisedDate'].forEach((field) => {
       if (req.body[field] !== undefined) updates[field] = req.body[field];
     });
     updates.updatedBy = req.user?.name || req.user?.email || '';
