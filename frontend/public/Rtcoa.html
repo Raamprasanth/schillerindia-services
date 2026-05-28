@@ -321,7 +321,6 @@ table.coa-table tbody tr:last-child td{border-bottom:none;}
             <div class="ff span2"><label>Problem Observed</label><div class="dval long" id="d-problemObserved">-</div></div>
             <div class="ff span2"><label>Components Used</label><div class="dval long" id="d-componentsUsed">-</div></div>
             <div class="ff span2"><label>Final Remarks</label><div class="dval long" id="d-finalRemarks">-</div></div>
-            <div class="ff span4"><label>Remarks</label><div class="dval long" id="d-remarks">-</div></div>
           </div>
         </div>
       </div>
@@ -500,7 +499,7 @@ function openDetail(id) {
   const set = (eid, val) => {
     const el = document.getElementById(eid); if (!el) return;
     el.textContent = val || '-';
-    el.className = 'dval' + (['d-description','d-problemObserved','d-componentsUsed','d-finalRemarks','d-remarks'].includes(eid) ? ' long' : '') + (!val ? ' empty' : '');
+    el.className = 'dval' + (['d-description','d-problemObserved','d-componentsUsed','d-finalRemarks'].includes(eid) ? ' long' : '') + (!val ? ' empty' : '');
   };
   set('d-entryDate', fmtDate(d.entryDate));
   set('d-closedDate', fmtDate(d.closedDate));
@@ -514,7 +513,6 @@ function openDetail(id) {
   set('d-problemObserved', d.problemObserved);
   set('d-componentsUsed', d.componentsUsed);
   set('d-finalRemarks', d.finalRemarks);
-  set('d-remarks', d.remarks);
   document.getElementById('modal-detail').classList.add('open');
 }
 
