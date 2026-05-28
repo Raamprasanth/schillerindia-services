@@ -3,6 +3,10 @@ const router = express.Router();
 const Ctodr = require('../models/Ctodr');
 const { protect } = require('../middleware/authMiddleware');
 
+const EmpFRN = require('../models/EmpFRN');
+const Service = require('../models/Service');
+const EstimationPending = require('../models/EstimationPending');
+
 function splitLegacyDescription(record) {
   if (record.model || !record.description || !record.description.includes('|')) return;
   const [model, ...descParts] = String(record.description).split('|');
@@ -17,7 +21,26 @@ function splitLegacyDescription(record) {
 router.get('/', protect, async (req, res) => {
   try {
     const records = await Ctodr.find().sort({ entryDate: -1, createdAt: -1 }).lean();
-    records.forEach(splitLegacyDescription);
+    
+    for (let r of records) {
+      splitLegacyDescription(r);
+      if (r.sourceId) {
+        let doc = null;
+        try {
+           doc = await EmpFRN.findById(r.sourceId).lean();
+           if (!doc) doc = await Service.findById(r.sourceId).lean();
+           if (!doc) doc = await EstimationPending.findById(r.sourceId).lean();
+        } catch(e) {}
+        
+        if (doc) {
+          const mName = doc.defMod || doc.defBrdModName || '';
+          if (mName) {
+            r.model = mName;
+          }
+        }
+      }
+    }
+    
     res.json(records);
   } catch (error) {
     console.error('Error fetching CTODR records:', error);
