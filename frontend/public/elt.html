@@ -311,8 +311,6 @@ async function sendToScod(id, btn) {
     <div class="stats-row">
       <div class="stat-card sc-blue"><div class="stat-icon si-blue">&#128230;</div><div class="stat-label">Total Items</div><div class="stat-value" id="s-total">-</div><div class="stat-sub">ELT entries</div></div>
       <div class="stat-card sc-green"><div class="stat-icon si-green">&#128197;</div><div class="stat-label">Today</div><div class="stat-value" id="s-today">-</div><div class="stat-sub">Added today</div></div>
-      <div class="stat-card sc-purple"><div class="stat-icon si-purple">&#128736;</div><div class="stat-label">Parts</div><div class="stat-value" id="s-parts">-</div><div class="stat-sub">Unique part numbers</div></div>
-      <div class="stat-card sc-amber"><div class="stat-icon si-amber">&#127970;</div><div class="stat-label">Divisions</div><div class="stat-value" id="s-divisions">-</div><div class="stat-sub">Active in table</div></div>
     </div>
 
     <div class="table-card">
@@ -353,8 +351,8 @@ async function sendToScod(id, btn) {
             <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
             <th onclick="sortBy('partNo')">Part No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('description')">Description <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('revalue')">Revalue <span class="si">&#8693;</span></th>
             <th onclick="sortBy('girNo')">GIR No <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('revalue')">Revalue <span class="si">&#8693;</span></th>
             <th>Status</th>
             <th>Remarks</th>
             <th>Action</th>
@@ -591,8 +589,8 @@ function renderTable(){
         <td><span class="div-tag">${esc(d.division || '-')}</span></td>
         <td class="mono" style="font-weight:700;">${esc(d.partNo || '-')}</td>
         <td class="wrap-cell" title="${esc(d.description || '')}">${esc(d.description || '-')}</td>
-        <td><input type="number" id="rev-${id}" value="${d.revalue ?? ''}" placeholder="Amount" style="padding:5px; border-radius:5px; border:1px solid #ccc; width:80px;"></td>
         <td class="mono">${esc(d.girNo || '-')}</td>
+        <td><input type="number" id="rev-${id}" value="${d.revalue ?? ''}" placeholder="Amount" style="padding:5px; border-radius:5px; border:1px solid #ccc; width:80px;"></td>
         <td>
           <select id="opt-${id}" style="padding:5px; border-radius:5px; border:1px solid #ccc; background:${d.opt==='scrap'?'#fecaca':(d.opt==='stock'?'#bbf7d0':(d.opt==='dispatch'?'#bfdbfe':'#fff'))}" onchange="changeOptColor(this)">
             <option value="" ${d.opt===''?'selected':''}>-</option>
