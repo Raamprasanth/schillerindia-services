@@ -77,7 +77,9 @@ async function mirrorFrnToTodr(doc, action, items = [], queuedBy = '') {
         partNo: row.partNo,
       },
       {
-        entryDate: toDateValue(doc.entryDate || doc.rcvdDate || doc.createdAt),
+        entryDate: action === 'TO'
+          ? toDateValue(doc.toEscalationQueuedAt || new Date())
+          : toDateValue(doc.entryDate || doc.rcvdDate || doc.createdAt),
         frnNo: doc.frnNo || doc.scRno || String(doc._id),
         partNo: row.partNo,
         description: row.description,

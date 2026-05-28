@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Todr = require('../models/Todr');
+const Ctodr = require('../models/Ctodr');
 const { protect } = require('../middleware/authMiddleware');
 
 const EmpFRN = require('../models/EmpFRN');
@@ -52,6 +53,38 @@ router.post('/', protect, async (req, res) => {
     res.status(201).json(savedRecord);
   } catch (error) {
     console.error('Error creating TODR record:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// PUT update a TODR entry
+router.post('/:id/fulfill', protect, async (req, res) => {
+  try {
+    const record = await Todr.findById(req.params.id).lean();
+    if (!record) return res.status(404).json({ message: 'Record not found' });
+
+    const fulfilledDate = req.body.fulfilledDate || new Date();
+    const closedRecord = await Ctodr.create({
+      entryDate: record.entryDate,
+      frnNo: record.frnNo,
+      partNo: record.partNo,
+      description: record.description,
+      action: record.action,
+      toRaisedDate: record.toRaisedDate || null,
+      sparesReceivedDate: record.sparesReceivedDate || null,
+      fulfilledDate,
+      fulfilledBy: req.user?.name || '',
+      sourceId: record.sourceId || '',
+      sourceModule: record.sourceModule || '',
+      queuedBy: record.queuedBy || '',
+      createdAt: record.createdAt || new Date(),
+      updatedAt: new Date()
+    });
+
+    await Todr.findByIdAndDelete(req.params.id);
+    res.json(closedRecord);
+  } catch (error) {
+    console.error('Error fulfilling TODR record:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
