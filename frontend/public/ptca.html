@@ -456,8 +456,7 @@ function renderTable() {
     
     return `<tr>
       <td>
-        <button class="btn btn-outline btn-sm" onclick="editData('${t._id}')">Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteData('${t._id}')">Del</button>
+        <button class="btn btn-outline btn-sm" onclick="viewData('${t._id}')">View</button>
       </td>
       <td><b>${esc(t.scEngineer)}</b></td>
       <td>${formatDate(t.initiatedDate)}</td>
@@ -482,7 +481,15 @@ function openModal(){
 }
 
 function closeModal(){ document.getElementById('app-modal').classList.remove('open'); }
+function setModalReadOnly(isReadOnly){
+  document.querySelectorAll('#app-modal input, #app-modal textarea, #app-modal select').forEach(el => {
+    if (el.id !== 'entry-id') el.disabled = isReadOnly;
+  });
+  const saveBtn = document.getElementById('save-btn');
+  if (saveBtn) saveBtn.style.display = isReadOnly ? 'none' : '';
+}
 function clearForm(){ 
+  setModalReadOnly(false);
   ['entry-id','f-initiated','f-activity','f-responsible','f-pending-from','f-target-date','f-remarks','f-incharge-remarks'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
   }); 
@@ -490,11 +497,10 @@ function clearForm(){
   showMsg(''); 
 }
 
-function editData(id){
+function fillModal(id){
   const doc = currentData.find(x => x._id === id);
   if(!doc) return;
   clearForm();
-  document.getElementById('modal-title').innerHTML = '&#128394;&#65039; Edit Closed Activity';
   document.getElementById('entry-id').value = doc._id;
   document.getElementById('f-engineer').value = doc.scEngineer || '';
   document.getElementById('f-initiated').value = doc.initiatedDate || '';
@@ -505,6 +511,13 @@ function editData(id){
   document.getElementById('f-status').value = doc.status || 'Pending';
   document.getElementById('f-remarks').value = doc.remarks || '';
   document.getElementById('f-incharge-remarks').value = doc.scInchargeRemarks || '';
+  return true;
+}
+
+function viewData(id){
+  if(!fillModal(id)) return;
+  document.getElementById('modal-title').innerHTML = '&#128065; View Closed Activity';
+  setModalReadOnly(true);
   document.getElementById('app-modal').classList.add('open'); 
 }
 

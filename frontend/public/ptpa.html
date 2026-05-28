@@ -523,7 +523,6 @@ function renderTable() {
       return `<tr>
       <td class="action-col">
           <button class="btn btn-outline btn-sm" onclick="editData('${t._id}')">Edit</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteData('${t._id}')">Del</button>
         </td>
       <td style="font-weight:600;">${esc(t.scEngineer)}</td>
       <td>${formatDate(t.initiatedDate)}</td>
