@@ -359,6 +359,7 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
         <table class="ns-table">
           <thead>
             <tr>
+              <th class="no-sort">Actions</th>
               <th class="sortable" data-col="birRef">BIR Ref No.<span class="si">&#8693;</span></th>
               <th class="sortable" data-col="unitInwardDate">Inward Date<span class="si">&#8693;</span></th>
               <th class="sortable" data-col="division">Division<span class="si">&#8693;</span></th>
@@ -370,7 +371,6 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
               <th class="no-sort">Accessory Details</th>
               <th class="no-sort">CNR/Technews</th>
               <th class="sortable" data-col="status">Status<span class="si">&#8693;</span></th>
-              <th class="no-sort">Actions</th>
             </tr>
           </thead>
           <tbody id="bir-tbody">
@@ -555,6 +555,9 @@ function renderTable(){
 
   document.getElementById('bir-tbody').innerHTML=paged.length?paged.map(e=>`
     <tr>
+      <td>
+        <button class="action-xs view" onclick="viewRecord('${e._id}')">View</button>
+      </td>
       <td><span class="chip-sm">${esc(e.birRef||e._id)}</span></td>
       <td style="color:var(--muted);font-size:12px;white-space:nowrap;">${fmtDate(e.unitInwardDate)}</td>
       <td><span class="badge-pill ${divPillClass(e.division)}">${esc(e.division)}</span></td>
@@ -566,9 +569,6 @@ function renderTable(){
       <td style="font-size:12px;color:var(--soft);max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(e.accDetails)}">${esc(e.accDetails||'-')}</td>
       <td style="font-size:12px;">${e.cnrCirculation==='Yes'?`<span style="color:var(--purple);font-weight:600;">&#9888;&#65039; Yes</span>`:`<span style="color:var(--muted);">-</span>`}</td>
       <td><span class="${e.status==='Approved'?'st-approved':'st-closed'}">${esc(e.status)}</span></td>
-      <td>
-        <button class="action-xs view" onclick="viewRecord('${e._id}')">View</button>
-      </td>
     </tr>`).join(''):`
     <tr><td colspan="12" style="text-align:center;padding:40px;color:var(--muted);">No closed records found.</td></tr>`;
 
