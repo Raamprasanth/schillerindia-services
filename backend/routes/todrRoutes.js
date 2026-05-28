@@ -63,7 +63,7 @@ router.get('/', protect, async (req, res) => {
         } catch(e) {}
         
         if (doc) {
-          const mName = doc.defMod || doc.defBrdModName || '';
+          const mName = doc.model || '';
           const bName = doc.defMod || doc.defBrdModName || r.description || '';
           if (mName) r.model = mName;
           if (bName) r.description = bName;
