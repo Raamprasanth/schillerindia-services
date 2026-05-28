@@ -370,9 +370,9 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       <div class="breadcrumb">
         <a href="Sc-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
         <span>Work Orders</span><span class="sep">&#8250;</span>
-        <span>Closed PRF/OB Register</span>
+        <span>Closed Transfer Order</span>
       </div>
-      <div class="page-title">Closed PRF/OB Register</div>
+      <div class="page-title">Closed Transfer Order</div>
     </div>
     <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
       <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
@@ -387,8 +387,6 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       <div class="table-top">
         <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;">Closed TO Register</div>
         <div style="display:flex;gap:10px;">
-          <button class="btn btn-primary btn-sm" onclick="openAddModal()">&#43; Add New Entry</button>
-          <button class="btn btn-outline btn-sm" onclick="loadData()">&#10227; Refresh</button>
         </div>
       </div>
       
@@ -396,12 +394,13 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <table class="frn-table">
           <thead>
             <tr>
-              <th>Entry Date</th>
+              <th>TO Requested Date</th>
               <th>FRN No</th>
               <th>Part No</th>
               <th>Model</th>
               <th>Description</th>
-              <th>Action</th>
+              <th>TO Raised Date</th>
+              <th>Spares Rcd Date</th>
               <th style="width:70px;text-align:center;">Edit</th>
               <th style="width:70px;text-align:center;">Del</th>
             </tr>
@@ -477,7 +476,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   function renderTable() {
     const tb = document.getElementById('tb');
-    if(!records.length) { tb.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;">No Closed TO entries found.</td></tr>'; return; }
+    if(!records.length) { tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;">No Closed TO entries found.</td></tr>'; return; }
     
     tb.innerHTML = records.map(r => `
       <tr>
@@ -486,7 +485,8 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <td>${esc(r.partNo)}</td>
         <td>${esc(r.model || '-')}</td>
         <td class="wrap-cell">${esc(r.description)}</td>
-        <td><span style="background:var(--surface2);padding:3px 8px;border-radius:10px;font-size:10px;font-weight:700;">${esc(r.action)}</span></td>
+        <td>${r.toRaisedDate ? new Date(r.toRaisedDate).toLocaleDateString('en-IN') : '-'}</td>
+        <td>${r.sparesReceivedDate ? new Date(r.sparesReceivedDate).toLocaleDateString('en-IN') : '-'}</td>
         <td style="text-align:center;"><button class="btn-xs update" onclick="openEdit('${r._id}')">&#9999;&#65039;</button></td>
         <td style="text-align:center;"><button class="btn-xs" style="color:var(--red);" onclick="delRecord('${r._id}')">&#128465;</button></td>
       </tr>
@@ -564,6 +564,24 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       await fetch(`/api/ctodr/${id}`, { method: 'DELETE', headers: hdrs() });
       loadData();
     } catch(e) { alert('Failed to delete'); }
+  }
+
+  function exportCSV() {
+    const headers = ['TO Requested Date','FRN No','Part No','Model','Description','TO Raised Date','Spares Rcd Date'];
+    const rows = records.map(r => [
+      r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-',
+      r.frnNo || '-',
+      r.partNo || '-',
+      r.model || '-',
+      r.description || '-',
+      r.toRaisedDate ? new Date(r.toRaisedDate).toLocaleDateString('en-IN') : '-',
+      r.sparesReceivedDate ? new Date(r.sparesReceivedDate).toLocaleDateString('en-IN') : '-'
+    ]);
+    const csv = [headers, ...rows].map(row => row.map(v => `"${String(v || '').replace(/"/g,'""')}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'closed-transfer-order-' + new Date().toISOString().split('T')[0] + '.csv';
+    a.click();
   }
 
   function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
