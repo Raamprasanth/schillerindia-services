@@ -303,7 +303,6 @@ async function sendToScod(id, btn) {
     </div>
     <div class="topbar-actions">
       <button class="topbar-btn" onclick="loadData()">&#10227; Refresh</button>
-      <button class="topbar-btn primary" onclick="openAddModal()">&#43; Add New</button>
       <button class="topbar-btn" onclick="exportCSV()">&#128228; Export</button>
     </div>
   </div>
@@ -356,7 +355,7 @@ async function sendToScod(id, btn) {
             <th onclick="sortBy('description')">Description <span class="si">&#8693;</span></th>
             <th onclick="sortBy('revalue')">Revalue <span class="si">&#8693;</span></th>
             <th onclick="sortBy('girNo')">GIR No <span class="si">&#8693;</span></th>
-            <th>Opt</th>
+            <th>Status</th>
             <th>Remarks</th>
             <th>Action</th>
           </tr></thead>
@@ -603,7 +602,7 @@ function renderTable(){
           </select>
         </td>
         <td>
-          <input type="text" id="rmk-${id}" value="${esc(d.remarks || '')}" readonly tabindex="-1" style="padding:5px; border:none; background:transparent; color:var(--text); width:100%; min-width:120px; outline:none; cursor:default;" title="${esc(d.remarks || '')}">
+          <input type="text" id="rmk-${id}" value="${esc(d.remarks || '')}" style="padding:5px; border-radius:5px; border:1px solid #ccc; background:var(--surface); color:var(--text); width:100%; min-width:120px; outline:none;" title="${esc(d.remarks || '')}">
         </td>
         <td>
           <button class="btn-xs btn-primary" onclick="sendToScod('${id}', this)">&#10148; to Scod</button>

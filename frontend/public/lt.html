@@ -252,7 +252,7 @@ table.frn-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
             <th onclick="sortBy('description')">Description <span class="si">&#8693;</span></th>
             <th onclick="sortBy('revalue')">Revalue <span class="si">&#8693;</span></th>
             <th onclick="sortBy('girNo')">GIR No <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('opt')">Opt <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('opt')">Status <span class="si">&#8693;</span></th>
             <th onclick="sortBy('remarks')">Remarks <span class="si">&#8693;</span></th>
             <th>Action</th>
           </tr></thead>
@@ -309,11 +309,11 @@ table.frn-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
             </div>
             <div class="ff">
               <label>Revalue</label>
-              <input type="number" id="m-revalue" min="0" step="0.01" placeholder="Amount"/>
+              <input type="number" id="m-revalue" min="0" step="0.01" placeholder="Amount" readonly tabindex="-1" style="background:var(--surface3); color:var(--soft); cursor:not-allowed; border-color:transparent;"/>
             </div>
             <div class="ff">
-              <label>Opt</label>
-              <select id="m-opt">
+              <label>Status</label>
+              <select id="m-opt" disabled style="background:var(--surface3); color:var(--soft); cursor:not-allowed; border-color:transparent; appearance:none;">
                 <option value="">-</option>
                 <option value="scrap">Scrap</option>
                 <option value="stock">Stock</option>
@@ -322,7 +322,7 @@ table.frn-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
             </div>
             <div class="ff">
               <label>Remarks</label>
-              <input type="text" id="m-remarks" placeholder="Remarks..."/>
+              <input type="text" id="m-remarks" placeholder="Remarks..." readonly tabindex="-1" style="background:var(--surface3); color:var(--soft); cursor:not-allowed; border-color:transparent;"/>
             </div>
           </div>
         </div>
