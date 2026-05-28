@@ -396,17 +396,20 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <table class="frn-table">
           <thead>
             <tr>
-              <th>Entry Date</th>
+              <th>DR requested date</th>
               <th>FRN No</th>
               <th>Part No</th>
+              <th>Model</th>
               <th>Description</th>
+              <th>Unit Status</th>
+              <th>Spares rcd date</th>
               <th>Action</th>
               <th style="width:70px;text-align:center;">Edit</th>
               <th style="width:70px;text-align:center;">Del</th>
             </tr>
           </thead>
           <tbody id="tb">
-            <tr><td colspan="7" style="text-align:center;padding:30px;">Loading...</td></tr>
+            <tr><td colspan="10" style="text-align:center;padding:30px;">Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -476,14 +479,17 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   function renderTable() {
     const tb = document.getElementById('tb');
-    if(!records.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;">No Closed DR entries found.</td></tr>'; return; }
+    if(!records.length) { tb.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:30px;">No Closed DR entries found.</td></tr>'; return; }
     
     tb.innerHTML = records.map(r => `
       <tr>
         <td>${r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-'}</td>
         <td><span style="font-weight:700;color:var(--accent);">${esc(r.frnNo)}</span></td>
         <td>${esc(r.partNo)}</td>
+        <td>${esc(r.model || '-')}</td>
         <td class="wrap-cell">${esc(r.description)}</td>
+        <td>${esc(r.unitStatus || '-')}</td>
+        <td>${r.sparesReceivedDate ? new Date(r.sparesReceivedDate).toLocaleDateString('en-IN') : '-'}</td>
         <td><span style="background:var(--surface2);padding:3px 8px;border-radius:10px;font-size:10px;font-weight:700;">${esc(r.action)}</span></td>
         <td style="text-align:center;"><button class="btn-xs update" onclick="openEdit('${r._id}')">&#9999;&#65039;</button></td>
         <td style="text-align:center;"><button class="btn-xs" style="color:var(--red);" onclick="delRecord('${r._id}')">&#128465;</button></td>

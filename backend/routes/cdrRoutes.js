@@ -3,10 +3,46 @@ const router = express.Router();
 const Cdr = require('../models/Cdr');
 const { protect } = require('../middleware/authMiddleware');
 
+const EmpFRN = require('../models/EmpFRN');
+const Service = require('../models/Service');
+const EstimationPending = require('../models/EstimationPending');
+
+function splitLegacyDescription(record) {
+  if (record.model || !record.description || !record.description.includes('|')) return;
+  const [model, ...descParts] = String(record.description).split('|');
+  const description = descParts.join('|').trim();
+  if (model.trim() && description) {
+    record.model = model.trim();
+    record.description = description;
+  }
+}
+
 // GET all CDR entries
 router.get('/', protect, async (req, res) => {
   try {
-    const records = await Cdr.find().sort({ entryDate: -1, createdAt: -1 });
+    const records = await Cdr.find().sort({ entryDate: -1, createdAt: -1 }).lean();
+    
+    for (let r of records) {
+      splitLegacyDescription(r);
+      if (r.sourceId) {
+        let doc = null;
+        try {
+           doc = await EmpFRN.findById(r.sourceId).lean();
+           if (!doc) doc = await Service.findById(r.sourceId).lean();
+           if (!doc) doc = await EstimationPending.findById(r.sourceId).lean();
+        } catch(e) {}
+        
+        if (doc) {
+          const mName = doc.model || '';
+          const bName = doc.defMod || doc.defBrdModName || r.description || '';
+          if (mName) r.model = mName;
+          if (bName) r.description = bName;
+          r.unitStatus = doc.unitSts || doc.unitStatus || '';
+          r.quantity = doc.qty || doc.quantity || '';
+        }
+      }
+    }
+
     res.json(records);
   } catch (error) {
     console.error('Error fetching CDR records:', error);
