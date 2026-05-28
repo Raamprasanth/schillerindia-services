@@ -474,7 +474,7 @@ function renderTable(){
         <td class="mono">${esc(d.girNo || '-')}</td>
         <td><span class="div-tag" style="background:${d.opt==='scrap'?'#fecaca':(d.opt==='stock'?'#bbf7d0':(d.opt==='dispatch'?'#bfdbfe':'#e2e8f0'))}; color:#1e293b;">${esc((d.opt||'-').toUpperCase())}</span></td>
         <td class="wrap-cell" title="${esc(d.remarks || '')}">${esc(d.remarks || '-')}</td>
-        <td><input type="date" class="f-inp" style="padding:4px 8px;font-size:11px;" id="raised-date-${id}" value="${d.toRaisedDate ? d.toRaisedDate.split('T')[0] : todayISO()}"></td>
+        <td><input type="date" class="f-inp" style="padding:4px 8px;font-size:11px;" id="raised-date-${id}" value="${d.toRaisedDate ? d.toRaisedDate.split('T')[0] : ''}"></td>
         <td>
           <button class="btn-xs update" onclick="moveToClosed('${id}')">Fulfilled</button>
         </td>
@@ -640,7 +640,14 @@ async function moveToClosed(id){
   btn.innerHTML = 'Moving...';
   
   try{
-    const toRaisedDate = document.getElementById('raised-date-' + id)?.value || todayISO();
+    const toRaisedDate = document.getElementById('raised-date-' + id)?.value;
+    if(!toRaisedDate) {
+      showToast('Please select a TO raised date before fulfilling.', 'err');
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+      return;
+    }
+    
     const payload = {
       date: d.date,
       division: d.division,
