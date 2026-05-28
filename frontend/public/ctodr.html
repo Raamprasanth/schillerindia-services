@@ -401,8 +401,6 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
               <th>Description</th>
               <th>TO Raised Date</th>
               <th>Spares Rcd Date</th>
-              <th style="width:70px;text-align:center;">Edit</th>
-              <th style="width:70px;text-align:center;">Del</th>
             </tr>
           </thead>
           <tbody id="tb">
@@ -476,7 +474,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   function renderTable() {
     const tb = document.getElementById('tb');
-    if(!records.length) { tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;">No Closed TO entries found.</td></tr>'; return; }
+    if(!records.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;">No Closed TO entries found.</td></tr>'; return; }
     
     tb.innerHTML = records.map(r => `
       <tr>
@@ -487,8 +485,6 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <td class="wrap-cell">${esc(r.description)}</td>
         <td>${r.toRaisedDate ? new Date(r.toRaisedDate).toLocaleDateString('en-IN') : '-'}</td>
         <td>${r.sparesReceivedDate ? new Date(r.sparesReceivedDate).toLocaleDateString('en-IN') : '-'}</td>
-        <td style="text-align:center;"><button class="btn-xs update" onclick="openEdit('${r._id}')">&#9999;&#65039;</button></td>
-        <td style="text-align:center;"><button class="btn-xs" style="color:var(--red);" onclick="delRecord('${r._id}')">&#128465;</button></td>
       </tr>
     `).join('');
   }
