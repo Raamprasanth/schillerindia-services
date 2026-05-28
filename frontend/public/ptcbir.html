@@ -348,6 +348,7 @@
         <table class="data-table">
           <thead>
             <tr>
+              <th>Action</th>
               <th data-col="birRef">BIR Ref No.<span class="si"></span></th>
               <th data-col="unitInwardDate">Inward Date<span class="si"></span></th>
               <th data-col="division">Division<span class="si"></span></th>
@@ -359,7 +360,6 @@
               <th>Accessory Details</th>
               <th>CNR/Technews</th>
               <th>Status</th>
-              <th>Action</th>
             </tr>
           </thead>
           <tbody id="bir-tbody"></tbody>
@@ -568,6 +568,7 @@ function renderTable(){
 
   document.getElementById('bir-tbody').innerHTML=paged.length?paged.map(e=>`
     <tr>
+      <td><button class="btn-xs" onclick="viewRecord('${e._id}')" title="View">View</button></td>
       <td><span class="chip-sm">${esc(e.birRef||e._id)}</span></td>
       <td style="color:var(--muted);font-size:12px;white-space:nowrap;">${fmtDate(e.unitInwardDate)}</td>
       <td><span class="badge-pill ${divPillClass(e.division)}">${esc(e.division)}</span></td>
@@ -579,7 +580,6 @@ function renderTable(){
       <td style="font-size:12px;color:var(--soft);max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(e.accDetails)}">${esc(e.accDetails||'-')}</td>
       <td style="font-size:12px;">${String(e.cnrCirculation).trim().toLowerCase()==='yes'?`<span style="color:var(--purple);font-weight:600;">Yes</span>`:`<span style="color:var(--muted);">${esc(e.cnrCirculation||'-')}</span>`}</td>
       <td><span class="st-approved">Approved</span></td>
-      <td><button class="btn-xs" onclick="viewRecord('${e._id}')" title="View">View</button></td>
     </tr>`).join(''):`
     <tr><td colspan="12">
       <div class="empty-state">
