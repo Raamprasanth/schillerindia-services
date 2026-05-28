@@ -250,11 +250,14 @@ table.frn-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
             <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
             <th onclick="sortBy('partNo')">Part No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('description')">Description <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('revalue')">Revalue <span class="si">&#8693;</span></th>
             <th onclick="sortBy('girNo')">GIR No <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('opt')">Status <span class="si">&#8693;</span></th>
             <th onclick="sortBy('remarks')">Remarks <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('toRaisedDate')">TO raised date <span class="si">&#8693;</span></th>
           </tr></thead>
           <tbody id="lt-tbody">
-            <tr class="loading-row"><td colspan="7"><span class="spin"></span>Loading from database</td></tr>
+            <tr class="loading-row"><td colspan="10"><span class="spin"></span>Loading from database</td></tr>
           </tbody>
         </table>
       </div>
@@ -397,7 +400,7 @@ async function loadData(){
   }catch(e){
     if(e.message === 'Unauthorized') return;
     showToast('Load failed: ' + e.message, 'err');
-    document.getElementById('lt-tbody').innerHTML = `<tr class="loading-row"><td colspan="7" style="color:var(--red);">&#9888; ${esc(e.message)}</td></tr>`;
+    document.getElementById('lt-tbody').innerHTML = `<tr class="loading-row"><td colspan="10" style="color:var(--red);">&#9888; ${esc(e.message)}</td></tr>`;
   }
 }
 
@@ -420,7 +423,7 @@ function applyFilters(){
   const to = document.getElementById('fl-to')?.value || '';
   const division = document.getElementById('fl-division')?.value || '';
   filtered = DATA.filter(d =>
-    (!q || ((d.partNo||'')+' '+(d.description||'')+' '+(d.girNo||'')+' '+(d.division||'')).toLowerCase().includes(q)) &&
+    (!q || ((d.partNo||'')+' '+(d.description||'')+' '+(d.revalue||'')+' '+(d.girNo||'')+' '+(d.opt||'')+' '+(d.division||'')).toLowerCase().includes(q)) &&
     (!from || (d.date||'') >= from) &&
     (!to || (d.date||'') <= to) &&
     (!division || d.division === division)
@@ -453,7 +456,7 @@ function renderTable(){
   setText('count-chip', total + ' entr' + (total === 1 ? 'y' : 'ies'));
 
   if(!total){
-    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-st"><div class="ei">&#128230;</div><div class="et">${DATA.length ? 'No records match the current filters' : 'No Closed Loan entries'}</div><div class="es">${DATA.length ? 'Try adjusting the filters.' : 'Click Add New to create the first closed loan.'}</div></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-st"><div class="ei">&#128230;</div><div class="et">${DATA.length ? 'No records match the current filters' : 'No Closed Loan entries'}</div><div class="es">${DATA.length ? 'Try adjusting the filters.' : 'Click Add New to create the first closed loan.'}</div></div></td></tr>`;
   }else{
     tbody.innerHTML = slice.map((d,i)=>{
       const id = d._id || d.id;
@@ -463,8 +466,11 @@ function renderTable(){
         <td><span class="div-tag">${esc(d.division || '-')}</span></td>
         <td class="mono" style="font-weight:700;">${esc(d.partNo || '-')}</td>
         <td class="wrap-cell" title="${esc(d.description || '')}">${esc(d.description || '-')}</td>
+        <td class="mono" style="font-weight:700;">${esc(d.revalue ? Number(d.revalue).toLocaleString('en-IN') : '-')}</td>
         <td class="mono">${esc(d.girNo || '-')}</td>
+        <td><span class="div-tag" style="background:${d.opt==='scrap'?'#fecaca':(d.opt==='stock'?'#bbf7d0':(d.opt==='dispatch'?'#bfdbfe':'#e2e8f0'))}; color:#1e293b;">${esc((d.opt||'-').toUpperCase())}</span></td>
         <td class="wrap-cell" title="${esc(d.remarks || '')}">${esc(d.remarks || '-')}</td>
+        <td style="font-size:11px;">${d.toRaisedDate ? d.toRaisedDate.split('T')[0] : '-'}</td>
       </tr>`;
     }).join('');
   }
@@ -605,8 +611,8 @@ async function deleteItem(id){
 }
 
 function exportCSV(){
-  const headers = ['#','Date','Division','Part No','Description','GIR No','Remarks'];
-  const rows = filtered.map((d,i) => [i+1,d.date,d.division,d.partNo,d.description,d.girNo,d.remarks]);
+  const headers = ['#','Date','Division','Part No','Description','Revalue','GIR No','Status','Remarks','TO raised date'];
+  const rows = filtered.map((d,i) => [i+1,d.date,d.division,d.partNo,d.description,d.revalue,d.girNo,d.opt,d.remarks,d.toRaisedDate ? d.toRaisedDate.split('T')[0] : '']);
   const csv = [headers,...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
@@ -616,7 +622,7 @@ function exportCSV(){
 }
 
 function setLoading(){
-  document.getElementById('lt-tbody').innerHTML = '<tr class="loading-row"><td colspan="7"><span class="spin"></span>Loading from database</td></tr>';
+  document.getElementById('lt-tbody').innerHTML = '<tr class="loading-row"><td colspan="10"><span class="spin"></span>Loading from database</td></tr>';
   ['s-total','s-today','s-parts','s-divisions'].forEach(id => setText(id, '-'));
 }
 function setText(id,val){ const el = document.getElementById(id); if(el) el.textContent = val; }
