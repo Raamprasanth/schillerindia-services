@@ -370,13 +370,12 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       <div class="breadcrumb">
         <a href="Sc-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
         <span>Work Orders</span><span class="sep">&#8250;</span>
-        <span>Closed PRF/OB Register</span>
+        <span>Direct dispatch</span>
       </div>
-      <div class="page-title">Closed PRF/OB Register</div>
+      <div class="page-title">Direct dispatch</div>
     </div>
     <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
       <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
-      <button class="btn btn-outline btn-sm" onclick="loadData()">&#10227; Refresh</button>
       <button class="btn btn-primary btn-sm" onclick="exportCSV()">&#128228; Export</button>
     </div>
   </div>
@@ -385,24 +384,20 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   <div class="content">
     <div class="table-card">
       <div class="table-top">
-        <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;">DR Register</div>
-        <div style="display:flex;gap:10px;">
-          <button class="btn btn-primary btn-sm" onclick="openAddModal()">&#43; Add New Entry</button>
-          <button class="btn btn-outline btn-sm" onclick="loadData()">&#10227; Refresh</button>
-        </div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;">Direct dispatch</div>
       </div>
       
       <div class="table-wrap">
         <table class="frn-table">
           <thead>
             <tr>
-              <th>Entry Date</th>
+              <th>DR requested date</th>
               <th>FRN No</th>
               <th>Part No</th>
+              <th>Model</th>
               <th>Description</th>
+              <th>Spares rcd date</th>
               <th>Action</th>
-              <th style="width:70px;text-align:center;">Edit</th>
-              <th style="width:70px;text-align:center;">Del</th>
             </tr>
           </thead>
           <tbody id="tb">
@@ -483,10 +478,10 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <td>${r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-'}</td>
         <td><span style="font-weight:700;color:var(--accent);">${esc(r.frnNo)}</span></td>
         <td>${esc(r.partNo)}</td>
+        <td>${esc(r.model)}</td>
         <td class="wrap-cell">${esc(r.description)}</td>
-        <td><span style="background:var(--surface2);padding:3px 8px;border-radius:10px;font-size:10px;font-weight:700;">${esc(r.action)}</span></td>
-        <td style="text-align:center;"><button class="btn-xs update" onclick="openEdit('${r._id}')">&#9999;&#65039;</button></td>
-        <td style="text-align:center;"><button class="btn-xs" style="color:var(--red);" onclick="delRecord('${r._id}')">&#128465;</button></td>
+        <td>${r.sparesRcdDate ? new Date(r.sparesRcdDate).toLocaleDateString('en-IN') : '-'}</td>
+        <td style="text-align:center;"><button class="btn btn-primary btn-sm" onclick="markFulfilled('${r._id}')">Fulfilled</button></td>
       </tr>
     `).join('');
   }
@@ -562,6 +557,29 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       await fetch(`/api/dr/${id}`, { method: 'DELETE', headers: hdrs() });
       loadData();
     } catch(e) { alert('Failed to delete'); }
+  }
+
+  async function markFulfilled(id) {
+    if(!confirm('Mark this DR as fulfilled and move to closed?')) return;
+    try {
+      const r = records.find(x => x._id === id);
+      if(!r) return;
+      
+      const payload = { ...r };
+      delete payload._id;
+      delete payload.__v;
+      payload.closedDate = new Date();
+
+      const res = await fetch('/api/cdr', { 
+        method: 'POST', 
+        headers: hdrs(), 
+        body: JSON.stringify(payload) 
+      });
+      if(!res.ok) throw new Error('Failed to move to closed DR');
+      
+      await fetch(`/api/dr/${id}`, { method: 'DELETE', headers: hdrs() });
+      loadData();
+    } catch(e) { alert(e.message); }
   }
 
   function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
