@@ -54,7 +54,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .breadcrumb .sep{color:var(--border2);}
 .page-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);}
 .content{flex:1;padding:20px 24px;overflow-y:auto;}
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
 .stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;box-shadow:var(--shadow);transition:all 0.2s;position:relative;overflow:hidden;display:grid;grid-template-columns:24px 1fr;column-gap:8px;align-items:start;}
 .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:11px 11px 0 0;}
 .sc-blue::before{background:linear-gradient(90deg,#0068b5,#0ea5e9);}
@@ -199,7 +199,6 @@ table.frn-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
     <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
       <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
       <button class="btn btn-outline btn-sm" onclick="loadData()">&#10227; Refresh</button>
-      <button class="btn btn-primary btn-sm" onclick="openAddModal()">&#43; Add New</button>
       <button class="btn btn-outline btn-sm" onclick="exportCSV()">&#128228; Export</button>
     </div>
   </div>
@@ -207,8 +206,6 @@ table.frn-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
   <div class="content">
     <div class="stats-row">
       <div class="stat-card sc-blue"><div class="stat-icon si-blue">&#128230;</div><div class="stat-label">Total Items</div><div class="stat-value" id="s-total">-</div><div class="stat-sub">Closed loan entries</div></div>
-      <div class="stat-card sc-green"><div class="stat-icon si-green">&#128197;</div><div class="stat-label">Today</div><div class="stat-value" id="s-today">-</div><div class="stat-sub">Added today</div></div>
-      <div class="stat-card sc-purple"><div class="stat-icon si-purple">&#128736;</div><div class="stat-label">Parts</div><div class="stat-value" id="s-parts">-</div><div class="stat-sub">Unique part numbers</div></div>
       <div class="stat-card sc-amber"><div class="stat-icon si-amber">&#127970;</div><div class="stat-label">Divisions</div><div class="stat-value" id="s-divisions">-</div><div class="stat-sub">Active in table</div></div>
     </div>
 
