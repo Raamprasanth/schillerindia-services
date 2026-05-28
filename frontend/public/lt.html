@@ -474,9 +474,9 @@ function renderTable(){
         <td class="mono">${esc(d.girNo || '-')}</td>
         <td><span class="div-tag" style="background:${d.opt==='scrap'?'#fecaca':(d.opt==='stock'?'#bbf7d0':(d.opt==='dispatch'?'#bfdbfe':'#e2e8f0'))}; color:#1e293b;">${esc((d.opt||'-').toUpperCase())}</span></td>
         <td class="wrap-cell" title="${esc(d.remarks || '')}">${esc(d.remarks || '-')}</td>
-        <td><input type="date" class="f-inp" style="padding:4px 8px;font-size:11px;" id="raised-date-${id}" value="${d.toRaisedDate ? d.toRaisedDate.split('T')[0] : ''}"></td>
+        <td><input type="date" class="f-inp" style="padding:4px 8px;font-size:11px;" id="raised-date-${id}" value="${d.toRaisedDate ? d.toRaisedDate.split('T')[0] : ''}" onchange="toggleFulfillBtn('${id}')"></td>
         <td>
-          <button class="btn-xs update" onclick="moveToClosed('${id}')">Fulfilled</button>
+          <button class="btn-xs update" id="btn-fulfill-${id}" onclick="moveToClosed('${id}')" ${d.toRaisedDate ? '' : 'disabled style="opacity:0.4;cursor:not-allowed;"'}>Fulfilled</button>
         </td>
       </tr>`;
     }).join('');
@@ -629,6 +629,22 @@ async function deleteItem(id){
   }
 }
 
+function toggleFulfillBtn(id) {
+  const dateVal = document.getElementById('raised-date-' + id).value;
+  const btn = document.getElementById('btn-fulfill-' + id);
+  if(btn) {
+    if(dateVal) {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+    } else {
+      btn.disabled = true;
+      btn.style.opacity = '0.4';
+      btn.style.cursor = 'not-allowed';
+    }
+  }
+}
+
 async function moveToClosed(id){
   if(!confirm('Mark this loan item as fulfilled? It will be moved to Closed Loan.')) return;
   const d = DATA.find(x => (x._id || x.id) === id);
@@ -718,6 +734,7 @@ Object.assign(window, {
   deleteItem,
   exportCSV,
   moveToClosed,
+  toggleFulfillBtn,
   logout
 });
 document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
