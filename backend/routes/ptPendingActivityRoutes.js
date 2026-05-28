@@ -22,6 +22,10 @@ function ownerFilter(user) {
   return {};
 }
 
+function normalizePendingStatus(value) {
+  return String(value || '').toLowerCase() === 'completed' ? 'Completed' : 'Pending';
+}
+
 router.get('/', async (req, res) => {
   try {
     const docs = await PtPendingActivity.find(ownerFilter(req.user)).sort({ createdAt: -1 }).lean();
@@ -49,7 +53,7 @@ router.post('/', async (req, res) => {
       targetDate: body.targetDate || '',
       remarks: body.remarks || '',
       scInchargeRemarks: body.scInchargeRemarks || '',
-      status: body.status || 'Pending',
+      status: normalizePendingStatus(body.status),
       createdBy: req.user?._id,
     });
     res.status(201).json(doc);
@@ -76,7 +80,7 @@ router.put('/:id', async (req, res) => {
     const filter = { _id: req.params.id, ...ownerFilter(req.user) };
     const status = String(req.body.status || '').toLowerCase();
     
-    if (status === 'closed' || status === 'completed') {
+    if (status === 'completed') {
       const existing = await PtPendingActivity.findOne(filter).lean();
       if (!existing) return res.status(404).json({ message: 'Record not found.' });
 
@@ -97,7 +101,10 @@ router.put('/:id', async (req, res) => {
       return res.json(closedDoc);
     }
     
-    const doc = await PtPendingActivity.findOneAndUpdate(filter, req.body, { new: true });
+    const doc = await PtPendingActivity.findOneAndUpdate(filter, {
+      ...req.body,
+      status: normalizePendingStatus(req.body.status),
+    }, { new: true });
     if (!doc) return res.status(404).json({ message: 'Record not found.' });
     res.json(doc);
   } catch (err) {
