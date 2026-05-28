@@ -1675,24 +1675,9 @@ function configureEstimationStatCards(){
   const cards=document.querySelectorAll('.stats-row .stat-card');
   if(cards.length<4) return;
   cards[0].setAttribute('onclick',"filterByCard('all')");
-  cards[0].innerHTML='<div class="stat-icon si-blue">&#128202;</div><div class="stat-label">Total SO Pending</div><div class="stat-value" id="stat-total">-</div><div class="stat-sub">Active records</div>';
-        <td class="amount-cell">${amt}</td>
-        <td><span class="s-pill ${otClass}">${esc(ot)}</span></td>
-        <td>${esc(s.estRaEng||'-')}</td>
-        <td style="font-weight:600;color:var(--accent2);">${s.pdEst} days</td>
-        <td><button class="btn-xs upd" onclick="openUpdate('${rowId}')" title="Update">&#9999;&#65039;</button></td>
-        <td><button class="btn-xs del" onclick="deleteRecord('${rowId}')">&#128465; Del</button></td>
-      </tr>`;
-    }).join('');
-  }
-  const fr=total?(currentPage-1)*perPage+1:0;
-  (document.getElementById('tbl-info')||{}).textContent =total?`Showing ${fr} to ${Math.min(currentPage*perPage,total)} of ${total} entr${total===1?'y':'ies'}`:'0 entries';
-  renderPagination(pages);
-}
-configureEstimationTableColumns();
-function setLoading(){
-  document.getElementById('est-tbody').innerHTML='<tr class="loading-row"><td colspan="20"><span class="spin"></span>Loading from database...</td></tr>';
-  ['stat-total','stat-high','stat-repair','stat-new'].forEach(id=>document.getElementById(id).textContent='-');
+  cards[1].setAttribute('onclick',"filterByCard('normal')");
+  cards[2].setAttribute('onclick',"filterByCard('warning')");
+  cards[3].setAttribute('onclick',"filterByCard('critical')");
 }
 function renderTable(){
   const perPage=parseInt(document.getElementById('per-page').value)||10;
