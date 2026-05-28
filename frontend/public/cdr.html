@@ -386,10 +386,6 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     <div class="table-card">
       <div class="table-top">
         <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;">Closed DR Register</div>
-        <div style="display:flex;gap:10px;">
-          <button class="btn btn-primary btn-sm" onclick="openAddModal()">&#43; Add New Entry</button>
-          <button class="btn btn-outline btn-sm" onclick="loadData()">&#10227; Refresh</button>
-        </div>
       </div>
       
       <div class="table-wrap">
@@ -403,13 +399,10 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
               <th>Description</th>
               <th>Unit Status</th>
               <th>Spares rcd date</th>
-              <th>Action</th>
-              <th style="width:70px;text-align:center;">Edit</th>
-              <th style="width:70px;text-align:center;">Del</th>
             </tr>
           </thead>
           <tbody id="tb">
-            <tr><td colspan="10" style="text-align:center;padding:30px;">Loading...</td></tr>
+            <tr><td colspan="7" style="text-align:center;padding:30px;">Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -479,7 +472,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   function renderTable() {
     const tb = document.getElementById('tb');
-    if(!records.length) { tb.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:30px;">No Closed DR entries found.</td></tr>'; return; }
+    if(!records.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;">No Closed DR entries found.</td></tr>'; return; }
     
     tb.innerHTML = records.map(r => `
       <tr>
@@ -490,9 +483,6 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <td class="wrap-cell">${esc(r.description)}</td>
         <td>${esc(r.unitStatus || '-')}</td>
         <td>${r.sparesReceivedDate ? new Date(r.sparesReceivedDate).toLocaleDateString('en-IN') : '-'}</td>
-        <td><span style="background:var(--surface2);padding:3px 8px;border-radius:10px;font-size:10px;font-weight:700;">${esc(r.action)}</span></td>
-        <td style="text-align:center;"><button class="btn-xs update" onclick="openEdit('${r._id}')">&#9999;&#65039;</button></td>
-        <td style="text-align:center;"><button class="btn-xs" style="color:var(--red);" onclick="delRecord('${r._id}')">&#128465;</button></td>
       </tr>
     `).join('');
   }
