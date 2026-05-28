@@ -262,7 +262,6 @@
     <div class="topbar-actions">
       <button class="topbar-btn" onclick="const b=this; const o=b.innerHTML; b.innerHTML='&#8635; Refreshing...'; Promise.resolve(loadData()).then(()=>{b.innerHTML='&#10004; Refreshed!'; setTimeout(()=>b.innerHTML=o,2000);}).catch(()=>{b.innerHTML='&#10008; Error'; setTimeout(()=>b.innerHTML=o,2000);})">&#10227; Refresh</button>
       <button class="topbar-btn" onclick="exportCSV()">&#128228; Export</button>
-      <button class="topbar-btn primary" onclick="window.location.href='ptbir.html'">+ New BIR</button>
     </div>
   </div>
 

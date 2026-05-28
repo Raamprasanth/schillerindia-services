@@ -338,7 +338,7 @@ tr:hover td{background:var(--surface3);}
       <div class="table-responsive">
         <table>
           <thead>
-            <tr>
+            <tr><th>Actions</th>
               <th>SC Engineer</th>
               <th>Initiated Date</th>
               <th>Activity</th>
@@ -349,7 +349,7 @@ tr:hover td{background:var(--surface3);}
               <th>Remarks</th>
               <th>SC Incharge Remarks</th>
               <th>Status</th>
-              <th>Actions</th>
+              
             </tr>
           </thead>
           <tbody id="table-body">
@@ -458,6 +458,10 @@ function renderTable() {
     if(s==='closed'||s==='completed') statCls='closed';
     
     return `<tr>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="editData('${t._id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteData('${t._id}')">Del</button>
+      </td>
       <td><b>${esc(t.scEngineer)}</b></td>
       <td>${formatDate(t.initiatedDate)}</td>
       <td><b>${esc(t.activity)}</b></td>
@@ -468,10 +472,6 @@ function renderTable() {
       <td>${esc(t.remarks)}</td>
       <td>${esc(t.scInchargeRemarks)}</td>
       <td><span class="badge ${statCls}">${esc(t.status)}</span></td>
-      <td>
-        <button class="btn btn-outline btn-sm" onclick="editData('${t._id}')">Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteData('${t._id}')">Del</button>
-      </td>
     </tr>`;
   }).join('');
 }
