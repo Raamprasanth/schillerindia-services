@@ -17,14 +17,14 @@ const ptCallRegisterSchema = new mongoose.Schema(
     },
     commType:   {
       type: String,
-      enum: ['Phone', 'WhatsApp', 'Email', 'In-Person', 'Video Call', ''],
-      default: '',
+      enum: ['Phone', 'WhatsApp', 'Email', 'In-Person', 'Video Call'],
+      required: true,
     },
     duration:   { type: String, trim: true, default: '' },
     status: {
       type: String,
-      enum: ['Open', 'Closed', 'Pending', 'Escalated'],
-      default: 'Open',
+      enum: ['Pending', 'Closed', 'Escalated'],
+      default: 'Pending',
       required: true,
     },
     remarks:     { type: String, trim: true, default: '' },

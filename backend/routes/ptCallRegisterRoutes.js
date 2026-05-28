@@ -9,6 +9,25 @@ function getUserDivisions(user) {
   return [...new Set(values.map(v => String(v || '').trim()).filter(Boolean))];
 }
 
+const ALLOWED_STATUSES = ['Pending', 'Closed', 'Escalated'];
+const ALLOWED_COMM_TYPES = ['Phone', 'WhatsApp', 'Email', 'In-Person', 'Video Call'];
+
+function normalizePayload(body = {}) {
+  const payload = { ...body };
+  if (!ALLOWED_STATUSES.includes(payload.status)) payload.status = 'Pending';
+  return payload;
+}
+
+function validateRequired(payload) {
+  if (!payload.commType || !ALLOWED_COMM_TYPES.includes(payload.commType)) {
+    return 'Communication Type is required.';
+  }
+  if (!ALLOWED_STATUSES.includes(payload.status)) {
+    return 'Valid status is required.';
+  }
+  return '';
+}
+
 // ── GET /api/pt/call-register (all open records for division)
 router.get('/', protect, async (req, res) => {
   try {
@@ -60,8 +79,11 @@ router.get('/:id', protect, async (req, res) => {
 // ── POST /api/pt/call-register
 router.post('/', protect, async (req, res) => {
   try {
+    const payload = normalizePayload(req.body);
+    const validationMessage = validateRequired(payload);
+    if (validationMessage) return res.status(400).json({ message: validationMessage });
     const doc = new PtCallRegister({
-      ...req.body,
+      ...payload,
       createdBy: req.user._id,
     });
     const saved = await doc.save();
@@ -78,9 +100,12 @@ router.post('/', protect, async (req, res) => {
 // ── PUT /api/pt/call-register/:id
 router.put('/:id', protect, async (req, res) => {
   try {
+    const payload = normalizePayload(req.body);
+    const validationMessage = validateRequired(payload);
+    if (validationMessage) return res.status(400).json({ message: validationMessage });
     const doc = await PtCallRegister.findByIdAndUpdate(
       req.params.id,
-      { ...req.body },
+      { ...payload },
       { new: true, runValidators: true }
     );
     if (!doc) return res.status(404).json({ message: 'Record not found' });

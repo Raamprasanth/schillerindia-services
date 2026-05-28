@@ -340,9 +340,9 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
           </select>
         </div>
         <div class="ff">
-          <label>Communication Type</label>
-          <select id="m-commtype">
-            <option value="">Select...</option>
+          <label>Communication Type <span class="req">*</span></label>
+          <select id="m-commtype" required>
+            <option value="">Select Communication-</option>
             <option value="Phone">Phone</option>
             <option value="WhatsApp">WhatsApp</option>
             <option value="Email">Email</option>
@@ -357,10 +357,9 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
         <div class="ff">
           <label>Status <span class="req">*</span></label>
           <select id="m-status" required>
-            <option value="">Select...</option>
-            <option value="Open">Open</option>
-            <option value="Closed">Closed</option>
+            <option value="">Select Status-</option>
             <option value="Pending">Pending</option>
+            <option value="Closed">Closed</option>
             <option value="Escalated">Escalated</option>
           </select>
         </div>
@@ -475,7 +474,7 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
     <!-- STATS -->
     <div class="stats-row">
       <div class="stat-card sc-blue"><div class="stat-icon si-blue">&#128202;</div><div class="stat-label">Total Calls</div><div class="stat-value" id="s-total">-</div><div class="stat-sub">All registered calls</div></div>
-      <div class="stat-card sc-green"><div class="stat-icon si-green">&#9989;</div><div class="stat-label">Open</div><div class="stat-value" id="s-open">-</div><div class="stat-sub">Active calls</div></div>
+      <div class="stat-card sc-green"><div class="stat-icon si-green">&#9989;</div><div class="stat-label">Closed</div><div class="stat-value" id="s-closed">-</div><div class="stat-sub">Closed in register</div></div>
       <div class="stat-card sc-amber"><div class="stat-icon si-amber">&#9203;</div><div class="stat-label">Pending</div><div class="stat-value" id="s-pending">-</div><div class="stat-sub">Awaiting action</div></div>
       <div class="stat-card sc-red"><div class="stat-icon si-red">&#128308;</div><div class="stat-label">Escalated</div><div class="stat-value" id="s-escalated">-</div><div class="stat-sub">Needs attention</div></div>
     </div>
@@ -521,7 +520,7 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
         <label>Status</label>
         <select class="f-select" id="fl-status" onchange="applyFilters()">
           <option value="">All Status</option>
-          <option>Open</option><option>Closed</option><option>Pending</option><option>Escalated</option>
+          <option>Pending</option><option>Closed</option><option>Escalated</option>
         </select>
         <button class="btn btn-outline btn-sm" style="padding:5px 11px;font-size:11px;margin-left:auto;" onclick="clearAllFilters()">&#10005; Clear All</button>
       </div>
@@ -841,7 +840,7 @@ async function loadData(){
 
 function updateStats(){
   (document.getElementById('s-total')||{}).textContent = CALL_DATA.length;
-  (document.getElementById('s-open')||{}).textContent = CALL_DATA.filter(d => d.status === 'Open').length;
+  (document.getElementById('s-closed')||{}).textContent = CALL_DATA.filter(d => d.status === 'Closed').length;
   (document.getElementById('s-pending')||{}).textContent = CALL_DATA.filter(d => d.status === 'Pending').length;
   (document.getElementById('s-escalated')||{}).textContent = CALL_DATA.filter(d => d.status === 'Escalated').length;
 }
@@ -996,7 +995,7 @@ function clearModalForm(){
     if(el) el.value = '';
   });
   ['m-supplier','m-model','m-duration','m-remarks'].forEach(id => {const el=document.getElementById(id);if(el)el.value = '';});
-  ['m-division','m-region','m-branch','m-calldate','m-engineer','m-supplier','m-model','m-calltype','m-status','m-remarks'].forEach(id => { const el=document.getElementById(id); if(el) el.classList.remove('err'); });
+  ['m-division','m-region','m-branch','m-calldate','m-engineer','m-supplier','m-model','m-calltype','m-commtype','m-status','m-remarks'].forEach(id => { const el=document.getElementById(id); if(el) el.classList.remove('err'); });
 }
 
 function clearModalMsg(){
@@ -1009,7 +1008,7 @@ function showModalErr(msg){
 }
 
 async function saveEntry(){
-  const required = ['m-region','m-branch','m-calldate','m-engineer','m-model','m-calltype','m-status','m-remarks'];
+  const required = ['m-region','m-branch','m-calldate','m-engineer','m-model','m-calltype','m-commtype','m-status','m-remarks'];
   let err = false;
   required.forEach(id=>{const el=document.getElementById(id);if(!el)return;if(!el.value.trim()){el.classList.add('err');err=true;}else el.classList.remove('err');});
   if(err){ showModalErr('Please fill all required fields.'); return; }
@@ -1051,34 +1050,6 @@ async function saveEntry(){
 
     if(editMode){
       const id = document.getElementById('edit-id').value;
-      if(payload.status === 'Closed'){
-        const ALLOWED_DIV = ['PATIENT MONITORS','SAG','VENTILATOR','DEFIBRILLATOR','ECG','SYRINGE PUMP','INFUSION PUMP','ULTRASOUND','ANAESTHESIA','SHIPL','OTHER'];
-        const orig = CALL_DATA.find(x=>(x._id||x.id)===id) || {};
-        const div = payload.division||orig.division||'';
-        const closePayload = {
-          division:  ALLOWED_DIV.includes(div) ? div : 'OTHER',
-          callDate:  payload.callDate || orig.callDate || '',
-          entryDate: payload.callDate || orig.callDate || '',
-          closeDate: new Date().toISOString().split('T')[0],
-          scEngg:    payload.scEng || orig.scEng || '',
-          engineer:  payload.engineer || orig.engineer || '-',
-          typeCall:  payload.callType || orig.callType || '',
-          branch:    payload.branch || orig.branch || '',
-          region:    payload.region || orig.region || '',
-          model:     payload.model || orig.model || '',
-          remarks:   payload.remarks || orig.remarks || '',
-          status:    'Closed',
-        };
-        const cr = await fetch(`${API}/api/pt/closed-calls`, {method:'POST', headers:authHeaders(), body:JSON.stringify(closePayload)});
-        handleUnauth(cr);
-        if(!cr.ok){ const e=await cr.json().catch(()=>({})); throw new Error('Close move failed: '+(e.message||'HTTP '+cr.status)); }
-        await fetch(`${API}/api/pt/call-register/${id}`, {method:'DELETE', headers:authHeaders()});
-        CALL_DATA = CALL_DATA.filter(x=>(x._id||x.id)!==id);
-        applyFilters(); updateStats();
-        showToast('Call closed and moved to Closed Calls.','ok');
-        closeAddModal();
-        return;
-      }
       const idx = CALL_DATA.findIndex(x=>(x._id||x.id)===id);
       if(idx!==-1) CALL_DATA[idx] = {...CALL_DATA[idx], ...payload, _id: CALL_DATA[idx]._id, id: CALL_DATA[idx].id};
     } else {
@@ -1163,7 +1134,7 @@ function getRange(c,t){if(t<=7)return Array.from({length:t},(_,i)=>i+1);if(c<=4)
 function gp(p){ currentPage=p; renderTable(); }
 
 /* -- HELPERS -- */
-function setLoading(){ document.getElementById('call-tbody').innerHTML='<tr class="loading-row"><td colspan="12"><span class="spin"></span>Loading from database-</td></tr>'; ['s-total','s-open','s-pending','s-escalated'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='-';}); }
+function setLoading(){ document.getElementById('call-tbody').innerHTML='<tr class="loading-row"><td colspan="12"><span class="spin"></span>Loading from database-</td></tr>'; ['s-total','s-closed','s-pending','s-escalated'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='-';}); }
 function setError(msg){ document.getElementById('call-tbody').innerHTML=`<tr class="loading-row"><td colspan="12" style="color:var(--red);">&#9888;&#65039; ${esc(msg)}</td></tr>`; }
 function fmtDate(d){ if(!d)return'-'; const p=String(d).split('T')[0].split('-'); if(p.length<3)return String(d); return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0]; }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
