@@ -8,6 +8,44 @@ const EmpFRN = require('../models/EmpFRN');
 const Service = require('../models/Service');
 const EstimationPending = require('../models/EstimationPending');
 
+function todayIso() {
+  const now = new Date();
+  const ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+  const y = ist.getFullYear();
+  const m = String(ist.getMonth() + 1).padStart(2, '0');
+  const d = String(ist.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function dateIso(value) {
+  if (!value) return '';
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
+}
+
+function splitLegacyDescription(record) {
+  if (record.model || !record.description || !record.description.includes('|')) return;
+  const [model, ...descParts] = String(record.description).split('|');
+  const description = descParts.join('|').trim();
+  if (model.trim() && description) {
+    record.model = model.trim();
+    record.description = description;
+  }
+}
+
+function validateDatePayload(body) {
+  const today = todayIso();
+  if (Object.prototype.hasOwnProperty.call(body, 'toRaisedDate') && body.toRaisedDate) {
+    const value = dateIso(body.toRaisedDate);
+    if (value !== today) return 'TO Raised Date can be only today.';
+  }
+  if (Object.prototype.hasOwnProperty.call(body, 'sparesReceivedDate') && body.sparesReceivedDate) {
+    const value = dateIso(body.sparesReceivedDate);
+    if (!value || value > today) return 'Spares Rcd Date cannot be a future date.';
+  }
+  return '';
+}
+
 // GET all TODR entries
 router.get('/', protect, async (req, res) => {
   try {
@@ -15,6 +53,7 @@ router.get('/', protect, async (req, res) => {
     
     // Dynamically fetch 'mod brd name' for descriptions
     for (let r of records) {
+      splitLegacyDescription(r);
       if (r.sourceId) {
         let doc = null;
         try {
@@ -25,11 +64,9 @@ router.get('/', protect, async (req, res) => {
         
         if (doc) {
           const mName = doc.model || '';
-          const bName = doc.defMod || doc.defBrdModName || '';
-          const newDesc = [mName, bName].filter(Boolean).join(' | ');
-          if (newDesc) {
-            r.description = newDesc;
-          }
+          const bName = doc.defMod || doc.defBrdModName || r.description || '';
+          if (mName) r.model = mName;
+          if (bName) r.description = bName;
         }
       }
     }
@@ -63,11 +100,12 @@ router.post('/:id/fulfill', protect, async (req, res) => {
     const record = await Todr.findById(req.params.id).lean();
     if (!record) return res.status(404).json({ message: 'Record not found' });
 
-    const fulfilledDate = req.body.fulfilledDate || new Date();
+    const fulfilledDate = todayIso();
     const closedRecord = await Ctodr.create({
       entryDate: record.entryDate,
       frnNo: record.frnNo,
       partNo: record.partNo,
+      model: record.model || '',
       description: record.description,
       action: record.action,
       toRaisedDate: record.toRaisedDate || null,
@@ -92,6 +130,9 @@ router.post('/:id/fulfill', protect, async (req, res) => {
 // PUT update a TODR entry
 router.put('/:id', protect, async (req, res) => {
   try {
+    const dateError = validateDatePayload(req.body);
+    if (dateError) return res.status(400).json({ message: dateError });
+
     const record = await Todr.findByIdAndUpdate(
       req.params.id,
       { ...req.body, updatedAt: new Date() },

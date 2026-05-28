@@ -4,6 +4,7 @@ const todrSchema = new mongoose.Schema({
   entryDate: { type: Date, required: true },
   frnNo: { type: String, required: true },
   partNo: { type: String, required: true },
+  model: { type: String, trim: true, default: '' },
   description: { type: String, required: true },
   action: { type: String, required: true },
   toRaisedDate: { type: Date, default: null },

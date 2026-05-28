@@ -3,10 +3,21 @@ const router = express.Router();
 const Ctodr = require('../models/Ctodr');
 const { protect } = require('../middleware/authMiddleware');
 
+function splitLegacyDescription(record) {
+  if (record.model || !record.description || !record.description.includes('|')) return;
+  const [model, ...descParts] = String(record.description).split('|');
+  const description = descParts.join('|').trim();
+  if (model.trim() && description) {
+    record.model = model.trim();
+    record.description = description;
+  }
+}
+
 // GET all CTODR entries
 router.get('/', protect, async (req, res) => {
   try {
-    const records = await Ctodr.find().sort({ entryDate: -1, createdAt: -1 });
+    const records = await Ctodr.find().sort({ entryDate: -1, createdAt: -1 }).lean();
+    records.forEach(splitLegacyDescription);
     res.json(records);
   } catch (error) {
     console.error('Error fetching CTODR records:', error);

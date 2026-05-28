@@ -47,12 +47,12 @@ function toDateValue(value) {
   return Number.isNaN(date.getTime()) ? new Date() : date;
 }
 
+function buildTodrModel(doc) {
+  return String(doc.model || '').trim();
+}
+
 function buildTodrDescription(doc, item = {}) {
-  const parts = [
-    doc.model,
-    doc.defMod || doc.defBrdModName || ''
-  ];
-  return parts.map(v => String(v || '').trim()).filter(Boolean).join(' | ') || 'TO/DR entry';
+  return String(item.description || doc.defMod || doc.defBrdModName || '').trim() || 'TO/DR entry';
 }
 
 async function mirrorFrnToTodr(doc, action, items = [], queuedBy = '') {
@@ -60,10 +60,12 @@ async function mirrorFrnToTodr(doc, action, items = [], queuedBy = '') {
     const rows = action === 'TO'
       ? items.map(item => ({
           partNo: String(item.partNo || '').trim(),
+          model: buildTodrModel(doc),
           description: buildTodrDescription(doc, item),
         })).filter(item => item.partNo)
       : [{
           partNo: String(doc.partNo || doc.defMod || doc.defGir || 'DR').trim(),
+          model: buildTodrModel(doc),
           description: buildTodrDescription(doc),
         }];
 
@@ -82,6 +84,7 @@ async function mirrorFrnToTodr(doc, action, items = [], queuedBy = '') {
           : toDateValue(doc.entryDate || doc.rcvdDate || doc.createdAt),
         frnNo: doc.frnNo || doc.scRno || String(doc._id),
         partNo: row.partNo,
+        model: row.model,
         description: row.description,
         action,
         sourceModule: 'emp_pending_frn',

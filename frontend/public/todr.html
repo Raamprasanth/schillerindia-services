@@ -394,6 +394,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
               <th>TO Requested Date</th>
               <th>FRN No</th>
               <th>Part No</th>
+              <th>Model</th>
               <th>Description</th>
               <th>TO Raised Date</th>
               <th>Spares Rcd Date</th>
@@ -401,7 +402,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             </tr>
           </thead>
           <tbody id="tb">
-            <tr><td colspan="7" style="text-align:center;padding:30px;">Loading...</td></tr>
+            <tr><td colspan="8" style="text-align:center;padding:30px;">Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -457,7 +458,12 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   function hdrs(){ return {"Content-Type":"application/json", "Authorization":"Bearer "+(sessionStorage.getItem('schiller_token')||"")}; }
   function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href="login.html"; }
+  function localDateIso(d = new Date()) {
+    const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+    return local.toISOString().split('T')[0];
+  }
 
+  const TODAY_ISO = localDateIso();
   let records = [];
 
   async function loadData() {
@@ -471,17 +477,18 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   function renderTable() {
     const tb = document.getElementById('tb');
-    if(!records.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;">No TO entries found.</td></tr>'; return; }
+    if(!records.length) { tb.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;">No TO entries found.</td></tr>'; return; }
     
     tb.innerHTML = records.map(r => `
       <tr>
         <td>${r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-'}</td>
         <td><span style="font-weight:700;color:var(--accent);">${esc(r.frnNo)}</span></td>
         <td>${esc(r.partNo)}</td>
+        <td>${esc(r.model || '-')}</td>
         <td class="wrap-cell">${esc(r.description)}</td>
-        <td><input type="date" class="f-inp" value="${dateInputValue(r.toRaisedDate)}" onchange="updateDateField('${r._id}','toRaisedDate',this.value)" style="width:140px;"></td>
-        <td><input type="date" class="f-inp" value="${dateInputValue(r.sparesReceivedDate)}" onchange="updateDateField('${r._id}','sparesReceivedDate',this.value)" style="width:140px;"></td>
-        <td><button class="btn-xs update" onclick="chooseFulfilledDate('${r._id}')">Fulfilled Date</button></td>
+        <td><input type="date" class="f-inp" min="${TODAY_ISO}" max="${TODAY_ISO}" value="${dateInputValue(r.toRaisedDate)}" onchange="updateDateField('${r._id}','toRaisedDate',this.value)" style="width:140px;"></td>
+        <td><input type="date" class="f-inp" max="${TODAY_ISO}" value="${dateInputValue(r.sparesReceivedDate)}" onchange="updateDateField('${r._id}','sparesReceivedDate',this.value)" style="width:140px;"></td>
+        <td><button class="btn-xs update" onclick="fulfillRecord('${r._id}')">Fulfilled</button></td>
       </tr>
     `).join('');
   }
@@ -496,6 +503,16 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   async function updateDateField(id, field, value) {
     const record = records.find(x => x._id === id);
     if(!record) return;
+    if(field === 'toRaisedDate' && value && value !== TODAY_ISO) {
+      alert('TO Raised Date can be only today.');
+      renderTable();
+      return;
+    }
+    if(field === 'sparesReceivedDate' && value && value > TODAY_ISO) {
+      alert('Spares Rcd Date cannot be a future date.');
+      renderTable();
+      return;
+    }
     const payload = { [field]: value || null };
     try {
       const res = await fetch(`/api/todr/${id}`, { method: 'PUT', headers: hdrs(), body: JSON.stringify(payload) });
@@ -509,25 +526,9 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     }
   }
 
-  function chooseFulfilledDate(id) {
-    const picker = document.createElement('input');
-    picker.type = 'date';
-    picker.value = new Date().toISOString().split('T')[0];
-    picker.style.position = 'fixed';
-    picker.style.left = '-9999px';
-    document.body.appendChild(picker);
-    picker.addEventListener('change', async () => {
-      const value = picker.value;
-      picker.remove();
-      if(value) await fulfillRecord(id, value);
-    }, { once: true });
-    picker.addEventListener('blur', () => setTimeout(() => picker.remove(), 300), { once: true });
-    picker.showPicker ? picker.showPicker() : picker.click();
-  }
-
-  async function fulfillRecord(id, fulfilledDate) {
+  async function fulfillRecord(id) {
     try {
-      const res = await fetch(`/api/todr/${id}/fulfill`, { method: 'POST', headers: hdrs(), body: JSON.stringify({ fulfilledDate }) });
+      const res = await fetch(`/api/todr/${id}/fulfill`, { method: 'POST', headers: hdrs(), body: JSON.stringify({ fulfilledDate: TODAY_ISO }) });
       const json = await res.json().catch(()=>{});
       if(!res.ok) throw new Error(json?.message || 'Server error');
       records = records.filter(r => r._id !== id);
@@ -611,11 +612,12 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   }
 
   function exportCSV() {
-    const headers = ['TO Requested Date','FRN No','Part No','Description','TO Raised Date','Spares Rcd Date'];
+    const headers = ['TO Requested Date','FRN No','Part No','Model','Description','TO Raised Date','Spares Rcd Date'];
     const rows = records.map(r => [
       r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-',
       r.frnNo || '-',
       r.partNo || '-',
+      r.model || '-',
       r.description || '-',
       r.toRaisedDate ? new Date(r.toRaisedDate).toLocaleDateString('en-IN') : '-',
       r.sparesReceivedDate ? new Date(r.sparesReceivedDate).toLocaleDateString('en-IN') : '-'
@@ -623,7 +625,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     const csv = [headers, ...rows].map(row => row.map(v => `"${String(v || '').replace(/"/g,'""')}"`).join(',')).join('\n');
     const a = document.createElement('a');
     a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-    a.download = 'pending-transfer-order-' + new Date().toISOString().split('T')[0] + '.csv';
+    a.download = 'pending-transfer-order-' + TODAY_ISO + '.csv';
     a.click();
   }
 

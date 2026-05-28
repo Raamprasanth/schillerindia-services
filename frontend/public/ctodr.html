@@ -399,6 +399,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
               <th>Entry Date</th>
               <th>FRN No</th>
               <th>Part No</th>
+              <th>Model</th>
               <th>Description</th>
               <th>Action</th>
               <th style="width:70px;text-align:center;">Edit</th>
@@ -406,7 +407,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             </tr>
           </thead>
           <tbody id="tb">
-            <tr><td colspan="7" style="text-align:center;padding:30px;">Loading...</td></tr>
+            <tr><td colspan="8" style="text-align:center;padding:30px;">Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -476,13 +477,14 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   function renderTable() {
     const tb = document.getElementById('tb');
-    if(!records.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;">No Closed TO entries found.</td></tr>'; return; }
+    if(!records.length) { tb.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;">No Closed TO entries found.</td></tr>'; return; }
     
     tb.innerHTML = records.map(r => `
       <tr>
         <td>${r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-'}</td>
         <td><span style="font-weight:700;color:var(--accent);">${esc(r.frnNo)}</span></td>
         <td>${esc(r.partNo)}</td>
+        <td>${esc(r.model || '-')}</td>
         <td class="wrap-cell">${esc(r.description)}</td>
         <td><span style="background:var(--surface2);padding:3px 8px;border-radius:10px;font-size:10px;font-weight:700;">${esc(r.action)}</span></td>
         <td style="text-align:center;"><button class="btn-xs update" onclick="openEdit('${r._id}')">&#9999;&#65039;</button></td>
