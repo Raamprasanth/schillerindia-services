@@ -342,7 +342,6 @@ tr:hover td{background:var(--surface3);}
               <th>SC Engineer</th>
               <th>Initiated Date</th>
               <th>Activity</th>
-              <th>Description</th>
               <th>Responsible</th>
               <th>Pending From</th>
               <th>Target Date</th>
@@ -379,8 +378,6 @@ tr:hover td{background:var(--surface3);}
       </div>
 
       <div class="field"><label>Activity <span class="req">*</span></label><input type="text" id="f-activity" placeholder="Brief activity name..."></div>
-      <div class="field"><label>Description</label><textarea id="f-description" rows="2" placeholder="Details..."></textarea></div>
-
       <div class="fg2">
         <div class="field"><label>Responsible</label><input type="text" id="f-responsible"></div>
         <div class="field"><label>Pending From</label><input type="date" id="f-pending-from"></div>
@@ -447,7 +444,7 @@ async function fetchData() {
 function renderTable() {
   const tbody = document.getElementById('table-body');
   if(!currentData.length){
-    tbody.innerHTML = `<tr><td colspan="11" class="empty-state">No pending activities found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10" class="empty-state">No pending activities found.</td></tr>`;
     return;
   }
   
@@ -465,7 +462,6 @@ function renderTable() {
       <td><b>${esc(t.scEngineer)}</b></td>
       <td>${formatDate(t.initiatedDate)}</td>
       <td><b>${esc(t.activity)}</b></td>
-      <td>${esc(t.description)}</td>
       <td>${esc(t.responsible)}</td>
       <td>${formatDate(t.pendingFrom)}</td>
       <td>${formatDate(t.targetDate)}</td>
@@ -487,7 +483,7 @@ function openModal(){
 
 function closeModal(){ document.getElementById('app-modal').classList.remove('open'); }
 function clearForm(){ 
-  ['entry-id','f-initiated','f-activity','f-description','f-responsible','f-pending-from','f-target-date','f-remarks','f-incharge-remarks'].forEach(id=>{
+  ['entry-id','f-initiated','f-activity','f-responsible','f-pending-from','f-target-date','f-remarks','f-incharge-remarks'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
   }); 
   document.getElementById('f-status').value='Pending';
@@ -503,7 +499,6 @@ function editData(id){
   document.getElementById('f-engineer').value = doc.scEngineer || '';
   document.getElementById('f-initiated').value = doc.initiatedDate || '';
   document.getElementById('f-activity').value = doc.activity || '';
-  document.getElementById('f-description').value = doc.description || '';
   document.getElementById('f-responsible').value = doc.responsible || '';
   document.getElementById('f-pending-from').value = doc.pendingFrom || '';
   document.getElementById('f-target-date').value = doc.targetDate || '';
@@ -518,7 +513,6 @@ async function saveData(){
     scEngineer: val('f-engineer'),
     initiatedDate: val('f-initiated'),
     activity: val('f-activity'),
-    description: val('f-description'),
     responsible: val('f-responsible'),
     pendingFrom: val('f-pending-from'),
     targetDate: val('f-target-date'),
@@ -569,8 +563,8 @@ function formatDate(dStr){
 }
 function exportCSV() {
   if (!currentData.length) { alert('No data to export.'); return; }
-  const headers = ['SC Engineer','Initiated Date','Activity','Description','Responsible','Pending From','Target Date','Remarks','SC Incharge Remarks','Status'];
-  const keys = ['scEngineer','initiatedDate','activity','description','responsible','pendingFrom','targetDate','remarks','scInchargeRemarks','status'];
+  const headers = ['SC Engineer','Initiated Date','Activity','Responsible','Pending From','Target Date','Remarks','SC Incharge Remarks','Status'];
+  const keys = ['scEngineer','initiatedDate','activity','responsible','pendingFrom','targetDate','remarks','scInchargeRemarks','status'];
   let csv = headers.join(',') + '\n';
   currentData.forEach(r => {
     csv += keys.map(k => '"' + String(r[k]||'').replace(/"/g,'""') + '"').join(',') + '\n';
