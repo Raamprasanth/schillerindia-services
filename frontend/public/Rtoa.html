@@ -327,7 +327,146 @@ table.oa-table tbody tr:last-child td{border-bottom:none;}
             <select id="f-status">
               <option value="In Progress">In Progress</option>
               <option value="Closed">Closed</option>
-            </select>
+            </select></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline btn-sm" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-rep btn-sm" id="save-btn" onclick="saveRecord()">&#128190; Save Activity</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+const userInfo = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
+const EMP_NAME = userInfo.name || userInfo.username || 'Repair User';
+let allData = [], filteredData = [], currentPage = 1, sortCol = 'entryDate', sortDir = 'desc', editId = null, summaryFilter = 'all';
+
+(function initPage(){
+  const set = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+  set('emp-name', EMP_NAME);
+  set('emp-role', userInfo.role || userInfo.designation || 'Repair Team');
+  set('emp-avatar', String(EMP_NAME || 'R').charAt(0).toUpperCase());
+  set('topbar-date', new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'short', day: '2-digit' }));
+  populateDivisions();
+  loadData();
+})();
+
+function authHeaders(){ return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (sessionStorage.getItem('schiller_token') || '') }; }
+function todayISO(){ return new Date().toISOString().split('T')[0]; }
+function handleUnauth(res){
+  if(res.status === 401){ window.location.href = 'login.html'; throw new Error('Unauthorized'); }
+  if(res.status === 403){
+    const warn = document.getElementById('auth-warn'), role = document.getElementById('warn-role');
+    if(role) role.textContent = userInfo.role || '-';
+    if(warn) warn.classList.add('show');
+    throw new Error('Forbidden');
+  }
+}
+
+async function populateDivisions(){
+  const sel = document.getElementById('f-division2');
+  if(!sel) return;
+  try{
+    const res = await fetch('/api/divisions', { headers: authHeaders() });
+    handleUnauth(res);
+    const rows = res.ok ? await res.json() : [];
+    const names = [...new Set((Array.isArray(rows) ? rows : []).map(d => d.name || d.division || d).filter(Boolean))].sort();
+    sel.innerHTML = '<option value="">Select Division</option>' + names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
+  }catch(e){ if(!['Unauthorized','Forbidden'].includes(e.message)) console.warn('Division fetch failed:', e.message); }
+}
+
+async function loadData(){
+  const tbody = document.getElementById('oa-tbody');
+  if(tbody) tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>';
+  try{
+    const res = await fetch(`${API}/api/rtoa`, { headers: authHeaders() });
+    handleUnauth(res);
+    const json = await res.json().catch(() => ({}));
+    if(!res.ok) throw new Error(json.message || json.error || ('HTTP ' + res.status));
+    allData = Array.isArray(json) ? json : (json.data || []);
+    currentPage = 1;
+    applyFilters();
+  }catch(e){
+    if(['Unauthorized','Forbidden'].includes(e.message)) return;
+    allData = []; filteredData = [];
+    updateStats();
+    if(tbody) tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:44px;color:var(--red);">Could not load: ${esc(e.message)}</td></tr>`;
+    const info = document.getElementById('tbl-info'); if(info) info.textContent = '0 entries';
+    renderPagination(1);
+  }
+}
+
+function setSummaryFilter(filter){ summaryFilter = filter || 'all'; currentPage = 1; applyFilters(); }
+function applyFilters(){
+  const q = String(document.getElementById('tbl-search')?.value || '').toLowerCase();
+  const today = todayISO();
+  filteredData = allData.filter(d => {
+    const status = String(d.status || '').toLowerCase();
+    let summaryOk = true;
+    if(summaryFilter === 'Open') summaryOk = status === 'open';
+    if(summaryFilter === 'In Progress') summaryOk = status === 'in progress';
+    if(summaryFilter === 'today') summaryOk = String(d.closedDate || '').slice(0,10) === today;
+    const text = [d.repairedBy,d.division,d.model,d.partNumber,d.description,d.problemObserved,d.componentsUsed,d.finalRemarks,d.status].join(' ').toLowerCase();
+    return summaryOk && (!q || text.includes(q));
+  });
+  renderTable();
+  updateStats();
+}
+
+function sortBy(col){ if(sortCol === col) sortDir = sortDir === 'asc' ? 'desc' : 'asc'; else { sortCol = col; sortDir = 'asc'; } renderTable(); }
+function updateStats(){
+  const open = allData.filter(d => String(d.status || '').toLowerCase() === 'open').length;
+  const inProg = allData.filter(d => String(d.status || '').toLowerCase() === 'in progress').length;
+  const today = allData.filter(d => String(d.closedDate || '').slice(0,10) === todayISO()).length;
+  const set = (id, value) => { const el = document.getElementById(id); if(el) el.textContent = value; };
+  set('st-total', allData.length); set('st-open', open); set('st-inprog', inProg); set('st-today', today);
+  const count = document.getElementById('count-pill'); if(count) count.textContent = filteredData.length + ' entr' + (filteredData.length === 1 ? 'y' : 'ies');
+}
+function statusClass(status){ const s = String(status || '').toLowerCase(); return s === 'closed' ? 'sp-closed' : (s === 'open' ? 'sp-open' : 'sp-inprog'); }
+function lockDateRules(){
+  const entry = document.getElementById('f-entryDate');
+  const repaired = document.getElementById('f-repairedDate');
+  if(entry) entry.value = entry.value || todayISO();
+  if(repaired) repaired.min = todayISO();
+}
+function renderTable(){
+  const tbody = document.getElementById('oa-tbody');
+  if(!tbody) return;
+  const perPage = parseInt(document.getElementById('per-page')?.value, 10) || 10;
+  const rows = [...filteredData].sort((a,b) => {
+    const av = String(a[sortCol] || ''), bv = String(b[sortCol] || '');
+    return sortDir === 'asc' ? av.localeCompare(bv, undefined, { numeric: true }) : bv.localeCompare(av, undefined, { numeric: true });
+  });
+  const total = rows.length, pages = Math.max(1, Math.ceil(total / perPage));
+  if(currentPage > pages) currentPage = pages;
+  const start = (currentPage - 1) * perPage;
+  const pageRows = rows.slice(start, start + perPage);
+  tbody.innerHTML = pageRows.length ? pageRows.map(d => {
+    const id = d._id || d.id || '';
+    return `<tr>
+      <td>${fmtDate(d.entryDate)}</td>
+      <td>${fmtDate(d.closedDate)}</td>
+      <td>${esc(d.repairedBy || '-')}</td>
+      <td>${esc(d.division || '-')}</td>
+      <td>${esc(d.model || '-')}</td>
+      <td>${esc(d.partNumber || '-')}</td>
+      <td style="min-width:180px;white-space:normal;">${esc(d.description || '-')}</td>
+      <td style="min-width:180px;white-space:normal;">${esc(d.problemObserved || '-')}</td>
+      <td style="min-width:170px;white-space:normal;">${esc(d.componentsUsed || '-')}</td>
+      <td>${fmtDate(d.repairedDate)}</td>
+      <td style="min-width:170px;white-space:normal;">${esc(d.finalRemarks || '-')}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn-xs edit-btn" onclick="openEdit('${id}')">Edit</button>
+        <button class="btn-xs close-btn" onclick="closeRecord('${id}')">Close</button>
+        <span class="status-pill ${statusClass(d.status)}" style="margin-left:6px;">${esc(d.status || 'In Progress')}</span>
+      </td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="12" style="text-align:center;padding:44px;color:var(--muted);">No active other activities found.</td></tr>';
+  const info = document.getElementById('tbl-info');
+  if(info) info.textContent = total ? `Showing ${start + 1} to ${Math.min(start + pageRows.length, total)} of ${total} entries` : '0 entries';
   renderPagination(pages);
 }
 
