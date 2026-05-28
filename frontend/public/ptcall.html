@@ -1050,6 +1050,34 @@ async function saveEntry(){
 
     if(editMode){
       const id = document.getElementById('edit-id').value;
+      if(payload.status === 'Closed'){
+        const orig = CALL_DATA.find(x=>(x._id||x.id)===id) || {};
+        const closePayload = {
+          division:  payload.division || orig.division || '',
+          callDate:  payload.callDate || orig.callDate || '',
+          entryDate: payload.callDate || orig.callDate || '',
+          closeDate: new Date().toISOString().split('T')[0],
+          scEngg:    payload.scEng || orig.scEng || '',
+          engineer:  payload.engineer || orig.engineer || '-',
+          typeCall:  payload.callType || orig.callType || '',
+          branch:    payload.branch || orig.branch || '',
+          region:    payload.region || orig.region || '',
+          model:     payload.model || orig.model || '',
+          remarks:   payload.remarks || orig.remarks || '',
+          status:    'Closed',
+        };
+        const cr = await fetch(`${API}/api/pt/closed-calls`, {method:'POST', headers:authHeaders(), body:JSON.stringify(closePayload)});
+        handleUnauth(cr);
+        if(!cr.ok){ const e=await cr.json().catch(()=>({})); throw new Error('Close move failed: '+(e.message||'HTTP '+cr.status)); }
+        const del = await fetch(`${API}/api/pt/call-register/${id}`, {method:'DELETE', headers:authHeaders()});
+        handleUnauth(del);
+        if(!del.ok){ const e=await del.json().catch(()=>({})); throw new Error('Call register delete failed: '+(e.message||'HTTP '+del.status)); }
+        CALL_DATA = CALL_DATA.filter(x=>(x._id||x.id)!==id);
+        applyFilters(); updateStats();
+        showToast('Call closed and moved to Closed Calls.','ok');
+        closeAddModal();
+        return;
+      }
       const idx = CALL_DATA.findIndex(x=>(x._id||x.id)===id);
       if(idx!==-1) CALL_DATA[idx] = {...CALL_DATA[idx], ...payload, _id: CALL_DATA[idx]._id, id: CALL_DATA[idx].id};
     } else {
