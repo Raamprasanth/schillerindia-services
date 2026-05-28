@@ -386,6 +386,47 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       <div class="table-top">
         <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;">Direct dispatch</div>
       </div>
+    <a class="nav-item" href="cdr.html"><span class="ico">&#128274;</span> Closed DR</a>
+    <a class="nav-item" href="scprfob.html"><span class="ico">&#128203;</span> PRF/OB Register</a>
+    <a class="nav-item" href="sccr.html"><span class="ico">&#128274;</span> Closed PRF/OB Register</a>
+    <a class="nav-item" href="lt.html"><span class="ico">&#128230;</span> Loan Item</a>
+    <a class="nav-item" href="cli.html"><span class="ico">&#128274;</span> Closed Loan</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="user-av" id="admin-avatar">S</div>
+      <div>
+        <div class="user-nm" id="admin-name">Coordinator</div>
+        <div class="user-rl" id="admin-role">Service Coordinator</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<!-- --- MAIN --- -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="Sc-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
+        <span>Work Orders</span><span class="sep">&#8250;</span>
+        <span>Direct dispatch</span>
+      </div>
+      <div class="page-title">Direct dispatch</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+      <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
+      <button class="btn btn-primary btn-sm" onclick="exportCSV()">&#128228; Export</button>
+    </div>
+  </div>
+
+  
+  <div class="content">
+    <div class="table-card">
+      <div class="table-top">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;">Direct dispatch</div>
+      </div>
       
       <div class="table-wrap">
         <table class="frn-table">
@@ -396,12 +437,13 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
               <th>Part No</th>
               <th>Model</th>
               <th>Description</th>
+              <th>Unit Status</th>
               <th>Spares rcd date</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody id="tb">
-            <tr><td colspan="7" style="text-align:center;padding:30px;">Loading...</td></tr>
+            <tr><td colspan="8" style="text-align:center;padding:30px;">Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -460,30 +502,35 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   let records = [];
 
-  async function loadData() {
-    try {
-      const res = await fetch('/api/dr', { headers: hdrs() });
-      if(res.status===401||res.status===403) return logout();
-      const data = await res.json();
-      if(res.ok) { records = data; renderTable(); }
-    } catch(e) { console.error(e); }
+  const TODAY_ISO = new Date().toISOString().split('T')[0];
+  function dateInputValue(val) {
+    if (!val) return '';
+    const d = new Date(val);
+    return Number.isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
   }
 
-  function renderTable() {
-    const tb = document.getElementById('tb');
-    if(!records.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;">No DR entries found.</td></tr>'; return; }
-    
-    tb.innerHTML = records.map(r => `
-      <tr>
-        <td>${r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-'}</td>
-        <td><span style="font-weight:700;color:var(--accent);">${esc(r.frnNo)}</span></td>
-        <td>${esc(r.partNo)}</td>
-        <td>${esc(r.model)}</td>
-        <td class="wrap-cell">${esc(r.description)}</td>
-        <td>${r.sparesRcdDate ? new Date(r.sparesRcdDate).toLocaleDateString('en-IN') : '-'}</td>
-        <td style="text-align:center;"><button class="btn btn-primary btn-sm" onclick="markFulfilled('${r._id}')">Fulfilled</button></td>
-      </tr>
-    `).join('');
+  async function updateDateField(id, field, value) {
+    try {
+      const payload = {};
+      payload[field] = value;
+      const res = await fetch(`/api/dr/${id}`, {
+        method: 'PUT',
+        headers: hdrs(),
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json().catch(()=>{});
+      if(!res.ok) {
+        msg(data.message || 'Failed to update date', true);
+        loadData();
+      } else {
+        const idx = records.findIndex(r => r._id === id);
+        if (idx !== -1) records[idx][field] = value;
+        msg('Date updated successfully');
+      }
+    } catch(e) {
+      msg('Error updating date: ' + e.message, true);
+      loadData();
+    }
   }
 
   function openAddModal() {
