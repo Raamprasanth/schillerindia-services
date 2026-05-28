@@ -399,6 +399,8 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
               <th>Part No</th>
               <th>Model</th>
               <th>Description</th>
+              <th>Unit Status</th>
+              <th>Quantity</th>
               <th>TO Raised Date</th>
               <th>Spares Rcd Date</th>
             </tr>
@@ -474,7 +476,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   function renderTable() {
     const tb = document.getElementById('tb');
-    if(!records.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;">No Closed TO entries found.</td></tr>'; return; }
+    if(!records.length) { tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;">No Closed TO entries found.</td></tr>'; return; }
     
     tb.innerHTML = records.map(r => `
       <tr>
@@ -483,6 +485,8 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <td>${esc(r.partNo)}</td>
         <td>${esc(r.model || '-')}</td>
         <td class="wrap-cell">${esc(r.description)}</td>
+        <td>${esc(r.unitStatus || '-')}</td>
+        <td>${esc(r.quantity || '-')}</td>
         <td>${r.toRaisedDate ? new Date(r.toRaisedDate).toLocaleDateString('en-IN') : '-'}</td>
         <td>${r.sparesReceivedDate ? new Date(r.sparesReceivedDate).toLocaleDateString('en-IN') : '-'}</td>
       </tr>

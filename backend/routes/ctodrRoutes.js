@@ -37,6 +37,8 @@ router.get('/', protect, async (req, res) => {
           if (mName) {
             r.model = mName;
           }
+          r.unitStatus = doc.unitSts || doc.unitStatus || '';
+          r.quantity = doc.qty || doc.quantity || '';
         }
       }
     }
