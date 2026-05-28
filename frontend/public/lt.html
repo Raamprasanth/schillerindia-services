@@ -54,7 +54,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .breadcrumb .sep{color:var(--border2);}
 .page-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);}
 .content{flex:1;padding:20px 24px;overflow-y:auto;}
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
 .stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;box-shadow:var(--shadow);transition:all 0.2s;position:relative;overflow:hidden;display:grid;grid-template-columns:24px 1fr;column-gap:8px;align-items:start;}
 .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:11px 11px 0 0;}
 .sc-blue::before{background:linear-gradient(90deg,#0068b5,#0ea5e9);}
@@ -208,7 +208,6 @@ table.frn-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
     <div class="stats-row">
       <div class="stat-card sc-blue"><div class="stat-icon si-blue">&#128230;</div><div class="stat-label">Total Items</div><div class="stat-value" id="s-total">-</div><div class="stat-sub">Loan item entries</div></div>
       <div class="stat-card sc-green"><div class="stat-icon si-green">&#128197;</div><div class="stat-label">Today</div><div class="stat-value" id="s-today">-</div><div class="stat-sub">Added today</div></div>
-      <div class="stat-card sc-purple"><div class="stat-icon si-purple">&#128736;</div><div class="stat-label">Parts</div><div class="stat-value" id="s-parts">-</div><div class="stat-sub">Unique part numbers</div></div>
       <div class="stat-card sc-amber"><div class="stat-icon si-amber">&#127970;</div><div class="stat-label">Divisions</div><div class="stat-value" id="s-divisions">-</div><div class="stat-sub">Active in table</div></div>
     </div>
 
@@ -413,7 +412,6 @@ function updateStats(){
   const today = todayISO();
   setText('s-total', DATA.length);
   setText('s-today', DATA.filter(d => d.date === today).length);
-  setText('s-parts', new Set(DATA.map(d => d.partNo).filter(Boolean)).size);
   setText('s-divisions', new Set(DATA.map(d => d.division).filter(Boolean)).size);
 }
 
@@ -476,7 +474,7 @@ function renderTable(){
         <td class="mono">${esc(d.girNo || '-')}</td>
         <td><span class="div-tag" style="background:${d.opt==='scrap'?'#fecaca':(d.opt==='stock'?'#bbf7d0':(d.opt==='dispatch'?'#bfdbfe':'#e2e8f0'))}; color:#1e293b;">${esc((d.opt||'-').toUpperCase())}</span></td>
         <td class="wrap-cell" title="${esc(d.remarks || '')}">${esc(d.remarks || '-')}</td>
-        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.toRaisedDate)}</td>
+        <td><input type="date" class="f-inp" style="padding:4px 8px;font-size:11px;" id="raised-date-${id}" value="${d.toRaisedDate ? d.toRaisedDate.split('T')[0] : todayISO()}"></td>
         <td>
           <button class="btn-xs update" onclick="moveToClosed('${id}')">Fulfilled</button>
         </td>
@@ -642,6 +640,7 @@ async function moveToClosed(id){
   btn.innerHTML = 'Moving...';
   
   try{
+    const toRaisedDate = document.getElementById('raised-date-' + id)?.value || todayISO();
     const payload = {
       date: d.date,
       division: d.division,
@@ -649,7 +648,8 @@ async function moveToClosed(id){
       description: d.description,
       girNo: d.girNo,
       opt: d.opt,
-      remarks: d.remarks
+      remarks: d.remarks,
+      toRaisedDate: toRaisedDate
     };
     
     const res = await fetch(API + '/api/closed-loans', {
@@ -687,7 +687,7 @@ function exportCSV(){
 
 function setLoading(){
   document.getElementById('lt-tbody').innerHTML = '<tr class="loading-row"><td colspan="10"><span class="spin"></span>Loading from database</td></tr>';
-  ['s-total','s-today','s-parts','s-divisions'].forEach(id => setText(id, '-'));
+  ['s-total','s-today','s-divisions'].forEach(id => setText(id, '-'));
 }
 function setText(id,val){ const el = document.getElementById(id); if(el) el.textContent = val; }
 function fmtDate(d){ if(!d)return'-'; const p=String(d).split('T')[0].split('-'); if(p.length<3)return String(d); return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0]; }
