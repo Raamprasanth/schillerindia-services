@@ -1143,6 +1143,16 @@ function openAddModal(){
   document.getElementById('form-id').value = '';
   hydrateDivisionDropdown();
   hydrateExactPrfObOptions();
+  
+  const un = sessionStorage.getItem('userName') || localStorage.getItem('userName') || '';
+  if (un) {
+    const scEngSelect = document.getElementById('f-scEng');
+    if (scEngSelect) {
+      const match = Array.from(scEngSelect.options).find(o => o.text.toLowerCase() === un.toLowerCase() || o.value.toLowerCase() === un.toLowerCase());
+      if (match) scEngSelect.value = match.value;
+    }
+  }
+
   const todayStr = new Date().toISOString().split('T')[0];
   document.getElementById('x-entryDate').value = todayStr;
   document.getElementById('x-entryDate').max = todayStr;
