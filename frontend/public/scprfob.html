@@ -1135,9 +1135,9 @@ function renderTable(){
         <td style="font-weight:600;">${esc(d.refNo||'-')}</td>
         <td class="mono">${esc(d.crmRefNo||'-')}</td>
         <td>${statusPill(d.status)}</td>
-        <td>${d.status === 'Open' ? `<input type="date" id="inline-date-${rid}" value="${d.sparesReceivedAtSvc||''}" class="frm-inp" style="padding: 2px 4px; font-size: 11px; max-width: 110px;">` : `<span style="font-size:11px;color:var(--soft);">${fmtDate(d.sparesReceivedAtSvc)}</span>`}</td>
+        <td>${!d.sparesReceivedAtSvc ? `<input type="date" id="inline-date-${rid}" value="" class="frm-inp" style="padding: 2px 4px; font-size: 11px; max-width: 110px;">` : `<span style="font-size:11px;color:var(--soft);">${fmtDate(d.sparesReceivedAtSvc)}</span>`}</td>
         <td style="display:flex;gap:5px;">
-          ${d.status === 'Open' 
+          ${!d.sparesReceivedAtSvc 
             ? `<button class="btn-xs" style="color:var(--green);border-color:rgba(4,120,87,0.3);background:var(--green-bg);" onclick="inlineMarkPending('${rid}')" title="Send to Employee">&#10004;&#65039;</button>` 
             : `<button class="btn-xs update" onclick="openEditModal('${rid}')" title="Update">&#9999;&#65039;</button>`}
         </td>
