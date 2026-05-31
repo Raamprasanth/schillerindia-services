@@ -1144,7 +1144,8 @@ function openAddModal(){
   hydrateDivisionDropdown();
   hydrateExactPrfObOptions();
   
-  const un = sessionStorage.getItem('userName') || localStorage.getItem('userName') || '';
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
+  const un = u.name || sessionStorage.getItem('userName') || localStorage.getItem('userName') || '';
   if (un) {
     const scEngSelect = document.getElementById('f-scEng');
     if (scEngSelect) {
