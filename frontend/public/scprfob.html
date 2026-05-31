@@ -1142,16 +1142,13 @@ function normalizeToSoType(value){
 }
 
 function setExactFormEditLocks(isEdit){
-  const editableOnUpdate = new Set(['x-sparesReceivedAtSvc','x-status']);
-  const alwaysReadOnly = new Set(['x-partType','x-partsDescription','x-scEng','x-crmRefNo','x-remarks','x-receivedDate']);
   [
     'x-refNo','x-entryDate','x-type','x-region','x-branch','x-eng','x-division',
-    'x-supplier','x-model','x-warrantyStatus','x-sparesReceivedAtSvc','x-status',
-    'x-partType','x-partsDescription','x-scEng','x-crmRefNo','x-remarks','x-receivedDate'
+    'x-supplier','x-model','x-warrantyStatus'
   ].forEach(id => {
     const el = document.getElementById(id);
     if(!el) return;
-    const locked = alwaysReadOnly.has(id) || (isEdit && !editableOnUpdate.has(id));
+    const locked = isEdit;
     el.disabled = locked && el.tagName === 'SELECT';
     el.readOnly = locked && el.tagName !== 'SELECT';
     el.classList.toggle('is-locked', locked);
@@ -1169,27 +1166,17 @@ function openAddModal(){
   hydrateExactPrfObOptions();
   const todayStr = new Date().toISOString().split('T')[0];
   document.getElementById('x-entryDate').value = '';
-  document.getElementById('x-sparesReceivedAtSvc').parentElement.style.display = 'none';
-  document.getElementById('x-status').parentElement.style.display = 'none';
   document.getElementById('x-entryDate').max = todayStr;
   document.getElementById('x-entryDate').removeAttribute('min');
-  document.getElementById('x-receivedDate').value = todayStr;
   document.getElementById('x-division').value = '';
-  document.getElementById('x-scEng').value = '';
   document.getElementById('x-type').value = '';
   document.getElementById('x-eng').value = '';
-  document.getElementById('x-sparesReceivedAtSvc').value = '';
   document.getElementById('x-supplier').value = '';
-  document.getElementById('x-partType').value = '';
   document.getElementById('x-model').value = '';
-  document.getElementById('x-partsDescription').value = '';
   document.getElementById('x-region').value = '';
   document.getElementById('x-warrantyStatus').value = '';
-  document.getElementById('x-crmRefNo').value = '';
   document.getElementById('x-branch').innerHTML = '<option value="">Select Branch</option>';
   document.getElementById('x-refNo').value = '';
-  document.getElementById('x-remarks').value = '';
-  document.getElementById('x-status').value = 'Pending';
   // Re-sync after all fields are cleared so unfiltered lists are shown
   syncDealerOptions();
   syncEngineerOptions();
