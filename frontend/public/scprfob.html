@@ -333,17 +333,6 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
                 <option value="Demo">Demo</option>
               </select>
             </div>
-            <div class="ff">
-              <label>Spares Rcv Date</label>
-              <input type="date" id="x-sparesReceivedAtSvc"/>
-            </div>
-            <div class="ff">
-              <label>Status <span class="req">*</span></label>
-              <select id="x-status">
-                <option value="Pending">Pending</option>
-                <option value="Closed">Completed</option>
-              </select>
-            </div>
           </div>
         </div>
 
@@ -1207,8 +1196,6 @@ function openEditModal(id){
   (document.getElementById('ri-warranty')||{}).textContent = d.warrantyStatus||'-';
 
   document.getElementById('form-id').value = id;
-  document.getElementById('x-sparesReceivedAtSvc').parentElement.style.display = 'none';
-  document.getElementById('x-status').parentElement.style.display = 'none';
   hydrateDivisionDropdown(d.division);
   hydrateExactPrfObOptions(d);
   const set=(elId,val)=>{const el=document.getElementById(elId);if(el)el.value=val||'';};
@@ -1271,10 +1258,9 @@ function closeFormModal(){
 async function handleFormSave(){
   const id = document.getElementById('form-id').value;
   const requiredMap = editMode
-    ? {'x-status':'Status'}
+    ? {}
     : {
       'x-refNo':'TO/SO Ref No','x-entryDate':'TO/SO Date','x-type':'Type','x-division':'Division',
-      
       'x-branch':'Branch','x-model':'Model',
       'x-region':'Region','x-eng':'Engineer','x-supplier':'Supplier'
     };
@@ -1287,9 +1273,7 @@ async function handleFormSave(){
   if(hasErr){showFormMsg('Please fill all required fields.','err');return;}
 
   const payload = editMode ? {
-    sparesReceivedAtSvc: document.getElementById('x-sparesReceivedAtSvc').value.trim(),
-    status: editMode ? document.getElementById('x-status').value : 'Open',
-    updatedAt:     new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   } : {
     entryDate:     document.getElementById('x-entryDate').value,
     raisedDate:    document.getElementById('x-entryDate').value,
@@ -1297,26 +1281,26 @@ async function handleFormSave(){
     division:      document.getElementById('x-division').value,
     dealer:        '',
     refNo:         document.getElementById('x-refNo').value.trim(),
-    receivedDate:  document.getElementById('x-receivedDate').value,
+    receivedDate:  '',
     executedDate:  '',
-    status:        document.getElementById('x-status').value,
+    status:        'Open',
     warrantyStatus:document.getElementById('x-warrantyStatus').value,
-    scEng:         document.getElementById('x-scEng').value.trim(),
+    scEng:         '',
     eng:           document.getElementById('x-eng').value,
     region:        document.getElementById('x-region').value,
     branch:        document.getElementById('x-branch').value,
     supplier:      document.getElementById('x-supplier').value,
-    crmRefNo:      document.getElementById('x-crmRefNo').value.trim(),
-    sparesReceivedAtSvc: document.getElementById('x-sparesReceivedAtSvc').value.trim(),
-    partType:      document.getElementById('x-partType').value.trim(),
-    partsDescription: document.getElementById('x-partsDescription').value.trim(),
+    crmRefNo:      '',
+    sparesReceivedAtSvc: '',
+    partType:      '',
+    partsDescription: '',
     model:         document.getElementById('x-model').value,
     serialNo:      '',
     partNo:        '',
     qty:           1,
     unitPrice:     0,
     totalAmount:   0,
-    remarks:       document.getElementById('x-remarks').value.trim(),
+    remarks:       '',
     updatedAt:     new Date().toISOString(),
   };
   if(!editMode) payload.createdAt = new Date().toISOString();
