@@ -330,6 +330,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
                 <option value="EW">EW</option>
                 <option value="STOCK">STOCK</option>
                 <option value="IW">IW</option>
+                <option value="Demo">Demo</option>
               </select>
             </div>
             <div class="ff">
@@ -433,6 +434,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
                 <option value="EW">EW</option>
                 <option value="STOCK">STOCK</option>
                 <option value="IW">IW</option>
+                <option value="Demo">Demo</option>
               </select>
             </div>
           </div>
@@ -1178,8 +1180,10 @@ function openAddModal(){
   document.getElementById('form-id').value = '';
   hydrateDivisionDropdown();
   hydrateExactPrfObOptions();
+  const todayStr = new Date().toISOString().split('T')[0];
   document.getElementById('x-entryDate').value = '';
-  document.getElementById('x-receivedDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('x-entryDate').min = todayStr;
+  document.getElementById('x-receivedDate').value = todayStr;
   document.getElementById('x-division').value = '';
   document.getElementById('x-scEng').value = '';
   document.getElementById('x-type').value = '';
