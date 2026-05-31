@@ -453,7 +453,6 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <table class="frn-table">
           <thead><tr>
             <th onclick="sortBy('entryDate')" class="sorted">Entry Date <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('receivedDate')">Received Date <span class="si">&#8693;</span></th>
             <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
             <th onclick="sortBy('type')">Type <span class="si">&#8693;</span></th>
             <th onclick="sortBy('branch')">Branch <span class="si">&#8693;</span></th>
@@ -463,7 +462,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('refNo')">PRF/OB Ref No. <span class="si">&#8693;</span></th>
             <th onclick="sortBy('status')">Status <span class="si">&#8693;</span></th>
             <th onclick="sortBy('crmRefNo')">GIR No <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('executedDate')">Executed Date <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('executedDate')">Spares rcd date <span class="si">&#8693;</span></th>
           </tr></thead>
           <tbody id="cr-tbody">
             <tr class="loading-row"><td colspan="12"><span class="spin"></span>Loading from database </td></tr>
@@ -592,7 +591,6 @@ function renderTable(){
       const rid = d._id||d.id;
       return `<tr>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
-        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.receivedDate)}</td>
         <td><span class="div-tag">${esc(d.division||' ')}</span></td>
         <td>${typePill(d.type)}</td>
         <td><span class="branch-tag">${esc(d.branch||' ')}</span></td>
