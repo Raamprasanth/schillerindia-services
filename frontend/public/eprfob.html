@@ -1558,7 +1558,6 @@
         <div class="form-group"><label>Region</label><input class="locked" id="ep-region" readonly /></div>
 
         <div class="form-group"><label>Branch</label><input class="locked" id="ep-branch" readonly /></div>
-        <div class="form-group"><label>Dealer</label><input class="locked" id="ep-dealer" readonly /></div>
         <div class="form-group"><label>Engineer</label><input class="locked" id="ep-eng" readonly /></div>
         <div class="form-group"><label>Supplier</label><input class="locked" id="ep-supplier" readonly /></div>
 
@@ -1566,10 +1565,6 @@
         <div class="form-group"><label>Warranty Status</label><input class="locked" id="ep-warrantyStatus" readonly />
         </div>
         <div class="form-group"><label>TO/SO Reference No.</label><input class="locked" id="ep-refNo" readonly /></div>
-        <div class="form-group"><label>Part No</label><input class="locked" id="ep-partType" readonly /></div>
-
-        <div class="form-group"><label>Parts Description</label><input class="locked" id="ep-partsDescription"
-            readonly /></div>
         <div class="form-group"><label>Spares Received at SVC</label><input class="locked" id="ep-sparesReceivedAtSvc"
             readonly /></div>
         <div class="form-group"><label>Status</label><input class="locked" id="ep-status" readonly /></div>
@@ -1581,7 +1576,9 @@
       <div class="ep-grid">
         <div class="form-group"><label>SC Engineer</label><input id="ep-scEng" placeholder="SC Engineer" /></div>
         <div class="form-group"><label>GIR No</label><input id="ep-crmRefNo" placeholder="GIR No" /></div>
-        <div class="form-group" style="grid-column:span 2;"><label>Remarks</label><textarea id="ep-remarks"
+        <div class="form-group"><label>Part No</label><input id="ep-partType" placeholder="Part No" /></div>
+        <div class="form-group"><label>Parts Description</label><input id="ep-partsDescription" placeholder="Description" /></div>
+        <div class="form-group" style="grid-column:span 4;"><label>Remarks</label><textarea id="ep-remarks"
             placeholder="Remarks"></textarea></div>
       </div>
 
@@ -2255,7 +2252,6 @@
       setField('ep-entryDate', row.entryDate);
       setField('ep-region', row.region);
       setField('ep-branch', row.branch);
-      setField('ep-dealer', row.dealer);
       setField('ep-eng', row.engineer);
       setField('ep-supplier', row.supplier);
       setField('ep-model', row.model);
@@ -2289,6 +2285,8 @@
         executedDate: new Date().toISOString().slice(0, 10),
         scEng: document.getElementById('ep-scEng')?.value?.trim() || '',
         crmRefNo: document.getElementById('ep-crmRefNo')?.value?.trim() || '',
+        partType: document.getElementById('ep-partType')?.value?.trim() || '',
+        partsDescription: document.getElementById('ep-partsDescription')?.value?.trim() || '',
         remarks: document.getElementById('ep-remarks')?.value?.trim() || ''
       };
       if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
