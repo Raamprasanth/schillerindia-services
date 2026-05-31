@@ -453,12 +453,12 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('branch')">Branch <span class="si">&#8693;</span></th>
             <th onclick="sortBy('eng')">Engineer <span class="si">&#8693;</span></th>
             <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('warrantyStatus')">Warranty Status <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('warrantyStatus')">Warr Status <span class="si">&#8693;</span></th>
             <th onclick="sortBy('refNo')">TO/SO Ref No. <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('status')">Status <span class="si">&#8693;</span></th>
             <th onclick="sortBy('crmRefNo')">GIR No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('sparesReceivedAtSvc')">Spares rcd date <span class="si">&#8693;</span></th>
             <th onclick="sortBy('executedDate')">Executed Date <span class="si">&#8693;</span></th>
+            <th style="text-align:center;">Action</th>
           </tr></thead>
           <tbody id="cr-tbody">
             <tr class="loading-row"><td colspan="12"><span class="spin"></span>Loading from database </td></tr>
@@ -593,10 +593,10 @@ function renderTable(){
         <td style="font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.model||'')}">${esc(d.model||' ')}</td>
         <td>${warrantyPill(d.warrantyStatus)}</td>
         <td style="font-weight:600;">${esc(d.refNo||' ')}</td>
-        <td>${statusPill(d.status)}</td>
         <td class="wrap-cell" style="max-width:200px;font-size:11px;color:var(--soft);" title="${esc(d.crmRefNo||'')}">${esc((d.crmRefNo||' ').slice(0,40))}${(d.crmRefNo||'').length>40?' ':''}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.sparesReceivedAtSvc)}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.executedDate)}</td>
+        <td style="text-align:center;"><button class="btn-xs btn-outline" onclick="openUpdateModal('${rid}')" title="View">&#128065;&#65039;</button></td>
       </tr>`;
     }).join('');
   }
