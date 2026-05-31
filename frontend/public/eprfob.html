@@ -2238,7 +2238,7 @@
       setField('ep-sparesReceivedAtSvc', row.sparesReceivedAtSvc);
       setField('ep-status', row.status);
       setField('ep-receivedDate', row.receivedDate);
-      setField('ep-scEng', row.scEng);
+      setField('ep-scEng', row.scEng || sessionStorage.getItem('userName') || localStorage.getItem('userName') || '');
       setField('ep-crmRefNo', row.crmRefNo);
       setField('ep-remarks', row.remarks);
       document.getElementById('employee-update-modal')?.classList.add('show');
