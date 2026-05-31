@@ -659,7 +659,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             <th class="no-sort">Action</th>
           </tr></thead>
           <tbody id="prf-tbody">
-            <tr class="loading-row"><td colspan="15"><span class="spin"></span>Loading from database...</td></tr>
+            <tr class="loading-row"><td colspan="12"><span class="spin"></span>Loading from database...</td></tr>
           </tbody>
         </table>
       </div>
@@ -1055,7 +1055,7 @@ async function loadData(){
   }catch(e){
     if(e.message === 'Unauthorized') return;
     showToast('Load failed: ' + e.message, 'err');
-    document.getElementById('prf-tbody').innerHTML = `<tr class="loading-row"><td colspan="15" style="color:var(--red);">&#9888; ${esc(e.message)}</td></tr>`;
+    document.getElementById('prf-tbody').innerHTML = `<tr class="loading-row"><td colspan="12" style="color:var(--red);">&#9888; ${esc(e.message)}</td></tr>`;
   }
 }
 
