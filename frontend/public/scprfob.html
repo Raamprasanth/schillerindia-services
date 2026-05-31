@@ -638,7 +638,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 const API = '';
 const MAIL_ACK_KEY = 'scprfob-mail-ack-visible';
 const MAIL_STATUS_ENDPOINT = '/api/escalation/status/prf-ob';
-let DATA = [], filtered = [], sortKey = '_id', sortDir = 1, currentPage = 1;
+let DATA = [], filtered = [], sortKey = 'createdAt', sortDir = -1, currentPage = 1;
 let mailAckVisible = localStorage.getItem(MAIL_ACK_KEY) === '1';
 let deleteTargetId = null;
 let editMode = false;
