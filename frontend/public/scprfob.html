@@ -248,18 +248,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     </div>
 
     <!-- Record info strip (shown only in edit mode) -->
-    <div class="rec-info" id="edit-info-strip" style="display:none;">
-      <div class="rec-info-item"><div class="rec-info-label">TO/SO Ref No</div><div class="rec-info-val" id="ri-refno">-</div></div>
-      <div class="rec-info-item"><div class="rec-info-label">SC Engineer</div><div class="rec-info-val normal" id="ri-sceng">-</div></div>
-      <div class="rec-info-item"><div class="rec-info-label">Division</div><div class="rec-info-val" id="ri-division">-</div></div>
-      <div class="rec-info-item"><div class="rec-info-label">Branch</div><div class="rec-info-val normal" id="ri-branch">-</div></div>
-      <div class="rec-info-item"><div class="rec-info-label">Status</div><div class="rec-info-val" id="ri-status">-</div></div>
-      <div class="rec-info-item"><div class="rec-info-label">GIR No</div><div class="rec-info-val normal" id="ri-crmref">-</div></div>
-      <div class="rec-info-item"><div class="rec-info-label">Model</div><div class="rec-info-val normal" id="ri-model">-</div></div>
-      <div class="rec-info-item"><div class="rec-info-label">Engineer</div><div class="rec-info-val normal" id="ri-eng">-</div></div>
-      <div class="rec-info-item"><div class="rec-info-label">Type</div><div class="rec-info-val" id="ri-type">-</div></div>
-      <div class="rec-info-item"><div class="rec-info-label">Warranty Status</div><div class="rec-info-val normal" id="ri-warranty">-</div></div>
-    </div>
+    <!-- Record info strip removed -->
 
     <div class="modal-scroll">
       <div class="modal-body">
@@ -488,7 +477,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
     <div class="modal-footer">
       <div class="form-msg" id="form-msg"></div>
-      <button class="btn btn-outline btn-sm" onclick="closeFormModal()">Cancel</button>
+      <button class="btn btn-outline btn-sm" id="form-cancel-btn" onclick="closeFormModal()">Cancel</button>
       <button class="btn btn-success" id="form-save-btn" onclick="handleFormSave()">&#128190; Save Entry</button>
     </div>
   </div>
@@ -1096,7 +1085,7 @@ function renderTable(){
         <td style="display:flex;gap:5px;">
           ${!d.sparesReceivedAtSvc 
             ? `<button class="btn-xs" style="color:var(--green);border-color:rgba(4,120,87,0.3);background:var(--green-bg);" onclick="inlineMarkPending('${rid}')" title="Confirm & Send to Engineer today's date">&#10004;&#65039;</button>` 
-            : `<button class="btn-xs update" onclick="openEditModal('${rid}')" title="Update">&#9999;&#65039;</button>`}
+            : `<button class="btn-xs update" onclick="openEditModal('${rid}')" title="View">&#128065;&#65039;</button>`}
         </td>
       </tr>`;
     }).join('');
@@ -1149,7 +1138,8 @@ function openAddModal(){
   editMode = false;
   (document.getElementById('modal-title')||{}).innerHTML = '&#10133; Add New TO/SO Entry';
   (document.getElementById('modal-sub')||{}).textContent = 'Fill in all required fields below.';
-  document.getElementById('edit-info-strip').style.display = 'none';
+  document.getElementById('form-save-btn').style.display = 'flex';
+  document.getElementById('form-cancel-btn').textContent = 'Cancel';
   document.getElementById('form-id').value = '';
   hydrateDivisionDropdown();
   hydrateExactPrfObOptions();
@@ -1181,20 +1171,10 @@ function openEditModal(id){
   const d = DATA.find(x=>(x._id||x.id)===id);
   if(!d) return;
   editMode = true;
-  (document.getElementById('modal-title')||{}).innerHTML = '&#9999; Update TO/SO Entry';
-  (document.getElementById('modal-sub')||{}).textContent = 'Only Spares Rcv Date and Status can be updated here.';
-  const strip = document.getElementById('edit-info-strip');
-  strip.style.display = 'grid';
-  (document.getElementById('ri-refno')||{}).textContent = d.refNo||'-';
-  (document.getElementById('ri-sceng')||{}).textContent = d.scEng||'-';
-  (document.getElementById('ri-division')||{}).textContent = d.division||'-';
-  (document.getElementById('ri-branch')||{}).textContent = d.branch||'-';
-  (document.getElementById('ri-status')||{}).textContent = d.status||'-';
-  (document.getElementById('ri-crmref')||{}).textContent = d.crmRefNo||'-';
-  (document.getElementById('ri-model')||{}).textContent = d.model||'-';
-  (document.getElementById('ri-eng')||{}).textContent = d.eng||'-';
-  (document.getElementById('ri-type')||{}).textContent = d.type||'-';
-  (document.getElementById('ri-warranty')||{}).textContent = d.warrantyStatus||'-';
+  (document.getElementById('modal-title')||{}).innerHTML = '&#128065;&#65039; View TO/SO Entry';
+  (document.getElementById('modal-sub')||{}).textContent = 'View details.';
+  document.getElementById('form-save-btn').style.display = 'none';
+  document.getElementById('form-cancel-btn').textContent = 'Close';
 
   document.getElementById('form-id').value = id;
   hydrateDivisionDropdown(d.division);
