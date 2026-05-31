@@ -1719,34 +1719,16 @@
             <table class="data-table" id="main-table">
               <thead>
                 <tr>
-                  <th onclick="sortTable('id')"><span>Id</span><span
-                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
-                  <th onclick="sortTable('division')">Division<span
-                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
-                  <th onclick="sortTable('entryDate')">Entry Date<span
-                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
-                  <th onclick="sortTable('scEngg')">Sc Engg<span
-                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
-                  <th onclick="sortTable('type')">Type<span
-                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
-                  <th onclick="sortTable('receivedDate')">Received Date<span
-                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
-                  <th onclick="sortTable('branch')">Branch<span
-                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
-                  <th onclick="sortTable('engineer')">Engineer<span
-                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
-                  <th onclick="sortTable('model')">Model<span
-                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
-                  <th onclick="sortTable('warranty')">Warranty Status<span
-                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
-                  <th onclick="sortTable('prfobRef')">TO/SO Ref No.<span
-                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
-                  <th onclick="sortTable('crmRef')">CRM Ref No.<span
-                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
-                  <th onclick="sortTable('status')">Status<span
-                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
-                  <th onclick="sortTable('executedDate')">Executed Date<span
-                      class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('entryDate')">Entry Date<span class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('division')">Division<span class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('type')">Type<span class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('branch')">Branch<span class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('engineer')">Engineer<span class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('model')">Model<span class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('warranty')">Warr Status<span class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('prfobRef')">TO/SO Ref No<span class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('status')">Status<span class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('sparesReceivedAtSvc')">Spares Rcv Date<span class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -1806,18 +1788,16 @@
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Id</th>
-                  <th>Division</th>
                   <th>Entry Date</th>
-                  <th>Sc Engg</th>
+                  <th>Division</th>
                   <th>Type</th>
-                  <th>Engineer</th>
                   <th>Branch</th>
+                  <th>Engineer</th>
                   <th>Model</th>
-                  <th>Warranty</th>
-                  <th>TO/SO Ref</th>
-                  <th>CRM Ref</th>
-                  <th>Executed Date</th>
+                  <th>Warr Status</th>
+                  <th>TO/SO Ref No</th>
+                  <th>Status</th>
+                  <th>Spares Rcv Date</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -2200,20 +2180,16 @@
       } else {
         tbody.innerHTML = pageRows.map(e => `
       <tr>
-        <td>${esc(e.id)}</td>
-        <td><span style="font-size:12px;font-weight:600;color:var(--accent);">${esc(e.division)}</span></td>
         <td>${esc(e.entryDate)}</td>
-        <td>${esc(e.scEngg)}</td>
+        <td><span style="font-size:12px;font-weight:600;color:var(--accent);">${esc(e.division)}</span></td>
         <td>${esc(e.type)}</td>
-        <td>${esc(e.receivedDate)}</td>
         <td>${esc(e.branch)}</td>
         <td style="font-weight:600;">${esc(e.engineer)}</td>
         <td>${esc(e.model)}</td>
         <td>${esc(e.warranty)}</td>
         <td><span class="chip">${esc(e.prfobRef)}</span></td>
-        <td>${esc(e.crmRef)}</td>
         <td><span class="${statusClass(e.status)}">${esc(e.status)}</span></td>
-        <td>${esc(e.executedDate || '')}</td>
+        <td>${esc(e.sparesReceivedAtSvc || '')}</td>
         <td><button class="btn-xs" onclick="openEmployeeUpdateModal('${e._id}')" title="Update">&#9999;&#65039;</button></td>
       </tr>`).join('');
       }
@@ -2229,10 +2205,10 @@
       const start = (currentPage - 1) * pageSize;
       const pageRows = rows.slice(start, start + pageSize);
       tbody.innerHTML = !pageRows.length
-        ? `<tr class="empty-row"><td colspan="13">No closed TO/SO records found.</td></tr>`
+        ? `<tr class="empty-row"><td colspan="11">No closed TO/SO records found.</td></tr>`
         : pageRows.map(e => `
       <tr>
-        <td>${esc(e.id)}</td><td>${esc(e.division)}</td><td>${esc(e.entryDate)}</td><td>${esc(e.scEngg)}</td><td>${esc(e.type)}</td><td>${esc(e.engineer)}</td><td>${esc(e.branch)}</td><td>${esc(e.model)}</td><td>${esc(e.warranty)}</td><td>${esc(e.prfobRef)}</td><td>${esc(e.crmRef)}</td><td>${esc(e.executedDate || '')}</td>
+        <td>${esc(e.entryDate)}</td><td>${esc(e.division)}</td><td>${esc(e.type)}</td><td>${esc(e.branch)}</td><td>${esc(e.engineer)}</td><td>${esc(e.model)}</td><td>${esc(e.warranty)}</td><td>${esc(e.prfobRef)}</td><td>${esc(e.status)}</td><td>${esc(e.sparesReceivedAtSvc || '')}</td>
         <td><button class="btn-xs" onclick="openEmployeeUpdateModal('${e._id}')">&#128065; View</button></td>
       </tr>`).join('');
       const info = document.getElementById('closed-info');
