@@ -642,18 +642,15 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       <div class="table-wrap">
         <table class="frn-table">
           <thead><tr>
-            <th onclick="sortBy('_id')" class="sorted" style="width:46px;">Id <span class="si">&#8597;</span></th>
-            <th onclick="sortBy('division')">Division <span class="si">&#8597;</span></th>
-            <th onclick="sortBy('entryDate')">Entry Date <span class="si">&#8597;</span></th>
-            <th onclick="sortBy('scEng')">SC Engg <span class="si">&#8597;</span></th>
-            <th onclick="sortBy('type')">Type <span class="si">&#8597;</span></th>
+            <th onclick="sortBy('entryDate')" class="sorted">Entry Date <span class="si">&#8597;</span></th>
             <th onclick="sortBy('receivedDate')">Received Date <span class="si">&#8597;</span></th>
+            <th onclick="sortBy('division')">Division <span class="si">&#8597;</span></th>
+            <th onclick="sortBy('type')">Type <span class="si">&#8597;</span></th>
             <th onclick="sortBy('branch')">Branch <span class="si">&#8597;</span></th>
             <th onclick="sortBy('eng')">Engineer <span class="si">&#8597;</span></th>
             <th onclick="sortBy('model')">Model <span class="si">&#8597;</span></th>
             <th onclick="sortBy('warrantyStatus')">Warranty Status <span class="si">&#8597;</span></th>
             <th onclick="sortBy('refNo')">TO/SO Ref No <span class="si">&#8597;</span></th>
-            <th onclick="sortBy('crmRefNo')">GIR No <span class="si">&#8597;</span></th>
             <th onclick="sortBy('status')">Status <span class="si">&#8597;</span></th>
             <th onclick="sortBy('sparesReceivedAtSvc')">Spares Rcv Date <span class="si">&#8597;</span></th>
             <th class="no-sort">Action</th>
@@ -1117,23 +1114,20 @@ function renderTable(){
   const tbody = document.getElementById('prf-tbody');
 
   if(!total){
-    tbody.innerHTML = `<tr><td colspan="15"><div class="empty-st"><div class="ei">&#128196;</div><div class="et">${DATA.length?'No records match the current filters':'No PRF/OB entries yet'}</div><div class="es">${DATA.length?'Try adjusting the filters.':'Click "Add New Entry" to create the first PRF/OB record.'}</div></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-st"><div class="ei">&#128196;</div><div class="et">${DATA.length?'No records match the current filters':'No PRF/OB entries yet'}</div><div class="es">${DATA.length?'Try adjusting the filters.':'Click "Add New Entry" to create the first PRF/OB record.'}</div></div></td></tr>`;
   } else {
     tbody.innerHTML = slice.map((d,i)=>{
       const rid = d._id||d.id;
       return `<tr>
-        <td class="mono" style="color:var(--muted);">${(currentPage-1)*perPage+i+1}</td>
-        <td><span class="div-tag">${esc(d.division||'-')}</span></td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
-        <td style="font-weight:600;">${esc(d.scEng||'-')}</td>
-        <td>${typePill(d.type)}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.receivedDate)}</td>
+        <td><span class="div-tag">${esc(d.division||'-')}</span></td>
+        <td>${typePill(d.type)}</td>
         <td><span class="branch-tag">${esc(d.branch||'-')}</span></td>
         <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.eng||'')}">${esc(d.eng||'-')}</td>
         <td style="font-weight:600;">${esc(d.model||'-')}</td>
         <td>${warrantyPill(d.warrantyStatus)}</td>
         <td style="font-weight:600;">${esc(d.refNo||'-')}</td>
-        <td class="mono">${esc(d.crmRefNo||'-')}</td>
         <td>${statusPill(d.status)}</td>
         <td><span style="font-size:11px;color:var(--soft);">${d.sparesReceivedAtSvc ? fmtDate(d.sparesReceivedAtSvc) : '<span style="color:var(--muted);">-</span>'}</span></td>
         <td style="display:flex;gap:5px;">
