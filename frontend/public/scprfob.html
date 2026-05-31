@@ -1345,8 +1345,8 @@ async function confirmDelete(){
 
 // -- EXPORT CSV ------------------------------------------------------------
 function exportCSV(){
-  const headers=['#','Entry Date','Division','SC Engg','Type','Received Date','Branch','Engineer','Model','Warranty Status','PRF/OB Ref No','CRM Ref No','Status','Executed Date','Qty','Unit Price','Total Amount','Remarks'];
-  const rows=filtered.map((d,i)=>[i+1,d.entryDate,d.division,d.scEng,d.type,d.receivedDate,d.branch,d.eng,d.model,d.warrantyStatus,d.refNo,d.crmRefNo,d.status,d.executedDate,d.qty,d.unitPrice,d.totalAmount,d.remarks]);
+  const headers=['#','Entry Date','Division','Type','Branch','Engineer','Model','Warranty Status','TO/SO Ref No','Status','Spares Rcv Date'];
+  const rows=filtered.map((d,i)=>[i+1, d.entryDate, d.division, normalizeToSoType(d.type), d.branch, d.eng, d.model, d.warrantyStatus, d.refNo, d.status, d.sparesReceivedAtSvc]);
   const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
