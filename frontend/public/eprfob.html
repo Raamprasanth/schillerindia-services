@@ -1673,28 +1673,20 @@
         <!-- Stats strip -->
         <div class="stats-row">
           <div class="stat-card sc-blue">
-            <div class="stat-icon si-blue">&#128202;</div>
-            <div class="stat-label">Total TO/SO</div>
-            <div class="stat-value" id="s-total">-</div>
-            <div class="stat-sub">Active records</div>
+            <div class="stat-icon si-blue">&#128196;</div><div class="stat-label">Total Entries</div>
+            <div class="stat-value" id="s-total">-</div><div class="stat-sub">TO/SO records</div>
           </div>
-          <div class="stat-card sc-red">
-            <div class="stat-icon si-red">&#128308;</div>
-            <div class="stat-label">Critical (&gt;30 days)</div>
-            <div class="stat-value" id="s-critical">-</div>
-            <div class="stat-sub">Needs immediate action</div>
+          <div class="stat-card sc-purple">
+            <div class="stat-icon si-purple">&#128221;</div><div class="stat-label">Below 1 Day</div>
+            <div class="stat-value" id="s-prf">-</div><div class="stat-sub">Entries < 1 day</div>
           </div>
           <div class="stat-card sc-amber">
-            <div class="stat-icon si-amber">&#9888;</div>
-            <div class="stat-label">Warning (14-30 days)</div>
-            <div class="stat-value" id="s-warn">-</div>
-            <div class="stat-sub">Monitor closely</div>
+            <div class="stat-icon si-amber">&#128230;</div><div class="stat-label">1 to 3 Days</div>
+            <div class="stat-value" id="s-ob">-</div><div class="stat-sub">Entries 1 to 3 days</div>
           </div>
           <div class="stat-card sc-green">
-            <div class="stat-icon si-green">&#9989;</div>
-            <div class="stat-label">Closed</div>
-            <div class="stat-value" id="s-closed">-</div>
-            <div class="stat-sub">Completed TO/SO</div>
+            <div class="stat-icon si-green">&#9989;</div><div class="stat-label">Greater than 3 Days</div>
+            <div class="stat-value" id="s-open">-</div><div class="stat-sub">Entries > 3 days</div>
           </div>
         </div>
 
@@ -2033,23 +2025,30 @@
 
 
     /* ----------- STATS & BADGES ----------- */
-    function calcDays(d) {
-      if (!d) return 0;
-      return Math.max(0, Math.floor((Date.now() - new Date(d).getTime()) / 86400000));
-    }
-
     function updateStats() {
       const d = prfobData;
       (document.getElementById('s-total')||{}).textContent = d.length;
+      
+      const now = new Date();
+      now.setHours(0,0,0,0);
+      
+      let below1 = 0, oneTo3 = 0, greater3 = 0;
+      
+      d.forEach(row => {
+        const dStr = row.entryDate || row.raisedDate || row.createdAt;
+        if(!dStr) { greater3++; return; }
+        const ed = new Date(dStr);
+        ed.setHours(0,0,0,0);
+        const diffDays = Math.floor((now - ed) / (1000 * 60 * 60 * 24));
+        
+        if (diffDays < 1) below1++;
+        else if (diffDays <= 3) oneTo3++;
+        else greater3++;
+      });
 
-      const pending = d.filter(x => x.status !== 'Closed' && x.status !== 'Completed');
-      const critical = pending.filter(x => calcDays(x.entryDate || x.createdAt) > 30).length;
-      const warn = pending.filter(x => { const days = calcDays(x.entryDate || x.createdAt); return days > 14 && days <= 30; }).length;
-      const closed = d.filter(x => x.status === 'Closed' || x.status === 'Completed').length;
-
-      (document.getElementById('s-critical')||{}).textContent = critical;
-      (document.getElementById('s-warn')||{}).textContent = warn;
-      (document.getElementById('s-closed')||{}).textContent = closed;
+      (document.getElementById('s-prf')||{}).textContent = below1;
+      (document.getElementById('s-ob')||{}).textContent = oneTo3;
+      (document.getElementById('s-open')||{}).textContent = greater3;
     }
 
     async function savePRFEntry() {
