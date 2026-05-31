@@ -269,12 +269,12 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
           <div class="form-section-title">TO/SO Register Form</div>
           <div class="fg-4">
             <div class="ff">
-              <label>TO/SO Ref No <span class="req">*</span></label>
-              <input type="text" id="x-refNo"/>
-            </div>
-            <div class="ff">
               <label>TO/SO Date <span class="req">*</span></label>
               <input type="date" id="x-entryDate"/>
+            </div>
+            <div class="ff">
+              <label>TO/SO Ref No <span class="req">*</span></label>
+              <input type="text" id="x-refNo"/>
             </div>
             <div class="ff">
               <label>Type <span class="req">*</span></label>
@@ -1154,9 +1154,10 @@ function openAddModal(){
   hydrateDivisionDropdown();
   hydrateExactPrfObOptions();
   const todayStr = new Date().toISOString().split('T')[0];
-  document.getElementById('x-entryDate').value = '';
+  document.getElementById('x-entryDate').value = todayStr;
   document.getElementById('x-entryDate').max = todayStr;
   document.getElementById('x-entryDate').removeAttribute('min');
+  document.getElementById('x-receivedDate').value = todayStr;
   document.getElementById('x-division').value = '';
   document.getElementById('x-type').value = '';
   document.getElementById('x-eng').value = '';
