@@ -1135,11 +1135,11 @@ function renderTable(){
         <td style="font-weight:600;">${esc(d.refNo||'-')}</td>
         <td class="mono">${esc(d.crmRefNo||'-')}</td>
         <td>${statusPill(d.status)}</td>
-        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.sparesReceivedAtSvc)}</td>
+        <td>${d.status === 'Open' ? `<input type="date" id="inline-date-${rid}" value="${d.sparesReceivedAtSvc||''}" class="frm-inp" style="padding: 2px 4px; font-size: 11px; max-width: 110px;">` : `<span style="font-size:11px;color:var(--soft);">${fmtDate(d.sparesReceivedAtSvc)}</span>`}</td>
         <td style="display:flex;gap:5px;">
-          <button class="btn-xs update" onclick="openEditModal('${rid}')" title="Update">&#9999;&#65039;</button>
-          ${d.status === 'Open' ? `<button class="btn-xs" style="color:var(--green);border-color:rgba(4,120,87,0.3);background:var(--green-bg);" onclick="markPending('${rid}')" title="Send to Employee">&#10004;&#65039;</button>` : ''}
-
+          ${d.status === 'Open' 
+            ? `<button class="btn-xs" style="color:var(--green);border-color:rgba(4,120,87,0.3);background:var(--green-bg);" onclick="inlineMarkPending('${rid}')" title="Send to Employee">&#10004;&#65039;</button>` 
+            : `<button class="btn-xs update" onclick="openEditModal('${rid}')" title="Update">&#9999;&#65039;</button>`}
         </td>
       </tr>`;
     }).join('');
@@ -1283,11 +1283,14 @@ function openEditModal(id){
 }
 
 
-async function markPending(id) {
+
+async function inlineMarkPending(id) {
   const d = DATA.find(x=>(x._id||x.id)===id);
   if(!d) return;
-  if(!d.sparesReceivedAtSvc) {
-    showToast("Please enter Spares Rcv Date first (using the Update button).", "err");
+  const dateInput = document.getElementById('inline-date-' + id);
+  const dateVal = dateInput ? dateInput.value : '';
+  if(!dateVal) {
+    showToast("Please enter Spares Rcv Date directly in the table row.", "err");
     return;
   }
   if(!confirm("Are you sure you want to send this entry to the engineer?")) return;
@@ -1296,7 +1299,7 @@ async function markPending(id) {
     const res = await fetch(API + '/api/emp/prfob/' + id, {
       method: 'PUT',
       headers: authHeaders(),
-      body: JSON.stringify({ status: 'Pending' })
+      body: JSON.stringify({ status: 'Pending', sparesReceivedAtSvc: dateVal })
     });
     if(!res.ok) throw new Error("Failed to update status");
     showToast("Entry marked as Pending and sent to engineer.", "ok");
