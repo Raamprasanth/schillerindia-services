@@ -2176,7 +2176,7 @@
       const start = (currentPage - 1) * pageSize;
       const pageRows = filteredData.slice(start, start + pageSize);
       if (!pageRows.length) {
-        tbody.innerHTML = `<tr class="empty-row"><td colspan="15">No TO/SO records found.</td></tr>`;
+        tbody.innerHTML = `<tr class="empty-row"><td colspan="11">No TO/SO records found.</td></tr>`;
       } else {
         tbody.innerHTML = pageRows.map(e => `
       <tr>
