@@ -594,21 +594,18 @@ function renderTable(){
     tbody.innerHTML = slice.map((d,i)=>{
       const rid = d._id||d.id;
       return `<tr>
-        <td class="mono" style="color:var(--muted);">${(currentPage-1)*perPage+i+1}</td>
-        <td><span class="div-tag">${esc(d.division||' ')}</span></td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
-        <td style="font-weight:600;">${esc(d.scEng||' ')}</td>
-        <td>${typePill(d.type)}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.receivedDate)}</td>
+        <td><span class="div-tag">${esc(d.division||' ')}</span></td>
+        <td>${typePill(d.type)}</td>
         <td><span class="branch-tag">${esc(d.branch||' ')}</span></td>
         <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.eng||'')}">${esc(d.eng||' ')}</td>
         <td style="font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.model||'')}">${esc(d.model||' ')}</td>
         <td>${warrantyPill(d.warrantyStatus)}</td>
         <td style="font-weight:600;">${esc(d.refNo||' ')}</td>
-        <td class="wrap-cell" style="max-width:200px;font-size:11px;color:var(--soft);" title="${esc(d.crmRefNo||'')}">${esc((d.crmRefNo||' ').slice(0,40))}${(d.crmRefNo||'').length>40?' ':''}</td>
         <td>${statusPill(d.status)}</td>
+        <td class="wrap-cell" style="max-width:200px;font-size:11px;color:var(--soft);" title="${esc(d.crmRefNo||'')}">${esc((d.crmRefNo||' ').slice(0,40))}${(d.crmRefNo||'').length>40?' ':''}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.executedDate)}</td>
-        <td><button class="btn-xs update" onclick="openUpdateModal('${rid}')" title="Update">&#9999;&#65039;</button></td>
       </tr>`;
     }).join('');
   }
