@@ -357,7 +357,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
               </select>
             </div>
             <div class="ff">
-              <label>PRF/OB Ref No <span class="req">*</span></label>
+              <label>TO/SO Ref No <span class="req">*</span></label>
               <input type="text" id="f-refNo"/>
             </div>
             <div class="ff">
@@ -488,7 +488,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   <div class="confirm-box">
     <div class="confirm-icon">&#128465;</div>
     <div class="confirm-title">Delete this entry?</div>
-    <div class="confirm-sub">This action cannot be undone. The PRF/OB record will be permanently removed from the database.</div>
+    <div class="confirm-sub">This action cannot be undone. The TO/SO record will be permanently removed from the database.</div>
     <div class="confirm-actions">
       <button class="btn btn-outline btn-sm" onclick="closeConfirm()">Cancel</button>
       <button class="btn btn-sm" style="background:var(--red);color:#fff;" id="confirm-delete-btn" onclick="confirmDelete()">Delete</button>
@@ -688,7 +688,7 @@ function renderMailAck(data={}){
   const wrap = document.getElementById('mail-ack-wrap');
   if(!wrap) return;
   wrap.innerHTML = `
-    <div class="mail-ack-card"><div class="mail-ack-label">Queued</div><div class="mail-ack-value">${q.totalCount || 0}</div><div class="mail-ack-sub">${q.slotLabel || 'PRF/OB Daily'}</div></div>
+    <div class="mail-ack-card"><div class="mail-ack-label">Queued</div><div class="mail-ack-value">${q.totalCount || 0}</div><div class="mail-ack-sub">${q.slotLabel || 'TO/SO Daily'}</div></div>
     <div class="mail-ack-card"><div class="mail-ack-label">Next Mail</div><div class="mail-ack-value">${q.nextRunLabel || '4:30 PM'}</div><div class="mail-ack-sub">Window date ${q.windowDate || '-'}</div></div>
     <div class="mail-ack-card"><div class="mail-ack-label">Receivers</div><div class="mail-ack-value">${recipients.length}</div><div class="mail-ack-sub">${recipients.join(', ') || 'Add receiver in Settings'}</div></div>
     <div class="mail-ack-card"><div class="mail-ack-label">Last Mail</div><div class="mail-ack-value">${status}</div><div class="mail-ack-sub">${sentAt}</div></div>`;
@@ -700,7 +700,7 @@ async function loadMailAckStatus(){
     if(!res.ok) throw new Error('HTTP ' + res.status);
     renderMailAck(await res.json());
   }catch(e){
-    renderMailAck({queue:{totalCount:0,nextRunLabel:'4:30 PM',slotLabel:'PRF/OB Daily'},recipients:[],latest:{status:'status unavailable'}});
+    renderMailAck({queue:{totalCount:0,nextRunLabel:'4:30 PM',slotLabel:'TO/SO Daily'},recipients:[],latest:{status:'status unavailable'}});
   }
 }
 
@@ -1067,7 +1067,7 @@ function renderTable(){
   const tbody = document.getElementById('prf-tbody');
 
   if(!total){
-    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-st"><div class="ei">&#128196;</div><div class="et">${DATA.length?'No records match the current filters':'No PRF/OB entries yet'}</div><div class="es">${DATA.length?'Try adjusting the filters.':'Click "Add New Entry" to create the first PRF/OB record.'}</div></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-st"><div class="ei">&#128196;</div><div class="et">${DATA.length?'No records match the current filters':'No TO/SO entries yet'}</div><div class="es">${DATA.length?'Try adjusting the filters.':'Click "Add New Entry" to create the first TO/SO record.'}</div></div></td></tr>`;
   } else {
     tbody.innerHTML = slice.map((d,i)=>{
       const rid = d._id||d.id;
@@ -1305,7 +1305,7 @@ async function handleFormSave(){
     }
     updateStats(); applyFilters();
     showFormMsg(editMode?'&#10004; Record updated successfully!':'&#10004; New entry added successfully!','ok');
-    showToast(editMode?'PRF/OB record updated.':'New PRF/OB entry added.','ok');
+    showToast(editMode?'TO/SO record updated.':'New TO/SO entry added.','ok');
     setTimeout(closeFormModal, 1100);
   }catch(e){
     if(e.message!=='Unauthorized'){showFormMsg('Save failed: '+e.message,'err');showToast('Save failed: '+e.message,'err');}

@@ -406,7 +406,7 @@ table.mini-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
     <!-- -- ALERTS -- -->
     <div class="alert-strip" id="alert-strip">
       <div class="alert-item alert-red">
-        &#128680; <span><strong id="overdue-count">0</strong> PRF/OB entries are overdue (&gt;30 days). Immediate action required.</span>
+        &#128680; <span><strong id="overdue-count">0</strong> TO/SO entries are overdue (&gt;30 days). Immediate action required.</span>
         <button class="alert-close" onclick="this.parentElement.remove()">&#10005;</button>
       </div>
 
@@ -428,7 +428,7 @@ table.mini-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
       <div class="wb-right">
         <div class="wb-stat">
           <div class="wb-stat-val" id="wb-open">-</div>
-          <div class="wb-stat-lbl">Open PRF</div>
+          <div class="wb-stat-lbl">Open TO/SO</div>
         </div>
 
         <div class="wb-stat">
@@ -442,7 +442,7 @@ table.mini-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
     <div class="stats-grid">
       <div class="stat-card sc-blue">
         <div class="stat-icon-wrap si-blue">&#128203;</div>
-        <div class="stat-lbl">Total PRF/OB</div>
+        <div class="stat-lbl">Total TO/SO</div>
         <div class="stat-val" id="st-total-prf">-</div>
         <div class="stat-sub"><span class="stat-trend trend-up" id="st-trend-prf">+0</span> this week</div>
       </div>
@@ -454,7 +454,7 @@ table.mini-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
       </div>
       <div class="stat-card sc-green">
         <div class="stat-icon-wrap si-green">&#9989;</div>
-        <div class="stat-lbl">Closed PRF/OB</div>
+        <div class="stat-lbl">Closed TO/SO</div>
         <div class="stat-val" id="st-closed-prf">-</div>
         <div class="stat-sub"><span class="stat-trend trend-up" id="st-closed-today">+0 today</span></div>
       </div>
@@ -473,11 +473,11 @@ table.mini-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
           </div>
           <div class="progress-list" style="width:55%;min-width:180px;">
             <div class="prog-item">
-              <div class="prog-header"><span class="prog-label">PRF Closed &le;7d</span><span class="prog-val" id="prog-7d">-%</span></div>
+              <div class="prog-header"><span class="prog-label">TO/SO Closed &le;7d</span><span class="prog-val" id="prog-7d">-%</span></div>
               <div class="prog-bar"><div class="prog-fill pf-green" id="bar-7d" style="width:0%"></div></div>
             </div>
             <div class="prog-item">
-              <div class="prog-header"><span class="prog-label">PRF Closed &le;30d</span><span class="prog-val" id="prog-30d">-%</span></div>
+              <div class="prog-header"><span class="prog-label">TO/SO Closed &le;30d</span><span class="prog-val" id="prog-30d">-%</span></div>
               <div class="prog-bar"><div class="prog-fill pf-blue" id="bar-30d" style="width:0%"></div></div>
             </div>
             <div class="prog-item">
@@ -501,16 +501,16 @@ table.mini-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
     <!-- -- ROW 2: PRF TABLE + ACTIVITY -- -->
     <div class="three-col">
 
-      <!-- Recent PRF/OB -->
+      <!-- Recent TO/SO -->
       <div class="panel">
         <div class="panel-head">
-          <div class="panel-title">&#128203; Recent PRF/OB Entries <span class="panel-badge" id="prf-table-count">-</span></div>
+          <div class="panel-title">&#128203; Recent TO/SO Entries <span class="panel-badge" id="prf-table-count">-</span></div>
           <a href="sc-prf-ob.html" style="font-size:11.5px;color:var(--accent);text-decoration:none;font-weight:600;">View All &rarr;</a>
         </div>
         <div class="table-wrap" style="overflow-x:auto;">
           <table class="mini-table" style="min-width:560px;">
             <thead><tr>
-              <th onclick="sortPRF('prfNo')">PRF No &#8597;</th>
+              <th onclick="sortPRF('prfNo')">TO/SO No &#8597;</th>
               <th onclick="sortPRF('custName')">Customer &#8597;</th>
               <th onclick="sortPRF('model')">Model &#8597;</th>
               <th onclick="sortPRF('entryDate')">Date &#8597;</th>
@@ -568,7 +568,7 @@ table.mini-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
               </a>
               <a class="quick-card" href="sc-closed-prf.html">
                 <div class="qc-ico">&#128274;</div>
-                <div class="qc-title">Closed PRF/OB</div>
+                <div class="qc-title">Closed TO/SO</div>
                 <div class="qc-sub">Completed records</div>
                 <span class="qc-badge" style="background:var(--green-bg);color:var(--green);">Closed: <span id="qa-closed">-</span></span>
               </a>
@@ -601,7 +601,7 @@ table.mini-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
     <!-- -- DIVISION BREAKDOWN -- -->
     <div class="panel" style="margin-bottom:22px;">
       <div class="panel-head">
-        <div class="panel-title">&#128309; PRF/OB by Division</div>
+        <div class="panel-title">&#128309; TO/SO by Division</div>
         <span style="font-size:11px;color:var(--muted);">Active open records</span>
       </div>
       <div class="panel-body">
@@ -1026,7 +1026,7 @@ function renderPRFTable(){
   });
   const slice = sorted.slice(0,8);
   const tbody = document.getElementById('prf-tbody');
-  if(!slice.length){ tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--muted);">No PRF/OB records.</td></tr>'; return; }
+  if(!slice.length){ tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--muted);">No TO/SO records.</td></tr>'; return; }
   tbody.innerHTML = slice.map(r=>{
     const st  = r.status==='closed'||r.status==='completed'?'sp-closed':r.pendingDays>30?'sp-urgent':r.status==='pending'?'sp-pending':'sp-open';
     const lbl = r.status==='closed'||r.status==='completed'?'Closed':r.pendingDays>30?'Overdue':r.status==='pending'?'Pending':'Open';
@@ -1052,7 +1052,7 @@ function renderActivityFeed(){
   const icons=[{cls:'ai-blue',ico:'&#128203;'},{cls:'ai-green',ico:'&#9989;'},{cls:'ai-amber',ico:'&#9889;'},{cls:'ai-teal',ico:'&#128297;'},{cls:'ai-purple',ico:'&#128230;'},{cls:'ai-red',ico:'&#128680;'}];
   feed.innerHTML=recent.map((r,i)=>{
     const ic=icons[i%icons.length];
-    const action=r.status==='closed'||r.status==='completed'?'Closed PRF/OB':r.pendingDays>30?'Overdue PRF':'Updated PRF/OB';
+    const action=r.status==='closed'||r.status==='completed'?'Closed TO/SO':r.pendingDays>30?'Overdue TO/SO':'Updated TO/SO';
     const ago=calcDays(r.updatedAt||r.entryDate);
     return`<div class="activity-item" style="padding:11px 18px;">
       <div class="activity-ico ${ic.cls}">${ic.ico}</div>
@@ -1076,7 +1076,7 @@ function renderDivisionBars(){
   const sorted=Object.entries(divMap).sort((a,b)=>b[1]-a[1]);
   const max=sorted.length?sorted[0][1]:1;
   const container=document.getElementById('division-bars');
-  if(!sorted.length){container.innerHTML='<div style="color:var(--muted);font-size:12.5px;">No open PRF/OB records.</div>';return;}
+  if(!sorted.length){container.innerHTML='<div style="color:var(--muted);font-size:12.5px;">No open TO/SO records.</div>';return;}
   container.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">
     ${sorted.map(([div,cnt],i)=>`
       <div class="prog-item">

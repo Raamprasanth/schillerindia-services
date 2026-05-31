@@ -244,7 +244,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   <div class="modal">
     <div class="modal-header">
       <div>
-        <div class="modal-title" id="modal-title">&#9998; Update Closed PRF/OB Entry</div>
+        <div class="modal-title" id="modal-title">&#9998; Update Closed TO/SO Entry</div>
         <div style="font-size:11.5px;color:var(--muted);margin-top:3px;">Review and update the record details below.</div>
       </div>
       <button class="modal-close" onclick="closeModal()" title="Close (Esc)">&#10005;</button>
@@ -252,7 +252,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
     <!-- Record info strip -->
     <div class="rec-info" id="rec-strip">
-      <div class="rec-info-item"><div class="rec-info-label">PRF/OB Ref No</div><div class="rec-info-val" id="ri-refno"> </div></div>
+      <div class="rec-info-item"><div class="rec-info-label">TO/SO Ref No</div><div class="rec-info-val" id="ri-refno"> </div></div>
       <div class="rec-info-item"><div class="rec-info-label">SC Engineer</div><div class="rec-info-val normal" id="ri-sceng"> </div></div>
       <div class="rec-info-item"><div class="rec-info-label">Division</div><div class="rec-info-val" id="ri-division"> </div></div>
       <div class="rec-info-item"><div class="rec-info-label">Branch</div><div class="rec-info-val normal" id="ri-branch"> </div></div>
@@ -376,12 +376,12 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <div class="stat-icon si-blue">&#128196;</div>
         <div class="stat-label">Total Closed</div>
         <div class="stat-value" id="s-total"> </div>
-        <div class="stat-sub">Closed PRF/OB entries</div>
+        <div class="stat-sub">Closed TO/SO entries</div>
       </div>
       
       <div class="stat-card sc-purple">
         <div class="stat-icon si-purple">&#128230;</div>
-        <div class="stat-label">PRF Closed</div>
+        <div class="stat-label">TO/SO Closed</div>
         <div class="stat-value" id="s-prf"> </div>
         <div class="stat-sub">Purchase requisitions</div>
       </div>
@@ -397,7 +397,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     <div class="table-card">
       <div class="table-top">
         <div class="table-title">
-          Closed PRF/OB Details
+          Closed TO/SO Details
           <span class="count-chip" id="count-chip">&#8600; entries</span>
           <span class="closed-chip">&#10005; Closed Register</span>
         </div>
@@ -454,7 +454,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('eng')">Engineer <span class="si">&#8693;</span></th>
             <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
             <th onclick="sortBy('warrantyStatus')">Warranty Status <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('refNo')">PRF/OB Ref No. <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('refNo')">TO/SO Ref No. <span class="si">&#8693;</span></th>
             <th onclick="sortBy('status')">Status <span class="si">&#8693;</span></th>
             <th onclick="sortBy('crmRefNo')">GIR No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('sparesReceivedAtSvc')">Spares rcd date <span class="si">&#8693;</span></th>
@@ -580,7 +580,7 @@ function renderTable(){
   const tbody = document.getElementById('cr-tbody');
 
   if(!total){
-    tbody.innerHTML=`<tr><td colspan="12"><div class="empty-st"><div class="ei">&#128196;</div><div class="et">${DATA.length?'No records match the current filters':'No Closed PRF/OB entries'}</div><div class="es">${DATA.length?'Try adjusting the filters.':'Closed records will appear here once PRF/OB entries are completed.'}</div></div></td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="12"><div class="empty-st"><div class="ei">&#128196;</div><div class="et">${DATA.length?'No records match the current filters':'No Closed TO/SO entries'}</div><div class="es">${DATA.length?'Try adjusting the filters.':'Closed records will appear here once TO/SO entries are completed.'}</div></div></td></tr>`;
   } else {
     tbody.innerHTML = slice.map((d,i)=>{
       const rid = d._id||d.id;
@@ -684,7 +684,7 @@ async function submitUpdate(){
     if(idx!==-1) DATA[idx]={...DATA[idx],...payload,...saved};
     applyFilters();
     showUpdMsg('&#10004; Record updated successfully!','ok');
-    showToast('PRF/OB record updated.','ok');
+    showToast('TO/SO record updated.','ok');
     setTimeout(closeModal, 1100);
   }catch(e){
     if(e.message!=='Unauthorized'){showUpdMsg('Save failed: '+e.message,'err');showToast('Update failed: '+e.message,'err');}
@@ -695,7 +695,7 @@ async function submitUpdate(){
 
 // -- EXPORT CSV ------------------------------------------------------------
 function exportCSV(){
-  const headers=['#','Division','Entry Date','SC Engg','Type','Received Date','Branch','Engineer','Model','Warranty Status','PRF/OB Ref No','CRM Ref No','Status','Executed Date','Remarks'];
+  const headers=['#','Division','Entry Date','SC Engg','Type','Received Date','Branch','Engineer','Model','Warranty Status','TO/SO Ref No','CRM Ref No','Status','Executed Date','Remarks'];
   const rows=filtered.map((d,i)=>[i+1,d.division,d.entryDate,d.scEng,d.type,d.receivedDate,d.branch,d.eng,d.model,d.warrantyStatus,d.refNo,d.crmRefNo,d.status,d.executedDate,d.remarks]);
   const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');

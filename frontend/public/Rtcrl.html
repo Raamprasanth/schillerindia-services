@@ -675,7 +675,7 @@ function exportCSV() {
     'Technical Remarks', 'Repair Team Remarks', 'Components Used to Repaired', 'Cost in INR', 'Time Taken to Repair', 'Repair Status',
     'DOI (Date of Installation)', 'Repaired By', 'Repaired Date', 'Type of Work', 'RA Engineer', 'DEF Unit GIR No', 'Repaired GIR No', 'Repaired BRD Stk Date',
     'Type of Report', 'DC No', 'Field Remarks', 'Final Remarks', 'Additional Notes', 'Return DC No', 'Destination', 'Shipped SC', 'Shipped Commercial',
-    'PRF/OB No', 'Submitted By', 'Submitted At'
+    'TO/SO No', 'Submitted By', 'Submitted At'
   ];
   const rows = filtered.map(d => [
     fmtDate(d.entryDate), d.division || '-', d.scRefNo || '-', d.defGirNo || '-', d.category || d.obType || '-', d.model || '-', d.defBrdModName || '-', d.noOfDays || 0, d.status || '-',

@@ -1434,11 +1434,11 @@
     </div>
   </div>
 
-  <!-- NEW PRF/OB ENTRY -->
+  <!-- NEW TO/SO ENTRY -->
   <div class="modal-overlay" id="prfob-modal">
     <div class="modal-box">
       <div class="modal-header">
-        <h3>&#128196; New PRF/OB Entry</h3>
+        <h3>&#128196; New TO/SO Entry</h3>
         <button class="modal-close" onclick="closePRFModal()">&#10005;</button>
       </div>
       <p class="modal-sub">Register a new PRF / Outward Bill entry</p>
@@ -1492,7 +1492,7 @@
             <option>CAMC</option>
           </select>
         </div>
-        <div class="form-group"><label>PRF/OB Ref No.</label><input type="text" id="pf-ref"
+        <div class="form-group"><label>TO/SO Ref No.</label><input type="text" id="pf-ref"
             placeholder="" /></div>
         <div class="form-group"><label>CRM Ref No.</label><input type="text" id="pf-crm"
             placeholder="" /></div>
@@ -1523,7 +1523,7 @@
   <div class="modal-overlay" id="view-modal">
     <div class="modal-box" style="max-width:680px;">
       <div class="modal-header">
-        <h3 id="view-title">&#128196; PRF/OB Entry Detail</h3>
+        <h3 id="view-title">&#128196; TO/SO Entry Detail</h3>
         <button class="modal-close"
           onclick="document.getElementById('view-modal').classList.remove('show')">&#10005;</button>
       </div>
@@ -1542,11 +1542,11 @@
   <div class="modal-overlay" id="employee-update-modal">
     <div class="modal-box" style="max-width:1180px;width:96%;">
       <div class="modal-header">
-        <h3>&#9998; Update PRF/OB Entry</h3>
+        <h3>&#9998; Update TO/SO Entry</h3>
         <button class="modal-close" onclick="closeEmployeeUpdateModal()">&#10005;</button>
       </div>
       <p class="modal-sub">Details from Service Coordinator stay locked here. Only the lower section is editable in
-        employee PRF/OB.</p>
+        employee TO/SO.</p>
       <input type="hidden" id="ep-id" />
 
       <div class="ep-section-title">TO/SO Register Form</div>
@@ -1565,7 +1565,7 @@
         <div class="form-group"><label>Model</label><input class="locked" id="ep-model" readonly /></div>
         <div class="form-group"><label>Warranty Status</label><input class="locked" id="ep-warrantyStatus" readonly />
         </div>
-        <div class="form-group"><label>PRF/OB Reference No.</label><input class="locked" id="ep-refNo" readonly /></div>
+        <div class="form-group"><label>TO/SO Reference No.</label><input class="locked" id="ep-refNo" readonly /></div>
         <div class="form-group"><label>Part No</label><input class="locked" id="ep-partType" readonly /></div>
 
         <div class="form-group"><label>Parts Description</label><input class="locked" id="ep-partsDescription"
@@ -1652,7 +1652,7 @@
     <div class="topbar">
       <div>
         <div class="topbar-title" id="topbar-title">TO/SO Register</div>
-        <div class="topbar-breadcrumb"><span>SchillerIndia</span><span>&#8250;</span><span id="topbar-sub">PRF/OB
+        <div class="topbar-breadcrumb"><span>SchillerIndia</span><span>&#8250;</span><span id="topbar-sub">TO/SO
             Register</span></div>
       </div>
       <div class="topbar-actions">
@@ -1662,7 +1662,7 @@
 
     <div class="content">
 
-      <!-- ---- PRF/OB REGISTER (default active) ---- -->
+      <!-- ---- TO/SO REGISTER (default active) ---- -->
       <div class="page active" id="page-prfob-register">
         <div class="page-header">
           <div class="page-title-row">
@@ -1677,7 +1677,7 @@
         <div class="stats-row">
           <div class="stat-card sc-blue">
             <div class="stat-icon si-blue">&#128202;</div>
-            <div class="stat-label">Total PRF/OB</div>
+            <div class="stat-label">Total TO/SO</div>
             <div class="stat-value" id="s-total">-</div>
             <div class="stat-sub">Active records</div>
           </div>
@@ -1697,14 +1697,14 @@
             <div class="stat-icon si-green">&#9989;</div>
             <div class="stat-label">Closed</div>
             <div class="stat-value" id="s-closed">-</div>
-            <div class="stat-sub">Completed PRF/OB</div>
+            <div class="stat-sub">Completed TO/SO</div>
           </div>
         </div>
 
-        <!-- PRF/OB Details -->
+        <!-- TO/SO Details -->
         <div class="table-panel">
           <div class="table-panel-header">
-            <div class="table-panel-title">&#128196; PRF/OB Details</div>
+            <div class="table-panel-title">&#128196; TO/SO Details</div>
             <div class="table-controls">
               <div class="show-entries">
                 Show <select id="entries-per-page" onchange="changePageSize()">
@@ -1742,7 +1742,7 @@
                       class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
                   <th onclick="sortTable('warranty')">Warranty Status<span
                       class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
-                  <th onclick="sortTable('prfobRef')">PRF/OB Ref No.<span
+                  <th onclick="sortTable('prfobRef')">TO/SO Ref No.<span
                       class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
                   <th onclick="sortTable('crmRef')">CRM Ref No.<span
                       class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
@@ -1763,13 +1763,13 @@
         </div>
       </div>
 
-      <!-- ---- CLOSED PRF/OB ---- -->
+      <!-- ---- CLOSED TO/SO ---- -->
       <div class="page" id="page-closed-prfob">
         <div class="page-header">
           <div class="page-title-row">
             <div>
               <h1>Closed TO/SO Register</h1>
-              <p>All resolved and closed PRF/OB entries</p>
+              <p>All resolved and closed TO/SO entries</p>
             </div>
           </div>
         </div>
@@ -1794,7 +1794,7 @@
         </div>
         <div class="table-panel">
           <div class="table-panel-header">
-            <div class="table-panel-title" style="color:var(--green);">&#128196; Closed PRF/OB Details</div>
+            <div class="table-panel-title" style="color:var(--green);">&#128196; Closed TO/SO Details</div>
             <div class="table-controls">
               <div class="show-entries">Show <select id="closed-per-page" onchange="renderClosedTable()">
                   <option value="10">10</option>
@@ -1818,7 +1818,7 @@
                   <th>Branch</th>
                   <th>Model</th>
                   <th>Warranty</th>
-                  <th>PRF/OB Ref</th>
+                  <th>TO/SO Ref</th>
                   <th>CRM Ref</th>
                   <th>Executed Date</th>
                   <th>Action</th>
@@ -2118,7 +2118,7 @@
         filteredData = [...prfobData];
         updateStats(); updateBadges();
         msg.className = 'form-msg ok'; msg.textContent = 'Entry submitted successfully!';
-        showToast('PRF/OB entry added!', 'ok');
+        showToast('TO/SO entry added!', 'ok');
         setTimeout(() => { closePRFModal(); applyDateFilter();['pf-div', 'pf-type', 'pf-branch', 'pf-warranty', 'pf-status'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });['pf-entry-date', 'pf-received-date', 'pf-executed-date', 'pf-sc-engg', 'pf-engineer', 'pf-model', 'pf-ref', 'pf-crm', 'pf-remarks'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; }); }, 900);
       } catch (e) { msg.className = 'form-msg err-msg'; msg.textContent = 'Save failed: ' + e.message; }
       finally { if (btn) { btn.disabled = false; btn.innerHTML = '&#128190; Submit Entry'; } }
@@ -2199,7 +2199,7 @@
       const start = (currentPage - 1) * pageSize;
       const pageRows = filteredData.slice(start, start + pageSize);
       if (!pageRows.length) {
-        tbody.innerHTML = `<tr class="empty-row"><td colspan="15">No PRF/OB records found.</td></tr>`;
+        tbody.innerHTML = `<tr class="empty-row"><td colspan="15">No TO/SO records found.</td></tr>`;
       } else {
         tbody.innerHTML = pageRows.map(e => `
       <tr>
@@ -2232,7 +2232,7 @@
       const start = (currentPage - 1) * pageSize;
       const pageRows = rows.slice(start, start + pageSize);
       tbody.innerHTML = !pageRows.length
-        ? `<tr class="empty-row"><td colspan="13">No closed PRF/OB records found.</td></tr>`
+        ? `<tr class="empty-row"><td colspan="13">No closed TO/SO records found.</td></tr>`
         : pageRows.map(e => `
       <tr>
         <td>${esc(e.id)}</td><td>${esc(e.division)}</td><td>${esc(e.entryDate)}</td><td>${esc(e.scEngg)}</td><td>${esc(e.type)}</td><td>${esc(e.engineer)}</td><td>${esc(e.branch)}</td><td>${esc(e.model)}</td><td>${esc(e.warranty)}</td><td>${esc(e.prfobRef)}</td><td>${esc(e.crmRef)}</td><td>${esc(e.executedDate || '')}</td>
@@ -2315,7 +2315,7 @@
         filteredData = [...prfobData].filter(x => !['closed', 'completed'].includes(String(x.status).toLowerCase()));
         updateStats(); updateBadges(); renderMainTable(); renderClosedTable();
         if (msg) { msg.className = 'form-msg ok'; msg.textContent = 'Update saved successfully!'; }
-        showToast('PRF/OB update saved.', 'ok');
+        showToast('TO/SO update saved.', 'ok');
         setTimeout(() => { closeEmployeeUpdateModal(); window.location.href = 'ecr.html'; }, 900);
       } catch (e) {
         if (msg) { msg.className = 'form-msg err-msg'; msg.textContent = 'Save failed: ' + e.message; }
@@ -2326,7 +2326,7 @@
     }
 
     /* ----------- DELETE ----------- */
-    function confirmDelete(id) { showConfirm('Delete this PRF/OB entry? This cannot be undone.', async () => { try { try { const r = await fetch('/api/prfob/' + id, { method: 'DELETE', headers: authH() }); if (!r.ok) throw new Error(''); } catch (e) { } prfobData = prfobData.filter(x => x._id !== id); filteredData = filteredData.filter(x => x._id !== id); updateStats(); updateBadges(); renderMainTable(); showToast('Entry deleted.', 'ok'); } catch (e) { showToast('Delete failed.', 'err'); } }); }
+    function confirmDelete(id) { showConfirm('Delete this TO/SO entry? This cannot be undone.', async () => { try { try { const r = await fetch('/api/prfob/' + id, { method: 'DELETE', headers: authH() }); if (!r.ok) throw new Error(''); } catch (e) { } prfobData = prfobData.filter(x => x._id !== id); filteredData = filteredData.filter(x => x._id !== id); updateStats(); updateBadges(); renderMainTable(); showToast('Entry deleted.', 'ok'); } catch (e) { showToast('Delete failed.', 'err'); } }); }
     function showConfirm(msg, cb) { (document.getElementById('confirm-msg')||{}).textContent = msg; document.getElementById('confirm-modal').classList.add('show'); document.getElementById('confirm-yes').onclick = () => { closeConfirm(); cb(); }; }
     function closeConfirm() { document.getElementById('confirm-modal').classList.remove('show'); }
     document.getElementById('confirm-modal').addEventListener('click', e => { if (e.target === document.getElementById('confirm-modal')) closeConfirm(); });
@@ -2334,7 +2334,7 @@
     /* ----------- EXPORT ----------- */
     function exportAll() {
       const d = filteredData;
-      const csv = ['Id,Division,Entry Date,Sc Engg,Type,Received Date,Branch,Engineer,Model,Warranty,PRF/OB Ref,CRM Ref,Status,Executed Date,Remarks', ...d.map(e => [e.id, e.division, e.entryDate, e.scEngg, e.type, e.receivedDate, e.branch, e.engineer, e.model, e.warranty, e.prfobRef, e.crmRef, e.status, e.executedDate, '"' + (e.remarks || '').replace(/"/g, '""') + '"'].join(','))].join('\n');
+      const csv = ['Id,Division,Entry Date,Sc Engg,Type,Received Date,Branch,Engineer,Model,Warranty,TO/SO Ref,CRM Ref,Status,Executed Date,Remarks', ...d.map(e => [e.id, e.division, e.entryDate, e.scEngg, e.type, e.receivedDate, e.branch, e.engineer, e.model, e.warranty, e.prfobRef, e.crmRef, e.status, e.executedDate, '"' + (e.remarks || '').replace(/"/g, '""') + '"'].join(','))].join('\n');
       downloadCSV(csv, 'prfob-export-' + Date.now() + '.csv');
       showToast('Exported ' + d.length + ' entries as CSV.', 'ok');
     }

@@ -325,8 +325,8 @@ table.ob-table tbody tr:last-child td{border-bottom:none;}
       <div class="nav-sub">
         <a class="nav-item" href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
         <a class="nav-item" href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
-        <a class="nav-item" href="aprfob.html"><span class="icon">&#128203;</span> PRF/OB List</a>
-        <a class="nav-item" href="acr.html"><span class="icon">&#128209;</span> Closed PRF/OB</a>
+        <a class="nav-item" href="aprfob.html"><span class="icon">&#128203;</span> TO/SO List</a>
+        <a class="nav-item" href="acr.html"><span class="icon">&#128209;</span> Closed TO/SO</a>
         <a class="nav-item" href="ans.html"><span class="icon">&#128230;</span> Non Saleable</a>
         <a class="nav-item" href="as.html"><span class="icon">&#128176;</span> Saleable</a>
         <a class="nav-item" href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
@@ -473,7 +473,7 @@ table.ob-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('noOfDays')">No of Days <span class="si">&#8597;</span></th>
             <th onclick="sortBy('status')">Status <span class="si">&#8597;</span></th>
             <th onclick="sortBy('raEng')">RA Engineer <span class="si">&#8597;</span></th>
-            <th onclick="sortBy('prfObNo')">PRF/OB No <span class="si">&#8597;</span></th>
+            <th onclick="sortBy('prfObNo')">TO/SO No <span class="si">&#8597;</span></th>
             <th onclick="sortBy('submittedBy')">Submitted By <span class="si">&#8597;</span></th>
           </tr></thead>
           <tbody id="ob-tbody">
@@ -774,7 +774,7 @@ async function deleteRecord(id, ref) {
 }
 
 function exportCSV(){
-  const headers=['Entry Date','Division','SC Ref No','DEF GIR No','OB Type','Model','Def Brd/Mod Name','No of Days','Status','RA Engineer','PRF/OB No','Submitted By','Type of Work','Final Remarks'];
+  const headers=['Entry Date','Division','SC Ref No','DEF GIR No','OB Type','Model','Def Brd/Mod Name','No of Days','Status','RA Engineer','TO/SO No','Submitted By','Type of Work','Final Remarks'];
   const rows=filtered.map(d=>[fmtDate(d.entryDate),d.division,d.scRefNo,d.defGirNo,d.obType||'OB',d.model,d.defBrdModName,d.noOfDays,d.status,d.raEng||'-',d.prfObNo||'-',d.submittedBy||'-',d.typeWork||'-',d.finalRemarks||'-']);
   const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='atob-'+new Date().toISOString().split('T')[0]+'.csv';a.click();

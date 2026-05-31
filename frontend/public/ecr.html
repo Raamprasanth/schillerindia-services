@@ -261,7 +261,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   <div class="modal">
     <div class="modal-header">
       <div>
-        <div class="modal-title" id="modal-main-title">&#128203; PRF/OB Record Details</div>
+        <div class="modal-title" id="modal-main-title">&#128203; TO/SO Record Details</div>
         <div style="font-size:11.5px;color:var(--muted);margin-top:3px;" id="modal-sub">View record details or submit an update.</div>
       </div>
       <button class="modal-close" onclick="closeModal()" title="Close (Esc)">&#10005;</button>
@@ -269,7 +269,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
     <!-- Record info strip -->
     <div class="rec-info">
-      <div class="rec-info-item"><div class="rec-info-label">PRF/OB Ref No</div><div class="rec-info-val" id="ri-refno">-</div></div>
+      <div class="rec-info-item"><div class="rec-info-label">TO/SO Ref No</div><div class="rec-info-val" id="ri-refno">-</div></div>
       <div class="rec-info-item"><div class="rec-info-label">SC Engineer</div><div class="rec-info-val normal" id="ri-sceng">-</div></div>
       <div class="rec-info-item"><div class="rec-info-label">Division</div><div class="rec-info-val" id="ri-division">-</div></div>
       <div class="rec-info-item"><div class="rec-info-label">Branch</div><div class="rec-info-val normal" id="ri-branch">-</div></div>
@@ -461,7 +461,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       </div>
       <div class="stat-card sc-purple">
         <div class="stat-icon">&#128202;</div>
-        <div class="stat-label">PRF Closed</div>
+        <div class="stat-label">TO/SO Closed</div>
         <div class="stat-value" id="s-prf">-</div>
         <div class="stat-sub">Purchase requisitions</div>
       </div>
@@ -477,7 +477,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     <div class="table-card">
       <div class="table-top">
         <div class="table-title">
-          PRF/OB Details
+          TO/SO Details
           <span class="count-chip" id="count-chip">- entries</span>
           <span class="closed-chip">&#128274; Closed Register</span>
         </div>
@@ -537,7 +537,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('eng')">Engineer <span class="si">&#8693;</span></th>
             <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
             <th onclick="sortBy('warrantyStatus')">Warranty Status <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('refNo')">PRF/OB Ref No. <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('refNo')">TO/SO Ref No. <span class="si">&#8693;</span></th>
             <th onclick="sortBy('crmRefNo')">CRM Ref No. <span class="si">&#8693;</span></th>
             <th onclick="sortBy('status')">Status <span class="si">&#8693;</span></th>
             <th onclick="sortBy('executedDate')">Executed Date <span class="si">&#8693;</span></th>
@@ -668,7 +668,7 @@ function renderTable(){
   if(!total){
     tbody.innerHTML = `<tr><td colspan="14"><div class="empty-st">
       <div class="ei">&#128196;</div>
-      <div class="et">${DATA.length ? 'No records match the current filters' : 'No Closed PRF/OB entries'}</div>
+      <div class="et">${DATA.length ? 'No records match the current filters' : 'No Closed TO/SO entries'}</div>
       <div class="es">${DATA.length ? 'Try adjusting the filters or search.' : 'Closed records assigned to you will appear here.'}</div>
     </div></td></tr>`;
   } else {
@@ -809,7 +809,7 @@ async function submitUpdate(){
     applyFilters();
     updateStats();
     showUpdMsg('Record updated successfully!','ok');
-    showToast('PRF/OB record updated.','ok');
+    showToast('TO/SO record updated.','ok');
     setTimeout(()=>{ closeModal(); }, 1100);
   } catch(e){
     if(e.message!=='Unauthorized'){
@@ -823,7 +823,7 @@ async function submitUpdate(){
 
 // -- EXPORT CSV ------------------------------------------------------------
 function exportCSV(){
-  const headers = ['#','Division','Entry Date','SC Engg','Type','Received Date','Branch','Engineer','Model','Warranty Status','PRF/OB Ref No','CRM Ref No','Status','Executed Date','Remarks'];
+  const headers = ['#','Division','Entry Date','SC Engg','Type','Received Date','Branch','Engineer','Model','Warranty Status','TO/SO Ref No','CRM Ref No','Status','Executed Date','Remarks'];
   const rows = filtered.map((d,i) => [i+1,d.division,d.entryDate,d.scEng,d.type,d.receivedDate,d.branch,d.eng,d.model,d.warrantyStatus,d.refNo,d.crmRefNo,d.status,d.executedDate,d.remarks]);
   const csv = [headers,...rows].map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');

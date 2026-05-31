@@ -199,7 +199,7 @@ table.cf-table tbody tr:last-child td{border-bottom:none;}
   <div class="detail-modal">
     <div class="dm-head">
       <div>
-        <div class="dm-eyebrow">PRF / OB Record Detail</div>
+        <div class="dm-eyebrow">TO / SO Record Detail</div>
         <div class="dm-title">Ref No: <span id="dm-ref" style="color:var(--accent);"></span></div>
       </div>
       <button class="dm-close" onclick="closeDetail()">&#10005;</button>
@@ -260,8 +260,8 @@ table.cf-table tbody tr:last-child td{border-bottom:none;}
       <div class="nav-sub">
         <a class="nav-item " href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
         <a class="nav-item " href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
-        <a class="nav-item active" href="aprfob.html"><span class="icon">&#128203;</span> PRF/OB List</a>
-        <a class="nav-item " href="acr.html"><span class="icon">&#128209;</span> Closed PRF/OB</a>
+        <a class="nav-item active" href="aprfob.html"><span class="icon">&#128203;</span> TO/SO List</a>
+        <a class="nav-item " href="acr.html"><span class="icon">&#128209;</span> Closed TO/SO</a>
         <a class="nav-item " href="ans.html"><span class="icon">&#128230;</span> Non Saleable</a>
         <a class="nav-item " href="as.html"><span class="icon">&#128176;</span> Saleable</a>
         <a class="nav-item " href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
@@ -302,9 +302,9 @@ table.cf-table tbody tr:last-child td{border-bottom:none;}
       <div class="breadcrumb">
         <a href="admin-dashboard.html">Dashboard</a>
         <span class="sep">&#8250;</span><span>Activity Register</span>
-        <span class="sep">&#8250;</span><span>PRF / OB Register</span>
+        <span class="sep">&#8250;</span><span>TO / SO Register</span>
       </div>
-      <div class="page-title">PRF / OB Register</div>
+      <div class="page-title">TO / SO Register</div>
     </div>
     <div class="topbar-actions">
       <span class="date-chip" id="topbar-date"></span>
@@ -359,7 +359,7 @@ table.cf-table tbody tr:last-child td{border-bottom:none;}
     <!-- TABLE CARD -->
     <div class="table-card">
       <div class="table-topbar">
-        <div class="table-title">PRF / OB Records <span class="count-chip" id="tbl-count">- entries</span></div>
+        <div class="table-title">TO / SO Records <span class="count-chip" id="tbl-count">- entries</span></div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <button class="btn btn-danger btn-sm" id="del-sel-btn" onclick="deleteSelected()" style="display:none;">&#128465; Delete Selected (<span id="sel-count">0</span>)</button>
           <div class="show-row">Show
@@ -485,7 +485,7 @@ function renderTable() {
   document.getElementById('tbl-count').textContent = total + ' entr' + (total === 1 ? 'y' : 'ies');
   const tbody = document.getElementById('cf-tbody');
   if (!total) {
-    tbody.innerHTML = `<tr><td colspan="13"><div class="empty-state"><div class="empty-ico">&#128203;</div><div class="empty-title">${DATA.length ? 'No records match filters' : 'No PRF/OB records'}</div><div class="empty-sub">${DATA.length ? 'Try clearing filters.' : 'Records from SC and Employee pages appear here.'}</div></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="13"><div class="empty-state"><div class="empty-ico">&#128203;</div><div class="empty-title">${DATA.length ? 'No records match filters' : 'No TO/SO records'}</div><div class="empty-sub">${DATA.length ? 'Try clearing filters.' : 'Records from SC and Employee pages appear here.'}</div></div></td></tr>`;
   } else {
     tbody.innerHTML = slice.map(d => {
       const id = d.id || d._id;
