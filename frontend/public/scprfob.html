@@ -1188,7 +1188,7 @@ function openEditModal(id){
   set('x-sparesReceivedAtSvc', d.sparesReceivedAtSvc);
   set('x-supplier', d.supplier);
   set('x-partType', d.partType);
-  set('x-receivedDate', d.receivedDate);
+  set('x-receivedDate', d.receivedDate || (d.createdAt ? d.createdAt.substring(0, 10) : ''));
   set('x-model', d.model);
   set('x-partsDescription', d.partsDescription);
   set('x-region', d.region);
@@ -1262,7 +1262,7 @@ async function handleFormSave(){
     division:      document.getElementById('x-division').value,
     dealer:        '',
     refNo:         document.getElementById('x-refNo').value.trim(),
-    receivedDate:  '',
+    receivedDate:  document.getElementById('x-receivedDate').value,
     executedDate:  '',
     status:        'Open',
     warrantyStatus:document.getElementById('x-warrantyStatus').value,
