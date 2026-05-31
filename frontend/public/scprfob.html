@@ -399,7 +399,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
           <div class="fg-4">
             <div class="ff">
               <label>SC Engineer <span class="req">*</span></label>
-              <select id="f-scEng">
+              <select id="f-scEng" class="locked" disabled>
                 <option value="">Select SC Engineer...</option>
                 <option>PREETHA</option><option>HEMACHANDREN</option><option>JEEVAPRAKASH</option>
                 <option>SABARIKANNAN</option><option>RANJITH</option><option>PRAVIN BURUTE</option>
@@ -1277,7 +1277,7 @@ async function handleFormSave(){
     executedDate:  '',
     status:        'Open',
     warrantyStatus:document.getElementById('x-warrantyStatus').value,
-    scEng:         '',
+    scEng:         document.getElementById('f-scEng').value,
     eng:           document.getElementById('x-eng').value,
     region:        document.getElementById('x-region').value,
     branch:        document.getElementById('x-branch').value,
