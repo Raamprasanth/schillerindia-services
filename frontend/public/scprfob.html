@@ -345,30 +345,6 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
               </select>
             </div>
           </div>
-
-          <div class="form-section-title" style="margin-top:20px;">Read-Only Fields</div>
-          <div class="fg-4">
-            <div class="ff">
-              <label>Part No</label>
-              <input type="text" id="x-partType" class="is-locked" readonly/>
-            </div>
-            <div class="ff">
-              <label>Description</label>
-              <input type="text" id="x-partsDescription" class="is-locked" readonly/>
-            </div>
-            <div class="ff">
-              <label>SC Engineer</label>
-              <input type="text" id="x-scEng" class="is-locked" readonly/>
-            </div>
-            <div class="ff">
-              <label>GIR No</label>
-              <input type="text" id="x-crmRefNo" class="is-locked" readonly/>
-            </div>
-            <div class="ff">
-              <label>Remarks</label>
-              <input type="text" id="x-remarks" class="is-locked" readonly/>
-            </div>
-          </div>
         </div>
 
         <div class="form-section">
@@ -643,7 +619,6 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <table class="frn-table">
           <thead><tr>
             <th onclick="sortBy('entryDate')" class="sorted">Entry Date <span class="si">&#8597;</span></th>
-            <th onclick="sortBy('receivedDate')">Received Date <span class="si">&#8597;</span></th>
             <th onclick="sortBy('division')">Division <span class="si">&#8597;</span></th>
             <th onclick="sortBy('type')">Type <span class="si">&#8597;</span></th>
             <th onclick="sortBy('branch')">Branch <span class="si">&#8597;</span></th>
@@ -1120,7 +1095,6 @@ function renderTable(){
       const rid = d._id||d.id;
       return `<tr>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
-        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.receivedDate)}</td>
         <td><span class="div-tag">${esc(d.division||'-')}</span></td>
         <td>${typePill(d.type)}</td>
         <td><span class="branch-tag">${esc(d.branch||'-')}</span></td>
@@ -1246,8 +1220,8 @@ function openEditModal(id){
   (document.getElementById('ri-warranty')||{}).textContent = d.warrantyStatus||'-';
 
   document.getElementById('form-id').value = id;
-  document.getElementById('x-sparesReceivedAtSvc').parentElement.style.display = 'flex';
-  document.getElementById('x-status').parentElement.style.display = 'flex';
+  document.getElementById('x-sparesReceivedAtSvc').parentElement.style.display = 'none';
+  document.getElementById('x-status').parentElement.style.display = 'none';
   hydrateDivisionDropdown(d.division);
   hydrateExactPrfObOptions(d);
   const set=(elId,val)=>{const el=document.getElementById(elId);if(el)el.value=val||'';};
