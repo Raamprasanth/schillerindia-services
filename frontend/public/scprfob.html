@@ -1182,7 +1182,8 @@ function openAddModal(){
   hydrateExactPrfObOptions();
   const todayStr = new Date().toISOString().split('T')[0];
   document.getElementById('x-entryDate').value = '';
-  document.getElementById('x-entryDate').min = todayStr;
+  document.getElementById('x-entryDate').max = todayStr;
+  document.getElementById('x-entryDate').removeAttribute('min');
   document.getElementById('x-receivedDate').value = todayStr;
   document.getElementById('x-division').value = '';
   document.getElementById('x-scEng').value = '';
