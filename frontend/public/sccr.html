@@ -595,6 +595,7 @@ function renderTable(){
         <td style="font-weight:600;">${esc(d.refNo||' ')}</td>
         <td>${statusPill(d.status)}</td>
         <td class="wrap-cell" style="max-width:200px;font-size:11px;color:var(--soft);" title="${esc(d.crmRefNo||'')}">${esc((d.crmRefNo||' ').slice(0,40))}${(d.crmRefNo||'').length>40?' ':''}</td>
+        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.sparesReceivedAtSvc)}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.executedDate)}</td>
       </tr>`;
     }).join('');
