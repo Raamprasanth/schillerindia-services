@@ -5,6 +5,8 @@
   "scripts": {
     "check:html": "node scripts/check-html-scripts.js",
     "install:backend": "npm install --prefix backend",
+    "postinstall": "npm run install:backend",
+    "build": "npm run install:backend",
     "start": "npm start --prefix backend"
   },
   "engines": {
