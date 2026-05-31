@@ -65,7 +65,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .content{flex:1;padding:20px 24px;overflow-y:auto;}
 
 /* -- STATS -- */
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
 .stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;box-shadow:var(--shadow);transition:all 0.2s;position:relative;overflow:hidden;display:grid;grid-template-columns:24px 1fr;column-gap:8px;align-items:start;}
 .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:11px 11px 0 0;}
 .sc-blue::before{background:linear-gradient(90deg,#0068b5,#0ea5e9);}
@@ -378,12 +378,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <div class="stat-value" id="s-total"> </div>
         <div class="stat-sub">Closed PRF/OB entries</div>
       </div>
-      <div class="stat-card sc-green">
-        <div class="stat-icon si-green">&#128221;</div>
-        <div class="stat-label">Completed</div>
-        <div class="stat-value" id="s-completed"> </div>
-        <div class="stat-sub">Successfully executed</div>
-      </div>
+      
       <div class="stat-card sc-purple">
         <div class="stat-icon si-purple">&#128230;</div>
         <div class="stat-label">PRF Closed</div>
@@ -462,10 +457,11 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('refNo')">PRF/OB Ref No. <span class="si">&#8693;</span></th>
             <th onclick="sortBy('status')">Status <span class="si">&#8693;</span></th>
             <th onclick="sortBy('crmRefNo')">GIR No <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('executedDate')">Spares rcd date <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('sparesReceivedAtSvc')">Spares rcd date <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('executedDate')">Executed Date <span class="si">&#8693;</span></th>
           </tr></thead>
           <tbody id="cr-tbody">
-            <tr class="loading-row"><td colspan="11"><span class="spin"></span>Loading from database </td></tr>
+            <tr class="loading-row"><td colspan="12"><span class="spin"></span>Loading from database </td></tr>
           </tbody>
         </table>
       </div>
@@ -523,13 +519,12 @@ async function loadData(){
   }catch(e){
     if(e.message === 'Unauthorized') return;
     showToast('Load failed: ' + e.message, 'err');
-    document.getElementById('cr-tbody').innerHTML = `<tr class="loading-row"><td colspan="11" style="color:var(--red);">&#9888; ${esc(e.message)}</td></tr>`;
+    document.getElementById('cr-tbody').innerHTML = `<tr class="loading-row"><td colspan="12" style="color:var(--red);">&#9888; ${esc(e.message)}</td></tr>`;
   }
 }
 
 function updateStats(){
   (document.getElementById('s-total')||{}).textContent = DATA.length;
-  (document.getElementById('s-completed')||{}).textContent = DATA.filter(d=>d.status==='Completed').length;
   (document.getElementById('s-prf')||{}).textContent = DATA.filter(d=>d.type==='PRF').length;
   (document.getElementById('s-ob')||{}).textContent = DATA.filter(d=>d.type==='OB').length;
 }
@@ -585,7 +580,7 @@ function renderTable(){
   const tbody = document.getElementById('cr-tbody');
 
   if(!total){
-    tbody.innerHTML=`<tr><td colspan="11"><div class="empty-st"><div class="ei">&#128196;</div><div class="et">${DATA.length?'No records match the current filters':'No Closed PRF/OB entries'}</div><div class="es">${DATA.length?'Try adjusting the filters.':'Closed records will appear here once PRF/OB entries are completed.'}</div></div></td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="12"><div class="empty-st"><div class="ei">&#128196;</div><div class="et">${DATA.length?'No records match the current filters':'No Closed PRF/OB entries'}</div><div class="es">${DATA.length?'Try adjusting the filters.':'Closed records will appear here once PRF/OB entries are completed.'}</div></div></td></tr>`;
   } else {
     tbody.innerHTML = slice.map((d,i)=>{
       const rid = d._id||d.id;
@@ -726,8 +721,8 @@ function gp(p){currentPage=p;renderTable();}
 
 // -- HELPERS ---------------------------------------------------------------
 function setLoading(){
-  document.getElementById('cr-tbody').innerHTML='<tr class="loading-row"><td colspan="11"><span class="spin"></span>Loading from database </td></tr>';
-  ['s-total','s-completed','s-prf','s-ob'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=' ';});
+  document.getElementById('cr-tbody').innerHTML='<tr class="loading-row"><td colspan="12"><span class="spin"></span>Loading from database </td></tr>';
+  ['s-total','s-prf','s-ob'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=' ';});
 }
 function fmtDate(d){if(!d)return' ';const p=String(d).split('T')[0].split('-');if(p.length<3)return String(d);return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0];}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
