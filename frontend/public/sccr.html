@@ -465,7 +465,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('executedDate')">Spares rcd date <span class="si">&#8693;</span></th>
           </tr></thead>
           <tbody id="cr-tbody">
-            <tr class="loading-row"><td colspan="12"><span class="spin"></span>Loading from database </td></tr>
+            <tr class="loading-row"><td colspan="11"><span class="spin"></span>Loading from database </td></tr>
           </tbody>
         </table>
       </div>
@@ -523,7 +523,7 @@ async function loadData(){
   }catch(e){
     if(e.message === 'Unauthorized') return;
     showToast('Load failed: ' + e.message, 'err');
-    document.getElementById('cr-tbody').innerHTML = `<tr class="loading-row"><td colspan="12" style="color:var(--red);">&#9888; ${esc(e.message)}</td></tr>`;
+    document.getElementById('cr-tbody').innerHTML = `<tr class="loading-row"><td colspan="11" style="color:var(--red);">&#9888; ${esc(e.message)}</td></tr>`;
   }
 }
 
@@ -585,7 +585,7 @@ function renderTable(){
   const tbody = document.getElementById('cr-tbody');
 
   if(!total){
-    tbody.innerHTML=`<tr><td colspan="12"><div class="empty-st"><div class="ei">&#128196;</div><div class="et">${DATA.length?'No records match the current filters':'No Closed PRF/OB entries'}</div><div class="es">${DATA.length?'Try adjusting the filters.':'Closed records will appear here once PRF/OB entries are completed.'}</div></div></td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="11"><div class="empty-st"><div class="ei">&#128196;</div><div class="et">${DATA.length?'No records match the current filters':'No Closed PRF/OB entries'}</div><div class="es">${DATA.length?'Try adjusting the filters.':'Closed records will appear here once PRF/OB entries are completed.'}</div></div></td></tr>`;
   } else {
     tbody.innerHTML = slice.map((d,i)=>{
       const rid = d._id||d.id;
@@ -726,7 +726,7 @@ function gp(p){currentPage=p;renderTable();}
 
 // -- HELPERS ---------------------------------------------------------------
 function setLoading(){
-  document.getElementById('cr-tbody').innerHTML='<tr class="loading-row"><td colspan="12"><span class="spin"></span>Loading from database </td></tr>';
+  document.getElementById('cr-tbody').innerHTML='<tr class="loading-row"><td colspan="11"><span class="spin"></span>Loading from database </td></tr>';
   ['s-total','s-completed','s-prf','s-ob'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=' ';});
 }
 function fmtDate(d){if(!d)return' ';const p=String(d).split('T')[0].split('-');if(p.length<3)return String(d);return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0];}
