@@ -602,7 +602,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('branch')">Branch <span class="si">&#8597;</span></th>
             <th onclick="sortBy('eng')">Engineer <span class="si">&#8597;</span></th>
             <th onclick="sortBy('model')">Model <span class="si">&#8597;</span></th>
-            <th onclick="sortBy('warrantyStatus')">Warranty Status <span class="si">&#8597;</span></th>
+            <th onclick="sortBy('warrantyStatus')">Warr Status <span class="si">&#8597;</span></th>
             <th onclick="sortBy('refNo')">TO/SO Ref No <span class="si">&#8597;</span></th>
             <th onclick="sortBy('status')">Status <span class="si">&#8597;</span></th>
             <th onclick="sortBy('sparesReceivedAtSvc')">Spares Rcv Date <span class="si">&#8597;</span></th>
@@ -1345,7 +1345,7 @@ async function confirmDelete(){
 
 // -- EXPORT CSV ------------------------------------------------------------
 function exportCSV(){
-  const headers=['#','Entry Date','Division','Type','Branch','Engineer','Model','Warranty Status','TO/SO Ref No','Status','Spares Rcv Date'];
+  const headers=['#','Entry Date','Division','Type','Branch','Engineer','Model','Warr Status','TO/SO Ref No','Status','Spares Rcv Date'];
   const rows=filtered.map((d,i)=>[i+1, d.entryDate, d.division, normalizeToSoType(d.type), d.branch, d.eng, d.model, d.warrantyStatus, d.refNo, d.status, d.sparesReceivedAtSvc]);
   const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');
