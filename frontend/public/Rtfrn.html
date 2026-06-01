@@ -274,11 +274,10 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
       <div class="info-cell"><div class="info-lbl">Division</div><div class="info-val dark" id="ri-div">-</div></div>
       <div class="info-cell"><div class="info-lbl">DEF GIR No</div><div class="info-val" id="ri-defgir">-</div></div>
       <div class="info-cell"><div class="info-lbl">Model</div><div class="info-val dark" id="ri-model">-</div></div>
-      <div class="info-cell"><div class="info-lbl">Category</div><div class="info-val dark" id="ri-cat">-</div></div>
+      <div class="info-cell"><div class="info-lbl">DOI (Date of Installation)</div><div class="info-val dark" id="ri-doi">-</div></div>
       <div class="info-cell"><div class="info-lbl">Def Brd/Mod Name</div><div class="info-val dark" id="ri-defbrd">-</div></div>
       <div class="info-cell"><div class="info-lbl">Entry Date</div><div class="info-val dark" id="ri-date">-</div></div>
       <div class="info-cell"><div class="info-lbl">No of Days</div><div class="info-val" id="ri-days">-</div></div>
-      <div class="info-cell"><div class="info-lbl">Status</div><div class="info-val dark" id="ri-status">-</div></div>
       <div class="info-cell"><div class="info-lbl">Submitted By</div><div class="info-val dark" id="ri-by">-</div></div>
     </div>
 
@@ -302,7 +301,6 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
         <div class="form-sec">
           <div class="form-sec-title">&#128196; Details</div>
           <div class="fg-4">
-            <div class="ff"><label>DOI (Date of Installation)</label><input type="text" id="u-doi" readonly style="background-color:var(--surface2);cursor:not-allowed;" /></div>
             <div class="ff">
               <label>Repaired By <span class="req">*</span></label>
               <select id="u-repairedby">
@@ -592,6 +590,7 @@ const EMP_NAME = LUSER.name || '';
 const IS_ADMIN = ['admin','superadmin','administrator'].includes((LUSER.role || '').toLowerCase());
 
 let allData = [], filtered = [], sortKey = 'entryDate', sortDir = -1, currentPage = 1;
+let editingDoi = '';
 let editingId = null;
 let activeSummary = 'all';
 
@@ -856,14 +855,13 @@ function openUpdate(id) {
   (document.getElementById('ri-div')||{}).textContent = d.division || '-';
   (document.getElementById('ri-defgir')||{}).textContent = d.defGirNo || '-';
   (document.getElementById('ri-model')||{}).textContent = d.model || '-';
-  (document.getElementById('ri-cat')||{}).textContent = d.category || '-';
+  (document.getElementById('ri-doi')||{}).textContent = d.doi || '-';
   (document.getElementById('ri-defbrd')||{}).textContent = d.defBrdModName || '-';
   (document.getElementById('ri-date')||{}).textContent = fmtDate(d.entryDate);
   (document.getElementById('ri-days')||{}).textContent = d.noOfDays + ' days';
-  (document.getElementById('ri-status')||{}).textContent = d.status || '-';
   (document.getElementById('ri-by')||{}).textContent = d.submittedBy || '-';
   const set = (id, v) => { const el=document.getElementById(id); if(el) el.value=v||''; };
-  set('u-doi', d.doi||'');
+  editingDoi = d.doi || '';
   set('u-repairedby',  d.repairedBy||'');
   set('u-status',      d.status||'pending');
   set('u-repaireddate', new Date().toISOString().split('T')[0]);
@@ -881,6 +879,7 @@ function openUpdate(id) {
 function closeModal() {
   document.getElementById('modal-update').classList.remove('open');
   editingId = null;
+  editingDoi = '';
 }
 
 async function submitUpdate() {
@@ -921,7 +920,7 @@ async function submitUpdate() {
   const payload = {
     repairedBy,
     status,
-    doi:           document.getElementById('u-doi').value,
+    doi:           editingDoi,
     repairedDate:  document.getElementById('u-repaireddate').value,
     
     techRemarks:   document.getElementById('u-techremarks').value.trim(),
