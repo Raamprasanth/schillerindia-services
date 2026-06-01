@@ -660,7 +660,7 @@ async function safeFetch(url, fallback=[]){
 
 /* ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ INDIVIDUAL LOADERS ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ */
 async function loadCalls(){
-  let data = await safeFetch('/api/pt/calls', generateDemoData('calls', 8));
+  let data = await safeFetch('/api/pt/calls');
   if(data && data.data) data = data.data;
   window.LIVE_DATA.calls = Array.isArray(data) ? data : [];
   STATS.calls = window.LIVE_DATA.calls.length;
@@ -670,7 +670,7 @@ async function loadCalls(){
   renderCallsTable(window.LIVE_DATA.calls.slice(0,5));
 }
 async function loadClosedCalls(){
-  let data = await safeFetch('/api/pt/closed-calls', generateDemoData('closed-calls', 12));
+  let data = await safeFetch('/api/pt/closed-calls');
   if(data && data.data) data = data.data;
   window.LIVE_DATA.closedCalls = Array.isArray(data) ? data : [];
   STATS.closedCalls = window.LIVE_DATA.closedCalls.length;
@@ -679,7 +679,7 @@ async function loadClosedCalls(){
   setBar('bar-closed-calls', Math.min(100, Math.round((STATS.closedCalls/(STATS.closedCalls+STATS.calls||1))*100)));
 }
 async function loadPendingActivity(){
-  const data = await safeFetch('/api/pt/activity/pending', generateDemoData('activity', 5));
+  const data = await safeFetch('/api/pt/activity/pending');
   STATS.pendingAct = Array.isArray(data) ? data.length : 0;
   setVal('sc-pending-act', STATS.pendingAct);
   setVal('badge-pending', STATS.pendingAct);
@@ -687,14 +687,14 @@ async function loadPendingActivity(){
   renderActivityTable(Array.isArray(data) ? data.slice(0,5) : []);
 }
 async function loadClosedActivity(){
-  const data = await safeFetch('/api/pt/activity/closed', generateDemoData('closed-activity', 9));
+  const data = await safeFetch('/api/pt/activity/closed');
   STATS.closedAct = Array.isArray(data) ? data.length : 0;
   setVal('sc-closed-act', STATS.closedAct);
   setVal('badge-closed-act', STATS.closedAct);
   setBar('bar-closed-act', Math.min(100, Math.round((STATS.closedAct/(STATS.closedAct+STATS.pendingAct||1))*100)));
 }
 async function loadBIR(){
-  let data = await safeFetch('/api/pt/bir', generateDemoData('bir', 10));
+  let data = await safeFetch('/api/pt/bir');
   if(data && data.data) data = data.data;
   window.LIVE_DATA.bir = Array.isArray(data) ? data : [];
   STATS.bir = window.LIVE_DATA.bir.length;
@@ -704,7 +704,7 @@ async function loadBIR(){
   renderBIRTable(window.LIVE_DATA.bir.slice(0,5));
 }
 async function loadClosedBIR(){
-  let data = await safeFetch('/api/pt/bir/closed', generateDemoData('closed-bir', 7));
+  let data = await safeFetch('/api/pt/bir/closed');
   if(data && data.data) data = data.data;
   window.LIVE_DATA.closedBir = Array.isArray(data) ? data : [];
   STATS.closedBir = window.LIVE_DATA.closedBir.length;
@@ -845,6 +845,7 @@ function renderFeed(){
 
 /* ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ DEMO DATA ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ */
 function generateDemoData(type, count){
+  return [];
   const arr = [];
   const divs = ['PATIENT MONITORS','SAG','VENTILATOR','DEFIBRILLATOR','ECG'];
   const models = ['TS III','TS ULTRA','MPS','BLT CNS','P15','ETCO2 MODULE'];

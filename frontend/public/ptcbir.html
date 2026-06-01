@@ -425,7 +425,6 @@ function mergeClosedLists(primary, secondary){
 // -- LOAD DATA -----------------------------------------------------------------
 async function loadData(){
   try{
-    const storedClosed = JSON.parse(localStorage.getItem('si_pt_closed_bir_data')||'[]').map(normalizeClosed);
     let apiClosed = [];
     let approvedOpen = [];
 
@@ -443,20 +442,16 @@ async function loadData(){
     }
     
     // Merge everything
-    allData = mergeClosedLists(mergeClosedLists(apiClosed, approvedOpen), storedClosed);
-    
-    if(allData.length===0) allData = demoData();
+    allData = mergeClosedLists(apiClosed, approvedOpen);
   }catch(e){
-    const storedClosed = JSON.parse(localStorage.getItem('si_pt_closed_bir_data')||'[]');
-    const stored = storedClosed.length ? storedClosed : JSON.parse(localStorage.getItem('si_pt_bir_data')||'[]');
-    allData = stored.filter(x=>['Approved','Closed'].includes(x.status)).map(normalizeClosed);
-    if(allData.length===0) allData = demoData();
+    allData = [];
   }
   updateStats();
   applyFilters();
 }
 
 function demoData(){
+  return [];
   return[
     {_id:'cbir001',birRef:'VENT/170426/31',unitInwardDate:'2026-04-17',fqcInwardDate:'2026-04-17',division:'VENTILATOR',model:'GRAPHNET TS',configuration:'ADL, PED',receivedQty:'25',prevSwVersion:'N11-TS-01.15',presSwVersion:'N11-TS-01.16',hwChanges:'NA',hwChangeRemarks:'',swChangeRemarks:'Firmware updated to latest stable build',accChanges:'No Change',accDetails:'standard accessories received',accChangeRemarks:'',userManualUpdate:'Yes',serviceManualUpdate:'No',fqcRemarks:'All checks passed',scEngineer:'Rajesh Kumar',psEngineer:'Amit Singh',techRemarks:'Calibration verified',tsVerificationDate:'2026-04-19',psVerificationDate:'2026-04-20',cnrCirculation:'Yes',cnrRefNo:'CNR-2026-041',cnrReleaseDate:'2026-04-21',approvedDate:'2026-04-22',invoiceNo:'INV/2026/0041',invoiceDate:'2026-04-16',serial:'GNET-2026-025',supplier:'Getinge AB',status:'Approved'},
     {_id:'cbir002',birRef:'SAG/150426/25',unitInwardDate:'2026-04-15',fqcInwardDate:'2026-04-15',division:'GANSHORN',model:'Body Plus',configuration:'Spirometry+SBD+Body plethysmography+Provocation',receivedQty:'2nos',prevSwVersion:'1.10.2.54',presSwVersion:'1.10.2.54',hwChanges:'NA',hwChangeRemarks:'',swChangeRemarks:'',accChanges:'No Change',accDetails:'std acc recd',accChangeRemarks:'',userManualUpdate:'No',serviceManualUpdate:'No',fqcRemarks:'Satisfactory',scEngineer:'Priya Nair',psEngineer:'Suresh Babu',techRemarks:'',tsVerificationDate:'2026-04-17',psVerificationDate:'2026-04-18',cnrCirculation:'No',cnrRefNo:'',cnrReleaseDate:'',approvedDate:'2026-04-19',invoiceNo:'INV/2026/0039',invoiceDate:'2026-04-14',serial:'BP-2026-002',supplier:'Ganshorn GmbH',status:'Approved'},
