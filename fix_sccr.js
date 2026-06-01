@@ -1,74 +1,69 @@
 const fs = require('fs');
-const path = require('path');
-const p = path.join(__dirname, 'frontend/public/sccr.html');
-let content = fs.readFileSync(p, 'utf8');
+let txt = fs.readFileSync('frontend/public/sccr.html', 'utf8');
 
-// 1. thead changes
-const theadOld = `          <thead><tr>
-            <th onclick="sortBy('_id')" class="sorted" style="width:46px;">Id <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('entryDate')">Entry Date <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('scEng')">Sc Engg <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('type')">Type <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('receivedDate')">Received Date <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('branch')">Branch <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('eng')">Engineer <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('warrantyStatus')">Warranty Status <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('refNo')">PRF/OB Ref No. <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('crmRefNo')">CRM Ref no. <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('status')">Status <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('executedDate')">Executed Date <span class="si">&#8693;</span></th>
-            <th class="no-sort">Action</th>
-          </tr></thead>`;
-const theadNew = `          <thead><tr>
-            <th onclick="sortBy('entryDate')" class="sorted">Entry Date <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('receivedDate')">Received Date <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('type')">Type <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('branch')">Branch <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('eng')">Engineer <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('warrantyStatus')">Warranty Status <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('refNo')">PRF/OB Ref No. <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('status')">Status <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('crmRefNo')">GIR No <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('executedDate')">Executed Date <span class="si">&#8693;</span></th>
-          </tr></thead>`;
+// find openUpdateModal and replace everything until helpers with correct JS
+const startIdx = txt.indexOf('function openUpdateModal(id)');
+const endIdx = txt.indexOf('// -- HELPERS');
 
-content = content.replace(theadOld, theadNew);
-content = content.replace(/colspan="15"/g, 'colspan="12"');
+const newJs = `function openUpdateModal(id){
+  const d = DATA.find(x=>(x._id||x.id)===id);
+  if(!d) return;
 
-// 2. tbody changes
-const tbodyOld = `        <td class="mono" style="color:var(--muted);">\${(currentPage-1)*perPage+i+1}</td>
-        <td><span class="div-tag">\${esc(d.division||' ')}</span></td>
-        <td style="font-size:11px;color:var(--soft);">\${fmtDate(d.entryDate)}</td>
-        <td style="font-weight:600;">\${esc(d.scEng||' ')}</td>
-        <td>\${typePill(d.type)}</td>
-        <td style="font-size:11px;color:var(--soft);">\${fmtDate(d.receivedDate)}</td>
-        <td><span class="branch-tag">\${esc(d.branch||' ')}</span></td>
-        <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;" title="\${esc(d.eng||'')}">\${esc(d.eng||' ')}</td>
-        <td style="font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;" title="\${esc(d.model||'')}">\${esc(d.model||' ')}</td>
-        <td>\${warrantyPill(d.warrantyStatus)}</td>
-        <td style="font-weight:600;">\${esc(d.refNo||' ')}</td>
-        <td class="wrap-cell" style="max-width:200px;font-size:11px;color:var(--soft);" title="\${esc(d.crmRefNo||'')}">\${esc((d.crmRefNo||' ').slice(0,40))}\${(d.crmRefNo||'').length>40?' ':''}</td>
-        <td>\${statusPill(d.status)}</td>
-        <td style="font-size:11px;color:var(--soft);">\${fmtDate(d.executedDate)}</td>
-        <td><button class="btn-xs update" onclick="openUpdateModal('\${rid}')" title="Update">&#9999;&#65039;</button></td>`;
+  const set=(elId,val)=>{const el=document.getElementById(elId);if(el)el.value=val||'';};
+  
+  // View Tab
+  set('ep-division', d.division);
+  set('ep-type', d.type);
+  set('ep-entryDate', fmtDate(d.entryDate));
+  set('ep-branch', d.branch);
+  set('ep-eng', d.eng);
+  set('ep-model', d.model);
+  set('ep-warrantyStatus', d.warrantyStatus);
+  set('ep-refNo', d.refNo);
+  set('ep-status', d.status);
+  set('ep-sparesReceivedAtSvc', fmtDate(d.sparesReceivedAtSvc));
+  set('ep-receivedDate', fmtDate(d.receivedDate));
+  set('ep-executedDate', fmtDate(d.executedDate));
+  set('ep-scEng', d.scEng);
+  set('ep-crmRefNo', d.crmRefNo);
+  set('ep-remarks', d.remarks);
 
-const tbodyNew = `        <td style="font-size:11px;color:var(--soft);">\${fmtDate(d.entryDate)}</td>
-        <td style="font-size:11px;color:var(--soft);">\${fmtDate(d.receivedDate)}</td>
-        <td><span class="div-tag">\${esc(d.division||' ')}</span></td>
-        <td>\${typePill(d.type)}</td>
-        <td><span class="branch-tag">\${esc(d.branch||' ')}</span></td>
-        <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;" title="\${esc(d.eng||'')}">\${esc(d.eng||' ')}</td>
-        <td style="font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;" title="\${esc(d.model||'')}">\${esc(d.model||' ')}</td>
-        <td>\${warrantyPill(d.warrantyStatus)}</td>
-        <td style="font-weight:600;">\${esc(d.refNo||' ')}</td>
-        <td>\${statusPill(d.status)}</td>
-        <td class="wrap-cell" style="max-width:200px;font-size:11px;color:var(--soft);" title="\${esc(d.crmRefNo||'')}">\${esc((d.crmRefNo||' ').slice(0,40))}\${(d.crmRefNo||'').length>40?' ':''}</td>
-        <td style="font-size:11px;color:var(--soft);">\${fmtDate(d.executedDate)}</td>`;
+  document.getElementById('update-overlay').classList.add('open');
+  document.querySelector('.modal-scroll').scrollTop = 0;
+}
 
-content = content.replace(tbodyOld, tbodyNew);
-fs.writeFileSync(p, content, 'utf8');
-console.log('done!');
+function closeModal(){
+  document.getElementById('update-overlay').classList.remove('open');
+}
+
+// -- EXPORT CSV ------------------------------------------------------------
+function exportCSV(){
+  const headers=['#','Division','Entry Date','SC Engg','Type','Received Date','Branch','Engineer','Model','Warranty Status','TO/SO Ref No','CRM Ref No','Status','Executed Date','Remarks'];
+  const rows=filtered.map((d,i)=>[i+1,d.division,d.entryDate,d.scEng,d.type,d.receivedDate,d.branch,d.eng,d.model,d.warrantyStatus,d.refNo,d.crmRefNo,d.status,d.executedDate,d.remarks]);
+  const csv=[headers,...rows].map(r=>r.map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(',')).join('\\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='closed-prfob-'+new Date().toISOString().split('T')[0]+'.csv';
+  a.click();
+  showToast('Exported '+filtered.length+' records.','ok');
+}
+
+// -- PAGINATION ------------------------------------------------------------
+function renderPagination(pages){
+  const el=document.getElementById('tbl-pagination');
+  if(pages<=1){el.innerHTML='';return;}
+  let h=\`<button class="pager" \${currentPage===1?'disabled':''} onclick="gp(\${currentPage-1})">&#8249; Prev</button>\`;
+  getRange(currentPage,pages).forEach(p=>{
+    if(p===' ') h+=\`<button class="pager" disabled> </button>\`;
+    else h+=\`<button class="pager \${p===currentPage?'active':''}" onclick="gp(\${p})">\${p}</button>\`;
+  });
+  h+=\`<button class="pager" \${currentPage===pages?'disabled':''} onclick="gp(\${currentPage+1})">Next &#8250;</button>\`;
+  el.innerHTML=h;
+}
+function getRange(c,t){if(t<=7)return Array.from({length:t},(_,i)=>i+1);if(c<=4)return[1,2,3,4,5,' ',t];if(c>=t-3)return[1,' ',t-4,t-3,t-2,t-1,t];return[1,' ',c-1,c,c+1,' ',t];}
+function gp(p){currentPage=p;renderTable();}
+
+`;
+
+txt = txt.substring(0, startIdx) + newJs + txt.substring(endIdx);
+fs.writeFileSync('frontend/public/sccr.html', txt);
