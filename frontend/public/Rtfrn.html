@@ -316,7 +316,6 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
               <label>Status <span class="req">*</span></label>
               <select id="u-status">
                 <option value="">Select...</option>
-                <option value="pending">Pending</option>
                 <option value="completed">Completed</option>
               </select>
             </div>
@@ -517,7 +516,6 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
         <div class="ff">
           <label>Status</label>
           <select id="a-status">
-            <option value="pending">Pending</option>
             <option value="inprogress">In Progress</option>
             <option value="completed">Completed</option>
           </select>
@@ -836,7 +834,7 @@ async function submitAdd() {
     ['a-screfno','a-defgirno','a-defbrdmod'].forEach(id => document.getElementById(id).value='');
     document.getElementById('a-division').value='';
     document.getElementById('a-model').value='';
-    document.getElementById('a-status').value='pending';
+    document.getElementById('a-status').value='inprogress';
   } catch(e) {
     if (e.message !== 'Unauthorized') { errEl.textContent=e.message; errEl.style.display='block'; }
   } finally {
@@ -863,7 +861,7 @@ function openUpdate(id) {
   const set = (id, v) => { const el=document.getElementById(id); if(el) el.value=v||''; };
   editingDoi = d.doi || '';
   set('u-repairedby',  d.repairedBy||'');
-  set('u-status',      d.status||'pending');
+  set('u-status',      d.status||'');
   set('u-repaireddate', new Date().toISOString().split('T')[0]);
   set('u-techremarks',   d.techRemarks||'');
   set('u-repairremarks', d.repairRemarks||'');
