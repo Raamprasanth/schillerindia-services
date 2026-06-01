@@ -554,7 +554,7 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
         <table class="rt-table">
           <thead><tr>
             <th onclick="sortBy('entryDate')" class="sorted">Entry Date <span class="si">&#8693;</span></th>
-            <th>Update</th><th>AI</th>
+            <th>Update</th>
             <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
             <th onclick="sortBy('scRefNo')">SC Ref No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('defGirNo')">DEF GIR No <span class="si">&#8693;</span></th>
@@ -566,7 +566,7 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('submittedBy')">Submitted By <span class="si">&#8693;</span></th>
           </tr></thead>
           <tbody id="rt-tbody">
-            <tr><td colspan="12" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading from database...</td></tr>
+            <tr><td colspan="11" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading from database...</td></tr>
           </tbody>
         </table>
       </div>
@@ -662,7 +662,7 @@ async function loadData() {
   } catch (e) {
     if (e.message === 'Unauthorized') return;
     document.getElementById('rt-tbody').innerHTML =
-      `<tr><td colspan="12" style="text-align:center;padding:40px;color:var(--red);">&#9888;&#65039; ${esc(e.message)} - ensure backend is running.</td></tr>`;
+      `<tr><td colspan="11" style="text-align:center;padding:40px;color:var(--red);">&#9888;&#65039; ${esc(e.message)} - ensure backend is running.</td></tr>`;
     showToast('Load failed: ' + e.message, 'err');
   } finally { }
 }
@@ -758,7 +758,7 @@ function renderTable() {
   const tbody = document.getElementById('rt-tbody');
 
   if (!slice.length) {
-    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-st">
+    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-st">
       <div class="ei">&#128196;</div>
       <div class="et">${allData.length ? 'No records match filters' : 'No PFRN Records'}</div>
       <div class="es">${allData.length ? 'Try clearing the filters.' : 'No PFRN records available.'}</div>
@@ -771,7 +771,7 @@ function renderTable() {
       const stLbl = {pending:'Pending',inprogress:'In Progress',completed:'Completed',on_hold:'On Hold',scrapped:'Scrapped'}[d.status] || (d.status||'Pending');
       return `<tr>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
-        <td><button class="btn-xs upd" onclick="openUpdate('${id}')" title="Update">&#9999;&#65039;</button></td><td><button class="btn-xs" onclick="openAIDiagnostics('${id}')" title="Free AI Analysis">AI</button></td>
+        <td><button class="btn-xs upd" onclick="openUpdate('${id}')" title="Update">&#9999;&#65039;</button></td>
         <td><span class="div-tag">${esc(d.division||'-')}</span></td>
         <td style="font-size:13.5px;font-weight:800;color:var(--accent);">${esc(d.scRefNo||'-')}</td>
         <td style="font-size:13.5px;font-weight:900;color:var(--purple);font-family:monospace;">${esc(d.defGirNo||'-')}</td>
