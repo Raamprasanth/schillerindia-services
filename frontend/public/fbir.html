@@ -613,11 +613,7 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
         <option>SHIPL</option><option>INJECTOR</option><option>RADIOLOGY</option><option>HOLTER</option>
       </select>
       <div class="f-divider"></div>
-      <span class="filter-label">Status</span>
-      <select class="f-select" id="f-filter-status" onchange="renderTable()">
-        <option value="">All Statuses</option>
-        <option>Pending</option><option>In Progress</option><option>Approved</option><option>Rejected</option>
-      </select>
+
       <button class="btn btn-outline btn-sm" onclick="clearFilters()" style="margin-left:auto;">&#10005; Clear</button>
     </div>
 
@@ -778,7 +774,7 @@ document.querySelectorAll('.ns-table th.sortable').forEach(th=>{
 function clearFilters(){
   document.getElementById('bir-search').value='';
   document.getElementById('f-filter-div').value='';
-  document.getElementById('f-filter-status').value='';
+
   renderTable();
 }
 
@@ -786,13 +782,11 @@ function clearFilters(){
 function renderTable(){
   const q=(document.getElementById('bir-search').value||'').toLowerCase();
   const divF=document.getElementById('f-filter-div').value;
-  const stF=document.getElementById('f-filter-status').value;
   const pageSize=parseInt(document.getElementById('f-filter-rows').value)||10;
 
   let data=[...birData];
   if(q)data=data.filter(x=>[x.birRef,x.division,x.model,x.configuration,x.serial,x.supplier,x.accDetails].join(' ').toLowerCase().includes(q));
   if(divF)data=data.filter(x=>x.division===divF);
-  if(stF)data=data.filter(x=>x.status===stF);
 
   // sort
   data.sort((a,b)=>{
@@ -814,7 +808,6 @@ function renderTable(){
     <tr>
       <td style="white-space:nowrap;">
         <button class="btn-xs" onclick="viewBIR('${e._id}')" title="View">&#128065;</button>
-        <button class="btn-xs success" onclick="editBIR('${e._id}')" title="Update">&#9999;&#65039;</button>
       </td>
       <td><span class="chip-sm">${esc(e.birRef||e._id)}</span></td>
       <td style="color:var(--muted);font-size:12px;">${fmtDate(e.unitInwardDate)}</td>
@@ -964,6 +957,15 @@ function openBIRModal(){
   document.getElementById('bir-modal-title-ui').innerHTML ='&#128196; New Batch Inspection Report';
   (document.getElementById('bir-modal-sub-ui')||{}).textContent ='Fill in all required fields to create a BIR entry';
   FIELDS.forEach(f=>{const el=document.getElementById(FIELD_MAP[f]);if(el)el.value=f==='status'?'Pending':'';});
+  
+  const nextIdx = birData.length + 1;
+  const newRef = "BIR-REF " + String(nextIdx).padStart(3, '0');
+  const refEl = document.getElementById('f-bir-ref');
+  if(refEl) {
+    refEl.value = newRef;
+    refEl.disabled = true;
+  }
+
   onDivisionChange();
   document.getElementById('bir-form-msg').className='form-msg';
   document.getElementById('bir-modal').classList.add('show');
@@ -982,6 +984,12 @@ function editBIR(id){
   (document.getElementById('bir-modal-sub-ui')||{}).textContent ='Update the batch inspection record';
   const CASCADE = new Set(['supplier','model']);
   FIELDS.forEach(f=>{if(CASCADE.has(f))return;const el=document.getElementById(FIELD_MAP[f]);if(el)el.value=e[f]||'';});
+  
+  const refEl = document.getElementById('f-bir-ref');
+  if(refEl) {
+    refEl.disabled = true;
+  }
+
   onDivisionChange(e.supplier||'');
   onSupplierChange(e.model||'');
   document.getElementById('bir-form-msg').className='form-msg';
