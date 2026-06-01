@@ -664,6 +664,10 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', () => {
+  const maxDate = new Date().toISOString().split('T')[0];
+  document.querySelectorAll('input[type="date"]').forEach(el => el.setAttribute('max', maxDate));
+});
 // -- DATA ----------------------------------------------------------------------
 let birData = [];
 let editingId = null;
