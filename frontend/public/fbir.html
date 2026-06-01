@@ -427,13 +427,6 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
             <label>FQC Remarks</label>
             <input type="text" id="f-fqc-remarks"/>
           </div>
-          <div class="form-group">
-            <label>Status <span class="req">*</span></label>
-            <select id="f-status">
-              <option value="TS team pending">TS team pending</option>
-              <option value="Completed">Completed</option>
-            </select>
-          </div>
           </div>
         </div>
 
@@ -997,11 +990,11 @@ async function saveBIR(){
   const model=document.getElementById('f-model').value.trim();
   const qty=document.getElementById('f-qty').value.trim();
   const inward=document.getElementById('f-unit-inward').value;
-  const status=document.getElementById('f-status').value;
-  if(!div||!model||!qty||!inward||!status){msg.className='form-msg err-msg';msg.textContent='Please fill all required fields (Division, Model, Received Qty, Inward Date, Status).';return;}
+  if(!div||!model||!qty||!inward){msg.className='form-msg err-msg';msg.textContent='Please fill all required fields (Division, Model, Received Qty, Inward Date).';return;}
   const btn=document.getElementById('bir-save-btn');btn.disabled=true;btn.textContent='Saving...';
   const payload={};
   FIELDS.forEach(f=>{const el=document.getElementById(FIELD_MAP[f]);if(el)payload[f]=el.value;});
+  if(!payload.status) payload.status = 'Pending';
   payload.accChanges=normalizeAccChangesValue(payload.accChanges);
   if(!payload.birRef)payload.birRef=genRef(div);
   try{
