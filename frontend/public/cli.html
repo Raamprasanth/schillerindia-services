@@ -61,6 +61,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .sc-green::before{background:linear-gradient(90deg,#047857,#059669);}
 .sc-purple::before{background:linear-gradient(90deg,#5b21b6,#7c3aed);}
 .sc-amber::before{background:linear-gradient(90deg,#b45309,#d97706);}
+.sc-red::before{background:linear-gradient(90deg,#b91c1c,#dc2626);}
 .stat-icon{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;grid-column:1;grid-row:1;}
 .si-blue{background:rgba(0,104,181,0.1);}.si-green{background:rgba(4,120,87,0.1);}.si-purple{background:rgba(91,33,182,0.1);}.si-amber{background:rgba(180,83,9,0.1);}
 .stat-label{font-size:8.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;grid-column:2;grid-row:1;align-self:center;}
@@ -204,9 +205,11 @@ table.frn-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
   </div>
 
   <div class="content">
-    <div class="stats-row">
+    <div class="stats-row" style="grid-template-columns:repeat(4,1fr);">
       <div class="stat-card sc-blue"><div class="stat-icon si-blue">&#128230;</div><div class="stat-label">Total Items</div><div class="stat-value" id="s-total">-</div><div class="stat-sub">Closed loan entries</div></div>
-      <div class="stat-card sc-amber"><div class="stat-icon si-amber">&#127970;</div><div class="stat-label">Divisions</div><div class="stat-value" id="s-divisions">-</div><div class="stat-sub">Active in table</div></div>
+      <div class="stat-card sc-green"><div class="stat-icon si-green">&#9201;&#65039;</div><div class="stat-label">&lt; 3 Days</div><div class="stat-value" id="s-less3">-</div><div class="stat-sub">To fulfill</div></div>
+      <div class="stat-card sc-amber"><div class="stat-icon si-amber">&#9203;&#65039;</div><div class="stat-label">3 to 7 Days</div><div class="stat-value" id="s-3to7">-</div><div class="stat-sub">To fulfill</div></div>
+      <div class="stat-card sc-red"><div class="stat-icon" style="background:rgba(185,28,28,0.1);color:var(--red);">&#10071;</div><div class="stat-label">&gt; 7 Days</div><div class="stat-value" id="s-above7">-</div><div class="stat-sub">To fulfill</div></div>
     </div>
 
     <div class="table-card">
@@ -242,7 +245,6 @@ table.frn-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
       <div class="table-wrap">
         <table class="frn-table">
           <thead><tr>
-            <th onclick="sortBy('_id')" class="sorted" style="width:46px;">Id <span class="si">&#8693;</span></th>
             <th onclick="sortBy('date')">Date <span class="si">&#8693;</span></th>
             <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
             <th onclick="sortBy('partNo')">Part No <span class="si">&#8693;</span></th>
@@ -254,7 +256,7 @@ table.frn-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
             <th onclick="sortBy('toRaisedDate')">TO raised date <span class="si">&#8693;</span></th>
           </tr></thead>
           <tbody id="lt-tbody">
-            <tr class="loading-row"><td colspan="10"><span class="spin"></span>Loading from database</td></tr>
+            <tr class="loading-row"><td colspan="9"><span class="spin"></span>Loading from database</td></tr>
           </tbody>
         </table>
       </div>
@@ -402,11 +404,26 @@ async function loadData(){
 }
 
 function updateStats(){
-  const today = todayISO();
   setText('s-total', DATA.length);
-  setText('s-today', DATA.filter(d => d.date === today).length);
-  setText('s-parts', new Set(DATA.map(d => d.partNo).filter(Boolean)).size);
-  setText('s-divisions', new Set(DATA.map(d => d.division).filter(Boolean)).size);
+  let less3 = 0, to7 = 0, above7 = 0;
+  
+  DATA.forEach(d => {
+    if(!d.date) return;
+    const itemDate = new Date(d.date);
+    itemDate.setHours(0,0,0,0);
+    const closedDate = d.toRaisedDate ? new Date(d.toRaisedDate) : (d.createdAt ? new Date(d.createdAt) : new Date());
+    closedDate.setHours(0,0,0,0);
+    const diffTime = closedDate.getTime() - itemDate.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 3600 * 24));
+    
+    if(diffDays < 3) less3++;
+    else if(diffDays <= 7) to7++;
+    else above7++;
+  });
+  
+  setText('s-less3', less3);
+  setText('s-3to7', to7);
+  setText('s-above7', above7);
 }
 
 function clearFilters(){
@@ -453,12 +470,11 @@ function renderTable(){
   setText('count-chip', total + ' entr' + (total === 1 ? 'y' : 'ies'));
 
   if(!total){
-    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-st"><div class="ei">&#128230;</div><div class="et">${DATA.length ? 'No records match the current filters' : 'No Closed Loan entries'}</div><div class="es">${DATA.length ? 'Try adjusting the filters.' : 'Click Add New to create the first closed loan.'}</div></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-st"><div class="ei">&#128230;</div><div class="et">${DATA.length ? 'No records match the current filters' : 'No Closed Loan entries'}</div><div class="es">${DATA.length ? 'Try adjusting the filters.' : 'Click Add New to create the first closed loan.'}</div></div></td></tr>`;
   }else{
     tbody.innerHTML = slice.map((d,i)=>{
       const id = d._id || d.id;
       return `<tr>
-        <td class="mono" style="color:var(--muted);">${(currentPage - 1) * perPage + i + 1}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.date)}</td>
         <td><span class="div-tag">${esc(d.division || '-')}</span></td>
         <td class="mono" style="font-weight:700;">${esc(d.partNo || '-')}</td>
@@ -619,8 +635,8 @@ function exportCSV(){
 }
 
 function setLoading(){
-  document.getElementById('lt-tbody').innerHTML = '<tr class="loading-row"><td colspan="10"><span class="spin"></span>Loading from database</td></tr>';
-  ['s-total','s-today','s-parts','s-divisions'].forEach(id => setText(id, '-'));
+  document.getElementById('lt-tbody').innerHTML = '<tr class="loading-row"><td colspan="9"><span class="spin"></span>Loading from database</td></tr>';
+  ['s-total','s-less3','s-3to7','s-above7'].forEach(id => setText(id, '-'));
 }
 function setText(id,val){ const el = document.getElementById(id); if(el) el.textContent = val; }
 function fmtDate(d){ if(!d)return'-'; const p=String(d).split('T')[0].split('-'); if(p.length<3)return String(d); return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0]; }
