@@ -38,7 +38,7 @@ function cleanGeminiError(err) {
 }
 
 async function analyzeDefectWithGemini({ mimeType, base64 }) {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY_BACKUP || process.env.GOOGLE_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
   if (!apiKey) {
     throw new Error('API key not found. Please set GEMINI_API_KEY in the environment.');
   }
@@ -106,7 +106,7 @@ function buildSearchLinks(searchQueries = []) {
 }
 
 async function identifyRepairItemWithGemini({ mimeType, base64 }) {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY_BACKUP || process.env.GOOGLE_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
   if (!apiKey) {
     throw new Error('API key not found. Please set GEMINI_API_KEY in the environment.');
   }

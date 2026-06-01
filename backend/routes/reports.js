@@ -53,8 +53,9 @@ function adminOrCoord(req, res, next) {
 }
 
 // ── Anthropic client ───────────────────────────────────────────────────────
-const genAI = (GoogleGenAI && process.env.GEMINI_API_KEY)
-  ? new GoogleGenAI.GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+const geminiKey = process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY_BACKUP;
+const genAI = (GoogleGenAI && geminiKey)
+  ? new GoogleGenAI.GoogleGenerativeAI(geminiKey)
   : null;
 
 const PERFORMANCE_REVIEW_SCRIPT = path.join(__dirname, '..', 'scripts', 'generate_performance_review.py');

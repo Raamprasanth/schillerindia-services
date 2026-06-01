@@ -200,7 +200,7 @@ function simplifyGeminiError(err) {
 }
 
 async function extractWithGemini({ mimeType, base64 }) {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY_BACKUP || process.env.GOOGLE_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
   if (!apiKey) return null;
   const { GoogleGenerativeAI } = require('@google/generative-ai');
   const genAI = new GoogleGenerativeAI(apiKey);

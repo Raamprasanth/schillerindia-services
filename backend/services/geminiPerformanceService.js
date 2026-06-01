@@ -65,7 +65,7 @@ function extractJson(text) {
 }
 
 async function askGemini(scopeLabel, metrics, heuristic) {
-  const apiKey = (process.env.GEMINI_API_KEY || '').trim();
+  const apiKey = (process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY_BACKUP || '').trim();
   if (!apiKey) return null;
 
   const prompt = [

@@ -250,7 +250,7 @@ function extractJson(text) {
 
 async function buildAiNarratives(scopeLabel, base, activityRows) {
   const fallback = fallbackNarratives(scopeLabel, base);
-  const apiKey = normalizeText(process.env.GEMINI_API_KEY);
+  const apiKey = normalizeText(process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY_BACKUP);
   if (!apiKey) return { ...fallback, source: 'fallback' };
 
   const cooldownUntil = geminiBackoffByScope.get(scopeLabel);
