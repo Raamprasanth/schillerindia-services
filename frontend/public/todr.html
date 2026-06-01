@@ -491,7 +491,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <td class="wrap-cell">${esc(r.description)}</td>
         <td>${esc(r.unitStatus || '-')}</td>
         <td>${esc(r.quantity || '-')}</td>
-        <td><input type="text" class="f-inp" value="${esc(r.toNo || '')}" onchange="updateTextField('${r._id}','toNo',this.value)" style="width:100px;" placeholder="TO NO"></td>
+        <td><input type="text" class="f-inp" value="${esc(r.toNo || '')}" onchange="updateTextField('${r._id}','toNo',this.value)" style="width:100px;"></td>
         <td><input type="date" class="f-inp" min="${TODAY_ISO}" max="${TODAY_ISO}" value="${dateInputValue(r.toRaisedDate)}" onchange="updateDateField('${r._id}','toRaisedDate',this.value)" style="width:140px;"></td>
         <td><input type="date" class="f-inp" max="${TODAY_ISO}" value="${dateInputValue(r.sparesReceivedDate)}" onchange="updateDateField('${r._id}','sparesReceivedDate',this.value)" style="width:140px;"></td>
         <td><button class="btn-xs update" onclick="fulfillRecord('${r._id}')">Fulfilled</button></td>
