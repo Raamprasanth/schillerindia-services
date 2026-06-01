@@ -1101,17 +1101,7 @@ function renderDonut(){
 
 // -- DEMO DATA ---------------------------------------------
 function getDemoPRF(){
-  const statuses=['open','pending','closed','open','open','pending','closed','overdue','open','pending'];
-  const models=['TS II','AT-102 G2','TS III','BR-102 Plus','DEFIGARD 5000','Hamilton-C1','TS_ULTRA Q7','SV300','AT-10 Plus','CS-200'];
-  const custs=['GMCH Theni','Apollo Chennai','AIIMS Delhi','Fortis Mumbai','Narayana Hrudayalaya','Manipal Hospital','JIPMER Pondicherry','KGMU Lucknow','Safdarjung Hospital','ESI Hospital'];
-  const divs=['PATIENT MONITORS','SAG','VENTILATOR','DEFIBRILLATOR','ECG','SYRINGE PUMP','PATIENT MONITORS','SAG','VENTILATOR','DEFIBRILLATOR'];
-  const now=Date.now();
-  return Array.from({length:18},(_,i)=>{
-    const days=[2,5,14,35,8,45,1,22,9,3,60,7,18,4,31,12,25,6][i]||Math.floor(Math.random()*40);
-    const st=days>30?'open':statuses[i%statuses.length];
-    const entryDate=new Date(now-days*86400000).toISOString().split('T')[0];
-    return{id:'PRF-'+String(300+i).padStart(4,'0'),prfNo:'PRF-'+String(300+i).padStart(4,'0'),scReNo:'OEM-0'+String(300+i),custName:custs[i%custs.length],model:models[i%models.length],division:divs[i%divs.length],entryDate,status:st,pendingDays:days,updatedAt:new Date(now-Math.floor(days/2)*86400000).toISOString()};
-  });
+  return [];
 }
 
 
