@@ -531,7 +531,6 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
     <div id="view-modal-content"></div>
     <div class="modal-actions">
       <button class="btn btn-outline btn-sm" onclick="closeViewModal()">Close</button>
-      <button class="btn btn-primary btn-sm" id="view-edit-btn">&#9998; Edit Record</button>
     </div>
   </div>
 </div>
@@ -846,7 +845,6 @@ function viewBIR(id){
     ['CNR Release Date',fmtDate(e.cnrReleaseDate)],['Approved Date',fmtDate(e.approvedDate)],
   ];
   document.getElementById('view-modal-content').innerHTML=`<div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;"><div class="detail-grid">${fields.map(([l,v,cls])=>`<div class="detail-cell"><div class="detail-label">${esc(l)}</div><div class="detail-val ${cls||''}">${esc(v||'-')}</div></div>`).join('')}</div></div>`;
-  document.getElementById('view-edit-btn').onclick=()=>{closeViewModal();editBIR(id);};
   document.getElementById('view-modal').classList.add('show');
 }
 function closeViewModal(){document.getElementById('view-modal').classList.remove('show');}
