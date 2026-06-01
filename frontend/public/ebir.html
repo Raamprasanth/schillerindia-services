@@ -319,7 +319,7 @@ table.bir-table tbody tr:last-child td{border-bottom:none;}
         </div>
 
         <!-- Product Team Section (LOCKED) -->
-        <div class="ebir-section-frozen" id="product-section">
+        <div class="ebir-section-frozen" id="product-section" style="display:none;">
           <div class="ebir-section-title"><span class="ebir-dot" style="background:var(--purple)"></span> Product Team Section</div>
           <div class="fg-4">
             <div class="ff"><label>PS Engineer</label><input type="text" id="upd-ps-engineer" disabled/></div>
@@ -787,7 +787,7 @@ function renderTable(){
 async function openModal(id){
   const d = DATA.find(x=>(x._id||x.id)===id); if(!d) return;
   await ensureEngineersLoaded();
-  (document.getElementById('modal-title')||{}).textContent = '&#9998; Update BIR Record';
+  (document.getElementById('modal-title')||{}).innerHTML = '&#9998; Update BIR Record';
   (document.getElementById('modal-sub')||{}).textContent = (d.birRefNo||'') + ' - ' + (d.model||'');
   document.getElementById('upd-id').value = id;
   const set = (elId,val) => { const el=document.getElementById(elId); if(el) el.value = val||''; };
@@ -927,7 +927,7 @@ async function submitUpdate(){
       DATA.splice(DATA.findIndex(x=>(x._id||x.id)===id),1);
       filtered=filtered.filter(x=>(x._id||x.id)!==id);
       updateStats(); renderTable();
-      msg.textContent='&#10004; Record closed and moved to Closed BIR!';
+      msg.innerHTML='&#10004; Record closed and moved to Closed BIR!';
       msg.className='form-msg ok';
       showToast('BIR record closed.','ok');
       setTimeout(()=>window.location.href='ecbir.html',1100);
@@ -941,7 +941,7 @@ async function submitUpdate(){
       if(idx!==-1) DATA[idx]={...DATA[idx],...editPayload,...saved};
       filtered=filtered.map(x=>(x._id||x.id)===id?{...x,...editPayload,...saved}:x);
       updateStats(); renderTable();
-      msg.textContent='&#10004; Record updated successfully!';
+      msg.innerHTML='&#10004; Record updated successfully!';
       msg.className='form-msg ok';
       showToast('BIR record updated.','ok');
       setTimeout(()=>closeModal(),1100);
@@ -996,7 +996,7 @@ function gp(p){ currentPage=p; renderTable(); }
 /* -- HELPERS -- */
 function setLoading(){
   document.getElementById('bir-tbody').innerHTML = '<tr class="loading-row"><td colspan="9"><span class="spin"></span>Loading from database&#8230;</td></tr>';
-  ['s-total','s-pending','s-closed','s-review'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='&#8212;';});
+  ['s-total','s-pending','s-closed','s-review'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='&#8212;';});
 }
 function fmtDate(d){
   if(!d) return '&#8212;';
