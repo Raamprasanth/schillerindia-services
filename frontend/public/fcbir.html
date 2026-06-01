@@ -376,11 +376,7 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
       </div>
     </div>
 
-    <!-- DIVISION BREAKDOWN BELOW TABLE -->
-    <div class="panel">
-      <div class="panel-header"><div class="panel-title">&#128202; Division Breakdown</div></div>
-      <div class="panel-body" id="div-breakdown" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;"></div>
-    </div>
+
 
   </div>
 </div>
@@ -473,23 +469,7 @@ function updateStats(){
   (document.getElementById('sc-sw')||{}).textContent =sw;
   (document.getElementById('sc-month')||{}).textContent =thisM;
 
-  // Division breakdown
-  const dm={};
-  allData.forEach(e=>{if(!dm[e.division])dm[e.division]=0;dm[e.division]++;});
-  const maxVal=Math.max(...Object.values(dm),1);
-  document.getElementById('div-breakdown').innerHTML=Object.keys(dm).length
-    ?Object.entries(dm).sort((a,b)=>b[1]-a[1]).map(([d,c])=>{
-        const pct=Math.round((c/total)*100);
-        const barPct=Math.round((c/maxVal)*100);
-        return`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;">
-          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:6px;">
-            <span>${esc(d)}</span>
-            <span style="color:var(--green);">${c} <span style="color:var(--muted);font-weight:400;">(${pct}%)</span></span>
-          </div>
-          <div class="progress-wrap"><div class="progress-bar" style="width:${barPct}%"></div></div>
-        </div>`;
-      }).join('')
-    :'<p style="color:var(--muted);text-align:center;padding:20px;grid-column:1/-1;">No data.</p>';
+
 }
 
 // -- SORT ----------------------------------------------------------------------
