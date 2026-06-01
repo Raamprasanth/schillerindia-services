@@ -201,6 +201,16 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 .detail-section-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--muted);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);margin-top:10px;}
 .detail-section-title:first-child{margin-top:0;}
 
+
+/* Modal tabs */
+.modal-tab-bar{display:flex;gap:0;border-bottom:2px solid var(--border);background:var(--surface3);flex-shrink:0;}
+.modal-tab{padding:11px 26px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:none;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.2s;display:flex;align-items:center;gap:7px;}
+.modal-tab:hover{color:var(--text);background:var(--surface2);}
+.modal-tab.active{color:var(--accent);border-bottom-color:var(--accent);background:var(--surface);}
+.fg-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.fg-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.locked{background:var(--surface3);color:var(--muted);cursor:not-allowed;}
+
 /* Update form inside modal */
 .update-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
 .update-grid.g3{grid-template-columns:repeat(3,1fr);}
@@ -264,8 +274,48 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       <div class="rec-info-item"><div class="rec-info-label">Entry Date</div><div class="rec-info-val normal" id="ri-entrydate"> </div></div>
     </div>
 
+    
+    <!-- Tab bar -->
+    <div class="modal-tab-bar">
+      <button class="modal-tab active" id="tab-details-btn" onclick="switchModalTab('details')">&#128203; Record Details</button>
+      <button class="modal-tab" id="tab-update-btn" onclick="switchModalTab('update')" title="Update">&#9999;&#65039; Update</button>
+    </div>
+
     <div class="modal-scroll">
-      <div class="modal-body">
+      <!-- -- TAB: DETAILS -- -->
+      <div id="tab-details" class="modal-body">
+        <div class="form-section">
+          <div class="detail-section-title">TO/SO Register Form</div>
+          <div class="fg-4">
+            <div class="ff"><label>Division</label><input class="locked is-locked" id="ep-division" readonly /></div>
+            <div class="ff"><label>Type</label><input class="locked is-locked" id="ep-type" readonly /></div>
+            <div class="ff"><label>Entry Date</label><input class="locked is-locked" id="ep-entryDate" readonly /></div>
+            <div class="ff"><label>Branch</label><input class="locked is-locked" id="ep-branch" readonly /></div>
+
+            <div class="ff"><label>Engineer</label><input class="locked is-locked" id="ep-eng" readonly /></div>
+            <div class="ff"><label>Model</label><input class="locked is-locked" id="ep-model" readonly /></div>
+            <div class="ff"><label>Warranty Status</label><input class="locked is-locked" id="ep-warrantyStatus" readonly /></div>
+            <div class="ff"><label>TO/SO Reference No.</label><input class="locked is-locked" id="ep-refNo" readonly /></div>
+
+            <div class="ff"><label>Status</label><input class="locked is-locked" id="ep-status" readonly /></div>
+            <div class="ff"><label>Spares Received at SVC</label><input class="locked is-locked" id="ep-sparesReceivedAtSvc" readonly /></div>
+            <div class="ff"><label>Received Date (SC)</label><input class="locked is-locked" id="ep-receivedDate" readonly /></div>
+            <div class="ff"><label>Executed Date</label><input class="locked is-locked" id="ep-executedDate" readonly /></div>
+          </div>
+        </div>
+
+        <div class="form-section" style="margin-top:22px;">
+          <div class="detail-section-title">Coordinator Updates</div>
+          <div class="fg-4">
+            <div class="ff"><label>SC Engineer</label><input id="ep-scEng" class="locked is-locked" readonly /></div>
+            <div class="ff"><label>GIR No</label><input id="ep-crmRefNo" class="locked is-locked" readonly /></div>
+            <div class="ff span2" style="grid-column: span 2;"><label>Remarks</label><textarea id="ep-remarks" class="locked is-locked" readonly></textarea></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- -- TAB: UPDATE -- -->
+      <div id="tab-update" class="modal-body" style="display:none;">
         <input type="hidden" id="upd-id"/>
 
         <div class="detail-section-title">Status &amp; Execution</div>
@@ -306,10 +356,11 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       </div>
     </div>
 
+    </div>
     <div class="modal-footer">
       <div class="form-msg" id="upd-msg"></div>
-      <button class="btn btn-outline btn-sm" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-success" id="upd-save-btn" onclick="submitUpdate()">&#128190; Save Update</button>
+      <button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button>
+      <button class="btn btn-success" id="upd-save-btn" onclick="submitUpdate()" style="display:none;">&#128190; Save Update</button>
     </div>
   </div>
 </div>
@@ -607,6 +658,22 @@ function warrantyPill(s){
 }
 
 // -- UPDATE MODAL ----------------------------------------------------------
+
+function switchModalTab(tab){
+  const td = document.getElementById('tab-details');
+  const tu = document.getElementById('tab-update');
+  if(td) td.style.display = tab==='details' ? 'block' : 'none';
+  if(tu) tu.style.display  = tab==='update'  ? 'block' : 'none';
+  
+  const tb1 = document.getElementById('tab-details-btn');
+  const tb2 = document.getElementById('tab-update-btn');
+  if(tb1) tb1.classList.toggle('active', tab==='details');
+  if(tb2) tb2.classList.toggle('active', tab==='update');
+  
+  const sbtn = document.getElementById('upd-save-btn');
+  if(sbtn) sbtn.style.display = tab==='update' ? 'inline-flex' : 'none';
+}
+
 function openUpdateModal(id){
   const d = DATA.find(x=>(x._id||x.id)===id);
   if(!d) return;
@@ -622,15 +689,35 @@ function openUpdateModal(id){
   (document.getElementById('ri-crmref')||{}).textContent = d.crmRefNo||' ';
   (document.getElementById('ri-entrydate')||{}).textContent = fmtDate(d.entryDate);
 
-  document.getElementById('upd-id').value = id;
   const set=(elId,val)=>{const el=document.getElementById(elId);if(el)el.value=val||'';};
+  
+  // View Tab
+  set('ep-division', d.division);
+  set('ep-type', d.type);
+  set('ep-entryDate', fmtDate(d.entryDate));
+  set('ep-branch', d.branch);
+  set('ep-eng', d.eng);
+  set('ep-model', d.model);
+  set('ep-warrantyStatus', d.warrantyStatus);
+  set('ep-refNo', d.refNo);
+  set('ep-status', d.status);
+  set('ep-sparesReceivedAtSvc', fmtDate(d.sparesReceivedAtSvc));
+  set('ep-receivedDate', fmtDate(d.receivedDate));
+  set('ep-executedDate', fmtDate(d.executedDate));
+  set('ep-scEng', d.scEng);
+  set('ep-crmRefNo', d.crmRefNo);
+  set('ep-remarks', d.remarks);
+
+  // Update Tab
+  document.getElementById('upd-id').value = id;
   set('upd-status',       d.status||'Completed');
-  set('upd-executeddate', d.executedDate||'');
-  set('upd-receiveddate', d.receivedDate||'');
+  set('upd-executeddate', d.executedDate?d.executedDate.split('T')[0]:'');
+  set('upd-receiveddate', d.receivedDate?d.receivedDate.split('T')[0]:'');
   set('upd-crmrefno',     d.crmRefNo||'');
   set('upd-remarks',      d.remarks||'');
 
   clearUpdMsg();
+  if(typeof switchModalTab==='function') switchModalTab('details');
   document.getElementById('update-overlay').classList.add('open');
   document.querySelector('.modal-scroll').scrollTop = 0;
 }
