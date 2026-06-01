@@ -7,6 +7,7 @@ const todrSchema = new mongoose.Schema({
   model: { type: String, trim: true, default: '' },
   description: { type: String, required: true },
   action: { type: String, required: true },
+  toNo: { type: String, trim: true, default: '' },
   toRaisedDate: { type: Date, default: null },
   sparesReceivedDate: { type: Date, default: null },
   sourceId: { type: String, trim: true, default: '' },
