@@ -399,7 +399,6 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <div class="table-title">
           Closed TO/SO Details
           <span class="count-chip" id="count-chip">&#8600; entries</span>
-          <span class="closed-chip">&#10005; Closed Register</span>
         </div>
         <div class="toolbar-r">
           <div class="show-row">Show
@@ -430,17 +429,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
           <option>INFUSION PUMP</option><option>ULTRASOUND</option><option>ANAESTHESIA</option>
           <option>RADIOLOGY</option><option>OTHER</option>
         </select>
-        <label>Type</label>
-        <select class="f-select" id="fl-type" onchange="applyFilters()">
-          <option value="">All Types</option>
-          <option>PRF</option><option>OB</option>
-        </select>
-        <label>Warranty</label>
-        <select class="f-select" id="fl-warranty" onchange="applyFilters()">
-          <option value="">All</option>
-          <option>OW</option><option>LAMC</option><option>CAMC</option>
-          <option>EW</option><option>STOCK</option><option>IW</option>
-        </select>
+
         <button class="btn btn-outline btn-sm" onclick="clearFilters()" style="margin-left:auto;">&#10060; Clear</button>
       </div>
 
@@ -531,7 +520,7 @@ function updateStats(){
 
 // -- FILTERS ---------------------------------------------------------------
 function clearFilters(){
-  ['fl-from','fl-to','fl-division','fl-type','fl-warranty','tbl-search'].forEach(id=>{
+  ['fl-from','fl-to','fl-division','tbl-search'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
   });
   applyFilters();
@@ -542,16 +531,12 @@ function applyFilters(){
   const from = document.getElementById('fl-from').value;
   const to   = document.getElementById('fl-to').value;
   const div  = document.getElementById('fl-division').value;
-  const type = document.getElementById('fl-type').value;
-  const war  = document.getElementById('fl-warranty').value;
 
   filtered = DATA.filter(d =>
     (!q    || ((d.refNo||'')+' '+(d.scEng||'')+' '+(d.eng||'')+' '+(d.model||'')+' '+(d.crmRefNo||'')+' '+(d.branch||'')+' '+(d.division||'')).toLowerCase().includes(q)) &&
     (!from || (d.entryDate||'') >= from) &&
     (!to   || (d.entryDate||'') <= to) &&
-    (!div  || d.division === div) &&
-    (!type || d.type === type) &&
-    (!war  || d.warrantyStatus === war)
+    (!div  || d.division === div)
   );
   sortArr(); currentPage = 1; renderTable();
 }
