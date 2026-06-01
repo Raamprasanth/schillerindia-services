@@ -673,16 +673,12 @@ function exportCSV() {
   const headers = [
     'Entry Date', 'Closed Date', 'Division', 'SC Ref No', 'DEF GIR No', 'Category/OB Type', 'Model', 'Def Brd/Mod Name', 'No of Days', 'Status',
     'Technical Remarks', 'Repair Team Remarks', 'Components Used to Repaired', 'Cost in INR', 'Time Taken to Repair', 'Repair Status',
-    'DOI (Date of Installation)', 'Repaired By', 'Repaired Date', 'Type of Work', 'RA Engineer', 'DEF Unit GIR No', 'Repaired GIR No', 'Repaired BRD Stk Date',
-    'Type of Report', 'DC No', 'Field Remarks', 'Final Remarks', 'Additional Notes', 'Return DC No', 'Destination', 'Shipped SC', 'Shipped Commercial',
-    'TO/SO No', 'Closed By', 'Submitted By', 'Submitted At'
+    'DOI (Date of Installation)', 'Repaired By', 'Repaired Date', 'Closed By'
   ];
   const rows = filtered.map(d => [
     fmtDate(d.entryDate), fmtDate(d.closedDate), d.division || '-', d.scRefNo || '-', d.defGirNo || '-', d.category || d.obType || '-', d.model || '-', d.defBrdModName || '-', d.noOfDays || 0, d.status || '-',
     d.techRemarks || '-', d.repairRemarks || '-', d.components || d.compUsedToRepair || '-', d.cost || '-', d.timeTaken || '-', d.repairStatus || '-',
-    d.doi || '-', d.repairedBy || '-', getDisplayRepairedDate(d) ? fmtDate(getDisplayRepairedDate(d)) : '-', d.typeWork || '-', d.raEng || '-', d.defUnitGir || '-', d.repGirNo || '-', (d.repBrd || d.repBrdDate) ? fmtDate(d.repBrd || d.repBrdDate) : '-',
-    d.typeReport || '-', d.dcNo || '-', d.fieldRemarks || '-', d.finalRemarks || '-', d.addNotes || '-', d.returnDcNo || '-', d.destination || '-', d.shipSc ? fmtDate(d.shipSc) : '-', d.shipComm ? fmtDate(d.shipComm) : '-',
-    d.prfObNo || '-', d.closedBy || '-', d.submittedBy || '-', d.submittedAt ? fmtDate(d.submittedAt) : '-'
+    d.doi || '-', d.repairedBy || '-', getDisplayRepairedDate(d) ? fmtDate(getDisplayRepairedDate(d)) : '-', d.closedBy || '-'
   ]);
   const csv = [headers, ...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
