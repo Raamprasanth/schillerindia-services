@@ -231,11 +231,6 @@ table.frn-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
       </div>
 
       <div class="filter-strip">
-        <label>From</label>
-        <input type="date" class="f-inp" id="fl-from" onchange="applyFilters()"/>
-        <label>To</label>
-        <input type="date" class="f-inp" id="fl-to" onchange="applyFilters()"/>
-        <div class="f-divider"></div>
         <label>Division</label>
         <select class="f-select" id="fl-division" onchange="applyFilters()">
           <option value="">All Divisions</option>
@@ -246,7 +241,6 @@ table.frn-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
       <div class="table-wrap">
         <table class="frn-table">
           <thead><tr>
-            <th onclick="sortBy('_id')" class="sorted" style="width:46px;">Id <span class="si">&#8693;</span></th>
             <th onclick="sortBy('date')">Date <span class="si">&#8693;</span></th>
             <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
             <th onclick="sortBy('partNo')">Part No <span class="si">&#8693;</span></th>
@@ -406,7 +400,7 @@ async function loadData(){
   }catch(e){
     if(e.message === 'Unauthorized') return;
     showToast('Load failed: ' + e.message, 'err');
-    document.getElementById('lt-tbody').innerHTML = `<tr class="loading-row"><td colspan="7" style="color:var(--red);">&#9888; ${esc(e.message)}</td></tr>`;
+    document.getElementById('lt-tbody').innerHTML = `<tr class="loading-row"><td colspan="10" style="color:var(--red);">&#9888; ${esc(e.message)}</td></tr>`;
   }
 }
 
@@ -434,19 +428,15 @@ function updateStats(){
 }
 
 function clearFilters(){
-  ['fl-from','fl-to','fl-division','tbl-search'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  ['fl-division','tbl-search'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
   applyFilters();
 }
 
 function applyFilters(){
   const q = (document.getElementById('tbl-search')?.value || '').toLowerCase();
-  const from = document.getElementById('fl-from')?.value || '';
-  const to = document.getElementById('fl-to')?.value || '';
   const division = document.getElementById('fl-division')?.value || '';
   filtered = DATA.filter(d =>
-    (!q || ((d.partNo||'')+' '+(d.description||'')+' '+(d.revalue||'')+' '+(d.girNo||'')+' '+(d.division||'')).toLowerCase().includes(q)) &&
-    (!from || (d.date||'') >= from) &&
-    (!to || (d.date||'') <= to) &&
+    (!q || ((d.partNo||'')+' '+(d.description||'')+' '+(d.girNo||'')+' '+(d.division||'')).toLowerCase().includes(q)) &&
     (!division || d.division === division)
   );
   sortArr();
@@ -483,7 +473,6 @@ function renderTable(){
     tbody.innerHTML = slice.map((d,i)=>{
       const id = d._id || d.id;
       return `<tr>
-        <td class="mono" style="color:var(--muted);">${(currentPage - 1) * perPage + i + 1}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.date)}</td>
         <td><span class="div-tag">${esc(d.division || '-')}</span></td>
         <td class="mono" style="font-weight:700;">${esc(d.partNo || '-')}</td>
@@ -717,8 +706,8 @@ async function moveToClosed(id){
 }
 
 function exportCSV(){
-  const headers = ['#','Date','Division','Part No','Description','GIR No','Revalue','Status','Remarks','TO raised date'];
-  const rows = filtered.map((d,i) => [i+1,d.date,d.division,d.partNo,d.description,d.girNo,d.revalue,d.opt,d.remarks,d.toRaisedDate?d.toRaisedDate.split('T')[0]:'']);
+  const headers = ['Date','Division','Part No','Description','GIR No','Revalue','Status','Remarks','TO raised date'];
+  const rows = filtered.map((d,i) => [d.date,d.division,d.partNo,d.description,d.girNo,d.revalue,d.opt,d.remarks,d.toRaisedDate?d.toRaisedDate.split('T')[0]:'']);
   const csv = [headers,...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
