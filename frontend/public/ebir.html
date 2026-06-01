@@ -817,7 +817,15 @@ async function openModal(id){
   set('upd-final-status', d.finalStatus||'Pending');
 
   // Service Section (unlocked - editable)
-  fillScEngineerSelect(d.scEngineer || LOGGED_USER.name || '', d.division);
+  fillScEngineerSelect(LOGGED_USER.name || '', d.division);
+  const scEngEl = document.getElementById('upd-sc-engineer');
+  if(scEngEl) {
+    scEngEl.value = LOGGED_USER.name || '';
+    scEngEl.disabled = true;
+    scEngEl.style.backgroundColor = 'var(--surface3)';
+    scEngEl.style.color = 'var(--muted)';
+    scEngEl.style.cursor = 'not-allowed';
+  }
   set('upd-sc-inward', d.scInwardDate);
   set('upd-sc-obs', d.scObservation);
   set('upd-sc-action', d.scActionPlan);
@@ -833,7 +841,14 @@ async function openModal(id){
   set('upd-fqc-obs', d.fqcObservation);
 
   // Product Team Section (locked)
-  set('upd-ts-date', d.tsVerificationDate);
+  const dObj = new Date();
+  const todayStr = dObj.getFullYear() + '-' + String(dObj.getMonth()+1).padStart(2,'0') + '-' + String(dObj.getDate()).padStart(2,'0');
+  const tsDateEl = document.getElementById('upd-ts-date');
+  if (tsDateEl) {
+    tsDateEl.value = todayStr;
+    tsDateEl.min = todayStr;
+    tsDateEl.max = todayStr;
+  }
   set('upd-ps-engineer', d.psEngineer);
   set('upd-cnr-ref', d.cnrRefNo);
   set('upd-cnr-date', d.cnrReleaseDate);
