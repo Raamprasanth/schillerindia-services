@@ -478,15 +478,13 @@ table.ob-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
             <th onclick="sortBy('scRefNo')">SC Ref No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('defGirNo')">DEF GIR No <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('category')">Category <span class="si">&#8693;</span></th>
             <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
             <th onclick="sortBy('defBrdModName')">Def Brd/Mod Name <span class="si">&#8693;</span></th>
             <th onclick="sortBy('noOfDays')" class="sorted">No of Days <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('status')">Status <span class="si">&#8693;</span></th>
             <th onclick="sortBy('submittedBy')">Submitted By <span class="si">&#8693;</span></th>
           </tr></thead>
           <tbody id="ob-tbody">
-            <tr><td colspan="11" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
+            <tr><td colspan="9" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -600,7 +598,7 @@ async function loadData() {
 
 function showError(msg) {
   document.getElementById('ob-tbody').innerHTML =
-    `<tr><td colspan="11"><div class="empty-st">
+    `<tr><td colspan="9"><div class="empty-st">
       <div class="ei">&#128196;</div>
       <div class="et">Cannot load data</div>
       <div class="es">${msg}</div>
@@ -654,7 +652,7 @@ function renderTable(){
   (document.getElementById('count-pill')||{}).textContent =total+' entr'+(total===1?'y':'ies');
   const tbody=document.getElementById('ob-tbody');
   if(!slice.length){
-    tbody.innerHTML=`<tr><td colspan="11"><div class="empty-st">
+    tbody.innerHTML=`<tr><td colspan="9"><div class="empty-st">
       <div class="ei">&#128196;</div>
       <div class="et">${allData.length?'No records match filters':'No RT OB Records'}</div>
       <div class="es">${allData.length?'Try clearing the filters.':'No RT OB records available.'}</div>
@@ -671,11 +669,9 @@ function renderTable(){
         <td><span class="div-tag">${esc(d.division||'-')}</span></td>
         <td style="font-size:13.5px;font-weight:800;color:var(--text);">${esc(d.scRefNo||'-')}</td>
         <td style="font-size:13.5px;font-weight:900;color:var(--purple);font-family:monospace;">${esc(d.defGirNo||'-')}</td>
-        <td><span class="ob-tag">${esc(d.category||d.obType||'OB')}</span></td>
         <td style="font-weight:600;">${esc(d.model||'-')}</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.defBrdModName||'')}">${esc(d.defBrdModName||'-')}</td>
         <td><span class="${pdCls}">${d.noOfDays}</span></td>
-        <td><span class="status-pill ${stCls}">${stLbl}</span></td>
         <td style="font-size:11px;color:var(--muted);">${esc(d.submittedBy||'-')}</td>
       </tr>`;
     }).join('');
