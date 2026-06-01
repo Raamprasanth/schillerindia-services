@@ -334,11 +334,6 @@ async function sendToScod(id, btn) {
       </div>
 
       <div class="filter-strip">
-        <label>From</label>
-        <input type="date" class="f-inp" id="fl-from" onchange="applyFilters()"/>
-        <label>To</label>
-        <input type="date" class="f-inp" id="fl-to" onchange="applyFilters()"/>
-        <div class="f-divider"></div>
         <label>Division</label>
         <select class="f-select" id="fl-division" onchange="applyFilters()">
           <option value="">All Divisions</option>
@@ -349,7 +344,6 @@ async function sendToScod(id, btn) {
       <div class="table-wrap">
         <table class="frn-table">
           <thead><tr>
-            <th onclick="sortBy('_id')" class="sorted" style="width:46px;">Id <span class="si">&#8693;</span></th>
             <th onclick="sortBy('date')">Date <span class="si">&#8693;</span></th>
             <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
             <th onclick="sortBy('partNo')">Part No <span class="si">&#8693;</span></th>
@@ -361,7 +355,7 @@ async function sendToScod(id, btn) {
             <th>Action</th>
           </tr></thead>
           <tbody id="lt-tbody">
-            <tr class="loading-row"><td colspan="10"><span class="spin"></span>Loading from database</td></tr>
+            <tr class="loading-row"><td colspan="9"><span class="spin"></span>Loading from database</td></tr>
           </tbody>
         </table>
       </div>
@@ -598,12 +592,11 @@ function renderTable(){
   setText('count-chip', total + ' entr' + (total === 1 ? 'y' : 'ies'));
 
   if(!total){
-    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-st"><div class="ei">&#128230;</div><div class="et">${DATA.length ? 'No records match the current filters' : 'No ELT entries'}</div><div class="es">${DATA.length ? 'Try adjusting the filters.' : 'Click Add New to create the first ELT.'}</div></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-st"><div class="ei">&#128230;</div><div class="et">${DATA.length ? 'No records match the current filters' : 'No ELT entries'}</div><div class="es">${DATA.length ? 'Try adjusting the filters.' : 'Click Add New to create the first ELT.'}</div></div></td></tr>`;
   }else{
     tbody.innerHTML = slice.map((d,i)=>{
       const id = d._id || d.id;
       return `<tr>
-        <td class="mono" style="color:var(--muted);">${(currentPage - 1) * perPage + i + 1}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.date)}</td>
         <td><span class="div-tag">${esc(d.division || '-')}</span></td>
         <td class="mono" style="font-weight:700;">${esc(d.partNo || '-')}</td>
@@ -775,7 +768,7 @@ function exportCSV(){
 }
 
 function setLoading(){
-  document.getElementById('lt-tbody').innerHTML = '<tr class="loading-row"><td colspan="10"><span class="spin"></span>Loading from database</td></tr>';
+  document.getElementById('lt-tbody').innerHTML = '<tr class="loading-row"><td colspan="9"><span class="spin"></span>Loading from database</td></tr>';
   ['s-total','s-less3','s-3to7','s-above7'].forEach(id => setText(id, '-'));
 }
 function setText(id,val){ const el = document.getElementById(id); if(el) el.textContent = val; }
