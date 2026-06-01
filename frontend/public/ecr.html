@@ -247,60 +247,15 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 .nav-children.open{max-height:400px;}
 .nav-sub .nav-item{padding-left:28px;font-size:11.5px;}
 
-    .ep-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-    }
-    .ep-grid .form-group input.locked,
-    .ep-grid .form-group select.locked,
-    .ep-grid .form-group textarea.locked {
-      background: var(--surface2);
-      color: var(--muted);
-      cursor: not-allowed;
-    }
-    .ep-section-title {
-      font-size: 10.5px;
-      font-weight: 700;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      margin: 12px 0 10px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--border);
-    }
+    
+    
+    
 
 
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-    .form-group label {
-      font-size: 10.5px;
-      font-weight: 700;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .08em;
-    }
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      padding: 9px 12px;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      font-size: 13px;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      color: var(--text);
-      background: var(--surface);
-      outline: none;
-      transition: border-color .2s;
-      width: 100%;
-    }
-    .form-group textarea {
-      resize: vertical;
-      min-height: 72px;
-    }
+    
+    
+    
+    
 
 </style>
   <link rel="stylesheet" href="global-typography.css">
@@ -346,33 +301,38 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     <div class="modal-scroll">
 
       <!-- -- TAB: DETAILS -- -->
-            <div id="tab-details" class="modal-body">
-        <div class="ep-section-title">TO/SO Register Form</div>
-        <div class="ep-grid">
-          <div class="form-group"><label>Division</label><input class="locked" id="ep-division" readonly /></div>
-          <div class="form-group"><label>Type</label><input class="locked" id="ep-type" readonly /></div>
-          <div class="form-group"><label>TO/SO Raised Date</label><input class="locked" id="ep-entryDate" readonly /></div>
-          <div class="form-group"><label>Region</label><input class="locked" id="ep-region" readonly /></div>
+                  <div id="tab-details" class="modal-body">
+        <div class="form-section">
+          <div class="detail-section-title">TO/SO Register Form</div>
+          <div class="fg-4">
+            <div class="ff"><label>Division</label><input class="locked is-locked" id="ep-division" readonly /></div>
+            <div class="ff"><label>Type</label><input class="locked is-locked" id="ep-type" readonly /></div>
+            <div class="ff"><label>TO/SO Raised Date</label><input class="locked is-locked" id="ep-entryDate" readonly /></div>
+            <div class="ff"><label>Region</label><input class="locked is-locked" id="ep-region" readonly /></div>
 
-          <div class="form-group"><label>Branch</label><input class="locked" id="ep-branch" readonly /></div>
-          <div class="form-group"><label>Engineer</label><input class="locked" id="ep-eng" readonly /></div>
-          <div class="form-group"><label>Supplier</label><input class="locked" id="ep-supplier" readonly /></div>
+            <div class="ff"><label>Branch</label><input class="locked is-locked" id="ep-branch" readonly /></div>
+            <div class="ff"><label>Engineer</label><input class="locked is-locked" id="ep-eng" readonly /></div>
+            <div class="ff"><label>Supplier</label><input class="locked is-locked" id="ep-supplier" readonly /></div>
 
-          <div class="form-group"><label>Model</label><input class="locked" id="ep-model" readonly /></div>
-          <div class="form-group"><label>Warranty Status</label><input class="locked" id="ep-warrantyStatus" readonly /></div>
-          <div class="form-group"><label>TO/SO Reference No.</label><input class="locked" id="ep-refNo" readonly /></div>
-          <div class="form-group"><label>Spares Received at SVC</label><input class="locked" id="ep-sparesReceivedAtSvc" readonly /></div>
-          <div class="form-group"><label>Status</label><input class="locked" id="ep-status" readonly /></div>
-          <div class="form-group"><label>Entry Date from SC</label><input class="locked" id="ep-receivedDate" readonly /></div>
+            <div class="ff"><label>Model</label><input class="locked is-locked" id="ep-model" readonly /></div>
+            <div class="ff"><label>Warranty Status</label><input class="locked is-locked" id="ep-warrantyStatus" readonly /></div>
+            <div class="ff"><label>TO/SO Reference No.</label><input class="locked is-locked" id="ep-refNo" readonly /></div>
+            <div class="ff"><label>Spares Received at SVC</label><input class="locked is-locked" id="ep-sparesReceivedAtSvc" readonly /></div>
+
+            <div class="ff"><label>Status</label><input class="locked is-locked" id="ep-status" readonly /></div>
+            <div class="ff"><label>Entry Date from SC</label><input class="locked is-locked" id="ep-receivedDate" readonly /></div>
+          </div>
         </div>
 
-        <div class="ep-section-title">Employee Update Section</div>
-        <div class="ep-grid">
-          <div class="form-group"><label>SC Engineer</label><input id="ep-scEng" class="locked" readonly /></div>
-          <div class="form-group"><label>GIR No</label><input id="ep-crmRefNo" class="locked" readonly /></div>
-          <div class="form-group"><label>Part No</label><input id="ep-partType" class="locked" readonly /></div>
-          <div class="form-group"><label>Parts Description</label><input id="ep-partsDescription" class="locked" readonly /></div>
-          <div class="form-group" style="grid-column:span 4;"><label>Remarks</label><textarea id="ep-remarks" class="locked" readonly></textarea></div>
+        <div class="form-section">
+          <div class="detail-section-title">Employee Update Section</div>
+          <div class="fg-4">
+            <div class="ff"><label>SC Engineer</label><input id="ep-scEng" class="locked is-locked" readonly /></div>
+            <div class="ff"><label>GIR No</label><input id="ep-crmRefNo" class="locked is-locked" readonly /></div>
+            <div class="ff"><label>Part No</label><input id="ep-partType" class="locked is-locked" readonly /></div>
+            <div class="ff"><label>Parts Description</label><input id="ep-partsDescription" class="locked is-locked" readonly /></div>
+            <div class="ff span4" style="grid-column: span 4;"><label>Remarks</label><textarea id="ep-remarks" class="locked is-locked" readonly></textarea></div>
+          </div>
         </div>
       </div>
 
