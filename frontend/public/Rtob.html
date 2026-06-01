@@ -246,11 +246,10 @@ table.ob-table tbody tr:last-child td{border-bottom:none;}
       <div class="info-cell"><div class="info-lbl">Division</div><div class="info-val dark" id="ri-div">-</div></div>
       <div class="info-cell"><div class="info-lbl">DEF GIR No</div><div class="info-val" id="ri-defgir">-</div></div>
       <div class="info-cell"><div class="info-lbl">Model</div><div class="info-val dark" id="ri-model">-</div></div>
-      <div class="info-cell"><div class="info-lbl">OB Type</div><div class="info-val dark" id="ri-obtype">-</div></div>
+      <div class="info-cell"><div class="info-lbl">DOI (Date of Installation)</div><div class="info-val dark" id="ri-doi">-</div></div>
       <div class="info-cell"><div class="info-lbl">Def Brd/Mod Name</div><div class="info-val dark" id="ri-defbrd">-</div></div>
       <div class="info-cell"><div class="info-lbl">Entry Date</div><div class="info-val dark" id="ri-date">-</div></div>
       <div class="info-cell"><div class="info-lbl">No of Days</div><div class="info-val" id="ri-days">-</div></div>
-      <div class="info-cell"><div class="info-lbl">Status</div><div class="info-val dark" id="ri-status">-</div></div>
       <div class="info-cell"><div class="info-lbl">Submitted By</div><div class="info-val dark" id="ri-by">-</div></div>
     </div>
     <div class="modal-scroll">
@@ -272,7 +271,6 @@ table.ob-table tbody tr:last-child td{border-bottom:none;}
         <div class="form-sec">
           <div class="form-sec-title">&#128196; Details</div>
           <div class="fg-4">
-            <div class="ff"><label>DOI (Date of Installation)</label><input type="text" id="u-doi" readonly style="background-color:var(--surface2);cursor:not-allowed;" /></div>
             <div class="ff"><label>Repaired By <span class="req">*</span></label>
               <select id="u-repairedby">
                 <option value="">Select...</option>
@@ -512,6 +510,7 @@ const IS_ADMIN = RAW_ROLE === 'admin';
 
 let allData = [], filtered = [], sortKey = 'entryDate', sortDir = -1, currentPage = 1;
 let editingId = null;
+let editingDoi = '';
 let activeSummary = 'all';
 
 async function syncRepairSessionUser(){
@@ -731,14 +730,13 @@ function openUpdate(id){
   (document.getElementById('ri-div')||{}).textContent =d.division||'-';
   (document.getElementById('ri-defgir')||{}).textContent =d.defGirNo||'-';
   (document.getElementById('ri-model')||{}).textContent =d.model||'-';
-  (document.getElementById('ri-obtype')||{}).textContent =d.obType||'OB';
+  (document.getElementById('ri-doi')||{}).textContent =d.doi||'-';
   (document.getElementById('ri-defbrd')||{}).textContent =d.defBrdModName||'-';
   (document.getElementById('ri-date')||{}).textContent =fmtDate(d.entryDate);
   (document.getElementById('ri-days')||{}).textContent =d.noOfDays+' days';
-  (document.getElementById('ri-status')||{}).textContent =d.status||'-';
   (document.getElementById('ri-by')||{}).textContent =d.submittedBy||'-';
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
-  set('u-doi',d.doi||''); set('u-repairedby',d.repairedBy); set('u-status',d.status||'');
+  editingDoi=d.doi||''; set('u-repairedby',d.repairedBy); set('u-status',d.status||'');
   set('u-repaireddate', new Date().toISOString().split('T')[0]);
   set('u-techremarks',   d.techRemarks||'');
   set('u-repairremarks', d.repairRemarks||'');
@@ -754,6 +752,7 @@ function openUpdate(id){
 function closeModal(){
   document.getElementById('modal-update').classList.remove('open');
   editingId=null;
+  editingDoi='';
   if (history.state && history.state.modalOpen === 'modal-update') history.back();
 }
 window.addEventListener('popstate', function(e){
@@ -779,7 +778,7 @@ async function submitUpdate(){
   const timeTakenValue=document.getElementById('u-timetaken').value.trim();
   const normalizedTimeTaken=/^\d{2}:\d{2}$/.test(timeTakenValue)?`${timeTakenValue}:00`:timeTakenValue;
   const repairRemarks=document.getElementById('u-repairremarks').value.trim();
-  const payload={repairedBy,status,doi:document.getElementById('u-doi').value,repairedDate:document.getElementById('u-repaireddate').value,techRemarks:document.getElementById('u-techremarks').value.trim(),repairRemarks,components:document.getElementById('u-components').value.trim(),cost:document.getElementById('u-cost').value.trim(),timeTaken:normalizedTimeTaken,repairStatus:document.getElementById('u-repairstatus').value,updatedBy:EMP_NAME,updatedAt:new Date().toISOString()};
+  const payload={repairedBy,status,doi:editingDoi,repairedDate:document.getElementById('u-repaireddate').value,techRemarks:document.getElementById('u-techremarks').value.trim(),repairRemarks,components:document.getElementById('u-components').value.trim(),cost:document.getElementById('u-cost').value.trim(),timeTaken:normalizedTimeTaken,repairStatus:document.getElementById('u-repairstatus').value,updatedBy:EMP_NAME,updatedAt:new Date().toISOString()};
   try{
     const res=await fetch(`${API}/api/rtob/${editingId}`,{method:'PUT',headers:authHeaders(),body:JSON.stringify(payload)});
     handleUnauth(res);
