@@ -244,18 +244,9 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   <link rel="stylesheet" href="employee-theme.css">
   <script src="employee-theme.js"></script>
   <link rel="stylesheet" href="topbar-alignment.css">
-  <link rel="stylesheet" href="brand-logo.css">
-  <script src="brand-logo.js" defer></script>
-</head>
-<body>
-
-<!-- -- UPDATE MODAL -- -->
-<div class="overlay" id="update-overlay">
-  <div class="modal">
-    <div class="modal-header">
-      <div>
-        <div class="modal-title" id="modal-title">&#9998; Update Closed TO/SO Entry</div>
-/* Form inside modal */
+/* Update form inside modal */
+.update-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+.update-grid.g3{grid-template-columns:repeat(3,1fr);}
 .ff{display:flex;flex-direction:column;gap:5px;}
 .ff label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
 .ff label .req{color:var(--red);}

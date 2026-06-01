@@ -219,20 +219,207 @@
     .confirm-box{max-width:380px;}
     .confirm-box p{font-size:13px;color:var(--muted);margin-bottom:4px;line-height:1.6;}
 
+    .sidebar::-webkit-scrollbar{width:4px;}
+    .sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+    .sidebar-header{padding:16px 16px 12px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#002d5c,#0068b5);}
+    .sidebar-logo{display:flex;align-items:center;gap:10px;}
+    .sidebar-logo-icon{width:34px;height:34px;background:rgba(255,255,255,0.14);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#fff;border:1.5px solid rgba(255,255,255,0.22);box-shadow:none;}
+    .sidebar-logo-text{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#fff;line-height:1.2;}
+    .sidebar-logo-text .sub{display:block;font-size:10px;color:rgba(255,255,255,0.55);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;}
+    .pt-badge{margin:8px 12px 0;padding:3px 10px;border-radius:20px;font-size:9.5px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;display:inline-block;background:rgba(91,33,182,0.12);color:#7c3aed;border:1px solid rgba(91,33,182,0.22);}
+    .sidebar-nav{flex:1;padding:8px 6px;}
+    .nav-sec{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;padding:9px 8px 4px;}
+    .nav-item{display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:7px;color:var(--soft);font-size:12.5px;font-weight:500;cursor:pointer;transition:all 0.18s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;}
+    .nav-item:hover{background:var(--surface2);color:var(--text);}
+    .nav-item.active{background:var(--accent3);color:var(--accent);font-weight:700;border-left:3px solid var(--accent);padding-left:8px;}
+    .nav-item .icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+    .nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:9px;}
+    .nav-badge-amber{margin-left:auto;background:var(--amber);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:9px;}
+    .nav-badge.green{background:var(--green);}
+    .sidebar-footer{padding:11px 12px;border-top:1px solid var(--border);background:var(--surface3);}
+    .user-info{display:flex;align-items:center;gap:10px;}
+    .user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--cyan));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
+    .user-name{font-size:12px;font-weight:600;color:var(--text);}
+    .user-role{font-size:10px;color:var(--muted);}
+    .logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s;}
+    .logout-btn:hover{border-color:var(--red);color:var(--red);}
+
+    /* MAIN */
+    .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .topbar{padding:14px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:0 2px 8px rgba(0,80,120,0.05);}
+    .topbar-left .page-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);}
+    .topbar-left .topbar-date{font-size:12px;color:var(--muted);margin-top:2px;}
+    .topbar-actions{display:flex;align-items:center;gap:10px;}
+    .topbar-btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;border:1px solid var(--border);background:var(--surface2);color:var(--soft);font-family:'Plus Jakarta Sans',sans-serif;}
+    .topbar-btn:hover{border-color:var(--accent);color:var(--accent);}
+    .topbar-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 2px 8px rgba(0,104,181,0.2);}
+    .topbar-btn.primary:hover{background:var(--accent2);}
+    .content{flex:1;padding:24px 28px;overflow-y:auto;background:var(--bg);}
+
+
+    /* PAGE / ANIMATION */
+    .page{display:none;animation:fadeUp 0.35s ease both;}
+    .page.active{display:block;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+    /* HERO */
+    .bir-hero{display:none;}
+
+    /* STATS */
+    .stats-grid{display:none;}
+    .stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 2px 10px rgba(0,80,120,0.05);position:relative;overflow:hidden;}
+    .stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0;}
+    .stat-card.s-blue::after{background:var(--accent);}
+    .stat-card.s-amber::after{background:var(--amber);}
+    .stat-card.s-green::after{background:var(--green);}
+    .stat-card.s-red::after{background:var(--red);}
+    .stat-card.s-purple::after{background:var(--purple);}
+    .stat-card.s-cyan::after{background:var(--cyan);}
+    .stat-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,80,120,0.1);}
+    .stat-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;}
+    .stat-value{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;margin-bottom:3px;}
+    .stat-sub{font-size:11px;color:var(--muted);font-weight:500;}
+    .stat-icon{font-size:20px;opacity:0.35;float:right;margin-top:-28px;}
+    .s-blue .stat-value{color:var(--accent);}
+    .s-amber .stat-value{color:var(--amber);}
+    .s-green .stat-value{color:var(--green);}
+    .s-red .stat-value{color:var(--red);}
+    .s-purple .stat-value{color:var(--purple);}
+    .s-cyan .stat-value{color:var(--cyan);}
+
+    /* PANEL */
+    .panel{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,80,120,0.05);margin-bottom:20px;}
+    .panel-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface3);border-left:4px solid var(--accent);}
+    .panel-title{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+    .panel-body{padding:20px;}
+
+    /* FILTER BAR */
+    .filter-bar{display:none;}
+    .filter-search{flex:1;min-width:200px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+    .filter-search:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,104,181,0.08);}
+    .filter-select{padding:8px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--soft);background:var(--surface);outline:none;cursor:pointer;transition:border-color 0.2s;}
+    .filter-select:focus{border-color:var(--accent);outline:none;}
+
+    /* TABLE */
+    .data-table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1300px;}
+    .data-table th{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;background:var(--surface2);}
+    .data-table th.sortable{cursor:pointer;user-select:none;}
+    .data-table th.sortable:hover{color:var(--accent);}
+    .data-table th .sort-icon{margin-left:4px;opacity:0.4;font-size:10px;}
+    .data-table th.sort-asc .sort-icon::after{content:'^';}
+    .data-table th.sort-desc .sort-icon::after{content:'v';}
+    .data-table th:not(.sort-asc):not(.sort-desc) .sort-icon::after{content:'-';}
+    .data-table td{padding:10px 12px;font-size:12.5px;border-bottom:1px solid rgba(0,80,120,0.06);color:var(--text);vertical-align:middle;white-space:nowrap;}
+    .data-table tr:last-child td{border-bottom:none;}
+    .data-table tr:hover td{background:var(--glow-accent);}
+    .table-wrap{overflow-x:auto;}
+    .table-footer-bar{padding:11px 18px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;background:var(--surface2);}
+
+    /* BADGES / CHIPS */
+    .chip-sm{display:inline-flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-size:11px;color:var(--soft);font-weight:500;font-family:'JetBrains Mono',monospace;}
+    .badge-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+    .badge-pill::before{content:'';width:5px;height:5px;border-radius:50%;display:block;}
+    .bp-blue{background:rgba(0,119,204,0.1);color:var(--accent);}.bp-blue::before{background:var(--accent);}
+    .bp-purple{background:rgba(124,58,237,0.12);color:var(--purple);}.bp-purple::before{background:var(--purple);}
+    .bp-cyan{background:rgba(8,145,178,0.12);color:var(--cyan);}.bp-cyan::before{background:var(--cyan);}
+    .bp-amber{background:rgba(217,119,6,0.12);color:var(--amber);}.bp-amber::before{background:var(--amber);}
+    .status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+    .status-badge::before{content:'';width:6px;height:6px;border-radius:50%;display:block;}
+    .st-pending{background:rgba(217,119,6,0.12);color:var(--amber);}.st-pending::before{background:var(--amber);}
+    .st-approved{background:rgba(5,150,105,0.12);color:var(--green);}.st-approved::before{background:var(--green);}
+    .st-rejected{background:rgba(204,0,0,0.1);color:var(--red);}.st-rejected::before{background:var(--red);}
+    .st-wip{background:rgba(8,145,178,0.12);color:var(--cyan);}.st-wip::before{background:var(--cyan);}
+
+    /* BUTTONS */
+    .btn{padding:9px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;}
+    .btn-primary{background:var(--green);color:#fff;box-shadow:0 2px 8px rgba(5,150,105,0.2);}
+    .btn-primary:hover{background:#047857;}
+    .btn-danger{background:var(--red);color:#fff;}
+    .btn-success{background:var(--green);color:#fff;}
+    .btn-outline{background:none;border:1.5px solid var(--border);color:var(--soft);}
+    .btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+    .btn-sm{padding:6px 14px;font-size:12px;}
+    .btn-xs{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:none;color:var(--soft);font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;}
+    .btn-xs:hover{border-color:var(--accent);color:var(--accent);}
+    .btn-xs.danger{color:var(--red);border-color:rgba(204,0,0,0.3);}
+    .btn-xs.danger:hover{background:rgba(204,0,0,0.06);}
+    .btn-xs.success{color:var(--green);border-color:rgba(5,150,105,0.3);}
+    .btn-xs.success:hover{background:rgba(5,150,105,0.06);}
+
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(10,20,35,0.42);z-index:500;display:none;align-items:flex-start;justify-content:center;backdrop-filter:blur(5px);overflow-y:auto;padding:24px 12px;}
+    .modal-overlay.show{display:flex;animation:fadeUp 0.2s ease both;}
+    .modal-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:860px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,0.18);margin:auto;}
+    .modal-box h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text);margin-bottom:4px;}
+    .modal-subtitle{font-size:12px;color:var(--muted);margin-bottom:24px;}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:20px;border-top:1px solid var(--border);}
+    .modal-header{padding:12px 18px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--surface),var(--surface2));display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+    .modal-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);}
+    .modal-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+    .modal-close{width:30px;height:30px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:14px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+    .modal-close:hover{background:rgba(204,0,0,0.08);color:var(--red);border-color:rgba(204,0,0,0.3);}
+    .modal-scroll{flex:1;overflow-y:auto;}
+    .modal-body{padding:24px;}
+    .modal-footer{padding:10px 18px;border-top:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;gap:8px;justify-content:flex-end;flex-shrink:0;}
+    #bir-modal{top:0;right:0;bottom:0;left:225px;background:rgba(10,20,35,0.42);backdrop-filter:blur(5px);padding:0;align-items:stretch;justify-content:stretch;overflow:hidden;}
+    #bir-modal .modal-box{max-width:none;width:100%;height:100%;max-height:none;margin:0;border-radius:0;border:0;border-left:1px solid var(--border);box-shadow:none;padding:0;display:flex;flex-direction:column;overflow:hidden;}
+
+    #bir-modal > .modal-box > h3,
+    #bir-modal > .modal-box > .modal-subtitle{display:none;}
+    #bir-modal .modal-header{padding:12px 20px;}
+    #bir-modal .modal-body{padding:24px 28px 28px;max-width:1240px;width:100%;margin:0 auto;}
+    #bir-modal .modal-footer{padding:10px 20px;}
+    #bir-modal .form-section:first-of-type{margin-top:0;}
+
+    /* FORM */
+    .form-section{margin-bottom:24px;}
+    .form-section-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+    .form-section-title .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);}
+    .form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+    .form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .form-group{display:flex;flex-direction:column;gap:5px;}
+    .form-group.span-2{grid-column:span 2;}
+    .form-group.span-3{grid-column:span 3;}
+    .form-group label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
+    .form-group label .req{color:var(--red);margin-left:2px;}
+    .form-group input,.form-group select,.form-group textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+    .form-group textarea{resize:none;min-height:42px;height:42px;overflow:auto;}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(8,145,178,0.1);}
+    .form-group input:read-only{background:var(--surface2);color:var(--muted);}
+    .form-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+    .form-group.span-2{grid-column:span 2;}.form-group.span-4{grid-column:span 4;}
+    /* BIR TABS */
+    .bir-tabs{display:none;}
+    .bir-tab{padding:11px 18px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;font-family:'Plus Jakarta Sans',sans-serif;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all 0.18s;display:flex;align-items:center;gap:6px;white-space:nowrap;}
+    .bir-tab:hover{color:var(--text);background:rgba(8,145,178,0.06);}
+    .bir-tab.active{color:var(--cyan);border-bottom-color:var(--cyan);font-weight:700;}
+    .bir-tab-pane{display:block;padding:22px 28px 0;}
+    .bir-tab-pane.active{display:block;}
+    .bir-tab-pane + .bir-tab-pane{padding-top:28px;}
+    .form-msg{font-size:12px;font-weight:600;padding:8px 14px;border-radius:6px;margin-top:10px;display:none;}
+    .modal-footer .form-msg{margin-top:0;margin-right:auto;}
+    .form-msg.ok{display:block;background:rgba(5,150,105,0.1);color:var(--green);border:1px solid rgba(5,150,105,0.25);}
+    .form-msg.err-msg{display:block;background:rgba(204,0,0,0.08);color:var(--red);border:1px solid rgba(204,0,0,0.2);}
+
+    /* FROZEN SECTIONS */
+    .section-frozen{position:relative;border:1.5px solid rgba(0,119,204,0.18);border-radius:12px;padding:20px;margin-top:22px;background:linear-gradient(135deg,rgba(0,119,204,0.03),rgba(8,145,178,0.04));}
+    .section-frozen::before{content:'🔒 LOCKED';position:absolute;top:-10px;right:16px;background:linear-gradient(135deg,var(--accent),var(--cyan));color:#fff;font-size:9px;font-weight:700;letter-spacing:0.1em;padding:2px 10px;border-radius:10px;}
+    .section-frozen .form-group input,.section-frozen .form-group select,.section-frozen .form-group textarea{background:var(--surface2)!important;color:var(--muted)!important;cursor:not-allowed;}
+    .section-unlocked{position:relative;border:1.5px solid rgba(5,150,105,0.22);border-radius:12px;padding:20px;background:linear-gradient(135deg,rgba(5,150,105,0.03),rgba(5,150,105,0.05));}
+    .section-unlocked::before{content:'🔓 UNLOCKED';position:absolute;top:-10px;right:16px;background:linear-gradient(135deg,var(--green),#10b981);color:#fff;font-size:9px;font-weight:700;letter-spacing:0.1em;padding:2px 10px;border-radius:10px;}
+    .section-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+    .section-title .dot{width:6px;height:6px;border-radius:50%;}
+
+    /* CONFIRM MODAL */
+    .confirm-box{max-width:380px;}
+    .confirm-box p{font-size:13px;color:var(--muted);margin-bottom:4px;line-height:1.6;}
+
     /* TOAST */
     .toast-wrap{position:fixed;bottom:24px;right:24px;z-index:600;display:flex;flex-direction:column;gap:8px;}
     .toast{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;min-width:240px;animation:fadeUp 0.3s ease;box-shadow:0 8px 24px rgba(0,0,0,0.12);}
     .toast.ok{border-color:rgba(5,150,105,0.4);}.toast.ok .tdot{background:var(--green);}
     .toast.err{border-color:rgba(204,0,0,0.4);}.toast.err .tdot{background:var(--red);}
     .tdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-
-    /* KPI TICKER */
-    .kpi-ticker{display:flex;gap:20px;padding:12px 20px;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow-x:auto;margin-bottom:20px;align-items:center;}
-    .kpi-ticker::-webkit-scrollbar{display:none;}
-    .kpi-item{display:flex;align-items:center;gap:8px;flex-shrink:0;padding-right:20px;border-right:1px solid var(--border);}
-    .kpi-item:last-child{border-right:none;padding-right:0;}
-    .kpi-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;}
-    .kpi-val{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--text);}
 
     /* DETAIL VIEW */
     .detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;}
@@ -284,493 +471,6 @@
   <script src="dashboard-topbar-actions.js" defer></script>
   <script src="brand-logo.js" defer></script>
 </head>
-<body>
-
-<!-- TOAST -->
-<div class="toast-wrap" id="toast-wrap"></div>
-
-<!-- CONFIRM MODAL -->
-<div class="modal-overlay" id="confirm-modal">
-  <div class="modal-box confirm-box">
-    <h3>&#9888;&#65039; Confirm Action</h3>
-    <div class="modal-subtitle" id="confirm-subtitle">This action cannot be undone.</div>
-    <p id="confirm-msg">Are you sure?</p>
-    <div class="modal-actions">
-      <button class="btn btn-outline btn-sm" onclick="closeConfirm()">Cancel</button>
-      <button class="btn btn-danger btn-sm" id="confirm-yes">Confirm</button>
-    </div>
-  </div>
-</div>
-
-<!-- ADD/EDIT BIR MODAL -->
-<div class="modal-overlay" id="bir-modal">
-  <div class="modal-box">
-    <h3 id="bir-modal-title">&#128196; New Batch Inspection Report</h3>
-    <div class="modal-subtitle" id="bir-modal-sub">Fill in all required fields to create a BIR entry</div>
-
-    <div class="modal-header">
-      <div>
-        <div class="modal-title" id="bir-modal-title-ui">Batch Inspection Report</div>
-        <div class="modal-sub" id="bir-modal-sub-ui">Fill in all required fields to create a BIR entry</div>
-      </div>
-      <button class="modal-close" onclick="closeBIRModal()" title="Close">&#10005;</button>
-    </div>
-
-    <!-- TAB NAV -->
-    <div class="bir-tabs">
-      <button class="bir-tab active" id="tab-btn-edit" title="Update">&#9999;&#65039;</button>
-    </div>
-
-    <div class="modal-scroll">
-      <div id="bir-tab-pane-edit" class="bir-tab-pane active">
-        
-        <!-- FQC SECTION (Locked) -->
-        <div class="section-frozen" id="fqc-section">
-          <div class="section-title"><span class="dot" style="background:var(--cyan)"></span> FQC Section</div>
-          <div class="form-grid-4">
-            <div class="form-group">
-              <label>Division <span class="req">*</span></label>
-              <select id="f-division" disabled></select>
-            </div>
-            <div class="form-group">
-              <label>Unit Inward Date <span class="req">*</span></label>
-              <input type="date" id="f-unit-inward" disabled/>
-            </div>
-            <div class="form-group">
-              <label>FQC Inward Date</label>
-              <input type="date" id="f-fqc-inward" disabled/>
-            </div>
-            <div class="form-group">
-              <label>BIR Ref No.</label>
-              <input type="text" id="f-bir-ref" placeholder="Auto-generated if blank" disabled/>
-            </div>
-            <div class="form-group">
-              <label>Supplier Name</label>
-              <select id="f-supplier" disabled></select>
-            </div>
-            <div class="form-group">
-              <label>Model <span class="req">*</span></label>
-              <input type="text" id="f-model" list="model-list" placeholder="Search or enter model" disabled/>
-              <datalist id="model-list"></datalist>
-            </div>
-            <div class="form-group">
-              <label>Configuration</label>
-              <input type="text" id="f-configuration" placeholder="" disabled/>
-            </div>
-            <div class="form-group">
-              <label>Received Qty <span class="req">*</span></label>
-              <input type="text" id="f-qty" placeholder="27" disabled/>
-            </div>
-            <div class="form-group">
-              <label>Unit Serial No.</label>
-              <input type="text" id="f-serial" placeholder="Serial number" disabled/>
-            </div>
-            <div class="form-group">
-              <label>Invoice No.</label>
-              <input type="text" id="f-invoice-no" placeholder="Invoice number" disabled/>
-            </div>
-            <div class="form-group">
-              <label>Invoice Date</label>
-              <input type="date" id="f-invoice-date" disabled/>
-            </div>
-            <div class="form-group">
-              <label>Previous Software Version</label>
-              <input type="text" id="f-prev-sw" placeholder="" disabled/>
-            </div>
-            <div class="form-group">
-              <label>Present Software Version</label>
-              <input type="text" id="f-pres-sw" placeholder="" disabled/>
-            </div>
-            <div class="form-group">
-              <label>Accessory Changes</label>
-              <select id="f-acc-changes" disabled>
-                <option value="">Select</option>
-                <option>No Change</option><option>Added</option><option>Removed</option><option>Replaced</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Accessory Details</label>
-              <input type="text" id="f-acc-details" placeholder="" disabled/>
-            </div>
-            <div class="form-group">
-              <label>User Manual Update</label>
-              <select id="f-manual-update" disabled>
-                <option value="">Select</option>
-                <option>Yes</option><option>No</option><option>NA</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>FQC Remarks</label>
-              <input type="text" id="f-fqc-remarks" placeholder="FQC team remarks" disabled/>
-            </div>
-            <div class="form-group">
-              <label>Status <span class="req">*</span></label>
-              <select id="f-status" disabled>
-                <option value="Pending">Pending</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Approved">Approved</option>
-                <option value="Rejected">Rejected</option>
-                <option value="Closed">Closed</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- SERVICE SECTION (Locked) -->
-        <div class="section-frozen" id="service-section">
-          <div class="section-title"><span class="dot" style="background:var(--green)"></span> Service Section</div>
-          <div class="form-grid-4">
-            <div class="form-group">
-              <label>SC Engineer</label>
-              <input type="text" id="f-sc-engineer" disabled/>
-            </div>
-            <div class="form-group">
-              <label>SC Observation</label>
-              <input type="text" id="f-sc-obs" disabled/>
-            </div>
-            <div class="form-group">
-              <label>Hardware Changes</label>
-              <input type="text" id="f-hw-changes" disabled/>
-            </div>
-            <div class="form-group">
-              <label>Hardware Change Remarks</label>
-              <input type="text" id="f-hw-remarks" disabled/>
-            </div>
-            <div class="form-group">
-              <label>Accessory Change Remarks</label>
-              <input type="text" id="f-acc-remarks" disabled/>
-            </div>
-            <div class="form-group">
-              <label>Service Manual Update</label>
-              <select id="f-service-manual" disabled>
-                <option value="">Select</option><option>Yes</option><option>No</option><option>NA</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Technical Remarks</label>
-              <input type="text" id="f-tech-remarks" disabled/>
-            </div>
-            <div class="form-group">
-              <label>TS Verification Date</label>
-              <input type="date" id="f-ts-date" disabled/>
-            </div>
-          </div>
-        </div>
-
-        <!-- PRODUCT TEAM SECTION (Locked by default) -->
-        <div class="section-frozen" id="product-section">
-          <div class="section-title"><span class="dot" style="background:var(--purple)"></span> Product Team Section</div>
-          <div class="form-grid-4">
-            <div class="form-group">
-              <label>PS Engineer</label>
-              <input type="text" id="f-ps-engineer" placeholder="PS engineer name" disabled/>
-            </div>
-            <div class="form-group">
-              <label>CNR/Technews Circulation</label>
-              <select id="f-cnr-circ" disabled>
-                <option value="">Select</option>
-                <option>Yes</option><option>No</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>CNR/Technews Reference No.</label>
-              <input type="text" id="f-cnr-ref" placeholder="Reference number" disabled/>
-            </div>
-            <div class="form-group">
-              <label>CNR/Technews Release Date</label>
-              <input type="date" id="f-cnr-date" disabled/>
-            </div>
-            <div class="form-group">
-              <label>PS Team Verification Date</label>
-              <input type="date" id="f-ps-date" disabled/>
-            </div>
-            <div class="form-group">
-              <label>Product Team Remarks</label>
-              <input type="text" id="f-pt-remarks" disabled/>
-            </div>
-            <div class="form-group">
-              <label>Approved Date</label>
-              <input type="date" id="f-approved-date" disabled/>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div><!-- /modal-scroll -->
-
-    <div class="modal-footer">
-      <div id="bir-form-msg" class="form-msg"></div>
-      <button class="btn btn-outline btn-sm" onclick="closeBIRModal()">Cancel</button>
-      <button class="btn btn-primary btn-sm" id="bir-save-btn" onclick="saveBIR()">&#128190; Save BIR Entry</button>
-    </div>
-  </div>
-</div>
-
-<!-- VIEW DETAIL MODAL -->
-<div class="modal-overlay" id="view-modal">
-  <div class="modal-box">
-    <h3 id="view-modal-title">&#128196; BIR Detail</h3>
-    <div class="modal-subtitle" id="view-modal-sub">Full batch inspection record</div>
-    <div id="view-modal-content"></div>
-    <div class="modal-actions">
-      <button class="btn btn-outline btn-sm" onclick="closeViewModal()">Close</button>
-      <button class="btn btn-primary btn-sm" id="view-edit-btn">&#9998; Edit Record</button>
-    </div>
-  </div>
-</div>
-
-<!-- SIDEBAR -->
-<aside class="sidebar">
-  <div class="sidebar-header">
-    <div class="sidebar-logo">
-      <img class="brand-logo-img" src="logo.png" alt="SCHILLER">
-    </div>
-  </div>
-  <div style="padding:7px 12px 0;"><span class="pt-badge">&#9733; Product Team</span></div>
-  <nav class="sidebar-nav">
-    <div class="nav-sec">My Dashboard</div>
-    <a class="nav-item" href="pt-dashboard.html"><span class="icon">&#128202;</span> Dashboard</a>
-    <div class="nav-sec">Service Records</div>
-    <a class="nav-item active" href="ptbir.html"><span class="icon">&#128203;</span> BIR LIST</a>
-    <a class="nav-item" href="ptcbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
-    <a class="nav-item" href="ptpa.html"><span class="ico">&#128221;</span> Pending Activity</a>
-    <a class="nav-item" href="ptca.html"><span class="ico">&#9989;</span> Closed Activity</a>
-    <a class="nav-item" href="ptcall.html"><span class="ico">&#128222;</span> Call Register</a>
-    <a class="nav-item" href="ptclose.html"><span class="ico">&#9989;</span> Closed Calls</a>
-    <a class="nav-item" href="ptdw.html"><span class="ico">&#128197;</span> Daily Work</a>
-    <a class="nav-item" href="ptour.html"><span class="ico">&#128663;</span> Tour Summary</a>
-  </nav>
-  <div class="sidebar-footer">
-    <div class="user-info">
-      <div class="user-avatar" id="admin-avatar">A</div>
-      <div>
-        <div class="user-name" id="admin-name">Admin</div>
-        <div class="user-role">Product Team Engineer</div>
-      </div>
-      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
-    </div>
-  </div>
-</aside>
-
-<!-- MAIN -->
-<div class="main">
-  <div class="topbar">
-    <div class="topbar-left">
-      <div class="page-title">Batch Inspection Report</div>
-      <div class="topbar-date" id="admin-date"></div>
-    </div>
-    <div class="topbar-actions">
-      <button class="topbar-btn" onclick="const b=this; const o=b.innerHTML; b.innerHTML='&#8635; Refreshing...'; Promise.resolve(loadData()).then(()=>{b.innerHTML='&#10004; Refreshed!'; setTimeout(()=>b.innerHTML=o,2000);}).catch(()=>{b.innerHTML='&#10008; Error'; setTimeout(()=>b.innerHTML=o,2000);})">&#10227; Refresh</button>
-      <button class="topbar-btn" onclick="exportCSV()">&#128228; Export</button>
-    </div>
-  </div>
-
-  <div class="content">
-
-    <!-- HERO -->
-    <div class="bir-hero">
-      <div class="bir-hero-inner">
-        <div class="bir-hero-left">
-          <h1>Batch Inspection Report</h1>
-          <p>Full BIR tracking - software, hardware & accessory changes per unit</p>
-          <div class="live-pulse"><span class="pulse-dot"></span> BIR Registry Active</div>
-        </div>
-        <div class="bir-hero-meta">
-          <div class="bir-meta-item"><div class="val" id="hero-total" style="color:var(--cyan);">0</div><div class="lbl">Total BIRs</div></div>
-          <div class="bir-meta-item"><div class="val" id="hero-pending" style="color:var(--amber);">0</div><div class="lbl">Pending</div></div>
-          <div class="bir-meta-item"><div class="val" id="hero-approved" style="color:var(--green);">0</div><div class="lbl">Approved</div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- KPI TICKER -->
-    <div class="kpi-ticker">
-      <div class="kpi-item"><div><div class="kpi-label">Total Entries</div><div class="kpi-val" id="kpi-total">0</div></div></div>
-      <div class="kpi-item"><div><div class="kpi-label">Divisions</div><div class="kpi-val" id="kpi-divs">0</div></div></div>
-      <div class="kpi-item"><div><div class="kpi-label">Today's BIRs</div><div class="kpi-val" id="kpi-today">0</div></div></div>
-      <div class="kpi-item"><div><div class="kpi-label">In Progress</div><div class="kpi-val" id="kpi-wip">0</div></div></div>
-      <div class="kpi-item"><div><div class="kpi-label">Rejected</div><div class="kpi-val" id="kpi-rejected">0</div></div></div>
-    </div>
-
-    <!-- STATS -->
-    <div class="stats-grid">
-      <div class="stat-card s-cyan"><div class="stat-label">Total BIRs</div><div class="stat-icon">&#128202;</div><div class="stat-value" id="sc-total">0</div><div class="stat-sub">All entries</div></div>
-      <div class="stat-card s-amber"><div class="stat-label">Pending</div><div class="stat-icon">&#9989;</div><div class="stat-value" id="sc-pending">0</div><div class="stat-sub">Awaiting action</div></div>
-      <div class="stat-card s-blue"><div class="stat-label">In Progress</div><div class="stat-icon">&#128202;</div><div class="stat-value" id="sc-wip">0</div><div class="stat-sub">Under review</div></div>
-      <div class="stat-card s-green"><div class="stat-label">Approved</div><div class="stat-icon">&#9989;</div><div class="stat-value" id="sc-approved">0</div><div class="stat-sub">Cleared</div></div>
-      <div class="stat-card s-red"><div class="stat-label">Rejected</div><div class="stat-icon">&#9989;</div><div class="stat-value" id="sc-rejected">0</div><div class="stat-sub">Need rework</div></div>
-      <div class="stat-card s-purple"><div class="stat-label">HW Changes</div><div class="stat-icon">&#128202;</div><div class="stat-value" id="sc-hw">0</div><div class="stat-sub">With HW changes</div></div>
-    </div>
-
-    <!-- BIR TABLE -->
-    <div class="panel">
-      <div class="panel-header">
-        <div class="panel-title">&#128196; BIR Registry</div>
-        <div style="font-size:12px;color:var(--muted);" id="bir-count">0 records</div>
-      </div>
-      <div class="panel-body" style="padding-bottom:0;">
-        <div class="filter-bar">
-          <input class="filter-search" id="bir-search" placeholder="?? Search by division, model, ref no, serial..." oninput="renderTable()"/>
-          <select class="filter-select" id="f-filter-div" onchange="renderTable()">
-            <option value="">All Divisions</option>
-            <option>GANSHORN</option><option>VENTILATOR</option><option>PATIENT MONITORS</option>
-            <option>SHIPL</option><option>INJECTOR</option><option>RADIOLOGY</option><option>HOLTER</option>
-          </select>
-          <select class="filter-select" id="f-filter-status" onchange="renderTable()">
-            <option value="">All Statuses</option>
-            <option>Pending</option><option>In Progress</option><option>Approved</option><option>Rejected</option>
-          </select>
-          <select class="filter-select" id="f-filter-rows" onchange="renderTable()">
-            <option value="10">10 / page</option>
-            <option value="25">25 / page</option>
-            <option value="50">50 / page</option>
-            <option value="100">All</option>
-          </select>
-        </div>
-      </div>
-      <div class="table-wrap">
-        <table class="data-table">
-          <thead>
-            <tr><th>Actions</th>
-              <th class="sortable" data-col="birRef">BIR Ref No.<span class="sort-icon"></span></th>
-              <th class="sortable" data-col="unitInwardDate">Inward Date<span class="sort-icon"></span></th>
-              <th class="sortable" data-col="division">Division<span class="sort-icon"></span></th>
-              <th class="sortable" data-col="model">Model<span class="sort-icon"></span></th>
-              <th>Configuration</th>
-              <th class="sortable" data-col="receivedQty">Qty<span class="sort-icon"></span></th>
-              <th>Prev SW</th>
-              <th>HW Changes</th>
-              <th>Accessory Details</th>
-              <th>CNR/Technews</th>
-              <th class="sortable" data-col="status">Status<span class="sort-icon"></span></th>
-              
-            </tr>
-          </thead>
-          <tbody id="bir-tbody"></tbody>
-        </table>
-      </div>
-      <div class="table-footer-bar">
-        <span id="bir-footer">Showing 0 of 0 entries</span>
-        <div class="pagination" id="pagination"></div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<script>
-// -- DATA ----------------------------------------------------------------------
-let birData = [];
-let editingId = null;
-let sortCol = 'unitInwardDate';
-let sortDir = 'desc';
-let currentPage = 1;
-
-// -- HELPERS -------------------------------------------------------------------
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function getToken(){return sessionStorage.getItem('schiller_token')||'';}
-function authHeaders(){return{'Content-Type':'application/json',Authorization:'Bearer '+getToken()};}
-function handleUnauth(r){if(r.status===401){showToast('Session expired.','err');setTimeout(()=>window.location.href='login.html',1500);throw new Error('Unauthorized');}}
-function showToast(msg,type='ok'){const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="tdot"></span>'+msg;w.appendChild(el);setTimeout(()=>el.remove(),3200);}
-function stClass(s){return s==='Approved'?'st-approved':s==='Rejected'?'st-rejected':s==='In Progress'?'st-wip':'st-pending';}
-function divClass(d){return'bp-cyan';}
-function todayStr(){return new Date().toISOString().split('T')[0];}
-function fmtDate(d){if(!d)return'-';const dt=new Date(d);return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}
-function genRef(division){const now=new Date();const dd=String(now.getDate()).padStart(2,'0');const mm=String(now.getMonth()+1).padStart(2,'0');const yy=String(now.getFullYear()).slice(-2);const idx=birData.length+1;const prefix=(division||'BIR').split(' ')[0].substring(0,5).toUpperCase();return`${prefix}/${dd}${mm}${yy}/${String(idx).padStart(2,'0')}`;}
-
-// -- LOAD/SAVE DATA ------------------------------------------------------------
-function normalizeForPtView(r){
-  return {
-    ...r,
-    unitInwardDate: r.unitInwardDate || r.inwardDate || '',
-    birRef:         r.birRef         || r.birRefNo   || '',
-    status:         r.status         || r.finalStatus || 'Pending',
-    accDetails:     r.accDetails     || r.accessoryDetails || '',
-    scEngineer:     r.scEngineer     || r.scEng || r.engineer || '',
-    hwChanges:      r.hwChanges === '!' ? 'NA' : (r.hwChanges || ''),
-    cnrCirculation: r.cnrCirculation === '!' ? '' : (r.cnrCirculation || '')
-  };
-}
-function isOpenPtBir(r){
-  const status = String(r?.status || r?.finalStatus || '').trim();
-  return !['Approved','Closed'].includes(status);
-}
-
-async function loadData(){
-  try{
-    const res=await fetch('/api/pt/bir',{headers:authHeaders()});
-    if(res.ok){
-      const raw=await res.json();
-      birData=raw.map(normalizeForPtView).filter(isOpenPtBir);
-    }else{birData=[];}
-  }catch(e){
-    birData=[];
-  }
-  updateAll();
-  populateModelList();
-}
-
-function populateModelList(){
-  const dl = document.getElementById('model-list');
-  if (!dl) return;
-  const models = [...new Set(birData.map(x => x.model).filter(Boolean))].sort();
-  dl.innerHTML = models.map(m => `<option value="${esc(m)}">`).join('');
-}
-
-function demoData(){
-  return[
-    {_id:'bir001',birRef:'SAG/270426/27',unitInwardDate:'2026-04-27',fqcInwardDate:'2026-04-27',division:'GANSHORN',model:'DLCO',configuration:'Spirometry, SBD, Provocation.',receivedQty:'1no',prevSwVersion:'1.10.2.54',presSwVersion:'',hwChanges:'',hwChangeRemarks:'',swChangeRemarks:'',accChanges:'No Change',accDetails:'std acc recd',accChangeRemarks:'',userManualUpdate:'',serviceManualUpdate:'',fqcRemarks:'',scEngineer:'',psEngineer:'',techRemarks:'',tsVerificationDate:'',psVerificationDate:'',cnrCirculation:'',cnrRefNo:'',cnrReleaseDate:'',approvedDate:'',invoiceNo:'',invoiceDate:'',serial:'',supplier:'',status:'Pending'},
-    {_id:'bir002',birRef:'VENT/230426/32',unitInwardDate:'2026-04-23',fqcInwardDate:'2026-04-23',division:'VENTILATOR',model:'NNT_8050',configuration:'servo control',receivedQty:'27',prevSwVersion:'1.14',presSwVersion:'',hwChanges:'',hwChangeRemarks:'',swChangeRemarks:'',accChanges:'No Change',accDetails:'standard accessories received',accChangeRemarks:'',userManualUpdate:'',serviceManualUpdate:'',fqcRemarks:'',scEngineer:'',psEngineer:'',techRemarks:'',tsVerificationDate:'',psVerificationDate:'',cnrCirculation:'',cnrRefNo:'',cnrReleaseDate:'',approvedDate:'',invoiceNo:'',invoiceDate:'',serial:'',supplier:'',status:'Pending'},
-    {_id:'bir003',birRef:'OEM/230426/11',unitInwardDate:'2026-04-24',fqcInwardDate:'2026-04-24',division:'PATIENT MONITORS',model:'BLT CNS',configuration:'DUAL DISPLAY',receivedQty:'5nos',prevSwVersion:'V02.00.00.RE01',presSwVersion:'',hwChanges:'',hwChangeRemarks:'',swChangeRemarks:'',accChanges:'No Change',accDetails:'std acc recd',accChangeRemarks:'',userManualUpdate:'',serviceManualUpdate:'',fqcRemarks:'',scEngineer:'',psEngineer:'',techRemarks:'',tsVerificationDate:'',psVerificationDate:'',cnrCirculation:'',cnrRefNo:'',cnrReleaseDate:'',approvedDate:'',invoiceNo:'',invoiceDate:'',serial:'',supplier:'',status:'In Progress'},
-    {_id:'bir004',birRef:'VENT/170426/31',unitInwardDate:'2026-04-17',fqcInwardDate:'2026-04-17',division:'VENTILATOR',model:'GRAPHNET TS',configuration:'ADL, PED',receivedQty:'25',prevSwVersion:'N11-TS-01.15',presSwVersion:'',hwChanges:'',hwChangeRemarks:'',swChangeRemarks:'',accChanges:'No Change',accDetails:'standard accessories received',accChangeRemarks:'',userManualUpdate:'',serviceManualUpdate:'',fqcRemarks:'',scEngineer:'',psEngineer:'',techRemarks:'',tsVerificationDate:'',psVerificationDate:'',cnrCirculation:'',cnrRefNo:'',cnrReleaseDate:'',approvedDate:'',invoiceNo:'',invoiceDate:'',serial:'',supplier:'',status:'Approved'},
-    {_id:'bir005',birRef:'SAG/150426/26',unitInwardDate:'2026-04-16',fqcInwardDate:'2026-04-16',division:'GANSHORN',model:'DLCO',configuration:'Spirometry + SBD + Provocation+FRC Washout+ROCC+P0.1/Pmax',receivedQty:'1no',prevSwVersion:'1.10.2.54',presSwVersion:'',hwChanges:'',hwChangeRemarks:'',swChangeRemarks:'',accChanges:'Added',accDetails:'std acc recd',accChangeRemarks:'',userManualUpdate:'',serviceManualUpdate:'',fqcRemarks:'',scEngineer:'',psEngineer:'',techRemarks:'',tsVerificationDate:'',psVerificationDate:'',cnrCirculation:'',cnrRefNo:'',cnrReleaseDate:'',approvedDate:'',invoiceNo:'',invoiceDate:'',serial:'',supplier:'',status:'Pending'},
-    {_id:'bir006',birRef:'SAG/150426/25',unitInwardDate:'2026-04-15',fqcInwardDate:'2026-04-15',division:'GANSHORN',model:'Body Plus',configuration:'Spirometry+SBD+Body plethysmography+Provocation',receivedQty:'2nos',prevSwVersion:'1.10.2.54',presSwVersion:'',hwChanges:'NA',hwChangeRemarks:'',swChangeRemarks:'',accChanges:'No Change',accDetails:'std acc recd',accChangeRemarks:'',userManualUpdate:'',serviceManualUpdate:'',fqcRemarks:'',scEngineer:'',psEngineer:'',techRemarks:'',tsVerificationDate:'',psVerificationDate:'',cnrCirculation:'',cnrRefNo:'',cnrReleaseDate:'',approvedDate:'',invoiceNo:'',invoiceDate:'',serial:'',supplier:'',status:'Approved'},
-    {_id:'bir007',birRef:'SHIPL/15042026/09',unitInwardDate:'2026-04-15',fqcInwardDate:'2026-04-15',division:'SHIPL',model:'DG-400x',configuration:'ESNRPAC - 12 LEAD (LI-ION)',receivedQty:'5',prevSwVersion:'V2.5',presSwVersion:'',hwChanges:'NA',hwChangeRemarks:'',swChangeRemarks:'',accChanges:'No Change',accDetails:'NA',accChangeRemarks:'',userManualUpdate:'',serviceManualUpdate:'',fqcRemarks:'',scEngineer:'',psEngineer:'',techRemarks:'',tsVerificationDate:'',psVerificationDate:'',cnrCirculation:'',cnrRefNo:'',cnrReleaseDate:'',approvedDate:'',invoiceNo:'',invoiceDate:'',serial:'',supplier:'',status:'Rejected'},
-  ];
-}
-
-async function persistData(){localStorage.setItem('si_pt_bir_data',JSON.stringify(birData));}
-async function persistClosedBir(doc){
-  const key = 'si_pt_closed_bir_data';
-  const current = JSON.parse(localStorage.getItem(key) || '[]');
-  const normalized = normalizeForPtView(doc || {});
-  const next = [normalized, ...current.filter(x => (x._id || x.id || x.birRef) !== (normalized._id || normalized.id || normalized.birRef))];
-  localStorage.setItem(key, JSON.stringify(next));
-}
-
-// -- UPDATE UI -----------------------------------------------------------------
-function updateAll(){updateStats();renderTable();}
-function updateStats(){
-  const total=birData.length;
-  const pending=birData.filter(x=>x.status==='Pending').length;
-  const approved=birData.filter(x=>x.status==='Approved').length;
-  const rejected=birData.filter(x=>x.status==='Rejected').length;
-  const wip=birData.filter(x=>x.status==='In Progress').length;
-  const hwChanged=birData.filter(x=>x.hwChanges&&x.hwChanges.toLowerCase()!=='na'&&x.hwChanges.trim()!=='').length;
-  const divCount=[...new Set(birData.map(x=>x.division))].length;
-  const todayISO=todayStr();
-  const todayCount=birData.filter(x=>x.unitInwardDate===todayISO).length;
-  (document.getElementById('hero-total')||{}).textContent =total;
-  (document.getElementById('hero-pending')||{}).textContent =pending;
-  (document.getElementById('hero-approved')||{}).textContent =approved;
-  (document.getElementById('sc-total')||{}).textContent =total;
-  (document.getElementById('sc-pending')||{}).textContent =pending;
-  (document.getElementById('sc-approved')||{}).textContent =approved;
-  (document.getElementById('sc-rejected')||{}).textContent =rejected;
-  (document.getElementById('sc-wip')||{}).textContent =wip;
-  (document.getElementById('sc-hw')||{}).textContent =hwChanged;
-  const badgeBir = document.getElementById('badge-bir');
-  if (badgeBir) badgeBir.textContent = total;
-  (document.getElementById('kpi-total')||{}).textContent =total;
-  (document.getElementById('kpi-divs')||{}).textContent =divCount;
-  (document.getElementById('kpi-today')||{}).textContent =todayCount;
-  (document.getElementById('kpi-wip')||{}).textContent =wip;
-  (document.getElementById('kpi-rejected')||{}).textContent =rejected;
-}
-
-// -- SORT ----------------------------------------------------------------------
-document.querySelectorAll('.data-table th.sortable').forEach(th=>{
-  th.addEventListener('click',()=>{
     const col=th.dataset.col;
     if(sortCol===col)sortDir=sortDir==='asc'?'desc':'asc';
     else{sortCol=col;sortDir='asc';}
