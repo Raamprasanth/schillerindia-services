@@ -590,7 +590,7 @@ function fillScEngineerSelect(selected, recordDivision){
   if(selectedName && !Array.from(sel.options).some(o => o.value === selectedName)){
     const opt = document.createElement('option');
     opt.value = selectedName;
-    opt.textContent = selectedName + ' (current)';
+    opt.textContent = selectedName;
     sel.appendChild(opt);
   }
   if(selectedName) sel.value = selectedName;
