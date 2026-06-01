@@ -290,7 +290,8 @@ table.comr-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('requested')">Requested &#8597;</th>
             <th onclick="sortBy('division')">Division &#8597;</th>
             <th onclick="sortBy('model')">Model &#8597;</th>
-            <th onclick="sortBy('description')">Description &#8597;</th>
+            <th onclick="sortBy('description')">Board Name &#8597;</th>
+            <th onclick="sortBy('componentName')">Comp Name &#8597;</th>
             <th onclick="sortBy('partNumber')">MPN/Part no &#8597;</th>
             <th onclick="sortBy('requiredQty')">Req Qty &#8597;</th>
             <th onclick="sortBy('price')">Price per Qty &#8597;</th>
@@ -301,7 +302,7 @@ table.comr-table tbody tr:last-child td{border-bottom:none;}
             <th>Actions</th>
           </tr></thead>
           <tbody id="comr-tbody">
-            <tr><td colspan="13" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
+            <tr><td colspan="14" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -332,7 +333,8 @@ table.comr-table tbody tr:last-child td{border-bottom:none;}
           <div class="ff"><label>Division <span class="req">*</span></label><select id="fm-division"><option value="">Select Division</option></select></div>
           <div class="ff"><label>Model</label><input type="text" id="f-model"/></div>
 
-          <div class="ff"><label>Description <span class="req">*</span></label><input type="text" id="f-description"/></div>
+          <div class="ff"><label>Board Name <span class="req">*</span></label><input type="text" id="f-description"/></div>
+          <div class="ff"><label>Comp Name</label><input type="text" id="f-componentName"/></div>
           <div class="ff"><label>MPN/Part no</label><input type="text" id="f-mpnno"/></div>
           <div class="ff"><label>Required Qty <span class="req">*</span></label><input type="number" id="f-requiredQty" min="1"/></div>
           <div class="ff"><label>Price per Qty</label><input type="number" id="f-price" min="0" step="0.01"/></div>
@@ -382,6 +384,7 @@ function setupRepairSuggestions() {
   RepairSuggestions.bind({
     'f-model': ['model'],
     'f-description': ['description'],
+    'f-componentName': ['componentName'],
     'f-mpnno': ['partNumber','mpnNumber'],
     'f-requiredQty': ['requiredQty'],
     'f-price': ['price'],
@@ -446,7 +449,7 @@ async function loadData() {
 
 function showError(msg) {
   document.getElementById('comr-tbody').innerHTML =
-    `<tr><td colspan="13"><div class="empty-st">
+    `<tr><td colspan="14"><div class="empty-st">
       <div class="ei">&#9888;&#65039;</div><div class="et">Cannot load data</div>
       <div class="es">${msg}</div>
       <div style="margin-top:14px;"><button class="btn btn-rep btn-sm" onclick="loadData()">&#10227; Try Again</button></div>
@@ -543,7 +546,7 @@ function renderTable() {
   (document.getElementById('count-pill')||{}).textContent = total + ' entr' + (total === 1 ? 'y' : 'ies');
   const tbody = document.getElementById('comr-tbody');
   if (!slice.length) {
-    tbody.innerHTML = `<tr><td colspan="13"><div class="empty-st">
+    tbody.innerHTML = `<tr><td colspan="14"><div class="empty-st">
       <div class="ei">&#128296;</div>
       <div class="et">${allData.length ? 'No records match filters' : 'No Component Requests'}</div>
       <div class="es">${allData.length ? 'Try clearing filters.' : 'Click "+ New Request" to create one.'}</div>
@@ -558,6 +561,7 @@ function renderTable() {
         <td><span style="font-size:10px;background:rgba(91,33,182,0.08);color:#5b21b6;border:1px solid rgba(91,33,182,0.18);border-radius:8px;padding:2px 8px;font-weight:700;">${esc(d.division||'-')}</span></td>
         <td style="font-size:11.5px;">${esc(d.model||'-')}</td>
         <td style="font-weight:600;">${esc(d.description||'-')}</td>
+        <td style="font-weight:600;">${esc(d.componentName||'-')}</td>
         <td><span style="font-family:monospace;font-size:14px;font-weight:800;color:var(--text);">${esc(d.partNumber || d.mpnNumber || '-')}</span></td>
         <td style="font-weight:700;text-align:center;">${d.requiredQty||'-'}</td>
         <td style="font-size:11.5px;">${d.price != null && d.price !== '' ? d.price : '-'}</td>
@@ -603,6 +607,7 @@ function openEdit(id) {
   document.getElementById('fm-division').value = d.division || '';
   document.getElementById('f-model').value = d.model || '';
   document.getElementById('f-description').value = d.description || '';
+  document.getElementById('f-componentName').value = d.componentName || '';
   document.getElementById('f-mpnno').value = d.partNumber || d.mpnNumber || '';
   document.getElementById('f-requiredQty').value = d.requiredQty || '';
   document.getElementById('f-price').value = d.price != null ? d.price : '';
@@ -616,7 +621,7 @@ function openEdit(id) {
 function closeModal() { document.getElementById('modal-form').classList.remove('open'); }
 
 function clearForm() {
-  ['f-requestedDate','fm-division','f-model','f-description','f-mpnno','f-requiredQty',
+  ['f-requestedDate','fm-division','f-model','f-description','f-componentName','f-mpnno','f-requiredQty',
    'f-requested','f-price','f-piRaisedDate','f-piApprovedDate','f-componentsReceivedDate','f-remarks'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
@@ -628,6 +633,7 @@ async function saveRecord() {
   const division               = document.getElementById('fm-division').value.trim();
   const model                  = document.getElementById('f-model').value.trim();
   const description            = document.getElementById('f-description').value.trim();
+  const componentName          = document.getElementById('f-componentName').value.trim();
   const partNumber             = document.getElementById('f-mpnno').value.trim();
   const requiredQty            = parseInt(document.getElementById('f-requiredQty').value) || 0;
   const price                  = parseFloat(document.getElementById('f-price').value) || 0;
@@ -639,7 +645,7 @@ async function saveRecord() {
   if (!requestedDate || !requested || !division || !description || !requiredQty) {
     showToast('Please fill all required fields.', 'err'); return;
   }
-  const body = { requestedDate, requested, division, model, description, partNumber, requiredQty, price,
+  const body = { requestedDate, requested, division, model, description, componentName, partNumber, requiredQty, price,
     piRaisedDate: piRaisedDate || null, piApprovedDate: piApprovedDate || null,
     componentsReceivedDate: componentsReceivedDate || null, remarks };
   const btn = document.getElementById('save-btn');

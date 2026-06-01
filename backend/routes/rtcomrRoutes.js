@@ -45,12 +45,12 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const {
-      requestedDate, requested, requestedBy, division, model, description, partNumber, mpnNumber,
+      requestedDate, requested, requestedBy, division, model, description, componentName, partNumber, mpnNumber,
       requiredQty, price, piRaisedDate, piApprovedDate, componentsReceivedDate, remarks,
     } = req.body;
 
     if (!requestedDate || !requested && !requestedBy || !division || !description || !requiredQty) {
-      return fail(res, 400, 'Required: requestedDate, requested, division, description, requiredQty');
+      return fail(res, 400, 'Required: requestedDate, requested, division, boardName, requiredQty');
     }
 
     const doc = await RtCOMR.create({
@@ -59,6 +59,7 @@ router.post('/', async (req, res) => {
       division,
       model:                  model || '',
       description,
+      componentName:          componentName || '',
       partNumber:             partNumber || mpnNumber || '',
       requiredQty:            parseInt(requiredQty)  || 1,
       price:                  parseFloat(price)      || 0,
@@ -88,6 +89,7 @@ router.put('/:id', async (req, res) => {
     if (b.division               !== undefined) record.division               = b.division;
     if (b.model                  !== undefined) record.model                  = b.model;
     if (b.description            !== undefined) record.description            = b.description;
+    if (b.componentName          !== undefined) record.componentName          = b.componentName;
     if (b.partNumber             !== undefined) record.partNumber             = b.partNumber;
     if (b.mpnNumber              !== undefined && b.partNumber === undefined) record.partNumber = b.mpnNumber;
     if (b.requiredQty            !== undefined) record.requiredQty            = parseInt(b.requiredQty) || 1;
@@ -110,6 +112,7 @@ router.put('/:id', async (req, res) => {
           division: saved.division,
           model: saved.model,
           description: saved.description,
+          componentName: saved.componentName,
           partNumber: saved.partNumber,
           requiredQty: saved.requiredQty,
           price: saved.price,
@@ -154,6 +157,7 @@ router.put('/:id/fulfill', async (req, res) => {
         division: saved.division,
         model: saved.model,
         description: saved.description,
+        componentName: saved.componentName,
         partNumber: saved.partNumber,
         requiredQty: saved.requiredQty,
         price: saved.price,

@@ -7,6 +7,7 @@ const rtClosedComponentsRequestSchema = new mongoose.Schema(
     division: { type: String, trim: true, index: true },
     model: { type: String, trim: true, default: '' },
     description: { type: String, trim: true },
+    componentName: { type: String, trim: true, default: '' },
     partNumber: { type: String, trim: true, default: '' },
     requiredQty: { type: Number, default: 1 },
     price: { type: Number, default: 0 },

@@ -269,7 +269,8 @@ table.ccr-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('fulfilledDate')">Closed Date &#8597;</th>
             <th onclick="sortBy('division')">Division &#8597;</th>
             <th onclick="sortBy('model')">Model &#8597;</th>
-            <th onclick="sortBy('description')">Description &#8597;</th>
+            <th onclick="sortBy('description')">Board Name &#8597;</th>
+            <th onclick="sortBy('componentName')">Comp Name &#8597;</th>
             <th onclick="sortBy('partNumber')">Part No &#8597;</th>
             <th onclick="sortBy('requiredQty')">Req Qty &#8597;</th>
             <th onclick="sortBy('price')">Price &#8597;</th>
@@ -279,7 +280,7 @@ table.ccr-table tbody tr:last-child td{border-bottom:none;}
             <th>View</th>
           </tr></thead>
           <tbody id="ccr-tbody">
-            <tr><td colspan="12" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
+            <tr><td colspan="13" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -305,7 +306,8 @@ table.ccr-table tbody tr:last-child td{border-bottom:none;}
           <div class="df"><label>Closed / Fulfilled Date</label><div class="dval hl" id="d-fulfilledDate">-</div></div>
           <div class="df"><label>Division</label><div class="dval" id="d-division">-</div></div>
           <div class="df"><label>Model</label><div class="dval" id="d-model">-</div></div>
-          <div class="df"><label>Description</label><div class="dval" id="d-description">-</div></div>
+          <div class="df"><label>Board Name</label><div class="dval" id="d-description">-</div></div>
+          <div class="df"><label>Comp Name</label><div class="dval" id="d-componentName">-</div></div>
           <div class="df"><label>Part Number</label><div class="dval" id="d-partNumber">-</div></div>
           <div class="df"><label>Required Qty</label><div class="dval" id="d-requiredQty">-</div></div>
           <div class="df"><label>Price</label><div class="dval" id="d-price">-</div></div>
@@ -382,7 +384,7 @@ async function loadData() {
 
 function showError(msg) {
   document.getElementById('ccr-tbody').innerHTML =
-    `<tr><td colspan="12"><div class="empty-st">
+    `<tr><td colspan="13"><div class="empty-st">
       <div class="ei">&#9888;&#65039;</div><div class="et">Cannot load data</div>
       <div class="es">${msg}</div>
       <div style="margin-top:14px;"><button class="btn btn-rep btn-sm" onclick="loadData()">&#10227; Try Again</button></div>
@@ -440,7 +442,7 @@ function renderTable() {
   (document.getElementById('count-pill')||{}).textContent = total + ' entr' + (total === 1 ? 'y' : 'ies');
   const tbody = document.getElementById('ccr-tbody');
   if (!slice.length) {
-    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-st">
+    tbody.innerHTML = `<tr><td colspan="13"><div class="empty-st">
       <div class="ei">&#128194;</div>
       <div class="et">${allData.length ? 'No records match filters' : 'No Closed Requests'}</div>
       <div class="es">${allData.length ? 'Try clearing filters.' : 'Fulfilled or rejected requests will appear here.'}</div>
@@ -455,6 +457,7 @@ function renderTable() {
         <td><span style="font-size:10px;background:rgba(91,33,182,0.08);color:#5b21b6;border:1px solid rgba(91,33,182,0.18);border-radius:8px;padding:2px 8px;font-weight:700;">${esc(d.division||'-')}</span></td>
         <td style="font-size:11.5px;">${esc(d.model||'-')}</td>
         <td style="font-weight:600;">${esc(d.description||'-')}</td>
+        <td style="font-weight:600;">${esc(d.componentName||'-')}</td>
         <td><span style="font-family:monospace;font-size:10.5px;color:var(--muted);">${esc(d.partNumber||'-')}</span></td>
         <td style="font-weight:700;text-align:center;">${d.requiredQty||'-'}</td>
         <td style="font-size:11.5px;">${d.price != null && d.price !== '' ? d.price : '-'}</td>
@@ -486,6 +489,7 @@ function openDetail(id) {
   set('d-division', d.division);
   set('d-model', d.model);
   set('d-description', d.description);
+  set('d-componentName', d.componentName);
   set('d-partNumber', d.partNumber);
   set('d-requiredQty', d.requiredQty ? String(d.requiredQty) : '');
   set('d-price', d.price != null && d.price !== '' ? String(d.price) : '');
@@ -501,12 +505,12 @@ function openDetail(id) {
 function closeModal() { document.getElementById('modal-detail').classList.remove('open'); }
 
 function exportCSV() {
-  const headers = ['Requested Date','Closed Date','Division','Model','Description','Part No','Req Qty','Price','PI Raised Date','PI Approved Date','Components Received Date','Fulfilled By','Final Status','Remarks'];
+  const headers = ['Requested Date','Closed Date','Division','Model','Board Name','Comp Name','Part No','Req Qty','Price','PI Raised Date','PI Approved Date','Components Received Date','Fulfilled By','Final Status','Remarks'];
   const rows = filtered.map(d => {
     const closedDate = d.fulfilledDate || d.closedDate || '';
     return [
       fmtDate(d.requestedDate), fmtDate(closedDate), d.division||'-', d.model||'-',
-      d.description||'-', d.partNumber||'-', d.requiredQty||0, d.price||0,
+      d.description||'-', d.componentName||'-', d.partNumber||'-', d.requiredQty||0, d.price||0,
       fmtDate(d.piRaisedDate), fmtDate(d.piApprovedDate), fmtDate(d.componentsReceivedDate),
       d.fulfilledBy||d.closedBy||'-', d.status||'-', d.remarks||'-'
     ];
