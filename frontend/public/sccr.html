@@ -662,6 +662,26 @@ function openUpdateModal(id){
 
   document.getElementById('update-overlay').classList.add('open');
   document.querySelector('.modal-scroll').scrollTop = 0;
+}
+
+function closeModal(){
+  document.getElementById('update-overlay').classList.remove('open');
+}
+
+// -- EXPORT CSV ------------------------------------------------------------
+function exportCSV(){
+  const headers=['#','Division','Entry Date','SC Engg','Type','Received Date','Branch','Engineer','Model','Warranty Status','TO/SO Ref No','CRM Ref No','Status','Executed Date','Remarks'];
+  const rows=filtered.map((d,i)=>[i+1,d.division,d.entryDate,d.scEng,d.type,d.receivedDate,d.branch,d.eng,d.model,d.warrantyStatus,d.refNo,d.crmRefNo,d.status,d.executedDate,d.remarks]);
+  const csv=[headers,...rows].map(r=>r.map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='closed-prfob-'+new Date().toISOString().split('T')[0]+'.csv';
+  a.click();
+  showToast('Exported '+filtered.length+' records.','ok');
+}
+
+// -- PAGINATION ------------------------------------------------------------
+function renderPagination(pages){
   const el=document.getElementById('tbl-pagination');
   if(pages<=1){el.innerHTML='';return;}
   let h=`<button class="pager" ${currentPage===1?'disabled':''} onclick="gp(${currentPage-1})">&#8249; Prev</button>`;
