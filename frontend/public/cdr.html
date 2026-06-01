@@ -541,7 +541,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   }
 
   function openEdit(id) {
-    const r = records.find(x => x._id === id);
+    const r = filtered.find(x => x._id === id);
     if(!r) return;
     document.getElementById('f-id').value = r._id;
     document.getElementById('f-date').value = r.entryDate ? new Date(r.entryDate).toISOString().split('T')[0] : '';
@@ -599,6 +599,24 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       await fetch(`/api/cdr/${id}`, { method: 'DELETE', headers: hdrs() });
       loadData();
     } catch(e) { alert('Failed to delete'); }
+  }
+
+  function exportCSV() {
+    const headers = ['DR Req Date','FRN No','Part No','Model','Description','Unit Status','Spares Rcd Date'];
+    const rows = filtered.map(r => [
+      r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-',
+      r.frnNo || '-',
+      r.partNo || '-',
+      r.model || '-',
+      r.description || '-',
+      r.unitStatus || '-',
+      r.sparesReceivedDate ? new Date(r.sparesReceivedDate).toLocaleDateString('en-IN') : '-'
+    ]);
+    const csv = [headers, ...rows].map(row => row.map(v => `"${String(v || '').replace(/"/g,'""')}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'closed-dr-' + new Date().toISOString().split('T')[0] + '.csv';
+    a.click();
   }
 
   function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
