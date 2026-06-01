@@ -314,12 +314,12 @@
     <button class="nav-item active" data-page="fqc-dashboard">
       <span class="icon">&#128202;</span> Dashboard
     </button>
-    <button class="nav-item" data-page="pending-activity">
+    <a class="nav-item" href="fqc-dashboard.html?page=pending-activity">
       <span class="icon">&#9203;</span> Pending Activity
-    </button>
-    <button class="nav-item" data-page="closed-activity">
+    </a>
+    <a class="nav-item" href="fqc-dashboard.html?page=closed-activity">
       <span class="icon">&#9989;</span> Closed Activity
-    </button>
+    </a>
     <a class="nav-item" href="fns.html">
       <span class="icon">&#128230;</span> Non Saleable
     </a>
@@ -569,6 +569,12 @@ document.querySelectorAll('.nav-item[data-page]').forEach(b=>b.addEventListener(
 function goTo(page){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.querySelectorAll('.nav-item[data-page="'+page+'"]').forEach(n=>n.classList.add('active'));
+  // Also highlight anchor links that match the current page
+  document.querySelectorAll('.nav-item[href]').forEach(n=>{
+    const href = n.getAttribute('href')||'';
+    if(href.includes('page='+page)) n.classList.add('active');
+    else n.classList.remove('active');
+  });
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const t=document.getElementById('page-'+page);if(t)t.classList.add('active');
   (document.getElementById('topbar-title')||{}).textContent =pageTitles[page]||page;
