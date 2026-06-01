@@ -143,6 +143,10 @@ table.bir-table tbody tr:last-child td{border-bottom:none;}
 .btn-xs.update{color:var(--accent);border-color:rgba(0,104,181,0.3);background:var(--accent3);}
 .btn-xs.view{color:var(--teal);border-color:rgba(14,116,144,0.3);background:var(--teal-bg);}
 .btn-xs.close-btn{color:var(--green);border-color:rgba(4,120,87,0.3);background:var(--green-bg);}
+.topbar-btn{padding:7px 13px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface);color:var(--soft);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;line-height:1.2;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+.topbar-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent3);}
+.topbar-btn.primary{border-color:var(--accent);background:var(--accent);color:#fff;}
+.topbar-btn.primary:hover{background:var(--accent2);color:#fff;}
 
 /* ?"??"? LOADING / EMPTY ?"??"? */
 .loading-row td{text-align:center;padding:50px 20px;color:var(--muted);font-size:13px;}
@@ -418,8 +422,8 @@ table.bir-table tbody tr:last-child td{border-bottom:none;}
     </div>
     <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
       <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
-      <button class="btn btn-outline btn-sm" onclick="loadData()">&#8635; Refresh</button>
-      <button class="btn btn-export btn-sm" onclick="exportCSV()">&#128228; Export CSV</button>
+      <button class="topbar-btn" onclick="loadData()">&#8635; Refresh</button>
+      <button class="topbar-btn primary" onclick="exportCSV()">&#128228; Export CSV</button>
     </div>
   </div>
 
@@ -659,19 +663,11 @@ function divisionMatches(recordDivision, selectedDivision){
   return record === selected;
 }
 function applyFilters(){
-  const q = document.getElementById('tbl-search').value.toLowerCase();
-  const from = document.getElementById('fl-from').value;
-  const to = document.getElementById('fl-to').value;
-  const div = document.getElementById('fl-division').value;
-  const st = document.getElementById('fl-status').value;
-  const hw = document.getElementById('fl-hw').value;
+  const searchEl = document.getElementById('tbl-search');
+  const q = searchEl ? searchEl.value.toLowerCase() : '';
+
   filtered = DATA.filter(d=>
-    (!q || ((d.birRefNo||'')+' '+(d.model||'')+' '+(d.division||'')+' '+(d.configuration||'')).toLowerCase().includes(q)) &&
-    (!from || (d.inwardDate||'') >= from) &&
-    (!to   || (d.inwardDate||'') <= to) &&
-    divisionMatches(d.division, div) &&
-    (!st   || d.finalStatus === st) &&
-    (!hw   || d.hwChanges === hw)
+    (!q || ((d.birRefNo||'')+' '+(d.model||'')+' '+(d.division||'')+' '+(d.configuration||'')).toLowerCase().includes(q))
   );
   sortArr(); currentPage = 1; renderTable();
 }
@@ -929,12 +925,6 @@ function exportCSV(){
   a.click();
   URL.revokeObjectURL(url);
   showToast('Exported ' + filtered.length + ' records.', 'ok');
-}"`).join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
-  a.download = 'bir-list-'+new Date().toISOString().split('T')[0]+'.csv';
-  a.click();
-  showToast('Exported '+filtered.length+' records.','ok');
 }
 
 /* -- PAGINATION -- */
@@ -944,7 +934,7 @@ function renderPagination(pages){
   let h = '<button class="pager" '+(currentPage===1?'disabled':'')+' onclick="gp('+(currentPage-1)+')">&#8249; Prev</button>';
   getRange(currentPage,pages).forEach(p=>{
     if(p==='&#8230;') h+='<button class="pager" disabled>&#8230;</button>';
-    else h+='<button class="pager '+(p===currentPage?'active':'')+'" onclick="gp('+p+'">'+p+'</button>';
+    else h+='<button class="pager '+(p===currentPage?'active':'')+'" onclick="gp('+p+')">'+p+'</button>';
   });
   h += '<button class="pager" '+(currentPage===pages?'disabled':'')+' onclick="gp('+(currentPage+1)+')">Next &#8250;</button>';
   el.innerHTML = h;
