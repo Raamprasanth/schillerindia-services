@@ -394,7 +394,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <table class="frn-table">
           <thead>
             <tr>
-              <th>TO Requested Date</th>
+              <th>TO Req Date</th>
               <th>FRN No</th>
               <th>Part No</th>
               <th>Model</th>
@@ -567,7 +567,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   }
 
   function exportCSV() {
-    const headers = ['TO Requested Date','FRN No','Part No','Model','Description','TO Raised Date','Spares Rcd Date'];
+    const headers = ['TO Req Date','FRN No','Part No','Model','Description','TO Raised Date','Spares Rcd Date'];
     const rows = records.map(r => [
       r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-',
       r.frnNo || '-',
