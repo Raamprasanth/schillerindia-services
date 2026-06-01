@@ -662,65 +662,6 @@ function openUpdateModal(id){
 
   document.getElementById('update-overlay').classList.add('open');
   document.querySelector('.modal-scroll').scrollTop = 0;
-}
-
-function closeModal(){
-  document.getElementById('update-overlay').classList.remove('open');
-}
-
-// -- SUBMIT UPDATE ---------------------------------------------------------
-async function submitUpdate(){
-  const id = document.getElementById('upd-id').value;
-  const status = document.getElementById('upd-status').value;
-  if(!status){ document.getElementById('upd-status').classList.add('err'); showUpdMsg('Status is required.','err'); return; }
-  document.getElementById('upd-status').classList.remove('err');
-
-  const payload = {
-    status,
-    executedDate: document.getElementById('upd-executeddate').value,
-    receivedDate: document.getElementById('upd-receiveddate').value,
-    crmRefNo:     document.getElementById('upd-crmrefno').value.trim(),
-    remarks:      document.getElementById('upd-remarks').value.trim(),
-    updatedAt:    new Date().toISOString(),
-  };
-
-  const btn = document.getElementById('upd-save-btn');
-  btn.disabled = true; btn.innerHTML = '&#9203; Saving...';
-
-  try{
-    const res = await fetch(`${API}/api/sccr/${id}`, {
-      method: 'PUT', headers: authHeaders(), body: JSON.stringify(payload)
-    });
-    handleUnauth(res);
-    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'HTTP '+res.status);}
-    const saved = await res.json().catch(()=>({}));
-    const idx = DATA.findIndex(x=>(x._id||x.id)===id);
-    if(idx!==-1) DATA[idx]={...DATA[idx],...payload,...saved};
-    applyFilters();
-    showUpdMsg('&#10004; Record updated successfully!','ok');
-    showToast('TO/SO record updated.','ok');
-    setTimeout(closeModal, 1100);
-  }catch(e){
-    if(e.message!=='Unauthorized'){showUpdMsg('Save failed: '+e.message,'err');showToast('Update failed: '+e.message,'err');}
-  }finally{
-    btn.disabled=false; btn.innerHTML ='&#128190; Save Update';
-  }
-}
-
-// -- EXPORT CSV ------------------------------------------------------------
-function exportCSV(){
-  const headers=['#','Division','Entry Date','SC Engg','Type','Received Date','Branch','Engineer','Model','Warranty Status','TO/SO Ref No','CRM Ref No','Status','Executed Date','Remarks'];
-  const rows=filtered.map((d,i)=>[i+1,d.division,d.entryDate,d.scEng,d.type,d.receivedDate,d.branch,d.eng,d.model,d.warrantyStatus,d.refNo,d.crmRefNo,d.status,d.executedDate,d.remarks]);
-  const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');
-  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
-  a.download='closed-prfob-'+new Date().toISOString().split('T')[0]+'.csv';
-  a.click();
-  showToast('Exported '+filtered.length+' records.','ok');
-}
-
-// -- PAGINATION ------------------------------------------------------------
-function renderPagination(pages){
   const el=document.getElementById('tbl-pagination');
   if(pages<=1){el.innerHTML='';return;}
   let h=`<button class="pager" ${currentPage===1?'disabled':''} onclick="gp(${currentPage-1})">&#8249; Prev</button>`;
