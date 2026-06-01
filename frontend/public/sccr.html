@@ -255,30 +255,48 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     <div class="modal-header">
       <div>
         <div class="modal-title" id="modal-title">&#9998; Update Closed TO/SO Entry</div>
-        <div style="font-size:11.5px;color:var(--muted);margin-top:3px;">Review and update the record details below.</div>
+/* Form inside modal */
+.ff{display:flex;flex-direction:column;gap:5px;}
+.ff label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
+.ff label .req{color:var(--red);}
+.ff input,.ff select,.ff textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s,box-shadow 0.2s;width:100%;}
+.ff input:focus,.ff select:focus,.ff textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,104,181,0.08);}
+.ff input.err,.ff select.err{border-color:var(--red)!important;}
+.ff textarea{resize:none;height:72px;}
+.ff input::placeholder,.ff textarea::placeholder{color:var(--muted);font-size:11.5px;}
+.span2{grid-column:span 2;}.span3{grid-column:span 3;}.span4{grid-column:span 4;}
+.modal-footer{padding:16px 28px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;justify-content:flex-end;background:var(--surface3);flex-shrink:0;}
+
+/* -- TOAST -- */
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:700;display:flex;flex-direction:column;gap:7px;}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:11px 15px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:9px;min-width:230px;animation:fadeUp 0.28s ease;box-shadow:0 8px 22px rgba(0,0,0,0.1);}
+.toast.ok{border-color:rgba(4,120,87,0.35);}.toast.ok .td{background:var(--green);}
+.toast.err{border-color:rgba(185,28,28,0.35);}.toast.err .td{background:var(--red);}
+.toast.info{border-color:rgba(0,104,181,0.35);}.toast.info .td{background:var(--accent);}
+.td{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+    </style>
+  <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="employee-theme.css">
+  <script src="employee-theme.js"></script>
+  <link rel="stylesheet" href="topbar-alignment.css">
+  <link rel="stylesheet" href="brand-logo.css">
+  <script src="brand-logo.js" defer></script>
+</head>
+<body>
+
+<!-- -- VIEW MODAL -- -->
+<div class="overlay" id="update-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-title">&#9998; View Closed TO/SO Entry</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:3px;">Review the record details below.</div>
       </div>
       <button class="modal-close" onclick="closeModal()" title="Close (Esc)">&#10005;</button>
-    </div>
-
-    <!-- Record info strip -->
-    <div class="rec-info" id="rec-strip">
-      <div class="rec-info-item"><div class="rec-info-label">TO/SO Ref No</div><div class="rec-info-val" id="ri-refno"> </div></div>
-      <div class="rec-info-item"><div class="rec-info-label">SC Engineer</div><div class="rec-info-val normal" id="ri-sceng"> </div></div>
-      <div class="rec-info-item"><div class="rec-info-label">Division</div><div class="rec-info-val" id="ri-division"> </div></div>
-      <div class="rec-info-item"><div class="rec-info-label">Branch</div><div class="rec-info-val normal" id="ri-branch"> </div></div>
-      <div class="rec-info-item"><div class="rec-info-label">Type</div><div class="rec-info-val" id="ri-type"> </div></div>
-      <div class="rec-info-item"><div class="rec-info-label">Model</div><div class="rec-info-val normal" id="ri-model"> </div></div>
-      <div class="rec-info-item"><div class="rec-info-label">Engineer</div><div class="rec-info-val normal" id="ri-eng"> </div></div>
-      <div class="rec-info-item"><div class="rec-info-label">Warranty Status</div><div class="rec-info-val" id="ri-warranty"> </div></div>
-      <div class="rec-info-item"><div class="rec-info-label">CRM Ref No</div><div class="rec-info-val normal" id="ri-crmref"> </div></div>
-      <div class="rec-info-item"><div class="rec-info-label">Entry Date</div><div class="rec-info-val normal" id="ri-entrydate"> </div></div>
-    </div>
-
-    
-    <!-- Tab bar -->
-    <div class="modal-tab-bar">
-      <button class="modal-tab active" id="tab-details-btn" onclick="switchModalTab('details')">&#128203; Record Details</button>
-      <button class="modal-tab" id="tab-update-btn" onclick="switchModalTab('update')" title="Update">&#9999;&#65039; Update</button>
     </div>
 
     <div class="modal-scroll">
@@ -313,59 +331,13 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
           </div>
         </div>
       </div>
-
-      <!-- -- TAB: UPDATE -- -->
-      <div id="tab-update" class="modal-body" style="display:none;">
-        <input type="hidden" id="upd-id"/>
-
-        <div class="detail-section-title">Status &amp; Execution</div>
-        <div class="update-grid">
-          <div class="ff">
-            <label>Status <span class="req">*</span></label>
-            <select id="upd-status">
-              <option value="">Select </option>
-              <option value="Completed">Completed</option>
-              <option value="Closed">Closed</option>
-              <option value="Rejected">Rejected</option>
-              <option value="Open">Open</option>
-              <option value="Pending">Pending</option>
-            </select>
-          </div>
-          <div class="ff">
-            <label>Executed Date</label>
-            <input type="date" id="upd-executeddate"/>
-          </div>
-          <div class="ff">
-            <label>Received Date</label>
-            <input type="date" id="upd-receiveddate"/>
-          </div>
-          <div class="ff">
-            <label>CRM Ref No</label>
-            <input type="text" id="upd-crmrefno" placeholder=""/>
-          </div>
-        </div>
-
-        <div class="detail-section-title">Remarks</div>
-        <div class="update-grid g3">
-          <div class="ff span3">
-            <label>Remarks / Notes</label>
-            <textarea id="upd-remarks" placeholder="Update remarks, actions taken, resolution notes"></textarea>
-          </div>
-        </div>
-
-      </div>
     </div>
 
-    </div>
     <div class="modal-footer">
-      <div class="form-msg" id="upd-msg"></div>
       <button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button>
-      <button class="btn btn-success" id="upd-save-btn" onclick="submitUpdate()" style="display:none;">&#128190; Save Update</button>
     </div>
   </div>
 </div>
-
-<div class="toast-wrap" id="toast-wrap"></div>
 
 <!-- --- SIDEBAR (matches sc-dashboard.html exactly) --- -->
 <aside class="sidebar">
@@ -678,17 +650,6 @@ function openUpdateModal(id){
   const d = DATA.find(x=>(x._id||x.id)===id);
   if(!d) return;
 
-  (document.getElementById('ri-refno')||{}).textContent = d.refNo||' ';
-  (document.getElementById('ri-sceng')||{}).textContent = d.scEng||' ';
-  (document.getElementById('ri-division')||{}).textContent = d.division||' ';
-  (document.getElementById('ri-branch')||{}).textContent = d.branch||' ';
-  (document.getElementById('ri-type')||{}).textContent = d.type||' ';
-  (document.getElementById('ri-model')||{}).textContent = d.model||' ';
-  (document.getElementById('ri-eng')||{}).textContent = d.eng||' ';
-  (document.getElementById('ri-warranty')||{}).textContent = d.warrantyStatus||' ';
-  (document.getElementById('ri-crmref')||{}).textContent = d.crmRefNo||' ';
-  (document.getElementById('ri-entrydate')||{}).textContent = fmtDate(d.entryDate);
-
   const set=(elId,val)=>{const el=document.getElementById(elId);if(el)el.value=val||'';};
   
   // View Tab
@@ -708,16 +669,6 @@ function openUpdateModal(id){
   set('ep-crmRefNo', d.crmRefNo);
   set('ep-remarks', d.remarks);
 
-  // Update Tab
-  document.getElementById('upd-id').value = id;
-  set('upd-status',       d.status||'Completed');
-  set('upd-executeddate', d.executedDate?d.executedDate.split('T')[0]:'');
-  set('upd-receiveddate', d.receivedDate?d.receivedDate.split('T')[0]:'');
-  set('upd-crmrefno',     d.crmRefNo||'');
-  set('upd-remarks',      d.remarks||'');
-
-  clearUpdMsg();
-  if(typeof switchModalTab==='function') switchModalTab('details');
   document.getElementById('update-overlay').classList.add('open');
   document.querySelector('.modal-scroll').scrollTop = 0;
 }
