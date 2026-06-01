@@ -397,6 +397,14 @@ function todayISO() {
   return d.toISOString().split('T')[0];
 }
 
+function lockPastDates() {
+  const today = todayISO();
+  ['f-requestedDate','f-piRaisedDate','f-piApprovedDate','f-componentsReceivedDate'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.min = today;
+  });
+}
+
 async function loadDivisionOptions() {
   try {
     const res = await fetch(`${API}/api/divisions`, { headers: authHeaders() });
@@ -591,6 +599,7 @@ function openModal() {
   document.getElementById('modal-title').innerHTML = '&#10133; New Components Request';
   document.getElementById('save-btn').innerHTML = '&#128190; Save Request';
   clearForm();
+  lockPastDates();
   document.getElementById('f-requestedDate').value = todayISO();
   document.getElementById('modal-form').classList.add('open');
 }
@@ -601,6 +610,7 @@ function openEdit(id) {
   editId = id;
   document.getElementById('modal-title').innerHTML = '&#9998; Edit Components Request';
   document.getElementById('save-btn').innerHTML = '&#128190; Update Request';
+  lockPastDates();
   const isoDate = v => v ? String(v).split('T')[0] : '';
   document.getElementById('f-requestedDate').value = isoDate(d.requestedDate);
   document.getElementById('f-requested').value = d.requested || d.requestedBy || '';
