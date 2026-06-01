@@ -246,6 +246,30 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 .nav-children{max-height:0;overflow:hidden;transition:max-height .28s ease;margin-bottom:3px;}
 .nav-children.open{max-height:400px;}
 .nav-sub .nav-item{padding-left:28px;font-size:11.5px;}
+
+    .ep-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+    .ep-grid .form-group input.locked,
+    .ep-grid .form-group select.locked,
+    .ep-grid .form-group textarea.locked {
+      background: var(--surface2);
+      color: var(--muted);
+      cursor: not-allowed;
+    }
+    .ep-section-title {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin: 12px 0 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
 </style>
   <link rel="stylesheet" href="global-typography.css">
   <link rel="stylesheet" href="employee-theme.css">
@@ -290,29 +314,33 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     <div class="modal-scroll">
 
       <!-- -- TAB: DETAILS -- -->
-      <div id="tab-details" class="modal-body">
-        <div class="detail-section-title">Basic Information</div>
-        <div class="detail-grid">
-          <div class="detail-item"><div class="detail-lbl">Entry Date</div><div class="detail-val" id="d-entrydate">-</div></div>
-          <div class="detail-item"><div class="detail-lbl">Received Date</div><div class="detail-val" id="d-receiveddate">-</div></div>
-          <div class="detail-item"><div class="detail-lbl">Executed Date</div><div class="detail-val green" id="d-executeddate">-</div></div>
-          <div class="detail-item"><div class="detail-lbl">Type</div><div class="detail-val accent" id="d-type">-</div></div>
+            <div id="tab-details" class="modal-body">
+        <div class="ep-section-title">TO/SO Register Form</div>
+        <div class="ep-grid">
+          <div class="form-group"><label>Division</label><input class="locked" id="ep-division" readonly /></div>
+          <div class="form-group"><label>Type</label><input class="locked" id="ep-type" readonly /></div>
+          <div class="form-group"><label>TO/SO Raised Date</label><input class="locked" id="ep-entryDate" readonly /></div>
+          <div class="form-group"><label>Region</label><input class="locked" id="ep-region" readonly /></div>
+
+          <div class="form-group"><label>Branch</label><input class="locked" id="ep-branch" readonly /></div>
+          <div class="form-group"><label>Engineer</label><input class="locked" id="ep-eng" readonly /></div>
+          <div class="form-group"><label>Supplier</label><input class="locked" id="ep-supplier" readonly /></div>
+
+          <div class="form-group"><label>Model</label><input class="locked" id="ep-model" readonly /></div>
+          <div class="form-group"><label>Warranty Status</label><input class="locked" id="ep-warrantyStatus" readonly /></div>
+          <div class="form-group"><label>TO/SO Reference No.</label><input class="locked" id="ep-refNo" readonly /></div>
+          <div class="form-group"><label>Spares Received at SVC</label><input class="locked" id="ep-sparesReceivedAtSvc" readonly /></div>
+          <div class="form-group"><label>Status</label><input class="locked" id="ep-status" readonly /></div>
+          <div class="form-group"><label>Entry Date from SC</label><input class="locked" id="ep-receivedDate" readonly /></div>
         </div>
 
-        <div class="detail-section-title">Device &amp; Product Details</div>
-        <div class="detail-grid">
-          <div class="detail-item"><div class="detail-lbl">Model</div><div class="detail-val accent" id="d-model">-</div></div>
-          <div class="detail-item"><div class="detail-lbl">Serial No</div><div class="detail-val mono" id="d-serialno">-</div></div>
-          <div class="detail-item"><div class="detail-lbl">Part Number</div><div class="detail-val mono" id="d-partno">-</div></div>
-          <div class="detail-item"><div class="detail-lbl">Quantity</div><div class="detail-val" id="d-qty">-</div></div>
-          <div class="detail-item"><div class="detail-lbl">Unit Price (Rs.)</div><div class="detail-val amber" id="d-unitprice">-</div></div>
-          <div class="detail-item"><div class="detail-lbl">Total Amount (Rs.)</div><div class="detail-val amber" id="d-totalamount">-</div></div>
-          <div class="detail-item span2"><div class="detail-lbl">CRM Ref No</div><div class="detail-val mono" id="d-crmrefno">-</div></div>
-        </div>
-
-        <div class="detail-section-title">Remarks</div>
-        <div class="detail-grid g2">
-          <div class="detail-item span2"><div class="detail-lbl">Remarks / Notes</div><div class="detail-val" id="d-remarks" style="white-space:pre-wrap;line-height:1.6;">-</div></div>
+        <div class="ep-section-title">Employee Update Section</div>
+        <div class="ep-grid">
+          <div class="form-group"><label>SC Engineer</label><input id="ep-scEng" class="locked" readonly /></div>
+          <div class="form-group"><label>GIR No</label><input id="ep-crmRefNo" class="locked" readonly /></div>
+          <div class="form-group"><label>Part No</label><input id="ep-partType" class="locked" readonly /></div>
+          <div class="form-group"><label>Parts Description</label><input id="ep-partsDescription" class="locked" readonly /></div>
+          <div class="form-group" style="grid-column:span 4;"><label>Remarks</label><textarea id="ep-remarks" class="locked" readonly></textarea></div>
         </div>
       </div>
 
@@ -726,18 +754,26 @@ function openDetailModal(id, tab='details'){
   (document.getElementById('ri-crmref')||{}).textContent = d.crmRefNo||'-';
 
   // Detail tab values
-  (document.getElementById('d-entrydate')||{}).textContent = fmtDate(d.entryDate);
-  (document.getElementById('d-receiveddate')||{}).textContent = fmtDate(d.receivedDate);
-  (document.getElementById('d-executeddate')||{}).textContent = fmtDate(d.executedDate);
-  (document.getElementById('d-type')||{}).textContent = d.type||'-';
-  (document.getElementById('d-model')||{}).textContent = d.model||'-';
-  (document.getElementById('d-serialno')||{}).textContent = d.serialNo||'-';
-  (document.getElementById('d-partno')||{}).textContent = d.partNo||'-';
-  (document.getElementById('d-qty')||{}).textContent = d.qty??'-';
-  (document.getElementById('d-unitprice')||{}).textContent = d.unitPrice ? 'Rs. '+Number(d.unitPrice).toLocaleString('en-IN',{minimumFractionDigits:2}) : '-';
-  (document.getElementById('d-totalamount')||{}).textContent = d.totalAmount ? 'Rs. '+Number(d.totalAmount).toLocaleString('en-IN',{minimumFractionDigits:2}) : '-';
-  (document.getElementById('d-crmrefno')||{}).textContent = d.crmRefNo||'-';
-  (document.getElementById('d-remarks')||{}).textContent = d.remarks||'-';
+  const setField = (id, val) => { const e = document.getElementById(id); if (e) e.value = val || ''; };
+  setField('ep-division', d.division);
+  setField('ep-type', d.type);
+  setField('ep-entryDate', fmtDate(d.entryDate));
+  setField('ep-region', d.region);
+  setField('ep-branch', d.branch);
+  setField('ep-eng', d.eng || d.engineer);
+  setField('ep-supplier', d.supplier);
+  setField('ep-model', d.model);
+  setField('ep-warrantyStatus', d.warrantyStatus || d.warranty);
+  setField('ep-refNo', d.refNo || d.prfobRef);
+  setField('ep-sparesReceivedAtSvc', fmtDate(d.sparesReceivedAtSvc));
+  setField('ep-status', d.status);
+  setField('ep-receivedDate', fmtDate(d.receivedDate));
+  
+  setField('ep-scEng', d.scEng || d.scEngg);
+  setField('ep-crmRefNo', d.crmRefNo || d.crmRef);
+  setField('ep-partType', d.partType || d.partNo);
+  setField('ep-partsDescription', d.partsDescription || d.partsDesc);
+  setField('ep-remarks', d.remarks);
 
   // Update tab pre-fill
   document.getElementById('upd-id').value            = id;
