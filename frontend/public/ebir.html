@@ -426,11 +426,10 @@ table.bir-table tbody tr:last-child td{border-bottom:none;}
   <div class="content">
 
     <!-- STATS -->
-    <div class="stats-row">
-      <div class="stat-card sc-blue"><div class="stat-icon si-blue">&#128203;</div><div class="stat-label">Total BIR</div><div class="stat-value" id="s-total">&#8212;</div><div class="stat-sub">All entries</div></div>
-      <div class="stat-card sc-amber"><div class="stat-icon si-amber">&#9203;</div><div class="stat-label">Pending</div><div class="stat-value" id="s-pending">&#8212;</div><div class="stat-sub">Awaiting action</div></div>
-      <div class="stat-card sc-green"><div class="stat-icon si-green">&#9989;</div><div class="stat-label">Closed</div><div class="stat-value" id="s-closed">&#8212;</div><div class="stat-sub">Completed</div></div>
-      <div class="stat-card sc-purple"><div class="stat-icon si-purple">&#128295;</div><div class="stat-label">Under Review</div><div class="stat-value" id="s-review">&#8212;</div><div class="stat-sub">Being processed</div></div>
+    <div class="stats-row" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="stat-card sc-blue"><div class="stat-icon si-blue">&#128203;</div><div class="stat-label">Total BIR</div><div class="stat-value" id="s-total">&#8212;</div><div class="stat-sub">Total FBIR count</div></div>
+      <div class="stat-card sc-amber"><div class="stat-icon si-amber">&#9203;</div><div class="stat-label">TS Team Pending</div><div class="stat-value" id="s-ts-pending">&#8212;</div><div class="stat-sub">EBIR count</div></div>
+      <div class="stat-card sc-purple"><div class="stat-icon si-purple">&#128295;</div><div class="stat-label">PS Team Pending</div><div class="stat-value" id="s-ps-pending">&#8212;</div><div class="stat-sub">PTBIR count</div></div>
     </div>
 
     <!-- DATE FILTER -->
@@ -691,9 +690,8 @@ function generateDemoData(){
 /* ?"??"? STATS ?"??"? */
 function updateStats(){
   (document.getElementById('s-total')||{}).textContent = DATA.length;
-  (document.getElementById('s-pending')||{}).textContent = DATA.filter(d=>d.finalStatus==='Pending').length;
-  (document.getElementById('s-closed')||{}).textContent = DATA.filter(d=>d.finalStatus==='Closed').length;
-  (document.getElementById('s-review')||{}).textContent = DATA.filter(d=>d.finalStatus==='Under Review').length;
+  (document.getElementById('s-ts-pending')||{}).textContent = DATA.filter(d=>d.finalStatus==='TS team pending' || d.status==='TS team pending').length;
+  (document.getElementById('s-ps-pending')||{}).textContent = DATA.filter(d=>d.finalStatus==='PS team pending' || d.status==='PS team pending').length;
 }
 
 /* ?"??"? FILTERS ?"??"? */

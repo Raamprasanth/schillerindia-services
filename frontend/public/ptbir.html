@@ -559,8 +559,27 @@
 
   <div class="content">
 
-    <!-- HERO (hidden) -->
-    <div class="bir-hero" style="display:none;"></div>
+    <!-- STATS -->
+    <div class="stats-row" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:14px; margin-bottom:20px;">
+      <div class="stat-card sc-blue" style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:4px; box-shadow:var(--shadow);">
+        <div class="stat-icon si-blue" style="font-size:24px;">&#128203;</div>
+        <div class="stat-label" style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em;">Total BIR</div>
+        <div class="stat-value" id="s-total" style="font-size:20px; font-weight:700; color:var(--text);">&#8212;</div>
+        <div class="stat-sub" style="font-size:10px; color:var(--muted);">Total FBIR count</div>
+      </div>
+      <div class="stat-card sc-amber" style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:4px; box-shadow:var(--shadow);">
+        <div class="stat-icon si-amber" style="font-size:24px;">&#9203;</div>
+        <div class="stat-label" style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em;">TS Team Pending</div>
+        <div class="stat-value" id="s-ts-pending" style="font-size:20px; font-weight:700; color:var(--text);">&#8212;</div>
+        <div class="stat-sub" style="font-size:10px; color:var(--muted);">EBIR count</div>
+      </div>
+      <div class="stat-card sc-purple" style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:4px; box-shadow:var(--shadow);">
+        <div class="stat-icon si-purple" style="font-size:24px;">&#128295;</div>
+        <div class="stat-label" style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em;">PS Team Pending</div>
+        <div class="stat-value" id="s-ps-pending" style="font-size:20px; font-weight:700; color:var(--text);">&#8212;</div>
+        <div class="stat-sub" style="font-size:10px; color:var(--muted);">PTBIR count</div>
+      </div>
+    </div>
 
 
 
@@ -702,23 +721,13 @@ async function persistClosedBir(doc){
 function updateAll(){updateStats();renderTable();}
 function updateStats(){
   const total=birData.length;
-  const pending=birData.filter(x=>x.status==='Pending').length;
-  const approved=birData.filter(x=>x.status==='Approved').length;
-  const rejected=birData.filter(x=>x.status==='Rejected').length;
-  const wip=birData.filter(x=>x.status==='In Progress').length;
-  const hwChanged=birData.filter(x=>x.hwChanges&&x.hwChanges.toLowerCase()!=='na'&&x.hwChanges.trim()!=='').length;
-  const divCount=[...new Set(birData.map(x=>x.division))].length;
-  const todayISO=todayStr();
-  const todayCount=birData.filter(x=>x.unitInwardDate===todayISO).length;
-  (document.getElementById('hero-total')||{}).textContent =total;
-  (document.getElementById('hero-pending')||{}).textContent =pending;
-  (document.getElementById('hero-approved')||{}).textContent =approved;
-  (document.getElementById('sc-total')||{}).textContent =total;
-  (document.getElementById('sc-pending')||{}).textContent =pending;
-  (document.getElementById('sc-approved')||{}).textContent =approved;
-  (document.getElementById('sc-rejected')||{}).textContent =rejected;
-  (document.getElementById('sc-wip')||{}).textContent =wip;
-  (document.getElementById('sc-hw')||{}).textContent =hwChanged;
+  const tsPending=birData.filter(x=>x.status==='TS team pending').length;
+  const psPending=birData.filter(x=>x.status==='PS team pending').length;
+  
+  (document.getElementById('s-total')||{}).textContent = total;
+  (document.getElementById('s-ts-pending')||{}).textContent = tsPending;
+  (document.getElementById('s-ps-pending')||{}).textContent = psPending;
+  
   const badgeBir = document.getElementById('badge-bir');
   if (badgeBir) badgeBir.textContent = total;
 }
