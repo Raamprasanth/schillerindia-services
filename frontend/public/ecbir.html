@@ -416,12 +416,33 @@ function showToast(msg,type='ok'){const w=document.getElementById('toast-wrap');
 function fmtDate(d){if(!d)return'-';try{const dt=new Date(d);return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}catch{return d;}}
 function thisMonth(d){if(!d)return false;const dt=new Date(d);const now=new Date();return dt.getMonth()===now.getMonth()&&dt.getFullYear()===now.getFullYear();}
 function divPillClass(d){const m={'GANSHORN':'bp-blue','VENTILATOR':'bp-purple','PATIENT MONITORS':'bp-cyan','SHIPL':'bp-green','INJECTOR':'bp-amber','RADIOLOGY':'bp-blue','HOLTER':'bp-cyan'};return m[d]||'bp-blue';}
-function normalizeClosed(doc){if(!doc)return null;const out={...doc};if(out.status==='Completed')out.status='Closed';return out;}
+function normalizeBir(doc){
+  if(!doc)return null;
+  const status = doc.status || doc.finalStatus || 'Closed';
+  return {
+    ...doc,
+    birRef: doc.birRef || doc.birRefNo || doc._id || '',
+    unitInwardDate: doc.unitInwardDate || doc.inwardDate || '',
+    fqcInwardDate: doc.fqcInwardDate || doc.inwardDate || '',
+    accDetails: doc.accDetails || doc.accessoryDetails || '',
+    accChanges: doc.accChanges || '',
+    userManualUpdate: doc.userManualUpdate || '',
+    serviceManualUpdate: doc.serviceManualUpdate || '',
+    fqcRemarks: doc.fqcRemarks || doc.fqcFinalRemarks || doc.fqcObservation || '',
+    scEngineer: doc.scEngineer || '',
+    psEngineer: doc.psEngineer || '',
+    techRemarks: doc.techRemarks || doc.scObservation || '',
+    tsVerificationDate: doc.tsVerificationDate || doc.tentativeDate || '',
+    psVerificationDate: doc.psVerificationDate || doc.shipDateToFqc || '',
+    approvedDate: doc.approvedDate || doc.shipDateToFqc || doc.updatedAt || doc.inwardDate || '',
+    status: status === 'Completed' ? 'Closed' : status,
+  };
+}
 function mergeClosedLists(primary, secondary){
   const seen=new Set();
   const merged=[];
   [...(primary||[]), ...(secondary||[])].forEach(item=>{
-    const normalized=normalizeClosed(item);
+    const normalized=normalizeBir(item);
     if(!normalized)return;
     if(!['Approved','Closed'].includes(String(normalized.status||'')))return;
     const key=normalized._id||normalized.id||normalized.birRef;
