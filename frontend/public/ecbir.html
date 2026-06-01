@@ -581,13 +581,6 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
     <div class="topbar-actions">
       <button class="topbar-btn" onclick="exportCSV()">&#128228; Export CSV</button>
     </div>
-
-    </div>
-          <div class="np-foot"><a href="#">View all announcements</a></div>
-        </div>
-      </div>
-      <button class="topbar-btn primary">+ Submit Report</button>
-    </div>
   </div>
 
   <div class="content">
@@ -913,13 +906,28 @@ function exportCSV(){
 }
 
 // -- THEME / USER --------------------------------------------------------------
-(document.getElementById('admin-date')||{}).textContent =new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-(function(){const u=JSON.parse(sessionStorage.getItem('schiller_user')||'{}');const n=u.name||'Admin';(document.getElementById('admin-name')||{}).textContent =n;(document.getElementById('admin-avatar')||{}).textContent =n.charAt(0).toUpperCase();})();
+(document.getElementById('emp-date')||{}).textContent =new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+(function(){
+  const u=JSON.parse(sessionStorage.getItem('schiller_user')||'{}');
+  const n=u.name||'Employee';
+  (document.getElementById('emp-name')||{}).textContent=n;
+  (document.getElementById('emp-avatar')||{}).textContent=n.charAt(0).toUpperCase();
+  (document.getElementById('emp-desig')||{}).textContent=u.designation||'Field Engineer';
+})();
 
 function logout(){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';}
 
 // -- INIT ----------------------------------------------------------------------
-loadData();
+(function init(){
+  if(!getToken()){
+    window.location.href='login.html';
+    return;
+  }
+  document.getElementById('auth-guard').style.display='none';
+  document.getElementById('sidebar').style.display='flex';
+  document.getElementById('main-content').style.display='flex';
+  loadData();
+})();
 </script>
 <script src="tab-fix.js"></script>
 </body>
