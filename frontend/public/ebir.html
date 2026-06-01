@@ -497,22 +497,18 @@ table.bir-table tbody tr:last-child td{border-bottom:none;}
       <div class="table-wrap">
         <table class="bir-table">
           <thead><tr>
-            <th style="width:42px;" class="no-sort">#</th>
-            <th onclick="sortBy('inwardDate')">Inward Date <span class="si">&#8597;</span></th>
             <th class="no-sort">Action</th>
+            <th onclick="sortBy('birRefNo')">BIR Ref No. <span class="si">&#8597;</span></th>
+            <th onclick="sortBy('inwardDate')">Inward Date <span class="si">&#8597;</span></th>
             <th onclick="sortBy('division')">Division <span class="si">&#8597;</span></th>
             <th onclick="sortBy('model')">Model <span class="si">&#8597;</span></th>
-            <th onclick="sortBy('configuration')">Configuration <span class="si">&#8597;</span></th>
-            <th onclick="sortBy('receivedQty')">Received Qty <span class="si">&#8597;</span></th>
-            <th onclick="sortBy('prevSwVersion')">Previous Software Version <span class="si">&#8597;</span></th>
-            <th onclick="sortBy('hwChanges')">Hardware Changes <span class="si">&#8597;</span></th>
+            <th onclick="sortBy('configuration')">Config <span class="si">&#8597;</span></th>
+            <th onclick="sortBy('receivedQty')">Qty <span class="si">&#8597;</span></th>
             <th>Accessory Details</th>
-            <th onclick="sortBy('cnrCirculation')">CNR/Technews Circulation <span class="si">&#8597;</span></th>
-            <th onclick="sortBy('birRefNo')">BIR Ref No. <span class="si">&#8597;</span></th>
             <th onclick="sortBy('finalStatus')">Status <span class="si">&#8597;</span></th>
           </tr></thead>
           <tbody id="bir-tbody">
-            <tr class="loading-row"><td colspan="13"><span class="spin"></span>Loading from database...</td></tr>
+            <tr class="loading-row"><td colspan="9"><span class="spin"></span>Loading from database...</td></tr>
           </tbody>
         </table>
       </div>
@@ -761,7 +757,7 @@ function renderTable(){
   (document.getElementById('count-chip')||{}).textContent = total+' entr'+(total===1?'y':'ies');
   const tbody = document.getElementById('bir-tbody');
   if(!total){
-    tbody.innerHTML = '<tr><td colspan="13"><div class="empty-st"><div class="ei">&#128203;</div><div class="et">'+(DATA.length?'No records match the current filters':'No BIR entries found')+'</div><div class="es">'+(DATA.length?'Try clearing the filters.':'BIR entries will appear here.')+'</div></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9"><div class="empty-st"><div class="ei">&#128203;</div><div class="et">'+(DATA.length?'No records match the current filters':'No BIR entries found')+'</div><div class="es">'+(DATA.length?'Try clearing the filters.':'BIR entries will appear here.')+'</div></div></td></tr>';
     (document.getElementById('tbl-info')||{}).textContent = '0 entries';
     document.getElementById('tbl-pagination').innerHTML = '';
     return;
@@ -769,23 +765,18 @@ function renderTable(){
   tbody.innerHTML = slice.map((d,i)=>{
     const rid = d._id||d.id;
     return '<tr onclick="openModal(\''+rid+'\')">' +
-      '<td style="color:var(--muted);font-family:monospace;font-size:10.5px;">'+(((currentPage-1)*perPage)+i+1)+'</td>' +
-      '<td style="font-size:11px;color:var(--soft);white-space:nowrap;">'+fmtDate(d.inwardDate)+'</td>' +
       '<td onclick="event.stopPropagation()">' +
         '<div style="display:flex;gap:5px;">' +
-          '<button class="btn-xs view" onclick="openModal(\''+rid+'\',\'view\')">&#128065; View</button>' +
           '<button class="btn-xs update" onclick="openModal(\''+rid+'\',\'update\')" title="Update">&#9999;&#65039;</button>' +
         '</div>' +
       '</td>' +
+      '<td><span class="bir-ref">'+esc(d.birRefNo||'&#8212;')+'</span></td>' +
+      '<td style="font-size:11px;color:var(--soft);white-space:nowrap;">'+fmtDate(d.inwardDate)+'</td>' +
       '<td><span class="div-tag">'+esc(d.division||'&#8212;')+'</span></td>' +
       '<td style="font-weight:700;color:var(--text);">'+esc(d.model||'&#8212;')+'</td>' +
       '<td style="font-size:11px;color:var(--soft);max-width:120px;overflow:hidden;text-overflow:ellipsis;" title="'+esc(d.configuration||'')+'">'+esc(d.configuration||'&#8212;')+'</td>' +
       '<td style="font-weight:600;color:var(--accent);">'+esc(d.receivedQty||'&#8212;')+'</td>' +
-      '<td style="font-family:monospace;font-size:11px;color:var(--soft);">'+esc(d.prevSwVersion||'NA')+'</td>' +
-      '<td>'+hwBadge(d.hwChanges)+'</td>' +
       '<td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--soft);" title="'+esc(d.accessoryDetails||'')+'">'+esc((d.accessoryDetails||'&#8212;').slice(0,45))+((d.accessoryDetails||'').length>45?'&#8230;':'')+'</td>' +
-      '<td><span style="font-size:11px;color:var(--soft);">'+esc(d.cnrCirculation||'&#8212;')+'</span></td>' +
-      '<td><span class="bir-ref">'+esc(d.birRefNo||'&#8212;')+'</span></td>' +
       '<td>'+statusPill(d.finalStatus)+'</td>' +
     '</tr>';
   }).join('');
@@ -991,7 +982,7 @@ function gp(p){ currentPage=p; renderTable(); }
 
 /* -- HELPERS -- */
 function setLoading(){
-  document.getElementById('bir-tbody').innerHTML = '<tr class="loading-row"><td colspan="13"><span class="spin"></span>Loading from database&#8230;</td></tr>';
+  document.getElementById('bir-tbody').innerHTML = '<tr class="loading-row"><td colspan="9"><span class="spin"></span>Loading from database&#8230;</td></tr>';
   ['s-total','s-pending','s-closed','s-review'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='&#8212;';});
 }
 function fmtDate(d){
