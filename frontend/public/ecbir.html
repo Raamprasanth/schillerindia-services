@@ -682,6 +682,7 @@ function normalizeClosed(doc){
   if(out.birRefNo && !out.birRef) out.birRef = out.birRefNo;
   if(out.inwardDate && !out.unitInwardDate) out.unitInwardDate = out.inwardDate;
   if(out.finalStatus && !out.status) out.status = out.finalStatus;
+  if(out.accessoryDetails && !out.accDetails) out.accDetails = out.accessoryDetails;
   return out;
 }
 function mergeClosedLists(primary, secondary){
