@@ -690,8 +690,8 @@ function generateDemoData(){
 /* ?"??"? STATS ?"??"? */
 function updateStats(){
   (document.getElementById('s-total')||{}).textContent = DATA.length;
-  (document.getElementById('s-ts-pending')||{}).textContent = DATA.filter(d=>d.finalStatus==='TS team pending' || d.status==='TS team pending').length;
-  (document.getElementById('s-ps-pending')||{}).textContent = DATA.filter(d=>d.finalStatus==='PS team pending' || d.status==='PS team pending').length;
+  (document.getElementById('s-ts-pending')||{}).textContent = DATA.filter(d=>['Pending', 'In Progress'].includes(d.finalStatus) || ['Pending', 'In Progress'].includes(d.status)).length;
+  (document.getElementById('s-ps-pending')||{}).textContent = DATA.filter(d=>d.finalStatus==='Under Review' || d.status==='Under Review').length;
 }
 
 /* ?"??"? FILTERS ?"??"? */

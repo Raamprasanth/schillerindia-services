@@ -721,8 +721,8 @@ async function persistClosedBir(doc){
 function updateAll(){updateStats();renderTable();}
 function updateStats(){
   const total=birData.length;
-  const tsPending=birData.filter(x=>x.status==='TS team pending').length;
-  const psPending=birData.filter(x=>x.status==='PS team pending').length;
+  const tsPending=birData.filter(x=>['Pending', 'In Progress'].includes(x.status) || ['Pending', 'In Progress'].includes(x.finalStatus)).length;
+  const psPending=birData.filter(x=>x.status==='Under Review' || x.finalStatus==='Under Review').length;
   
   (document.getElementById('s-total')||{}).textContent = total;
   (document.getElementById('s-ts-pending')||{}).textContent = tsPending;
