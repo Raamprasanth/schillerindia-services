@@ -461,13 +461,13 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       </div>
       <div class="stat-card sc-purple">
         <div class="stat-icon">&#128202;</div>
-        <div class="stat-label">TO/SO Closed</div>
+        <div class="stat-label">TO Closed</div>
         <div class="stat-value" id="s-prf">-</div>
         <div class="stat-sub">Purchase requisitions</div>
       </div>
       <div class="stat-card sc-amber">
         <div class="stat-icon si-amber">&#9888;</div>
-        <div class="stat-label">OB Closed</div>
+        <div class="stat-label">SO Closed</div>
         <div class="stat-value" id="s-ob">-</div>
         <div class="stat-sub">Order bookings</div>
       </div>
@@ -526,24 +526,22 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
       <div class="table-wrap">
         <table class="frn-table">
-          <thead><tr>
-            <th onclick="sortBy('_id')" class="sorted" style="width:46px;">Id <span class="si">&#8693;</span></th>
+                    <thead><tr>
+            <th onclick="sortBy('entryDate')" class="sorted">Entry Date <span class="si">&#8693;</span></th>
             <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('entryDate')">Entry Date <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('scEng')">Sc Engg <span class="si">&#8693;</span></th>
             <th onclick="sortBy('type')">Type <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('receivedDate')">Received Date <span class="si">&#8693;</span></th>
             <th onclick="sortBy('branch')">Branch <span class="si">&#8693;</span></th>
             <th onclick="sortBy('eng')">Engineer <span class="si">&#8693;</span></th>
             <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('warrantyStatus')">Warranty Status <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('warrantyStatus')">Warr Status <span class="si">&#8693;</span></th>
             <th onclick="sortBy('refNo')">TO/SO Ref No. <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('crmRefNo')">CRM Ref No. <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('status')">Status <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('crmRefNo')">GIR No <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('sparesReceivedAtSvc')">Spares rcd date <span class="si">&#8693;</span></th>
             <th onclick="sortBy('executedDate')">Executed Date <span class="si">&#8693;</span></th>
+            <th style="text-align:center;">Action</th>
           </tr></thead>
           <tbody id="ecr-tbody">
-            <tr class="loading-row"><td colspan="14"><span class="spin"></span>Loading from database...</td></tr>
+            <tr class="loading-row"><td colspan="12"><span class="spin"></span>Loading from database...</td></tr>
           </tbody>
         </table>
       </div>
@@ -666,7 +664,7 @@ function renderTable(){
   const tbody = document.getElementById('ecr-tbody');
 
   if(!total){
-    tbody.innerHTML = `<tr><td colspan="14"><div class="empty-st">
+    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-st">
       <div class="ei">&#128196;</div>
       <div class="et">${DATA.length ? 'No records match the current filters' : 'No Closed TO/SO entries'}</div>
       <div class="es">${DATA.length ? 'Try adjusting the filters or search.' : 'Closed records assigned to you will appear here.'}</div>
@@ -674,21 +672,19 @@ function renderTable(){
   } else {
     tbody.innerHTML = slice.map((d,i) => {
       const rid = d._id||d.id;
-      return `<tr onclick="openDetailModal('${rid}')">
-        <td class="mono" style="color:var(--muted);">${(currentPage-1)*perPage+i+1}</td>
-        <td><span class="div-tag">${esc(d.division||'-')}</span></td>
+            return `<tr onclick="openDetailModal('${rid}')">
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
-        <td style="font-weight:600;">${esc(d.scEng||'-')}</td>
+        <td><span class="div-tag">${esc(d.division||'-')}</span></td>
         <td>${typePill(d.type)}</td>
-        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.receivedDate)}</td>
         <td><span class="branch-tag">${esc(d.branch||'-')}</span></td>
-        <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.eng||'')}">${esc(d.eng||'-')}</td>
-        <td style="font-weight:600;color:var(--accent2);max-width:130px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.model||'')}">${esc(d.model||'-')}</td>
+        <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.eng||'')}">${esc(d.eng||'-')}</td>
+        <td style="font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.model||'')}">${esc(d.model||'-')}</td>
         <td>${warrantyPill(d.warrantyStatus)}</td>
         <td style="font-weight:600;">${esc(d.refNo||'-')}</td>
-        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--soft);" title="${esc(d.crmRefNo||'')}">${esc((d.crmRefNo||'-').slice(0,35))}${(d.crmRefNo||'').length>35?'...':''}</td>
-        <td>${statusPill(d.status)}</td>
+        <td class="wrap-cell" style="max-width:200px;font-size:11px;color:var(--soft);" title="${esc(d.crmRefNo||'')}">${esc((d.crmRefNo||'-').slice(0,40))}${(d.crmRefNo||'').length>40?' ':''}</td>
+        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.sparesReceivedAtSvc)}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.executedDate)}</td>
+        <td style="text-align:center;"><button class="btn-xs btn-outline" onclick="openDetailModal('${rid}'); event.stopPropagation();" title="View">&#128065;&#65039;</button></td>
       </tr>`;
     }).join('');
   }
