@@ -1049,8 +1049,8 @@ async function saveBIR(){
       birData.unshift(saved);
     }
     await persistData();
-    msg.className='form-msg ok';msg.textContent=editingId?'BIR updated successfully!':'BIR entry created!';
-    showToast(editingId?'BIR updated.':'BIR entry created!','ok');
+    msg.className='form-msg ok';msg.textContent=editingId?'BIR updated and synced to EBIR successfully!':'BIR entry created and pushed to EBIR!';
+    showToast(editingId?'BIR updated and synced.':'BIR entry created & pushed to EBIR!','ok');
     setTimeout(()=>{closeBIRModal();updateAll();},900);
   }catch(e){if(e.message!=='Unauthorized'){msg.className='form-msg err-msg';msg.textContent='Save failed: '+e.message;}}
   finally{btn.disabled=false;btn.innerHTML ='&#128190; Save BIR Entry';}
