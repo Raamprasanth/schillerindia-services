@@ -488,7 +488,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <td class="wrap-cell">${esc(r.description)}</td>
         <td>${esc(r.unitStatus || '-')}</td>
         <td>${esc(r.quantity || '-')}</td>
-        <td><input type="text" class="f-inp" value="${esc(r.toNo || '')}" onchange="updateTextField('${r._id}','toNo',this.value)" style="width:100px;"></td>
+        <td><span style="font-weight:600;">${esc(r.toNo || '-')}</span></td>
         <td>${r.toRaisedDate ? new Date(r.toRaisedDate).toLocaleDateString('en-IN') : '-'}</td>
         <td>${r.sparesReceivedDate ? new Date(r.sparesReceivedDate).toLocaleDateString('en-IN') : '-'}</td>
       </tr>

@@ -110,6 +110,7 @@ router.post('/:id/fulfill', protect, async (req, res) => {
       model: record.model || '',
       description: record.description,
       action: record.action,
+      toNo: record.toNo || '',
       toRaisedDate: record.toRaisedDate || null,
       sparesReceivedDate: record.sparesReceivedDate || null,
       fulfilledDate,
