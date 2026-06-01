@@ -16,8 +16,8 @@ const PrfObSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['PRF', 'OB'],
-      required: [true, 'Type (PRF or OB) is required'],
+      enum: ['TO', 'SO', 'PRF', 'OB'],
+      required: [true, 'Type is required'],
     },
     division: {
       type: String,
