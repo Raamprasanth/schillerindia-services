@@ -8,7 +8,7 @@
   const role  = (sessionStorage.getItem('schiller_role')||'').toLowerCase();
   if (!token || !['repair','repair_team','admin'].includes(role)) { window.location.href = 'login.html'; }
 })();</script>
-<title>SchillerIndia - RT UR</title>
+  <title>SchillerIndia - UR</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
@@ -224,7 +224,7 @@ table.ur-table tbody tr:last-child td{border-bottom:none;}
   <div class="modal">
     <div class="modal-head">
       <div>
-        <div class="modal-htitle">&#9998; Update RT UR Record <span class="modal-badge" id="modal-scref">-</span></div>
+        <div class="modal-htitle">&#9998; Update UR Record <span class="modal-badge" id="modal-scref">-</span></div>
         <div style="font-size:11px;color:var(--muted);margin-top:2px;">Update under-repair tracking, repair details, and findings below.</div>
       </div>
       <button class="modal-close" onclick="closeModal()">&#10005;</button>
@@ -370,7 +370,7 @@ table.ur-table tbody tr:last-child td{border-bottom:none;}
     <div>
       <div class="breadcrumb">
         <a href="Repair-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
-        <span>Repair Work</span><span class="sep">&#8250;</span><span>RT UR</span>
+        <span>Repair Work</span><span class="sep">&#8250;</span><span>UR</span>
       </div>
       <div class="topbar-title">Repair Activity List - Under Repair</div>
     </div>
@@ -393,15 +393,16 @@ table.ur-table tbody tr:last-child td{border-bottom:none;}
 
 
     <div class="stats-row">
-      <div class="stat-card sc-blue" onclick="setSummaryFilter('all')"><div class="stat-ico si-blue">&#128736;&#65039;</div><div class="stat-lbl">Total RT UR</div><div class="stat-val" id="st-total">-</div><div class="stat-sub">Active UR records</div></div>
-      <div class="stat-card sc-amber" onclick="setSummaryFilter('pending')"><div class="stat-ico si-amber">&#9203;</div><div class="stat-lbl">Pending</div><div class="stat-val" id="st-pending">-</div><div class="stat-sub">Awaiting repair</div></div>
-      <div class="stat-card sc-red" onclick="setSummaryFilter('critical')"><div class="stat-ico si-red">&#9888;&#65039;</div><div class="stat-lbl">Critical (&gt;30 days)</div><div class="stat-val" id="st-critical">-</div><div class="stat-sub">Needs immediate action</div></div>
+      <div class="stat-card sc-blue" onclick="setSummaryFilter('all')"><div class="stat-ico si-blue">&#128736;&#65039;</div><div class="stat-lbl">Total UR</div><div class="stat-val" id="st-total">-</div><div class="stat-sub">Active UR records</div></div>
+      <div class="stat-card sc-green" onclick="setSummaryFilter('below-5')"><div class="stat-ico si-green">&#9203;</div><div class="stat-lbl">Below 5 Days</div><div class="stat-val" id="st-below-5">-</div><div class="stat-sub">0 to 4 days</div></div>
+      <div class="stat-card sc-amber" onclick="setSummaryFilter('5-to-7')"><div class="stat-ico si-amber">&#128337;</div><div class="stat-lbl">5 to 7 Days</div><div class="stat-val" id="st-5-to-7">-</div><div class="stat-sub">Needs follow-up</div></div>
+      <div class="stat-card sc-red" onclick="setSummaryFilter('above-7')"><div class="stat-ico si-red">&#9888;&#65039;</div><div class="stat-lbl">Above 7 Days</div><div class="stat-val" id="st-above-7">-</div><div class="stat-sub">Needs priority action</div></div>
     </div>
 
     <!-- ADD PANEL -->
     <div class="add-panel" id="add-panel">
       <div class="add-panel-hdr">
-        <div class="add-panel-title">&#10133; Add New RT UR Record <span class="add-panel-tag">Under Repair</span></div>
+        <div class="add-panel-title">&#10133; Add New UR Record <span class="add-panel-tag">Under Repair</span></div>
         <button class="close-panel" onclick="toggleAddPanel()">&#10005;</button>
       </div>
       <div class="fg-4" style="margin-bottom:14px;">
@@ -590,11 +591,10 @@ function calcDays(d) {
 }
 
 function updateStats() {
-  const total=allData.length, pending=allData.filter(d=>d.status==='pending').length;
-  const critical=allData.filter(d=>d.noOfDays>30&&d.status!=='completed').length;
-  document.getElementById('st-total').textContent=total;
-  document.getElementById('st-pending').textContent=pending;
-  document.getElementById('st-critical').textContent=critical;
+  document.getElementById('st-total').textContent=allData.length;
+  document.getElementById('st-below-5').textContent=allData.filter(d=>d.noOfDays<5).length;
+  document.getElementById('st-5-to-7').textContent=allData.filter(d=>d.noOfDays>=5&&d.noOfDays<=7).length;
+  document.getElementById('st-above-7').textContent=allData.filter(d=>d.noOfDays>7).length;
 }
 
 function clearDates(){ applyFilters(); }
@@ -603,8 +603,9 @@ function clearAllFilters(){
 }
 function setSummaryFilter(type){ activeSummary=type||'all'; applyFilters(); }
 function summaryMatches(d){
-  if(activeSummary==='pending') return d.status==='pending';
-  if(activeSummary==='critical') return d.noOfDays>30&&d.status!=='completed';
+  if(activeSummary==='below-5') return d.noOfDays<5;
+  if(activeSummary==='5-to-7') return d.noOfDays>=5&&d.noOfDays<=7;
+  if(activeSummary==='above-7') return d.noOfDays>7;
   return true;
 }
 
@@ -636,8 +637,8 @@ function renderTable(){
   if(!slice.length){
     tbody.innerHTML=`<tr><td colspan="9"><div class="empty-st">
       <div class="ei">&#128196;</div>
-      <div class="et">${allData.length?'No records match filters':'No RT UR Records'}</div>
-      <div class="es">${allData.length?'Try clearing the filters.':'No RT UR records available.'}</div>
+      <div class="et">${allData.length?'No records match filters':'No UR Records'}</div>
+      <div class="es">${allData.length?'Try clearing the filters.':'No UR records available.'}</div>
     </div></td></tr>`;
   } else {
     tbody.innerHTML=slice.map(d=>{
@@ -719,7 +720,11 @@ function openUpdate(id){
   (document.getElementById('ri-by')||{}).textContent =d.submittedBy||'-';
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
   editingDoi=d.doi||''; set('u-repairedby',d.repairedBy); set('u-status',d.status||'');
-  set('u-repaireddate', new Date().toISOString().split('T')[0]);
+  const repairedDateEl=document.getElementById('u-repaireddate');
+  const today=new Date().toISOString().split('T')[0];
+  repairedDateEl.value=today;
+  repairedDateEl.min=today;
+  repairedDateEl.max=today;
   set('u-techremarks',   d.techRemarks||'');
   set('u-repairremarks', d.repairRemarks||'');
   set('u-components',    d.compUsedToRepair||d.components||'');
