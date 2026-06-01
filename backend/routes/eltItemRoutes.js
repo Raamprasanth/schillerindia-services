@@ -63,7 +63,7 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const { date, division, partNo, description, revalue, girNo, opt, remarks } = req.body || {};
+    const { date, division, partNo, description, revalue, girNo, opt, remarks, loanItemId } = req.body || {};
     if (!date || !division || !partNo || !description || !girNo) {
       return res.status(400).json({ message: 'Required: date, division, part no, description and GIR no.' });
     }
@@ -77,6 +77,7 @@ router.post('/', async (req, res) => {
       girNo,
       opt,
       remarks,
+      loanItemId: loanItemId || '',
       createdBy: req.user?.name || req.user?.email || '',
     });
     res.status(201).json(doc);
@@ -124,19 +125,35 @@ router.post('/:id/to-scod', async (req, res) => {
     const doc = await EltItem.findById(req.params.id);
     if (!doc) return res.status(404).json({ message: 'ELT item not found.' });
     
-    // Create new ClosedLoan
-    const loanDoc = await LoanItem.create({
-      date: doc.date,
-      division: doc.division,
-      partNo: doc.partNo,
-      description: doc.description,
-      girNo: doc.girNo,
-      opt: req.body.opt || doc.opt,
-      remarks: req.body.remarks || doc.remarks,
-      revalue: req.body.revalue || doc.revalue,
-      createdBy: doc.createdBy,
-      updatedBy: req.user?.name || req.user?.email || '',
-    });
+    let loanDoc;
+    if (doc.loanItemId) {
+      loanDoc = await LoanItem.findByIdAndUpdate(
+        doc.loanItemId,
+        {
+          opt: req.body.opt || doc.opt,
+          remarks: req.body.remarks || doc.remarks,
+          revalue: req.body.revalue || doc.revalue,
+          updatedBy: req.user?.name || req.user?.email || '',
+        },
+        { new: true }
+      );
+    }
+    
+    if (!loanDoc) {
+      // Create new LoanItem if no loanItemId exists or if the existing one was deleted
+      loanDoc = await LoanItem.create({
+        date: doc.date,
+        division: doc.division,
+        partNo: doc.partNo,
+        description: doc.description,
+        girNo: doc.girNo,
+        opt: req.body.opt || doc.opt,
+        remarks: req.body.remarks || doc.remarks,
+        revalue: req.body.revalue || doc.revalue,
+        createdBy: doc.createdBy,
+        updatedBy: req.user?.name || req.user?.email || '',
+      });
+    }
     
     await EmpClosedLoan.create({
       date: doc.date,

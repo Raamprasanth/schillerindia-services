@@ -10,6 +10,7 @@ const eltItemSchema = new mongoose.Schema(
     girNo: { type: String, trim: true, required: true },
     opt: { type: String, trim: true, default: '' },
     remarks: { type: String, trim: true, default: '' },
+    loanItemId: { type: String, trim: true, default: '' },
     createdBy: { type: String, trim: true, default: '' },
     updatedBy: { type: String, trim: true, default: '' },
   },

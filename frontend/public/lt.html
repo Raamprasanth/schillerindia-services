@@ -597,10 +597,11 @@ async function saveItem(){
 
     if(!id) {
       try {
+        const eltPayload = { ...payload, loanItemId: json._id || json.id };
         await fetch(API + '/api/elt-items', {
           method: 'POST',
           headers: authHeaders(),
-          body: JSON.stringify(payload)
+          body: JSON.stringify(eltPayload)
         });
       } catch (err) {
         console.error('Failed to save to ELT:', err);
