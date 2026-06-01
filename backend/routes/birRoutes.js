@@ -156,15 +156,6 @@ router.post('/', protect, async (req, res) => {
     });
     await eBirDoc.save();
 
-    // Mirror to PtBir
-    const PtBir = require('../models/PtBir');
-    const ptBirDoc = new PtBir({
-      ...payload,
-      birRef: saved.birRef,
-      createdBy: req.user._id,
-    });
-    await ptBirDoc.save();
-
     if (shouldMoveToClosed(saved.status)) {
       const closedDoc = await moveBirToClosed(saved, req.user._id);
       return res.status(201).json({ movedToClosed: true, data: closedDoc });
@@ -245,13 +236,6 @@ router.put('/:id', protect, async (req, res) => {
         cnrReleaseDate: doc.cnrReleaseDate,
         finalStatus: doc.status,
       }
-    );
-
-    // Sync to PtBir
-    const PtBir = require('../models/PtBir');
-    await PtBir.findOneAndUpdate(
-      { birRef: doc.birRef },
-      payload
     );
 
     if (shouldMoveToClosed(doc.status)) {
