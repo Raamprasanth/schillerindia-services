@@ -14,12 +14,6 @@
     }
     body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;transition:background 0.25s,color 0.25s;}
 
-    /* -- AUTH GUARD -- */
-    #auth-guard{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:12px;}
-    #auth-guard p{color:#6b8ca8;font-size:14px;}
-    .spinner{width:32px;height:32px;border:3px solid #ccdde8;border-top-color:#059669;border-radius:50%;animation:spin 0.7s linear infinite;}
-    @keyframes spin{to{transform:rotate(360deg);}}
-
     /* LAYOUT */
     .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
 
@@ -510,16 +504,10 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
 </head>
 <body>
 
-<!-- Auth guard -->
-<div id="auth-guard">
-  <div class="spinner"></div>
-  <p>Verifying session...</p>
-</div>
-
 <div class="toast-wrap" id="toast-wrap"></div>
 
 <!-- --- SIDEBAR (scrap list style) --- -->
-<aside class="sidebar" id="sidebar" style="display:none;">
+<aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
     <div class="logo-wrap">
       <img class="brand-logo-img" src="logo.png" alt="SCHILLER">
@@ -571,7 +559,7 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
   </div>
 </aside>
 
-<div class="main" id="main-content" style="display:none;">
+<div class="main" id="main-content">
   <div class="topbar">
     <div>
       <div class="topbar-title">Closed BIR List</div>
@@ -923,9 +911,6 @@ function logout(){sessionStorage.clear(); localStorage.clear();window.location.h
     window.location.href='login.html';
     return;
   }
-  document.getElementById('auth-guard').style.display='none';
-  document.getElementById('sidebar').style.display='flex';
-  document.getElementById('main-content').style.display='flex';
   loadData();
 })();
 </script>
