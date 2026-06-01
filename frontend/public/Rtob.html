@@ -404,9 +404,10 @@ table.ob-table tbody tr:last-child td{border-bottom:none;}
 
 
     <div class="stats-row">
-      <div class="stat-card sc-teal" onclick="setSummaryFilter('all')"><div class="stat-ico si-teal">&#128230;</div><div class="stat-lbl">Total RT OB</div><div class="stat-val" id="st-total">-</div><div class="stat-sub">Active OB records</div></div>
-      <div class="stat-card sc-amber" onclick="setSummaryFilter('pending')"><div class="stat-ico si-amber">&#9203;</div><div class="stat-lbl">Pending</div><div class="stat-val" id="st-pending">-</div><div class="stat-sub">Awaiting dispatch</div></div>
-      <div class="stat-card sc-red" onclick="setSummaryFilter('critical')"><div class="stat-ico si-red">&#9888;&#65039;</div><div class="stat-lbl">Critical (&gt;30 days)</div><div class="stat-val" id="st-critical">-</div><div class="stat-sub">Needs immediate action</div></div>
+      <div class="stat-card sc-teal" onclick="setSummaryFilter('all')"><div class="stat-ico si-teal">&#128230;</div><div class="stat-lbl">Total OB</div><div class="stat-val" id="st-total">-</div><div class="stat-sub">Active OB records</div></div>
+      <div class="stat-card sc-green" onclick="setSummaryFilter('below-3')"><div class="stat-ico si-green">&#9203;</div><div class="stat-lbl">Below 3 Days</div><div class="stat-val" id="st-below-3">-</div><div class="stat-sub">0 to 2 days</div></div>
+      <div class="stat-card sc-amber" onclick="setSummaryFilter('3-to-5')"><div class="stat-ico si-amber">&#128337;</div><div class="stat-lbl">3 to 5 Days</div><div class="stat-val" id="st-3-to-5">-</div><div class="stat-sub">Needs follow-up</div></div>
+      <div class="stat-card sc-red" onclick="setSummaryFilter('above-5')"><div class="stat-ico si-red">&#9888;&#65039;</div><div class="stat-lbl">Above 5 Days</div><div class="stat-val" id="st-above-5">-</div><div class="stat-sub">Needs priority action</div></div>
     </div>
 
     <!-- ADD PANEL -->
@@ -612,11 +613,10 @@ function calcDays(d) {
   return isNaN(diff) ? 0 : Math.max(0, diff);
 }
 function updateStats() {
-  const total=allData.length, pending=allData.filter(d=>d.status==='pending').length;
-  const critical=allData.filter(d=>d.noOfDays>30&&d.status!=='completed').length;
-  document.getElementById('st-total').textContent=total;
-  document.getElementById('st-pending').textContent=pending;
-  document.getElementById('st-critical').textContent=critical;
+  document.getElementById('st-total').textContent=allData.length;
+  document.getElementById('st-below-3').textContent=allData.filter(d=>d.noOfDays<3).length;
+  document.getElementById('st-3-to-5').textContent=allData.filter(d=>d.noOfDays>=3&&d.noOfDays<=5).length;
+  document.getElementById('st-above-5').textContent=allData.filter(d=>d.noOfDays>5).length;
 }
 function clearDates(){ applyFilters(); }
 function clearAllFilters(){
@@ -624,8 +624,9 @@ function clearAllFilters(){
 }
 function setSummaryFilter(type){ activeSummary=type||'all'; applyFilters(); }
 function summaryMatches(d){
-  if(activeSummary==='pending') return d.status==='pending';
-  if(activeSummary==='critical') return d.noOfDays>30&&d.status!=='completed';
+  if(activeSummary==='below-3') return d.noOfDays<3;
+  if(activeSummary==='3-to-5') return d.noOfDays>=3&&d.noOfDays<=5;
+  if(activeSummary==='above-5') return d.noOfDays>5;
   return true;
 }
 function applyFilters(){
@@ -733,7 +734,11 @@ function openUpdate(id){
   (document.getElementById('ri-by')||{}).textContent =d.submittedBy||'-';
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
   editingDoi=d.doi||''; set('u-repairedby',d.repairedBy); set('u-status',d.status||'');
-  set('u-repaireddate', new Date().toISOString().split('T')[0]);
+  const repairedDateEl=document.getElementById('u-repaireddate');
+  const today=new Date().toISOString().split('T')[0];
+  repairedDateEl.value=today;
+  repairedDateEl.min=today;
+  repairedDateEl.max=today;
   set('u-techremarks',   d.techRemarks||'');
   set('u-repairremarks', d.repairRemarks||'');
   set('u-components',    d.components||'');
