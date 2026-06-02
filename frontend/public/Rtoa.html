@@ -325,11 +325,6 @@ table.oa-table tbody tr:last-child td{border-bottom:none;}
               <option value="Thilipan">Thilipan</option>
             </select></div>
           <div class="ff"><label>Repaired Date</label><input type="date" id="f-repairedDate"/></div>
-          <div class="ff"><label>Status <span class="req">*</span></label>
-            <select id="f-status">
-              <option value="In Progress">In Progress</option>
-              <option value="Closed">Closed</option>
-            </select></div>
         </div>
       </div>
     </div>
@@ -479,7 +474,6 @@ function openModal() {
   document.getElementById('save-btn').innerHTML = '&#128190; Save Activity';
   clearForm();
   document.getElementById('f-entryDate').value = todayISO();
-  document.getElementById('f-status').value = 'In Progress';
   lockDateRules();
   document.getElementById('modal-form').classList.add('open');
 }
@@ -495,7 +489,6 @@ function openEdit(id) {
   document.getElementById('f-division2').value     = d.division || '';
   document.getElementById('f-model').value         = d.model || '';
   document.getElementById('f-partNumber').value    = d.partNumber || '';
-  document.getElementById('f-status').value        = d.status || '';
   document.getElementById('f-description').value   = d.description || '';
   document.getElementById('f-problemObserved').value = d.problemObserved || '';
   document.getElementById('f-componentsUsed').value  = d.componentsUsed || '';
@@ -510,7 +503,7 @@ function closeModal() { document.getElementById('modal-form').classList.remove('
 
 function clearForm() {
   ['f-repairedBy','f-entryDate','f-division2','f-model','f-partNumber',
-   'f-description','f-problemObserved','f-componentsUsed','f-finalRemarks','f-repairedDate','f-status'
+   'f-description','f-problemObserved','f-componentsUsed','f-finalRemarks','f-repairedDate'
   ].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
 }
 
@@ -526,7 +519,7 @@ async function saveRecord() {
   const finalRemarks    = document.getElementById('f-finalRemarks').value.trim();
   const repairedDate    = document.getElementById('f-repairedDate').value;
   const remarks         = ''; // field removed
-  const status          = document.getElementById('f-status').value;
+  const status          = editId ? (allData.find(x => (x._id || x.id) === editId)?.status || 'In Progress') : 'In Progress';
   if (!repairedBy || !entryDate || !division || !problemObserved) {
     showToast('Please fill: Repaired By, Entry Date, Division, Problem Observed.', 'err'); return;
   }
