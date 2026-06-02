@@ -1447,7 +1447,7 @@ function generatePDFData(s, mode='download'){
   labelValue(L+2, y+7, 'Engineer Name', s.eng || '-', 45);
   labelValue(104, y+7, 'FRN', s.frnNo || '-', 20);
   labelValue(104, y+14, 'DATE', fmtDate(s.frnDate), 20);
-  labelValue(104, y+21, 'SVC RCD Date', fmtDate(s.rcvdDate || s.entryDate), 45);
+  labelValue(104, y+21, 'SVC RCD Date', fmtDate(s.rcvdDate || s.entryDate), 26);
 
   y=104;
   doc.setFont('helvetica','bold');
@@ -1455,7 +1455,7 @@ function generatePDFData(s, mode='download'){
   doc.text('Received Item:',L,y);
   doc.setFont('helvetica','normal');
   y+=5;
-  labelValue(L, y, '', s.defMod || s.defBrdModName || s.itemDescription || '-', 32);
+  labelValue(L, y, 'Item Name', s.model || s.defMod || s.defBrdModName || s.itemDescription || '-', 20);
   labelValue(104, y, 'Unit S/N', s.unitSl || '-', 22);
   labelValue(150, y, 'Unit Status', s.unitStatus || s.unitSts || '-', 22);
 
@@ -1527,19 +1527,16 @@ function generatePDFData(s, mode='download'){
   doc.text(money(groupTotal),R-2,tableY+5,{align:'right'});
   tableY+=8;
 
-  doc.rect(tableX,tableY,R-L,8);
-  doc.text('If the quotation rejected, then please suggest to dispose of goods or send it back unrepaired in the return mail',tableX+1.5,tableY+5.2);
-  tableY+=18;
-
   doc.setFont('helvetica','bold');
   doc.text('Term & Condition:',L,tableY);
   tableY+=8;
   doc.setFont('helvetica','normal');
   const terms = [
-    'Above mentioned prices are without tax.',
-    'Estimate cost Rs.1000. This amount is charged if the estimate is not accepted.',
-    'Please state our Estimation number on all correspondence.',
-    'If the OB is not received within 30 days from the date of estimation, the items will be returned to branch without prior notice.'
+    '1. The prices mentioned above are exclusive of GST except MRP. The MRP is inclusive of GST.',
+    '2. If the quotation is not approved, please advise whether the items should be disposed or returned unrepaired. Kindly confirm your decision by return email.',
+    '3. If the items are returning without repairs, an estimation charge of Rs. 2,000 will be applicable.',
+    '4. Any waiver or exception requires approval from the RSM.',
+    '5. It is mandatory to share a copy of the estimate provided to the customer with the concerned technical team.'
   ];
   terms.forEach(term=>{
     tableY += writeWrapped(term, L, tableY, 182);
