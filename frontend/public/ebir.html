@@ -313,6 +313,9 @@ table.bir-table tbody tr:last-child td{border-bottom:none;}
 .ebir-section-unlocked::before{content:'🔓 UNLOCKED';position:absolute;top:-10px;right:16px;background:linear-gradient(135deg,var(--green),#10b981);color:#fff;font-size:9px;font-weight:700;letter-spacing:0.1em;padding:2px 10px;border-radius:10px;}
 .ebir-section-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
 .ebir-section-title .ebir-dot{width:6px;height:6px;border-radius:50%;}
+.ebir-section-frozen::before{content:'\1F512  LOCKED';}
+.ebir-section-unlocked::before{content:'\1F513  UNLOCKED';}
+.ebir-section-unlocked.view-only::before{content:'\1F512  VIEW ONLY';background:linear-gradient(135deg,var(--teal),var(--accent));}
 
 .nav-group-toggle{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;color:var(--soft,#3d6480);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;margin-bottom:3px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;}
 .nav-group-toggle:hover{background:var(--surface2,#e8f0f7);color:var(--text,#0f2236);}
@@ -784,6 +787,9 @@ function statusPill(s){
   const m = {Pending:'sp-pending','TS Pending':'sp-pending','PT Pending':'sp-review',Closed:'sp-closed','Under Review':'sp-review',Rejected:'sp-rejected'};
   return '<span class="s-pill '+(m[s]||'sp-pending')+'">'+esc(s||'Pending')+'</span>';
 }
+function canUpdateRecord(d){
+  return ['Pending','TS Pending','In Progress',''].includes(String(d.finalStatus||d.status||'').trim());
+}
 function renderTable(){
   const perPage = parseInt(document.getElementById('per-page').value,10) || 10;
   const total = filtered.length;
@@ -795,9 +801,14 @@ function renderTable(){
   (document.getElementById('tbl-info')||{}).textContent = total
     ? 'Showing '+(start+1)+' to '+Math.min(start+perPage,total)+' of '+total+' entries'
     : '0 entries';
-  document.getElementById('bir-tbody').innerHTML = rows.length ? rows.map(d=>`
-    <tr onclick="openUpdate('${esc(d._id||d.id)}')">
-      <td onclick="event.stopPropagation()"><button class="btn-xs update" onclick="openUpdate('${esc(d._id||d.id)}')">&#9998; Update</button></td>
+  document.getElementById('bir-tbody').innerHTML = rows.length ? rows.map(d=>{
+    const editable = canUpdateRecord(d);
+    const actionClass = editable ? 'update' : 'view';
+    const actionIcon = editable ? '&#9998;' : '&#128065;';
+    const actionLabel = editable ? 'Update' : 'View';
+    return `
+    <tr onclick="openUpdate('${esc(d._id||d.id)}',${!editable})">
+      <td onclick="event.stopPropagation()"><button class="btn-xs ${actionClass}" onclick="openUpdate('${esc(d._id||d.id)}',${!editable})">${actionIcon} ${actionLabel}</button></td>
       <td><span class="bir-ref">${esc(d.birRefNo||'-')}</span></td>
       <td>${fmtDate(d.inwardDate)}</td>
       <td><span class="div-tag">${esc(d.division||'-')}</span></td>
@@ -806,12 +817,14 @@ function renderTable(){
       <td>${esc(d.receivedQty||'-')}</td>
       <td>${esc(d.accessoryDetails||'-')}</td>
       <td>${statusPill(d.finalStatus||d.status)}</td>
-    </tr>`).join('') : '<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--muted);">No BIR records found.</td></tr>';
+    </tr>`;
+  }).join('') : '<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--muted);">No BIR records found.</td></tr>';
   renderPagination(pages);
 }
-async function openUpdate(id){
+async function openUpdate(id,readOnly=false){
   const d = DATA.find(x=>String(x._id||x.id)===String(id));
   if(!d) return;
+  readOnly = readOnly || !canUpdateRecord(d);
   const set = (fieldId,value) => {
     const el = document.getElementById(fieldId);
     if(el) el.value = value || '';
@@ -848,9 +861,9 @@ async function openUpdate(id){
   const todayStr = dObj.getFullYear() + '-' + String(dObj.getMonth()+1).padStart(2,'0') + '-' + String(dObj.getDate()).padStart(2,'0');
   const tsDateEl = document.getElementById('upd-ts-date');
   if (tsDateEl) {
-    tsDateEl.value = todayStr;
-    tsDateEl.min = todayStr;
-    tsDateEl.max = todayStr;
+    tsDateEl.value = readOnly ? (d.tsVerificationDate||'') : todayStr;
+    tsDateEl.min = readOnly ? '' : todayStr;
+    tsDateEl.max = readOnly ? '' : todayStr;
   }
   set('upd-ps-engineer', d.psEngineer);
   set('upd-cnr-ref', d.cnrRefNo);
@@ -859,6 +872,15 @@ async function openUpdate(id){
   set('upd-pt-remarks', d.productTeamRemarks);
   set('upd-approved-date', d.approvedDate);
 
+  const serviceFields = ['upd-sc-engineer','upd-sc-obs','upd-hw-changes','upd-hw-remarks','upd-acc-remarks','upd-service-manual','upd-tech-remarks','upd-ts-date'];
+  serviceFields.forEach(fieldId=>{
+    const el = document.getElementById(fieldId);
+    if(el) el.disabled = readOnly;
+  });
+  document.getElementById('service-section').classList.toggle('view-only',readOnly);
+  document.getElementById('upd-save-btn').style.display = readOnly ? 'none' : '';
+  document.getElementById('modal-title').innerHTML = readOnly ? '&#128065; View BIR Record' : '&#9998; Update BIR Record';
+  document.getElementById('modal-sub').textContent = readOnly ? 'This record has already been sent to Product Team.' : 'Fill in the update fields and save.';
   clearMsg();
   document.getElementById('update-overlay').classList.add('open');
   document.querySelector('.modal-scroll').scrollTop = 0;

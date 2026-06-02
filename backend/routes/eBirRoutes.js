@@ -213,6 +213,10 @@ router.put('/:id', protect, async (req, res) => {
     if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && !canAccessDivision(req.user, existing.division)) {
       return res.status(403).json({ message: 'Access denied' });
     }
+    const canUpdate = ['Pending', 'TS Pending', 'In Progress', ''].includes(String(existing.finalStatus || '').trim());
+    if (!canUpdate) {
+      return res.status(409).json({ message: 'This BIR record has already been sent to Product Team and is view-only.' });
+    }
 
     const allowed = [
       // SC / FQC fields
