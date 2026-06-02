@@ -569,6 +569,7 @@ let allRecords = [], filtered = [], currentPage = 1;
 let sortKey = 'entryDate', sortDir = -1;
 let editingId = null;
 let currentEstimateRows = [];
+let _estimateRowsInitialized = false;
 let selectedIds = new Set();
 let ALL_ENGINEERS = [];
 
@@ -911,6 +912,7 @@ function openEstimationForRecords(records){
   const first = records[0];
   const isMulti = records.length > 1;
   editingId = String(first._id || first.id);
+  _estimateRowsInitialized = true; // mark rows as initialized so PDF uses currentEstimateRows
   currentEstimateRows = isMulti
     ? records.map((row, index) => ({
         id: row._id || row.id,
@@ -1063,6 +1065,7 @@ function normalizeEstimateLine(index){
 function removeEstimateLine(index){
   if(index < 0 || index >= currentEstimateRows.length) return;
   currentEstimateRows.splice(index, 1);
+  _estimateRowsInitialized = true; // mark as explicitly managed even if now empty
   renderEstimateLineItems();
 }
 
@@ -1089,13 +1092,18 @@ function closeModal(){
   document.getElementById('modal-est').classList.remove('open');
   editingId=null;
   currentEstimateRows=[];
+  _estimateRowsInitialized = false;
   const chargeInput=document.getElementById('u-servicecharge');
   if(chargeInput) chargeInput.value='0';
 }
 
 function buildEstimateLineRows(seed){
   const fallbackRow = seed || {};
-  return (currentEstimateRows.length ? currentEstimateRows : getGroupedEstimateRows(fallbackRow)).map((row, index) => ({
+  // If rows have been explicitly initialized (loaded or modified by user), always use currentEstimateRows.
+  // Only fall back to DB-fetched rows if rows haven't been initialized yet.
+  const sourceRows = _estimateRowsInitialized ? currentEstimateRows
+    : (currentEstimateRows.length ? currentEstimateRows : getGroupedEstimateRows(fallbackRow));
+  return sourceRows.map((row, index) => ({
     ...row,
     serviceId: row.serviceId || row.id || '',
     partNo: sanitizePartNo(row.partNo),
