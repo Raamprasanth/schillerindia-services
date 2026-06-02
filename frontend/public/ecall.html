@@ -295,37 +295,24 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
           <input type="date" id="m-calldate" required/>
         </div>
         <div class="ff">
-          <label>Region <span class="req">*</span></label>
-          <select id="m-region" required onchange="onRegionChange()">
-            <option value="">Select Region-</option>
+          <label>Call <span class="req">*</span></label>
+          <select id="m-call" required>
+            <option value="">Select Call-</option>
+            <option value="Incoming">Incoming</option>
+            <option value="Outgoing">Outgoing</option>
           </select>
         </div>
         <div class="ff">
-          <label>Branch <span class="req">*</span></label>
-          <select id="m-branch" required onchange="onBranchChange()">
-            <option value="">Select Branch-</option>
+          <label>Comm Type</label>
+          <select id="m-commtype">
+            <option value="">Select...</option>
+            <option value="Phone">Phone</option>
+            <option value="WhatsApp">WhatsApp</option>
+            <option value="Online">Online</option>
+            <option value="Field Visit">Field Visit</option>
+            <option value="Video Call">Video Call</option>
           </select>
         </div>
-        <div class="ff">
-          <label>Engineer (Field) <span class="req">*</span></label>
-          <select id="m-engineer" required>
-            <option value="">Select Engineer-</option>
-          </select>
-        </div>
-        <div class="ff">
-          <label>Supplier <span class="req">*</span></label>
-          <select id="m-supplier" required onchange="onSupplierChange()">
-            <option value="">Select Supplier-</option>
-          </select>
-        </div>
-        <div class="ff">
-          <label>Model / Device <span class="req">*</span></label>
-          <select id="m-model" required>
-            <option value="">Select Model-</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-grid" style="margin-bottom:14px;">
         <div class="ff">
           <label>Call Type <span class="req">*</span></label>
           <select id="m-calltype" required>
@@ -339,28 +326,43 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
             <option value="Others">Others</option>
           </select>
         </div>
+      </div>
+      <div class="form-grid" style="margin-bottom:14px;">
         <div class="ff">
-          <label>Communication Type</label>
-          <select id="m-commtype">
-            <option value="">Select...</option>
-            <option value="Phone">Phone</option>
-            <option value="WhatsApp">WhatsApp</option>
-            <option value="Online">Online</option>
-            <option value="Field Visit">Field Visit</option>
-            <option value="Video Call">Video Call</option>
+          <label>Region <span class="req">*</span></label>
+          <select id="m-region" required onchange="onRegionChange()">
+            <option value="">Select Region-</option>
           </select>
         </div>
         <div class="ff">
-          <label>Duration (HH:MM:SS)</label>
+          <label>Branch <span class="req">*</span></label>
+          <select id="m-branch" required onchange="onBranchChange()">
+            <option value="">Select Branch-</option>
+          </select>
+        </div>
+        <div class="ff">
+          <label>Engineer <span class="req">*</span></label>
+          <select id="m-engineer" required>
+            <option value="">Select Engineer-</option>
+          </select>
+        </div>
+        <div class="ff">
+          <label>Supplier <span class="req">*</span></label>
+          <select id="m-supplier" required onchange="onSupplierChange()">
+            <option value="">Select Supplier-</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid" style="margin-bottom:14px;">
+        <div class="ff">
+          <label>Model <span class="req">*</span></label>
+          <select id="m-model" required>
+            <option value="">Select Model-</option>
+          </select>
+        </div>
+        <div class="ff">
+          <label>Duration</label>
           <input type="text" id="m-duration" placeholder="" pattern="\d{2}:\d{2}:\d{2}"/>
-        </div>
-        <div class="ff">
-          <label>Status <span class="req">*</span></label>
-          <select id="m-status" required>
-            <option value="">Select...</option>
-            <option value="Pending">Pending</option>
-            <option value="Closed">Closed</option>
-          </select>
         </div>
       </div>
       <div class="form-grid" style="margin-bottom:14px;">
@@ -520,19 +522,20 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
           <thead><tr>
             <th style="width:40px;"># <span class="si">&#8693;</span></th>
             <th onclick="sortBy('callDate')">Call Date <span class="si">&#8693;</span></th>
-            <th>Action</th>
-            <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('scEng')">SC Eng <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('engineer')">Engineer <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('callType')">Call Type <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('call')">Call <span class="si">&#8693;</span></th>
             <th onclick="sortBy('commType')">Comm Type <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('callType')">Call Type <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('region')">Region <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('branch')">Branch <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('engineer')">Engineer <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('supplier')">Supplier <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
             <th>Duration</th>
-            <th style="max-width:180px;">Remarks</th>
-            <th onclick="sortBy('status')">Status <span class="si">&#8693;</span></th>
+            <th style="max-width:180px;">Remarks / Notes</th>
+            <th>Actions</th>
           </tr></thead>
           <tbody id="call-tbody">
-            <tr class="loading-row"><td colspan="12"><span class="spin"></span>Loading from database...</td></tr>
+             <tr class="loading-row"><td colspan="13"><span class="spin"></span>Loading from database...</td></tr>
           </tbody>
         </table>
       </div>
@@ -874,16 +877,20 @@ function renderTable(){
       return `<tr>
         <td class="mono" style="color:var(--muted);">${(currentPage-1)*perPage+i+1}</td>
         <td style="font-size:11px;font-weight:600;color:var(--soft);">${fmtDate(d.callDate)}</td>
-        <td><button class="btn-xs update" title="Update" onclick="openEditModal('${rid}')">&#9999;&#65039;</button></td>
-        <td><span class="div-tag">${esc(d.division||'-')}</span></td>
-        <td style="font-size:11.5px;font-weight:600;">${esc(d.scEng||'-')}</td>
-        <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;">${esc(d.engineer||'-')}</td>
-        <td style="font-weight:600;color:var(--accent2);">${esc(d.model||'-')}</td>
-        <td><span class="call-type-pill ${callTypeCls(d.callType)}">${esc(d.callType||'-')}</span></td>
+        <td>${esc(d.call||'-')}</td>
         <td style="font-size:11px;color:var(--soft);">${esc(d.commType||'-')}</td>
+        <td><span class="call-type-pill ${callTypeCls(d.callType)}">${esc(d.callType||'-')}</span></td>
+        <td>${esc(d.region||'-')}</td>
+        <td>${esc(d.branch||'-')}</td>
+        <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;">${esc(d.engineer||'-')}</td>
+        <td>${esc(d.supplier||d.customer||'-')}</td>
+        <td style="font-weight:600;color:var(--accent2);">${esc(d.model||'-')}</td>
         <td><span class="duration-badge"><span class="dur-ico">&#9201;</span>${esc(d.duration||'-')}</span></td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--soft);" title="${esc(d.remarks||'')}">${esc(remark||'-')}</td>
-        <td><span class="status-pill ${statusCls(d.status)}">${esc(d.status||'Open')}</span></td>
+        <td>
+          <button class="btn-xs update" title="Update" onclick="openEditModal('${rid}')">Edit</button>
+          <button class="btn-xs update" title="Close" onclick="closeEntry('${rid}')" style="margin-left:4px;">Close</button>
+        </td>
       </tr>`;
     }).join('');
   }
@@ -931,13 +938,13 @@ async function openEditModal(id){
   renderRegionOptions(recordRegion);
   renderBranchOptions(recordBranch);
   set('m-calldate', (d.callDate||'').slice(0,10));
+  set('m-call', d.call);
   set('m-sceng', d.scEng);
   document.getElementById('top-sceng').textContent = d.scEng || '-';
   await onBranchChange(d.engineer);
   set('m-calltype', d.callType);
   set('m-commtype', d.commType);
   set('m-duration', d.duration);
-  set('m-status', d.status);
   set('m-remarks', d.remarks);
   clearModalMsg();
   document.getElementById('add-modal').classList.add('open');
@@ -946,7 +953,7 @@ async function openEditModal(id){
 function closeAddModal(){ document.getElementById('add-modal').classList.remove('open'); }
 
 function clearModalForm(){
-  ['m-region','m-branch','m-engineer','m-calltype','m-commtype','m-status'].forEach(id => {
+  ['m-region','m-branch','m-engineer','m-call','m-calltype','m-commtype'].forEach(id => {
     const el = document.getElementById(id);
     if(el) el.value = '';
   });
@@ -954,7 +961,7 @@ function clearModalForm(){
   const div = CURRENT_USER.division || '';
   document.getElementById('m-division').value = div;
   (document.getElementById('top-division')||{}).textContent = div || '-';
-  ['m-division','m-region','m-branch','m-calldate','m-engineer','m-supplier','m-model','m-calltype','m-status','m-remarks'].forEach(id => document.getElementById(id).classList.remove('err'));
+  ['m-division','m-region','m-branch','m-calldate','m-engineer','m-supplier','m-model','m-call','m-calltype','m-remarks'].forEach(id => document.getElementById(id).classList.remove('err'));
 }
 
 function clearModalMsg(){
@@ -967,7 +974,7 @@ function showModalErr(msg){
 }
 
 async function saveEntry(){
-  const required = ['m-division','m-region','m-branch','m-calldate','m-engineer','m-supplier','m-model','m-calltype','m-status','m-remarks'];
+  const required = ['m-division','m-region','m-branch','m-calldate','m-engineer','m-supplier','m-model','m-call','m-calltype','m-remarks'];
   let err = false;
   required.forEach(id=>{const el=document.getElementById(id);if(!el)return;if(!el.value.trim()){el.classList.add('err');err=true;}else el.classList.remove('err');});
   if(err){ showModalErr('Please fill all required fields.'); return; }
@@ -983,10 +990,12 @@ async function saveEntry(){
     engineer:   document.getElementById('m-engineer').value.trim(),
     customer:   document.getElementById('m-supplier').value.trim(),
     model:      document.getElementById('m-model').value.trim(),
+    supplier:   document.getElementById('m-supplier').value.trim(),
+    call:       document.getElementById('m-call').value,
     callType:   document.getElementById('m-calltype').value,
     commType:   document.getElementById('m-commtype').value,
     duration:   document.getElementById('m-duration').value.trim(),
-    status:     document.getElementById('m-status').value,
+    status:     'Pending',
     remarks:    document.getElementById('m-remarks').value.trim(),
     submittedBy: u.name || '',
     submittedAt: new Date().toISOString(),
@@ -1007,16 +1016,6 @@ async function saveEntry(){
     if(!res.ok){ const e=await res.json().catch(()=>({})); throw new Error(e.message||'HTTP '+res.status); }
     const saved = await res.json();
 
-    if(editMode && saved.closed){
-      const closedId = document.getElementById('edit-id').value;
-      CALL_DATA = CALL_DATA.filter(x=>(x._id||x.id)!==closedId);
-      applyFilters(); updateStats();
-      showToast('Call closed and moved to Closed Calls.','ok');
-      closeAddModal();
-      setTimeout(()=>{ window.location.href='eclose.html'; }, 1200);
-      return;
-    }
-
     if(editMode){
       const idx = CALL_DATA.findIndex(x=>(x._id||x.id)===document.getElementById('edit-id').value);
       if(idx!==-1) CALL_DATA[idx] = {...CALL_DATA[idx], ...payload, _id: CALL_DATA[idx]._id, id: CALL_DATA[idx].id};
@@ -1033,6 +1032,18 @@ async function saveEntry(){
   }
 }
 
+async function closeEntry(id){
+  if(!confirm('Close this call and move it to Closed Calls?')) return;
+  try{
+    const res = await fetch(`${API}/api/calls/${id}/close`, {method:'POST', headers:authHeaders()});
+    handleUnauth(res);
+    if(!res.ok){ const e=await res.json().catch(()=>({})); throw new Error(e.message||'Close failed'); }
+    CALL_DATA = CALL_DATA.filter(x=>(x._id||x.id)!==id);
+    applyFilters(); updateStats();
+    showToast('Call moved to Closed Calls.','ok');
+  }catch(e){ if(e.message!=='Unauthorized') showToast('Close failed: '+e.message,'err'); }
+}
+
 /* -- VIEW MODAL -- */
 function openViewModal(id){
   const d = CALL_DATA.find(x=>(x._id||x.id)===id);
@@ -1041,7 +1052,8 @@ function openViewModal(id){
   const fields = [
     ['Division', d.division],['Region / Branch', d.region||d.branch],['Call Date', fmtDate(d.callDate)],
     ['Entry Date', fmtDate(d.entryDate||d.createdAt)],['SC Engineer', d.scEng],['Field Engineer', d.engineer],
-    ['Model / Device', d.model],['Call Type', d.callType],['Communication', d.commType||'-'],
+    ['Supplier', d.supplier||d.customer],['Model', d.model],['Call', d.call||'-'],
+    ['Call Type', d.callType],['Comm Type', d.commType||'-'],
     ['Duration', d.duration||'-'],['Status', d.status||'Open'],['Submitted By', d.submittedBy||'-'],
   ];
   document.getElementById('view-grid').innerHTML = fields.map(([label,val])=>`
@@ -1076,8 +1088,8 @@ async function deleteEntry(id){
 
 /* -- EXPORT -- */
 function exportCSV(){
-  const headers = ['#','Entry Date','Call Date','Division','Region','SC Eng','Engineer','Model','Call Type','Comm Type','Duration','Status','Remarks'];
-  const rows = filtered.map((d,i)=>[i+1,d.entryDate||d.createdAt,d.callDate,d.division,d.region||d.branch,d.scEng,d.engineer,d.model,d.callType,d.commType||'-',d.duration||'-',d.status,d.remarks]);
+  const headers = ['#','Call Date','Call','Comm Type','Call Type','Region','Branch','Engineer','Supplier','Model','Duration','Remarks / Notes'];
+  const rows = filtered.map((d,i)=>[i+1,d.callDate,d.call,d.commType||'-',d.callType,d.region,d.branch,d.engineer,d.supplier||d.customer,d.model,d.duration||'-',d.remarks]);
   const csv = [headers,...rows].map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
@@ -1102,7 +1114,7 @@ function getRange(c,t){if(t<=7)return Array.from({length:t},(_,i)=>i+1);if(c<=4)
 function gp(p){ currentPage=p; renderTable(); }
 
 /* -- HELPERS -- */
-function setLoading(){ document.getElementById('call-tbody').innerHTML='<tr class="loading-row"><td colspan="12"><span class="spin"></span>Loading from database...</td></tr>'; ['s-total','s-pending','s-closed'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='-';}); }
+function setLoading(){ document.getElementById('call-tbody').innerHTML='<tr class="loading-row"><td colspan="13"><span class="spin"></span>Loading from database...</td></tr>'; ['s-total','s-pending','s-closed'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='-';}); }
 function setError(msg){ document.getElementById('call-tbody').innerHTML=`<tr class="loading-row"><td colspan="13" style="color:var(--red);">&#9888; ${esc(msg)}</td></tr>`; }
 function fmtDate(d){ if(!d)return'-'; const p=String(d).split('T')[0].split('-'); if(p.length<3)return String(d); return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0]; }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }

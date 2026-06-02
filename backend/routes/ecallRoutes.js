@@ -43,6 +43,31 @@ function canAccessDivision(user, division) {
   return divisions.includes(target);
 }
 
+function closedCallPayload(doc, createdBy) {
+  const today = new Date().toISOString().split('T')[0];
+  return {
+    entryDate: doc.callDate || today,
+    callDate: doc.callDate || today,
+    closeDate: today,
+    division: doc.division || '',
+    call: doc.call || '',
+    commType: doc.commType || '',
+    typeCall: doc.callType || '',
+    branch: doc.branch || '',
+    region: doc.region || '',
+    scEngg: doc.scEng || '',
+    engineer: doc.engineer || '',
+    customer: doc.customer || doc.supplier || '',
+    supplier: doc.supplier || doc.customer || '',
+    model: doc.model || '',
+    girSno: doc.girSno || '',
+    duration: doc.duration || '',
+    status: 'Closed',
+    remarks: doc.remarks || '',
+    createdBy,
+  };
+}
+
 // ── GET /api/calls  (admin: all records)
 router.get('/', protect, async (req, res) => {
   try {
@@ -122,6 +147,24 @@ router.post('/', protect, async (req, res) => {
   }
 });
 
+// POST /api/calls/:id/close
+router.post('/:id/close', protect, async (req, res) => {
+  try {
+    const existing = await Ecall.findById(req.params.id).lean();
+    if (!existing) return res.status(404).json({ message: 'Record not found' });
+    if (!isAdminUser(req.user) && !canAccessDivision(req.user, existing.division)) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    const closedDoc = await Eclose.create(closedCallPayload(existing, req.user._id));
+    await Ecall.findByIdAndDelete(req.params.id);
+    res.json(closedDoc);
+  } catch (err) {
+    console.error('[POST /api/calls/:id/close]', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
 // ── PUT /api/calls/:id
 router.put('/:id', protect, async (req, res) => {
   try {
@@ -138,24 +181,7 @@ router.put('/:id', protect, async (req, res) => {
     );
 
     if (String(req.body.status || '').trim() === 'Closed') {
-      const today = new Date().toISOString().split('T')[0];
-      await Eclose.create({
-        entryDate: doc.callDate || today,
-        callDate:  doc.callDate  || today,
-        closeDate: today,
-        division:  doc.division  || '',
-        typeCall:  doc.callType || '',
-        branch:    doc.branch    || '',
-        region:    doc.region    || '',
-        scEngg:    doc.scEng     || '',
-        engineer:  doc.engineer  || '',
-        customer:  doc.customer  || '',
-        model:     doc.model     || '',
-        girSno:    doc.girSno    || '',
-        status:    'Closed',
-        remarks:   doc.remarks   || '',
-        createdBy: req.user._id,
-      });
+      await Eclose.create(closedCallPayload(doc, req.user._id));
       await Ecall.findByIdAndDelete(req.params.id);
       return res.json({ ...doc.toObject(), closed: true });
     }

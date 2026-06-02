@@ -10,6 +10,12 @@ const ptCallRegisterSchema = new mongoose.Schema(
     scEng:      { type: String, trim: true, default: '' },
     engineer:   { type: String, trim: true, default: '' },
     model:      { type: String, trim: true, default: '' },
+    supplier:   { type: String, trim: true, default: '' },
+    call: {
+      type: String,
+      enum: ['Incoming', 'Outgoing'],
+      required: true,
+    },
     callType:   {
       type: String,
       enum: ['Application', 'Software', 'Technical', 'Demo', 'CRM', 'Training', ''],

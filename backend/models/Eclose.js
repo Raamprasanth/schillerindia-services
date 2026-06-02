@@ -22,6 +22,15 @@ const ecloseSchema = new mongoose.Schema(
     },
 
     // ── Location ──────────────────────────────────────────────
+    call: {
+      type: String,
+      enum: ['Incoming', 'Outgoing', ''],
+      default: '',
+    },
+    commType: { type: String, trim: true, default: '' },
+    duration: { type: String, trim: true, default: '' },
+    supplier: { type: String, trim: true, default: '' },
+
     branch: { type: String, trim: true, default: '' },
     region: { type: String, trim: true, default: '' },
 

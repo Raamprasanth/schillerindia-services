@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const PtCallRegister = require('../models/PtCallRegister');
+const PtClose = require('../models/PtClose');
 const { protect } = require('../middleware/authMiddleware');
 
 function getUserDivisions(user) {
@@ -93,6 +94,39 @@ router.post('/', protect, async (req, res) => {
     if (err.name === 'ValidationError') {
       return res.status(400).json({ message: err.message });
     }
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+router.post('/:id/close', protect, async (req, res) => {
+  try {
+    const existing = await PtCallRegister.findById(req.params.id).lean();
+    if (!existing) return res.status(404).json({ message: 'Record not found' });
+    const today = new Date().toISOString().split('T')[0];
+    const closedDoc = await PtClose.create({
+      entryDate: existing.callDate || today,
+      callDate: existing.callDate || today,
+      closeDate: today,
+      division: existing.division || '',
+      call: existing.call || '',
+      commType: existing.commType || '',
+      typeCall: existing.callType || '',
+      branch: existing.branch || '',
+      region: existing.region || '',
+      scEngg: existing.scEng || '',
+      engineer: existing.engineer || '',
+      supplier: existing.supplier || '',
+      customer: existing.supplier || '',
+      model: existing.model || '',
+      duration: existing.duration || '',
+      status: 'Closed',
+      remarks: existing.remarks || '',
+      createdBy: existing.createdBy || req.user._id,
+    });
+    await PtCallRegister.findByIdAndDelete(req.params.id);
+    res.json(closedDoc);
+  } catch (err) {
+    console.error('[POST /api/pt/call-register/:id/close]', err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });

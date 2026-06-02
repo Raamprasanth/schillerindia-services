@@ -24,6 +24,11 @@ const ecallSchema = new mongoose.Schema(
     girSno: { type: String, trim: true, default: '' },
 
     // ── Call Details ──────────────────────────────────────────
+    call: {
+      type: String,
+      enum: ['Incoming', 'Outgoing'],
+      required: true,
+    },
     callType: {
       type: String,
       enum: [
@@ -38,6 +43,7 @@ const ecallSchema = new mongoose.Schema(
       default: '',
     },
     duration: { type: String, trim: true, default: '' },
+    supplier: { type: String, trim: true, default: '' },
 
     status: {
       type: String,
