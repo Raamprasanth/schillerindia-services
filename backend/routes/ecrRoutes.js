@@ -4,6 +4,18 @@ const Ecr     = require('../models/Ecr');
 const EPrfOb  = require('../models/EPrfOb');
 const { protect } = require('../middleware/authMiddleware');
 
+function isAdminUser(user) {
+  const role = String(user?.role || '').toLowerCase();
+  return role === 'admin' || role === 'superadmin';
+}
+
+function getUserDivisions(user) {
+  const values = user?.activeDivision
+    ? [user.activeDivision]
+    : (Array.isArray(user?.divisions) && user.divisions.length ? [...user.divisions] : [user?.division]);
+  return [...new Set(values.map(v => String(v || '').trim()).filter(Boolean))];
+}
+
 // GET /api/ecr
 router.get('/', protect, async (req, res) => {
   try {
@@ -11,7 +23,15 @@ router.get('/', protect, async (req, res) => {
     const filter = {};
     if (type)           filter.type           = type;
     if (status)         filter.status         = status;
-    if (division)       filter.division       = division;
+    
+    if (isAdminUser(req.user)) {
+      if (division) filter.division = division;
+    } else {
+      const divisions = getUserDivisions(req.user);
+      if (!divisions.length) return res.json([]);
+      filter.division = { $in: divisions };
+    }
+
     if (scEng)          filter.scEng          = scEng;
     if (eng)            filter.eng            = eng;
     if (warrantyStatus) filter.warrantyStatus = warrantyStatus;
@@ -25,7 +45,7 @@ router.get('/', protect, async (req, res) => {
       EPrfOb.find({
         status: { $in: ['Closed', 'Completed'] },
         ...(type ? { type } : {}),
-        ...(division ? { division } : {}),
+        ...(filter.division ? { division: filter.division } : {}),
         ...(eng ? { eng } : {}),
         ...(from || to ? {
           entryDate: {
