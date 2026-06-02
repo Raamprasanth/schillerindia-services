@@ -712,7 +712,17 @@ function onBranchChange() {
   const hint   = document.getElementById('engineer-hint');
   enSel.innerHTML = '<option value=""> Select Engineer </option>';
   if (!branch) return;
-  let engineers = DB_ENGINEERS.filter(e => (e.branch || e.branchName || '') === branch);
+  function branchMatch(b1, b2) {
+    if(!b1 || !b2) return false;
+    let s1 = String(b1).toLowerCase().replace('shipl', '').replace(/[^a-z0-9]/g, '');
+    let s2 = String(b2).toLowerCase().replace('shipl', '').replace(/[^a-z0-9]/g, '');
+    if(!s1 || !s2) return false;
+    if(s1 === s2 || s1.includes(s2) || s2.includes(s1)) return true;
+    const aliases = [['banglore', 'bengaluru', 'bangalore'], ['trivandrum', 'trivandram', 'thiruvananthapuram'], ['hubili', 'hubli'], ['villupurum', 'villupuram'], ['chandigar', 'chandigarh'], ['trichy', 'tiruchirappalli']];
+    for (let grp of aliases) { if (grp.some(a => s1.includes(a)) && grp.some(a => s2.includes(a))) return true; }
+    return false;
+  }
+  let engineers = DB_ENGINEERS.filter(e => branchMatch(e.branch || e.branchName, branch));
   if (!engineers.length && reg) {
     engineers = DB_ENGINEERS.filter(e => (e.region || e.reg || '') === reg);
     if (engineers.length) hint.textContent = 'Showing all engineers for this region';
