@@ -398,6 +398,25 @@ function showToast(msg,type='ok'){const w=document.getElementById('toast-wrap');
 function fmtDate(d){if(!d)return'-';try{const dt=new Date(d);return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}catch{return d;}}
 function thisMonth(d){if(!d)return false;const dt=new Date(d);const now=new Date();return dt.getMonth()===now.getMonth()&&dt.getFullYear()===now.getFullYear();}
 function divPillClass(d){const m={'GANSHORN':'bp-blue','VENTILATOR':'bp-purple','PATIENT MONITORS':'bp-cyan','SHIPL':'bp-green','INJECTOR':'bp-amber','RADIOLOGY':'bp-blue','HOLTER':'bp-cyan'};return m[d]||'bp-blue';}
+function closedBirViewSections(e){return[
+  {title:'FQC Section',color:'var(--cyan)',fields:[
+    ['Division',e.division],['Unit Inward Date',fmtDate(e.unitInwardDate)],['FQC Inward Date',fmtDate(e.fqcInwardDate)],['BIR Ref No.',e.birRef,'mono'],
+    ['Supplier Name',e.supplier],['Model',e.model],['Configuration',e.configuration],['Received Qty',e.receivedQty],
+    ['Unit Serial No.',e.serial],['Invoice No.',e.invoiceNo],['Invoice Date',fmtDate(e.invoiceDate)],['Previous Software Version',e.prevSwVersion,'mono'],
+    ['Present Software Version',e.presSwVersion,'mono'],['Accessory Changes',e.accChanges],['Accessory Details',e.accDetails],['User Manual Update',e.userManualUpdate],
+    ['FQC Remarks',e.fqcRemarks],['Status',e.status],
+  ]},
+  {title:'Service Section',color:'var(--green)',fields:[
+    ['SC Engineer',e.scEngineer],['SC Inward Date',fmtDate(e.scInwardDate)],['SC Observation',e.scObservation],['Required Parts',e.requiredParts],['Root Cause',e.rootCause],['SC Action Plan',e.scActionPlan],
+    ['Tentative Date',fmtDate(e.tentativeDate)],['Ship Date to FQC',fmtDate(e.shipDateToFqc)],['Defective Unit Received Date',fmtDate(e.defUnitReceivedDate)],['Replacement Ship Date',fmtDate(e.replacementShipDate)],
+    ['FQC Final Remarks',e.fqcFinalRemarks],['FQC Observation',e.fqcObservation],['Hardware Changes',e.hwChanges],['Hardware Change Remarks',e.hwChangeRemarks],
+    ['Accessory Change Remarks',e.accChangeRemarks],['Service Manual Update',e.serviceManualUpdate],['Technical Remarks',e.techRemarks],['TS Verification Date',fmtDate(e.tsVerificationDate)],
+  ]},
+  {title:'Product Team Section',color:'var(--purple)',fields:[
+    ['PS Engineer',e.psEngineer],['Software Change Remarks',e.swChangeRemarks],['CNR/Technews Circulation',e.cnrCirculation],['CNR/Technews Reference No.',e.cnrRefNo],
+    ['CNR/Technews Release Date',fmtDate(e.cnrReleaseDate)],['PS Team Verification Date',fmtDate(e.psVerificationDate)],['Product Team Remarks',e.productTeamRemarks],['Approved Date',fmtDate(e.approvedDate)],
+  ]},
+];}
 function normalizeClosed(r){
   return {
     ...r,
@@ -607,26 +626,7 @@ function viewRecord(id){
   (document.getElementById('view-title')||{}).textContent ='Closed BIR: '+esc(e.birRef||id);
   (document.getElementById('view-sub')||{}).textContent =`${esc(e.division)} - ${esc(e.model)} - Approved: ${fmtDate(e.approvedDate)}`;
 
-  const sections=[
-    {title:'Unit & Division Details',color:'var(--green)',fields:[
-      ['BIR Ref No.',e.birRef,'mono'],['Division',e.division],['Model',e.model],
-      ['Configuration',e.configuration],['Received Qty',e.receivedQty],['Serial No.',e.serial],
-      ['Supplier',e.supplier],['Unit Inward Date',fmtDate(e.unitInwardDate)],['FQC Inward Date',fmtDate(e.fqcInwardDate)],
-      ['Invoice No.',e.invoiceNo],['Invoice Date',fmtDate(e.invoiceDate)],['Status',e.status],
-    ]},
-    {title:'Software & Hardware',color:'var(--purple)',fields:[
-      ['Prev SW Version',e.prevSwVersion,'mono'],['Present SW Version',e.presSwVersion,'mono'],['HW Changes',e.hwChanges],
-      ['HW Change Remarks',e.hwChangeRemarks],['SW Change Remarks',e.swChangeRemarks],['Accessory Changes',e.accChanges],
-      ['Accessory Details',e.accDetails],['User Manual Update',e.userManualUpdate],['Service Manual Update',e.serviceManualUpdate],
-      ['Accessory Remarks',e.accChangeRemarks],
-    ]},
-    {title:'Engineering & Approval',color:'var(--cyan)',fields:[
-      ['SC Engineer',e.scEngineer],['PS Engineer',e.psEngineer],['FQC Remarks',e.fqcRemarks],
-      ['Technical Remarks',e.techRemarks],['TS Verification Date',fmtDate(e.tsVerificationDate)],['PS Verification Date',fmtDate(e.psVerificationDate)],
-      ['CNR/Technews Circulation',e.cnrCirculation],['CNR Ref No.',e.cnrRefNo],['CNR Release Date',fmtDate(e.cnrReleaseDate)],
-      ['Approved Date',fmtDate(e.approvedDate)],
-    ]},
-  ];
+  const sections=closedBirViewSections(e);
 
   document.getElementById('view-content').innerHTML=sections.map(s=>`
     <div class="detail-section">

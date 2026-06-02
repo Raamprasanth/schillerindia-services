@@ -3,6 +3,7 @@ const router = express.Router();
 const EClosedBir = require('../models/EClosedBir');
 const Bir = require('../models/Bir');
 const PtBir = require('../models/PtBir');
+const PtClosedBir = require('../models/PtClosedBir');
 const { protect } = require('../middleware/authMiddleware');
 
 function buildMirrorUpdate(doc) {
@@ -24,6 +25,7 @@ function buildMirrorUpdate(doc) {
     swChangeRemarks: doc.swChangeRemarks || '',
     hwChanges: doc.hwChanges || '',
     hwChangeRemarks: doc.hwChangeRemarks || '',
+    accChanges: doc.accChanges || '',
     accDetails: doc.accessoryDetails || '',
     accChangeRemarks: doc.accChangeRemarks || '',
     userManualUpdate: doc.userManualUpdate || '',
@@ -53,6 +55,60 @@ function buildMirrorUpdate(doc) {
     finalStatus: doc.finalStatus || 'Closed',
     updatedBy: doc.updatedBy,
   };
+}
+
+function fillMissingEmployeeClosedFields(doc, source) {
+  if (!source) return doc;
+  const mappings = {
+    birRefNo: 'birRef',
+    division: 'division',
+    model: 'model',
+    configuration: 'configuration',
+    inwardDate: 'unitInwardDate',
+    fqcInwardDate: 'fqcInwardDate',
+    invoiceDate: 'invoiceDate',
+    approvedDate: 'approvedDate',
+    supplier: 'supplier',
+    invoiceNo: 'invoiceNo',
+    receivedQty: 'receivedQty',
+    serial: 'serial',
+    prevSwVersion: 'prevSwVersion',
+    presSwVersion: 'presSwVersion',
+    swChangeRemarks: 'swChangeRemarks',
+    hwChanges: 'hwChanges',
+    hwChangeRemarks: 'hwChangeRemarks',
+    accChanges: 'accChanges',
+    accessoryDetails: 'accDetails',
+    accChangeRemarks: 'accChangeRemarks',
+    userManualUpdate: 'userManualUpdate',
+    serviceManualUpdate: 'serviceManualUpdate',
+    scEngineer: 'scEngineer',
+    psEngineer: 'psEngineer',
+    fqcRemarks: 'fqcRemarks',
+    techRemarks: 'techRemarks',
+    scInwardDate: 'scInwardDate',
+    scObservation: 'scObservation',
+    requiredParts: 'requiredParts',
+    rootCause: 'rootCause',
+    scActionPlan: 'scActionPlan',
+    tentativeDate: 'tentativeDate',
+    shipDateToFqc: 'shipDateToFqc',
+    defUnitReceivedDate: 'defUnitReceivedDate',
+    replacementShipDate: 'replacementShipDate',
+    fqcObservation: 'fqcObservation',
+    fqcFinalRemarks: 'fqcFinalRemarks',
+    tsVerificationDate: 'tsVerificationDate',
+    psVerificationDate: 'psVerificationDate',
+    productTeamRemarks: 'productTeamRemarks',
+    cnrCirculation: 'cnrCirculation',
+    cnrRefNo: 'cnrRefNo',
+    cnrReleaseDate: 'cnrReleaseDate',
+  };
+  const filled = { ...doc };
+  Object.entries(mappings).forEach(([target, sourceField]) => {
+    if (!String(filled[target] || '').trim() && String(source[sourceField] || '').trim()) filled[target] = source[sourceField];
+  });
+  return filled;
 }
 
 function buildPtMirrorUpdate(doc) {
@@ -140,7 +196,10 @@ router.get('/', protect, async (req, res) => {
     }
 
     const docs = await EClosedBir.find(filter).sort({ inwardDate: -1 }).lean();
-    res.json(docs);
+    const refs = docs.map(doc => doc.birRefNo).filter(Boolean);
+    const sources = refs.length ? await PtClosedBir.find({ birRef: { $in: refs } }).lean() : [];
+    const byRef = new Map(sources.map(doc => [doc.birRef, doc]));
+    res.json(docs.map(doc => fillMissingEmployeeClosedFields(doc, byRef.get(doc.birRefNo))));
   } catch (err) {
     console.error('[GET /api/emp/bir/closed]', err);
     res.status(500).json({ message: 'Server error', error: err.message });

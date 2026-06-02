@@ -1,7 +1,17 @@
 const express   = require('express');
 const router    = express.Router();
 const ClosedBir = require('../models/ClosedBir');
+const PtClosedBir = require('../models/PtClosedBir');
 const { protect } = require('../middleware/authMiddleware');
+
+function fillMissingFields(doc, source) {
+  if (!source) return doc;
+  const filled = { ...doc };
+  Object.entries(source).forEach(([field, value]) => {
+    if (!String(filled[field] || '').trim() && String(value || '').trim()) filled[field] = value;
+  });
+  return filled;
+}
 
 // ── GET /api/bir/closed  (all closed/approved BIR records)
 router.get('/', protect, async (req, res) => {
@@ -21,7 +31,10 @@ router.get('/', protect, async (req, res) => {
     const docs = await ClosedBir.find(filter)
       .sort({ approvedDate: -1, unitInwardDate: -1 })
       .lean();
-    res.json(docs);
+    const refs = docs.map(doc => doc.birRef).filter(Boolean);
+    const sources = refs.length ? await PtClosedBir.find({ birRef: { $in: refs } }).lean() : [];
+    const byRef = new Map(sources.map(doc => [doc.birRef, doc]));
+    res.json(docs.map(doc => fillMissingFields(doc, byRef.get(doc.birRef))));
   } catch (err) {
     console.error('[GET /api/bir/closed]', err);
     res.status(500).json({ message: 'Server error', error: err.message });

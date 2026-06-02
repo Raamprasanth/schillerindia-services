@@ -26,6 +26,7 @@ const eClosedBirSchema = new mongoose.Schema(
     hwChanges:       { type: String, trim: true, default: '' },
     hwChangeRemarks: { type: String, trim: true, default: '' },
 
+    accChanges:       { type: String, enum: ['No Change', 'Added', 'Removed', 'Replaced', ''], default: '' },
     accessoryDetails: { type: String, trim: true, default: '' },
     accChangeRemarks: { type: String, trim: true, default: '' },
 
