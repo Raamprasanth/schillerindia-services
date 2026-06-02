@@ -97,8 +97,8 @@ router.post('/', protect, async (req, res) => {
     const body = normalizeBirBody(req.body);
     const payload = {
       ...body,
-      status: normalizeStatus(body.status || 'Pending'),
-      finalStatus: body.status || body.finalStatus || '',
+      status: normalizeStatus(body.status || 'TS Pending'),
+      finalStatus: body.status || body.finalStatus || 'TS Pending',
     };
     const doc = new Bir({
       ...payload,
@@ -108,7 +108,7 @@ router.post('/', protect, async (req, res) => {
 
     // Mirror to EBir
     const EBir = require('../models/EBir');
-    const eBirDoc = new EBir({
+    const eBirPayload = {
       birRefNo: saved.birRef,
       division: saved.division,
       model: saved.model,
@@ -151,10 +151,14 @@ router.post('/', protect, async (req, res) => {
       cnrCirculation: saved.cnrCirculation,
       cnrRefNo: saved.cnrRefNo,
       cnrReleaseDate: saved.cnrReleaseDate,
-      finalStatus: saved.status,
+      finalStatus: 'TS Pending',
       createdBy: req.user._id,
-    });
-    await eBirDoc.save();
+    };
+    await EBir.findOneAndUpdate(
+      { birRefNo: saved.birRef },
+      { $set: eBirPayload },
+      { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
+    );
 
     if (shouldMoveToClosed(saved.status)) {
       const closedDoc = await moveBirToClosed(saved, req.user._id);

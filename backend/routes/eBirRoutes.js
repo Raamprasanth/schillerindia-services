@@ -1,12 +1,10 @@
 const express = require('express');
 const router  = express.Router();
 const EBir    = require('../models/EBir');
-const EClosedBir = require('../models/EClosedBir');
 const Bir     = require('../models/Bir');
 const PtBir   = require('../models/PtBir');
 const { protect } = require('../middleware/authMiddleware');
 
-const CLOSED_STATUSES = new Set(['Closed', 'Approved']);
 const SERVICE_UPDATE_FIELDS = [
   'scInwardDate', 'scObservation', 'requiredParts', 'rootCause',
   'scActionPlan', 'tentativeDate', 'shipDateToFqc',
@@ -99,8 +97,8 @@ function buildMirrorUpdate(doc) {
 function buildPtMirrorUpdate(doc) {
   return {
     ...buildMirrorUpdate(doc),
-    status: 'Pending',
-    finalStatus: 'Pending',
+    status: 'PT Pending',
+    finalStatus: 'PT Pending',
   };
 }
 
@@ -127,31 +125,6 @@ async function syncMirrorsFromEBir(doc) {
     Bir.findOneAndUpdate({ birRef: doc.birRefNo }, { $set: mirror }, { new: true, upsert: true, runValidators: false, setDefaultsOnInsert: true }),
     upsertSinglePtMirror(doc.birRefNo, buildPtMirrorUpdate(doc)),
   ]);
-}
-
-async function moveToClosedIfComplete(doc, userId) {
-  if (!doc || !CLOSED_STATUSES.has(doc.finalStatus)) return { moved: false, doc };
-  const payload = doc.toObject();
-  delete payload._id;
-  delete payload.__v;
-  delete payload.createdBy;
-  delete payload.createdAt;
-  delete payload.updatedAt;
-  payload.updatedBy = userId;
-  payload.finalStatus = doc.finalStatus === 'Approved' ? 'Approved' : 'Closed';
-
-  const closed = await EClosedBir.findOneAndUpdate(
-    { birRefNo: doc.birRefNo },
-    { $set: payload, $setOnInsert: { createdBy: doc.createdBy || userId } },
-    { new: true, upsert: true, runValidators: false, setDefaultsOnInsert: true }
-  );
-  try {
-    await syncMirrorsFromEBir(closed);
-  } catch (syncErr) {
-    console.error('[PUT /api/emp/bir/:id] closed mirror sync failed', syncErr);
-  }
-  await EBir.findByIdAndDelete(doc._id);
-  return { moved: true, doc: closed };
 }
 
 // ── GET /api/emp/bir  (all records with optional filters)
@@ -246,8 +219,8 @@ router.put('/:id', protect, async (req, res) => {
     ];
     const update = {};
     allowed.forEach(f => { if (req.body[f] !== undefined) update[f] = req.body[f]; });
-    if ((!update.finalStatus || update.finalStatus === 'Pending') && hasMeaningfulServiceUpdate(update)) {
-      update.finalStatus = 'Closed';
+    if (hasMeaningfulServiceUpdate(update)) {
+      update.finalStatus = 'PT Pending';
     }
     update.updatedBy = req.user._id;
 
@@ -257,8 +230,6 @@ router.put('/:id', protect, async (req, res) => {
       { new: true, runValidators: true }
     );
     await syncMirrorsFromEBir(doc);
-    const result = await moveToClosedIfComplete(doc, req.user._id);
-    if (result.moved) return res.json({ movedToClosed: true, data: result.doc });
     res.json(doc);
   } catch (err) {
     console.error('[PUT /api/emp/bir/:id]', err);

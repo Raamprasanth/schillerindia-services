@@ -399,6 +399,7 @@
               <label>Status <span class="req">*</span></label>
               <select id="f-status" disabled>
                 <option value="Pending">Pending</option>
+                <option value="PT Pending">PT Pending</option>
                 <option value="In Progress">In Progress</option>
                 <option value="Approved">Approved</option>
                 <option value="Rejected">Rejected</option>
@@ -577,7 +578,7 @@
           </select>
           <select class="filter-select" id="f-filter-status" onchange="renderTable()">
             <option value="">All Statuses</option>
-            <option>Pending</option><option>In Progress</option><option>Approved</option><option>Rejected</option>
+            <option>Pending</option><option>PT Pending</option><option>In Progress</option><option>Approved</option><option>Rejected</option>
           </select>
           <select class="filter-select" id="f-filter-rows" onchange="renderTable()">
             <option value="10">10 / page</option>
@@ -700,7 +701,7 @@ async function persistClosedBir(doc){
 function updateAll(){updateStats();renderTable();}
 function updateStats(){
   const total=birData.length;
-  const tsPending=birData.filter(x=>['Pending', 'In Progress'].includes(x.status) || ['Pending', 'In Progress'].includes(x.finalStatus)).length;
+  const tsPending=birData.filter(x=>['Pending', 'PT Pending', 'In Progress'].includes(x.status) || ['Pending', 'PT Pending', 'In Progress'].includes(x.finalStatus)).length;
   const psPending=birData.filter(x=>x.status==='Under Review' || x.finalStatus==='Under Review').length;
   
   (document.getElementById('s-total')||{}).textContent = total;
@@ -959,7 +960,6 @@ async function saveBIR(){
       handleUnauth(res);
       if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error((e.error||e.message)||'HTTP '+res.status);}
       const response=await res.json().catch(()=>({}));
-      await persistClosedBir(response.data || ptPayload);
       birData=birData.filter(x=>x._id!==editingId);
       await persistData();
       msg.className='form-msg ok';msg.textContent='BIR approved and moved to Closed BIR!';

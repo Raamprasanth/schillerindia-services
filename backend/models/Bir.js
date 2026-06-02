@@ -74,7 +74,7 @@ const birSchema = new mongoose.Schema(
     // ── Status ────────────────────────────────────────────────
     status: {
       type: String,
-      enum: ['Pending', 'In Progress', 'Approved', 'Rejected', 'Closed'],
+      enum: ['Pending', 'TS Pending', 'PT Pending', 'In Progress', 'Approved', 'Rejected', 'Closed'],
       default: 'Pending',
       required: true,
     },

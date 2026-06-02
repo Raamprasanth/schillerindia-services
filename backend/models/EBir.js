@@ -73,7 +73,7 @@ const eBirSchema = new mongoose.Schema(
     // ── Status ────────────────────────────────────────────────
     finalStatus: {
       type: String,
-      enum: ['Pending', 'Closed', 'Under Review', 'Rejected', 'In Progress', 'Approved', ''],
+      enum: ['Pending', 'TS Pending', 'PT Pending', 'Closed', 'Under Review', 'Rejected', 'In Progress', 'Approved', ''],
       default: 'Pending',
       required: true,
     },

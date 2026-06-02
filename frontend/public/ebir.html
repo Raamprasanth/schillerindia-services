@@ -292,13 +292,12 @@ table.bir-table tbody tr:last-child td{border-bottom:none;}
             <div class="ff"><label>FQC Remarks</label><input type="text" id="upd-fqc-remarks-disp" disabled/></div>
             <div class="ff">
               <label>Status</label>
-              <select id="upd-final-status" required>
+              <select id="upd-final-status" required disabled>
                 <option value="Pending">Pending</option>
+                <option value="TS Pending">TS Pending</option>
+                <option value="PT Pending">PT Pending</option>
                 <option value="In Progress">In Progress</option>
                 <option value="Under Review">Under Review</option>
-                <option value="Closed">Closed</option>
-                <option value="Approved">Approved</option>
-                <option value="Rejected">Rejected</option>
               </select>
             </div>
           </div>
@@ -645,8 +644,8 @@ function generateDemoData(){
 /* ?"??"? STATS ?"??"? */
 function updateStats(){
   (document.getElementById('s-total')||{}).textContent = DATA.length;
-  (document.getElementById('s-ts-pending')||{}).textContent = DATA.filter(d=>['Pending', 'In Progress'].includes(d.finalStatus) || ['Pending', 'In Progress'].includes(d.status)).length;
-  (document.getElementById('s-ps-pending')||{}).textContent = DATA.filter(d=>d.finalStatus==='Under Review' || d.status==='Under Review').length;
+  (document.getElementById('s-ts-pending')||{}).textContent = DATA.filter(d=>['Pending', 'TS Pending', 'In Progress'].includes(d.finalStatus) || ['Pending', 'TS Pending', 'In Progress'].includes(d.status)).length;
+  (document.getElementById('s-ps-pending')||{}).textContent = DATA.filter(d=>['PT Pending', 'Under Review'].includes(d.finalStatus) || ['PT Pending', 'Under Review'].includes(d.status)).length;
 }
 
 /* ?"??"? FILTERS ?"??"? */
@@ -686,7 +685,7 @@ function sortArr(){
 
 /* ?"??"? RENDER ?"??"? */
 function statusPill(s){
-  const m = {Pending:'sp-pending',Closed:'sp-closed','Under Review':'sp-review',Rejected:'sp-rejected'};
+  const m = {Pending:'sp-pending','TS Pending':'sp-pending','PT Pending':'sp-review',Closed:'sp-closed','Under Review':'sp-review',Rejected:'sp-rejected'};
   return '<span class="s-pill '+(m[s]||'sp-pending')+'">'+esc(s||'Pending')+'</span>';
 }
 function hwBadge(v){
@@ -850,49 +849,26 @@ async function submitUpdate(){
     serviceManualUpdate: document.getElementById('upd-service-manual').value,
     techRemarks:         document.getElementById('upd-tech-remarks').value.trim(),
   };
-  const hasServiceUpdate = [
-    'scObservation', 'hwChanges', 'hwChangeRemarks',
-    'serviceManualUpdate', 'techRemarks', 'tsVerificationDate'
-  ].some(key => String(editPayload[key] || '').trim());
-  if(finalStatus === 'Pending' && hasServiceUpdate){
-    finalStatus = 'Closed';
-    editPayload.finalStatus = finalStatus;
-    document.getElementById('upd-final-status').value = finalStatus;
-  }
-  const isClosed = finalStatus === 'Closed' || finalStatus === 'Approved';
+  finalStatus = 'PT Pending';
+  editPayload.finalStatus = finalStatus;
+  document.getElementById('upd-final-status').value = finalStatus;
 
   const btn = document.getElementById('upd-save-btn');
   btn.disabled = true; btn.textContent = 'Saving...';
 
   try{
-    if(isClosed){
-      const res = await fetch(API+'/api/emp/bir/'+id,{method:'PUT',headers:authHeaders(),body:JSON.stringify(editPayload)});
-      handleUnauth(res);
-      if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error||e.message||'HTTP '+res.status);}
-      const saved = await res.json().catch(()=>({}));
-      if(!saved.movedToClosed){throw new Error('Record saved, but closed move was not confirmed.');}
-      DATA.splice(DATA.findIndex(x=>(x._id||x.id)===id),1);
-      filtered=filtered.filter(x=>(x._id||x.id)!==id);
-      updateStats(); renderTable();
-      msg.innerHTML='&#10004; Record closed and moved to Closed BIR!';
-      msg.className='form-msg ok';
-      showToast('BIR record closed.','ok');
-      setTimeout(()=>window.location.href='ecbir.html',1100);
-    }else{
-      // Update in place
-      const res = await fetch(API+'/api/emp/bir/'+id,{method:'PUT',headers:authHeaders(),body:JSON.stringify(editPayload)});
-      handleUnauth(res);
-      if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error||e.message||'HTTP '+res.status);}
-      const saved = await res.json().catch(()=>({}));
-      const idx = DATA.findIndex(x=>(x._id||x.id)===id);
-      if(idx!==-1) DATA[idx]={...DATA[idx],...editPayload,...saved};
-      filtered=filtered.map(x=>(x._id||x.id)===id?{...x,...editPayload,...saved}:x);
-      updateStats(); renderTable();
-      msg.innerHTML='&#10004; Record updated successfully!';
-      msg.className='form-msg ok';
-      showToast('BIR record updated.','ok');
-      setTimeout(()=>closeModal(),1100);
-    }
+    const res = await fetch(API+'/api/emp/bir/'+id,{method:'PUT',headers:authHeaders(),body:JSON.stringify(editPayload)});
+    handleUnauth(res);
+    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error||e.message||'HTTP '+res.status);}
+    const saved = await res.json().catch(()=>({}));
+    const idx = DATA.findIndex(x=>(x._id||x.id)===id);
+    if(idx!==-1) DATA[idx]={...DATA[idx],...editPayload,...saved};
+    filtered=filtered.map(x=>(x._id||x.id)===id?{...x,...editPayload,...saved}:x);
+    updateStats(); renderTable();
+    msg.innerHTML='&#10004; Record sent to Product Team!';
+    msg.className='form-msg ok';
+    showToast('BIR record sent to Product Team.','ok');
+    setTimeout(()=>closeModal(),1100);
   }catch(e){
     if(e.message!=='Unauthorized'){
       msg.textContent='Save failed: '+e.message;

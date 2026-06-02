@@ -62,7 +62,7 @@ const ptBirSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ['Pending', 'In Progress', 'Approved', 'Rejected', 'Closed'],
+      enum: ['Pending', 'PT Pending', 'In Progress', 'Approved', 'Rejected', 'Closed'],
       default: 'Pending',
       required: true,
     },

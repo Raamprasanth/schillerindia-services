@@ -3,7 +3,9 @@ const router = express.Router();
 const PtBir = require('../models/PtBir');
 const PtClosedBir = require('../models/PtClosedBir');
 const Bir = require('../models/Bir');
+const ClosedBir = require('../models/ClosedBir');
 const EBir = require('../models/EBir');
+const EClosedBir = require('../models/EClosedBir');
 const { protect } = require('../middleware/authMiddleware');
 
 const CLOSED_STATUSES = new Set(['Approved', 'Closed']);
@@ -187,12 +189,44 @@ async function moveToClosedIfComplete(doc, userId) {
   delete closedPayload.updatedAt;
   closedPayload.accChanges = normalizeAccChanges(closedPayload.accChanges);
 
-  const closed = await PtClosedBir.findOneAndUpdate(
-    { birRef: doc.birRef },
-    { $set: closedPayload, $setOnInsert: { createdBy: doc.createdBy || userId } },
-    { new: true, upsert: true, runValidators: false, setDefaultsOnInsert: true }
-  );
-  await PtBir.findByIdAndDelete(doc._id);
+  const finalStatus = doc.status === 'Closed' ? 'Closed' : 'Approved';
+  const fqcClosedPayload = {
+    ...buildBirMirror(doc),
+    status: finalStatus,
+    approvedDate: doc.approvedDate || new Date().toISOString().split('T')[0],
+    createdBy: doc.createdBy || userId,
+  };
+  delete fqcClosedPayload.finalStatus;
+  const employeeClosedPayload = {
+    ...buildEBirMirror(doc),
+    finalStatus,
+    approvedDate: doc.approvedDate || new Date().toISOString().split('T')[0],
+    createdBy: doc.createdBy || userId,
+    updatedBy: userId,
+  };
+
+  const [closed] = await Promise.all([
+    PtClosedBir.findOneAndUpdate(
+      { birRef: doc.birRef },
+      { $set: closedPayload, $setOnInsert: { createdBy: doc.createdBy || userId } },
+      { new: true, upsert: true, runValidators: false, setDefaultsOnInsert: true }
+    ),
+    ClosedBir.findOneAndUpdate(
+      { birRef: doc.birRef },
+      { $set: fqcClosedPayload },
+      { new: true, upsert: true, runValidators: false, setDefaultsOnInsert: true }
+    ),
+    EClosedBir.findOneAndUpdate(
+      { birRefNo: doc.birRef },
+      { $set: employeeClosedPayload },
+      { new: true, upsert: true, runValidators: false, setDefaultsOnInsert: true }
+    ),
+  ]);
+  await Promise.all([
+    PtBir.deleteMany({ birRef: doc.birRef }),
+    Bir.deleteMany({ birRef: doc.birRef }),
+    EBir.deleteMany({ birRefNo: doc.birRef }),
+  ]);
   return { moved: true, doc: closed };
 }
 
