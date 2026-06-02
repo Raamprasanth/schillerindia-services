@@ -790,8 +790,8 @@ async function submitUpdate(){
     if(saved.completed){
       allData=allData.filter(x=>(x._id||x.id)!==editingId);
       applyFilters(); updateStats();
-      showToast('Repair completed! Moved to RTCRL. Redirecting...','ok');
-      setTimeout(()=>{ window.location.href='Rtcrl.html'; },900);
+      showToast('Repair completed! Moved to RTCRL.','ok');
+      setTimeout(closeModal,900);
     }else{
       const idx=allData.findIndex(x=>(x._id||x.id)===editingId);
       if(idx!==-1) Object.assign(allData[idx],payload);
