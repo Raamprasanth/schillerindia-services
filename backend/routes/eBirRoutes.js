@@ -111,6 +111,35 @@ function buildPtMirrorUpdate(doc) {
   };
 }
 
+function fillMissingEBirFqcFields(doc, source) {
+  if (!source) return doc;
+  const mappings = {
+    division: 'division',
+    model: 'model',
+    configuration: 'configuration',
+    inwardDate: 'unitInwardDate',
+    fqcInwardDate: 'fqcInwardDate',
+    invoiceDate: 'invoiceDate',
+    supplier: 'supplier',
+    invoiceNo: 'invoiceNo',
+    receivedQty: 'receivedQty',
+    serial: 'serial',
+    prevSwVersion: 'prevSwVersion',
+    presSwVersion: 'presSwVersion',
+    accChanges: 'accChanges',
+    accessoryDetails: 'accDetails',
+    userManualUpdate: 'userManualUpdate',
+    fqcRemarks: 'fqcRemarks',
+  };
+  const filled = { ...doc };
+  Object.entries(mappings).forEach(([target, sourceField]) => {
+    if (!String(filled[target] || '').trim() && String(source[sourceField] || '').trim()) {
+      filled[target] = source[sourceField];
+    }
+  });
+  return filled;
+}
+
 async function upsertSinglePtMirror(birRef, mirror) {
   const existing = await PtBir.find({ birRef }).sort({ updatedAt: -1, createdAt: -1 });
   if (existing.length) {
@@ -129,10 +158,12 @@ async function upsertSinglePtMirror(birRef, mirror) {
 
 async function syncMirrorsFromEBir(doc) {
   if (!doc?.birRefNo) return;
-  const mirror = buildMirrorUpdate(doc);
+  const source = await Bir.findOne({ birRef: doc.birRefNo }).lean();
+  const completeDoc = fillMissingEBirFqcFields(doc.toObject ? doc.toObject() : doc, source);
+  const mirror = buildMirrorUpdate(completeDoc);
   await Promise.all([
     Bir.findOneAndUpdate({ birRef: doc.birRefNo }, { $set: mirror }, { new: true, upsert: true, runValidators: false, setDefaultsOnInsert: true }),
-    upsertSinglePtMirror(doc.birRefNo, buildPtMirrorUpdate(doc)),
+    upsertSinglePtMirror(doc.birRefNo, buildPtMirrorUpdate(completeDoc)),
   ]);
 }
 
@@ -160,7 +191,12 @@ router.get('/', requireDatabase, protect, async (req, res) => {
     }
 
     const docs = await EBir.find(filter).sort({ inwardDate: -1 }).lean();
-    res.json(docs);
+    const refs = docs.map(doc => doc.birRefNo).filter(Boolean);
+    const sources = refs.length
+      ? await Bir.find({ birRef: { $in: refs } }).lean()
+      : [];
+    const byRef = new Map(sources.map(doc => [doc.birRef, doc]));
+    res.json(docs.map(doc => fillMissingEBirFqcFields(doc, byRef.get(doc.birRefNo))));
   } catch (err) {
     console.error('[GET /api/emp/bir]', err);
     res.status(500).json({ message: 'Server error', error: err.message });

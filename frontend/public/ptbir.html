@@ -753,7 +753,7 @@ function renderTable(){
 
   const tbody=document.getElementById('bir-tbody');
   tbody.innerHTML=paged.length?paged.map(e=>`
-    <tr onclick="viewBIR('${e._id}')">
+    <tr>
       <td onclick="event.stopPropagation()">
         <div style="display:flex;gap:5px;">
           <button class="btn-xs update" onclick="editBIR('${e._id}')" title="Update">&#9999;&#65039;</button>
@@ -908,7 +908,15 @@ function editBIR(id){
   (document.getElementById('bir-modal-sub')||{}).textContent ='Update the batch inspection record';
   document.getElementById('bir-modal-title-ui').innerHTML ='&#9998; Edit BIR: '+(e.birRef||id);
   (document.getElementById('bir-modal-sub-ui')||{}).textContent ='Update the batch inspection record';
-  FIELDS.forEach(f=>{const el=document.getElementById(FIELD_MAP[f]);if(el)el.value=e[f]||'';});
+  FIELDS.forEach(f=>{
+    const el=document.getElementById(FIELD_MAP[f]);
+    if(!el)return;
+    const value=e[f]||'';
+    if(el.tagName==='SELECT'&&value&&!Array.from(el.options).some(option=>option.value===value)){
+      el.add(new Option(value,value));
+    }
+    el.value=value;
+  });
   document.getElementById('bir-form-msg').className='form-msg';
   document.getElementById('bir-modal').classList.add('show');
   // Always unlock PT section so product team can fill in their details and save

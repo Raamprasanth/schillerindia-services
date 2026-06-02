@@ -137,6 +137,7 @@ function buildEBirMirror(doc) {
     swChangeRemarks: doc.swChangeRemarks || '',
     hwChanges: doc.hwChanges || '',
     hwChangeRemarks: doc.hwChangeRemarks || '',
+    accChanges: normalizeAccChanges(doc.accChanges),
     accessoryDetails: doc.accDetails || '',
     accChangeRemarks: doc.accChangeRemarks || '',
     userManualUpdate: doc.userManualUpdate || '',
@@ -165,6 +166,23 @@ function buildEBirMirror(doc) {
     finalStatus: doc.finalStatus || doc.status || 'Pending',
     updatedBy: doc.updatedBy,
   };
+}
+
+function fillMissingPtFqcFields(doc, source) {
+  if (!source) return doc;
+  const fields = [
+    'division', 'model', 'configuration', 'unitInwardDate', 'fqcInwardDate',
+    'invoiceDate', 'supplier', 'invoiceNo', 'receivedQty', 'serial',
+    'prevSwVersion', 'presSwVersion', 'accChanges', 'accDetails',
+    'userManualUpdate', 'fqcRemarks',
+  ];
+  const filled = { ...doc };
+  fields.forEach(field => {
+    if (!String(filled[field] || '').trim() && String(source[field] || '').trim()) {
+      filled[field] = source[field];
+    }
+  });
+  return filled;
 }
 
 async function syncMirrorsFromPtBir(doc) {
@@ -244,8 +262,13 @@ router.get('/', protect, async (req, res) => {
       if (to) filter.unitInwardDate.$lte = to;
     }
 
-    const docs = await PtBir.find(filter).sort({ unitInwardDate: -1 }).lean();
-    res.json(dedupeByBirRef(docs));
+    const docs = dedupeByBirRef(await PtBir.find(filter).sort({ unitInwardDate: -1 }).lean());
+    const refs = docs.map(doc => doc.birRef).filter(Boolean);
+    const sources = refs.length
+      ? await Bir.find({ birRef: { $in: refs } }).lean()
+      : [];
+    const byRef = new Map(sources.map(doc => [doc.birRef, doc]));
+    res.json(docs.map(doc => fillMissingPtFqcFields(doc, byRef.get(doc.birRef))));
   } catch (err) {
     console.error('[GET /api/pt/bir]', err);
     res.status(500).json({ message: 'Server error', error: err.message });
