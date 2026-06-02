@@ -765,24 +765,68 @@ function sortArr(){
 /* ?"??"? RENDER ?"??"? */
 function statusPill(s){
   const m = {Pending:'sp-pending','TS Pending':'sp-pending','PT Pending':'sp-review',Closed:'sp-closed','Under Review':'sp-review',Rejected:'sp-rejected'};
-    scEngEl.style.color = 'var(--muted)';
-    scEngEl.style.cursor = 'not-allowed';
-  }
-  set('upd-sc-inward', d.scInwardDate);
+  return '<span class="s-pill '+(m[s]||'sp-pending')+'">'+esc(s||'Pending')+'</span>';
+}
+function renderTable(){
+  const perPage = parseInt(document.getElementById('per-page').value,10) || 10;
+  const total = filtered.length;
+  const pages = Math.max(1,Math.ceil(total/perPage));
+  if(currentPage>pages) currentPage=pages;
+  const start = (currentPage-1)*perPage;
+  const rows = filtered.slice(start,start+perPage);
+  (document.getElementById('count-chip')||{}).textContent = total+' entr'+(total===1?'y':'ies');
+  (document.getElementById('tbl-info')||{}).textContent = total
+    ? 'Showing '+(start+1)+' to '+Math.min(start+perPage,total)+' of '+total+' entries'
+    : '0 entries';
+  document.getElementById('bir-tbody').innerHTML = rows.length ? rows.map(d=>`
+    <tr onclick="openUpdate('${esc(d._id||d.id)}')">
+      <td onclick="event.stopPropagation()"><button class="btn-xs update" onclick="openUpdate('${esc(d._id||d.id)}')">&#9998; Update</button></td>
+      <td><span class="bir-ref">${esc(d.birRefNo||'-')}</span></td>
+      <td>${fmtDate(d.inwardDate)}</td>
+      <td><span class="div-tag">${esc(d.division||'-')}</span></td>
+      <td>${esc(d.model||'-')}</td>
+      <td>${esc(d.configuration||'-')}</td>
+      <td>${esc(d.receivedQty||'-')}</td>
+      <td>${esc(d.accessoryDetails||'-')}</td>
+      <td>${statusPill(d.finalStatus||d.status)}</td>
+    </tr>`).join('') : '<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--muted);">No BIR records found.</td></tr>';
+  renderPagination(pages);
+}
+async function openUpdate(id){
+  const d = DATA.find(x=>String(x._id||x.id)===String(id));
+  if(!d) return;
+  const set = (fieldId,value) => {
+    const el = document.getElementById(fieldId);
+    if(el) el.value = value || '';
+  };
+  set('upd-id', d._id||d.id);
+  set('upd-division', d.division);
+  set('upd-inward-date', d.inwardDate);
+  set('upd-fqc-inward-date', d.fqcInwardDate);
+  set('upd-bir-ref', d.birRefNo);
+  set('upd-supplier', d.supplier);
+  set('upd-model', d.model);
+  set('upd-configuration', d.configuration);
+  set('upd-received-qty', d.receivedQty);
+  set('upd-serial', d.serial);
+  set('upd-invoice-no', d.invoiceNo);
+  set('upd-invoice-date', d.invoiceDate);
+  set('upd-prev-sw', d.prevSwVersion);
+  set('upd-pres-sw', d.presSwVersion);
+  set('upd-acc-changes', d.accChanges);
+  set('upd-acc-details', d.accessoryDetails);
+  set('upd-manual-update', d.userManualUpdate);
+  set('upd-fqc-remarks-disp', d.fqcRemarks);
   set('upd-sc-obs', d.scObservation);
-  set('upd-sc-action', d.scActionPlan);
-  set('upd-tent-date', d.tentativeDate);
-  set('upd-ship-fqc', d.shipDateToFqc);
-  set('upd-def-recv', d.defUnitReceivedDate);
-  set('upd-rep-ship', d.replacementShipDate);
+  set('upd-hw-changes', d.hwChanges);
+  set('upd-hw-remarks', d.hwChangeRemarks);
+  set('upd-acc-remarks', d.accChangeRemarks);
   set('upd-service-manual', d.serviceManualUpdate);
   set('upd-tech-remarks', d.techRemarks);
-  set('upd-cnr', d.cnrCirculation);
-  set('upd-fqc-remarks', d.fqcFinalRemarks);
   set('upd-final-status', d.finalStatus||'Pending');
-  set('upd-fqc-obs', d.fqcObservation);
+  await ensureEngineersLoaded();
+  fillScEngineerSelect(d.scEngineer,d.division);
 
-  // Product Team Section (locked)
   const dObj = new Date();
   const todayStr = dObj.getFullYear() + '-' + String(dObj.getMonth()+1).padStart(2,'0') + '-' + String(dObj.getDate()).padStart(2,'0');
   const tsDateEl = document.getElementById('upd-ts-date');

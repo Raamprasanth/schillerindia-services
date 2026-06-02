@@ -32,6 +32,7 @@ const eBirSchema = new mongoose.Schema(
     hwChangeRemarks: { type: String, trim: true, default: '' },
 
     // ── Accessories ───────────────────────────────────────────
+    accChanges:         { type: String, enum: ['No Change', 'Added', 'Removed', 'Replaced', ''], default: '' },
     accessoryDetails:   { type: String, trim: true, default: '' },
     accChangeRemarks:   { type: String, trim: true, default: '' },
 

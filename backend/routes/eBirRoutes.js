@@ -63,6 +63,7 @@ function buildMirrorUpdate(doc) {
     swChangeRemarks: doc.swChangeRemarks || '',
     hwChanges: doc.hwChanges || '',
     hwChangeRemarks: doc.hwChangeRemarks || '',
+    accChanges: doc.accChanges || '',
     accDetails: doc.accessoryDetails || '',
     accChangeRemarks: doc.accChangeRemarks || '',
     userManualUpdate: doc.userManualUpdate || '',
