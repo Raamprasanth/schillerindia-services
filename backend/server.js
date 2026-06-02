@@ -42,6 +42,7 @@ const rturRoutes = require('./routes/rturRoutes');
 const aturRoutes = require('./routes/aturRoutes');
 const rtrrRoutes    = require('./routes/rtrrRoutes');
 const rtcrlRoutes   = require('./routes/rtcrlRoutes');
+const rtcrrRoutes   = require('./routes/rtcrrRoutes');
 const atcrlRoutes = require('./routes/atcrlRoutes');
 const revertRepairRoutes = require('./routes/revertRepairRoutes');
 const rtoaRoutes  = require('./routes/rtoaRoutes');
@@ -186,6 +187,7 @@ app.use('/api/rtur', rturRoutes);
 app.use('/api/atur', aturRoutes);
 app.use('/api/rtrr', rtrrRoutes);
 app.use('/api/rtcrl', rtcrlRoutes);
+app.use('/api/rtcrr', rtcrrRoutes);
 app.use('/api/atcrl', atcrlRoutes);  // Admin CRL Ã¢â‚¬â€  same rtcrls collection, read-only
 app.use('/api/revert-repair', revertRepairRoutes);
 app.use('/api/rtoa',  rtoaRoutes);

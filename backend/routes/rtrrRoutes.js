@@ -13,7 +13,7 @@ const express  = require('express');
 const router   = express.Router();
 const mongoose = require('mongoose');
 const Rtrr    = require('../models/Rtrr');
-const RTCRL    = require('../models/rtcrlModel');
+const Rtcrr    = require('../models/Rtcrr');
 const EmpFRN   = require('../models/EmpFRN');
 const Service  = require('../models/Service');
 const { protect } = require('../middleware/authMiddleware');
@@ -328,7 +328,8 @@ router.put('/:id', protect, async (req, res) => {
     // ── On completion: copy to RTCRL, update source EmpFRN, delete Rtrr ──
     if (updates.status === 'completed') {
       try {
-        await RTCRL.create({
+        await Rtcrr.create({
+          revertedDate:     updated.revertedDate || null,
           entryDate:        updated.entryDate ? new Date(updated.entryDate) : new Date(),
           closedDate:       new Date(),
           division:         cleanDivision(updated.division, existing.division),
@@ -357,11 +358,11 @@ router.put('/:id', protect, async (req, res) => {
           sourceCollection: 'rtrr',
         });
       } catch (crlErr) {
-        console.error('Rtrr → RTCRL copy failed:', crlErr.message);
+        console.error('Rtrr → Rtcrr copy failed:', crlErr.message);
       }
 
       await Rtrr.findByIdAndDelete(updated._id);
-      return res.json({ success: true, completed: true, message: 'Repair completed and moved to RTCRL.' });
+      return res.json({ success: true, completed: true, message: 'Re-repair completed and moved to Closed Re-repair List.' });
     }
 
     return res.json(updated);

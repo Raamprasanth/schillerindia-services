@@ -343,9 +343,9 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
     <a class="nav-item" href="Rtfrn.html"><span class="ico">&#128221;</span> PFRN</a>
     <a class="nav-item" href="Rtob.html"><span class="ico">&#128230;</span> OB</a>
     <a class="nav-item" href="Rtur.html"><span class="ico">&#128736;&#65039;</span> UR</a>
-    <a class="nav-item active" href="Rtcrl.html"><span class="ico">&#9989;</span> Closed Repair List</a>
+    <a class="nav-item" href="Rtcrl.html"><span class="ico">&#9989;</span> Closed Re-repair List</a>
     <a class="nav-item" href="Rtrr.html"><span class="ico">&#128260;</span> Re-repair List</a>
-    <a class="nav-item" href="Rtcrr.html"><span class="ico">&#9989;</span> Closed Re-repair List</a>
+    <a class="nav-item active" href="Rtcrr.html"><span class="ico">&#9989;</span> Closed Re-repair List</a>
     <div class="nav-sec">Other Activities</div>
     <a class="nav-item" href="Rtoa.html"><span class="ico">&#128203;</span> Other Activity</a>
     <a class="nav-item" href="Rtcoa.html"><span class="ico">&#9989;</span> Closed Activity</a>
@@ -367,9 +367,9 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
     <div>
       <div class="breadcrumb">
         <a href="Repair-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
-        <span>Repair Work</span><span class="sep">&#8250;</span><span>Closed Repair List</span>
+        <span>Repair Work</span><span class="sep">&#8250;</span><span>Closed Re-repair List</span>
       </div>
-      <div class="topbar-title">Closed Repair List</div>
+      <div class="topbar-title">Closed Re-repair List</div>
     </div>
     <div style="display:flex;align-items:center;gap:9px;">
       <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
@@ -382,7 +382,7 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
     <!-- AUTH WARN -->
     <div class="auth-warn" id="auth-warn">
       &#9888;&#65039; <strong>Access Warning:</strong> The server returned a permission error.
-      Your role (<span id="warn-role">-</span>) may not have access to <code>/api/rtcrl</code>.
+      Your role (<span id="warn-role">-</span>) may not have access to <code>/api/rtcrr</code>.
       <button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="document.getElementById('auth-warn').classList.remove('show')">Dismiss</button>
     </div>
 
@@ -484,10 +484,10 @@ function handleUnauth(r) {
 
 async function loadData() {
   try {
-    const res = await fetch(`${API}/api/rtcrl`, { headers: authHeaders() });
+    const res = await fetch(`${API}/api/rtcrr`, { headers: authHeaders() });
     handleUnauth(res);
     if (res.status === 404) {
-      showError('The <code>/api/rtcrl</code> route does not exist yet.<br>Add it to server.js and it will show data automatically.');
+      showError('The <code>/api/rtcrr</code> route does not exist yet.<br>Add it to server.js and it will show data automatically.');
       allData = []; applyFilters(); updateStats(); return;
     }
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -598,6 +598,7 @@ function renderTable() {
       const dCls  = days <= 14 ? 'day-ok' : days <= 45 ? 'day-warn' : 'day-crit';
       const catCls = d.category === 'PFRN' ? 'sp-pfrn' : d.category === 'OB' ? 'sp-ob' : 'sp-ur';
       return `<tr>
+        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.revertedDate)}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
         <td style="font-size:11px;color:var(--green);font-weight:600;">${fmtDate(d.closedDate)}</td>
         <td><span class="div-tag">${esc(d.division || '-')}</span></td>
@@ -673,7 +674,7 @@ function printRecord() { window.print(); }
 // -- EXPORT -------------------------------------------------------------------
 function exportCSV() {
   const headers = [
-    'Entry Date', 'Closed Date', 'Division', 'SC Ref No', 'DEF GIR No', 'Category/OB Type', 'Model', 'Def Brd/Mod Name', 'No of Days', 'Status',
+    'Reverted Date', 'Entry Date', 'Closed Date', 'Division', 'SC Ref No', 'DEF GIR No', 'Category/OB Type', 'Model', 'Def Brd/Mod Name', 'No of Days', 'Status',
     'Technical Remarks', 'Repair Team Remarks', 'Components Used to Repaired', 'Cost in INR', 'Time Taken to Repair', 'Repair Status',
     'DOI (Date of Installation)', 'Repaired By', 'Repaired Date', 'Closed By'
   ];
