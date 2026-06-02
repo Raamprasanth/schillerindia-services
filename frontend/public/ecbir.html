@@ -578,24 +578,6 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
   </div>
 
   <div class="content">
-<!-- HERO -->
-    <div class="hero">
-      <div class="hero-inner">
-        <div class="hero-left">
-          <h1>Closed BIR Registry</h1>
-          <p>All approved &amp; closed Batch Inspection Reports - read-only archive</p>
-          <div class="hero-badge"><span class="dot"></span> Archive Active</div>
-        </div>
-        <div class="hero-meta">
-          <div class="meta-item"><div class="val" id="hero-total" style="color:var(--green);">0</div><div class="lbl">Total Closed</div></div>
-          <div class="meta-item"><div class="val" id="hero-divs" style="color:var(--cyan);">0</div><div class="lbl">Divisions</div></div>
-          <div class="meta-item"><div class="val" id="hero-this-month" style="color:var(--purple);">0</div><div class="lbl">This Month</div></div>
-        </div>
-      </div>
-    </div>
-
-
-
     <!-- Date & Division Filter -->
     <div class="filter-strip">
       <span class="filter-label">From Date</span>
@@ -763,13 +745,7 @@ async function loadData(){
 
 // -- STATS ---------------------------------------------------------------------
 function updateStats(){
-  const total=allData.length;
-  const divs=[...new Set(allData.map(x=>x.division))];
-  const thisM=allData.filter(x=>thisMonth(x.approvedDate||x.unitInwardDate)).length;
-
-  (document.getElementById('hero-total')||{}).textContent =total;
-  (document.getElementById('hero-divs')||{}).textContent =divs.length;
-  (document.getElementById('hero-this-month')||{}).textContent =thisM;
+  // Kept as a hook for the shared data refresh path.
 }
 
 // -- SORT ----------------------------------------------------------------------
