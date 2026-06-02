@@ -228,7 +228,7 @@ router.post('/:id', async (req, res) => {
       await empfrnDoc.save({ validateBeforeSave: false });
     }
 
-    // 3. Re-create the RTUR/RTFRN/RTOB record with all fields restored from RTCRL
+    // 3. Re-create the RTUR/RTFRN/RTOB record with all fields restored from RTCRL -> NOW GOES TO Rtrr
     let finalSourceCollection = deletedSourceCollection;
     if (!finalSourceCollection) {
       if (isEstimation) finalSourceCollection = 'rtob';
@@ -236,9 +236,8 @@ router.post('/:id', async (req, res) => {
       else finalSourceCollection = 'rtur';
     }
 
-    const ModelToRecreate = 
-      finalSourceCollection === 'rtob' ? RTOB :
-      finalSourceCollection === 'rtfrn' ? RTFRN : RTUR;
+    const Rtrr = require('../models/Rtrr');
+    const ModelToRecreate = Rtrr;
       
     // Determine the category
     let category = crlCategory;
@@ -392,7 +391,7 @@ router.post('/crl/:id', async (req, res) => {
       }
     }
 
-    // 3. Re-create the RTUR/RTFRN/RTOB record with all fields restored from RTCRL
+    // 3. Re-create the RTUR/RTFRN/RTOB record with all fields restored from RTCRL -> NOW GOES TO Rtrr
     let finalSourceCollection = deletedSourceCollection;
     if (!finalSourceCollection) {
       if (isEstimation) finalSourceCollection = 'rtob';
@@ -400,9 +399,8 @@ router.post('/crl/:id', async (req, res) => {
       else finalSourceCollection = 'rtur';
     }
 
-    const ModelToRecreate = 
-      finalSourceCollection === 'rtob' ? RTOB :
-      finalSourceCollection === 'rtfrn' ? RTFRN : RTUR;
+    const Rtrr = require('../models/Rtrr');
+    const ModelToRecreate = Rtrr;
 
     let category = crlDoc.category || 'UR';
     if (service.frnNo && finalSourceCollection === 'rtfrn') category = 'PFRN';
