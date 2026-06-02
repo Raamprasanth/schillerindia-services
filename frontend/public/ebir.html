@@ -653,12 +653,34 @@ function handleUnauth(res){
 }
 
 /* ?"??"? LOAD ?"??"? */
+function fetchWithTimeout(url, options={}, timeoutMs=12000){
+  const controller = new AbortController();
+  const timer = setTimeout(()=>controller.abort(),timeoutMs);
+  return fetch(url,{...options,signal:controller.signal}).finally(()=>clearTimeout(timer));
+}
+function showLoadError(message){
+  DATA = [];
+  filtered = [];
+  updateStats();
+  document.getElementById('bir-tbody').innerHTML = `
+    <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--muted);">
+      <div style="font-weight:700;color:var(--red);margin-bottom:6px;">Could not load BIR records</div>
+      <div>${esc(message)}</div>
+      <button class="btn btn-outline btn-sm" style="margin-top:12px;" onclick="loadData()">&#8635; Try Again</button>
+    </td></tr>`;
+  (document.getElementById('count-chip')||{}).textContent = '0 entries';
+  (document.getElementById('tbl-info')||{}).textContent = '0 entries';
+  (document.getElementById('tbl-pagination')||{}).innerHTML = '';
+}
 async function loadData(){
   setLoading();
   try{
-    const res = await fetch(API+'/api/emp/bir',{headers:authHeaders()});
+    const res = await fetchWithTimeout(API+'/api/emp/bir',{headers:authHeaders()});
     handleUnauth(res);
-    if(!res.ok) throw new Error('HTTP '+res.status);
+    if(!res.ok){
+      const body = await res.json().catch(()=>({}));
+      throw new Error(body.error||body.message||('HTTP '+res.status));
+    }
     DATA = await res.json();
     DATA = DATA.map(d=>({...d, id: d._id||d.id}));
     applyFilters();
@@ -668,13 +690,8 @@ async function loadData(){
     showToast('Loaded '+DATA.length+' record'+(DATA.length!==1?'s':''),'info');
   }catch(e){
     if(e.message === 'Unauthorized') return;
-    /* Demo data if API unavailable */
-    DATA = generateDemoData();
-    applyFilters();
-    updateStats();
-    const b = document.getElementById('sidebar-bir-count');
-    if(b) b.textContent = DATA.length;
-    showToast('Demo mode - connect API for live data','info');
+    showLoadError(e.name==='AbortError'?'Database request timed out. Please try again.':e.message);
+    showToast('Could not load BIR records.','err');
   }
 }
 

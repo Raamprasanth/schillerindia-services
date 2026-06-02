@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const router  = express.Router();
 const EBir    = require('../models/EBir');
 const Bir     = require('../models/Bir');
@@ -42,6 +43,13 @@ function canAccessDivision(user, division) {
 
 function hasMeaningfulServiceUpdate(update) {
   return SERVICE_UPDATE_FIELDS.some(field => String(update[field] || '').trim());
+}
+
+function requireDatabase(req, res, next) {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ message: 'Database unavailable. Please try again shortly.' });
+  }
+  next();
 }
 
 function buildMirrorUpdate(doc) {
@@ -129,7 +137,7 @@ async function syncMirrorsFromEBir(doc) {
 }
 
 // ── GET /api/emp/bir  (all records with optional filters)
-router.get('/', protect, async (req, res) => {
+router.get('/', requireDatabase, protect, async (req, res) => {
   try {
     const { division, status, hw, from, to } = req.query;
     const filter = {};
