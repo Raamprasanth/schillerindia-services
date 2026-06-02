@@ -29,6 +29,14 @@ function formatDateOnly(d) {
   return splitT || new Date().toISOString().split('T')[0];
 }
 
+function stripRevertRemarkFragments(value) {
+  return String(value || '')
+    .split('|')
+    .map(part => part.trim())
+    .filter(part => part && part.toLowerCase() !== 're-repair requested' && !/^problem observed:/i.test(part))
+    .join(' | ');
+}
+
 async function resolveDivisionName(service) {
   if (!service) return 'OTHER';
   
@@ -233,11 +241,9 @@ router.post('/:id', async (req, res) => {
     service.rtfrnSent = true;
     service.rtobSent = true;
     service.repairStatus = 're repair product';
+    service.finalRemarks = stripRevertRemarkFragments(service.finalRemarks);
+    service.techRemarks = stripRevertRemarkFragments(service.techRemarks);
 
-    service.finalRemarks = (service.finalRemarks ? service.finalRemarks + ' | ' : '') + 'Re-repair requested';
-    if (problemObserved) {
-      service.techRemarks = (service.techRemarks ? service.techRemarks + ' | ' : '') + 'Problem Observed: ' + problemObserved;
-    }
     await service.save({ validateBeforeSave: false });
 
     if (empfrnDoc) {
@@ -269,11 +275,8 @@ router.post('/:id', async (req, res) => {
     const safeDivision = mapDiv[rawDiv] || 'OTHER';
 
     // Build final remarks for the new doc
-    let newDocRemarks = 'Re-repair requested';
-    let newDocTechRemarks = (crlDoc && crlDoc.techRemarks) || '';
-    if (problemObserved) {
-      newDocTechRemarks = (newDocTechRemarks ? newDocTechRemarks + ' | ' : '') + 'Problem Observed: ' + problemObserved;
-    }
+    const newDocRemarks = stripRevertRemarkFragments(crlDoc && crlDoc.finalRemarks);
+    const newDocTechRemarks = stripRevertRemarkFragments(crlDoc && crlDoc.techRemarks);
 
     // Find matching EmpFRN if category is PFRN/rtfrn
     let sourceEmpFrnId = empfrnDoc ? empfrnDoc._id : null;
@@ -398,10 +401,8 @@ router.post('/crl/:id', async (req, res) => {
     service.rtfrnSent = true;
     service.rtobSent = true;
     service.repairStatus = 're repair product';
-    service.finalRemarks = (service.finalRemarks ? service.finalRemarks + ' | ' : '') + 'Re-repair requested';
-    if (problemObserved) {
-      service.techRemarks = (service.techRemarks ? service.techRemarks + ' | ' : '') + 'Problem Observed: ' + problemObserved;
-    }
+    service.finalRemarks = stripRevertRemarkFragments(service.finalRemarks);
+    service.techRemarks = stripRevertRemarkFragments(service.techRemarks);
     await service.save({ validateBeforeSave: false });
 
     // Also clear rtfrnCompleted and ensure rtfrnSent is true on the associated EmpFRN if category is rtfrn/PFRN
@@ -437,11 +438,8 @@ router.post('/crl/:id', async (req, res) => {
     const safeDivision = mapDiv[rawDiv] || 'OTHER';
 
     // Build final remarks for the new doc
-    let newDocRemarks = 'Re-repair requested';
-    let newDocTechRemarks = crlDoc.techRemarks || '';
-    if (problemObserved) {
-      newDocTechRemarks = (newDocTechRemarks ? newDocTechRemarks + ' | ' : '') + 'Problem Observed: ' + problemObserved;
-    }
+    const newDocRemarks = stripRevertRemarkFragments(crlDoc.finalRemarks);
+    const newDocTechRemarks = stripRevertRemarkFragments(crlDoc.techRemarks);
 
     // Find matching EmpFRN if category is PFRN/rtfrn
     let sourceEmpFrnId = null;

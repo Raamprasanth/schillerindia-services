@@ -846,6 +846,14 @@ async function submitAdd() {
 }
 
 // -- UPDATE MODAL ------------------------------------------
+function cleanRevertTechnicalRemarks(value) {
+  return String(value || '')
+    .split('|')
+    .map(part => part.trim())
+    .filter(part => part && part.toLowerCase() !== 're-repair requested' && !/^problem observed:/i.test(part))
+    .join(' | ');
+}
+
 function openUpdate(id) {
   const d = allData.find(x => (x._id||x.id) === id);
   if (!d) return;
@@ -866,7 +874,7 @@ function openUpdate(id) {
   set('u-repairedby',  d.repairedBy||'');
   set('u-status',      d.status||'');
   set('u-repaireddate', new Date().toISOString().split('T')[0]);
-  set('u-techremarks',   d.techRemarks||'');
+  set('u-techremarks',   cleanRevertTechnicalRemarks(d.techRemarks));
   set('u-repairremarks', d.repairRemarks||'');
   set('u-components',    d.components||'');
   set('u-cost',          d.cost||'');
