@@ -197,10 +197,10 @@ const rtcrrSchema = new mongoose.Schema(
       default: null,
     },
 
-    // Which collection the record came from: 'rtur' | 'rtob' | 'rtfrn'
+    // Which collection the record came from: 'rtur' | 'rtob' | 'rtfrn' | 'rtrr'
     sourceCollection: {
       type: String,
-      enum: ['rtur', 'rtob', 'rtfrn', ''],
+      enum: ['rtur', 'rtob', 'rtfrn', 'rtrr', ''],
       default: '',
     },
   },

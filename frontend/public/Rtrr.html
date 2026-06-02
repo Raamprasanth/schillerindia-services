@@ -245,13 +245,13 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
   animation: spin 0.8s linear infinite;
   display: inline-block;
 }
-    </style>
-  <link rel="stylesheet" href="global-typography.css">
-  <link rel="stylesheet" href="employee-theme.css">
-  <script src="employee-theme.js"></script>
-  <link rel="stylesheet" href="topbar-alignment.css">
-  <link rel="stylesheet" href="brand-logo.css">
-  <script src="brand-logo.js" defer></script>
+</style>
+<link rel="stylesheet" href="global-typography.css">
+<link rel="stylesheet" href="employee-theme.css">
+<script src="employee-theme.js"></script>
+<link rel="stylesheet" href="topbar-alignment.css">
+<link rel="stylesheet" href="brand-logo.css">
+<script src="brand-logo.js" defer></script>
 </head>
 <body>
 <!-- -- FULL-SCREEN UPDATE MODAL -- -->
@@ -556,10 +556,10 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
         <table class="rt-table">
           <thead><tr>
             <th onclick="sortBy('revertedDate')">Reverted Date <span class="si">&#8693;</span></th>
-              <th onclick="sortBy('entryDate')" class="sorted">Entry Date <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('entryDate')" class="sorted">Entry Date <span class="si">&#8693;</span></th>
             <th>Update</th>
             <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
-              <th onclick="sortBy('category')">Category <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('category')">Category <span class="si">&#8693;</span></th>
             <th onclick="sortBy('scRefNo')">SC Ref No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('defGirNo')">DEF GIR No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
@@ -697,6 +697,7 @@ function setSummaryFilter(type) {
   applyFilters();
 }
 
+// -- SORT & RENDER ------------------------------------------
 function summaryMatches(d) {
   if (activeSummary === 'below-2') return d.noOfDays < 2;
   if (activeSummary === '2-to-5') return d.noOfDays >= 2 && d.noOfDays <= 5;
@@ -769,13 +770,12 @@ function renderTable() {
     tbody.innerHTML = slice.map(d => {
       const id = d._id || d.id;
       const pdCls = d.noOfDays > 30 ? 'day-crit' : d.noOfDays > 14 ? 'day-warn' : 'day-ok';
-      const stCls = d.status==='completed'?'sp-completed':d.status==='inprogress'?'sp-inprogress':d.noOfDays>30?'sp-critical':'sp-pending';
-      const stLbl = {pending:'Pending',inprogress:'In Progress',completed:'Completed',on_hold:'On Hold',scrapped:'Scrapped'}[d.status] || (d.status||'Pending');
       return `<tr>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.revertedDate)}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
         <td><button class="btn-xs upd" onclick="openUpdate('${id}')" title="Update">&#9999;&#65039;</button></td>
         <td><span class="div-tag">${esc(d.division||'-')}</span></td>
+        <td><span class="badge badge-outline" style="background:#f3f4f6;color:#374151;border-color:#d1d5db">${esc(d.category||'-')}</span></td>
         <td style="font-size:13.5px;font-weight:800;color:var(--accent);">${esc(d.scRefNo||'-')}</td>
         <td style="font-size:13.5px;font-weight:900;color:var(--purple);font-family:monospace;">${esc(d.defGirNo||'-')}</td>
         <td style="font-weight:600;">${esc(d.model||'-')}</td>
@@ -940,8 +940,8 @@ async function submitUpdate() {
     if (saved.completed) {
       allData = allData.filter(x => (x._id||x.id) !== editingId);
       applyFilters(); updateStats();
-      okEl.textContent = '? Repair completed! Moved to RTCRL.'; okEl.classList.add('show');
-      showToast('Repair completed and moved to RTCRL.', 'ok');
+      okEl.textContent = '? Repair completed! Moved to RTCRR.'; okEl.classList.add('show');
+      showToast('Repair completed and moved to RTCRR.', 'ok');
       setTimeout(closeModal, 1200);
     } else {
       const idx = allData.findIndex(x=>(x._id||x.id)===editingId);
@@ -1004,8 +1004,21 @@ function gp(p) { currentPage=p; renderTable(); }
 // -- HELPERS -----------------------------------------------
 function fmtDate(d) {
   if (!d) return '-';
-  const p = String(d).split('T')[0].split('-');
-  if (p.length < 3) return String(d);
+  let str = String(d).trim();
+  if (str.includes(' ') && !/^\d{4}-\d{2}-\d{2}/.test(str)) {
+    try {
+      const dt = new Date(d);
+      if (!isNaN(dt.getTime())) {
+        const day = String(dt.getDate()).padStart(2, '0');
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const month = months[dt.getMonth()];
+        const year = dt.getFullYear();
+        return `${day} ${month} ${year}`;
+      }
+    } catch (_) {}
+  }
+  const p = str.split('T')[0].split('-');
+  if (p.length < 3) return str;
   return p[2] + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1] + ' ' + p[0];
 }
 function esc(s) {

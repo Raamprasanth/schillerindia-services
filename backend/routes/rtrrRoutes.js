@@ -359,6 +359,7 @@ router.put('/:id', protect, async (req, res) => {
         });
       } catch (crlErr) {
         console.error('Rtrr → Rtcrr copy failed:', crlErr.message);
+        throw crlErr;
       }
 
       await Rtrr.findByIdAndDelete(updated._id);
