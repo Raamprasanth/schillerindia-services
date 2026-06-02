@@ -559,6 +559,7 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
               <th onclick="sortBy('entryDate')" class="sorted">Entry Date <span class="si">&#8693;</span></th>
             <th>Update</th>
             <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
+              <th onclick="sortBy('category')">Category <span class="si">&#8693;</span></th>
             <th onclick="sortBy('scRefNo')">SC Ref No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('defGirNo')">DEF GIR No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
@@ -963,12 +964,12 @@ async function submitUpdate() {
 // -- EXPORT CSV --------------------------------------------
 function exportCSV() {
   const headers = [
-    'Reverted Date', 'Entry Date', 'Division', 'SC Ref No', 'DEF GIR No', 'Model', 'Def Brd/Mod Name', 'No of Days', 'Status',
+    'Reverted Date', 'Entry Date', 'Division', 'Category', 'SC Ref No', 'DEF GIR No', 'Model', 'Def Brd/Mod Name', 'No of Days', 'Status',
     'DOI (Date of Installation)', 'Technical Remarks', 'Repair Team Remarks', 'Components Used to Repaired', 'Cost in INR', 'Time Taken to Repair', 'Repair Status',
     'Repaired By', 'Repaired Date', 'Submitted By'
   ];
   const rows = filtered.map(d => [
-    `\t${fmtDate(d.revertedDate)}`, `\t${fmtDate(d.entryDate)}`, d.division || '-', d.scRefNo || '-', d.defGirNo || '-', d.model || '-', d.defBrdModName || '-', d.noOfDays || 0, d.status || '-',
+    `\t${fmtDate(d.revertedDate)}`, `\t${fmtDate(d.entryDate)}`, d.division || '-', d.category || '-', d.scRefNo || '-', d.defGirNo || '-', d.model || '-', d.defBrdModName || '-', d.noOfDays || 0, d.status || '-',
     d.doi || '-', d.techRemarks || '-', d.repairRemarks || '-', d.components || d.compUsedToRepair || '-', d.cost || '-', d.timeTaken || '-', d.repairStatus || '-',
     d.repairedBy || '-', d.repairedDate ? fmtDate(d.repairedDate) : '-', d.submittedBy || '-'
   ]);
