@@ -378,7 +378,8 @@ router.put('/:id', protect, async (req, res) => {
         await Rtcrr.create({
           revertedDate:     updated.revertedDate || null,
           entryDate:        updated.entryDate ? new Date(updated.entryDate) : new Date(),
-          closedDate:       new Date(),
+          closedDate:       updated.closedDate || null,
+          reRepDate:        new Date(),
           division:         cleanDivision(updated.division, existing.division),
           scRefNo:          updated.scRefNo,
           defGirNo:         updated.defGirNo,

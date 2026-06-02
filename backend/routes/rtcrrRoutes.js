@@ -148,21 +148,22 @@ router.get('/export/csv', async (req, res) => {
   try {
     const filter  = buildFilter(req.query);
     const records = await attachActualDivisions(
-      await Rtcrr.find(filter).sort({ closedDate: -1 }).lean()
+      await Rtcrr.find(filter).sort({ reRepDate: -1, closedDate: -1 }).lean()
     );
 
     // Column order matches rtcrl.html exportCSV() headers array
     const cols = [
-      'entryDate', 'closedDate', 'division', 'scRefNo', 'defGirNo',
+      'revertedDate', 'reRepDate', 'entryDate', 'closedDate', 'division', 'scRefNo', 'defGirNo',
       'category', 'model', 'defBrdModName', 'noOfDays',
       'repairedBy', 'closedBy', 'techRemarks', 'finalRemarks',
       'compUsedToRepair', 'dcNo', 'returnDcNo', 'destination',
     ];
     const header = cols.join(',');
     const rows   = records.map(r => {
-      const end     = r.closedDate ? new Date(r.closedDate) : new Date();
-      const noOfDays = r.entryDate
-        ? Math.max(0, Math.floor((end.getTime() - new Date(r.entryDate).getTime()) / 86400000))
+      const end = new Date(r.reRepDate || r.closedDate || new Date());
+      const start = r.revertedDate || r.entryDate;
+      const noOfDays = start
+        ? Math.max(0, Math.floor((end.getTime() - new Date(start).getTime()) / 86400000))
         : 0;
       return cols.map(c => {
         let val = c === 'noOfDays' ? noOfDays : (r[c] ?? '');
@@ -198,7 +199,7 @@ router.get('/', async (req, res) => {
 
     const records = await attachActualDivisions(await Rtcrr
       .find(filter)
-      .sort({ closedDate: -1 })
+      .sort({ reRepDate: -1, closedDate: -1 })
       .skip(skip)
       .limit(Number(limit))
       .lean());
@@ -250,7 +251,7 @@ router.post('/', async (req, res) => {
   try {
     const {
       entryDate, division, scRefNo, defGirNo, category, model, defBrdModName,
-      closedDate, closedBy,
+      closedDate, reRepDate, closedBy,
       repairedBy, compUsedToRepair, repBrdDate, dcNo,
       techRemarks, finalRemarks, addNotes,
       returnDate, returnDcNo, destination,
@@ -268,6 +269,7 @@ router.post('/', async (req, res) => {
     const doc = await Rtcrr.create({
       entryDate:        new Date(entryDate),
       closedDate:       closedDate   ? new Date(closedDate)   : new Date(),
+      reRepDate:        reRepDate    ? new Date(reRepDate)    : new Date(),
       division:         safeDivision,
       scRefNo,
       defGirNo,

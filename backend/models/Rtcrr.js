@@ -40,6 +40,11 @@ const rtcrrSchema = new mongoose.Schema(
       default: Date.now,
       index: true,
     },
+    reRepDate: {
+      type: Date,
+      default: null,
+      index: true,
+    },
 
     division: {
       type: String,
@@ -212,13 +217,13 @@ const rtcrrSchema = new mongoose.Schema(
 
 // ─────────────────────────────────────────────────────────────────────────────
 // VIRTUAL — noOfDays
-// Days from entryDate to closedDate (not to today, since the record is closed)
-// rtcrl.html calcDays(entry, closed) does the same on the client side.
+// Days spent in re-repair, from revert to re-repair completion.
 // ─────────────────────────────────────────────────────────────────────────────
 rtcrrSchema.virtual('noOfDays').get(function () {
-  if (!this.entryDate) return 0;
-  const end  = this.closedDate ? new Date(this.closedDate) : new Date();
-  const diff = Math.floor((end.getTime() - new Date(this.entryDate).getTime()) / 86400000);
+  const start = this.revertedDate || this.entryDate;
+  if (!start) return 0;
+  const end  = this.reRepDate || this.closedDate || new Date();
+  const diff = Math.floor((new Date(end).getTime() - new Date(start).getTime()) / 86400000);
   return Math.max(0, isNaN(diff) ? 0 : diff);
 });
 
@@ -233,7 +238,7 @@ rtcrrSchema.set('toObject', { virtuals: true });
 //   fl-repairedby       → repairedBy
 //   fl-closedby         → closedBy (text search)
 // ─────────────────────────────────────────────────────────────────────────────
-rtcrrSchema.index({ closedDate: -1,  category: 1 });
+rtcrrSchema.index({ reRepDate: -1,   category: 1 });
 rtcrrSchema.index({ entryDate:  -1,  division: 1 });
 rtcrrSchema.index({ category:   1,   division: 1 });
 rtcrrSchema.index({ scRefNo:    1,   defGirNo: 1 });
@@ -261,7 +266,12 @@ rtcrrSchema.statics.getAvgDays = async function () {
       $project: {
         days: {
           $divide: [
-            { $subtract: [{ $ifNull: ['$closedDate', new Date()] }, '$entryDate'] },
+            {
+              $subtract: [
+                { $ifNull: ['$reRepDate', { $ifNull: ['$closedDate', new Date()] }] },
+                { $ifNull: ['$revertedDate', '$entryDate'] },
+              ],
+            },
             86400000,
           ],
         },

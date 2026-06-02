@@ -103,7 +103,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .srch-wrap input:focus{border-color:var(--crl);}
 .srch-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);}
 .table-wrap{overflow-x:auto;}
-table.crl-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:1200px;}
+table.crl-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:1400px;}
 table.crl-table thead th{padding:10px 12px;font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;text-align:left;border-bottom:2px solid var(--border);background:var(--surface3);white-space:nowrap;cursor:pointer;user-select:none;}
 table.crl-table thead th:hover{color:var(--crl);}
 table.crl-table tbody td{padding:10px 12px;border-bottom:1px solid rgba(0,60,120,0.05);vertical-align:middle;white-space:nowrap;color:var(--text);}
@@ -424,20 +424,22 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
       <div class="table-wrap">
         <table class="crl-table">
           <thead><tr>
+            <th onclick="sortBy('revertedDate')">Reverted Date &#8597;</th>
+            <th onclick="sortBy('reRepDate')">Re-rep Date &#8597;</th>
             <th onclick="sortBy('entryDate')">Entry Date &#8597;</th>
             <th onclick="sortBy('closedDate')">Closed Date &#8597;</th>
+            <th>View</th>
             <th onclick="sortBy('division')">Division &#8597;</th>
+            <th onclick="sortBy('category')">Category &#8597;</th>
             <th onclick="sortBy('scRefNo')">SC Ref No &#8597;</th>
             <th onclick="sortBy('defGirNo')">DEF GIR No &#8597;</th>
-            <th onclick="sortBy('category')">Category &#8597;</th>
             <th onclick="sortBy('model')">Model &#8597;</th>
             <th onclick="sortBy('defBrdModName')">Def Brd/Mod Name &#8597;</th>
             <th onclick="sortBy('noOfDays')">No of Days &#8597;</th>
-            <th onclick="sortBy('repairedBy')">Repaired By &#8597;</th>
-            <th>Details</th>
+            <th onclick="sortBy('submittedBy')">Submitted By &#8597;</th>
           </tr></thead>
           <tbody id="crl-tbody">
-            <tr><td colspan="11" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
+            <tr><td colspan="13" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -455,7 +457,7 @@ const LUSER    = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
 const EMP_NAME = LUSER.name || '';
 const RAW_ROLE = (LUSER.role || sessionStorage.getItem('schiller_role') || '').toLowerCase();
 
-let allData = [], filtered = [], sortKey = 'closedDate', sortDir = -1, currentPage = 1;
+let allData = [], filtered = [], sortKey = 'reRepDate', sortDir = -1, currentPage = 1;
 let activeCat = '';
 
 (function init() {
@@ -493,7 +495,7 @@ async function loadData() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     const list = data.data || data;
-    allData = list.map(d => ({ ...d, id: d._id || d.id, noOfDays: calcDays(d.entryDate, d.closedDate) }));
+    allData = list.map(d => ({ ...d, id: d._id || d.id, noOfDays: calcDays(d.revertedDate || d.entryDate, d.reRepDate || d.closedDate) }));
     applyFilters(); updateStats();
     showToast('Loaded ' + allData.length + ' closed record' + (allData.length !== 1 ? 's' : ''), 'info');
   } catch (e) {
@@ -506,18 +508,18 @@ async function loadData() {
 
 function showError(msg) {
   document.getElementById('crl-tbody').innerHTML =
-    `<tr><td colspan="11"><div class="empty-st">
+    `<tr><td colspan="13"><div class="empty-st">
       <div class="ei">&#9888;&#65039;</div><div class="et">Cannot load data</div>
       <div class="es">${msg}</div>
       <div style="margin-top:14px;"><button class="btn btn-crl btn-sm" onclick="loadData()">&#10227; Try Again</button></div>
     </div></td></tr>`;
 }
 
-// noOfDays = days from entry to close (or to today if not closed yet)
-function calcDays(entry, closed) {
-  if (!entry) return 0;
-  const end  = closed ? new Date(closed) : new Date();
-  const diff = Math.floor((end.getTime() - new Date(entry).getTime()) / 86400000);
+// noOfDays = days spent in re-repair, from revert to re-repair completion.
+function calcDays(reverted, reRep) {
+  if (!reverted) return 0;
+  const end  = reRep ? new Date(reRep) : new Date();
+  const diff = Math.floor((end.getTime() - new Date(reverted).getTime()) / 86400000);
   return Math.max(0, isNaN(diff) ? 0 : diff);
 }
 
@@ -586,7 +588,7 @@ function renderTable() {
   const tbody = document.getElementById('crl-tbody');
 
   if (!slice.length) {
-    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-st">
+    tbody.innerHTML = `<tr><td colspan="13"><div class="empty-st">
       <div class="ei">&#9989;</div>
       <div class="et">${allData.length ? 'No records match filters' : 'No Closed Repair Records'}</div>
       <div class="es">${allData.length ? 'Try clearing the filters or changing the category tab.' : 'Records appear here once a repair is marked as completed.'}</div>
@@ -599,19 +601,18 @@ function renderTable() {
       const catCls = d.category === 'PFRN' ? 'sp-pfrn' : d.category === 'OB' ? 'sp-ob' : 'sp-ur';
       return `<tr>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.revertedDate)}</td>
+        <td style="font-size:11px;color:var(--green);font-weight:600;">${fmtDate(d.reRepDate || d.closedDate)}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
-        <td style="font-size:11px;color:var(--green);font-weight:600;">${fmtDate(d.closedDate)}</td>
+        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.closedDate)}</td>
+        <td><button class="btn-xs view" onclick="openDetail('${id}')">View</button></td>
         <td><span class="div-tag">${esc(d.division || '-')}</span></td>
+        <td><span class="status-pill ${catCls}">${esc(d.category || 'UR')}</span></td>
         <td style="font-size:13.5px;font-weight:800;color:var(--text);">${esc(d.scRefNo || '-')}</td>
         <td style="font-size:13.5px;font-weight:900;color:var(--purple);font-family:monospace;">${esc(d.defGirNo || '-')}</td>
-        <td><span class="status-pill ${catCls}">${esc(d.category || 'UR')}</span></td>
         <td style="font-weight:600;">${esc(d.model || '-')}</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.defBrdModName || '')}">${esc(d.defBrdModName || '-')}</td>
         <td><span class="${dCls}">${days}</span></td>
-        <td style="font-size:11.5px;">${esc(d.repairedBy || '-')}</td>
-        <td>
-          <button class="btn-xs view" onclick="openDetail('${id}')">View</button>
-        </td>
+        <td style="font-size:11px;color:var(--muted);">${esc(d.submittedBy || '-')}</td>
       </tr>`;
     }).join('');
   }
@@ -674,12 +675,12 @@ function printRecord() { window.print(); }
 // -- EXPORT -------------------------------------------------------------------
 function exportCSV() {
   const headers = [
-    'Reverted Date', 'Entry Date', 'Closed Date', 'Division', 'Category', 'SC Ref No', 'DEF GIR No', 'Category/OB Type', 'Model', 'Def Brd/Mod Name', 'DOI (Date of Installation)',
+    'Reverted Date', 'Re-rep Date', 'Entry Date', 'Closed Date', 'Division', 'Category', 'SC Ref No', 'DEF GIR No', 'Category/OB Type', 'Model', 'Def Brd/Mod Name', 'DOI (Date of Installation)',
     'Technical Remarks', 'Repair Team Remarks', 'Components Used to Repaired', 'Cost in INR', 'Time Taken to Repair', 'Repair Status',
     'Repaired By', 'Repaired Date', 'Closed By', 'No of Days', 'Status'
   ];
   const rows = filtered.map(d => [
-    fmtDate(d.revertedDate), fmtDate(d.entryDate), fmtDate(d.closedDate), d.division || '-', d.category || '-', d.scRefNo || '-', d.defGirNo || '-', d.category || d.obType || '-', d.model || '-', d.defBrdModName || '-', d.doi || '-',
+    fmtDate(d.revertedDate), fmtDate(d.reRepDate || d.closedDate), fmtDate(d.entryDate), fmtDate(d.closedDate), d.division || '-', d.category || '-', d.scRefNo || '-', d.defGirNo || '-', d.category || d.obType || '-', d.model || '-', d.defBrdModName || '-', d.doi || '-',
     d.techRemarks || '-', d.repairRemarks || '-', d.components || d.compUsedToRepair || '-', d.cost || '-', d.timeTaken || '-', d.repairStatus || '-',
     d.repairedBy || '-', getDisplayRepairedDate(d) ? fmtDate(getDisplayRepairedDate(d)) : '-', d.closedBy || '-', d.noOfDays || 0, d.status || '-'
   ]);
