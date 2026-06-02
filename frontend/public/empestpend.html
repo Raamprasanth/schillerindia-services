@@ -808,7 +808,7 @@ function getEngineerDivisions(engineer) {
 function engineerMatchesDivision(engineer, division) {
   const div = normalizeDivisionName(division);
   const engDivs = getEngineerDivisions(engineer);
-  return !engDivs.length || (div && engDivs.includes(div));
+  return div && engDivs.includes(div);
 }
 
 async function fetchAllEngineers() {
@@ -826,10 +826,6 @@ function fillEngSelect(selId, division, selected) {
   if (!sel) return;
   const div = normalizeDivisionName(getLoggedDivision() || division);
   const engs = ALL_ENGINEERS.filter(e => engineerMatchesDivision(e, div));
-  
-  if (selected && !engs.some(e => String(e.name).trim() === String(selected).trim())) {
-    engs.push({ name: String(selected).trim() });
-  }
   
   sel.innerHTML = div
     ? '<option value="">Select Engineer...</option>'
