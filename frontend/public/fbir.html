@@ -677,7 +677,21 @@ function stClass(s){return s==='Approved'?'st-approved':s==='Rejected'?'st-rejec
 function divClass(d){return'bp-cyan';}
 function todayStr(){return new Date().toISOString().split('T')[0];}
 function fmtDate(d){if(!d)return'-';const dt=new Date(d);return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}
-function genRef(division){const now=new Date();const dd=String(now.getDate()).padStart(2,'0');const mm=String(now.getMonth()+1).padStart(2,'0');const yy=String(now.getFullYear()).slice(-2);const idx=birData.length+1;const prefix=(division||'BIR').split(' ')[0].substring(0,5).toUpperCase();return`${prefix}/${dd}${mm}${yy}/${String(idx).padStart(2,'0')}`;}
+async function loadNextBirRef(){
+  const refEl=document.getElementById('f-bir-ref');
+  if(!refEl)return;
+  refEl.disabled=true;
+  refEl.value='Loading...';
+  try{
+    const res=await fetch('/api/bir/next-ref',{headers:authHeaders()});
+    handleUnauth(res);
+    if(!res.ok)throw new Error('Unable to load next BIR reference');
+    const data=await res.json();
+    refEl.value=data.birRef||'';
+  }catch(e){
+    if(e.message!=='Unauthorized')refEl.value='';
+  }
+}
 function isOpenBir(r){return !['Closed','Completed'].includes(String(r?.status||''));}
 function normalizeClosedBir(doc){if(!doc)return null;const out={...doc};if(out.status==='Completed')out.status='Closed';return out;}
 function persistClosedBir(doc){
@@ -940,13 +954,7 @@ function openBIRModal(){
   (document.getElementById('bir-modal-sub-ui')||{}).textContent ='Fill in all required fields to create a BIR entry';
   FIELDS.forEach(f=>{const el=document.getElementById(FIELD_MAP[f]);if(el)el.value=f==='status'?'TS Pending':'';});
   
-  const nextIdx = birData.length + 1;
-  const newRef = "BIR-REF " + String(nextIdx).padStart(3, '0');
-  const refEl = document.getElementById('f-bir-ref');
-  if(refEl) {
-    refEl.value = newRef;
-    refEl.disabled = true;
-  }
+  loadNextBirRef();
 
   onDivisionChange();
   document.getElementById('bir-form-msg').className='form-msg';
@@ -991,7 +999,6 @@ async function saveBIR(){
   FIELDS.forEach(f=>{const el=document.getElementById(FIELD_MAP[f]);if(el)payload[f]=el.value;});
   if(!payload.status) payload.status = 'TS Pending';
   payload.accChanges=normalizeAccChangesValue(payload.accChanges);
-  if(!payload.birRef)payload.birRef=genRef(div);
   try{
     if(editingId){
       let res;

@@ -2,7 +2,50 @@ const express  = require('express');
 const router   = express.Router();
 const Bir      = require('../models/Bir');
 const ClosedBir = require('../models/ClosedBir');
+const Counter  = require('../models/Counter');
 const { protect } = require('../middleware/authMiddleware');
+
+const BIR_REF_COUNTER = 'fbirRef';
+
+function getBirRefSequence(value) {
+  const match = String(value || '').trim().match(/^BIR-REF\s+(\d+)$/i);
+  return match ? Number(match[1]) : 0;
+}
+
+function formatBirRef(sequence) {
+  return `BIR-REF ${String(sequence).padStart(3, '0')}`;
+}
+
+async function ensureBirRefCounterFloor() {
+  const [openDocs, closedDocs] = await Promise.all([
+    Bir.find({ birRef: /^BIR-REF\s+\d+$/i }).select('birRef -_id').lean(),
+    ClosedBir.find({ birRef: /^BIR-REF\s+\d+$/i }).select('birRef -_id').lean(),
+  ]);
+  const floor = [...openDocs, ...closedDocs].reduce(
+    (highest, doc) => Math.max(highest, getBirRefSequence(doc.birRef)),
+    0
+  );
+  return Counter.findOneAndUpdate(
+    { _id: BIR_REF_COUNTER },
+    { $max: { seq: floor } },
+    { new: true, upsert: true, setDefaultsOnInsert: true }
+  );
+}
+
+async function previewNextBirRef() {
+  const counter = await ensureBirRefCounterFloor();
+  return formatBirRef((counter?.seq || 0) + 1);
+}
+
+async function reserveNextBirRef() {
+  await ensureBirRefCounterFloor();
+  const counter = await Counter.findOneAndUpdate(
+    { _id: BIR_REF_COUNTER },
+    { $inc: { seq: 1 } },
+    { new: true, upsert: true, setDefaultsOnInsert: true }
+  );
+  return formatBirRef(counter.seq);
+}
 
 function normalizeStatus(status) {
   return status === 'Completed' ? 'Closed' : status;
@@ -80,6 +123,15 @@ router.get('/', protect, async (req, res) => {
 });
 
 // ── GET /api/bir/:id
+router.get('/next-ref', protect, async (req, res) => {
+  try {
+    res.json({ birRef: await previewNextBirRef() });
+  } catch (err) {
+    console.error('[GET /api/bir/next-ref]', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
 router.get('/:id', protect, async (req, res) => {
   try {
     const doc = await Bir.findById(req.params.id).lean();
@@ -97,6 +149,7 @@ router.post('/', protect, async (req, res) => {
     const body = normalizeBirBody(req.body);
     const payload = {
       ...body,
+      birRef: await reserveNextBirRef(),
       status: normalizeStatus(body.status || 'TS Pending'),
       finalStatus: body.status || body.finalStatus || 'TS Pending',
     };

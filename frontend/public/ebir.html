@@ -287,7 +287,6 @@ table.bir-table tbody tr:last-child td{border-bottom:none;}
             <div class="ff"><label>Previous Software Version</label><input type="text" id="upd-prev-sw" disabled/></div>
             <div class="ff"><label>Present Software Version</label><input type="text" id="upd-pres-sw" disabled/></div>
             <div class="ff"><label>Accessory Details</label><input type="text" id="upd-acc-details" disabled/></div>
-            <div class="ff"><label>Accessory Change Remarks</label><input type="text" id="upd-acc-remarks" disabled/></div>
             <div class="ff"><label>User Manual Update</label><input type="text" id="upd-manual-update" disabled/></div>
             <div class="ff"><label>FQC Remarks</label><input type="text" id="upd-fqc-remarks-disp" disabled/></div>
             <div class="ff">
@@ -311,6 +310,7 @@ table.bir-table tbody tr:last-child td{border-bottom:none;}
             <div class="ff"><label>SC Observation</label><input type="text" id="upd-sc-obs" required/></div>
             <div class="ff"><label>Hardware Changes</label><input type="text" id="upd-hw-changes" required/></div>
             <div class="ff"><label>Hardware Change Remarks</label><input type="text" id="upd-hw-remarks" required/></div>
+            <div class="ff"><label>Accessory Change Remarks</label><input type="text" id="upd-acc-remarks"/></div>
             <div class="ff"><label>Service Manual Update</label>
               <select id="upd-service-manual" required>
                 <option value="">Select</option><option>Yes</option><option>No</option>
@@ -843,6 +843,7 @@ async function submitUpdate(){
     scObservation:       document.getElementById('upd-sc-obs').value.trim(),
     hwChanges:           document.getElementById('upd-hw-changes').value.trim(),
     hwChangeRemarks:     document.getElementById('upd-hw-remarks').value.trim(),
+    accChangeRemarks:    document.getElementById('upd-acc-remarks').value.trim(),
     finalStatus:         finalStatus,
     tsVerificationDate:  document.getElementById('upd-ts-date').value,
     scEngineer:          document.getElementById('upd-sc-engineer').value.trim() || (JSON.parse(sessionStorage.getItem('schiller_user') || '{}').name || ''),

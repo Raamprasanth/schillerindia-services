@@ -8,7 +8,7 @@ const { protect } = require('../middleware/authMiddleware');
 const SERVICE_UPDATE_FIELDS = [
   'scInwardDate', 'scObservation', 'requiredParts', 'rootCause',
   'scActionPlan', 'tentativeDate', 'shipDateToFqc',
-  'hwChanges', 'hwChangeRemarks', 'swChangeRemarks',
+  'hwChanges', 'hwChangeRemarks', 'accChangeRemarks', 'swChangeRemarks',
   'fqcFinalRemarks', 'defUnitReceivedDate', 'replacementShipDate',
   'fqcObservation', 'scEngineer', 'serviceManualUpdate', 'techRemarks',
 ];
@@ -213,7 +213,7 @@ router.put('/:id', protect, async (req, res) => {
       'replacementShipDate', 'fqcObservation',
       'scEngineer', 'serviceManualUpdate', 'techRemarks',
       'fqcInwardDate', 'userManualUpdate', 'fqcRemarks',
-      'hwChanges', 'hwChangeRemarks', 'cnrRefNo', 'cnrReleaseDate', 'swChangeRemarks',
+      'hwChanges', 'hwChangeRemarks', 'accChangeRemarks', 'cnrRefNo', 'cnrReleaseDate', 'swChangeRemarks',
       // Product Team fields
       'tsVerificationDate', 'psEngineer', 'psVerificationDate', 'productTeamRemarks', 'approvedDate',
     ];
