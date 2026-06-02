@@ -1379,7 +1379,7 @@ function generatePDFData(s, mode='download'){
   const doc=new jsPDFLib('p','mm','a4');
   const W=210,H=297,L=14,R=196;
   let y=12;
-  const lineItems=(Array.isArray(s.lineItems)&&s.lineItems.length?s.lineItems:[{
+  const lineItems=(Array.isArray(s.lineItems)?s.lineItems:[{
     partNo:s.partNo||'',
     estPartNo:s.estPartNo||'',
     itemDescription:s.defMod||'',
@@ -1454,7 +1454,7 @@ function generatePDFData(s, mode='download'){
   doc.setFontSize(8.8);
   doc.text('Received Item:',L,y);
   doc.setFont('helvetica','normal');
-  y+=8;
+  y+=5;
   labelValue(L, y, '', s.defMod || s.defBrdModName || s.itemDescription || '-', 32);
   labelValue(104, y, 'Unit S/N', s.unitSl || '-', 22);
   labelValue(150, y, 'Unit Status', s.unitStatus || s.unitSts || '-', 22);
@@ -1512,7 +1512,7 @@ function generatePDFData(s, mode='download'){
 
   if(serviceCharge > 0){
     let cellX=tableX;
-    const chargeValues=['-','SERCHGS','1',money(serviceCharge),'INR',money(serviceCharge)];
+    const chargeValues=['SERCHGS','Service Charges','1',money(serviceCharge),'INR',money(serviceCharge)];
     chargeValues.forEach((value,idx)=>{
       doc.rect(cellX,tableY,cols[idx],10);
       const alignRight = idx >= 3 && idx !== 4;

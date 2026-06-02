@@ -1097,7 +1097,8 @@ function printReport(){
   const content=document.getElementById('md-output');
   if(!content){toast('No report to print','error');return;}
   const w=window.open('','_blank');
-  w.document.write(`<html><head><title>Report</title><style>body{font-family:sans-serif;max-width:900px;margin:40px auto;line-height:1.7;} table{border-collapse:collapse;width:100%;} th,td{border:1px solid #ccc;padding:8px 12px;} th{background:#f4f7fa;} h1,h2,h3{font-weight:700;} blockquote{border-left:3px solid #b91c1c;padding:8px 14px;background:#fff5f5;margin:10px 0;}</style></head><body>${content.innerHTML}</body></html>`);
+  w.document.write(`<html><head><title>Report</title><style>body{font-family:sans-serif;max-width:900px;margin:40px auto;line-height:1.7;} table{border-collapse:collapse;width:100%;} th,td{border:1px solid #ccc;padding:8px 12px;} th{background:#f4f7fa;} h1,h2,h3{font-weight:700;} blockquote{border-left:3px solid #b91c1c;padding:8px 14px;background:#fff5f5;margin:10px 0;}</style></head><body>${content.innerHTML}<script src="tab-fix.js"></script>
+</body></html>`);
   w.document.close();w.print();
 }
 
@@ -1655,5 +1656,6 @@ loadStats();
 loadDivisions();
 if (currentTab === 'kanban') loadKanbanBoard(); // Handle direct loads if modified
 </script>
+<script src="tab-fix.js"></script>
 </body>
 </html>
