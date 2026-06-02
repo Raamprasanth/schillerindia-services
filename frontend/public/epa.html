@@ -543,6 +543,7 @@ function renderTable(){
 /* -- ADD / EDIT MODAL -- */
 function openAddModal(){
   editMode = false;
+  setEditFieldLock(false);
   document.getElementById('edit-id').value = '';
   document.getElementById('modal-title').innerHTML = '&#128221; Add Pending Activity';
   clearModalForm();
@@ -580,12 +581,20 @@ function openEditModal(id){
   set('m-pending-from', d.pendingFrom);
   set('m-target-date', d.targetDate);
   set('m-remarks', d.remarks);
+  setEditFieldLock(true);
   
   clearModalMsg();
   document.getElementById('add-modal').classList.add('open');
 }
 
 function closeAddModal(){ document.getElementById('add-modal').classList.remove('open'); }
+
+function setEditFieldLock(locked){
+  ['m-initiated','m-activity','m-description','m-responsible','m-pending-from','m-target-date'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.disabled = locked;
+  });
+}
 
 function clearModalForm(){
   ['edit-id','m-activity','m-description','m-responsible','m-pending-from','m-target-date','m-remarks'].forEach(id => {

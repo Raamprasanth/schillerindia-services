@@ -106,20 +106,9 @@ router.put('/:id', async (req, res) => {
       return res.status(403).json({ message: 'Access denied' });
     }
 
-    const division = getWriteDivision(req);
     const updated = await EmpPendingActivity.findByIdAndUpdate(
       req.params.id,
-      {
-        division,
-        initiatedDate: req.body.initiatedDate,
-        activity: req.body.activity,
-        description: req.body.description || '',
-        responsible: req.body.responsible || '',
-        pendingFrom: req.body.pendingFrom || '',
-        targetDate: req.body.targetDate || '',
-        remarks: req.body.remarks || '',
-        status: 'Pending',
-      },
+      { remarks: req.body.remarks || '' },
       { new: true, runValidators: true }
     );
     res.json(updated);

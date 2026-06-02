@@ -103,33 +103,11 @@ router.delete('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const filter = { _id: req.params.id, ...ownerFilter(req.user) };
-    const status = String(req.body.status || '').toLowerCase();
-    
-    if (status === 'completed') {
-      const existing = await PtPendingActivity.findOne(filter).lean();
-      if (!existing) return res.status(404).json({ message: 'Record not found.' });
-
-      const closedDoc = await PtClosedActivity.create({
-        scEngineer: req.body.scEngineer || existing.scEngineer,
-        initiatedDate: req.body.initiatedDate || existing.initiatedDate,
-        activity: req.body.activity || existing.activity,
-        description: req.body.description || existing.description,
-        responsible: req.body.responsible || existing.responsible,
-        pendingFrom: req.body.pendingFrom || existing.pendingFrom,
-        targetDate: req.body.targetDate || existing.targetDate,
-        remarks: req.body.remarks || existing.remarks,
-        scInchargeRemarks: req.body.scInchargeRemarks || existing.scInchargeRemarks,
-        status: req.body.status || existing.status,
-        createdBy: existing.createdBy
-      });
-      await PtPendingActivity.findOneAndDelete(filter);
-      return res.json(closedDoc);
-    }
-    
-    const doc = await PtPendingActivity.findOneAndUpdate(filter, {
-      ...req.body,
-      status: normalizePendingStatus(req.body.status),
-    }, { new: true });
+    const doc = await PtPendingActivity.findOneAndUpdate(
+      filter,
+      { remarks: req.body.remarks || '' },
+      { new: true, runValidators: true }
+    );
     if (!doc) return res.status(404).json({ message: 'Record not found.' });
     res.json(doc);
   } catch (err) {

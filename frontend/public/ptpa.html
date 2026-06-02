@@ -589,6 +589,7 @@ function gp(p) { currentPage = p; renderTable(); }
 
 function openModal(){ 
   clearForm(); 
+  setEditFieldLock(false);
   document.getElementById('modal-title').innerHTML = '&#128221; Add Pending Activity';
   const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   document.getElementById('f-engineer').value = u.name || 'Employee';
@@ -618,7 +619,15 @@ function editData(id){
   document.getElementById('f-pending-from').value = doc.pendingFrom || '';
   document.getElementById('f-target-date').value = doc.targetDate || '';
   document.getElementById('f-remarks').value = doc.remarks || '';
+  setEditFieldLock(true);
   document.getElementById('app-modal').classList.add('open'); 
+}
+
+function setEditFieldLock(locked){
+  ['f-initiated','f-activity','f-description','f-responsible','f-pending-from','f-target-date'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.disabled = locked;
+  });
 }
 
 async function saveData(){
