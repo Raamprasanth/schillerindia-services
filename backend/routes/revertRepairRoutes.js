@@ -204,7 +204,8 @@ router.post('/:id', async (req, res) => {
         deletedSourceId = crlDoc.sourceId;
         deletedSourceCollection = crlDoc.sourceCollection;
         crlCategory = crlDoc.category || 'UR';
-        await RTCRL.findByIdAndDelete(crlDoc._id);
+        // DO NOT delete RTCRL record on revert
+        // await RTCRL.findByIdAndDelete(crlDoc._id);
       }
     }
 
@@ -265,7 +266,8 @@ router.post('/:id', async (req, res) => {
 
     // Carry over all view-tab fields from RTCRL so no data is lost
     const newDocPayload = {
-      entryDate:        new Date(),
+      revertedDate:     new Date(),
+      entryDate:        (crlDoc && crlDoc.entryDate) ? new Date(crlDoc.entryDate) : (service.entryDate ? new Date(service.entryDate) : new Date()),
       division:         safeDivision,
       scRefNo:          scRefNo || '',
       defGirNo:         defGirNo || '',
@@ -364,8 +366,8 @@ router.post('/crl/:id', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Matching active Service/Estimation record not found' });
     }
 
-    // 1. Delete corresponding RTCRL record
-    await RTCRL.findByIdAndDelete(crlId);
+    // 1. Keep RTCRL record
+    // await RTCRL.findByIdAndDelete(crlId);
 
     // 2. Clear completion flags and ensure sent flags are true
     service.rturCompleted = false;
@@ -427,7 +429,8 @@ router.post('/crl/:id', async (req, res) => {
 
     // Carry over all view-tab fields from RTCRL so no data is lost
     const newDocPayload = {
-      entryDate:        new Date(),
+      revertedDate:     new Date(),
+      entryDate:        (crlDoc && crlDoc.entryDate) ? new Date(crlDoc.entryDate) : (service.entryDate ? new Date(service.entryDate) : new Date()),
       division:         safeDivision,
       scRefNo:          scRefNo || '',
       defGirNo:         defGirNo || '',
