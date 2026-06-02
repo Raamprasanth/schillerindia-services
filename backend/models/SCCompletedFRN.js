@@ -90,5 +90,7 @@ SCCompletedFRNSchema.index({ unitStatus: 1 });
 SCCompletedFRNSchema.index({ scRno: 1 });
 SCCompletedFRNSchema.index({ createdAt: 1 });
 SCCompletedFRNSchema.index({ frnId: 1 });
+SCCompletedFRNSchema.index({ serviceId: 1 });
+
 
 module.exports = mongoose.model('SCCompletedFRN', SCCompletedFRNSchema);

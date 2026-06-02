@@ -111,6 +111,8 @@ empfrnSchema.index({ entryDate: 1 });
 empfrnSchema.index({ unitStatus: 1 });
 empfrnSchema.index({ division: 1 });
 empfrnSchema.index({ divisionName: 1 });
+empfrnSchema.index({ serviceId: 1 });
+
 
 // ── Virtual: recalculate pending days on read ─────────────
 empfrnSchema.virtual('pendingDays').get(function () {

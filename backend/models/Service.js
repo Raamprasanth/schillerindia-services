@@ -144,6 +144,11 @@ const serviceSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+serviceSchema.index({ division: 1 });
+serviceSchema.index({ type: 1 });
+serviceSchema.index({ status: 1 });
+
+
 // Auto-generate serviceId
 serviceSchema.pre('save', async function (next) {
   if (!this.serviceId) {

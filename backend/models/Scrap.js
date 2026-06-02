@@ -73,5 +73,7 @@ scrapSchema.index({ region: 1 });
 scrapSchema.index({ entryDate: 1 });
 scrapSchema.index({ unitStatus: 1 });
 scrapSchema.index({ jobSheetStatus: 1 });
+scrapSchema.index({ serviceId: 1 });
+
 
 module.exports = mongoose.model('Scrap', scrapSchema);

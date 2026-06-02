@@ -109,5 +109,7 @@ OBPendingSchema.index({ scEng: 1 });
 OBPendingSchema.index({ model: 1 });
 OBPendingSchema.index({ scRno: 1 });
 OBPendingSchema.index({ createdAt: 1 });
+OBPendingSchema.index({ serviceId: 1 });
+
 
 module.exports = mongoose.model('OBPending', OBPendingSchema);

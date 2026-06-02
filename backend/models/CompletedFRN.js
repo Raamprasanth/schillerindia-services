@@ -80,5 +80,7 @@ CompletedFRNSchema.index({ typeWork: 1 });
 CompletedFRNSchema.index({ scRno: 1 });
 CompletedFRNSchema.index({ createdAt: -1 });
 CompletedFRNSchema.index({ frnId: 1 });
+CompletedFRNSchema.index({ serviceId: 1 });
+
 
 module.exports = mongoose.model('CompletedFRN', CompletedFRNSchema);
