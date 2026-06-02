@@ -537,8 +537,8 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
     <a class="nav-item" href="tours.html"><span class="ico">&#128205;</span> Tour Summary</a>
       <a class="nav-item" href="dailyw.html"><span class="ico">&#128197;</span> Daily Work</a>
     </div>
-    <button class="nav-group-toggle" type="button" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');"><span class="ico">&#128230;</span><span>Inventory</span><span class="caret">&#9656;</span></button>
-    <div class="nav-children nav-sub">
+    <button class="nav-group-toggle open" type="button" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');"><span class="ico">&#128230;</span><span>Inventory</span><span class="caret">&#9656;</span></button>
+    <div class="nav-children nav-sub open">
     <a class="nav-item" href="emp-non-saleable.html"><span class="ico">&#128230;</span> Non Saleable</a>
     <a class="nav-item" href="emp-saleables.html"><span class="ico">&#128176;</span> Saleables</a>
     <a class="nav-item" href="ebir.html"><span class="ico">&#128203;</span> BIR LIST</a>
@@ -562,11 +562,17 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
 <div class="main" id="main-content">
   <div class="topbar">
     <div>
-      <div class="topbar-title">Closed BIR List</div>
-      <div class="topbar-date" id="emp-date"></div>
+      <div class="breadcrumb">
+        <a href="employee-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
+        <span>Inventory</span><span class="sep">&#8250;</span>
+        <span>Closed BIR</span>
+      </div>
+      <div class="page-title">Closed BIR List</div>
     </div>
     
     <div class="topbar-actions">
+      <span style="font-size:11.5px;color:var(--muted);" id="emp-date"></span>
+      <button class="topbar-btn" onclick="loadData()">&#8635; Refresh</button>
       <button class="topbar-btn" onclick="exportCSV()">&#128228; Export CSV</button>
     </div>
   </div>
@@ -657,6 +663,18 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
     </div>
   </div>
 </div>
+
+<!-- VIEW DETAIL MODAL -->
+<div class="modal-overlay" id="view-modal">
+  <div class="modal-box">
+    <h3 id="view-title">Closed BIR Details</h3>
+    <div class="modal-subtitle" id="view-sub"></div>
+    <div id="view-content"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline btn-sm" onclick="closeView()">&#10005; Close</button>
+    </div>
+  </div>
+</div>
 <script>
 // -- STATE ---------------------------------------------------------------------
 let allData = [];
@@ -700,62 +718,58 @@ function mergeClosedLists(primary, secondary){
   return merged;
 }
 
-// -- LOAD DATA -----------------------------------------------------------------
-async function loadData(){
-  const localClosed = JSON.parse(localStorage.getItem('si_closed_bir_data')||'[]');
-  try{
-    // Try closed BIR API first
-    let res = await fetch('/api/emp/bir/closed',{headers:authHeaders()}).catch(()=>null);
-    if(res&&res.ok){allData=mergeClosedLists(await res.json(), localClosed);}
-    else{
-      // Fallback: filter approved from full BIR data or localStorage
-      res = await fetch('/api/emp/bir',{headers:authHeaders()}).catch(()=>null);
-      if(res&&res.ok){
-        const all = await res.json();
-        allData = mergeClosedLists(all.filter(x=>['Approved','Closed'].includes(x.status)), localClosed);
-      } else {
-        const stored = JSON.parse(localStorage.getItem('si_bir_data')||'[]');
-        allData = mergeClosedLists(stored.filter(x=>['Approved','Closed'].includes(x.status)), localClosed);
-        if(allData.length===0) allData = demoData();
-      }
-    }
-  }catch(e){
-    const stored = JSON.parse(localStorage.getItem('si_bir_data')||'[]');
-    allData = mergeClosedLists(stored.filter(x=>['Approved','Closed'].includes(x.status)), localClosed);
-    if(allData.length===0) allData = demoData();
-  }
-  updateStats();
-  applyFilters();
+function fetchWithTimeout(url, options={}, timeoutMs=12000){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),timeoutMs);
+  return fetch(url,{...options,signal:controller.signal}).finally(()=>clearTimeout(timer));
 }
 
-function demoData(){
-  return[
-    {_id:'cbir001',birRef:'VENT/170426/31',unitInwardDate:'2026-04-17',fqcInwardDate:'2026-04-17',division:'VENTILATOR',model:'GRAPHNET TS',configuration:'ADL, PED',receivedQty:'25',prevSwVersion:'N11-TS-01.15',presSwVersion:'N11-TS-01.16',hwChanges:'NA',hwChangeRemarks:'',swChangeRemarks:'Firmware updated to latest stable build',accChanges:'No Change',accDetails:'standard accessories received',accChangeRemarks:'',userManualUpdate:'Yes',serviceManualUpdate:'No',fqcRemarks:'All checks passed',scEngineer:'Rajesh Kumar',psEngineer:'Amit Singh',techRemarks:'Calibration verified',tsVerificationDate:'2026-04-19',psVerificationDate:'2026-04-20',cnrCirculation:'Yes',cnrRefNo:'CNR-2026-041',cnrReleaseDate:'2026-04-21',approvedDate:'2026-04-22',invoiceNo:'INV/2026/0041',invoiceDate:'2026-04-16',serial:'GNET-2026-025',supplier:'Getinge AB',status:'Approved'},
-    {_id:'cbir002',birRef:'SAG/150426/25',unitInwardDate:'2026-04-15',fqcInwardDate:'2026-04-15',division:'GANSHORN',model:'Body Plus',configuration:'Spirometry+SBD+Body plethysmography+Provocation',receivedQty:'2nos',prevSwVersion:'1.10.2.54',presSwVersion:'1.10.2.54',hwChanges:'NA',hwChangeRemarks:'',swChangeRemarks:'',accChanges:'No Change',accDetails:'std acc recd',accChangeRemarks:'',userManualUpdate:'No',serviceManualUpdate:'No',fqcRemarks:'Satisfactory',scEngineer:'Priya Nair',psEngineer:'Suresh Babu',techRemarks:'',tsVerificationDate:'2026-04-17',psVerificationDate:'2026-04-18',cnrCirculation:'No',cnrRefNo:'',cnrReleaseDate:'',approvedDate:'2026-04-19',invoiceNo:'INV/2026/0039',invoiceDate:'2026-04-14',serial:'BP-2026-002',supplier:'Ganshorn GmbH',status:'Approved'},
-    {_id:'cbir003',birRef:'SHIPL/10042026/07',unitInwardDate:'2026-04-10',fqcInwardDate:'2026-04-11',division:'SHIPL',model:'CS-200',configuration:'12-Lead ECG, Spirometry',receivedQty:'3',prevSwVersion:'V3.1',presSwVersion:'V3.2',hwChanges:'Battery module replaced',hwChangeRemarks:'Li-Ion upgraded to higher capacity',swChangeRemarks:'v3.2 includes ECG algorithm improvements',accChanges:'Added',accDetails:'USB Cable added',accChangeRemarks:'Standard USB-C cable added per new policy',userManualUpdate:'Yes',serviceManualUpdate:'Yes',fqcRemarks:'All pass',scEngineer:'Vikram Menon',psEngineer:'Deepa Rao',techRemarks:'Battery calibration done',tsVerificationDate:'2026-04-12',psVerificationDate:'2026-04-13',cnrCirculation:'Yes',cnrRefNo:'CNR-2026-038',cnrReleaseDate:'2026-04-14',approvedDate:'2026-04-15',invoiceNo:'INV/2026/0035',invoiceDate:'2026-04-09',serial:'CS200-2026-003',supplier:'Schiller AG',status:'Approved'},
-    {_id:'cbir004',birRef:'VENT/050426/28',unitInwardDate:'2026-04-05',fqcInwardDate:'2026-04-05',division:'VENTILATOR',model:'ELISA 800',configuration:'ICU Ventilator Full',receivedQty:'10',prevSwVersion:'8.20.1',presSwVersion:'8.21.0',hwChanges:'NA',hwChangeRemarks:'',swChangeRemarks:'Critical patch for alarm thresholds',accChanges:'No Change',accDetails:'standard accessories received',accChangeRemarks:'',userManualUpdate:'Yes',serviceManualUpdate:'No',fqcRemarks:'Critical update applied',scEngineer:'Anand Krishnan',psEngineer:'Meena Pillai',techRemarks:'Alarm system tested',tsVerificationDate:'2026-04-07',psVerificationDate:'2026-04-08',cnrCirculation:'Yes',cnrRefNo:'CNR-2026-031',cnrReleaseDate:'2026-04-09',approvedDate:'2026-04-10',invoiceNo:'INV/2026/0028',invoiceDate:'2026-04-04',serial:'',supplier:'Skanray',status:'Approved'},
-    {_id:'cbir005',birRef:'SAG/280326/22',unitInwardDate:'2026-03-28',fqcInwardDate:'2026-03-28',division:'GANSHORN',model:'DLCO',configuration:'Spirometry, SBD, Provocation, ROCC',receivedQty:'1no',prevSwVersion:'1.10.2.50',presSwVersion:'1.10.2.54',hwChanges:'NA',hwChangeRemarks:'',swChangeRemarks:'Performance improvements',accChanges:'No Change',accDetails:'std acc recd',accChangeRemarks:'',userManualUpdate:'No',serviceManualUpdate:'No',fqcRemarks:'OK',scEngineer:'Rajesh Kumar',psEngineer:'Suresh Babu',techRemarks:'',tsVerificationDate:'2026-03-30',psVerificationDate:'2026-03-31',cnrCirculation:'No',cnrRefNo:'',cnrReleaseDate:'',approvedDate:'2026-04-01',invoiceNo:'INV/2026/0019',invoiceDate:'2026-03-27',serial:'DLCO-2026-001',supplier:'Ganshorn GmbH',status:'Approved'},
-    {_id:'cbir006',birRef:'MONIT/200326/18',unitInwardDate:'2026-03-20',fqcInwardDate:'2026-03-20',division:'PATIENT MONITORS',model:'BLT S12',configuration:'Multi-Param',receivedQty:'8',prevSwVersion:'V01.05.00',presSwVersion:'V01.06.00',hwChanges:'SpO2 sensor updated',hwChangeRemarks:'Masimo module replaced with newer revision',swChangeRemarks:'SpO2 algorithm v2',accChanges:'Replaced',accDetails:'SpO2 probe - new model',accChangeRemarks:'Nellcor probe replaced',userManualUpdate:'Yes',serviceManualUpdate:'Yes',fqcRemarks:'All functional',scEngineer:'Priya Nair',psEngineer:'Amit Singh',techRemarks:'SpO2 accuracy verified',tsVerificationDate:'2026-03-22',psVerificationDate:'2026-03-23',cnrCirculation:'Yes',cnrRefNo:'CNR-2026-022',cnrReleaseDate:'2026-03-24',approvedDate:'2026-03-25',invoiceNo:'INV/2026/0014',invoiceDate:'2026-03-19',serial:'',supplier:'BLT Medical',status:'Approved'},
-    {_id:'cbir007',birRef:'INJEC/150326/15',unitInwardDate:'2026-03-15',fqcInwardDate:'2026-03-15',division:'INJECTOR',model:'CT Expr-s',configuration:'Single Head',receivedQty:'2',prevSwVersion:'4.0.1',presSwVersion:'4.0.1',hwChanges:'NA',hwChangeRemarks:'',swChangeRemarks:'',accChanges:'No Change',accDetails:'standard accessories received',accChangeRemarks:'',userManualUpdate:'No',serviceManualUpdate:'No',fqcRemarks:'Passed',scEngineer:'Vikram Menon',psEngineer:'Deepa Rao',techRemarks:'',tsVerificationDate:'2026-03-17',psVerificationDate:'2026-03-18',cnrCirculation:'No',cnrRefNo:'',cnrReleaseDate:'',approvedDate:'2026-03-19',invoiceNo:'INV/2026/0010',invoiceDate:'2026-03-14',serial:'CTEX-2026-002',supplier:'Guerbet',status:'Approved'},
-  ];
+function showLoadError(message){
+  allData=[];
+  filtered=[];
+  updateStats();
+  document.getElementById('bir-tbody').innerHTML=`
+    <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted);">
+      <div style="font-weight:700;color:var(--red);margin-bottom:6px;">Could not load closed BIR records</div>
+      <div>${esc(message)}</div>
+      <button class="btn btn-outline btn-sm" style="margin-top:12px;" onclick="loadData()">&#8635; Try Again</button>
+    </td></tr>`;
+  (document.getElementById('bir-footer')||{}).textContent='Showing 0 of 0 entries';
+  (document.getElementById('pagination')||{}).innerHTML='';
+}
+
+// -- LOAD DATA -----------------------------------------------------------------
+async function loadData(){
+  try{
+    document.getElementById('bir-tbody').innerHTML='<tr class="loading-row"><td colspan="8"><span class="spin"></span>Loading from database...</td></tr>';
+    const res=await fetchWithTimeout('/api/emp/bir/closed',{headers:authHeaders()});
+    handleUnauth(res);
+    if(!res.ok){
+      const body=await res.json().catch(()=>({}));
+      throw new Error(body.error||body.message||('HTTP '+res.status));
+    }
+    const body=await res.json();
+    const records=Array.isArray(body)?body:(Array.isArray(body.data)?body.data:[]);
+    allData=mergeClosedLists(records,[]);
+    updateStats();
+    applyFilters();
+    showToast('Loaded '+allData.length+' closed BIR record'+(allData.length===1?'':'s')+'.','ok');
+  }catch(e){
+    if(e.message==='Unauthorized')return;
+    showLoadError(e.name==='AbortError'?'Database request timed out. Please try again.':e.message);
+    showToast('Could not load closed BIR records.','err');
+  }
 }
 
 // -- STATS ---------------------------------------------------------------------
 function updateStats(){
   const total=allData.length;
-  const approved=allData.filter(x=>x.status==='Approved'||x.status==='Closed').length;
   const divs=[...new Set(allData.map(x=>x.division))];
   const thisM=allData.filter(x=>thisMonth(x.approvedDate||x.unitInwardDate)).length;
-  const hw=allData.filter(x=>x.hwChanges&&x.hwChanges.toLowerCase()!=='na'&&x.hwChanges.trim()!=='').length;
-  const sw=allData.filter(x=>x.presSwVersion&&x.prevSwVersion&&x.presSwVersion!==x.prevSwVersion).length;
 
-  (document.getElementById('sc-total')||{}).textContent =total;
-  (document.getElementById('sc-divs')||{}).textContent =divs.length;
-  (document.getElementById('sc-hw')||{}).textContent =hw;
-  (document.getElementById('sc-sw')||{}).textContent =sw;
-  (document.getElementById('sc-month')||{}).textContent =thisM;
-
-
+  (document.getElementById('hero-total')||{}).textContent =total;
+  (document.getElementById('hero-divs')||{}).textContent =divs.length;
+  (document.getElementById('hero-this-month')||{}).textContent =thisM;
 }
 
 // -- SORT ----------------------------------------------------------------------
@@ -809,6 +823,7 @@ function renderTable(){
   const start=(currentPage-1)*pageSize;
   const paged=filtered.slice(start,start+pageSize);
 
+  (document.getElementById('bir-count')||{}).textContent =total+' entr'+(total===1?'y':'ies');
   (document.getElementById('bir-footer')||{}).textContent =`Showing ${Math.min(start+1,total)}-${Math.min(start+paged.length,total)} of ${total} entries`;
 
   document.getElementById('bir-tbody').innerHTML=paged.length?paged.map(e=>`
