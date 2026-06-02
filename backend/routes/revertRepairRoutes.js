@@ -234,9 +234,10 @@ router.post('/:id', async (req, res) => {
     service.rtobSent = true;
     service.repairStatus = 're repair product';
 
-    let remarkParts = ['Re-repair requested'];
-    if (problemObserved) remarkParts.push('Problem Observed: ' + problemObserved);
-    service.finalRemarks = (service.finalRemarks ? service.finalRemarks + ' | ' : '') + remarkParts.join(' | ');
+    service.finalRemarks = (service.finalRemarks ? service.finalRemarks + ' | ' : '') + 'Re-repair requested';
+    if (problemObserved) {
+      service.techRemarks = (service.techRemarks ? service.techRemarks + ' | ' : '') + 'Problem Observed: ' + problemObserved;
+    }
     await service.save({ validateBeforeSave: false });
 
     if (empfrnDoc) {
@@ -269,7 +270,10 @@ router.post('/:id', async (req, res) => {
 
     // Build final remarks for the new doc
     let newDocRemarks = 'Re-repair requested';
-    if (problemObserved) newDocRemarks += ' | Problem Observed: ' + problemObserved;
+    let newDocTechRemarks = (crlDoc && crlDoc.techRemarks) || '';
+    if (problemObserved) {
+      newDocTechRemarks = (newDocTechRemarks ? newDocTechRemarks + ' | ' : '') + 'Problem Observed: ' + problemObserved;
+    }
 
     // Find matching EmpFRN if category is PFRN/rtfrn
     let sourceEmpFrnId = empfrnDoc ? empfrnDoc._id : null;
@@ -291,7 +295,7 @@ router.post('/:id', async (req, res) => {
       category:         category,
       model:            (crlDoc && crlDoc.model)            || service.model       || '',
       defBrdModName:    (crlDoc && crlDoc.defBrdModName)     || service.defMod      || '',
-      techRemarks:      (crlDoc && crlDoc.techRemarks)       || '',
+      techRemarks:      newDocTechRemarks,
       repairRemarks:    (crlDoc && crlDoc.repairRemarks)     || '',
       compUsedToRepair: (crlDoc && (crlDoc.compUsedToRepair || crlDoc.components)) || '',
       components:       (crlDoc && (crlDoc.components || crlDoc.compUsedToRepair)) || '',
@@ -394,9 +398,10 @@ router.post('/crl/:id', async (req, res) => {
     service.rtfrnSent = true;
     service.rtobSent = true;
     service.repairStatus = 're repair product';
-    let remarkParts = ['Re-repair requested'];
-    if (problemObserved) remarkParts.push('Problem Observed: ' + problemObserved);
-    service.finalRemarks = (service.finalRemarks ? service.finalRemarks + ' | ' : '') + remarkParts.join(' | ');
+    service.finalRemarks = (service.finalRemarks ? service.finalRemarks + ' | ' : '') + 'Re-repair requested';
+    if (problemObserved) {
+      service.techRemarks = (service.techRemarks ? service.techRemarks + ' | ' : '') + 'Problem Observed: ' + problemObserved;
+    }
     await service.save({ validateBeforeSave: false });
 
     // Also clear rtfrnCompleted and ensure rtfrnSent is true on the associated EmpFRN if category is rtfrn/PFRN
@@ -433,7 +438,10 @@ router.post('/crl/:id', async (req, res) => {
 
     // Build final remarks for the new doc
     let newDocRemarks = 'Re-repair requested';
-    if (problemObserved) newDocRemarks += ' | Problem Observed: ' + problemObserved;
+    let newDocTechRemarks = crlDoc.techRemarks || '';
+    if (problemObserved) {
+      newDocTechRemarks = (newDocTechRemarks ? newDocTechRemarks + ' | ' : '') + 'Problem Observed: ' + problemObserved;
+    }
 
     // Find matching EmpFRN if category is PFRN/rtfrn
     let sourceEmpFrnId = null;
@@ -456,7 +464,7 @@ router.post('/crl/:id', async (req, res) => {
       // Restored from RTCRL view tab
       model:            crlDoc.model            || service.model       || '',
       defBrdModName:    crlDoc.defBrdModName     || service.defMod      || '',
-      techRemarks:      crlDoc.techRemarks       || '',
+      techRemarks:      newDocTechRemarks,
       repairRemarks:    crlDoc.repairRemarks     || '',
       compUsedToRepair: crlDoc.compUsedToRepair  || crlDoc.components   || '',
       components:       crlDoc.components        || crlDoc.compUsedToRepair || '',
