@@ -13,6 +13,22 @@ const { protect, repairTeamOrEmployeeOrAdmin } = require('../middleware/authMidd
 // Mount at /api/revert-repair
 router.use(protect, repairTeamOrEmployeeOrAdmin);
 
+function formatDateOnly(d) {
+  if (!d) return new Date().toISOString().split('T')[0];
+  const str = String(d).trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+    return str.substring(0, 10);
+  }
+  try {
+    const dateObj = new Date(d);
+    if (!isNaN(dateObj.getTime())) {
+      return dateObj.toISOString().split('T')[0];
+    }
+  } catch (_) {}
+  const splitT = str.split('T')[0];
+  return splitT || new Date().toISOString().split('T')[0];
+}
+
 async function resolveDivisionName(service) {
   if (!service) return 'OTHER';
   
@@ -267,7 +283,7 @@ router.post('/:id', async (req, res) => {
     // Carry over all view-tab fields from RTCRL so no data is lost
     const newDocPayload = {
       revertedDate:     new Date(),
-      entryDate:        (crlDoc && crlDoc.entryDate) ? new Date(crlDoc.entryDate) : (service.entryDate ? new Date(service.entryDate) : new Date()),
+      entryDate:        (crlDoc && crlDoc.entryDate) ? formatDateOnly(crlDoc.entryDate) : (service.entryDate ? formatDateOnly(service.entryDate) : formatDateOnly(new Date())),
       division:         safeDivision,
       scRefNo:          scRefNo || '',
       defGirNo:         defGirNo || '',
@@ -430,7 +446,7 @@ router.post('/crl/:id', async (req, res) => {
     // Carry over all view-tab fields from RTCRL so no data is lost
     const newDocPayload = {
       revertedDate:     new Date(),
-      entryDate:        (crlDoc && crlDoc.entryDate) ? new Date(crlDoc.entryDate) : (service.entryDate ? new Date(service.entryDate) : new Date()),
+      entryDate:        (crlDoc && crlDoc.entryDate) ? formatDateOnly(crlDoc.entryDate) : (service.entryDate ? formatDateOnly(service.entryDate) : formatDateOnly(new Date())),
       division:         safeDivision,
       scRefNo:          scRefNo || '',
       defGirNo:         defGirNo || '',

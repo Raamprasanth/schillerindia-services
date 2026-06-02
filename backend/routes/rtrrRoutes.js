@@ -28,6 +28,22 @@ function canManageDelete(user) {
   return role === 'admin' || role === 'repair' || role === 'repair_team';
 }
 
+function formatDateOnly(d) {
+  if (!d) return new Date().toISOString().split('T')[0];
+  const str = String(d).trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+    return str.substring(0, 10);
+  }
+  try {
+    const dateObj = new Date(d);
+    if (!isNaN(dateObj.getTime())) {
+      return dateObj.toISOString().split('T')[0];
+    }
+  } catch (_) {}
+  const splitT = str.split('T')[0];
+  return splitT || new Date().toISOString().split('T')[0];
+}
+
 function cleanDivision(value, fallback = '') {
   const candidate = String(value || '').trim();
   const fallbackValue = String(fallback || '').trim();
@@ -189,7 +205,7 @@ router.post('/', protect, async (req, res) => {
     }
 
     const record = await Rtrr.create({
-      entryDate,
+      entryDate:      formatDateOnly(entryDate),
       division,
       scRefNo:        scRefNo.toUpperCase().trim(),
       defGirNo:       defGirNo.toUpperCase().trim(),
@@ -237,6 +253,9 @@ router.put('/:id', protect, async (req, res) => {
 
     const updates = {};
     allowed.forEach(k => { if (req.body[k] !== undefined) updates[k] = req.body[k]; });
+    if (updates.entryDate !== undefined) {
+      updates.entryDate = formatDateOnly(updates.entryDate);
+    }
     if (updates.division !== undefined) {
       updates.division = cleanDivision(updates.division, existing.division);
     }
@@ -292,6 +311,9 @@ router.put('/:id', protect, async (req, res) => {
             rtrrSent: true,
             rtrrCompleted: updated.status === 'completed',
             rtrrCompletedAt: updated.status === 'completed' ? new Date() : null,
+            rtfrnSent: true,
+            rtfrnCompleted: updated.status === 'completed',
+            rtfrnCompletedAt: updated.status === 'completed' ? new Date() : null,
           },
           { new: true, runValidators: false }
         );
@@ -314,6 +336,10 @@ router.put('/:id', protect, async (req, res) => {
                 rtrrSentAt: empUpdate.rtrrSentAt || updated.submittedAt || new Date(),
                 rtrrCompleted: updated.status === 'completed',
                 rtrrCompletedAt: updated.status === 'completed' ? new Date().toISOString() : null,
+                rtfrnSent: true,
+                rtfrnSentAt: empUpdate.rtfrnSentAt || updated.submittedAt || new Date(),
+                rtfrnCompleted: updated.status === 'completed',
+                rtfrnCompletedAt: updated.status === 'completed' ? new Date().toISOString() : null,
                 updatedAt: new Date().toISOString(),
               },
             },
@@ -326,6 +352,26 @@ router.put('/:id', protect, async (req, res) => {
     }
 
     // ── On completion: copy to RTCRL, update source EmpFRN, delete Rtrr ──
+    if (updated.sourceServiceId) {
+      try {
+        await Service.findByIdAndUpdate(
+          updated.sourceServiceId,
+          {
+            $set: {
+              rtfrnSent: true,
+              rtfrnSentAt: updated.submittedAt || new Date(),
+              rtfrnCompleted: updated.status === 'completed',
+              rtfrnCompletedAt: updated.status === 'completed' ? new Date().toISOString() : null,
+              updatedAt: new Date().toISOString(),
+            },
+          },
+          { runValidators: false }
+        );
+      } catch (serviceSyncErr) {
+        console.error('Rtrr -> Service sync failed:', serviceSyncErr.message);
+      }
+    }
+
     if (updates.status === 'completed') {
       try {
         await Rtcrr.create({
