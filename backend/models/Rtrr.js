@@ -13,6 +13,10 @@ const RtrrSchema = new mongoose.Schema(
       required: [true, 'Entry date is required'],
       trim:     true,
     },
+    closedDate: {
+      type:     Date,       // Date the prior RTCRL entry was closed before re-repair
+      default:  null,
+    },
     division: {
       type:     String,
       required: [true, 'Division is required'],

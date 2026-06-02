@@ -284,6 +284,7 @@ router.post('/:id', async (req, res) => {
     const newDocPayload = {
       revertedDate:     new Date(),
       entryDate:        (crlDoc && crlDoc.entryDate) ? formatDateOnly(crlDoc.entryDate) : (service.entryDate ? formatDateOnly(service.entryDate) : formatDateOnly(new Date())),
+      closedDate:       (crlDoc && crlDoc.closedDate) || null,
       division:         safeDivision,
       scRefNo:          scRefNo || '',
       defGirNo:         defGirNo || '',
@@ -447,6 +448,7 @@ router.post('/crl/:id', async (req, res) => {
     const newDocPayload = {
       revertedDate:     new Date(),
       entryDate:        (crlDoc && crlDoc.entryDate) ? formatDateOnly(crlDoc.entryDate) : (service.entryDate ? formatDateOnly(service.entryDate) : formatDateOnly(new Date())),
+      closedDate:       crlDoc.closedDate        || null,
       division:         safeDivision,
       scRefNo:          scRefNo || '',
       defGirNo:         defGirNo || '',

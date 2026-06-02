@@ -557,6 +557,7 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
           <thead><tr>
             <th onclick="sortBy('revertedDate')">Reverted Date <span class="si">&#8693;</span></th>
             <th onclick="sortBy('entryDate')" class="sorted">Entry Date <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('closedDate')">Closed Date <span class="si">&#8693;</span></th>
             <th>Update</th>
             <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
             <th onclick="sortBy('category')">Category <span class="si">&#8693;</span></th>
@@ -568,7 +569,7 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('submittedBy')">Submitted By <span class="si">&#8693;</span></th>
           </tr></thead>
           <tbody id="rt-tbody">
-            <tr><td colspan="9" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading from database...</td></tr>
+            <tr><td colspan="12" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading from database...</td></tr>
           </tbody>
         </table>
       </div>
@@ -664,7 +665,7 @@ async function loadData() {
   } catch (e) {
     if (e.message === 'Unauthorized') return;
     document.getElementById('rt-tbody').innerHTML =
-      `<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--red);">&#9888;&#65039; ${esc(e.message)} - ensure backend is running.</td></tr>`;
+      `<tr><td colspan="12" style="text-align:center;padding:40px;color:var(--red);">&#9888;&#65039; ${esc(e.message)} - ensure backend is running.</td></tr>`;
     showToast('Load failed: ' + e.message, 'err');
   } finally { }
 }
@@ -761,7 +762,7 @@ function renderTable() {
   const tbody = document.getElementById('rt-tbody');
 
   if (!slice.length) {
-    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-st">
+    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-st">
       <div class="ei">&#128196;</div>
       <div class="et">${allData.length ? 'No records match filters' : 'No PFRN Records'}</div>
       <div class="es">${allData.length ? 'Try clearing the filters.' : 'No PFRN records available.'}</div>
@@ -773,6 +774,7 @@ function renderTable() {
       return `<tr>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.revertedDate)}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
+        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.closedDate)}</td>
         <td><button class="btn-xs upd" onclick="openUpdate('${id}')" title="Update">&#9999;&#65039;</button></td>
         <td><span class="div-tag">${esc(d.division||'-')}</span></td>
         <td><span class="badge badge-outline" style="background:#f3f4f6;color:#374151;border-color:#d1d5db">${esc(d.category||'-')}</span></td>
@@ -964,12 +966,12 @@ async function submitUpdate() {
 // -- EXPORT CSV --------------------------------------------
 function exportCSV() {
   const headers = [
-    'Reverted Date', 'Entry Date', 'Division', 'Category', 'SC Ref No', 'DEF GIR No', 'Model', 'Def Brd/Mod Name', 'No of Days', 'Status',
+    'Reverted Date', 'Entry Date', 'Closed Date', 'Division', 'Category', 'SC Ref No', 'DEF GIR No', 'Model', 'Def Brd/Mod Name', 'No of Days', 'Status',
     'DOI (Date of Installation)', 'Technical Remarks', 'Repair Team Remarks', 'Components Used to Repaired', 'Cost in INR', 'Time Taken to Repair', 'Repair Status',
     'Repaired By', 'Repaired Date', 'Submitted By'
   ];
   const rows = filtered.map(d => [
-    `\t${fmtDate(d.revertedDate)}`, `\t${fmtDate(d.entryDate)}`, d.division || '-', d.category || '-', d.scRefNo || '-', d.defGirNo || '-', d.model || '-', d.defBrdModName || '-', d.noOfDays || 0, d.status || '-',
+    `\t${fmtDate(d.revertedDate)}`, `\t${fmtDate(d.entryDate)}`, `\t${fmtDate(d.closedDate)}`, d.division || '-', d.category || '-', d.scRefNo || '-', d.defGirNo || '-', d.model || '-', d.defBrdModName || '-', d.noOfDays || 0, d.status || '-',
     d.doi || '-', d.techRemarks || '-', d.repairRemarks || '-', d.components || d.compUsedToRepair || '-', d.cost || '-', d.timeTaken || '-', d.repairStatus || '-',
     d.repairedBy || '-', d.repairedDate ? fmtDate(d.repairedDate) : '-', d.submittedBy || '-'
   ]);

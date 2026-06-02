@@ -178,7 +178,7 @@ router.get('/:id', protect, async (req, res) => {
 router.post('/', protect, async (req, res) => {
   try {
     const {
-      entryDate, division, scRefNo, defGirNo,
+      entryDate, closedDate, division, scRefNo, defGirNo,
       category, model, defBrdModName, status,
       submittedBy, submittedAt, sourceEmpFrnId,
       doi, fieldRemarks, techRemarks,
@@ -206,6 +206,7 @@ router.post('/', protect, async (req, res) => {
 
     const record = await Rtrr.create({
       entryDate:      formatDateOnly(entryDate),
+      closedDate:     closedDate ? new Date(closedDate) : null,
       division,
       scRefNo:        scRefNo.toUpperCase().trim(),
       defGirNo:       defGirNo.toUpperCase().trim(),
@@ -248,7 +249,7 @@ router.put('/:id', protect, async (req, res) => {
       'doi','fieldRemarks',
       'updatedBy','updatedAt',
       // allow admins to edit core fields too
-      'entryDate','division','scRefNo','defGirNo','category','model','defBrdModName',
+      'entryDate','closedDate','division','scRefNo','defGirNo','category','model','defBrdModName',
     ];
 
     const updates = {};
