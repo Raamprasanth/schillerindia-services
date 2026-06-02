@@ -343,7 +343,7 @@ table.cf-table tbody tr:last-child td{border-bottom:none;}
       <button class="btn btn-outline btn-sm" onclick="clearDates()">Clear</button>
       <div class="fl-div"></div>
       <span class="fl-label">Branch</span>
-      <select class="fl-select" id="fl-branch" onchange="applyFilters()">
+      <select class="fl-select" id="fl-branch" onchange="handleBranchFilterChange()">
         <option value="">All Branches</option>
         <option>SHIPL Agartala</option>
         <option>SHIPL Bhubaneshwar</option>
@@ -389,13 +389,10 @@ table.cf-table tbody tr:last-child td{border-bottom:none;}
       <span class="fl-label">Unit Status</span>
       <select class="fl-select" id="fl-unitsts" onchange="applyFilters()">
         <option value="">All</option>
-        <option>OW</option><option>LAMC</option><option>CAMC</option><option>EW</option><option>STOCK</option><option>IW</option>
       </select>
       <span class="fl-label">Type of Work</span>
       <select class="fl-select" id="fl-typework" onchange="applyFilters()">
         <option value="">All</option>
-        <option>REPAIRED</option><option>SCRAPPED</option><option>NO FAULT</option>
-        <option>RE-EXPORT</option><option>REPLACED</option><option>OB PENDING</option>
       </select>
       <span class="fl-label">Engineer</span>
       <select class="fl-select" id="fl-eng" onchange="applyFilters()"><option value="">All Engineers</option></select>
@@ -510,10 +507,52 @@ async function loadData() {
 }
 
 function populateDynamicFilters() {
-  const engs = [...new Set(DATA.map(d => d.eng).filter(Boolean))].sort();
+  populateFilterOptions('fl-unitsts', DATA.map(d => d.unitStatus), 'All');
+  populateFilterOptions('fl-typework', DATA.map(d => d.typeWork), 'All');
+  populateEngineerFilter();
+}
+
+function populateFilterOptions(selectId, values, allLabel) {
+  const sel = document.getElementById(selectId);
+  const selected = sel.value;
+  const options = [...new Set(values.map(value => String(value || '').trim()).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b));
+  sel.innerHTML = '';
+  const all = document.createElement('option');
+  all.value = '';
+  all.textContent = allLabel;
+  sel.appendChild(all);
+  options.forEach(value => {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = value;
+    sel.appendChild(option);
+  });
+  if (options.includes(selected)) sel.value = selected;
+}
+
+function populateEngineerFilter() {
+  const branch = document.getElementById('fl-branch').value;
+  const engineers = [...new Set(DATA
+    .filter(d => !branch || d.region === branch)
+    .map(d => String(d.eng || '').trim())
+    .filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b));
   const sel = document.getElementById('fl-eng');
+  const selected = sel.value;
   sel.innerHTML = '<option value="">All Engineers</option>';
-  engs.forEach(e => { const o = document.createElement('option'); o.value = e; o.textContent = e; sel.appendChild(o); });
+  engineers.forEach(engineer => {
+    const option = document.createElement('option');
+    option.value = engineer;
+    option.textContent = engineer;
+    sel.appendChild(option);
+  });
+  if (engineers.includes(selected)) sel.value = selected;
+}
+
+function handleBranchFilterChange() {
+  populateEngineerFilter();
+  applyFilters();
 }
 
 function updateStats() {
