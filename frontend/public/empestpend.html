@@ -1852,7 +1852,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeR
 </script>
 <script src="tab-fix.js"></script>
 
-<!-- RECHECK MODAL (WF / NW) -->
+<!-- RECHECK MODAL (NW) -->
 <div class="update-panel" id="recheck-modal" style="z-index: 9999; display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center;">
   <div style="background: var(--surface); padding: 30px; border-radius: 16px; width: 400px; box-shadow: 0 12px 40px rgba(0,60,120,0.2); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 18px; position: relative;">
     <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #059669, #dc2626); border-radius: 16px 16px 0 0;"></div>
@@ -1864,10 +1864,9 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeR
       </div>
     </div>
     <div style="font-size: 13px; color: var(--soft); line-height: 1.5; background: var(--surface3); padding: 12px; border-radius: 8px; border: 1px solid var(--border2);">
-      This item is marked as <strong>Repair Completed (RC)</strong>. Verify: is it <strong>Working Fine (WF)</strong> or <strong>Not Working (NW)</strong>?
+      This item is marked as <strong>Repair Completed (RC)</strong>. Report it only if it is <strong>Not Working (NW)</strong> and must return to the repair team.
     </div>
     <div style="display: flex; gap: 12px;">
-      <button class="btn btn-outline" style="flex:1; justify-content:center; border-color: #059669; color: #059669;" onclick="handleWF()">WF (Working Fine)</button>
       <button class="btn" style="flex:1; justify-content:center; background: #dc2626; color: #fff; box-shadow: 0 2px 8px rgba(185,28,28,0.3);" onclick="handleNW()">NW (Not Working)</button>
     </div>
     <button onclick="closeRecheckModal()" style="position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 16px; color: var(--muted); cursor: pointer;" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='var(--muted)'">&times;</button>
@@ -1918,13 +1917,6 @@ function openRecheckModal(id) {
 
 function closeRecheckModal() {
   document.getElementById('recheck-modal').style.display = 'none';
-}
-
-function handleWF() {
-  if (typeof showToast === 'function') showToast('Verified: Item is Working Fine (WF). Status remains Repair Completed.', 'info');
-  closeRecheckModal();
-  currentRecheckId = null;
-  currentRecheckRecord = null;
 }
 
 function handleNW() {
