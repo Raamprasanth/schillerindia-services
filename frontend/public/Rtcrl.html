@@ -673,14 +673,14 @@ function printRecord() { window.print(); }
 // -- EXPORT -------------------------------------------------------------------
 function exportCSV() {
   const headers = [
-    'Entry Date', 'Closed Date', 'Division', 'SC Ref No', 'DEF GIR No', 'Category/OB Type', 'Model', 'Def Brd/Mod Name', 'No of Days', 'Status',
+    'Entry Date', 'Closed Date', 'Division', 'SC Ref No', 'DEF GIR No', 'Category/OB Type', 'Model', 'Def Brd/Mod Name', 'DOI (Date of Installation)',
     'Technical Remarks', 'Repair Team Remarks', 'Components Used to Repaired', 'Cost in INR', 'Time Taken to Repair', 'Repair Status',
-    'DOI (Date of Installation)', 'Repaired By', 'Repaired Date', 'Closed By'
+    'Repaired By', 'Repaired Date', 'Closed By', 'No of Days', 'Status'
   ];
   const rows = filtered.map(d => [
-    fmtDate(d.entryDate), fmtDate(d.closedDate), d.division || '-', d.scRefNo || '-', d.defGirNo || '-', d.category || d.obType || '-', d.model || '-', d.defBrdModName || '-', d.noOfDays || 0, d.status || '-',
+    fmtDate(d.entryDate), fmtDate(d.closedDate), d.division || '-', d.scRefNo || '-', d.defGirNo || '-', d.category || d.obType || '-', d.model || '-', d.defBrdModName || '-', d.doi || '-',
     d.techRemarks || '-', d.repairRemarks || '-', d.components || d.compUsedToRepair || '-', d.cost || '-', d.timeTaken || '-', d.repairStatus || '-',
-    d.doi || '-', d.repairedBy || '-', getDisplayRepairedDate(d) ? fmtDate(getDisplayRepairedDate(d)) : '-', d.closedBy || '-'
+    d.repairedBy || '-', getDisplayRepairedDate(d) ? fmtDate(getDisplayRepairedDate(d)) : '-', d.closedBy || '-', d.noOfDays || 0, d.status || '-'
   ]);
   const csv = [headers, ...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
