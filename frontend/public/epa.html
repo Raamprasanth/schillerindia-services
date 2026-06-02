@@ -61,7 +61,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .breadcrumb .sep{color:var(--border2);}
 .topbar-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);}
 .content{flex:1;padding:22px 28px;overflow-y:auto;background:var(--bg);}
-.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+.stats-row{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:20px;}
 .stat-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:15px 18px;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;}
 .stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
 .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:13px 13px 0 0;}
@@ -169,13 +169,6 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
 .modal-foot{padding:14px 24px;border-top:1px solid var(--border);background:var(--surface3);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0;}
 .form-msg{font-size:11.5px;font-weight:600;padding:7px 13px;border-radius:7px;margin-right:auto;display:none;}
 .form-msg.err{display:block;background:var(--red-bg);color:var(--red);border:1px solid rgba(185,28,28,0.18);}
-.confirm-overlay{position:fixed;inset:0;background:rgba(5,18,38,0.6);backdrop-filter:blur(4px);z-index:2100;display:none;align-items:center;justify-content:center;}
-.confirm-overlay.open{display:flex;animation:fadeIn 0.15s ease;}
-.confirm-box{background:var(--surface);border-radius:14px;padding:26px 28px;max-width:360px;width:90%;box-shadow:var(--shadow-lg);text-align:center;animation:slideUp 0.18s ease;}
-.confirm-icon{font-size:32px;margin-bottom:10px;}
-.confirm-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:7px;}
-.confirm-sub{font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:20px;}
-.confirm-btns{display:flex;gap:10px;justify-content:center;}
 .mono{font-family:monospace;font-size:10.5px;color:var(--muted);}
 .empty-st{text-align:center;padding:50px 20px;}
 .ei{font-size:38px;margin-bottom:10px;opacity:0.28;}
@@ -224,62 +217,37 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
           <label>Initiated Date <span class="req">*</span></label>
           <input type="date" id="m-initiated" required/>
         </div>
-        <div class="field span-1">
-          <label>Status <span class="req">*</span></label>
-          <select id="m-status" required>
-            <option value="Pending">Pending</option>
-            <option value="Completed">Completed</option>
-          </select>
-        </div>
-        <div class="field span-2">
-          <label>Activity <span class="req">*</span></label>
+        <div class="field span-3">
+          <label>Model / Activity <span class="req">*</span></label>
           <input type="text" id="m-activity" required/>
         </div>
         
         <div class="field span-4">
-          <label>Description</label>
+          <label>Activity Details</label>
           <textarea id="m-description" rows="2"></textarea>
         </div>
         
         <div class="field span-1">
-          <label>Responsible</label>
+          <label>Resp Person</label>
           <input type="text" id="m-responsible"/>
-        </div>
-        <div class="field span-1">
-          <label>Pending From</label>
-          <input type="date" id="m-pending-from"/>
         </div>
         <div class="field span-1">
           <label>Target Date</label>
           <input type="date" id="m-target-date"/>
         </div>
         <div class="field span-1">
+          <label>Completed Date</label>
+          <input type="date" id="m-pending-from"/>
+        </div>
+        <div class="field span-1">
           <label>Remarks</label>
           <input type="text" id="m-remarks"/>
-        </div>
-        
-        <div class="field span-4">
-          <label>SC Incharge Remarks</label>
-          <input type="text" id="m-incharge-remarks"/>
         </div>
       </div>
     </div>
     <div class="modal-foot">
       <button class="btn btn-outline btn-sm" onclick="closeAddModal()">Cancel</button>
       <button class="btn btn-primary btn-sm" id="modal-save-btn" onclick="saveEntry()">&#128190; Save Activity</button>
-    </div>
-  </div>
-</div>
-
-<!-- -- CONFIRM DELETE -- -->
-<div class="confirm-overlay" id="confirm-overlay">
-  <div class="confirm-box">
-    <div class="confirm-icon">&#9888;&#65039;</div>
-    <div class="confirm-title">Delete this activity?</div>
-    <div class="confirm-sub">This action cannot be undone. The pending activity will be permanently removed.</div>
-    <div class="confirm-btns">
-      <button class="btn btn-outline btn-sm" onclick="document.getElementById('confirm-overlay').classList.remove('open')">Cancel</button>
-      <button class="btn btn-danger btn-sm" id="confirm-del-btn">Delete</button>
     </div>
   </div>
 </div>
@@ -363,8 +331,6 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
     <!-- STATS -->
     <div class="stats-row">
       <div class="stat-card sc-blue"><div class="stat-ico si-blue">&#128202;</div><div class="stat-lbl">Total Activities</div><div class="stat-val" id="s-total">-</div><div class="stat-sub">All registered items</div></div>
-      <div class="stat-card sc-amber"><div class="stat-ico si-amber">&#9888;</div><div class="stat-lbl">Pending</div><div class="stat-val" id="s-pending">-</div><div class="stat-sub">In progress</div></div>
-      <div class="stat-card sc-green"><div class="stat-ico si-green">&#9989;</div><div class="stat-lbl">Completed</div><div class="stat-val" id="s-completed">-</div><div class="stat-sub">Resolved items</div></div>
     </div>
 
     <!-- TABLE -->
@@ -393,19 +359,17 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
               <th onclick="sortBy('division')">Division &#8597;</th>
               <th onclick="sortBy('scEngineer')">SC Engineer &#8597;</th>
               <th onclick="sortBy('initiatedDate')">Initiated Date &#8597;</th>
-              <th onclick="sortBy('activity')">Activity &#8597;</th>
-              <th onclick="sortBy('description')">Description &#8597;</th>
-              <th onclick="sortBy('responsible')">Responsible &#8597;</th>
-              <th onclick="sortBy('pendingFrom')">Pending From &#8597;</th>
+              <th onclick="sortBy('activity')">Model / Activity &#8597;</th>
+              <th onclick="sortBy('description')">Activity Details &#8597;</th>
+              <th onclick="sortBy('responsible')">Resp Person &#8597;</th>
               <th onclick="sortBy('targetDate')">Target Date &#8597;</th>
+              <th onclick="sortBy('pendingFrom')">Completed Date &#8597;</th>
               <th>Remarks</th>
-              <th>SC Incharge Remarks</th>
-              <th onclick="sortBy('status')">Status &#8597;</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody id="call-tbody">
-            <tr class="loading-row"><td colspan="13" style="text-align:center;padding:30px;"><span class="spin"></span>Loading from database...</td></tr>
+            <tr class="loading-row"><td colspan="11" style="text-align:center;padding:30px;"><span class="spin"></span>Loading from database...</td></tr>
           </tbody>
         </table>
       </div>
@@ -421,7 +385,6 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
 <script>
 const API = '';
 let ACTIVITY_DATA = [], filtered = [], sortKey = 'initiatedDate', sortDir = -1, currentPage = 1;
-let pendingDeleteId = null;
 let editMode = false;
 let CURRENT_USER = {};
 const expandedTextCells = new Set();
@@ -488,17 +451,15 @@ async function loadData(){
 }
 
 function setLoading(){
-  document.getElementById('call-tbody').innerHTML = `<tr class="loading-row"><td colspan="13" style="text-align:center;padding:30px;"><span class="spin"></span>Loading from database...</td></tr>`;
+  document.getElementById('call-tbody').innerHTML = `<tr class="loading-row"><td colspan="11" style="text-align:center;padding:30px;"><span class="spin"></span>Loading from database...</td></tr>`;
 }
 
 function setError(msg){
-  document.getElementById('call-tbody').innerHTML = `<tr><td colspan="13" style="text-align:center;padding:30px;color:var(--red);font-weight:600;">&#9888; ${esc(msg)}</td></tr>`;
+  document.getElementById('call-tbody').innerHTML = `<tr><td colspan="11" style="text-align:center;padding:30px;color:var(--red);font-weight:600;">&#9888; ${esc(msg)}</td></tr>`;
 }
 
 function updateStats(){
   (document.getElementById('s-total')||{}).textContent = ACTIVITY_DATA.length;
-  (document.getElementById('s-pending')||{}).textContent = ACTIVITY_DATA.filter(d => d.status === 'Pending').length;
-  (document.getElementById('s-completed')||{}).textContent = ACTIVITY_DATA.filter(d => d.status === 'Completed').length;
 }
 
 /* -- FILTERS -- */
@@ -545,7 +506,7 @@ function renderTable(){
   const tbody = document.getElementById('call-tbody');
   
   if(!total){
-    tbody.innerHTML=`<tr><td colspan="13"><div class="empty-st">
+    tbody.innerHTML=`<tr><td colspan="11"><div class="empty-st">
       <div class="ei">&#128221;</div>
       <div class="et">${ACTIVITY_DATA.length?'No activities match the filters':'No Pending Activities yet'}</div>
       <div class="es">${ACTIVITY_DATA.length?'Try clearing or changing your search criteria.':'Click + Add New Activity to register your first record.'}</div>
@@ -553,7 +514,6 @@ function renderTable(){
   } else {
     tbody.innerHTML = slice.map((d,i)=>{
       const rid = d._id || d.id;
-      const statCls = (d.status||'').toLowerCase() === 'completed' ? 'sp-completed' : 'sp-pending';
       return `<tr>
         <td class="mono" style="color:var(--muted);">${(currentPage-1)*perPage+i+1}</td>
         <td><span class="div-tag">${esc(d.division||'-')}</span></td>
@@ -562,14 +522,12 @@ function renderTable(){
         <td class="compact-cell activity">${compactText(d.activity, rid+'-activity', true)}</td>
         <td class="compact-cell">${compactText(d.description, rid+'-description')}</td>
         <td>${esc(d.responsible||'-')}</td>
-        <td style="font-size:11px;color:var(--soft);">${formatDate(d.pendingFrom)}</td>
         <td style="font-size:11px;color:var(--soft);">${formatDate(d.targetDate)}</td>
+        <td style="font-size:11px;color:var(--soft);">${formatDate(d.pendingFrom)}</td>
         <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:normal;font-size:11px;color:var(--soft);" title="${esc(d.remarks||'')}">${esc(d.remarks||'-')}</td>
-        <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:normal;font-size:11px;color:var(--soft);" title="${esc(d.scInchargeRemarks||'')}">${esc(d.scInchargeRemarks||'-')}</td>
-        <td><span class="status-pill ${statCls}">${esc(d.status||'Pending')}</span></td>
         <td>
           <button class="btn-xs update" title="Update" onclick="openEditModal('${rid}')">Edit</button>
-          <button class="btn-xs delete" title="Delete" onclick="triggerDelete('${rid}')" style="margin-left:4px;">Del</button>
+          <button class="btn-xs update" title="Close" onclick="closeActivity('${rid}')" style="margin-left:4px;">Close</button>
         </td>
       </tr>`;
     }).join('');
@@ -597,7 +555,6 @@ function openAddModal(){
   (document.getElementById('top-division')||{}).textContent = div || '-';
   
   document.getElementById('m-initiated').value = new Date().toISOString().split('T')[0];
-  document.getElementById('m-status').value = 'Pending';
   clearModalMsg();
   document.getElementById('add-modal').classList.add('open');
 }
@@ -617,14 +574,12 @@ function openEditModal(id){
   (document.getElementById('top-sceng')||{}).textContent = d.scEngineer || '-';
   
   set('m-initiated', d.initiatedDate);
-  set('m-status', d.status);
   set('m-activity', d.activity);
   set('m-description', d.description);
   set('m-responsible', d.responsible);
   set('m-pending-from', d.pendingFrom);
   set('m-target-date', d.targetDate);
   set('m-remarks', d.remarks);
-  set('m-incharge-remarks', d.scInchargeRemarks);
   
   clearModalMsg();
   document.getElementById('add-modal').classList.add('open');
@@ -633,11 +588,10 @@ function openEditModal(id){
 function closeAddModal(){ document.getElementById('add-modal').classList.remove('open'); }
 
 function clearModalForm(){
-  ['edit-id','m-activity','m-description','m-responsible','m-pending-from','m-target-date','m-remarks','m-incharge-remarks'].forEach(id => {
+  ['edit-id','m-activity','m-description','m-responsible','m-pending-from','m-target-date','m-remarks'].forEach(id => {
     const el = document.getElementById(id); if(el) el.value = '';
   });
-  document.getElementById('m-status').value = 'Pending';
-  ['m-initiated','m-activity','m-status'].forEach(id => document.getElementById(id).classList.remove('err'));
+  ['m-initiated','m-activity'].forEach(id => document.getElementById(id).classList.remove('err'));
 }
 
 function clearModalMsg(){
@@ -655,25 +609,23 @@ async function saveEntry(){
     division: document.getElementById('m-division').value,
     scEngineer: document.getElementById('m-sceng').value,
     initiatedDate: document.getElementById('m-initiated').value,
-    status: document.getElementById('m-status').value,
     activity: document.getElementById('m-activity').value,
     description: document.getElementById('m-description').value,
     responsible: document.getElementById('m-responsible').value,
     pendingFrom: document.getElementById('m-pending-from').value,
     targetDate: document.getElementById('m-target-date').value,
     remarks: document.getElementById('m-remarks').value,
-    scInchargeRemarks: document.getElementById('m-incharge-remarks').value,
   };
   
   let valid = true;
-  ['m-initiated', 'm-activity', 'm-status'].forEach(id => {
+  ['m-initiated', 'm-activity'].forEach(id => {
     const el = document.getElementById(id);
     if(!el.value.trim()){ el.classList.add('err'); valid = false; }
     else el.classList.remove('err');
   });
   
   if(!valid){
-    showModalErr('Please fill in all required fields (Initiated Date, Activity, and Status).');
+    showModalErr('Please fill in all required fields (Initiated Date and Model / Activity).');
     return;
   }
   
@@ -706,33 +658,23 @@ async function saveEntry(){
   }
 }
 
-/* -- DELETE -- */
-function triggerDelete(id){
-  pendingDeleteId = id;
-  const dlg = document.getElementById('confirm-overlay');
-  dlg.classList.add('open');
-}
-
-document.getElementById('confirm-del-btn')?.addEventListener('click', async () => {
-  if(!pendingDeleteId) return;
-  const dlg = document.getElementById('confirm-overlay');
-  dlg.classList.remove('open');
+/* -- CLOSE -- */
+async function closeActivity(id){
+  if(!confirm('Close this activity and move it to Closed Activity?')) return;
   try{
-    const res = await fetch(`${API}/api/epa/${pendingDeleteId}`, {
-      method: 'DELETE',
+    const res = await fetch(`${API}/api/epa/${id}/close`, {
+      method: 'POST',
       headers: authHeaders()
     });
     handleUnauth(res);
     if(!res.ok) throw new Error('HTTP ' + res.status);
-    showToast('Activity record deleted successfully.', 'ok');
+    showToast('Activity moved to Closed Activity.', 'ok');
     loadData();
   }catch(e){
     if(e.message === 'Unauthorized') return;
-    showToast('Delete failed: ' + e.message, 'err');
-  }finally{
-    pendingDeleteId = null;
+    showToast('Close failed: ' + e.message, 'err');
   }
-});
+}
 
 /* -- PAGINATION -- */
 function renderPagination(pages){
@@ -767,8 +709,8 @@ function showToast(msg,type='ok'){
 }
 function exportCSV() {
   if (!filtered.length) { alert('No data to export.'); return; }
-  const headers = ['Division','SC Engineer','Initiated Date','Activity','Description','Responsible','Pending From','Target Date','Remarks','SC Incharge Remarks','Status'];
-  const keys = ['division','scEngineer','initiatedDate','activity','description','responsible','pendingFrom','targetDate','remarks','scInchargeRemarks','status'];
+  const headers = ['Division','SC Engineer','Initiated Date','Model / Activity','Activity Details','Resp Person','Target Date','Completed Date','Remarks'];
+  const keys = ['division','scEngineer','initiatedDate','activity','description','responsible','targetDate','pendingFrom','remarks'];
   let csv = headers.join(',') + '\n';
   filtered.forEach(r => {
     csv += keys.map(k => {

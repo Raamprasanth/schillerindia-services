@@ -39,7 +39,7 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const body = req.body || {};
-    if (!body.scEngineer || !body.initiatedDate || !body.activity || !body.status) {
+    if (!body.scEngineer || !body.initiatedDate || !body.activity) {
       return res.status(400).json({ message: 'Required fields missing.' });
     }
 
@@ -52,13 +52,38 @@ router.post('/', async (req, res) => {
       pendingFrom: body.pendingFrom || '',
       targetDate: body.targetDate || '',
       remarks: body.remarks || '',
-      scInchargeRemarks: body.scInchargeRemarks || '',
-      status: normalizePendingStatus(body.status),
+      status: 'Pending',
       createdBy: req.user?._id,
     });
     res.status(201).json(doc);
   } catch (err) {
     console.error('[POST /api/ptpa]', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+router.post('/:id/close', async (req, res) => {
+  try {
+    const filter = { _id: req.params.id, ...ownerFilter(req.user) };
+    const existing = await PtPendingActivity.findOne(filter).lean();
+    if (!existing) return res.status(404).json({ message: 'Record not found.' });
+
+    const closedDoc = await PtClosedActivity.create({
+      scEngineer: existing.scEngineer,
+      initiatedDate: existing.initiatedDate,
+      activity: existing.activity,
+      description: existing.description || '',
+      responsible: existing.responsible || '',
+      pendingFrom: existing.pendingFrom || '',
+      targetDate: existing.targetDate || '',
+      remarks: existing.remarks || '',
+      status: 'Completed',
+      createdBy: existing.createdBy,
+    });
+    await PtPendingActivity.findOneAndDelete(filter);
+    res.json(closedDoc);
+  } catch (err) {
+    console.error('[POST /api/ptpa/:id/close]', err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });

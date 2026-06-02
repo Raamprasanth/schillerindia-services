@@ -396,18 +396,17 @@ table.call-table tbody tr:hover td.action-col{background:var(--surface2);}
             <tr><th class="action-col">Actions</th>
               <th onclick="sortBy('scEngineer')">SC Engineer &#8597;</th>
               <th onclick="sortBy('initiatedDate')">Initiated Date &#8597;</th>
-              <th onclick="sortBy('activity')">Activity &#8597;</th>
-              <th onclick="sortBy('responsible')">Responsible &#8597;</th>
-              <th onclick="sortBy('pendingFrom')">Pending From &#8597;</th>
+              <th onclick="sortBy('activity')">Model / Activity &#8597;</th>
+              <th onclick="sortBy('description')">Activity Details &#8597;</th>
+              <th onclick="sortBy('responsible')">Resp Person &#8597;</th>
               <th onclick="sortBy('targetDate')">Target Date &#8597;</th>
+              <th onclick="sortBy('pendingFrom')">Completed Date &#8597;</th>
               <th onclick="sortBy('remarks')">Remarks &#8597;</th>
-              <th onclick="sortBy('scInchargeRemarks')">SC Incharge Remarks &#8597;</th>
-              <th onclick="sortBy('status')">Status &#8597;</th>
               
             </tr>
           </thead>
           <tbody id="table-body">
-            <tr><td colspan="10" style="text-align:center;padding:30px;color:var(--muted);">Loading...</td></tr>
+            <tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted);">Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -430,30 +429,21 @@ table.call-table tbody tr:hover td.action-col{background:var(--surface2);}
     </div>
     <div class="modal-body">
       <input type="hidden" id="entry-id">
-      
-      <div class="fg2">
-        <div class="field"><label>SC Engineer <span class="req">*</span></label><input type="text" id="f-engineer" readonly style="background:var(--surface2);"></div>
-        <div class="field"><label>Initiated Date <span class="req">*</span></label><input type="date" id="f-initiated"></div>
-      </div>
+      <input type="hidden" id="f-engineer">
 
-      <div class="field"><label>Activity <span class="req">*</span></label><input type="text" id="f-activity" placeholder="Brief activity name..."></div>
-      <div class="fg2">
-        <div class="field"><label>Responsible</label><input type="text" id="f-responsible"></div>
-        <div class="field"><label>Pending From</label><input type="date" id="f-pending-from"></div>
-      </div>
+      <div class="field"><label>Initiated Date <span class="req">*</span></label><input type="date" id="f-initiated"></div>
 
+      <div class="field"><label>Model / Activity <span class="req">*</span></label><input type="text" id="f-activity" placeholder="Model or activity name..."></div>
+      <div class="field"><label>Activity Details</label><textarea id="f-description" rows="2"></textarea></div>
       <div class="fg2">
+        <div class="field"><label>Resp Person</label><input type="text" id="f-responsible"></div>
         <div class="field"><label>Target Date</label><input type="date" id="f-target-date"></div>
-        <div class="field"><label>Status <span class="req">*</span></label>
-          <select id="f-status">
-            <option value="Pending">Pending</option>
-            <option value="Completed">Completed</option>
-          </select>
-        </div>
       </div>
 
-      <div class="field"><label>Remarks</label><input type="text" id="f-remarks"></div>
-      <div class="field"><label>SC Incharge Remarks</label><input type="text" id="f-incharge-remarks"></div>
+      <div class="fg2">
+        <div class="field"><label>Completed Date</label><input type="date" id="f-pending-from"></div>
+        <div class="field"><label>Remarks</label><input type="text" id="f-remarks"></div>
+      </div>
     </div>
     <div class="modal-foot">
       <div class="msg" id="modal-msg"></div>
@@ -511,28 +501,23 @@ function renderTable() {
 
   const tbody = document.getElementById('table-body');
   if(!slice.length){
-    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--muted);">No matching activities found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted);">No matching activities found.</td></tr>`;
   } else {
     tbody.innerHTML = slice.map(t => {
-      let statCls = 'sp-pending';
-      const s = (t.status||'').toLowerCase();
-      if(s==='open') statCls='sp-open';
-      if(s==='closed'||s==='completed') statCls='sp-closed';
-      
       const rid = t._id || t.id || t.serviceId || t.scEngineer || '';
       return `<tr>
       <td class="action-col">
           <button class="btn btn-outline btn-sm" onclick="editData('${t._id}')">Edit</button>
+          <button class="btn btn-outline btn-sm" onclick="closeData('${t._id}')">Close</button>
         </td>
       <td style="font-weight:600;">${esc(t.scEngineer)}</td>
       <td>${formatDate(t.initiatedDate)}</td>
       <td class="compact-cell activity">${compactText(t.activity, rid+'-activity', true)}</td>
+      <td class="compact-cell">${compactText(t.description, rid+'-description')}</td>
       <td>${esc(t.responsible)}</td>
-      <td>${formatDate(t.pendingFrom)}</td>
       <td>${formatDate(t.targetDate)}</td>
+      <td>${formatDate(t.pendingFrom)}</td>
       <td style="max-width:150px;white-space:normal;">${esc(t.remarks)}</td>
-      <td style="max-width:150px;white-space:normal;">${esc(t.scInchargeRemarks)}</td>
-      <td><span class="s-pill ${statCls}">${esc(t.status)}</span></td>
     </tr>`;
     }).join('');
   }
@@ -613,10 +598,9 @@ function openModal(){
 
 function closeModal(){ document.getElementById('app-modal').classList.remove('open'); }
 function clearForm(){ 
-  ['entry-id','f-initiated','f-activity','f-responsible','f-pending-from','f-target-date','f-remarks','f-incharge-remarks'].forEach(id=>{
+  ['entry-id','f-initiated','f-activity','f-description','f-responsible','f-pending-from','f-target-date','f-remarks'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
   }); 
-  document.getElementById('f-status').value='Pending';
   showMsg(''); 
 }
 
@@ -629,12 +613,11 @@ function editData(id){
   document.getElementById('f-engineer').value = doc.scEngineer || '';
   document.getElementById('f-initiated').value = doc.initiatedDate || '';
   document.getElementById('f-activity').value = doc.activity || '';
+  document.getElementById('f-description').value = doc.description || '';
   document.getElementById('f-responsible').value = doc.responsible || '';
   document.getElementById('f-pending-from').value = doc.pendingFrom || '';
   document.getElementById('f-target-date').value = doc.targetDate || '';
-  document.getElementById('f-status').value = doc.status === 'Completed' ? 'Completed' : 'Pending';
   document.getElementById('f-remarks').value = doc.remarks || '';
-  document.getElementById('f-incharge-remarks').value = doc.scInchargeRemarks || '';
   document.getElementById('app-modal').classList.add('open'); 
 }
 
@@ -643,16 +626,15 @@ async function saveData(){
     scEngineer: val('f-engineer'),
     initiatedDate: val('f-initiated'),
     activity: val('f-activity'),
+    description: val('f-description'),
     responsible: val('f-responsible'),
     pendingFrom: val('f-pending-from'),
     targetDate: val('f-target-date'),
-    status: val('f-status'),
     remarks: val('f-remarks'),
-    scInchargeRemarks: val('f-incharge-remarks'),
   };
   
-  if(!payload.initiatedDate || !payload.activity || !payload.status){ 
-    showMsg('Required: Initiated Date, Activity, and Status.'); return; 
+  if(!payload.initiatedDate || !payload.activity){ 
+    showMsg('Required: Initiated Date and Model / Activity.'); return; 
   }
   
   const id = val('entry-id');
@@ -676,12 +658,13 @@ async function saveData(){
   }
 }
 
-async function deleteData(id){ 
-  if(!confirm("Are you sure you want to delete this record?")) return; 
+async function closeData(id){ 
+  if(!confirm("Close this activity and move it to Closed Activity?")) return; 
   try {
-    await fetch("/api/ptpa/"+id, { method: "DELETE", headers: hdrs() });
+    const res = await fetch("/api/ptpa/"+id+"/close", { method: "POST", headers: hdrs() });
+    if(!res.ok) throw new Error("HTTP "+res.status);
     await fetchData(); 
-  } catch(e) { alert("Failed to delete"); }
+  } catch(e) { alert("Failed to close activity"); }
 }
 
 function val(id){ return (document.getElementById(id)?.value || "").trim(); }
@@ -693,8 +676,8 @@ function formatDate(dStr){
 }
 function exportCSV() {
   if (!currentData.length) { alert('No data to export.'); return; }
-  const headers = ['SC Engineer','Initiated Date','Activity','Responsible','Pending From','Target Date','Remarks','SC Incharge Remarks','Status'];
-  const keys = ['scEngineer','initiatedDate','activity','responsible','pendingFrom','targetDate','remarks','scInchargeRemarks','status'];
+  const headers = ['SC Engineer','Initiated Date','Model / Activity','Activity Details','Resp Person','Target Date','Completed Date','Remarks'];
+  const keys = ['scEngineer','initiatedDate','activity','description','responsible','targetDate','pendingFrom','remarks'];
   let csv = headers.join(',') + '\n';
   currentData.forEach(r => {
     csv += keys.map(k => '"' + String(r[k]||'').replace(/"/g,'""') + '"').join(',') + '\n';

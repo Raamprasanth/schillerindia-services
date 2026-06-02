@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const EmpPendingActivity = require('../models/EmpPendingActivity');
+const EmpCompletedActivity = require('../models/EmpCompletedActivity');
 const { protect } = require('../middleware/authMiddleware');
 
 router.use(protect);
@@ -67,7 +68,7 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const body = req.body || {};
-    if (!body.initiatedDate || !body.activity || !body.status) {
+    if (!body.initiatedDate || !body.activity) {
       return res.status(400).json({ message: 'Required fields missing.' });
     }
 
@@ -86,8 +87,7 @@ router.post('/', async (req, res) => {
       pendingFrom: body.pendingFrom || '',
       targetDate: body.targetDate || '',
       remarks: body.remarks || '',
-      scInchargeRemarks: body.scInchargeRemarks || '',
-      status: body.status || 'Pending',
+      status: 'Pending',
       createdBy: req.user?._id,
     });
     res.status(201).json(doc);
@@ -109,7 +109,17 @@ router.put('/:id', async (req, res) => {
     const division = getWriteDivision(req);
     const updated = await EmpPendingActivity.findByIdAndUpdate(
       req.params.id,
-      { ...req.body, division },
+      {
+        division,
+        initiatedDate: req.body.initiatedDate,
+        activity: req.body.activity,
+        description: req.body.description || '',
+        responsible: req.body.responsible || '',
+        pendingFrom: req.body.pendingFrom || '',
+        targetDate: req.body.targetDate || '',
+        remarks: req.body.remarks || '',
+        status: 'Pending',
+      },
       { new: true, runValidators: true }
     );
     res.json(updated);
@@ -119,7 +129,37 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// ── DELETE /api/epa/:id
+// POST /api/epa/:id/close
+router.post('/:id/close', async (req, res) => {
+  try {
+    const existing = await EmpPendingActivity.findById(req.params.id).lean();
+    if (!existing) return res.status(404).json({ message: 'Record not found.' });
+    if (!canAccessDivision(req.user, existing.division)) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    const closedDoc = await EmpCompletedActivity.create({
+      division: existing.division,
+      scEngineer: existing.scEngineer,
+      initiatedDate: existing.initiatedDate,
+      activity: existing.activity,
+      description: existing.description || '',
+      responsible: existing.responsible || '',
+      pendingFrom: existing.pendingFrom || '',
+      targetDate: existing.targetDate || '',
+      remarks: existing.remarks || '',
+      status: 'Completed',
+      createdBy: existing.createdBy,
+    });
+    await EmpPendingActivity.findByIdAndDelete(req.params.id);
+    res.json(closedDoc);
+  } catch (err) {
+    console.error('[POST /api/epa/:id/close]', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+// DELETE /api/epa/:id
 router.delete('/:id', async (req, res) => {
   try {
     const existing = await EmpPendingActivity.findById(req.params.id).lean();
