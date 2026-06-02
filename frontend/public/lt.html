@@ -235,6 +235,14 @@ table.frn-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
         <select class="f-select" id="fl-division" onchange="applyFilters()">
           <option value="">All Divisions</option>
         </select>
+        <div class="f-divider"></div>
+        <label>Status</label>
+        <select class="f-select" id="fl-status" onchange="applyFilters()">
+          <option value="">All Statuses</option>
+          <option value="scrap">Scrap</option>
+          <option value="stock">Stock</option>
+          <option value="dispatch">Dispatch</option>
+        </select>
         <button class="btn btn-outline btn-sm" onclick="clearFilters()" style="margin-left:auto;">&#10005; Clear</button>
       </div>
 
@@ -428,16 +436,18 @@ function updateStats(){
 }
 
 function clearFilters(){
-  ['fl-division','tbl-search'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  ['fl-division','fl-status','tbl-search'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
   applyFilters();
 }
 
 function applyFilters(){
   const q = (document.getElementById('tbl-search')?.value || '').toLowerCase();
   const division = document.getElementById('fl-division')?.value || '';
+  const status = document.getElementById('fl-status')?.value || '';
   filtered = DATA.filter(d =>
     (!q || ((d.partNo||'')+' '+(d.description||'')+' '+(d.girNo||'')+' '+(d.division||'')).toLowerCase().includes(q)) &&
-    (!division || d.division === division)
+    (!division || d.division === division) &&
+    (!status || (d.opt || '').toLowerCase() === status)
   );
   sortArr();
   currentPage = 1;

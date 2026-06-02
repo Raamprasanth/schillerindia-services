@@ -833,8 +833,18 @@ async function loadEngineerOptions(){
 
 function syncEngineerOptions(selectedValue = ''){
   const branch = (document.getElementById('x-branch') || {}).value || '';
+  function branchMatch(b1, b2) {
+    if(!b1 || !b2) return false;
+    let s1 = String(b1).toLowerCase().replace('shipl', '').replace(/[^a-z0-9]/g, '');
+    let s2 = String(b2).toLowerCase().replace('shipl', '').replace(/[^a-z0-9]/g, '');
+    if(!s1 || !s2) return false;
+    if(s1 === s2 || s1.includes(s2) || s2.includes(s1)) return true;
+    const aliases = [['banglore', 'bengaluru', 'bangalore'], ['trivandrum', 'trivandram', 'thiruvananthapuram'], ['hubili', 'hubli'], ['villupurum', 'villupuram'], ['chandigar', 'chandigarh'], ['trichy', 'tiruchirappalli']];
+    for (let grp of aliases) { if (grp.some(a => s1.includes(a)) && grp.some(a => s2.includes(a))) return true; }
+    return false;
+  }
   const candidates = branch
-    ? ENGINEER_DATA.filter(e => e.branch && e.branch.toLowerCase() === branch.toLowerCase()).map(e => e.name)
+    ? ENGINEER_DATA.filter(e => branchMatch(e.branch, branch)).map(e => e.name)
     : ENGINEER_OPTIONS;
   const values = selectedValue ? [...new Set([...candidates, selectedValue])] : candidates;
   hydrateSelect('x-eng', values, 'Select Engineer');
