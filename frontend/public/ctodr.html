@@ -401,6 +401,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
           <thead>
             <tr>
               <th>TO Req Date</th>
+              <th>Division</th>
               <th>FRN No</th>
               <th>Part No</th>
               <th>Model</th>
@@ -413,7 +414,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             </tr>
           </thead>
           <tbody id="tb">
-            <tr><td colspan="8" style="text-align:center;padding:30px;">Loading...</td></tr>
+            <tr><td colspan="9" style="text-align:center;padding:30px;">Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -513,11 +514,12 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   function renderTable() {
     const tb = document.getElementById('tb');
-    if(!filtered.length) { tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;">No Closed TO entries found.</td></tr>'; return; }
+    if(!filtered.length) { tb.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:30px;">No Closed TO entries found.</td></tr>'; return; }
     
     tb.innerHTML = filtered.map(r => `
       <tr>
         <td>${r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-'}</td>
+        <td>${esc(r.division || '-')}</td>
         <td><span style="font-weight:700;color:var(--accent);">${esc(r.frnNo)}</span></td>
         <td>${esc(r.partNo)}</td>
         <td>${esc(r.model || '-')}</td>
@@ -621,9 +623,10 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   }
 
   function exportCSV() {
-    const headers = ['TO Req Date','FRN No','Part No','Model','Description','TO NO','TO Raised Date','Spares Rcd Date'];
+    const headers = ['TO Req Date','Division','FRN No','Part No','Model','Description','TO NO','TO Raised Date','Spares Rcd Date'];
     const rows = filtered.map(r => [
       r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-',
+      r.division || '-',
       r.frnNo || '-',
       r.partNo || '-',
       r.model || '-',

@@ -391,6 +391,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
           <thead>
             <tr>
               <th>DR req date</th>
+              <th>Division</th>
               <th>FRN No</th>
               <th>Part No</th>
               <th>Model</th>
@@ -401,7 +402,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             </tr>
           </thead>
           <tbody id="tb">
-            <tr><td colspan="8" style="text-align:center;padding:30px;">Loading...</td></tr>
+            <tr><td colspan="9" style="text-align:center;padding:30px;">Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -471,11 +472,12 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   function renderTable() {
     const tb = document.getElementById('tb');
-    if(!records.length) { tb.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;">No DR entries found.</td></tr>'; return; }
+    if(!records.length) { tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;">No DR entries found.</td></tr>'; return; }
     
     tb.innerHTML = records.map(r => `
       <tr>
         <td>${r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-'}</td>
+        <td>${esc(r.division || '-')}</td>
         <td><span style="font-weight:700;color:var(--accent);">${esc(r.frnNo)}</span></td>
         <td>${esc(r.partNo)}</td>
         <td>${esc(r.model || '-')}</td>
