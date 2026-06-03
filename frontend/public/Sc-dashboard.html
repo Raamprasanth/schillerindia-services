@@ -505,13 +505,13 @@ table.mini-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
       <div class="panel">
         <div class="panel-head">
           <div class="panel-title">&#128203; Recent TO/SO Entries <span class="panel-badge" id="prf-table-count">-</span></div>
-          <a href="sc-prf-ob.html" style="font-size:11.5px;color:var(--accent);text-decoration:none;font-weight:600;">View All &rarr;</a>
+          <a href="scprfob.html" style="font-size:11.5px;color:var(--accent);text-decoration:none;font-weight:600;">View All &rarr;</a>
         </div>
         <div class="table-wrap" style="overflow-x:auto;">
           <table class="mini-table" style="min-width:560px;">
             <thead><tr>
-              <th onclick="sortPRF('prfNo')">TO/SO No &#8597;</th>
-              <th onclick="sortPRF('custName')">Customer &#8597;</th>
+              <th onclick="sortPRF('refNo')">TO/SO No &#8597;</th>
+              <th onclick="sortPRF('dealer')">Customer &#8597;</th>
               <th onclick="sortPRF('model')">Model &#8597;</th>
               <th onclick="sortPRF('entryDate')">Date &#8597;</th>
               <th onclick="sortPRF('pendingDays')">Days &#8597;</th>
@@ -560,13 +560,13 @@ table.mini-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
           <div class="panel-head"><div class="panel-title">&#9889; Quick Actions</div></div>
           <div class="panel-body" style="padding:12px;">
             <div class="quick-grid">
-              <a class="quick-card" href="sc-prf-ob.html">
+              <a class="quick-card" href="scprfob.html">
                 <div class="qc-ico">&#128203;</div>
                 <div class="qc-title">TO/SO Register</div>
                 <div class="qc-sub">Open & active entries</div>
                 <span class="qc-badge" style="background:var(--amber-bg);color:var(--amber);">Open: <span id="qa-open">-</span></span>
               </a>
-              <a class="quick-card" href="sc-closed-prf.html">
+              <a class="quick-card" href="sccr.html">
                 <div class="qc-ico">&#128274;</div>
                 <div class="qc-title">Closed TO/SO</div>
                 <div class="qc-sub">Completed records</div>
@@ -930,7 +930,7 @@ let prfData=[], prfSort='entryDate', prfDir=-1;
 async function loadPRF(){
   try{
     // Try PRF endpoint; fall back to demo data if unavailable
-    const res = await fetch(API+'/api/sc/prf', {headers:authHeaders()});
+    const res = await fetch(API+'/api/emp/prfob?status=all', {headers:authHeaders()});
     if(res.ok){
       prfData = await res.json();
     }else{
@@ -956,16 +956,35 @@ function calcDays(d){
 // -- STATS -------------------------------------------------
 function updatePRFStats(){
   const total   = prfData.length;
-  const open    = prfData.filter(r=>r.status!=='closed'&&r.status!=='completed').length;
-  const closed  = prfData.filter(r=>r.status==='closed'||r.status==='completed').length;
-  const overdue = prfData.filter(r=>r.pendingDays>30&&r.status!=='closed'&&r.status!=='completed').length;
-  const todayClosed = prfData.filter(r=>{
-    if(!r.closedDate&&r.status!=='closed') return false;
-    return calcDays(r.closedDate||r.updatedAt)===0;
+  const open    = prfData.filter(r=>{
+    const s = String(r.status || '').toLowerCase();
+    return s !== 'closed' && s !== 'completed' && s !== 'rejected';
   }).length;
-  const avgDays = open>0 ? Math.round(prfData.filter(r=>r.status!=='closed').reduce((s,r)=>s+r.pendingDays,0)/open) : 0;
-  const p7  = total>0?Math.round(prfData.filter(r=>r.pendingDays<=7&&(r.status==='closed'||r.status==='completed')).length/Math.max(1,closed)*100):0;
-  const p30 = total>0?Math.round(prfData.filter(r=>r.pendingDays<=30&&(r.status==='closed'||r.status==='completed')).length/Math.max(1,closed)*100):0;
+  const closed  = prfData.filter(r=>{
+    const s = String(r.status || '').toLowerCase();
+    return s === 'closed' || s === 'completed' || s === 'rejected';
+  }).length;
+  const overdue = prfData.filter(r=>{
+    const s = String(r.status || '').toLowerCase();
+    return r.pendingDays>30 && s !== 'closed' && s !== 'completed' && s !== 'rejected';
+  }).length;
+  const todayClosed = prfData.filter(r=>{
+    const s = String(r.status || '').toLowerCase();
+    if(s !== 'closed' && s !== 'completed' && s !== 'rejected') return false;
+    return calcDays(r.executedDate || r.closedDate || r.updatedAt)===0;
+  }).length;
+  const avgDays = open>0 ? Math.round(prfData.filter(r=>{
+    const s = String(r.status || '').toLowerCase();
+    return s !== 'closed' && s !== 'completed' && s !== 'rejected';
+  }).reduce((sum,r)=>sum+r.pendingDays,0)/open) : 0;
+  const p7  = total>0?Math.round(prfData.filter(r=>{
+    const s = String(r.status || '').toLowerCase();
+    return r.pendingDays<=7 && (s==='closed'||s==='completed'||s==='rejected');
+  }).length/Math.max(1,closed)*100):0;
+  const p30 = total>0?Math.round(prfData.filter(r=>{
+    const s = String(r.status || '').toLowerCase();
+    return r.pendingDays<=30 && (s==='closed'||s==='completed'||s==='rejected');
+  }).length/Math.max(1,closed)*100):0;
   const pod  = total>0?Math.round(overdue/Math.max(1,total)*100):0;
 
   setEl('st-total-prf', total);
@@ -1028,12 +1047,12 @@ function renderPRFTable(){
   const tbody = document.getElementById('prf-tbody');
   if(!slice.length){ tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--muted);">No TO/SO records.</td></tr>'; return; }
   tbody.innerHTML = slice.map(r=>{
-    const st  = r.status==='closed'||r.status==='completed'?'sp-closed':r.pendingDays>30?'sp-urgent':r.status==='pending'?'sp-pending':'sp-open';
-    const lbl = r.status==='closed'||r.status==='completed'?'Closed':r.pendingDays>30?'Overdue':r.status==='pending'?'Pending':'Open';
-    const daysCls = r.pendingDays>30?'color:var(--red);font-weight:700;':r.pendingDays>14?'color:var(--amber);font-weight:700;':'color:var(--green);font-weight:700;';
+    const s   = String(r.status || '').toLowerCase();
+    const st  = s==='closed'||s==='completed'?'sp-closed':s==='rejected'?'sp-closed':r.pendingDays>30?'sp-urgent':s==='pending'?'sp-pending':'sp-open';
+    const lbl = s==='closed'||s==='completed'?'Closed':s==='rejected'?'Rejected':r.pendingDays>30?'Overdue':s==='pending'?'Pending':'Open';
     return `<tr>
-      <td><span class="chip">${esc(r.prfNo||r.scReNo||r.id||'-')}</span></td>
-      <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(r.custName||r.customer||'-')}</td>
+      <td><span class="chip">${esc(r.refNo||r.id||'-')}</span></td>
+      <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(r.dealer||r.custName||r.customer||'-')}</td>
       <td style="font-weight:600;">${esc(r.model||'-')}</td>
       <td style="font-size:11px;color:var(--muted);">${fmtDate(r.entryDate||r.createdAt)}</td>
       <td style="font-weight:600;">${r.pendingDays}d</td>
@@ -1052,13 +1071,14 @@ function renderActivityFeed(){
   const icons=[{cls:'ai-blue',ico:'&#128203;'},{cls:'ai-green',ico:'&#9989;'},{cls:'ai-amber',ico:'&#9889;'},{cls:'ai-teal',ico:'&#128297;'},{cls:'ai-purple',ico:'&#128230;'},{cls:'ai-red',ico:'&#128680;'}];
   feed.innerHTML=recent.map((r,i)=>{
     const ic=icons[i%icons.length];
-    const action=r.status==='closed'||r.status==='completed'?'Closed TO/SO':r.pendingDays>30?'Overdue TO/SO':'Updated TO/SO';
+    const s = String(r.status || '').toLowerCase();
+    const action=s==='closed'||s==='completed'?'Closed TO/SO':r.pendingDays>30?'Overdue TO/SO':'Updated TO/SO';
     const ago=calcDays(r.updatedAt||r.entryDate);
     return`<div class="activity-item" style="padding:11px 18px;">
       <div class="activity-ico ${ic.cls}">${ic.ico}</div>
       <div class="activity-info">
-        <div class="activity-title">${action} - ${esc(r.prfNo||r.scReNo||'Record')}</div>
-        <div class="activity-sub">${esc(r.custName||r.customer||'Customer')} &middot; ${esc(r.model||'-')}</div>
+        <div class="activity-title">${action} - ${esc(r.refNo||'Record')}</div>
+        <div class="activity-sub">${esc(r.dealer||r.custName||r.customer||'Customer')} &middot; ${esc(r.model||'-')}</div>
       </div>
       <div class="activity-time">${ago===0?'Today':ago===1?'Yesterday':ago+'d ago'}</div>
     </div>`;
@@ -1069,7 +1089,10 @@ function renderActivityFeed(){
 const DIV_COLORS=['pf-blue','pf-teal','pf-green','pf-amber','pf-red','pf-purple'];
 function renderDivisionBars(){
   const divMap={};
-  prfData.filter(r=>r.status!=='closed'&&r.status!=='completed').forEach(r=>{
+  prfData.filter(r=>{
+    const s = String(r.status || '').toLowerCase();
+    return s !== 'closed' && s !== 'completed' && s !== 'rejected';
+  }).forEach(r=>{
     const d=r.division||r.divisionName||'Other';
     divMap[d]=(divMap[d]||0)+1;
   });
@@ -1093,9 +1116,18 @@ function renderDivisionBars(){
 // -- DONUT RENDER -----------------------------------------
 function renderDonut(){
   const total   = prfData.length;
-  const open    = prfData.filter(r=>r.status!=='closed'&&r.status!=='completed').length;
-  const closed  = prfData.filter(r=>r.status==='closed'||r.status==='completed').length;
-  const overdue = prfData.filter(r=>r.pendingDays>30&&r.status!=='closed'&&r.status!=='completed').length;
+  const open    = prfData.filter(r=>{
+    const s = String(r.status || '').toLowerCase();
+    return s !== 'closed' && s !== 'completed' && s !== 'rejected';
+  }).length;
+  const closed  = prfData.filter(r=>{
+    const s = String(r.status || '').toLowerCase();
+    return s === 'closed' || s === 'completed' || s === 'rejected';
+  }).length;
+  const overdue = prfData.filter(r=>{
+    const s = String(r.status || '').toLowerCase();
+    return r.pendingDays>30 && s !== 'closed' && s !== 'completed' && s !== 'rejected';
+  }).length;
   animateDonut(open,closed,overdue,total||1);
 }
 

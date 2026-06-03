@@ -45,7 +45,9 @@ router.get('/', protect, async (req, res) => {
     const filter = {};
     if (type)     filter.type     = type;
     if (status) {
-      filter.status = status;
+      if (String(status).toLowerCase() !== 'all') {
+        filter.status = status;
+      }
     } else {
       filter.status = { $nin: ['Closed', 'Rejected', 'Completed'] };
     }
