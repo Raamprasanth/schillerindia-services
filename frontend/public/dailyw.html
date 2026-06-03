@@ -249,7 +249,399 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   </div>
 </div>
 
-tab-fix.js</script>
+<script>
+let currentDate = new Date();
+let currentMonth = currentDate.getMonth();
+let currentYear = currentDate.getFullYear();
+let editId = null;
+let DW_LIST = [];
+const todayOffset = currentDate.getTimezoneOffset() * 60000;
+let selectedDateStr = new Date(currentDate.getTime() - todayOffset).toISOString().split("T")[0];
+
+(function initDailyWorkPage(){
+  const user = JSON.parse(sessionStorage.getItem("schiller_user") || "{}");
+  const name = user.name || "Employee";
+  const role = user.designation || "Field Engineer";
+
+  ["emp-name", "user-nm", "tb-name"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = name;
+  });
+  ["emp-avatar", "user-av", "tb-avatar"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = name.charAt(0).toUpperCase();
+  });
+  ["emp-desig", "user-rl", "tb-role"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = role;
+  });
+
+  const tbDate = document.getElementById("topbar-date");
+  if (tbDate) tbDate.textContent = new Date().toLocaleDateString("en-IN", {
+    weekday: "long", year: "numeric", month: "long", day: "numeric"
+  });
+
+  renderCalendar();
+})();
+
+function hdrs(){
+  return {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer " + (sessionStorage.getItem("schiller_token") || "")
+  };
+}
+
+async function fetchDwList(){
+  try {
+    const res = await fetch("/api/empdw", { headers: hdrs(), cache: "no-store" });
+    if (res.status === 401 || res.status === 403) {
+      window.location.href = "login.html";
+      return;
+    }
+    const data = await res.json().catch(() => []);
+    DW_LIST = res.ok && Array.isArray(data) ? data : [];
+  } catch (err) {
+    console.error("[dailyw] fetch failed", err);
+    DW_LIST = [];
+  }
+}
+
+async function renderCalendar(){
+  await fetchDwList();
+  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const title = document.getElementById("cal-title");
+  const grid = document.getElementById("cal-grid");
+  if (title) title.textContent = monthNames[currentMonth] + " " + currentYear;
+  if (!grid) return;
+
+  grid.innerHTML = "";
+  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const todayStr = toDateString(new Date());
+  const entryDates = new Set(DW_LIST.map(item => item.date));
+
+  for (let i = 0; i < firstDay; i++) {
+    const cell = document.createElement("div");
+    cell.className = "cal-cell empty-cell";
+    grid.appendChild(cell);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const cellDate = new Date(currentYear, currentMonth, day);
+    const cellDateStr = toDateString(cellDate);
+    const cell = document.createElement("div");
+    cell.className = "cal-cell";
+    cell.textContent = day;
+    if (cellDateStr === todayStr) cell.classList.add("today");
+    if (cellDateStr === selectedDateStr) cell.classList.add("selected");
+    if (entryDates.has(cellDateStr)) {
+      const dot = document.createElement("span");
+      dot.className = "has-entry-dot";
+      cell.appendChild(dot);
+    }
+    cell.addEventListener("click", () => {
+      selectedDateStr = cellDateStr;
+      renderCalendar();
+    });
+    grid.appendChild(cell);
+  }
+
+  renderKanban();
+}
+
+function prevMonth(){
+  currentMonth--;
+  if (currentMonth < 0) {
+    currentMonth = 11;
+    currentYear--;
+  }
+  renderCalendar();
+}
+
+function nextMonth(){
+  currentMonth++;
+  if (currentMonth > 11) {
+    currentMonth = 0;
+    currentYear++;
+  }
+  renderCalendar();
+}
+
+function renderKanban(){
+  const title = document.getElementById("kb-date-title");
+  const count = document.getElementById("kb-count");
+  const grid = document.getElementById("kb-grid");
+  if (!title || !count || !grid) return;
+
+  const displayDate = new Date(selectedDateStr + "T00:00:00").toLocaleDateString("en-IN", {
+    weekday: "short", day: "numeric", month: "short", year: "numeric"
+  });
+  const dayEntries = DW_LIST.filter(item => item.date === selectedDateStr);
+  title.textContent = "Entries for " + displayDate;
+  count.textContent = dayEntries.length + (dayEntries.length === 1 ? " entry found" : " entries found");
+
+  if (!dayEntries.length) {
+    grid.style.display = "block";
+    grid.innerHTML = `<div class="kb-empty" style="grid-column:1/-1;">
+      <div class="kb-empty-ico">&#128198;</div>
+      <div class="kb-empty-txt">No entries for this date</div>
+      <div class="kb-empty-sub">Click "Add Entry" at the top to log your work.</div>
+    </div>`;
+    return;
+  }
+
+  grid.style.display = "grid";
+  grid.innerHTML = dayEntries.map((item, index) => `
+    <div class="kb-card">
+      <div class="kb-top">
+        <div class="kb-num">#${index + 1}</div>
+        <div class="kb-time"><span class="ico">&#128336;</span> ${esc(item.fromTime || "--")} to ${esc(item.toTime || "--")}</div>
+      </div>
+      <div class="kb-activity">${esc(item.activity || "")}</div>
+      <div class="kb-foot">
+        <div class="kb-user">By <span>${esc(item.addedBy || "User")}</span></div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="kb-view" onclick="viewDw('${escAttr(item._id)}')" title="View Entry">View</button>
+          <button class="kb-del" onclick="deleteDw('${escAttr(item._id)}')" title="Delete Entry">&#128465;</button>
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function viewDw(id){
+  const entry = DW_LIST.find(item => item._id === id);
+  if (!entry) return;
+  const date = entry.date ? new Date(entry.date + "T00:00:00").toLocaleDateString("en-IN", {
+    day: "2-digit", month: "short", year: "numeric"
+  }) : "-";
+  document.getElementById("view-sub").textContent = date;
+  document.getElementById("dw-view-body").innerHTML = `
+    <div class="view-detail-grid">
+      <div class="view-detail"><div class="view-label">Date</div><div class="view-value">${esc(date)}</div></div>
+      <div class="view-detail"><div class="view-label">Team / Division</div><div class="view-value">${esc(entry.team || "-")}</div></div>
+      <div class="view-detail"><div class="view-label">From</div><div class="view-value">${esc(entry.fromTime || "-")}</div></div>
+      <div class="view-detail"><div class="view-label">To</div><div class="view-value">${esc(entry.toTime || "-")}</div></div>
+      <div class="view-detail"><div class="view-label">Total</div><div class="view-value">${esc(entry.dayTotal || durationText(entry.fromTime, entry.toTime) || "-")}</div></div>
+      <div class="view-detail"><div class="view-label">Added By</div><div class="view-value">${esc(entry.addedBy || "User")}</div></div>
+      <div class="view-detail full"><div class="view-label">Activity</div><div class="view-value">${esc(entry.activity || "-")}</div></div>
+    </div>`;
+  document.getElementById("dw-view-overlay").classList.add("open");
+}
+
+function closeDwView(){
+  document.getElementById("dw-view-overlay").classList.remove("open");
+}
+
+function openDwModal(){
+  editId = null;
+  clearForm();
+  document.getElementById("dw-date").value = selectedDateStr;
+  addDwRow();
+  document.querySelector(".modal-title").innerHTML = "&#128197; Add New Daily Work";
+  document.getElementById("save-btn").innerHTML = "&#128190; Save Entry";
+  document.getElementById("add-row-btn").style.display = "flex";
+  document.getElementById("dw-overlay").classList.add("open");
+  setTimeout(() => document.querySelector(".row-team")?.focus(), 50);
+}
+
+function closeDwModal(){
+  document.getElementById("dw-overlay").classList.remove("open");
+}
+
+function clearForm(){
+  const date = document.getElementById("dw-date");
+  if (date) date.value = "";
+  document.getElementById("dw-rows-container").innerHTML = "";
+  document.getElementById("dw-total-hours").textContent = "Total: 0h 0m";
+  showMsg("");
+}
+
+async function saveDw(){
+  const date = val("dw-date");
+  if (!date) {
+    showMsg("Date is required.");
+    return;
+  }
+
+  const teams = document.querySelectorAll(".row-team");
+  const acts = document.querySelectorAll(".row-act");
+  const froms = document.querySelectorAll(".row-from");
+  const tos = document.querySelectorAll(".row-to");
+  const entries = [];
+
+  for (let i = 0; i < acts.length; i++) {
+    const team = teams[i]?.value.trim();
+    const activity = acts[i]?.value.trim();
+    const fromTime = froms[i]?.value;
+    const toTime = tos[i]?.value;
+    if (!team || !activity || !fromTime || !toTime) {
+      showMsg("All activity rows must have Team/Division, Activity, From time, and To time.");
+      return;
+    }
+    entries.push({ team, activity, fromTime, toTime });
+  }
+
+  if (!entries.length) {
+    showMsg("Please add at least one activity row.");
+    return;
+  }
+
+  const btn = document.getElementById("save-btn");
+  btn.disabled = true;
+  btn.textContent = "Saving...";
+  try {
+    const dayTotal = document.getElementById("dw-total-hours").textContent.replace("Total: ", "");
+    for (const entry of entries) {
+      const payload = { date, ...entry, dayTotal };
+      const res = await fetch("/api/empdw", {
+        method: "POST",
+        headers: hdrs(),
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json.message || "HTTP " + res.status);
+      }
+    }
+
+    if (date !== selectedDateStr) {
+      selectedDateStr = date;
+      const chosen = new Date(date + "T00:00:00");
+      currentMonth = chosen.getMonth();
+      currentYear = chosen.getFullYear();
+    }
+    closeDwModal();
+    await renderCalendar();
+  } catch (err) {
+    showMsg("Save failed: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "&#128190; Save Entry";
+  }
+}
+
+function addDwRow(){
+  const container = document.getElementById("dw-rows-container");
+  const rowId = Date.now() + Math.floor(Math.random() * 1000);
+  container.insertAdjacentHTML("beforeend", `
+    <div class="dw-row" id="row-${rowId}">
+      <div class="field"><label>Team / Division</label><input type="text" class="row-team" list="team-options" placeholder="Team / Division"></div>
+      <div class="field"><label>Activity</label><textarea class="row-act" placeholder="Activity done" rows="3"></textarea></div>
+      <div class="field"><label>From</label><input type="time" class="row-from" onchange="calcTotalHours()"></div>
+      <div class="field"><label>To</label><input type="time" class="row-to" onchange="calcTotalHours()"></div>
+      <button class="kb-del" style="height:35px;width:34px;margin-bottom:2px;" onclick="document.getElementById('row-${rowId}').remove(); calcTotalHours();" title="Remove">&#128465;</button>
+    </div>
+  `);
+}
+
+function calcTotalHours(){
+  let totalMins = 0;
+  const froms = document.querySelectorAll(".row-from");
+  const tos = document.querySelectorAll(".row-to");
+  for (let i = 0; i < froms.length; i++) {
+    totalMins += durationMinutes(froms[i].value, tos[i].value);
+  }
+  const hours = Math.floor(totalMins / 60);
+  const mins = totalMins % 60;
+  document.getElementById("dw-total-hours").textContent = `Total: ${hours}h ${mins}m`;
+  return totalMins;
+}
+
+function exportToExcel(){
+  if (!DW_LIST.length) {
+    alert("No data to export.");
+    return;
+  }
+  const data = DW_LIST.map(item => ({
+    "Date": item.date || "",
+    "Team / Division": item.team || "",
+    "Activity": item.activity || "",
+    "From Time": item.fromTime || "",
+    "To Time": item.toTime || "",
+    "Duration": durationText(item.fromTime, item.toTime),
+    "Day Total": item.dayTotal || "",
+    "Added By": item.addedBy || "User"
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Daily Work");
+  XLSX.writeFile(wb, "Employee_Daily_Work.xlsx");
+}
+
+async function deleteDw(id){
+  if (!confirm("Delete this entry?")) return;
+  try {
+    const res = await fetch("/api/empdw/" + encodeURIComponent(id), {
+      method: "DELETE",
+      headers: hdrs()
+    });
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      throw new Error(json.message || "HTTP " + res.status);
+    }
+    await renderCalendar();
+  } catch (err) {
+    alert("Failed to delete: " + err.message);
+  }
+}
+
+function durationMinutes(fromTime, toTime){
+  if (!fromTime || !toTime) return 0;
+  const [fh, fm] = fromTime.split(":").map(Number);
+  const [th, tm] = toTime.split(":").map(Number);
+  if ([fh, fm, th, tm].some(Number.isNaN)) return 0;
+  let mins = (th * 60 + tm) - (fh * 60 + fm);
+  if (mins < 0) mins += 24 * 60;
+  return mins;
+}
+
+function durationText(fromTime, toTime){
+  const mins = durationMinutes(fromTime, toTime);
+  return `${Math.floor(mins / 60)}h ${mins % 60}m`;
+}
+
+function toDateString(date){
+  const offset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offset).toISOString().split("T")[0];
+}
+
+function val(id){
+  return (document.getElementById(id)?.value || "").trim();
+}
+
+function showMsg(message){
+  const el = document.getElementById("dw-msg");
+  if (!el) return;
+  el.textContent = message;
+  el.style.display = message ? "block" : "none";
+}
+
+function esc(value){
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function escAttr(value){
+  return esc(value).replace(/'/g, "&#39;");
+}
+
+function logout(){
+  sessionStorage.clear();
+  localStorage.clear();
+  window.location.href = "login.html";
+}
+
+document.getElementById("dw-overlay").addEventListener("click", event => {
+  if (event.target.id === "dw-overlay") closeDwModal();
+});
+document.getElementById("dw-view-overlay").addEventListener("click", event => {
+  if (event.target.id === "dw-view-overlay") closeDwView();
+});
+</script>
 <script src="tab-fix.js"></script>
 </body>
 </html>
