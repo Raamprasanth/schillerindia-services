@@ -868,69 +868,72 @@ function closeUpdateModal(){
 
 // -- SUBMIT UPDATE ---------------------------------------------------------
 async function submitUpdate(){
-  const id           = document.getElementById('upd-id').value;
-  const raEng        = document.getElementById('upd-raeng').value;
-  const finalRemarks = document.getElementById('upd-finalremarks').value.trim();
-  const typeWork     = document.getElementById('upd-typework').value;
-  const dcNo         = document.getElementById('upd-dcno').value.trim();
-  const destination  = document.getElementById('upd-destination').value.trim();
-  const shipComm     = document.getElementById('upd-shipcomm').value;
+  try {
+    const id           = document.getElementById('upd-id')?.value || '';
+    const raEng        = document.getElementById('upd-raeng')?.value || '';
+    const finalRemarks = (document.getElementById('upd-finalremarks')?.value || '').trim();
+    const typeWork     = document.getElementById('upd-typework')?.value || '';
+    const dcNo         = (document.getElementById('upd-dcno')?.value || '').trim();
+    const destination  = (document.getElementById('upd-destination')?.value || '').trim();
+    const shipComm     = document.getElementById('upd-shipcomm')?.value || '';
 
-  let hasErr = false;
-  const required = [
-    ['upd-raeng',        raEng],
-    ['upd-finalremarks', finalRemarks],
-    ['upd-typework',     typeWork],
-    ['upd-dcno',         dcNo],
-    ['upd-destination',  destination],
-    ['upd-shipcomm',     shipComm],
-  ];
-  required.forEach(([fid, val]) => {
-    const el = document.getElementById(fid);
-    if(el){ if(!val){ el.classList.add('err'); hasErr = true; } else el.classList.remove('err'); }
-  });
-  if(hasErr){ showUpdMsg('Please fill all required fields.', 'err'); return; }
+    let hasErr = false;
+    const required = [
+      ['upd-raeng',        raEng],
+      ['upd-finalremarks', finalRemarks],
+      ['upd-typework',     typeWork],
+      ['upd-dcno',         dcNo],
+      ['upd-destination',  destination],
+      ['upd-shipcomm',     shipComm],
+    ];
+    required.forEach(([fid, val]) => {
+      const el = document.getElementById(fid);
+      if(el){ if(!val){ el.classList.add('err'); hasErr = true; } else el.classList.remove('err'); }
+    });
+    if(hasErr){ showUpdMsg('Please fill all required fields.', 'err'); return; }
 
-  const payload = {
-    raEng,
-    repBrdDate:  document.getElementById('upd-repbrddate').value,
-    dcNo,
-    defUnitGir:  document.getElementById('upd-defunitgir').value.trim(),
-    repGirSno:   document.getElementById('upd-repgirsno').value.trim(),
-    finalRemarks,
-    techRemarks: document.getElementById('upd-techremarks').value.trim(),
-    components:  document.getElementById('upd-components').value.trim(),
-    typeWork,
-    reportType:  document.getElementById('upd-reporttype').value,
-    destination,
-    shipDateSC:  document.getElementById('upd-shipsc').value,
-    shipDateComm: shipComm,
-    updatedAt:   new Date().toISOString(),
-  };
+    const payload = {
+      raEng,
+      repBrdDate:  document.getElementById('upd-repbrddate')?.value || '',
+      dcNo,
+      defUnitGir:  (document.getElementById('upd-defunitgir')?.value || '').trim() || 'NA',
+      repGirSno:   (document.getElementById('upd-repgirsno')?.value || '').trim(),
+      finalRemarks,
+      techRemarks: (document.getElementById('upd-techremarks')?.value || '').trim(),
+      components:  (document.getElementById('upd-components')?.value || '').trim(),
+      typeWork,
+      reportType:  document.getElementById('upd-reporttype')?.value || '',
+      destination,
+      shipDateSC:  document.getElementById('upd-shipsc')?.value || '',
+      shipDateComm: shipComm,
+      updatedAt:   new Date().toISOString(),
+    };
 
-  const btn = document.getElementById('upd-save-btn');
-  btn.disabled = true; btn.textContent = '\uD83D\uDCBE Saving...';
+    const btn = document.getElementById('upd-save-btn');
+    if(btn) { btn.disabled = true; btn.textContent = '\uD83D\uDCBE Saving...'; }
 
-  try{
     const res = await fetch(`${API}/api/emp/sc-completed-frn/${id}`, {
       method: 'PUT', headers: authHeaders(), body: JSON.stringify(payload)
     });
     handleUnauth(res);
     if(!res.ok){ const e = await res.json().catch(()=>({})); throw new Error(e.message || 'HTTP ' + res.status); }
+
     const updated = await res.json().catch(()=>({}));
     const idx = DATA.findIndex(x => (x._id||x.id) === id);
     if(idx !== -1) DATA[idx] = {...DATA[idx], ...payload, ...updated};
     applyFilters();
-    showUpdMsg('? Record updated successfully!', 'ok');
+    showUpdMsg('✅ Record updated successfully!', 'ok');
     showToast('External Repair record updated.', 'ok');
     setTimeout(closeUpdateModal, 1200);
-  } catch(e){
+
+  } catch(e) {
     if(e.message !== 'Unauthorized'){
       showUpdMsg('Save failed: ' + e.message, 'err');
       showToast('Update failed: ' + e.message, 'err');
     }
-  } finally{
-    btn.disabled = false; btn.innerHTML = '&#128190; Save Update';
+  } finally {
+    const btn = document.getElementById('upd-save-btn');
+    if(btn) { btn.disabled = false; btn.innerHTML = '&#128190; Save Update'; }
   }
 }
 

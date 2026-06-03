@@ -878,30 +878,30 @@ function closeJS() {
 }
 
 async function saveJobSheet() {
-  const id = document.getElementById('js-record-id').value;
-  const status = document.getElementById('js-status').value;
-
-  // Collect 5 rows
-  const repDates = [...document.querySelectorAll('.js-repdate')].map(el => el.value);
-  const engs     = [...document.querySelectorAll('.js-eng')].map(el => el.value.trim());
-  const obs      = [...document.querySelectorAll('.js-obs')].map(el => el.value.trim());
-  const acts     = [...document.querySelectorAll('.js-act')].map(el => el.value.trim());
-  const times    = [...document.querySelectorAll('.js-time')].map(el => el.value.trim());
-  const rems     = [...document.querySelectorAll('.js-rem')].map(el => el.value.trim());
-
-  const jobSheetRows = Array.from({ length: 5 }, (_, i) => ({
-    repairDate:     repDates[i] || '',
-    engineerName:   engs[i]    || '',
-    observation:    obs[i]     || '',
-    repairActivity: acts[i]    || '',
-    timeSpent:      times[i]   || '',
-    remark:         rems[i]    || '',
-  }));
-
-  const btn = document.getElementById('js-save-btn');
-  btn.disabled = true; btn.textContent = 'Saving...';
-
   try {
+    const id = document.getElementById('js-record-id')?.value || '';
+    const status = document.getElementById('js-status')?.value || 'Pending';
+
+    // Collect 5 rows safely
+    const repDates = [...document.querySelectorAll('.js-repdate')].map(el => el.value || '');
+    const engs     = [...document.querySelectorAll('.js-eng')].map(el => (el.value || '').trim());
+    const obs      = [...document.querySelectorAll('.js-obs')].map(el => (el.value || '').trim());
+    const acts     = [...document.querySelectorAll('.js-act')].map(el => (el.value || '').trim());
+    const times    = [...document.querySelectorAll('.js-time')].map(el => (el.value || '').trim());
+    const rems     = [...document.querySelectorAll('.js-rem')].map(el => (el.value || '').trim());
+
+    const jobSheetRows = Array.from({ length: 5 }, (_, i) => ({
+      repairDate:     repDates[i] || '',
+      engineerName:   engs[i]    || '',
+      observation:    obs[i]     || '',
+      repairActivity: acts[i]    || '',
+      timeSpent:      times[i]   || '',
+      remark:         rems[i]    || '',
+    }));
+
+    const btn = document.getElementById('js-save-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+
     const res = await fetch(`${API}/api/scrap/${id}/jobsheet`, {
       method: 'PUT',
       headers: authHeaders(),
@@ -925,7 +925,8 @@ async function saveJobSheet() {
       showToast('Save failed: ' + e.message, 'err');
     }
   } finally {
-    btn.disabled = false; btn.innerHTML = '&#128190; Save Job Sheet';
+    const btn = document.getElementById('js-save-btn');
+    if (btn) { btn.disabled = false; btn.innerHTML = '&#128190; Save Job Sheet'; }
   }
 }
 
