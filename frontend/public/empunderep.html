@@ -358,7 +358,7 @@ body.panel-open .main{display:none;}
     <div class="modal-header">
       <div>
         <div class="modal-title">In House FRN Replacement <span id="to-modal-badge" style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:10px;background:rgba(124,58,237,0.10);color:#7c3aed;border:1px solid rgba(124,58,237,0.22);margin-left:8px;">-</span></div>
-        <div style="font-size:11.5px;color:var(--muted);margin-top:3px;">Add one or more TO rows, then queue this under-repair entry to TO escalation.</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:3px;">Add one or more rows, then queue this under-repair entry to In House FRN Replacement.</div>
       </div>
       <button class="modal-close" onclick="closeToEscalationModal()" title="Close (Esc)">&#10005;</button>
     </div>
@@ -1459,14 +1459,14 @@ async function submitToEscalationQueue(){
     const res=await fetch(`${API}/api/emp/underrepair/${id}/to`,{method:'POST',headers:{'Content-Type':'application/json',...authHeaders()},body:JSON.stringify({items:cleanItems})});
     handleUnauth(res);
     const data=await res.json().catch(()=>({}));
-    if(!res.ok) throw new Error(data.message||'Unable to queue TO escalation');
+    if(!res.ok) throw new Error(data.message||'Unable to queue In House FRN Replacement');
     const patch={toEscalationQueuedAt:data.toEscalationQueuedAt||new Date().toISOString(),toEscalationQueuedBy:data.toEscalationQueuedBy||''};
     UR_DATA=UR_DATA.map(item=>(item&&((item._id||item.id)===id))?{...item,...patch}:item);
     filtered=filtered.map(item=>(item&&((item._id||item.id)===id))?{...item,...patch}:item);
     renderTable();
     bumpToEscalationQueue(1);
-    if(msgEl){ msgEl.textContent='Queued for TO escalation successfully.'; msgEl.className='fm-msg ok'; }
-    showToast('Queued for TO escalation.','ok');
+    if(msgEl){ msgEl.textContent='Queued for In House FRN Replacement successfully.'; msgEl.className='fm-msg ok'; }
+    showToast('Queued for In House FRN Replacement.','ok');
     setTimeout(closeToEscalationModal,900);
   }catch(e){
     if(msgEl){ msgEl.textContent=e.message; msgEl.className='fm-msg err'; }

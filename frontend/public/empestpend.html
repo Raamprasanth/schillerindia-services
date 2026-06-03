@@ -567,7 +567,7 @@ table.est-table tbody tr:last-child td{border-bottom:none;}
     <div class="modal-header">
       <div>
         <div class="modal-title">In House FRN Replacement <span class="modal-title-badge" id="to-modal-badge">-</span></div>
-        <div style="font-size:11.5px;color:var(--muted);margin-top:3px;">Add one or more TO rows, then queue this entry to TO escalation.</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:3px;">Add one or more rows, then queue this entry to In House FRN Replacement.</div>
       </div>
       <button class="modal-close" onclick="closeToEscalationModal()" title="Close (Esc)">&#10005;</button>
     </div>
@@ -918,7 +918,7 @@ async function queueSrEscalation(id){
     if(typeof loadSrEscalationStatus === 'function') loadSrEscalationStatus('est');
     showToast(data.alreadyQueued?'Already queued for FRN Replacement Escalation.':'Queued for FRN Replacement Escalation.','ok');
   }catch(e){
-    showToast('SR escalation failed: '+e.message,'err');
+    showToast('FRN Replacement Escalation failed: '+e.message,'err');
   }
 }
 
@@ -996,8 +996,8 @@ async function submitToEscalationQueue(){
     closeToEscalationModal();
     showToast(data.alreadyQueued?'Already queued for In House FRN Replacement.':'Queued for In House FRN Replacement.','ok');
   }catch(e){
-    if(err){err.textContent='TO escalation failed: '+e.message;err.classList.add('show');}
-    showToast('TO escalation failed: '+e.message,'err');
+    if(err){err.textContent='In House FRN Replacement failed: '+e.message;err.classList.add('show');}
+    showToast('In House FRN Replacement failed: '+e.message,'err');
   }finally{
     btn.disabled=false;
     btn.textContent='Queue to In House FRN Replacement';
