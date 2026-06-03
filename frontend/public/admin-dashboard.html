@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -50,7 +50,7 @@
     .caret{margin-left:auto;font-size:9px;transition:transform 0.25s;}
     .nav-group-toggle.open .caret{transform:rotate(90deg);}
     .nav-children{max-height:0;overflow:hidden;transition:max-height 0.3s ease;}
-    .nav-children.open{max-height:400px;}
+    .nav-children.open{max-height:650px;}
     .nav-sub .nav-item{padding:6px 10px 6px 28px;font-size:12px;color:var(--muted);}
     .nav-sub .nav-item:hover{color:var(--text);}
     .nav-sub .nav-item.active{color:#b91c1c;background:rgba(185,28,28,0.07);}
@@ -449,7 +449,7 @@
       <div class="svc-filter-bar">
         <input class="svc-search" placeholder="&#128269; Search scrap items..." oninput="filterSvcTable(this,'scrap-tbody')"/>
         <select class="svc-select" id="scrap-status-filter" onchange="renderScrap()"><option value="">All Status</option><option value="Pending Approval">Pending Approval</option><option value="Approved">Approved</option><option value="Disposed">Disposed</option></select>
-        <select class="svc-select" id="scrap-div-filter" onchange="renderScrap()"><option value="">All Divisions</option><option>SHIPL</option><option>VENTILATOR</option><option>INJECTOR</option><option>RADIOLOGY</option><option>GANSHORN</option><option>HOLTER</option><option>MONITORS</option></select>
+        <select class="svc-select" id="scrap-div-filter" onchange="renderScrap()"><option value="">All Divisions</option><option>SHIPL</option><option>VENTILATOR</option><option>VENT CON</option><option>INJECTOR</option><option>RADIOLOGY</option><option>GANSHORN</option><option>HOLTER</option><option>MONITORS</option><option>MONITORS CON</option></select>
       </div>
       <div class="panel">
         <div class="panel-header"><div class="panel-title">Scrap Items</div><div style="font-size:12px;color:var(--muted);" id="scrap-count-label">Loading...</div></div>
@@ -470,7 +470,7 @@
     <div class="form-grid" style="margin-top:16px;">
       <div class="form-group"><label>Device / Model *</label><input type="text" id="sc-device" placeholder=""/></div>
       <div class="form-group"><label>Serial No.</label><input type="text" id="sc-serial" placeholder=""/></div>
-      <div class="form-group"><label>Division *</label><select id="sc-div"><option value="">Select...</option><option>SHIPL</option><option>VENTILATOR</option><option>INJECTOR</option><option>RADIOLOGY</option><option>GANSHORN</option><option>HOLTER</option><option>MONITORS</option></select></div>
+      <div class="form-group"><label>Division *</label><select id="sc-div"><option value="">Select...</option><option>SHIPL</option><option>VENTILATOR</option><option>VENT CON</option><option>INJECTOR</option><option>RADIOLOGY</option><option>GANSHORN</option><option>HOLTER</option><option>MONITORS</option><option>MONITORS CON</option></select></div>
       <div class="form-group"><label>Customer</label><input type="text" id="sc-customer" placeholder="Customer name"/></div>
       <div class="form-group" style="grid-column:span 2;"><label>Reason *</label><input type="text" id="sc-reason" placeholder=""/></div>
       <div class="form-group"><label>Added By</label><input type="text" id="sc-addedby" placeholder="Engineer name"/></div>

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -42,7 +42,7 @@
     .caret{margin-left:auto;font-size:9px;transition:transform 0.25s;}
     .nav-group-toggle.open .caret{transform:rotate(90deg);}
     .nav-children{max-height:0;overflow:hidden;transition:max-height 0.3s ease;}
-    .nav-children.open{max-height:400px;}
+    .nav-children.open{max-height:650px;}
     .nav-sub .nav-item{padding:6px 10px 6px 28px;font-size:12px;color:var(--muted);}
     .nav-sub .nav-item:hover{color:var(--text);background:var(--surface2);}
     .sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);}
@@ -551,7 +551,7 @@ function roleLabel(role){
 function getToken()    { return sessionStorage.getItem('schiller_token') || ''; }
 function authHeaders() { return { 'Content-Type':'application/json', Authorization:'Bearer ' + getToken() }; }
 
-// Centralized fetch: on 401 (expired/missing token) → clear session & redirect to login
+// Centralized fetch: on 401 (expired/missing token) ? clear session & redirect to login
 async function apiFetch(url, options = {}) {
   const defaultHeaders = authHeaders();
   const mergedOptions = {
@@ -564,7 +564,7 @@ async function apiFetch(url, options = {}) {
     sessionStorage.removeItem('schiller_user');
     sessionStorage.removeItem('schiller_role');
     window.location.href = 'login.html';
-    throw new Error('Session expired — please log in again.');
+    throw new Error('Session expired � please log in again.');
   }
   return res;
 }

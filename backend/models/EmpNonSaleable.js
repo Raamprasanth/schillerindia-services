@@ -5,7 +5,7 @@ const empNonSaleableSchema = new mongoose.Schema(
     // ── Classification ────────────────────────────────────────
     division: {
       type: String,
-      enum: ['SHIPL', 'VENTILATOR', 'INJECTOR', 'RADIOLOGY', 'GANSHORN', 'HOLTER', 'MONITORS'],
+      enum: ['SHIPL', 'VENTILATOR', 'INJECTOR', 'RADIOLOGY', 'GANSHORN', 'HOLTER', 'MONITORS', 'MONITORS CON', 'VENT CON'],
       required: true,
     },
     unitDetails: {

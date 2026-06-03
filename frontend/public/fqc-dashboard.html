@@ -265,7 +265,7 @@
       <div class="form-group"><label>Device / Model *</label><input type="text" id="fq-device" placeholder=""/></div>
       <div class="form-group"><label>Serial No. *</label><input type="text" id="fq-serial" placeholder=""/></div>
       <div class="form-group"><label>Division *</label>
-        <select id="fq-div"><option value="">Select...</option><option>SHIPL</option><option>VENTILATOR</option><option>INJECTOR</option><option>RADIOLOGY</option><option>GANSHORN</option><option>HOLTER</option><option>MONITORS</option></select>
+        <select id="fq-div"><option value="">Select...</option><option>SHIPL</option><option>VENTILATOR</option><option>VENT CON</option><option>INJECTOR</option><option>RADIOLOGY</option><option>GANSHORN</option><option>HOLTER</option><option>MONITORS</option><option>MONITORS CON</option></select>
       </div>
       <div class="form-group"><label>Engineer *</label><input type="text" id="fq-engineer" placeholder="Engineer name"/></div>
       <div class="form-group"><label>Customer</label><input type="text" id="fq-customer" placeholder="Hospital / Clinic"/></div>
@@ -438,7 +438,7 @@
         <input class="filter-search" placeholder="&#128269; Search pending activity..." oninput="renderPendingActivity(this.value)"/>
         <select class="filter-select" id="pa-div-filter" onchange="renderPendingActivity()">
           <option value="">All Divisions</option>
-          <option>SHIPL</option><option>VENTILATOR</option><option>INJECTOR</option><option>RADIOLOGY</option><option>GANSHORN</option><option>HOLTER</option><option>MONITORS</option>
+          <option>SHIPL</option><option>VENTILATOR</option><option>VENT CON</option><option>INJECTOR</option><option>RADIOLOGY</option><option>GANSHORN</option><option>HOLTER</option><option>MONITORS</option><option>MONITORS CON</option>
         </select>
       </div>
       <div class="panel">
@@ -487,7 +487,7 @@
         <input class="filter-search" placeholder="&#128269; Search saleables..." oninput="filterTable(this,'saleables-tbody')"/>
         <select class="filter-select" id="sale-div-filter" onchange="renderSaleables()">
           <option value="">All Divisions</option>
-          <option>SHIPL</option><option>VENTILATOR</option><option>INJECTOR</option><option>RADIOLOGY</option><option>GANSHORN</option><option>HOLTER</option><option>MONITORS</option>
+          <option>SHIPL</option><option>VENTILATOR</option><option>VENT CON</option><option>INJECTOR</option><option>RADIOLOGY</option><option>GANSHORN</option><option>HOLTER</option><option>MONITORS</option><option>MONITORS CON</option>
         </select>
       </div>
       <div class="panel">
@@ -508,7 +508,7 @@
         </select>
         <select class="filter-select" id="bir-div-filter" onchange="renderBIR()">
           <option value="">All Divisions</option>
-          <option>SHIPL</option><option>VENTILATOR</option><option>INJECTOR</option><option>RADIOLOGY</option><option>GANSHORN</option><option>HOLTER</option><option>MONITORS</option>
+          <option>SHIPL</option><option>VENTILATOR</option><option>VENT CON</option><option>INJECTOR</option><option>RADIOLOGY</option><option>GANSHORN</option><option>HOLTER</option><option>MONITORS</option><option>MONITORS CON</option>
         </select>
         <button class="btn btn-primary btn-sm" onclick="openFQCModal()">+ New FQC</button>
       </div>

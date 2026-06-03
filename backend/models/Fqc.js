@@ -9,7 +9,7 @@ const fqcSchema = new mongoose.Schema(
     serial:   { type: String, trim: true, required: true },
     division: {
       type: String,
-      enum: ['SHIPL', 'VENTILATOR', 'INJECTOR', 'RADIOLOGY', 'GANSHORN', 'HOLTER', 'MONITORS'],
+      enum: ['SHIPL', 'VENTILATOR', 'INJECTOR', 'RADIOLOGY', 'GANSHORN', 'HOLTER', 'MONITORS', 'MONITORS CON', 'VENT CON'],
       required: true,
     },
     customer: { type: String, trim: true, default: '—' },
