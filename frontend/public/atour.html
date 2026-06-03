@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+(function(){
+  document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme') || 'light');
+  const token = sessionStorage.getItem('schiller_token');
+  const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
+  if (!token || !['admin','superadmin','administrator'].includes(role)) window.location.href = 'login.html';
+})();
+</script>
+<title>SchillerIndia - Admin Tour Summary</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="global-typography.css">
+<link rel="stylesheet" href="admin-sidebar.css">
+<link rel="stylesheet" href="employee-theme.css">
+<link rel="stylesheet" href="brand-logo.css">
+<script src="brand-logo.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f0f4f8;--surface:#fff;--surface2:#e8f0f7;--surface3:#f8fafc;--border:#ccdde8;--accent:#0068b5;--green:#059669;--green2:#047857;--red:#b91c1c;--text:#0f2236;--muted:#6b8ca8;--soft:#3d6480;--card:#fff;--shadow:0 1px 8px rgba(0,60,120,.07)}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+/* Custom Sidebar Styles if admin-sidebar.css is missing some parts */
+.sidebar{width:240px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 12px rgba(0,80,120,.06)}
+.sidebar-header{padding:20px 20px 16px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#450a0a,#b91c1c)}
+.role-badge{margin:10px 20px 0;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;background:rgba(185,28,28,0.1);color:#b91c1c;border:1px solid rgba(185,28,28,0.25);display:inline-block}
+.sidebar-nav{flex:1;padding:12px 10px}.nav-sec,.nav-section{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;padding:10px 8px 5px}
+.nav-item,.nav-group-toggle{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:500;cursor:pointer;transition:all .2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none}
+.nav-item:hover,.nav-group-toggle:hover{background:var(--surface2);color:var(--text)}.nav-item.active{background:rgba(185,28,28,0.1);color:#b91c1c;font-weight:700}.icon,.ico{font-size:13px;width:18px;text-align:center;flex-shrink:0}.caret{margin-left:auto;font-size:9px;transition:transform .25s}.nav-group-toggle.open .caret{transform:rotate(90deg)}.nav-children{max-height:0;overflow:hidden;transition:max-height .35s ease}.nav-children.open{max-height:650px;}.nav-sub .nav-item{padding:6px 10px 6px 28px;font-size:12px;color:var(--muted)}.nav-sub .nav-item.active{color:#b91c1c;background:rgba(185,28,28,0.07)}
+.sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);background:var(--surface3)}.user-info,.user-row{display:flex;align-items:center;gap:10px}.user-avatar,.user-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#b91c1c,#ef4444);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff}.user-name,.user-nm{font-size:13px;font-weight:600}.user-role,.user-rl{font-size:11px;color:var(--muted)}.logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:11px}
+
+.main{flex:1;display:flex;flex-direction:column;min-width:0}.topbar{padding:13px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:var(--shadow);gap:14px}.topbar-left{min-width:0}.breadcrumb{display:flex;align-items:center;gap:5px;font-size:10.5px;margin-bottom:2px;color:var(--muted);flex-wrap:wrap}.breadcrumb a{color:var(--muted);text-decoration:none}.breadcrumb a:hover{color:var(--accent)}.breadcrumb .sep{color:#b8cad8}.page-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);line-height:1.2}.topbar-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}.topbar-date-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:var(--surface3);font-size:11.5px;font-weight:700;color:var(--soft);white-space:nowrap}
+.content{padding:20px 24px;overflow:auto}.filter-bar{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:14px 16px;margin-bottom:16px}.filter-field{display:flex;flex-direction:column;gap:5px;min-width:260px;flex:1}.filter-label{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.filter-input{border:1.5px solid var(--border);border-radius:10px;padding:10px 13px;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none}.filter-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,104,181,.08)}.filter-note{font-size:11px;color:var(--muted);font-weight:600}.panel{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}.panel-head{padding:14px 18px;background:var(--surface3);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.panel-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px}.badge{padding:3px 10px;border-radius:20px;font-size:10.5px;font-weight:700;background:rgba(5,150,105,.1);color:#047857;border:1px solid rgba(5,150,105,.2)}
+.btn{border:none;border-radius:8px;padding:8px 15px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;display:inline-flex;align-items:center;gap:6px}.btn-primary{background:var(--green);color:#fff}.btn-primary:hover{background:var(--green2)}.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{background:#aa0000;}.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--soft)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}.btn:disabled{opacity:0.6;cursor:not-allowed;}
+.tour-list{padding:18px;display:flex;flex-direction:column;gap:18px}.tour-group{position:relative;padding-left:22px}.tour-group::before{content:'';position:absolute;left:7px;top:38px;bottom:6px;width:2px;background:linear-gradient(#9bd6c2,#d7e8f5);border-radius:4px}.tour-group-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;flex-wrap:wrap}.tour-group-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px}.tour-group-title::before{content:'';width:14px;height:14px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px rgba(5,150,105,.12);margin-left:-21px}.tour-group-meta{font-size:11.5px;color:var(--muted);font-weight:700}.tour-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.tour-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 7px rgba(0,60,120,.06);overflow:hidden}.tour-card-top{padding:12px 14px;background:linear-gradient(135deg,#f8fbff,#f0fdf8);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.tour-card-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.tour-day{display:inline-flex;align-items:center;gap:5px;background:rgba(5,150,105,.1);color:#047857;border:1px solid rgba(5,150,105,.2);border-radius:999px;padding:3px 9px;font-size:11px;font-weight:800}.tour-date{font-size:11.5px;color:var(--accent);font-weight:800;margin-top:5px}.tour-customer{font-size:14px;font-weight:800;color:var(--text);line-height:1.35}.tour-card-body{padding:13px 14px;display:flex;flex-direction:column;gap:12px}.tour-meta-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.tour-meta{background:var(--surface3);border:1px solid rgba(0,60,120,.07);border-radius:9px;padding:8px}.tour-meta-label{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:800;margin-bottom:3px}.tour-meta-val{font-size:11.5px;color:var(--text);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tour-notes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.tour-note{border:1px solid rgba(0,60,120,.08);border-radius:9px;padding:9px;background:#fbfdff}.tour-note-title{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:800;margin-bottom:4px}.tour-note-text{font-size:11.5px;line-height:1.45;color:var(--soft);max-height:52px;overflow:hidden}.tour-photos{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.pill{display:inline-block;padding:2px 8px;border-radius:9px;font-size:11px;font-weight:700;background:rgba(0,104,181,.08);color:var(--accent)}.thumb{width:42px;height:42px;object-fit:cover;border-radius:7px;border:1px solid var(--border);cursor:pointer}.del,.add-day,.pdf-day{background:none;border:1px solid rgba(185,28,28,.25);color:var(--red);border-radius:6px;padding:4px 9px;font-size:11px;font-weight:700;cursor:pointer}.add-day{border-color:rgba(5,150,105,.28);color:#047857;background:rgba(5,150,105,.06)}.pdf-day{border-color:rgba(0,104,181,.28);color:var(--accent);background:rgba(0,104,181,.06)}.empty{text-align:center;padding:55px 20px;color:var(--muted)}
+@media(max-width:1200px){.tour-cards{grid-template-columns:1fr}.tour-meta-grid,.tour-notes{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:900px){.sidebar{display:none}.tour-meta-grid,.tour-notes{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}.content{padding:14px}.tour-list{padding:12px}.tour-group{padding-left:0}.tour-group::before,.tour-group-title::before{display:none}}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <img class="brand-logo-img" src="logo.png" alt="SCHILLER">
+    </div>
+  </div>
+  <div style="padding:10px 20px 0;"><span class="role-badge">Admin</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <button class="nav-item " onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
+    <button class="nav-item " onclick="window.location.href='company-section.html'"><span class="icon">&#127970;</span> Company</button>
+    <button class="nav-item " onclick="window.location.href='division-section.html'"><span class="icon">&#128309;</span> Division</button>
+    <button class="nav-item " onclick="window.location.href='engineer-section.html'"><span class="icon">&#128119;</span> Engineers</button>
+    <button class="nav-item " onclick="window.location.href='dealer-section.html'"><span class="icon">&#129309;</span> Dealers</button>
+    <div class="nav-section">Operations</div>
+    <button class="nav-group-toggle " id="sf-toggle" onclick="toggleSF()">
+      <span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span>
+    </button>
+    <div class="nav-children " id="sf-children">
+      <div class="nav-sub">
+        <button class="nav-item " onclick="window.location.href='service-list.html'"><span class="icon">&#128225;</span> Services</button>
+        <button class="nav-item " onclick="window.location.href='pending-frn.html'"><span class="icon">&#128221;</span> Pending FRN</button>
+        <button class="nav-item " onclick="window.location.href='ob-pending.html'"><span class="icon">&#128194;</span> OB Pending</button>
+        <button class="nav-item " onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
+        <button class="nav-item " onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
+        <button class="nav-item " onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
+        <button class="nav-item " onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
+        <button class="nav-item " onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
+      </div>
+    </div>
+    <button class="nav-group-toggle open" id="ar-toggle" onclick="toggleAR()"><span class="icon">&#128196;</span> Activity Register <span class="caret">&#9656;</span></button>
+    <div class="nav-children open" id="ar-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
+        <a class="nav-item " href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
+        <a class="nav-item " href="aprfob.html"><span class="icon">&#128203;</span> TO/SO List</a>
+        <a class="nav-item " href="acr.html"><span class="icon">&#128209;</span> Closed TO/SO</a>
+        <a class="nav-item " href="ans.html"><span class="icon">&#128230;</span> Non Saleable</a>
+        <a class="nav-item " href="as.html"><span class="icon">&#128176;</span> Saleable</a>
+        <a class="nav-item " href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
+        <a class="nav-item " href="acbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
+        <a class="nav-item " href="apa.html"><span class="icon">&#128221;</span> Pending Activity</a>
+        <a class="nav-item " href="acpa.html"><span class="icon">&#9989;</span> Closed Activity</a>
+        <a class="nav-item active" href="atour.html"><span class="icon">&#128205;</span> Tour Summary</a>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="rta-toggle" onclick="toggleRTA()"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="rta-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="atfrn.html"><span class="icon">&#128221;</span> Admin RT FRN</a>
+        <a class="nav-item " href="atob.html"><span class="icon">&#128230;</span> Admin RT OB</a>
+        <a class="nav-item " href="atur.html"><span class="icon">&#128736;&#65039;</span> Admin RT UR</a>
+        <a class="nav-item " href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
+        <a class="nav-item" href="admin-re-repair-atrr.html"><span class="icon">&#128260;</span> Admin ATRR</a>
+        <a class="nav-item" href="admin-closed-re-repair-atcrr.html"><span class="icon">&#128683;</span> Admin ATCRR</a>
+      </div>
+    </div>
+    <div class="nav-section">Admin</div>
+    <button class="nav-item " onclick="window.location.href='usermanagement.html'"><span class="icon">&#128101;</span> User Management</button>
+    <button class="nav-item " onclick="window.location.href='Reports.html'"><span class="icon">&#128200;</span> Reports</button>
+    <button class="nav-item " onclick="window.location.href='settings.html'"><span class="icon">&#9881;&#65039;</span> Settings</button>
+    <button class="nav-item " onclick="window.location.href='notifications.html'"><span class="icon">&#128276;</span> Notifications</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="admin-avatar">A</div>
+      <div>
+        <div class="user-name" id="admin-name">Admin</div>
+        <div class="user-role">Administrator</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left"><div class="breadcrumb"><a href="admin-dashboard.html">Dashboard</a><span class="sep">&#8250;</span><span>Activity Register</span><span class="sep">&#8250;</span><span>Tour Summary</span></div><div class="page-title">Admin Tour Summary</div></div>
+    <div class="topbar-actions"><span class="topbar-date-pill" id="topbar-date"></span><button class="btn btn-outline" onclick="loadTours()">&#10227; Refresh</button><button class="btn btn-outline" onclick="exportAllTourExcel()">&#128196; Export Excel</button><button class="btn btn-danger" id="btn-del-selected" style="display:none;" onclick="deleteSelectedTours()">&#128465; Delete Selected</button></div>
+  </div>
+  <div class="content">
+    <section class="filter-bar">
+      <div class="filter-field">
+        <label class="filter-label" for="tour-search">Search Tours</label>
+        <input class="filter-input" id="tour-search" type="text" placeholder="Search by date, employee, or tour name..." oninput="applyTourFilters()">
+      </div>
+      <div class="filter-note" id="tour-filter-summary">Showing all entries</div>
+    </section>
+    <section class="panel">
+      <div class="panel-head"><div><div class="panel-title">&#128205; Admin Field Visit Entries</div><div style="font-size:11.5px;color:var(--muted);margin-top:3px;">View all tour summary entries from Employees and Product Team.</div></div><span class="badge" id="tour-count-badge">0 entries</span></div>
+      <div class="tour-list" id="tour-list"><div class="empty">Loading tour summaries...</div></div>
+    </section>
+  </div>
+</main>
+<script>
+function toggleSF(){document.getElementById('sf-toggle').classList.toggle('open');document.getElementById('sf-children').classList.toggle('open')}
+function toggleAR(){document.getElementById('ar-toggle').classList.toggle('open');document.getElementById('ar-children').classList.toggle('open')}
+function toggleRTA(){document.getElementById('rta-toggle').classList.toggle('open');document.getElementById('rta-children').classList.toggle('open')}
+
+const token = sessionStorage.getItem('schiller_token') || '';
+let tours = [], filteredTours = [];
+(function init(){
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
+  const name = u.name || 'Admin';
+  setText('admin-name', name); setText('admin-avatar', name.charAt(0).toUpperCase());
+  setText('topbar-date', new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'}));
+  loadTours();
+})();
+function hdrs(){ return {'Content-Type':'application/json', Authorization:'Bearer '+token}; }
+function handleAuth(res){ if(res.status===401){ window.location.href='login.html'; throw new Error('Unauthorized'); } }
+
+async function loadTours(){
+  const listEl = document.getElementById('tour-list');
+  listEl.innerHTML = '<div class="empty">Loading tour summaries...</div>';
+  try{
+    const res = await fetch('/api/atours', { headers: hdrs() }); handleAuth(res);
+    const json = await res.json().catch(()=>[]);
+    if(!res.ok) throw new Error(json.message || 'HTTP '+res.status);
+    tours = Array.isArray(json) ? json : (json.data || []);
+    applyTourFilters();
+  }catch(e){
+    if(e.message !== 'Unauthorized') listEl.innerHTML = '<div class="empty" style="color:var(--red)">Could not load tours: '+esc(e.message)+'</div>';
+  }
+}
+function renderTable(){
+  setText('tour-count-badge', filteredTours.length + (filteredTours.length === 1 ? ' entry' : ' entries'));
+  const listEl = document.getElementById('tour-list');
+  if(!filteredTours.length){
+    const hasQuery = !!val('tour-search');
+    listEl.innerHTML = '<div class="empty"><div style="font-size:28px;margin-bottom:8px;">&#128205;</div>' + (hasQuery ? 'No matching tour entries found.' : 'No tour entries yet.') + '</div>';
+    return;
+  }
+  const groups = {};
+  filteredTours.forEach(t => {
+    const key = (t.tourName || t.customerName || 'Tour Summary').trim();
+    if(!groups[key]) groups[key] = [];
+    groups[key].push(t);
+  });
+  listEl.innerHTML = '<div class="tour-cards">'
+    + Object.keys(groups).sort().map((name, index) => {
+        const items = groups[name].sort((a,b) => (Number(a.dayNo||1)-Number(b.dayNo||1)) || String(a.startDate||'').localeCompare(String(b.startDate||'')));
+        return renderTourCardGroup(name, items, index + 1);
+      }).join('')
+    + '</div>';
+}
+function applyTourFilters(){
+  const query = val('tour-search').toLowerCase();
+  filteredTours = tours.filter(t => {
+    if(!query) return true;
+    const name = String(t.tourName || t.customerName || 'Tour Summary').toLowerCase();
+    const rawDate = String(t.startDate || '').toLowerCase();
+    const displayDate = fmtDate(t.startDate).toLowerCase();
+    const region = String(t.region || '').toLowerCase();
+    const branch = String(t.branch || '').toLowerCase();
+    const created = String(t.createdBy || '').toLowerCase();
+    return name.includes(query) || rawDate.includes(query) || displayDate.includes(query) || region.includes(query) || branch.includes(query) || created.includes(query);
+  });
+  setText('tour-filter-summary', query ? ('Showing ' + filteredTours.length + ' of ' + tours.length + ' entries') : 'Showing all entries');
+  updateDeleteSelectedBtn();
+  renderTable();
+}
+function renderTourCardGroup(name, items, tourNum){
+  const tourKey = escAttr(name);
+  const sortedItems = [...items].sort((a,b) => String(a.startDate||'').localeCompare(String(b.startDate||'')));
+  const firstDate = sortedItems[0] ? fmtDate(sortedItems[0].startDate) : '';
+  const lastDate = sortedItems[sortedItems.length - 1] ? fmtDate(sortedItems[sortedItems.length - 1].startDate) : '';
+  const dateText = (firstDate === lastDate || !lastDate) ? firstDate : (firstDate + ' - ' + lastDate);
+
+  let html = '<div class="tour-card-wrapper" style="display: flex; align-items: flex-start; gap: 10px; width: 100%;">'
+    + '<div class="tour-number" style="font-size: 13px; font-weight: 800; color: var(--muted); margin-top: 10px; background: var(--surface2); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); flex-shrink: 0;">' + tourNum + '</div>'
+    + '<article class="tour-card" style="flex: 1; min-width: 0;">'
+    + '<div class="tour-card-top" onclick="toggleTourBody(this)" style="cursor: pointer; user-select: none; border-bottom: none;"><div><div class="tour-day">' + esc(name) + '</div><div class="tour-date">' + dateText + ' (' + items.length + ' day' + (items.length === 1 ? '' : 's') + ' logged)</div></div>'
+    + '<div class="tour-card-actions" onclick="event.stopPropagation()">'
+    + '  <button class="pdf-day" onclick="generateTourExcel(&quot;' + tourKey + '&quot;)">&#128196; Excel</button>'
+    + '</div></div>'
+    + '<div class="tour-card-body" style="display: none; flex-direction: column; gap: 16px;">';
+    
+  items.forEach((t, idx) => {
+    const photos = (t.images || []).filter(Boolean).map(src => '<img class="thumb" src="'+src+'" onclick="viewImg(&quot;'+esc(src)+'&quot;)" title="View photo">').join('') || '<span style="color:var(--muted);font-size:11.5px;">No photos</span>';
+    
+    if (idx > 0) {
+      html += '<div style="border-top: 1px dashed var(--border); margin: 4px 0;"></div>';
+    }
+    
+    const sourceTypeStr = t.sourceType ? (' <span style="font-size:10px; background:rgba(0,0,0,0.1); padding:2px 6px; border-radius:4px; color:var(--text);">' + esc(t.sourceType) + '</span>') : '';
+    
+    html += '<div class="tour-day-section" style="display:flex; flex-direction:column; gap:10px;">'
+      + '  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">'
+      + '    <div style="display:flex; align-items:center; gap:8px;">'
+      + '      <input type="checkbox" class="tour-checkbox" value="'+(t._id||t.id)+'" onchange="updateDeleteSelectedBtn()" style="width:16px;height:16px;cursor:pointer;">'
+      + '      <span style="font-size:12px; font-weight:800; color:var(--accent); background:rgba(0,104,181,.08); padding:3px 9px; border-radius:12px;">Day ' + esc(t.dayNo || 1) + '</span>'
+      + '      <span style="font-size:12px; font-weight:700; color:var(--muted);">' + fmtDate(t.startDate) + '</span>'
+      + sourceTypeStr
+      + '    </div>'
+      + '    <div class="tour-card-actions">'
+      + '      <button class="del" onclick="deleteTour(&quot;'+(t._id||t.id)+'&quot;)">&#128465; Delete</button>'
+      + '    </div>'
+      + '  </div>'
+      + '  <div class="tour-customer">' + esc(t.customerName || '-') + '</div>'
+      + '  <div class="tour-meta-grid">'
+      + '    ' + meta('Region', t.region) + meta('Branch', t.branch) + meta('Model', t.model) + meta('Unit Status', t.unitStatus) + meta('Unit SL No', t.unitSlNo)
+      + '  </div>'
+      + '  <div class="tour-notes">'
+      + '    ' + note('Problem Reported', t.problemReported) + note('Problem Observed', t.problemObserved) + note('Action Taken', t.actionTaken)
+      + '  </div>'
+      + '  <div class="tour-photos">' + photos + '</div>'
+      + '  <div style="font-size:11px; color:var(--muted); font-weight:700;">Added by ' + esc(t.createdBy || '-') + ' (' + esc(t.createdByDivision || 'Unknown Div') + ')</div>'
+      + '</div>';
+  });
+  
+  html += '</div></article></div>';
+  return html;
+}
+function toggleTourBody(headerEl) {
+  const card = headerEl.closest('.tour-card');
+  const body = card.querySelector('.tour-card-body');
+  if (body) {
+    if (body.style.display === 'none') {
+      body.style.display = 'flex';
+      headerEl.style.borderBottom = '1px solid var(--border)';
+    } else {
+      body.style.display = 'none';
+      headerEl.style.borderBottom = 'none';
+    }
+  }
+}
+function meta(label,value){ return '<div class="tour-meta"><div class="tour-meta-label">'+esc(label)+'</div><div class="tour-meta-val" title="'+esc(value||'')+'">'+esc(value||'-')+'</div></div>'; }
+function note(label,value){ return '<div class="tour-note"><div class="tour-note-title">'+esc(label)+'</div><div class="tour-note-text" title="'+esc(value||'')+'">'+esc(value||'-')+'</div></div>'; }
+
+function updateDeleteSelectedBtn() {
+  const checked = document.querySelectorAll('.tour-checkbox:checked');
+  const btn = document.getElementById('btn-del-selected');
+  if(checked.length > 0) {
+    btn.style.display = 'inline-flex';
+    btn.innerHTML = '&#128465; Delete Selected (' + checked.length + ')';
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+async function deleteSelectedTours() {
+  const checked = Array.from(document.querySelectorAll('.tour-checkbox:checked')).map(cb => cb.value);
+  if(!checked.length) return;
+  if(!confirm('Delete ' + checked.length + ' selected tour entries?')) return;
+  const btn = document.getElementById('btn-del-selected');
+  btn.disabled = true;
+  btn.textContent = 'Deleting...';
+  try {
+    const res = await fetch('/api/atours/bulk-delete', {
+      method: 'POST',
+      headers: hdrs(),
+      body: JSON.stringify({ ids: checked })
+    });
+    handleAuth(res);
+    await loadTours();
+    updateDeleteSelectedBtn();
+  } catch(e) {
+    alert('Failed to delete: ' + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function deleteTour(id){ if(!confirm('Delete this admin tour summary?')) return; const res=await fetch('/api/atours/'+id,{method:'DELETE',headers:hdrs()}); handleAuth(res); await loadTours(); }
+async function exportAllTourExcel(){
+  if(!filteredTours.length){ alert('No tour summaries to export.'); return; }
+  const items = filteredTours.slice().sort((a,b) => String(a.startDate||'').localeCompare(String(b.startDate||'')));
+  downloadTourWorkbook(items, 'Admin_Tour_Summary_Export');
+}
+async function generateTourExcel(tourName){
+  const sameTour = tours.filter(t => String(t.tourName || t.customerName || 'Tour Summary') === String(tourName));
+  if(!sameTour.length){ alert('No tour days found.'); return; }
+  const items = sameTour.sort((a,b) => (Number(a.dayNo||1)-Number(b.dayNo||1)) || String(a.startDate||'').localeCompare(String(b.startDate||'')));
+  downloadTourWorkbook(items, safeFileName(tourName + '-summary-' + (new Date().toISOString().slice(0,10))));
+}
+function downloadTourWorkbook(items, fileBase){
+  const rows = items.map((t, i) => {
+    const photos = (t.images || []).filter(Boolean);
+    const photoHtml = photos.length
+      ? photos.map((src, idx) => '<span style="font-size:10px;font-weight:700;color:#4b5563;">Photo ' + (idx + 1) + '</span><br><img src="' + escAttr(src) + '" width="140" height="100" style="border:1px solid #cbd5e1;border-radius:4px;" /><br><br>').join('')
+      : '<span style="color:#64748b;">No photos</span>';
+    return '<tr>'
+      + '<td>' + (i + 1) + '</td>'
+      + '<td>' + esc(t.tourName || t.customerName || 'Tour Summary') + '</td>'
+      + '<td>' + esc(String(t.dayNo || 1)) + '</td>'
+      + '<td>' + esc(fmtDate(t.startDate)) + '</td>'
+      + '<td>' + esc(t.sourceType || 'Unknown') + '</td>'
+      + '<td>' + esc(t.customerName || '') + '</td>'
+      + '<td>' + esc(t.region || '') + '</td>'
+      + '<td>' + esc(t.branch || '') + '</td>'
+      + '<td>' + esc(t.model || '') + '</td>'
+      + '<td>' + esc(t.unitStatus || '') + '</td>'
+      + '<td>' + esc(t.unitSlNo || '') + '</td>'
+      + '<td>' + esc(t.problemReported || '') + '</td>'
+      + '<td>' + esc(t.problemObserved || '') + '</td>'
+      + '<td>' + esc(t.actionTaken || '') + '</td>'
+      + '<td>' + esc(t.createdBy || '') + '</td>'
+      + '<td>' + photoHtml + '</td>'
+      + '</tr>';
+  }).join('');
+  const html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Tour Summary</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--><style>table{border-collapse:collapse;width:100%;font-family:Arial,sans-serif}th,td{border:1px solid #cbd5e1;padding:8px;vertical-align:top;text-align:left}th{background:#e8f0f7;font-weight:700}.photos{min-width:180px}</style></head><body><table><thead><tr><th>S.No</th><th>Tour Name</th><th>Day</th><th>Start Date</th><th>Source</th><th>Customer Name</th><th>Region</th><th>Branch</th><th>Model</th><th>Unit Status</th><th>Unit SL No</th><th>Problem Reported</th><th>Problem Observed</th><th>Action Taken</th><th>Added By</th><th class="photos">Photos</th></tr></thead><tbody>' + rows + '</tbody></table><script src="tab-fix.js"></script></body></html>';
+  const blob = new Blob(['\ufeff', html], { type: 'application/vnd.ms-excel' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = safeFileName(fileBase) + '.xls';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function safeFileName(s){ return String(s||'tour-summary').toLowerCase().replace(/[^a-z0-9\-]+/g,'-').replace(/^-+|-+$/g,'').slice(0,80) || 'tour-summary'; }
+function viewImg(src){ const ov=document.createElement('div'); ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out'; ov.onclick=()=>ov.remove(); const img=document.createElement('img'); img.src=src; img.style.cssText='max-width:90vw;max-height:88vh;border-radius:12px'; ov.appendChild(img); document.body.appendChild(ov); }
+function val(id){ return (document.getElementById(id)?.value || '').trim(); }
+function setText(id,v){ const el=document.getElementById(id); if(el) el.textContent=v; }
+function fmtDate(d){ if(!d)return'-'; const p=String(d).split('T')[0].split('-'); return p.length===3 ? p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Number(p[1])-1]+' '+p[0] : String(d); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escAttr(s){ return esc(s).replace(/'/g,'&#39;'); }
+function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; }
+</script>
+<script src="tab-fix.js"></script>
+</body>
+</html>

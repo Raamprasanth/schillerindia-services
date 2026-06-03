@@ -1,5 +1,6 @@
 const express = require('express');
 const PTourSummary = require('../models/PTourSummary');
+const ATourSummary = require('../models/ATourSummary');
 const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -60,6 +61,18 @@ router.post('/', async (req, res) => {
       createdBy: req.user?.name || req.user?.email || '',
       createdById: req.user?._id,
     });
+
+    try {
+      await ATourSummary.create({
+        ...doc.toObject(),
+        _id: new require('mongoose').Types.ObjectId(),
+        sourceType: 'Product Team',
+        sourceId: doc._id
+      });
+    } catch (atErr) {
+      console.error('[POST /api/ptours] ATourSummary mirror error:', atErr);
+    }
+
     res.status(201).json(doc);
   } catch (err) {
     console.error('[POST /api/ptours]', err);
@@ -73,6 +86,13 @@ router.delete('/:id', async (req, res) => {
     const filter = { _id: req.params.id, ...ownerFilter(req.user) };
     const doc = await PTourSummary.findOneAndDelete(filter);
     if (!doc) return res.status(404).json({ message: 'Tour summary not found.' });
+
+    try {
+      await ATourSummary.deleteMany({ sourceId: req.params.id, sourceType: 'Product Team' });
+    } catch (atErr) {
+      console.error('[DELETE /api/ptours] ATourSummary mirror error:', atErr);
+    }
+
     res.json({ success: true, id: req.params.id });
   } catch (err) {
     console.error('[DELETE /api/ptours/:id]', err);

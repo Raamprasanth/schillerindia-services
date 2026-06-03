@@ -1,5 +1,6 @@
 const express = require('express');
 const TourSummary = require('../models/TourSummary');
+const ATourSummary = require('../models/ATourSummary');
 const Admin = require('../models/Admin');
 const Employee = require('../models/Employee');
 const RepairTeam = require('../models/Repairteam');
@@ -138,6 +139,18 @@ router.post('/', async (req, res) => {
       createdByDivisionKey: normalizeDivision(getDivisionLabel(req.user)),
       updatedBy: req.user?.name || req.user?.email || '',
     });
+
+    try {
+      await ATourSummary.create({
+        ...doc.toObject(),
+        _id: new require('mongoose').Types.ObjectId(), // New ID for the copy
+        sourceType: 'Employee',
+        sourceId: doc._id
+      });
+    } catch (atErr) {
+      console.error('[POST /api/tours] ATourSummary mirror error:', atErr);
+    }
+
     res.status(201).json(doc);
   } catch (err) {
     console.error('[POST /api/tours]', err);
@@ -151,6 +164,13 @@ router.delete('/:id', async (req, res) => {
     const filter = { _id: req.params.id, ...ownerFilter(req.user) };
     const doc = await TourSummary.findOneAndDelete(filter);
     if (!doc) return res.status(404).json({ message: 'Tour summary not found.' });
+    
+    try {
+      await ATourSummary.deleteMany({ sourceId: req.params.id, sourceType: 'Employee' });
+    } catch (atErr) {
+      console.error('[DELETE /api/tours] ATourSummary mirror error:', atErr);
+    }
+
     res.json({ success: true, id: req.params.id });
   } catch (err) {
     console.error('[DELETE /api/tours/:id]', err);
