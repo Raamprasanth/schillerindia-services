@@ -121,13 +121,43 @@ function adjustNavDropdown(panel) {
   document.head.appendChild(style);
 
   document.addEventListener('DOMContentLoaded', function () {
+    ensureAdminActivityPages();
     document.querySelectorAll('.nav-children.open').forEach(adjustNavDropdown);
     document.querySelectorAll('.nav-group-toggle').forEach(function (btn) {
       btn.addEventListener('click', function () {
         setTimeout(function () {
+          ensureAdminActivityPages();
           document.querySelectorAll('.nav-children').forEach(adjustNavDropdown);
         }, 0);
       });
     });
   });
 })();
+
+function ensureAdminActivityPages() {
+  var closedBir = document.querySelector('a[href="acbir.html"]');
+  if (!closedBir || !closedBir.parentNode) return;
+
+  if (!document.querySelector('a[href="apa.html"]')) {
+    closedBir.parentNode.insertBefore(
+      buildAdminNavLink('apa.html', '&#128221;', 'Pending Activity'),
+      closedBir.nextSibling
+    );
+  }
+
+  if (!document.querySelector('a[href="acpa.html"]')) {
+    var apa = document.querySelector('a[href="apa.html"]') || closedBir;
+    apa.parentNode.insertBefore(
+      buildAdminNavLink('acpa.html', '&#9989;', 'Closed Activity'),
+      apa.nextSibling
+    );
+  }
+}
+
+function buildAdminNavLink(href, icon, text) {
+  var link = document.createElement('a');
+  link.className = 'nav-item';
+  link.href = href;
+  link.innerHTML = '<span class="icon">' + icon + '</span> ' + text;
+  return link;
+}
