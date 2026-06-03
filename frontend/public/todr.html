@@ -157,6 +157,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 .btn-xs{padding:4px 10px;font-size:11px;border-radius:6px;border:1.5px solid var(--border);background:none;color:var(--soft);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;font-weight:600;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;}
 .btn-xs:hover{border-color:var(--accent);color:var(--accent);background:var(--accent3);}
 .btn-xs.update{color:var(--accent);border-color:rgba(0,104,181,0.3);background:var(--accent3);}
+.btn-xs:disabled, .btn-xs.update:disabled{opacity:0.4;cursor:not-allowed;background:var(--surface2);border-color:var(--border);color:var(--muted);pointer-events:none;}
 
 /* -- LOADING / EMPTY -- */
 .loading-row td{text-align:center;padding:50px 20px;color:var(--muted);font-size:13px;}
@@ -505,7 +506,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <td><input type="text" class="f-inp" value="${esc(r.toNo || '')}" onchange="updateTextField('${r._id}','toNo',this.value)" style="width:100px;"></td>
         <td><input type="date" class="f-inp" min="${TODAY_ISO}" max="${TODAY_ISO}" value="${dateInputValue(r.toRaisedDate)}" onchange="updateDateField('${r._id}','toRaisedDate',this.value)" style="width:140px;"></td>
         <td><input type="date" class="f-inp" max="${TODAY_ISO}" value="${dateInputValue(r.sparesReceivedDate)}" onchange="updateDateField('${r._id}','sparesReceivedDate',this.value)" style="width:140px;"></td>
-        <td><button class="btn-xs update" onclick="fulfillRecord('${r._id}')">Fulfilled</button></td>
+        <td><button class="btn-xs update" ${!(r.toNo && r.toRaisedDate) ? 'disabled' : ''} onclick="fulfillRecord('${r._id}')">Fulfilled</button></td>
       </tr>
     `).join('');
   }
