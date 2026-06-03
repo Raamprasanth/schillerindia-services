@@ -546,7 +546,6 @@ async function loadData() {
     SCRAP = await res.json();
     populateSCEngFilter();
     applyFilters();
-    updateStats();
     showToast('Loaded ' + SCRAP.length + ' record' + (SCRAP.length !== 1 ? 's' : ''), 'info');
   } catch (e) {
     if (e.message === 'Unauthorized') return;
@@ -563,14 +562,6 @@ function populateSCEngFilter() {
   engs.forEach(e => { const o = document.createElement('option'); o.value = e; o.textContent = e; sel.appendChild(o); });
 }
 
-function updateStats() {
-  (document.getElementById('s-total')||{}).textContent = SCRAP.length;
-  (document.getElementById('s-scrapped')||{}).textContent = SCRAP.filter(d => (d.typeWork||'').toUpperCase().includes('SUPPLIER')).length;
-  (document.getElementById('s-pending')||{}).textContent = SCRAP.filter(d => d.jobSheetStatus === 'Pending' || !d.jobSheetStatus).length;
-  const avgPd = SCRAP.length ? Math.round(SCRAP.reduce((s,d)=>s+(d.pdPfrn||0),0)/SCRAP.length) : 0;
-  (document.getElementById('s-avg')||{}).textContent = avgPd;
-  (document.getElementById('s-js')||{}).textContent = SCRAP.filter(d => d.jobSheetUpdated).length;
-}
 
 // -- FILTERS -----------------------------------------------
 function clearFilters() {
@@ -706,7 +697,6 @@ async function deleteRecord(id) {
     if(idx !== -1) SCRAP.splice(idx, 1);
     
     applyFilters();
-    if(typeof updateStats === 'function') updateStats();
     showToast('Record deleted successfully.', 'ok');
   } catch(e) {
     showToast('Delete failed: ' + e.message, 'err');
@@ -788,7 +778,7 @@ async function saveJobSheet() {
     // Patch local cache
     const idx = SCRAP.findIndex(x => (x._id||x.id) === id);
     if (idx !== -1) { SCRAP[idx].jobSheetRows = jobSheetRows; SCRAP[idx].jobSheetStatus = status; SCRAP[idx].jobSheetUpdated = true; }
-    renderTable(); updateStats();
+    renderTable();
     showJSMsg('Job Sheet saved successfully!', 'ok');
     showToast('Job Sheet updated.', 'ok');
     setTimeout(closeJS, 1100);
@@ -835,7 +825,7 @@ function getRange(c,t){if(t<=7)return Array.from({length:t},(_,i)=>i+1);if(c<=4)
 function gp(p){currentPage=p;renderTable();}
 
 // -- HELPERS -----------------------------------------------
-function setLoading(){document.getElementById('sc-tbody').innerHTML='<tr class="loading-row"><td colspan="18"><span class="spin"></span>Loading from database...</td></tr>';['s-total','s-scrapped','s-pending','s-avg','s-js'].forEach(id=>document.getElementById(id).textContent='-');}
+function setLoading(){document.getElementById('sc-tbody').innerHTML=`<tr class="loading-row"><td colspan="${SUPPLIER_COLUMNS.length+1}"><span class="spin"></span>Loading from database...</td></tr>`;}
 function setError(msg){document.getElementById('sc-tbody').innerHTML=`<tr class="loading-row"><td colspan="18" style="color:var(--red);">&#9888; ${esc(msg)}</td></tr>`;}
 function fmtDate(d){if(!d)return'-';const p=String(d).split('T')[0].split('-');if(p.length<3)return String(d);return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0];}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
