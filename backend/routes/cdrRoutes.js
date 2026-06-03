@@ -27,8 +27,8 @@ router.get('/', protect, async (req, res) => {
       if (r.sourceId) {
         let doc = null;
         try {
-           doc = await EmpFRN.findById(r.sourceId).lean();
-           if (!doc) doc = await Service.findById(r.sourceId).lean();
+           doc = await EmpFRN.findById(r.sourceId).populate('division', 'name').lean();
+           if (!doc) doc = await Service.findById(r.sourceId).populate('division', 'name').lean();
            if (!doc) doc = await EstimationPending.findById(r.sourceId).lean();
         } catch(e) {}
         
@@ -39,6 +39,7 @@ router.get('/', protect, async (req, res) => {
           if (bName) r.description = bName;
           r.unitStatus = doc.unitSts || doc.unitStatus || '';
           r.quantity = doc.qty || doc.quantity || '';
+          r.division = (doc.division && doc.division.name) ? doc.division.name : (doc.divisionName || '');
         }
       }
     }
