@@ -4,12 +4,12 @@ const ESCALATION_LABELS_KEY = 'escalation_labels';
 
 const DEFAULT_ESCALATION_TYPES = [
   { value: 'all_escalation', label: 'All Escalation' },
-  { value: 'main_combined', label: 'Main Combined Escalation' },
+  { value: 'main_combined', label: 'Dispatch Escalation' },
   { value: 'pending_frn', label: 'Pending FRN Escalation' },
   { value: 'estimation_pending', label: 'Estimation Pending Escalation' },
-  { value: 'sr_escalation', label: 'SR Escalation' },
-  { value: 'to_escalation', label: 'TO Escalation' },
-  { value: 'ur_followup', label: 'Under Repair Stock / Follow-up Escalation' },
+  { value: 'sr_escalation', label: 'FRN Replacement Escalation' },
+  { value: 'to_escalation', label: 'In House FRN Replacement' },
+  { value: 'ur_followup', label: 'Stock Escalation' },
   { value: 'ur_scrap', label: 'Under Repair Scrap Escalation' },
   { value: 'prf_ob_escalation', label: 'PRF/OB Escalation' },
   { value: 'supplier_warranty_escalation', label: 'Supplier Warranty Escalation' },

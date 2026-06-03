@@ -30,6 +30,9 @@
   }
 
   function addButtons() {
+    const isScDashboard = /sc-dashboard\.html/i.test(window.location.pathname);
+    if (!isScDashboard) return;
+
     const topbar = document.querySelector('.topbar');
     if (!topbar || topbar.querySelector('[data-dashboard-actions]')) return;
 

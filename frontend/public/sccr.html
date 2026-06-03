@@ -408,10 +408,6 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <label>Division</label>
         <select class="f-select" id="fl-division" onchange="applyFilters()">
           <option value="">All Divisions</option>
-          <option>PATIENT MONITORS</option><option>MONITORS CON</option><option>SAG</option><option>VENTILATOR</option><option>VENT CON</option>
-          <option>DEFIBRILLATOR</option><option>ECG</option><option>SYRINGE PUMP</option>
-          <option>INFUSION PUMP</option><option>ULTRASOUND</option><option>ANAESTHESIA</option>
-          <option>RADIOLOGY</option><option>OTHER</option>
         </select>
 
         <button class="btn btn-outline btn-sm" onclick="clearFilters()" style="margin-left:auto;">&#10060; Clear</button>
@@ -478,9 +474,23 @@ function handleUnauth(res){
 async function loadData(){
   setLoading();
   try{
-    const res = await fetch(API + '/api/sccr', {headers: authHeaders()});
+    const [res, divRes] = await Promise.all([
+      fetch(API + '/api/sccr', {headers: authHeaders()}),
+      fetch(API + '/api/divisions', {headers: authHeaders()})
+    ]);
     handleUnauth(res);
+    handleUnauth(divRes);
     if(!res.ok) throw new Error('HTTP ' + res.status);
+    
+    if(divRes.ok) {
+      const divData = await divRes.json();
+      const divSelect = document.getElementById('fl-division');
+      const curVal = divSelect.value;
+      divSelect.innerHTML = '<option value="">All Divisions</option>' + 
+        divData.data.map(d => `<option value="${d.name}">${d.name}</option>`).join('');
+      divSelect.value = curVal;
+    }
+
     DATA = await res.json();
     DATA = DATA.map(d => ({...d, id: d._id || d.id}));
     applyFilters();

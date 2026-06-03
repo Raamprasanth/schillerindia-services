@@ -601,7 +601,7 @@ function sortBy(k){if(sortKey===k) sortDir*=-1; else{sortKey=k;sortDir=1;} sortA
 function sortArr(){filtered.sort((a,b)=>{const av=String(a[sortKey]||'').toLowerCase(),bv=String(b[sortKey]||'').toLowerCase();return av<bv?-sortDir:av>bv?sortDir:0;});}
 
 const RT_CLASS={all:'rt-all',dispatchlist:'rt-dispatch',scraplist:'rt-scrap',stocklist:'rt-stock','prf/ob_completed':'rt-prf'};
-const RT_LABEL={all:'ALL',dispatchlist:'Dispatch List',scraplist:'Scrap List',stocklist:'Stock List','prf/ob_completed':'TO/SO Completed',all_escalation:'All Escalation',pending_frn:'Pending FRN',under_repair:'Under Repair',ob_pending:'OB Pending',estimation_pending:'Estimation Pending',sr_escalation:'SR Escalation'};
+const RT_LABEL={all:'ALL',dispatchlist:'Dispatch List',scraplist:'Scrap List',stocklist:'Stock List','prf/ob_completed':'TO/SO Completed',all_escalation:'All Escalation',pending_frn:'Pending FRN',under_repair:'Under Repair',ob_pending:'OB Pending',estimation_pending:'Estimation Pending',main_combined:'Dispatch Escalation',sr_escalation:'FRN Replacement Escalation',to_escalation:'In House FRN Replacement',ur_followup:'Stock Escalation'};
 
 function renderTable(){
   const perPage=parseInt(document.getElementById('per-page').value)||10;
@@ -1248,12 +1248,12 @@ deleteMail = async function(encodedEmail){
 
 const DEFAULT_ESCALATION_TYPES = [
   { value:'all_escalation', label:'All Escalation' },
-  { value:'main_combined', label:'Main Combined Escalation' },
+  { value:'main_combined', label:'Dispatch Escalation' },
   { value:'pending_frn', label:'Pending FRN Escalation' },
   { value:'estimation_pending', label:'Estimation Pending Escalation' },
-  { value:'sr_escalation', label:'SR Escalation' },
-  { value:'to_escalation', label:'TO Escalation' },
-  { value:'ur_followup', label:'Under Repair Stock / Follow-up Escalation' },
+  { value:'sr_escalation', label:'FRN Replacement Escalation' },
+  { value:'to_escalation', label:'In House FRN Replacement' },
+  { value:'ur_followup', label:'Stock Escalation' },
   { value:'ur_scrap', label:'Under Repair Scrap Escalation' },
   { value:'prf_ob_escalation', label:'PRF/OB Escalation' },
   { value:'supplier_warranty_escalation', label:'Supplier Warranty Escalation' },

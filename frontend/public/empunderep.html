@@ -357,7 +357,7 @@ body.panel-open .main{display:none;}
   <div class="modal">
     <div class="modal-header">
       <div>
-        <div class="modal-title">TO Escalation <span id="to-modal-badge" style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:10px;background:rgba(124,58,237,0.10);color:#7c3aed;border:1px solid rgba(124,58,237,0.22);margin-left:8px;">-</span></div>
+        <div class="modal-title">In House FRN Replacement <span id="to-modal-badge" style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:10px;background:rgba(124,58,237,0.10);color:#7c3aed;border:1px solid rgba(124,58,237,0.22);margin-left:8px;">-</span></div>
         <div style="font-size:11.5px;color:var(--muted);margin-top:3px;">Add one or more TO rows, then queue this under-repair entry to TO escalation.</div>
       </div>
       <button class="modal-close" onclick="closeToEscalationModal()" title="Close (Esc)">&#10005;</button>
@@ -365,7 +365,7 @@ body.panel-open .main{display:none;}
     <div class="modal-scroll">
       <div class="modal-body">
         <div class="fm-msg" id="to-msg"></div>
-        <div class="form-section-title" style="color:var(--amber);border-bottom-color:rgba(180,83,9,0.2);margin-bottom:12px;">TO Escalation Line Items</div>
+        <div class="form-section-title" style="color:var(--amber);border-bottom-color:rgba(180,83,9,0.2);margin-bottom:12px;">In House FRN Replacement Line Items</div>
         <div class="line-items-wrap">
           <div style="overflow-x:auto;">
             <table class="to-line-items-table">
@@ -394,7 +394,7 @@ body.panel-open .main{display:none;}
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline btn-sm" onclick="closeToEscalationModal()">Cancel</button>
-      <button class="btn btn-success" id="to-queue-btn" onclick="submitToEscalationQueue()">Queue to TO ES</button>
+      <button class="btn btn-success" id="to-queue-btn" onclick="submitToEscalationQueue()">Queue to In House FRN Replacement</button>
     </div>
   </div>
 </div>
@@ -895,7 +895,7 @@ function renderRepairStateButton(id,isSent,isCompleted,titlePrefix='RT UR'){
   return `<button class="btn-xs repair-state ${stateClass}" onclick="openRepairModal('${id}')" title="${stateTitle}">${stateLabel}</button>`;
 }
 function renderToEscalationButton(id,isQueued){
-  return `<button class="btn-xs ${isQueued?'to-queued':'to-action'}" onclick="openToEscalationModal('${id}')" title="${isQueued?'Already queued for TO escalation':'Queue to TO escalation'}">TO</button>`;
+  return `<button class="btn-xs ${isQueued?'to-queued':'to-action'}" onclick="openToEscalationModal('${id}')" title="${isQueued?'Already queued for In House FRN Replacement':'Queue to In House FRN Replacement'}">TO</button>`;
 }
 
 function updateStats() {
@@ -1242,10 +1242,10 @@ function ensureUrEscalationBanners(){
       <div class="esc-banner-left"><div class="esc-banner-dot scrap"></div><div><div class="esc-banner-title">Scrap Escalation</div><div class="esc-banner-text" id="ur-esc-text-scrap">Checking latest mail status...</div><div class="esc-banner-sub" id="ur-esc-sub-scrap">Receivers: -</div><div class="esc-banner-meta" id="ur-esc-meta-scrap">Queued records: -</div></div></div><div class="esc-banner-count scrap" id="ur-esc-count-scrap">-</div>
     </div>
     <div class="esc-banner" id="ur-esc-banner-followup">
-      <div class="esc-banner-left"><div class="esc-banner-dot"></div><div><div class="esc-banner-title">Stock / Follow-up Escalation</div><div class="esc-banner-text" id="ur-esc-text-followup">Checking latest mail status...</div><div class="esc-banner-sub" id="ur-esc-sub-followup">Receivers: -</div><div class="esc-banner-meta" id="ur-esc-meta-followup">Queued records: -</div></div></div><div class="esc-banner-count" id="ur-esc-count-followup">-</div>
+      <div class="esc-banner-left"><div class="esc-banner-dot"></div><div><div class="esc-banner-title">Stock Escalation</div><div class="esc-banner-text" id="ur-esc-text-followup">Checking latest mail status...</div><div class="esc-banner-sub" id="ur-esc-sub-followup">Receivers: -</div><div class="esc-banner-meta" id="ur-esc-meta-followup">Queued records: -</div></div></div><div class="esc-banner-count" id="ur-esc-count-followup">-</div>
     </div>
     <div class="esc-banner to-banner" id="ur-esc-banner-to">
-      <div class="esc-banner-left"><div class="esc-banner-dot" style="background:#7c3aed;box-shadow:0 0 0 4px rgba(124,58,237,0.14);"></div><div><div class="esc-banner-title">TO Escalation</div><div class="esc-banner-text" id="ur-esc-text-to">Checking latest TO mail status...</div><div class="esc-banner-sub" id="ur-esc-sub-to">Receivers: -</div><div class="esc-banner-meta" id="ur-esc-meta-to">Morning: - | Evening: - | Total: -</div></div></div><div class="esc-banner-count" id="ur-esc-count-to" style="color:#7c3aed;">-</div>
+      <div class="esc-banner-left"><div class="esc-banner-dot" style="background:#7c3aed;box-shadow:0 0 0 4px rgba(124,58,237,0.14);"></div><div><div class="esc-banner-title">In House FRN Replacement</div><div class="esc-banner-text" id="ur-esc-text-to">Checking latest in house FRN replacement mail status...</div><div class="esc-banner-sub" id="ur-esc-sub-to">Receivers: -</div><div class="esc-banner-meta" id="ur-esc-meta-to">Morning: - | Evening: - | Total: -</div></div></div><div class="esc-banner-count" id="ur-esc-count-to" style="color:#7c3aed;">-</div>
     </div>`;
   stats.insertAdjacentElement('afterend',wrap);
   syncMailAcknowledgementsVisibility();
@@ -1331,7 +1331,7 @@ function bumpToEscalationQueue(delta=1){
   const current=parseInt(countEl?.textContent||'0',10)||0;
   const next=Math.max(0,current+delta);
   if(countEl) countEl.textContent=String(next);
-  if(textEl && next>0) textEl.textContent=`${next} TO entr${next===1?'y is':'ies are'} queued for ${getNextToRunLabel()}.`;
+  if(textEl && next>0) textEl.textContent=`${next} In House FRN Replacement entr${next===1?'y is':'ies are'} queued for ${getNextToRunLabel()}.`;
   if(metaEl){
     const parts=(metaEl.textContent.match(/\d+/g)||['0','0','0']).map(v=>parseInt(v,10)||0);
     const minutes=new Date().getHours()*60+new Date().getMinutes();
@@ -1351,7 +1351,7 @@ async function loadToEscalationStatus(){
   try{
     const res=await fetch(`${API}/api/escalation/status/to`,{headers:authHeaders()});
     handleUnauth(res);
-    if(!res.ok) throw new Error('Unable to fetch TO escalation status');
+    if(!res.ok) throw new Error('Unable to fetch In House FRN Replacement status');
     const data=await res.json();
     const recipients=Array.isArray(data&&data.recipients)?data.recipients:[];
     const morning=data&&data.morning?data.morning:null;
@@ -1367,20 +1367,20 @@ async function loadToEscalationStatus(){
     const latest=getPreferredToLatest(morning,evening);
     if(textEl){
       if(totalCount>0){
-        textEl.textContent=`${totalCount} TO entr${totalCount===1?'y is':'ies are'} queued for ${getNextToRunLabel()}.`;
+        textEl.textContent=`${totalCount} In House FRN Replacement entr${totalCount===1?'y is':'ies are'} queued for ${getNextToRunLabel()}.`;
       }else if(latest){
         const slotLabel=String(latest.slot||'TO').replace(/_/g,' ').replace(/\b\w/g,m=>m.toUpperCase());
         const statusLabel=(latest.status||'pending').replace(/_/g,' ');
         textEl.textContent=`${slotLabel} escalation ${statusLabel} on ${fmtEscalationTs(latest.sentAt||latest.createdAt)}.`;
       }else{
-        textEl.textContent='No TO escalation mail has been sent yet.';
+        textEl.textContent='No In House FRN Replacement mail has been sent yet.';
       }
     }
     if(subEl) subEl.textContent=`Receivers: ${recipients.length?recipients.join(', '):'-'} | Excel queued for 11:00 AM and 4:30 PM`;
     if(metaEl) metaEl.textContent=`Morning: ${morningCount} | Evening: ${eveningCount} | Total: ${totalCount}`;
     if(countEl) countEl.textContent=String(totalCount);
   }catch(e){
-    if(textEl) textEl.textContent='TO escalation status unavailable right now.';
+    if(textEl) textEl.textContent='In House FRN Replacement status unavailable right now.';
     if(subEl) subEl.textContent='Receivers: -';
     if(metaEl) metaEl.textContent='Morning: - | Evening: - | Total: -';
     if(countEl) countEl.textContent='-';
@@ -1390,7 +1390,7 @@ function getToMsgEl(){ return document.getElementById('to-msg'); }
 function openToEscalationModal(id){
   const current=UR_DATA.find(x=>(x._id||x.id)===id);
   if(!current) return;
-  if(current.toEscalationQueuedAt){ showToast('Already queued for TO escalation.','info'); return; }
+  if(current.toEscalationQueuedAt){ showToast('Already queued for In House FRN Replacement.','info'); return; }
   currentToRecord=current;
   currentToRows=[{ partNo:String(current.partNo||'').trim(), qty:1 }];
   const badge=document.getElementById('to-modal-badge');
@@ -1472,7 +1472,7 @@ async function submitToEscalationQueue(){
     if(msgEl){ msgEl.textContent=e.message; msgEl.className='fm-msg err'; }
   }finally{
     btn.disabled=false;
-    btn.textContent='Queue to TO ES';
+    btn.textContent='Queue to In House FRN Replacement';
   }
 }
 function configureUnderRepairStatCards(){
