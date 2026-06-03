@@ -376,23 +376,36 @@ table.js-grid tbody td input::placeholder{color:var(--muted);font-size:11px;}
       <button class="view-tab" id="tab-entry" type="button">Update</button>
     </div>
 
-    <div class="entry-panel" id="entry-panel">
-      <div class="entry-head">
-        <div>
-          <div class="entry-title" id="entry-title">Add External Repair Entry</div>
-          <div class="entry-sub">Click an existing table row to auto-fill these boxes.</div>
+    <!-- DYNAMIC UPDATE MODAL -->
+    <div class="overlay" id="dynamic-update-overlay">
+      <div class="modal" style="max-height:85vh;">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">Update Record</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">Edit filled details or complete empty boxes.</div>
+          </div>
+          <button class="modal-close" onclick="closeDynamicUpdate()">&#10005;</button>
         </div>
-        <button class="modal-close" onclick="closeEntryPanel()">&#10005;</button>
-      </div>
-      <div class="entry-body">
-        <input type="hidden" id="sw-record-id"/>
-        <div class="entry-grid" id="entry-grid"></div>
-      </div>
-      <div class="entry-foot">
-        <div class="entry-msg" id="entry-msg"></div>
-        <button class="btn btn-outline btn-sm" onclick="resetEntryForm()">Clear</button>
-        <button class="btn btn-outline btn-sm" onclick="closeEntryPanel()">Cancel</button>
-        <button class="btn btn-success" id="entry-save-btn" onclick="saveEntry()">Update Entry</button>
+
+        <div class="modal-scroll" style="flex:1;overflow-y:auto;padding:24px 28px;">
+          <input type="hidden" id="dyn-upd-id"/>
+
+          <div class="form-section" id="dyn-filled-section">
+            <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--muted);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);">Filled Data</div>
+            <div style="display:grid;grid-template-columns:repeat(4,minmax(160px,1fr));gap:14px;" id="dyn-filled-grid"></div>
+          </div>
+
+          <div class="form-section" id="dyn-empty-section" style="margin-top:24px;">
+            <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--muted);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);">Details to Fill</div>
+            <div style="display:grid;grid-template-columns:repeat(4,minmax(160px,1fr));gap:14px;" id="dyn-empty-grid"></div>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="padding:16px 28px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;justify-content:flex-end;background:var(--surface3);flex-shrink:0;">
+          <div class="form-msg" id="dyn-upd-msg" style="margin-right:auto;display:none;padding:7px 13px;border-radius:7px;font-size:11.5px;font-weight:600;"></div>
+          <button class="btn btn-outline btn-sm" onclick="closeDynamicUpdate()">Cancel</button>
+          <button class="btn btn-success" id="dyn-save-btn" onclick="submitDynamicUpdate()">&#128190; Save Update</button>
+        </div>
       </div>
     </div>
 
@@ -499,7 +512,6 @@ const FIELD_ALIASES = {
   }
   (document.getElementById('topbar-date')||{}).textContent = new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   renderSupplierHeader();
-  renderEntryFields();
   applyMailAckState();
   populateYears();
   loadData();
@@ -650,27 +662,13 @@ function sortArr() {
 function renderSupplierHeader() {
   const row = document.getElementById('supplier-head-row');
   if (!row) return;
-  row.innerHTML = SUPPLIER_COLUMNS.map(col => {
+  let html = `<th>Action</th>`;
+  html += SUPPLIER_COLUMNS.map(col => {
     const sortable = col.key !== 'sn';
     const sorted = sortKey === col.key ? ' sorted' : '';
     return `<th class="${sorted}" ${sortable ? `onclick="sortBy('${col.key}')"` : ''}>${esc(col.label)}${sortable ? ' <span class="si">&#8693;</span>' : ''}</th>`;
   }).join('');
-}
-
-function renderEntryFields() {
-  const grid = document.getElementById('entry-grid');
-  if (!grid) return;
-  grid.innerHTML = ENTRY_FIELDS.map(field => {
-    const wide = field.wide ? ' wide' : '';
-    const inputId = 'sw-' + field.key;
-    let control = '';
-    if (ENTRY_TEXTAREAS.has(field.key)) {
-      control = `<textarea id="${inputId}"></textarea>`;
-    } else {
-      control = `<input id="${inputId}" type="${field.type || 'text'}"/>`;
-    }
-    return `<div class="entry-field${wide}"><label for="${inputId}">${esc(field.label)}</label>${control}</div>`;
-  }).join('');
+  row.innerHTML = html;
 }
 
 function fieldValue(d, key) {
@@ -686,106 +684,112 @@ function fieldValue(d, key) {
   return '';
 }
 
-function openEntryPanel(id = '') {
-  if (!id) {
-    showToast('Select an existing row to update.', 'info');
-    return;
-  }
-  const panel = document.getElementById('entry-panel');
-  const listPanel = document.getElementById('list-panel');
-  const title = document.getElementById('entry-title');
-  const recordId = document.getElementById('sw-record-id');
-  if (!panel) return;
-  panel.classList.add('open');
-  if (listPanel) listPanel.style.display = 'none';
-  setActiveTab('entry');
-  recordId.value = id || '';
-  const record = id ? SCRAP.find(x => (x._id || x.id) === id) : null;
-  ENTRY_FIELDS.forEach(field => {
-    const el = document.getElementById('sw-' + field.key);
-    if (el) el.value = record ? fieldValue(record, field.key) : '';
+function handleTick(id) {
+  showToast('Action marked via tick icon.', 'info');
+}
+
+function openUpdateModal(id) {
+  const record = SCRAP.find(x => (x._id || x.id) === id);
+  if(!record) return;
+  document.getElementById('dyn-upd-id').value = id;
+  
+  const filledGrid = document.getElementById('dyn-filled-grid');
+  const emptyGrid = document.getElementById('dyn-empty-grid');
+  filledGrid.innerHTML = ''; emptyGrid.innerHTML = '';
+  let fCount = 0, eCount = 0;
+
+  SUPPLIER_COLUMNS.filter(c => c.key !== 'sn').forEach(field => {
+    const val = fieldValue(record, field.key);
+    const isTextarea = ENTRY_TEXTAREAS.has(field.key);
+    const isDate = field.type === 'date';
+    
+    let controlHtml = '';
+    if (isTextarea) {
+      controlHtml = `<textarea id="dyn-${field.key}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);resize:vertical;min-height:72px;" placeholder="Enter ${esc(field.label)}">${esc(val)}</textarea>`;
+    } else if (isDate) {
+      const fmt = val ? new Date(val).toISOString().slice(0,10) : '';
+      controlHtml = `<input id="dyn-${field.key}" type="date" value="${fmt}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);"/>`;
+    } else {
+      controlHtml = `<input id="dyn-${field.key}" type="text" value="${esc(val)}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);" placeholder="Enter ${esc(field.label)}"/>`;
+    }
+
+    const html = `<div style="display:flex;flex-direction:column;gap:5px;">
+      <label style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;">${esc(field.label)}</label>
+      ${controlHtml}
+    </div>`;
+
+    if (val) {
+      filledGrid.innerHTML += html;
+      fCount++;
+    } else {
+      emptyGrid.innerHTML += html;
+      eCount++;
+    }
   });
-  if (title) title.textContent = 'Update Supplier Warranty Entry';
-  clearEntryMsg();
+
+  document.getElementById('dyn-filled-section').style.display = fCount ? 'block' : 'none';
+  document.getElementById('dyn-empty-section').style.display = eCount ? 'block' : 'none';
+  
+  const msg = document.getElementById('dyn-upd-msg');
+  if(msg) { msg.style.display = 'none'; msg.className = 'form-msg'; }
+  document.getElementById('dynamic-update-overlay').classList.add('open');
 }
 
-function closeEntryPanel() {
-  showListTab();
+function closeDynamicUpdate() {
+  document.getElementById('dynamic-update-overlay').classList.remove('open');
 }
 
-function showListTab() {
-  document.getElementById('entry-panel')?.classList.remove('open');
-  const listPanel = document.getElementById('list-panel');
-  if (listPanel) listPanel.style.display = '';
-  setActiveTab('list');
-}
-
-function setActiveTab(tab) {
-  document.getElementById('tab-list')?.classList.toggle('active', tab === 'list');
-  document.getElementById('tab-entry')?.classList.toggle('active', tab === 'entry');
-}
-
-function resetEntryForm() {
-  document.getElementById('sw-record-id').value = '';
-  ENTRY_FIELDS.forEach(field => {
-    const el = document.getElementById('sw-' + field.key);
-    if (el) el.value = '';
-  });
-  (document.getElementById('entry-title')||{}).textContent = 'Update Supplier Warranty Entry';
-  clearEntryMsg();
-}
-
-function collectEntryPayload() {
+async function submitDynamicUpdate() {
+  const id = document.getElementById('dyn-upd-id').value;
+  if (!id) return;
+  
   const payload = {};
-  ENTRY_FIELDS.forEach(field => {
-    payload[field.key] = (document.getElementById('sw-' + field.key)?.value || '').trim();
+  SUPPLIER_COLUMNS.filter(c => c.key !== 'sn').forEach(field => {
+    const el = document.getElementById('dyn-' + field.key);
+    if(el) payload[field.key] = el.value.trim();
   });
-  payload.customer = payload.customerName;
-  payload.entryDate = payload.receivedDateAtEsskay || '';
-  payload.rcvdDate = payload.receivedDateAtEsskay || '';
-  payload.defMod = payload.problemDetails || payload.itemDescription || '';
-  payload.typeWork = payload.repairStatus || 'SCRAPPED';
-  return payload;
-}
+  
+  // Custom mapping for Scrap list backend format
+  payload.customer = payload.customerName || payload.customer || '';
+  payload.entryDate = payload.receivedDateAtEsskay || payload.entryDate || '';
+  payload.rcvdDate = payload.receivedDateAtEsskay || payload.rcvdDate || '';
+  payload.defMod = payload.problemDetails || payload.itemDescription || payload.defMod || '';
+  payload.typeWork = payload.repairStatus || payload.typeWork || 'SCRAPPED';
 
-async function saveEntry() {
-  const id = document.getElementById('sw-record-id').value;
-  if (!id) {
-    showEntryMsg('Select an existing row to update.', 'err');
-    return;
-  }
-  const payload = collectEntryPayload();
-  if (!payload.customerName) {
-    showEntryMsg('Customer name is required.', 'err');
-    return;
-  }
-  const btn = document.getElementById('entry-save-btn');
-  btn.disabled = true; btn.textContent = 'Saving...';
+  const btn = document.getElementById('dyn-save-btn');
+  if(btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+  const msg = document.getElementById('dyn-upd-msg');
+  
   try {
-    const res = await fetch(`${API}/api/scrap${id ? '/' + id : ''}`, {
-      method: 'PUT',
-      headers: authHeaders(),
-      body: JSON.stringify(payload),
+    const res = await fetch(`${API}/api/scrap/${id}`, {
+      method: 'PUT', headers: authHeaders(), body: JSON.stringify(payload)
     });
     handleUnauth(res);
     if (!res.ok) {
-      const e = await res.json().catch(() => ({}));
+      const e = await res.json().catch(()=>({}));
       throw new Error(e.message || 'HTTP ' + res.status);
     }
-    const saved = await res.json();
-    const idx = SCRAP.findIndex(x => (x._id || x.id) === (saved._id || saved.id));
-    if (idx >= 0) SCRAP[idx] = saved; else SCRAP.unshift(saved);
-    applyFilters();
-    updateStats();
-    showEntryMsg('Entry updated.', 'ok');
-      showToast('Supplier warranty entry updated.', 'ok');
+    
+    const updated = await res.json().catch(()=>({}));
+    const idx = SCRAP.findIndex(x => (x._id||x.id) === id);
+    if(idx !== -1) SCRAP[idx] = {...SCRAP[idx], ...payload, ...updated};
+    
+    applyFilters(); updateStats();
+    showToast('Record updated successfully', 'ok');
+    if(msg) {
+      msg.textContent = '✅ Record updated successfully!';
+      msg.className = 'form-msg ok';
+      msg.style.display = 'block';
+    }
+    setTimeout(closeDynamicUpdate, 1000);
   } catch (e) {
-    if (e.message !== 'Unauthorized') {
-      showEntryMsg('Save failed: ' + e.message, 'err');
-      showToast('Save failed: ' + e.message, 'err');
+    if(msg) {
+      msg.textContent = 'Save failed: ' + e.message;
+      msg.className = 'form-msg err';
+      msg.style.display = 'block';
     }
   } finally {
-    btn.disabled = false; btn.textContent = 'Update Entry';
+    if(btn) { btn.disabled = false; btn.innerHTML = '&#128190; Save Update'; }
   }
 }
 
@@ -808,7 +812,13 @@ function renderTable() {
   } else {
     tbody.innerHTML = slice.map((d, i) => {
       const rid = d._id || d.id;
-      return `<tr onclick="openEntryPanel('${rid}')" title="Click to auto-fill the entry boxes">
+      return `<tr title="Record Row">
+        <td>
+          <div style="display:flex;gap:5px;">
+            <button class="btn-xs update" onclick="openUpdateModal('${rid}')" title="Update">&#9999;&#65039;</button>
+            <button class="btn-xs update" onclick="handleTick('${rid}')" title="Action Tick" style="color:var(--green);border-color:rgba(4,120,87,0.3);">&#10004;&#65039;</button>
+          </div>
+        </td>
         ${SUPPLIER_COLUMNS.map(col => {
           if (col.key === 'sn') return `<td style="font-weight:700;">${(currentPage - 1) * perPage + i + 1}</td>`;
           const value = fieldValue(d, col.key);
