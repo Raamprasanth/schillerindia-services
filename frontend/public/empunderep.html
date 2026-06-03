@@ -463,6 +463,8 @@ body.panel-open .main{display:none;}
     </div>
     <div class="topbar-actions">
       <span style="font-size:12px;color:var(--muted);" id="topbar-date"></span>
+      <button class="btn btn-outline btn-sm" onclick="transferSelectedRows('external')">External Rep</button>
+      <button class="btn btn-outline btn-sm" onclick="transferSelectedRows('supplier')">Supplier Warr</button>
       <button class="btn btn-outline btn-sm" id="mail-toggle-btn" onclick="toggleMailAcknowledgements()">&#128231; Mail</button>
       <button class="btn btn-outline btn-sm" onclick="loadData()">&#8635; Refresh</button>
       <button class="btn btn-success btn-sm" onclick="exportCSV()">&#128228; Export</button>
@@ -524,6 +526,7 @@ body.panel-open .main{display:none;}
       <div class="table-wrap">
         <table class="ur-table">
           <thead><tr>
+            <th><input type="checkbox" id="ur-transfer-all" onchange="toggleTransferAll(this.checked)"/></th>
             <th onclick="sortBy('_idx')">Id</th>
             <th onclick="sortBy('entryDate')">Entry Date <span class="si">&#8693;</span></th>
             <th>Update</th>
@@ -544,7 +547,7 @@ body.panel-open .main{display:none;}
             <th>TO</th>
           </tr></thead>
           <tbody id="ur-tbody">
-            <tr class="loading-row"><td colspan="18"><span class="spin"></span>Loading from database...</td></tr>
+            <tr class="loading-row"><td colspan="19"><span class="spin"></span>Loading from database...</td></tr>
           </tbody>
         </table>
       </div>
@@ -670,6 +673,7 @@ body.panel-open .main{display:none;}
 <script>
 const API = '';
 let UR_DATA = [], filtered = [], sortKey = 'entryDate', sortDir = -1, currentPage = 1;
+let selectedTransferIds = new Set();
 let currentToRecord = null;
 let currentToRows = [];
 const LOGGED_USER = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
@@ -969,7 +973,7 @@ function renderTable(){
   (document.getElementById('count-pill')||{}).textContent = total+' entr'+(total===1?'y':'ies');
   const tbody = document.getElementById('ur-tbody');
   if(!total){
-    tbody.innerHTML=`<tr><td colspan="18"><div class="empty-st">
+    tbody.innerHTML=`<tr><td colspan="19"><div class="empty-st">
       <div class="ei">&#128196;</div>
       <div class="et">${UR_DATA.length?'No records match the filters':'No Under Repair records yet'}</div>
       <div class="es">${UR_DATA.length?'Try clearing the filters.':'Records appear here when a service is saved with REP Type = TO/ADV SO.'}</div>
@@ -982,7 +986,9 @@ function renderTable(){
       const isCompleted= d.rturCompleted||d.rtfrnCompleted;
       const isSent= d.rturSent||d.rtfrnSent;
       const isToQueued= !!d.toEscalationQueuedAt;
+      const checked=selectedTransferIds.has(rid)?'checked':'';
       return `<tr>
+        <td><input type="checkbox" ${checked} onchange="toggleTransferRow('${rid}',this.checked)"/></td>
         <td class="mono" style="color:var(--muted);font-size:11px;">${(currentPage-1)*perPage+i+1}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
         <td><button class="btn-xs update" onclick="openUpdate('${rid}')" title="Update">&#9999;&#65039;</button></td>
@@ -1009,6 +1015,82 @@ function renderTable(){
     ? `Showing ${fr} to ${Math.min(currentPage*perPage,total)} of ${total} entries`
     : '0 entries';
   renderPagination(pages);
+  syncTransferSelectionUI();
+}
+
+function toggleTransferRow(id, checked){
+  if(checked) selectedTransferIds.add(id); else selectedTransferIds.delete(id);
+  syncTransferSelectionUI();
+}
+function toggleTransferAll(checked){
+  const perPage=parseInt(document.getElementById('per-page').value)||10;
+  filtered.slice((currentPage-1)*perPage,currentPage*perPage).forEach(row=>{
+    const id=row._id||row.id;
+    if(checked) selectedTransferIds.add(id); else selectedTransferIds.delete(id);
+  });
+  renderTable();
+}
+function syncTransferSelectionUI(){
+  const perPage=parseInt(document.getElementById('per-page').value)||10;
+  const slice=filtered.slice((currentPage-1)*perPage,currentPage*perPage);
+  const master=document.getElementById('ur-transfer-all');
+  if(master){
+    master.checked=slice.length>0 && slice.every(row=>selectedTransferIds.has(row._id||row.id));
+    master.indeterminate=slice.some(row=>selectedTransferIds.has(row._id||row.id)) && !master.checked;
+  }
+}
+function getSelectedTransferRecords(){
+  return UR_DATA.filter(row=>selectedTransferIds.has(row._id||row.id));
+}
+function buildRegisterTransferPayload(row,target){
+  const customer=row.custName||row.customer||'';
+  const entryDate=row.entryDate||new Date().toISOString().slice(0,10);
+  const base={
+    serviceId:row.serviceId||row._id||row.id||null,
+    entryDate,
+    scRno:row.scReNo||row.scRno||'',
+    scEng:row.scEng||'',
+    frnNo:row.frnNo||'',
+    region:row.reg||row.region||row.branch||'',
+    eng:row.eng||'',
+    engineer:row.eng||'',
+    customer,
+    customerName:customer,
+    year:entryDate?String(entryDate).slice(0,4):String(new Date().getFullYear()),
+    vendorName:row.vendorName||row.supplier||'',
+    supplier:row.supplier||row.vendorName||'',
+    model:row.model||'',
+    unitSerialNo:row.unitSl||row.unitSerialNo||'',
+    unitStatus:row.unitSts||row.unitStatus||'',
+    problemDetails:row.defMod||row.problemDetails||'',
+    partNo:row.partNo||'',
+    itemDescription:row.defMod||row.itemDescription||'',
+    defMod:row.defMod||'',
+    defGir:row.defGir||'',
+    defGirNumber:row.defGir||'',
+    defPartSn:row.defPartSn||'',
+    receivedDateAtEsskay:entryDate,
+    repairStatus:row.urTypeWork||row.typeWork||'UNDER REPAIR',
+    serviceCentreComments:row.finalRemarks||'',
+  };
+  if(target==='external') return {...base,frnNumber:base.frnNo,description:base.itemDescription,defPartSerialNumber:base.defPartSn,frnEntryDate:entryDate,typeOfWorkSupplier:'External Repair',serviceCentreRemarks:base.serviceCentreComments};
+  return {...base,typeWork:'Supplier Warranty',rcvdDate:entryDate};
+}
+async function transferSelectedRows(target){
+  const records=getSelectedTransferRecords();
+  if(!records.length){showToast('Select at least one entry first.','err');return;}
+  const endpoint=target==='external'?'/api/emp/sc-completed-frn':'/api/scrap';
+  const label=target==='external'?'External Repair':'Supplier Warranty';
+  try{
+    for(const row of records){
+      const res=await fetch(API+endpoint,{method:'POST',headers:authHeaders(),body:JSON.stringify(buildRegisterTransferPayload(row,target))});
+      handleUnauth(res);
+      if(!res.ok){const data=await res.json().catch(()=>({}));throw new Error(data.message||'HTTP '+res.status);}
+    }
+    showToast(`${records.length} entr${records.length===1?'y':'ies'} sent to ${label}.`,'ok');
+    selectedTransferIds.clear();
+    renderTable();
+  }catch(e){if(e.message!=='Unauthorized')showToast(`${label} transfer failed: ${e.message}`,'err');}
 }
 
 function unitPill(s){
@@ -1183,11 +1265,11 @@ function renderPagination(pages){
 function getRange(c,t){if(t<=7)return Array.from({length:t},(_,i)=>i+1);if(c<=4)return[1,2,3,4,5,'-',t];if(c>=t-3)return[1,'-',t-4,t-3,t-2,t-1,t];return[1,'-',c-1,c,c+1,'-',t];}
 function gp(p){currentPage=p;renderTable();}
 function setTableLoading(){
-  document.getElementById('ur-tbody').innerHTML='<tr class="loading-row"><td colspan="18"><span class="spin"></span>Loading...</td></tr>';
+  document.getElementById('ur-tbody').innerHTML='<tr class="loading-row"><td colspan="19"><span class="spin"></span>Loading...</td></tr>';
   ['st-total','st-overdue','st-mine','st-avg'].forEach(id=>document.getElementById(id).textContent='-');
 }
 function setTableError(msg){
-  document.getElementById('ur-tbody').innerHTML=`<tr class="loading-row"><td colspan="18" style="color:var(--red);">&#9888; ${esc(msg)}</td></tr>`;
+  document.getElementById('ur-tbody').innerHTML=`<tr class="loading-row"><td colspan="19" style="color:var(--red);">&#9888; ${esc(msg)}</td></tr>`;
 }
 function fmtDate(d){if(!d)return'-';const p=String(d).split('T')[0].split('-');if(p.length<3)return String(d);return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0];}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}

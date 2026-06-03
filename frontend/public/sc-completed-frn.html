@@ -426,7 +426,6 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       <button class="topbar-btn" onclick="loadData()">&#8635; Refresh</button>
       <button class="topbar-btn" id="mail-ack-btn" onclick="toggleMailAck()">&#9993; Mail</button>
       <button class="topbar-btn primary" onclick="exportCSV()">&#128228; Export</button>
-      <button class="topbar-btn primary" onclick="openEntryPanel()">+ Add New</button>
     </div>
   </div>
 
@@ -434,12 +433,12 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     <div class="mail-ack-wrap" id="mail-ack-wrap"></div>
     <div class="view-tabs">
       <button class="view-tab active" id="tab-list" onclick="showListTab()">External Repair List</button>
-      <button class="view-tab" id="tab-entry" onclick="openEntryPanel()">Add New</button>
+      <button class="view-tab" id="tab-entry" type="button">Update</button>
     </div>
     <div class="entry-panel" id="entry-panel">
       <div class="entry-head">
         <div>
-          <div class="entry-title" id="entry-title">Add External Repair Entry</div>
+          <div class="entry-title" id="entry-title">Update External Repair Entry</div>
           <div class="entry-sub">Click an existing table row to auto-fill these boxes.</div>
         </div>
         <button class="modal-close" onclick="showListTab()">&#10005;</button>
@@ -452,7 +451,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <div class="entry-msg" id="entry-msg"></div>
         <button class="btn btn-outline btn-sm" onclick="resetEntryForm()">Clear</button>
         <button class="btn btn-outline btn-sm" onclick="showListTab()">Cancel</button>
-        <button class="btn btn-success" id="entry-save-btn" onclick="saveEntry()">Save Entry</button>
+        <button class="btn btn-success" id="entry-save-btn" onclick="saveEntry()">Update Entry</button>
       </div>
     </div>
 
@@ -477,7 +476,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <table class="frn-table">
           <thead><tr id="external-head-row"></tr></thead>
           <tbody id="sc-tbody">
-            <tr class="loading-row"><td colspan="32"><span class="spin"></span>Loading from database...</td></tr>
+            <tr class="loading-row"><td colspan="21"><span class="spin"></span>Loading from database...</td></tr>
           </tbody>
         </table>
       </div>
@@ -498,50 +497,40 @@ let DATA = [], filtered = [], sortKey = 'frnEntryDate', sortDir = -1, currentPag
 let mailAckVisible = localStorage.getItem(MAIL_ACK_KEY) === '1';
 
 const EXTERNAL_COLUMNS = [
-  { key:'supplier', label:'Supplier' },
-  { key:'sbrRmaBltNo', label:'SBR/RMA/BLT No' },
-  { key:'frnNumber', label:'FRN number' },
-  { key:'warrantyReportedDate', label:'Warranty reported date', type:'date' },
-  { key:'warrantyApprovedStatus', label:'Warranty approved status' },
-  { key:'warrantyApprovedDate', label:'Warranty approved date', type:'date' },
-  { key:'defGirNumber', label:'Def GIR number' },
+  { key:'sn', label:'S/N' },
+  { key:'year', label:'Year' },
+  { key:'vendorName', label:'Vendor Name' },
   { key:'model', label:'Model' },
+  { key:'customerName', label:'Customer name' },
   { key:'unitSerialNo', label:'Unit Serial No' },
-  { key:'partNo', label:'Part No' },
-  { key:'description', label:'Description', wide:true },
-  { key:'defPartSerialNumber', label:'Def part serial number' },
-  { key:'problemDetails', label:'Problem Details', wide:true },
-  { key:'licenceVersionModelConfiguration', label:'Licence version/Model configuration', wide:true },
-  { key:'customerName', label:'Customer Name' },
-  { key:'warrantyType', label:'Warranty type' },
-  { key:'supplierWarrantyStatus', label:'Supplier warranty status' },
-  { key:'dcInvoiceNumberSupplier', label:'Dc/Invoice number supplier' },
-  { key:'frnEntryDate', label:'FRN entry date', type:'date' },
-  { key:'shipDateFromServiceCenter', label:'Ship date from service center', type:'date' },
-  { key:'dcInvoiceNo', label:'DC/Invoice No' },
-  { key:'dcInvoiceDate', label:'DC/Invoice Date', type:'date' },
-  { key:'awbNo', label:'AWB No' },
-  { key:'awbDate', label:'AWB DATE', type:'date' },
-  { key:'replacementReceivedStatus', label:'Replacement received status' },
-  { key:'replacementReceivedDate', label:'Replacement received date', type:'date' },
-  { key:'typeOfWorkSupplier', label:'Type of work supplier' },
-  { key:'receivedPartInvoiceNumber', label:'Received part invoice number' },
-  { key:'receivedPartInvoiceDate', label:'Received part invoice date', type:'date' },
-  { key:'replacementGirNo', label:'Replacement GIR No' },
-  { key:'receivedPartSerialNumber', label:'Received part serial number' },
-  { key:'serviceCentreRemarks', label:'Service Centre Remarks', wide:true },
+  { key:'unitStatus', label:'Unit Status' },
+  { key:'problemDetails', label:'Problem details', wide:true },
+  { key:'partNo', label:'Part no.' },
+  { key:'itemDescription', label:'Item Description', wide:true },
+  { key:'defGirNumber', label:'Def GIR no.' },
+  { key:'defPartSn', label:'DEF PART SN' },
+  { key:'vendorTicketNumber', label:'Vendor ticket number' },
+  { key:'commercialToDetails', label:'Commercial TO Details', wide:true },
+  { key:'docketDetails', label:'Docket details', wide:true },
+  { key:'receivedDateAtEsskay', label:'Received date at Esskay', type:'date' },
+  { key:'receivedBackAtSvc', label:'Received back at SVC', type:'date' },
+  { key:'repairStatus', label:'Repair Status' },
+  { key:'amountChargedForRepair', label:'Amount charged for repair', type:'number' },
+  { key:'softwareDetails', label:'Software details', wide:true },
+  { key:'serviceCentreRemarks', label:'Service centre comments', wide:true },
 ];
-const ENTRY_TEXTAREAS = new Set(['description','problemDetails','licenceVersionModelConfiguration','serviceCentreRemarks']);
+const ENTRY_FIELDS = EXTERNAL_COLUMNS.filter(c => c.key !== 'sn');
+const ENTRY_TEXTAREAS = new Set(['problemDetails','itemDescription','commercialToDetails','docketDetails','softwareDetails','serviceCentreRemarks']);
 const FIELD_ALIASES = {
+  vendorName: ['supplier'],
   frnNumber: ['frnNo'],
   defGirNumber: ['defGir'],
-  description: ['defMod'],
+  problemDetails: ['problemDetails','defMod'],
+  itemDescription: ['itemDescription','description','defMod'],
   customerName: ['customer'],
-  frnEntryDate: ['entryDate'],
-  shipDateFromServiceCenter: ['shipDateSC'],
-  dcInvoiceNo: ['dcNo'],
-  dcInvoiceDate: ['shipDateComm'],
-  typeOfWorkSupplier: ['typeWork'],
+  receivedDateAtEsskay: ['receivedDateAtEsskay','frnEntryDate','entryDate'],
+  receivedBackAtSvc: ['receivedBackAtSvc','shipDateSC','shipDateFromServiceCenter'],
+  repairStatus: ['repairStatus','typeWork','typeOfWorkSupplier'],
   serviceCentreRemarks: ['finalRemarks','techRemarks'],
 };
 
@@ -662,15 +651,16 @@ function renderExternalHeader(){
   const row = document.getElementById('external-head-row');
   if(!row) return;
   row.innerHTML = EXTERNAL_COLUMNS.map(col => {
+    const sortable = col.key !== 'sn';
     const sorted = sortKey === col.key ? ' sorted' : '';
-    return `<th class="${sorted}" onclick="sortBy('${col.key}')">${esc(col.label)} <span class="si">&#8693;</span></th>`;
+    return `<th class="${sorted}" ${sortable ? `onclick="sortBy('${col.key}')"` : ''}>${esc(col.label)}${sortable ? ' <span class="si">&#8693;</span>' : ''}</th>`;
   }).join('');
 }
 
 function renderEntryFields(){
   const grid = document.getElementById('entry-grid');
   if(!grid) return;
-  grid.innerHTML = EXTERNAL_COLUMNS.map(field => {
+  grid.innerHTML = ENTRY_FIELDS.map(field => {
     const id = 'ext-' + field.key;
     const wide = field.wide ? ' wide' : '';
     const control = ENTRY_TEXTAREAS.has(field.key)
@@ -682,6 +672,7 @@ function renderEntryFields(){
 
 function fieldValue(d, key){
   if(!d) return '';
+  if(key === 'sn') return '';
   const direct = d[key];
   if(direct !== undefined && direct !== null && direct !== '') return direct;
   for(const alias of (FIELD_ALIASES[key] || [])){
@@ -692,6 +683,10 @@ function fieldValue(d, key){
 }
 
 function openEntryPanel(id = ''){
+  if(!id){
+    showToast('Select an existing row to update.','info');
+    return;
+  }
   const panel = document.getElementById('entry-panel');
   const list = document.getElementById('list-panel');
   const stats = document.getElementById('stats-panel');
@@ -702,11 +697,11 @@ function openEntryPanel(id = ''){
   setActiveTab('entry');
   document.getElementById('ext-record-id').value = id || '';
   const record = id ? DATA.find(x => (x._id || x.id) === id) : null;
-  EXTERNAL_COLUMNS.forEach(field => {
+  ENTRY_FIELDS.forEach(field => {
     const el = document.getElementById('ext-' + field.key);
     if(el) el.value = record ? fieldValue(record, field.key) : '';
   });
-  (document.getElementById('entry-title')||{}).textContent = id ? 'Update External Repair Entry' : 'Add External Repair Entry';
+  (document.getElementById('entry-title')||{}).textContent = 'Update External Repair Entry';
   clearEntryMsg();
 }
 
@@ -726,36 +721,44 @@ function setActiveTab(tab){
 
 function resetEntryForm(){
   document.getElementById('ext-record-id').value = '';
-  EXTERNAL_COLUMNS.forEach(field => {
+  ENTRY_FIELDS.forEach(field => {
     const el = document.getElementById('ext-' + field.key);
     if(el) el.value = '';
   });
-  (document.getElementById('entry-title')||{}).textContent = 'Add External Repair Entry';
+  (document.getElementById('entry-title')||{}).textContent = 'Update External Repair Entry';
   clearEntryMsg();
 }
 
 function collectEntryPayload(){
   const payload = {};
-  EXTERNAL_COLUMNS.forEach(field => {
+  ENTRY_FIELDS.forEach(field => {
     payload[field.key] = (document.getElementById('ext-' + field.key)?.value || '').trim();
   });
-  payload.entryDate = payload.frnEntryDate || '';
+  payload.supplier = payload.vendorName || payload.supplier || '';
+  payload.entryDate = payload.receivedDateAtEsskay || '';
+  payload.frnEntryDate = payload.receivedDateAtEsskay || '';
   payload.frnNo = payload.frnNumber || '';
   payload.customer = payload.customerName || '';
   payload.defGir = payload.defGirNumber || '';
-  payload.shipDateSC = payload.shipDateFromServiceCenter || '';
-  payload.typeWork = payload.typeOfWorkSupplier || '';
+  payload.description = payload.itemDescription || payload.problemDetails || '';
+  payload.defPartSerialNumber = payload.defPartSn || '';
+  payload.shipDateFromServiceCenter = payload.receivedBackAtSvc || '';
+  payload.typeOfWorkSupplier = payload.repairStatus || '';
   return payload;
 }
 
 async function saveEntry(){
   const id = document.getElementById('ext-record-id').value;
+  if(!id){
+    showEntryMsg('Select an existing row to update.', 'err');
+    return;
+  }
   const payload = collectEntryPayload();
   const btn = document.getElementById('entry-save-btn');
   btn.disabled = true; btn.textContent = 'Saving...';
   try{
     const res = await fetch(`${API}/api/emp/sc-completed-frn${id ? '/' + id : ''}`, {
-      method: id ? 'PUT' : 'POST',
+      method: 'PUT',
       headers: authHeaders(),
       body: JSON.stringify(payload),
     });
@@ -766,15 +769,15 @@ async function saveEntry(){
     if(idx >= 0) DATA[idx] = {...DATA[idx], ...saved}; else DATA.unshift({...saved, id: saved._id || saved.id});
     applyFilters();
     updateStats();
-    showEntryMsg(id ? 'Entry updated.' : 'Entry added.', 'ok');
-    showToast(id ? 'External repair entry updated.' : 'External repair entry added.', 'ok');
+    showEntryMsg('Entry updated.', 'ok');
+    showToast('External repair entry updated.', 'ok');
   }catch(e){
     if(e.message !== 'Unauthorized'){
       showEntryMsg('Save failed: ' + e.message, 'err');
       showToast('Save failed: ' + e.message, 'err');
     }
   }finally{
-    btn.disabled = false; btn.textContent = 'Save Entry';
+    btn.disabled = false; btn.textContent = 'Update Entry';
   }
 }
 
@@ -792,13 +795,15 @@ function renderTable(){
   if(!total){
     tbody.innerHTML = `<tr><td colspan="${EXTERNAL_COLUMNS.length}"><div class="empty-st"><div class="ei">&#128196;</div><div class="et">${DATA.length ? 'No records match the current filters' : 'No External Repair records'}</div><div class="es">${DATA.length ? 'Try clearing the search.' : 'Records appear here once entries are added.'}</div></div></td></tr>`;
   } else {
-    tbody.innerHTML = slice.map((d) => {
+    tbody.innerHTML = slice.map((d, i) => {
       const rid = d._id || d.id;
       return `<tr onclick="openEntryPanel('${rid}')" title="Click to auto-fill the entry boxes">
         ${EXTERNAL_COLUMNS.map(col => {
+          if(col.key === 'sn') return `<td style="font-weight:700;">${(currentPage-1)*perPage+i+1}</td>`;
           const value = fieldValue(d, col.key);
+          if(col.key === 'unitStatus') return `<td>${unitPill(value)}</td>`;
           if(col.type === 'date') return `<td style="font-size:11px;color:var(--soft);">${fmtDate(value)}</td>`;
-          const strong = ['supplier','sbrRmaBltNo','frnNumber','model','customerName'].includes(col.key) ? 'font-weight:600;' : '';
+          const strong = ['vendorName','model','customerName','defGirNumber','frnNumber'].includes(col.key) ? 'font-weight:600;' : '';
           const color = col.key === 'model' ? 'color:var(--accent2);' : '';
           return `<td style="max-width:210px;overflow:hidden;text-overflow:ellipsis;${strong}${color}" title="${esc(value)}">${esc(value || '-')}</td>`;
         }).join('')}
@@ -932,7 +937,7 @@ async function submitUpdate(){
 // -- EXPORT CSV ------------------------------------------------------------
 function exportCSV(){
   const headers = EXTERNAL_COLUMNS.map(col => col.label);
-  const rows = filtered.map(d => EXTERNAL_COLUMNS.map(col => fieldValue(d, col.key)));
+  const rows = filtered.map((d, i) => EXTERNAL_COLUMNS.map(col => col.key === 'sn' ? i + 1 : fieldValue(d, col.key)));
   const csv = [headers, ...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);

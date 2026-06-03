@@ -6,10 +6,13 @@ const { resolveDivision } = require('../utils/visibility');
 const { buildExternalRepairEscalationRow, enqueueLatestEscalationSnapshot } = require('../services/escalationService');
 
 const REGISTER_FIELDS = [
-  'supplier', 'sbrRmaBltNo', 'frnNumber', 'warrantyReportedDate',
+  'supplier', 'year', 'vendorName', 'sbrRmaBltNo', 'frnNumber', 'warrantyReportedDate',
   'warrantyApprovedStatus', 'warrantyApprovedDate', 'defGirNumber',
   'unitSerialNo', 'partNo', 'description', 'defPartSerialNumber',
-  'problemDetails', 'licenceVersionModelConfiguration', 'customerName',
+  'defPartSn', 'problemDetails', 'itemDescription', 'vendorTicketNumber',
+  'commercialToDetails', 'docketDetails', 'receivedDateAtEsskay',
+  'receivedBackAtSvc', 'repairStatus', 'amountChargedForRepair',
+  'softwareDetails', 'licenceVersionModelConfiguration', 'customerName',
   'warrantyType', 'supplierWarrantyStatus', 'dcInvoiceNumberSupplier',
   'frnEntryDate', 'shipDateFromServiceCenter', 'dcInvoiceNo',
   'dcInvoiceDate', 'awbNo', 'awbDate', 'replacementReceivedStatus',
@@ -131,12 +134,13 @@ router.put('/:id', protect, async (req, res) => {
     if (hasRegisterPatch && !hasModalPatch) {
       const patch = {
         ...registerPatch,
-        entryDate: req.body.frnEntryDate || req.body.entryDate || undefined,
+        entryDate: req.body.frnEntryDate || req.body.receivedDateAtEsskay || req.body.entryDate || undefined,
         frnNo: req.body.frnNumber || undefined,
         customer: req.body.customerName || undefined,
         defGir: req.body.defGirNumber || undefined,
+        defMod: req.body.description || req.body.problemDetails || req.body.itemDescription || undefined,
         shipDateSC: req.body.shipDateFromServiceCenter || undefined,
-        typeWork: req.body.typeOfWorkSupplier || undefined,
+        typeWork: req.body.typeOfWorkSupplier || req.body.repairStatus || undefined,
         updatedBy: req.user.name,
       };
       Object.keys(patch).forEach((key) => patch[key] === undefined && delete patch[key]);
@@ -234,7 +238,7 @@ router.post('/', protect, async (req, res) => {
 
     const doc = await SCCompletedFRN.create({
       serviceId, frnId,
-      entryDate: entryDate || registerFields.frnEntryDate || '',
+      entryDate: entryDate || registerFields.frnEntryDate || registerFields.receivedDateAtEsskay || '',
       scRno: finalScRno,
       scEng: scEng || req.user.name || '',
       frnNo: frnNo || registerFields.frnNumber || '',
@@ -243,11 +247,11 @@ router.post('/', protect, async (req, res) => {
       customer: customer || registerFields.customerName || '',
       model: model || registerFields.model || '',
       unitStatus,
-      defMod: defMod || registerFields.description || '',
+      defMod: defMod || registerFields.description || registerFields.problemDetails || registerFields.itemDescription || '',
       defGir: defGir || registerFields.defGirNumber || '',
       ...registerFields,
       shipDateSC: registerFields.shipDateFromServiceCenter || '',
-      typeWork:  typeWork || registerFields.typeOfWorkSupplier || '',
+      typeWork:  typeWork || registerFields.typeOfWorkSupplier || registerFields.repairStatus || '',
       pdays:     pdays ?? null,
       status:    'pending_update',
       division:  divisionName,

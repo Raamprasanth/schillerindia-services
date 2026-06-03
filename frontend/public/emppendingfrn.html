@@ -750,6 +750,8 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     </div>
       <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
       <button class="btn-mail-sel" id="top-estimation-btn" onclick="openEstimateModal()" disabled>&#128221; Estimation <span class="sel-count-badge" id="sel-count-badge">0</span></button>
+      <button class="btn btn-outline btn-sm" onclick="transferSelectedRows('external')">External Rep</button>
+      <button class="btn btn-outline btn-sm" onclick="transferSelectedRows('supplier')">Supplier Warr</button>
       <div class="automail-badge never" id="automail-badge">
         <span class="am-dot" id="am-dot"></span>
         <div class="am-body">
@@ -1085,6 +1087,89 @@ function renderTable(){
   const fr=total?(currentPage-1)*perPage+1:0;
   (document.getElementById('tbl-info')||{}).textContent =total?`Showing ${fr} to ${Math.min(currentPage*perPage,total)} of ${total} entr${total===1?'y':'ies'}`:'0 entries';
   renderPagination(pages);updateSelectionUI();
+}
+
+function getSelectedTransferRecords(){
+  return FRN_DATA.filter(d => selectedIds.has(d._id || d.id));
+}
+
+function buildRegisterTransferPayload(row, target){
+  const customer = row.customer || row.custName || '';
+  const unitStatus = row.unitStatus || row.unitSts || '';
+  const defGir = row.defGir || row.defGirNo || '';
+  const description = row.defMod || row.problemDetails || '';
+  const entryDate = row.frnDate || row.entryDate || row.rcvdDate || new Date().toISOString().slice(0,10);
+  const base = {
+    serviceId: row.serviceId || row._id || row.id || null,
+    entryDate,
+    scRno: row.scRno || row.scReNo || '',
+    scEng: row.scEng || '',
+    frnNo: row.frnNo || '',
+    region: row.region || row.branch || row.reg || '',
+    eng: row.eng || row.engineer || '',
+    engineer: row.eng || row.engineer || '',
+    customer,
+    customerName: customer,
+    year: entryDate ? String(entryDate).slice(0,4) : String(new Date().getFullYear()),
+    vendorName: row.vendorName || row.supplier || '',
+    supplier: row.supplier || row.vendorName || '',
+    model: row.model || '',
+    unitSerialNo: row.unitSl || row.unitSerialNo || row.serialNo || '',
+    unitStatus,
+    problemDetails: description,
+    partNo: row.partNo || '',
+    itemDescription: row.itemDescription || description,
+    defMod: description,
+    defGir,
+    defGirNumber: defGir,
+    defPartSn: row.defPartSn || row.defPartSerialNumber || '',
+    vendorTicketNumber: row.vendorTicketNumber || '',
+    commercialToDetails: row.commercialToDetails || '',
+    docketDetails: row.docketDetails || '',
+    receivedDateAtEsskay: entryDate,
+    receivedBackAtSvc: row.receivedBackAtSvc || '',
+    repairStatus: row.repairStatus || row.typeWork || 'Pending',
+    amountChargedForRepair: row.amountChargedForRepair || '',
+    softwareDetails: row.softwareDetails || '',
+    serviceCentreComments: row.finalRemarks || row.remarks || '',
+  };
+  if(target === 'external'){
+    return {
+      ...base,
+      frnNumber: base.frnNo,
+      description: base.itemDescription,
+      defPartSerialNumber: base.defPartSn,
+      frnEntryDate: entryDate,
+      typeOfWorkSupplier: 'External Repair',
+      serviceCentreRemarks: base.serviceCentreComments,
+    };
+  }
+  return { ...base, typeWork: 'Supplier Warranty', rcvdDate: entryDate };
+}
+
+async function transferSelectedRows(target){
+  const records = getSelectedTransferRecords();
+  if(!records.length){ showToast('Select at least one entry first.','err'); return; }
+  const endpoint = target === 'external' ? '/api/emp/sc-completed-frn' : '/api/scrap';
+  const label = target === 'external' ? 'External Repair' : 'Supplier Warranty';
+  try{
+    for(const row of records){
+      const res = await fetch(API + endpoint, {
+        method:'POST',
+        headers:authHeaders(),
+        body:JSON.stringify(buildRegisterTransferPayload(row, target))
+      });
+      handleUnauth(res);
+      if(!res.ok){
+        const data = await res.json().catch(()=>({}));
+        throw new Error(data.message || 'HTTP ' + res.status);
+      }
+    }
+    showToast(`${records.length} entr${records.length===1?'y':'ies'} sent to ${label}.`,'ok');
+    clearSelection();
+  }catch(e){
+    if(e.message !== 'Unauthorized') showToast(`${label} transfer failed: ${e.message}`,'err');
+  }
 }
 
 function unitPill(s){const m={OW:'sp-ow',LAMC:'sp-lamc',CAMC:'sp-camc',EW:'sp-ew',STOCK:'sp-stock',IW:'sp-iw'};return`<span class="s-pill ${m[s]||'sp-iw'}">${esc(s||'-')}</span>`;}

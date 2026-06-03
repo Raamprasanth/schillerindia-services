@@ -365,7 +365,6 @@ table.js-grid tbody td input::placeholder{color:var(--muted);font-size:11px;}
       <button class="btn btn-outline btn-sm" onclick="loadData()">&#8635; Refresh</button>
       <button class="btn btn-outline btn-sm" id="mail-ack-btn" onclick="toggleMailAck()">&#9993; Mail</button>
       <button class="btn btn-success btn-sm" onclick="exportCSV()">&#128228; Export</button>
-      <button class="btn btn-primary btn-sm" onclick="openEntryPanel()">+ Add New</button>
     </div>
   </div>
 
@@ -374,7 +373,7 @@ table.js-grid tbody td input::placeholder{color:var(--muted);font-size:11px;}
 
     <div class="view-tabs">
       <button class="view-tab active" id="tab-list" onclick="showListTab()">External Repair List</button>
-      <button class="view-tab" id="tab-entry" onclick="openEntryPanel()">Add New</button>
+      <button class="view-tab" id="tab-entry" type="button">Update</button>
     </div>
 
     <div class="entry-panel" id="entry-panel">
@@ -393,7 +392,7 @@ table.js-grid tbody td input::placeholder{color:var(--muted);font-size:11px;}
         <div class="entry-msg" id="entry-msg"></div>
         <button class="btn btn-outline btn-sm" onclick="resetEntryForm()">Clear</button>
         <button class="btn btn-outline btn-sm" onclick="closeEntryPanel()">Cancel</button>
-        <button class="btn btn-success" id="entry-save-btn" onclick="saveEntry()">Save Entry</button>
+        <button class="btn btn-success" id="entry-save-btn" onclick="saveEntry()">Update Entry</button>
       </div>
     </div>
 
@@ -424,7 +423,7 @@ table.js-grid tbody td input::placeholder{color:var(--muted);font-size:11px;}
             <tr id="supplier-head-row"></tr>
           </thead>
           <tbody id="sc-tbody">
-            <tr class="loading-row"><td colspan="32"><span class="spin"></span>Loading from database...</td></tr>
+            <tr class="loading-row"><td colspan="21"><span class="spin"></span>Loading from database...</td></tr>
           </tbody>
         </table>
       </div>
@@ -442,58 +441,40 @@ table.js-grid tbody td input::placeholder{color:var(--muted);font-size:11px;}
 const API = '';
 const MAIL_ACK_KEY = 'supplier-warranty-mail-ack-visible';
 const MAIL_STATUS_ENDPOINT = '/api/escalation/status/supplier-warranty';
-let SCRAP = [], filtered = [], sortKey = 'frnEntryDate', sortDir = -1, currentPage = 1;
+let SCRAP = [], filtered = [], sortKey = 'receivedDateAtEsskay', sortDir = -1, currentPage = 1;
 let mailAckVisible = localStorage.getItem(MAIL_ACK_KEY) === '1';
 
 const SUPPLIER_COLUMNS = [
-  { key:'supplier', label:'Supplier' },
-  { key:'sbrRmaBltNo', label:'SBR/RMA/BLT No' },
-  { key:'frnNumber', label:'FRN number' },
-  { key:'warrantyReportedDate', label:'Warranty reported date', type:'date' },
-  { key:'warrantyApprovedStatus', label:'Warranty approved status' },
-  { key:'warrantyApprovedDate', label:'Warranty approved date', type:'date' },
-  { key:'defGirNumber', label:'Def GIR number' },
+  { key:'sn', label:'S/N' },
+  { key:'year', label:'Year' },
+  { key:'vendorName', label:'Vendor Name' },
   { key:'model', label:'Model' },
-  { key:'unitSerialNo', label:'Unit Serial No' },
-  { key:'partNo', label:'Part No' },
-  { key:'description', label:'Description', wide:true },
-  { key:'defPartSerialNumber', label:'Def part serial number' },
-  { key:'problemDetails', label:'Problem Details', wide:true },
-  { key:'licenceVersionModelConfiguration', label:'Licence version/Model configuration', wide:true },
-  { key:'customerName', label:'Customer Name' },
-  { key:'warrantyType', label:'Warranty type' },
-  { key:'supplierWarrantyStatus', label:'Supplier warranty status' },
-  { key:'dcInvoiceNumberSupplier', label:'Dc/Invoice number supplier' },
-  { key:'frnEntryDate', label:'FRN entry date', type:'date' },
-  { key:'shipDateFromServiceCenter', label:'Ship date from service center', type:'date' },
-  { key:'dcInvoiceNo', label:'DC/Invoice No' },
-  { key:'dcInvoiceDate', label:'DC/Invoice Date', type:'date' },
-  { key:'awbNo', label:'AWB No' },
-  { key:'awbDate', label:'AWB DATE', type:'date' },
-  { key:'replacementReceivedStatus', label:'Replacement received status' },
-  { key:'replacementReceivedDate', label:'Replacement received date', type:'date' },
-  { key:'typeOfWorkSupplier', label:'Type of work supplier' },
-  { key:'receivedPartInvoiceNumber', label:'Received part invoice number' },
-  { key:'receivedPartInvoiceDate', label:'Received part invoice date', type:'date' },
-  { key:'replacementGirNo', label:'Replacement GIR No' },
-  { key:'receivedPartSerialNumber', label:'Received part serial number' },
-  { key:'serviceCentreRemarks', label:'Service Centre Remarks', wide:true },
+  { key:'customerName', label:'Customer name' },
+  { key:'unitSerialNo', label:'Unit Serial no.' },
+  { key:'unitStatus', label:'Unit Status' },
+  { key:'problemDetails', label:'Problem details', wide:true },
+  { key:'partNo', label:'Part no.' },
+  { key:'itemDescription', label:'Item Description', wide:true },
+  { key:'defGir', label:'Def GIR no.' },
+  { key:'defPartSn', label:'DEF PART SN' },
+  { key:'vendorTicketNumber', label:'Vendor ticket number' },
+  { key:'commercialToDetails', label:'Commercial TO Details', wide:true },
+  { key:'docketDetails', label:'Docket details', wide:true },
+  { key:'receivedDateAtEsskay', label:'Received date at Esskay', type:'date' },
+  { key:'receivedBackAtSvc', label:'Received back at SVC', type:'date' },
+  { key:'repairStatus', label:'Repair Status' },
+  { key:'amountChargedForRepair', label:'Amount charged for repair', type:'number' },
+  { key:'softwareDetails', label:'Software details', wide:true },
+  { key:'serviceCentreComments', label:'Service centre comments', wide:true },
 ];
-const ENTRY_FIELDS = SUPPLIER_COLUMNS;
-const ENTRY_TEXTAREAS = new Set(['description','problemDetails','licenceVersionModelConfiguration','serviceCentreRemarks']);
+const ENTRY_FIELDS = SUPPLIER_COLUMNS.filter(c => c.key !== 'sn');
+const ENTRY_TEXTAREAS = new Set(['problemDetails','itemDescription','commercialToDetails','docketDetails','softwareDetails','serviceCentreComments']);
 const FIELD_ALIASES = {
-  supplier: ['vendorName'],
-  frnNumber: ['frnNo'],
-  defGirNumber: ['defGir'],
-  description: ['description','itemDescription','defMod'],
   customerName: ['customer'],
-  supplierWarrantyStatus: ['repairStatus','jobSheetStatus'],
-  frnEntryDate: ['frnEntryDate','receivedDateAtEsskay','rcvdDate','entryDate'],
-  shipDateFromServiceCenter: ['shipDateSC','receivedBackAtSvc'],
-  dcInvoiceNo: ['dcNo'],
-  dcInvoiceDate: ['shipDateComm'],
-  typeOfWorkSupplier: ['typeWork'],
-  serviceCentreRemarks: ['serviceCentreComments','finalRemarks','techRemarks'],
+  problemDetails: ['problemDetails','defMod','typeWork'],
+  itemDescription: ['itemDescription','description','defMod'],
+  receivedDateAtEsskay: ['receivedDateAtEsskay','frnEntryDate','rcvdDate','entryDate'],
+  repairStatus: ['repairStatus','jobSheetStatus','typeWork'],
 };
 
 // -- INIT --------------------------------------------------
@@ -658,7 +639,7 @@ function renderSupplierHeader() {
   const row = document.getElementById('supplier-head-row');
   if (!row) return;
   row.innerHTML = SUPPLIER_COLUMNS.map(col => {
-    const sortable = true;
+    const sortable = col.key !== 'sn';
     const sorted = sortKey === col.key ? ' sorted' : '';
     return `<th class="${sorted}" ${sortable ? `onclick="sortBy('${col.key}')"` : ''}>${esc(col.label)}${sortable ? ' <span class="si">&#8693;</span>' : ''}</th>`;
   }).join('');
@@ -694,6 +675,10 @@ function fieldValue(d, key) {
 }
 
 function openEntryPanel(id = '') {
+  if (!id) {
+    showToast('Select an existing row to update.', 'info');
+    return;
+  }
   const panel = document.getElementById('entry-panel');
   const listPanel = document.getElementById('list-panel');
   const title = document.getElementById('entry-title');
@@ -708,7 +693,7 @@ function openEntryPanel(id = '') {
     const el = document.getElementById('sw-' + field.key);
     if (el) el.value = record ? fieldValue(record, field.key) : '';
   });
-  if (title) title.textContent = id ? 'Update External Repair Entry' : 'Add External Repair Entry';
+  if (title) title.textContent = 'Update Supplier Warranty Entry';
   clearEntryMsg();
 }
 
@@ -734,7 +719,7 @@ function resetEntryForm() {
     const el = document.getElementById('sw-' + field.key);
     if (el) el.value = '';
   });
-  (document.getElementById('entry-title')||{}).textContent = 'Add External Repair Entry';
+  (document.getElementById('entry-title')||{}).textContent = 'Update Supplier Warranty Entry';
   clearEntryMsg();
 }
 
@@ -743,26 +728,20 @@ function collectEntryPayload() {
   ENTRY_FIELDS.forEach(field => {
     payload[field.key] = (document.getElementById('sw-' + field.key)?.value || '').trim();
   });
-  payload.vendorName = payload.supplier;
   payload.customer = payload.customerName;
-  payload.frnNo = payload.frnNumber || '';
-  payload.defGir = payload.defGirNumber || '';
-  payload.defMod = payload.description || payload.problemDetails || '';
-  payload.entryDate = payload.frnEntryDate || '';
-  payload.rcvdDate = payload.frnEntryDate || '';
-  payload.receivedDateAtEsskay = payload.frnEntryDate || '';
-  payload.shipDateSC = payload.shipDateFromServiceCenter || '';
-  payload.receivedBackAtSvc = payload.shipDateFromServiceCenter || '';
-  payload.dcNo = payload.dcInvoiceNo || '';
-  payload.shipDateComm = payload.dcInvoiceDate || '';
-  payload.typeWork = payload.typeOfWorkSupplier || payload.supplierWarrantyStatus || 'SCRAPPED';
-  payload.repairStatus = payload.supplierWarrantyStatus || payload.typeOfWorkSupplier || '';
-  payload.serviceCentreComments = payload.serviceCentreRemarks || '';
+  payload.entryDate = payload.receivedDateAtEsskay || '';
+  payload.rcvdDate = payload.receivedDateAtEsskay || '';
+  payload.defMod = payload.problemDetails || payload.itemDescription || '';
+  payload.typeWork = payload.repairStatus || 'SCRAPPED';
   return payload;
 }
 
 async function saveEntry() {
   const id = document.getElementById('sw-record-id').value;
+  if (!id) {
+    showEntryMsg('Select an existing row to update.', 'err');
+    return;
+  }
   const payload = collectEntryPayload();
   if (!payload.customerName) {
     showEntryMsg('Customer name is required.', 'err');
@@ -772,7 +751,7 @@ async function saveEntry() {
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
     const res = await fetch(`${API}/api/scrap${id ? '/' + id : ''}`, {
-      method: id ? 'PUT' : 'POST',
+      method: 'PUT',
       headers: authHeaders(),
       body: JSON.stringify(payload),
     });
@@ -786,15 +765,15 @@ async function saveEntry() {
     if (idx >= 0) SCRAP[idx] = saved; else SCRAP.unshift(saved);
     applyFilters();
     updateStats();
-    showEntryMsg(id ? 'Entry updated.' : 'Entry added.', 'ok');
-      showToast(id ? 'External repair entry updated.' : 'External repair entry added.', 'ok');
+    showEntryMsg('Entry updated.', 'ok');
+      showToast('Supplier warranty entry updated.', 'ok');
   } catch (e) {
     if (e.message !== 'Unauthorized') {
       showEntryMsg('Save failed: ' + e.message, 'err');
       showToast('Save failed: ' + e.message, 'err');
     }
   } finally {
-    btn.disabled = false; btn.textContent = 'Save Entry';
+    btn.disabled = false; btn.textContent = 'Update Entry';
   }
 }
 
@@ -811,17 +790,19 @@ function renderTable() {
   if (!total) {
     tbody.innerHTML = `<tr><td colspan="${SUPPLIER_COLUMNS.length}"><div class="empty-st">
       <div class="ei">&#128196;</div>
-      <div class="et">${SCRAP.length ? 'No records match the current filters' : 'No External Repair records'}</div>
-      <div class="es">${SCRAP.length ? 'Try clearing the filters or changing the month/year.' : 'External repair records will appear here when added.'}</div>
+      <div class="et">${SCRAP.length ? 'No records match the current filters' : 'No Supplier Warranty records'}</div>
+      <div class="es">${SCRAP.length ? 'Try clearing the filters or changing the month/year.' : 'Supplier warranty records will appear here when added.'}</div>
     </div></td></tr>`;
   } else {
     tbody.innerHTML = slice.map((d, i) => {
       const rid = d._id || d.id;
       return `<tr onclick="openEntryPanel('${rid}')" title="Click to auto-fill the entry boxes">
         ${SUPPLIER_COLUMNS.map(col => {
+          if (col.key === 'sn') return `<td style="font-weight:700;">${(currentPage - 1) * perPage + i + 1}</td>`;
           const value = fieldValue(d, col.key);
+          if (col.key === 'unitStatus') return `<td>${unitPill(value)}</td>`;
           if (col.type === 'date') return `<td style="font-size:11px;color:var(--soft);">${fmtDate(value)}</td>`;
-          const strong = ['supplier','model','customerName','defGirNumber','frnNumber'].includes(col.key) ? 'font-weight:600;' : '';
+          const strong = ['vendorName','model','customerName','defGir'].includes(col.key) ? 'font-weight:600;' : '';
           const color = col.key === 'model' ? 'color:var(--accent2);' : '';
           return `<td style="max-width:190px;overflow:hidden;text-overflow:ellipsis;${strong}${color}" title="${esc(value)}">${esc(value || '-')}</td>`;
         }).join('')}
@@ -940,12 +921,12 @@ async function saveJobSheet() {
 function exportCSV() {
   const h = SUPPLIER_COLUMNS.map(col => col.label);
   const rows = filtered.map((d, i) => SUPPLIER_COLUMNS.map(col => (
-    fieldValue(d, col.key)
+    col.key === 'sn' ? i + 1 : fieldValue(d, col.key)
   )));
   const csv = [h,...rows].map(r => r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-  a.download = 'external-repair-list-' + new Date().toISOString().split('T')[0] + '.csv';
+  a.download = 'supplier-warranty-list-' + new Date().toISOString().split('T')[0] + '.csv';
   a.click();
   showToast('Exported ' + filtered.length + ' records.', 'ok');
 }
