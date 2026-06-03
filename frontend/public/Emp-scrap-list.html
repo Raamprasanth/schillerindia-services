@@ -650,7 +650,7 @@ function applyFilters() {
 
 function sortBy(k) {
   if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = -1; }
-  sortArr(); renderTable();
+  sortArr(); renderSupplierHeader(); renderTable();
 }
 function sortArr() {
   filtered.sort((a, b) => {
@@ -800,7 +800,7 @@ function renderTable() {
   const tbody = document.getElementById('sc-tbody');
 
   if (!total) {
-    tbody.innerHTML = `<tr><td colspan="18"><div class="empty-st">
+    tbody.innerHTML = `<tr><td colspan="${SUPPLIER_COLUMNS.length}"><div class="empty-st">
       <div class="ei">&#128196;</div>
       <div class="et">${SCRAP.length ? 'No records match the current filters' : 'No Scrap List records'}</div>
       <div class="es">${SCRAP.length ? 'Try clearing the filters or changing the month/year.' : 'Scrap records will appear here when added.'}</div>
@@ -808,31 +808,17 @@ function renderTable() {
   } else {
     tbody.innerHTML = slice.map((d, i) => {
       const rid = d._id || d.id;
-      const pdClass = (v) => v > 100 ? 'pdays-crit' : v > 50 ? 'pdays-warn' : 'pdays-ok';
-      const jsUpdated = d.jobSheetUpdated;
-      return `<tr>
-        <td>${statusPill(d.typeWork, d.jobSheetStatus)}</td>
-        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
-        <td style="font-weight:600;">${esc(d.scRno||'-')}</td>
-        <td>${esc(d.scEng||'-')}</td>
-        <td class="mono">${esc(String(d.frnNo||'-'))}</td>
-        <td><span class="region-tag">${esc(d.region||'-')}</span></td>
-        <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.engineer||'')}">${esc(d.engineer||'-')}</td>
-        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;font-weight:500;" title="${esc(d.customer||'')}">${esc(d.customer||'-')}</td>
-        <td style="font-weight:600;color:var(--accent2);">${esc(d.model||'-')}</td>
-        <td>${unitPill(d.unitStatus)}</td>
-        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.defMod||'')}">${esc(d.defMod||'-')}</td>
-        <td><span style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;background:rgba(109,40,217,0.1);color:var(--purple);border:1px solid rgba(109,40,217,0.2);font-family:monospace;">${esc(d.defGir||'-')}</span></td>
-        <td style="font-size:11px;color:var(--soft);">${esc(d.typeWork||'-')}</td>
-        <td style="font-weight:600;">${d.pdPfrn||0}</td>
-        <td style="font-weight:600;">${d.pdObp||0}</td>
-        <td style="font-weight:600;">${d.pdUrp||0}</td>
-        <td style="font-weight:600;">${d.pdScc||0}</td>
-        <td>
-          <button class="btn-xs jobsheet" onclick="openJS('${rid}')">
-            ${jsUpdated ? '&#128221; JobSheet' : '&#128221; JobSheet'}
-          </button>
-        </td>
+      const sn = (currentPage - 1) * perPage + i + 1;
+      return `<tr onclick="openEntryPanel('${rid}')" title="Click to auto-fill the entry boxes">
+        ${SUPPLIER_COLUMNS.map(col => {
+          if (col.key === 'sn') return `<td style="font-weight:700;">${sn}</td>`;
+          const value = fieldValue(d, col.key);
+          if (col.key === 'unitStatus') return `<td>${unitPill(value)}</td>`;
+          if (col.key === 'receivedDateAtEsskay' || col.key === 'receivedBackAtSvc') return `<td style="font-size:11px;color:var(--soft);">${fmtDate(value)}</td>`;
+          const strong = ['vendorName','model','customerName','defGir'].includes(col.key) ? 'font-weight:600;' : '';
+          const color = col.key === 'model' ? 'color:var(--accent2);' : '';
+          return `<td style="max-width:190px;overflow:hidden;text-overflow:ellipsis;${strong}${color}" title="${esc(value)}">${esc(value || '-')}</td>`;
+        }).join('')}
       </tr>`;
     }).join('');
   }
@@ -946,13 +932,10 @@ async function saveJobSheet() {
 
 // -- EXPORT CSV --------------------------------------------
 function exportCSV() {
-  const h = ['Status','Entry Date','SC RNo','SC Eng','FRN No','Region','Engineer','Customer','Model','Unit Status','Def Mod','Def Gir No','Type of Work','PD(PFRN)','PD(OBP)','PD(URP)','PD(SCC)'];
-  const rows = filtered.map(d => [
-    d.typeWork?.toUpperCase().includes('SCRAP') ? 'Scrapped' : (d.jobSheetStatus||'Pending'),
-    d.entryDate, d.scRno, d.scEng, d.frnNo, d.region, d.engineer, d.customer,
-    d.model, d.unitStatus, d.defMod, d.defGir, d.typeWork,
-    d.pdPfrn, d.pdObp, d.pdUrp, d.pdScc,
-  ]);
+  const h = SUPPLIER_COLUMNS.map(col => col.label);
+  const rows = filtered.map((d, i) => SUPPLIER_COLUMNS.map(col => (
+    col.key === 'sn' ? i + 1 : fieldValue(d, col.key)
+  )));
   const csv = [h,...rows].map(r => r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
@@ -977,13 +960,15 @@ function getRange(c,t){if(t<=7)return Array.from({length:t},(_,i)=>i+1);if(c<=4)
 function gp(p){currentPage=p;renderTable();}
 
 // -- HELPERS -----------------------------------------------
-function setLoading(){document.getElementById('sc-tbody').innerHTML='<tr class="loading-row"><td colspan="18"><span class="spin"></span>Loading from database...</td></tr>';['s-total','s-scrapped','s-pending','s-avg','s-js'].forEach(id=>document.getElementById(id).textContent='-');}
-function setError(msg){document.getElementById('sc-tbody').innerHTML=`<tr class="loading-row"><td colspan="18" style="color:var(--red);">&#9888; ${esc(msg)}</td></tr>`;}
+function setLoading(){document.getElementById('sc-tbody').innerHTML=`<tr class="loading-row"><td colspan="${SUPPLIER_COLUMNS.length}"><span class="spin"></span>Loading from database...</td></tr>`;['s-total','s-scrapped','s-pending','s-avg','s-js'].forEach(id=>document.getElementById(id).textContent='-');}
+function setError(msg){document.getElementById('sc-tbody').innerHTML=`<tr class="loading-row"><td colspan="${SUPPLIER_COLUMNS.length}" style="color:var(--red);">&#9888; ${esc(msg)}</td></tr>`;}
 function fmtDate(d){if(!d)return'-';const p=String(d).split('T')[0].split('-');if(p.length<3)return String(d);return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0];}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function showToast(msg,type='ok'){const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="td"></span>'+msg;w.appendChild(el);setTimeout(()=>el.remove(),3400);}
 function showJSMsg(msg,type){const el=document.getElementById('js-msg');el.textContent=msg;el.className='fm-msg '+type;}
 function clearJSMsg(){const el=document.getElementById('js-msg');el.textContent='';el.className='fm-msg';}
+function showEntryMsg(msg,type){const el=document.getElementById('entry-msg');el.textContent=msg;el.style.color=type==='err'?'var(--red)':type==='ok'?'var(--green)':'var(--muted)';}
+function clearEntryMsg(){showEntryMsg('', 'info');}
 document.getElementById('js-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeJS();});
 function logout(){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';}
 </script>

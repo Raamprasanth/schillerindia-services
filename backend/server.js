@@ -103,6 +103,7 @@ const asRoutes     = require('./routes/asRoutes');
 const abirRoutes   = require('./routes/abirRoutes');
 const acbirRoutes  = require('./routes/acbirRoutes');
 const apaRoutes    = require('./routes/apaRoutes');
+const acpaRoutes   = require('./routes/acpaRoutes');
 const aprfobRoutes = require('./routes/aprfobRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const userNotificationRoutes = require('./routes/userNotificationRoutes');
@@ -250,6 +251,7 @@ app.use('/api/admin/nonsaleable',     ansRoutes);
 app.use('/api/admin/saleables',       asRoutes);
 app.use('/api/admin/bir/closed',      acbirRoutes);    // must be BEFORE /api/admin/bir
 app.use('/api/admin/apa',             apaRoutes);
+app.use('/api/admin/acpa',            acpaRoutes);
 app.use('/api/admin/bir',             abirRoutes);
 app.use('/api/admin/aprfob',          aprfobRoutes);
 app.use('/api/admin/notifications',   notificationRoutes);
@@ -285,6 +287,7 @@ app.get('/acr.html',                    (req, res) => res.sendFile(path.join(fro
 app.get('/abir.html',                   (req, res) => res.sendFile(path.join(frontendPath, 'abir.html')));
 app.get('/acbir.html',                  (req, res) => res.sendFile(path.join(frontendPath, 'acbir.html')));
 app.get('/apa.html',                    (req, res) => res.sendFile(path.join(frontendPath, 'apa.html')));
+app.get('/acpa.html',                   (req, res) => res.sendFile(path.join(frontendPath, 'acpa.html')));
 app.get('/employee-dashboard.html',     (req, res) => res.sendFile(path.join(frontendPath, 'employee-dashboard.html')));
 app.get('/employee-service-list.html',  (req, res) => res.sendFile(path.join(frontendPath, 'employee-service-list.html')));
 app.get('/ob-pending.html',             (req, res) => res.sendFile(path.join(frontendPath, 'ob-pending.html')));

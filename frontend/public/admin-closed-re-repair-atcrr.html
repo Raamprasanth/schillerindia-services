@@ -14,20 +14,28 @@
 :root{
   --bg:#f0f4f8;--surface:#ffffff;--surface2:#e8f0f7;--surface3:#f5f9fc;
   --border:#ccdde8;--border2:#ddeaf4;
-  --accent:#059669;--accent2:#047857;--accent3:#ecfdf5;
-  --green:#059669;--green-bg:rgba(5,150,105,0.08);
+  --accent:#b91c1c;--accent2:#ef4444;--accent3:#fef2f2;
+  --green:#059669;--green-bg:rgba(5,150,105,0.08);--red2:#b91c1c;
   --amber:#b45309;--amber-bg:rgba(180,83,9,0.08);
   --red:#b91c1c;--red-bg:rgba(185,28,28,0.07);
   --purple:#5b21b6;--purple-bg:rgba(91,33,182,0.08);
   --blue:#0068b5;--blue-bg:rgba(0,104,181,0.08);
   --teal:#0e7490;--teal-bg:rgba(14,116,144,0.08);
-  --crl:#059669;--crl2:#047857;--crl-bg:rgba(5,150,105,0.08);--crl-soft:rgba(5,150,105,0.12);
+  --crl:#b91c1c;--crl2:#ef4444;--crl-bg:rgba(185,28,28,0.10);--crl-soft:rgba(185,28,28,0.15);
   --text:#0f2236;--muted:#6b8ca8;--soft:#3d6480;--card:#ffffff;
   --shadow:0 1px 8px rgba(0,60,120,0.07);--shadow-md:0 4px 20px rgba(0,60,120,0.10);--shadow-lg:0 12px 40px rgba(0,60,120,0.13);
 }
+
+[data-theme="dark"]{
+  --bg:#0f1621;--surface:#1a2333;--surface2:#1e293b;--surface3:#1a2a3e;
+  --border:#2a3a52;--border2:#253348;--text:#e2eaf4;--muted:#4a6a8a;
+  --soft:#7a9ab0;--card:#1a2333;
+  --crl:#ef4444;--crl2:#b91c1c;--crl-bg:rgba(239,68,68,0.15);--crl-soft:rgba(239,68,68,0.2);
+  --shadow:0 1px 8px rgba(0,0,0,0.3);--shadow-md:0 4px 20px rgba(0,0,0,0.35);
+}
 body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
 .sidebar{width:230px;min-height:100vh;background:#ffffff;border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 14px rgba(0,60,120,0.06);}
-.sidebar-header{padding:18px 18px 14px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#052e16,#059669);}
+.sidebar-header{padding:18px 18px 14px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#450a0a,#b91c1c);}
 .logo-wrap{display:flex;align-items:center;gap:10px;}
 .logo-icon{width:36px;height:36px;background:rgba(255,255,255,0.15);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#fff;border:1.5px solid rgba(255,255,255,0.25);}
 .logo-text{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#fff;line-height:1.2;}
@@ -54,7 +62,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .breadcrumb .sep{color:var(--border2);}
 .topbar-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);}
 .content{flex:1;padding:22px 28px;overflow-y:auto;background:var(--bg);}
-.hero-banner{background:linear-gradient(135deg,#052e16 0%,#047857 50%,#059669 100%);border-radius:16px;padding:22px 28px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(5,150,105,0.25);}
+.hero-banner{background:linear-gradient(135deg,#450a0a 0%,#991b1b 50%,#b91c1c 100%);border-radius:16px;padding:22px 28px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(5,150,105,0.25);}
 .hero-banner::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.05);pointer-events:none;}
 .hero-left{position:relative;z-index:1;}
 .hero-tag{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;color:rgba(255,255,255,0.85);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;}
@@ -103,7 +111,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .srch-wrap input:focus{border-color:var(--crl);}
 .srch-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);}
 .table-wrap{overflow-x:auto;}
-table.crl-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:1400px;}
+table.crl-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:1200px;}
 table.crl-table thead th{padding:10px 12px;font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;text-align:left;border-bottom:2px solid var(--border);background:var(--surface3);white-space:nowrap;cursor:pointer;user-select:none;}
 table.crl-table thead th:hover{color:var(--crl);}
 table.crl-table tbody td{padding:10px 12px;border-bottom:1px solid rgba(0,60,120,0.05);vertical-align:middle;white-space:nowrap;color:var(--text);}
@@ -181,26 +189,20 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
 .cat-tab.pfrn.active{background:var(--purple);border-color:var(--purple);}
 .cat-tab.ur.active{background:var(--blue);border-color:var(--blue);}
 .cat-tab.ob.active{background:var(--teal);border-color:var(--teal);}
-#modal-detail .modal-htitle{font-size:22px;}
-#modal-detail .modal-head div[style*="font-size:11px"]{font-size:14px!important;line-height:1.45;}
-#modal-detail .modal-badge{font-size:14px;padding:5px 12px;}
-#modal-detail .info-lbl{font-size:11.5px;}
-#modal-detail .info-val{font-size:15px;line-height:1.35;}
-#modal-detail .detail-sec-title{font-size:13px;}
-#modal-detail .df label{font-size:12px;}
-#modal-detail .df .dval{font-size:15px;line-height:1.5;min-height:46px;padding:11px 14px;}
-#modal-detail .df .dval.long{min-height:92px;}
-#modal-detail .modal-foot .btn{font-size:13px;}
 ::-webkit-scrollbar{width:7px;height:7px;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
 
+    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
     </style>
   <link rel="stylesheet" href="global-typography.css">
+  <link rel="stylesheet" href="admin-sidebar.css">
+  <link rel="stylesheet" href="dashboard-topbar-actions.css">
+  <script src="dashboard-topbar-actions.js" defer></script>
   <link rel="stylesheet" href="employee-theme.css">
-  <script src="employee-theme.js"></script>
-  <link rel="stylesheet" href="topbar-alignment.css">
-  <link rel="stylesheet" href="brand-logo.css">
-  <script src="brand-logo.js" defer></script>
+  
+  
+  
+  
 </head>
 <body>
 <!-- DETAIL VIEW MODAL -->
@@ -371,6 +373,7 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
         <a class="nav-item " href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
         <a class="nav-item " href="acbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
         <a class="nav-item " href="apa.html"><span class="icon">&#128221;</span> Pending Activity</a>
+        <a class="nav-item " href="acpa.html"><span class="icon">&#9989;</span> Closed Activity</a>
       </div>
     </div>
     <button class="nav-group-toggle " id="rta-toggle" onclick="toggleRTA()"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
@@ -406,10 +409,10 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
   <div class="topbar">
     <div>
       <div class="breadcrumb">
-        <a href="Repair-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
-        <span>Repair Work</span><span class="sep">&#8250;</span><span>Closed Re-repair List</span>
+        <a href="admin-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
+        <span>Repair Team</span><span class="sep">&#8250;</span><span>Admin Closed Repair List</span>
       </div>
-      <div class="topbar-title">Closed Re-repair List</div>
+      <div class="topbar-title">Admin Closed Repair List</div>
     </div>
     <div style="display:flex;align-items:center;gap:9px;">
       <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
@@ -907,6 +910,7 @@ function deleteRecord(id) {
 </script>
 </body>
 </html>
+
 
 
 
