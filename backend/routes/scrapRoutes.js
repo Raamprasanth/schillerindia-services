@@ -5,6 +5,21 @@ const { protect, adminOnly } = require('../middleware/authMiddleware');
 const { resolveDivision } = require('../utils/visibility');
 const { buildSupplierWarrantyEscalationRow, enqueueLatestEscalationSnapshot } = require('../services/escalationService');
 
+function isAdminUser(user = {}) {
+  const role = String(user.role || '').toLowerCase();
+  return role === 'admin' || role === 'superadmin';
+}
+
+async function canAccessScrapDoc(doc, user = {}) {
+  if (isAdminUser(user)) return true;
+  const divDoc = await resolveDivision(user);
+  const empName = String(user.name || '').trim();
+  const allowedDiv = divDoc && doc.division && String(doc.division) === String(divDoc.name);
+  const allowedName = empName && [doc.scEng, doc.engineer, doc.addedBy]
+    .some((name) => String(name || '').trim() === empName);
+  return Boolean(allowedDiv || allowedName);
+}
+
 // ── GET all scrap records ─────────────────────────────────
 router.get('/', protect, async (req, res) => {
   try {
@@ -58,16 +73,21 @@ router.get('/:id', protect, async (req, res) => {
 });
 
 // ── POST create scrap record (Admin only) ─────────────────
-router.post('/', protect, adminOnly, async (req, res) => {
+router.post('/', protect, async (req, res) => {
   try {
     const {
       serviceId, entryDate, scRno, scEng, frnNo,
-      region, engineer, customer, model, unitStatus,
+      region, engineer, customer, customerName, year, vendorName, model, unitSerialNo, unitStatus,
+      problemDetails, partNo, itemDescription,
       defMod, defGir, typeWork, rcvdDate,
+      defPartSn, vendorTicketNumber, commercialToDetails, docketDetails,
+      receivedDateAtEsskay, receivedBackAtSvc, repairStatus,
+      amountChargedForRepair, softwareDetails, serviceCentreComments,
       pdPfrn, pdObp, pdUrp, pdScc,
     } = req.body;
 
-    if (!customer) return res.status(400).json({ message: 'Customer is required.' });
+    const finalCustomer = String(customerName || customer || '').trim();
+    if (!finalCustomer) return res.status(400).json({ message: 'Customer name is required.' });
 
     // Resolve division from linked Service record
     let divisionName = '';
@@ -80,16 +100,44 @@ router.post('/', protect, adminOnly, async (req, res) => {
         if (divDoc) divisionName = divDoc.name;
       }
     } catch (_) { /* non-fatal */ }
+    if (!divisionName) {
+      const divDoc = await resolveDivision(req.user);
+      divisionName = divDoc ? divDoc.name : '';
+    }
+
+    const finalReceivedDate = receivedDateAtEsskay || rcvdDate || entryDate || '';
 
     const doc = await Scrap.create({
       serviceId: serviceId || null,
-      entryDate, scRno, scEng, frnNo,
-      region, engineer, customer, model,
+      entryDate: entryDate || finalReceivedDate,
+      scRno,
+      scEng: scEng || req.user.name || '',
+      frnNo,
+      region,
+      engineer,
+      customer: finalCustomer,
+      year: year || '',
+      vendorName: vendorName || '',
+      model,
+      unitSerialNo: unitSerialNo || '',
       unitStatus: unitStatus || '',
+      problemDetails: problemDetails || '',
+      partNo: partNo || '',
+      itemDescription: itemDescription || '',
       defMod: defMod || '',
       defGir: defGir || '',
-      typeWork: typeWork || 'SCRAPPED',
-      rcvdDate: rcvdDate || '',
+      defPartSn: defPartSn || '',
+      vendorTicketNumber: vendorTicketNumber || '',
+      commercialToDetails: commercialToDetails || '',
+      docketDetails: docketDetails || '',
+      receivedDateAtEsskay: finalReceivedDate,
+      receivedBackAtSvc: receivedBackAtSvc || '',
+      repairStatus: repairStatus || '',
+      amountChargedForRepair: amountChargedForRepair || '',
+      softwareDetails: softwareDetails || '',
+      serviceCentreComments: serviceCentreComments || '',
+      typeWork: typeWork || repairStatus || 'SCRAPPED',
+      rcvdDate: finalReceivedDate,
       pdPfrn: pdPfrn || 0,
       pdObp:  pdObp  || 0,
       pdUrp:  pdUrp  || 0,
@@ -140,14 +188,34 @@ router.put('/:id/jobsheet', protect, async (req, res) => {
 });
 
 // ── PUT update scrap record (Admin) ──────────────────────
-router.put('/:id', protect, adminOnly, async (req, res) => {
+router.put('/:id', protect, async (req, res) => {
   try {
+    const existing = await Scrap.findById(req.params.id).lean();
+    if (!existing) return res.status(404).json({ message: 'Record not found.' });
+    if (!(await canAccessScrapDoc(existing, req.user))) {
+      return res.status(403).json({ message: 'Not authorized to update this record.' });
+    }
+
+    const customerName = req.body.customerName || req.body.customer;
+    const receivedDate = req.body.receivedDateAtEsskay || req.body.rcvdDate || req.body.entryDate;
+    const patch = {
+      ...req.body,
+      updatedBy: req.user.name,
+    };
+    if (customerName) patch.customer = customerName;
+    if (receivedDate) {
+      patch.receivedDateAtEsskay = receivedDate;
+      patch.rcvdDate = receivedDate;
+      patch.entryDate = req.body.entryDate || receivedDate;
+    }
+    if (!patch.typeWork && patch.repairStatus) patch.typeWork = patch.repairStatus;
+    delete patch.customerName;
+
     const doc = await Scrap.findByIdAndUpdate(
       req.params.id,
-      { ...req.body, updatedBy: req.user.name },
+      patch,
       { new: true, runValidators: true }
     );
-    if (!doc) return res.status(404).json({ message: 'Record not found.' });
     res.json(doc);
   } catch (e) {
     res.status(400).json({ message: e.message });

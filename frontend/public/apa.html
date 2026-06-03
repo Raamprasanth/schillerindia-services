@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<script>(function(){const token=sessionStorage.getItem('schiller_token');const role=String(sessionStorage.getItem('schiller_role')||'').toLowerCase();if(!token||!['admin','superadmin'].includes(role))window.location.href='login.html';})();</script>
+<title>SchillerIndia - Pending Activity List</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#f0f4f8;--surface:#fff;--surface2:#e8eef4;--surface3:#f7f9fb;--border:#d1dce8;--accent:#0062cc;--green:#00875a;--amber:#c47a00;--red:#c0392b;--purple:#6d28d9;--teal:#0e7490;--text:#0d1f2d;--muted:#7a96ab;--soft:#4a6a7e;--shadow:0 1px 8px rgba(0,60,120,.07);--shadow-md:0 4px 20px rgba(0,60,120,.1)}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+.sidebar{width:240px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 12px rgba(0,80,120,.06)}
+.sidebar-header{padding:20px 20px 16px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#450a0a,#b91c1c)}
+.logo-wrap{display:flex;align-items:center;gap:10px}.logo-icon{width:36px;height:36px;background:rgba(255,255,255,0.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;color:#fff}.logo-text{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;line-height:1.1}.logo-text span{display:block;font-size:10px;color:rgba(255,255,255,0.6);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400}.role-badge{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;background:rgba(185,28,28,0.1);color:#b91c1c;border:1px solid rgba(185,28,28,0.25);display:inline-block}
+.sidebar-nav{flex:1;padding:12px 10px}.nav-section{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;padding:10px 8px 5px}.nav-item,.nav-group-toggle{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:500;cursor:pointer;transition:all .2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none}.nav-item:hover,.nav-group-toggle:hover{background:var(--surface2);color:var(--text)}.nav-item.active{background:rgba(185,28,28,0.1);color:#b91c1c;font-weight:700}.icon{font-size:13px;width:18px;text-align:center;flex-shrink:0}.caret{margin-left:auto;font-size:9px;transition:transform .25s}.nav-group-toggle.open .caret{transform:rotate(90deg)}.nav-children{max-height:0;overflow:hidden;transition:max-height .35s ease}.nav-children.open{max-height:400px}.nav-sub .nav-item{padding:6px 10px 6px 28px;font-size:12px;color:var(--muted)}.nav-sub .nav-item.active{color:#b91c1c;background:rgba(185,28,28,0.07)}
+.sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);background:var(--surface3)}.user-info{display:flex;align-items:center;gap:10px}.user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#b91c1c,#ef4444);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff}.user-name{font-size:13px;font-weight:600}.user-role{font-size:11px;color:var(--muted)}.logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:11px}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}.topbar{height:60px;padding:0 26px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:var(--shadow)}.breadcrumb{display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--muted);margin-bottom:2px}.breadcrumb a{color:var(--muted);text-decoration:none}.page-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700}.content{flex:1;padding:20px 26px;overflow:auto}.topbar-actions{display:flex;gap:9px;align-items:center}
+.btn{padding:7px 15px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;display:inline-flex;align-items:center;gap:6px}.btn-primary{background:var(--accent);color:#fff}.btn-outline{background:none;border:1.5px solid var(--border);color:var(--soft)}.btn-danger{background:var(--red);color:#fff}.btn-sm{padding:5px 12px;font-size:11.5px}.btn-xs{padding:4px 9px;border-radius:6px;border:1.5px solid var(--border);background:none;color:var(--soft);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s}.btn-xs.update{color:var(--accent);background:rgba(0,98,204,.08);border-color:rgba(0,98,204,.25)}.btn-xs.update:hover{background:rgba(0,98,204,.15);border-color:var(--accent)}.btn-xs.delete{color:var(--red);border-color:rgba(192,57,43,.25);background:rgba(192,57,43,.05)}.btn-xs.delete:hover{background:rgba(192,57,43,.12);border-color:var(--red)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}.sc{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:14px 16px;box-shadow:var(--shadow);display:grid;grid-template-columns:32px 1fr auto;gap:8px;align-items:center}.sc-ico{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;background:rgba(0,98,204,.09)}.sc-lbl{font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}.sc-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:700}
+.filter-bar{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:13px 16px;margin-bottom:16px;box-shadow:var(--shadow);display:flex;align-items:center;gap:10px;flex-wrap:wrap}.fl-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}.fl-input,.fl-select{padding:7px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none}.fl-div{width:1px;height:24px;background:var(--border)}
+.table-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}.table-topbar{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--surface3)}.table-title{font-family:'Syne',sans-serif;font-size:13.5px;font-weight:700}.count-chip{background:rgba(0,98,204,.08);color:var(--accent);font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:10px;border:1px solid rgba(0,98,204,.15)}.search-wrap{position:relative}.search-wrap input{padding:7px 12px 7px 30px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;width:230px}.search-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted)}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:12px;min-width:1320px}th{padding:9px 11px;font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;text-align:left;border-bottom:2px solid var(--border);background:var(--surface3);white-space:nowrap;cursor:pointer}td{padding:9px 11px;border-bottom:1px solid rgba(0,40,80,.05);white-space:nowrap}tr:hover td{background:rgba(0,98,204,.025)}.table-foot{padding:11px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--muted);background:var(--surface3)}.pager-row{display:flex;gap:3px}.pager{min-width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--soft);font-size:11px;font-weight:600;cursor:pointer}.pager.active{background:var(--accent);border-color:var(--accent);color:#fff}.pager:disabled{opacity:.35;cursor:not-allowed}
+.src{padding:2px 8px;border-radius:6px;font-size:9.5px;font-weight:700}.src-admin{background:rgba(0,135,90,.1);color:var(--green)}.src-emp{background:rgba(109,40,217,.1);color:var(--purple)}.src-pt{background:rgba(196,122,0,.1);color:var(--amber)}
+.div-tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;background:rgba(109,40,217,.08);color:var(--purple);border:1px solid rgba(91,33,182,0.18)}
+.mono{font-family:monospace;font-size:11px}.empty{padding:45px;text-align:center;color:var(--muted)}
+.modal-overlay{position:fixed;inset:0;background:rgba(5,18,38,.52);backdrop-filter:blur(5px);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:720px;max-height:90vh;overflow:auto;box-shadow:0 18px 50px rgba(0,30,70,.18);display:flex;flex-direction:column}
+.modal-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:12px;position:sticky;top:0;background:var(--surface)}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700}
+.modal-sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.modal-close{width:30px;height:30px;border-radius:7px;background:var(--surface2);border:1px solid var(--border);cursor:pointer}
+.modal-body{padding:20px 22px;display:flex;flex-direction:column;gap:14px}
+.modal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.req{color:var(--red)}
+.field input,.field textarea,.field select{border:1.5px solid var(--border);border-radius:10px;padding:9px 13px;font-size:13px;color:var(--text);background:var(--surface);font-family:'Plus Jakarta Sans',sans-serif;outline:none;width:100%;transition:border-color 0.2s}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,98,204,.1)}
+.field.span-1{grid-column:span 1}
+.field.span-2{grid-column:span 2}
+.field.span-3{grid-column:span 3}
+.field.span-4{grid-column:span 4}
+.modal-foot{padding:14px 22px;border-top:1px solid var(--border);background:var(--surface3);display:flex;gap:10px;justify-content:flex-end}
+.form-msg{font-size:11.5px;font-weight:600;padding:7px 13px;border-radius:7px;margin-right:auto;display:none}
+.form-msg.err{display:block;background:rgba(185,28,28,.06);color:var(--red);border:1px solid rgba(185,28,28,0.18)}
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:700;display:flex;flex-direction:column;gap:7px}.toast{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:11px 15px;font-size:12.5px;box-shadow:0 8px 22px rgba(0,0,0,.1)}
+.compact-cell{width:240px;max-width:240px;white-space:normal!important}
+.compact-text{font-size:11px;line-height:1.35;color:var(--soft)}
+.compact-text.strong{font-weight:700;color:var(--accent)}
+.compact-preview{max-height:32px;overflow:hidden;word-break:break-word}
+.compact-text.expanded .compact-preview{max-height:none}
+.show-more-btn{margin-top:3px;border:none;background:none;color:var(--accent);font-size:10.5px;font-weight:800;cursor:pointer;padding:0;font-family:'Plus Jakarta Sans',sans-serif}
+.show-more-btn:hover{text-decoration:underline}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+<link rel="stylesheet" href="global-typography.css">
+<link rel="stylesheet" href="admin-sidebar.css">
+<link rel="stylesheet" href="topbar-alignment.css">
+<link rel="stylesheet" href="brand-logo.css">
+<script src="brand-logo.js" defer></script>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <img class="brand-logo-img" src="logo.png" alt="SCHILLER">
+    </div>
+  </div>
+  <div style="padding:10px 20px 0;"><span class="role-badge">Admin</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <button class="nav-item" onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
+    <button class="nav-item" onclick="window.location.href='company-section.html'"><span class="icon">&#127970;</span> Company</button>
+    <button class="nav-item" onclick="window.location.href='division-section.html'"><span class="icon">&#128309;</span> Division</button>
+    <button class="nav-item" onclick="window.location.href='engineer-section.html'"><span class="icon">&#128119;</span> Engineers</button>
+    <button class="nav-item" onclick="window.location.href='dealer-section.html'"><span class="icon">&#129309;</span> Dealers</button>
+    <div class="nav-section">Operations</div>
+    <button class="nav-group-toggle" id="sf-toggle" onclick="toggleSF()">
+      <span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span>
+    </button>
+    <div class="nav-children" id="sf-children">
+      <div class="nav-sub">
+        <button class="nav-item" onclick="window.location.href='service-list.html'"><span class="icon">&#128225;</span> Services</button>
+        <button class="nav-item" onclick="window.location.href='pending-frn.html'"><span class="icon">&#128221;</span> Pending FRN</button>
+        <button class="nav-item" onclick="window.location.href='ob-pending.html'"><span class="icon">&#128194;</span> OB Pending</button>
+        <button class="nav-item" onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
+        <button class="nav-item" onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
+        <button class="nav-item" onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
+        <button class="nav-item" onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
+        <button class="nav-item" onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
+      </div>
+    </div>
+    <button class="nav-group-toggle open" id="ar-toggle" onclick="toggleAR()"><span class="icon">&#128196;</span> Activity Register <span class="caret">&#9656;</span></button>
+    <div class="nav-children open" id="ar-children">
+      <div class="nav-sub">
+        <a class="nav-item" href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
+        <a class="nav-item" href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
+        <a class="nav-item" href="aprfob.html"><span class="icon">&#128203;</span> TO/SO List</a>
+        <a class="nav-item" href="acr.html"><span class="icon">&#128209;</span> Closed TO/SO</a>
+        <a class="nav-item" href="ans.html"><span class="icon">&#128230;</span> Non Saleable</a>
+        <a class="nav-item" href="as.html"><span class="icon">&#128176;</span> Saleable</a>
+        <a class="nav-item" href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
+        <a class="nav-item" href="acbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
+        <a class="nav-item active" href="apa.html"><span class="icon">&#128221;</span> Pending Activity</a>
+        <a class="nav-item active" href="apa.html"><span class="icon">&#128221;</span> Pending Activity</a>
+      </div>
+    </div>
+    <button class="nav-group-toggle" id="rta-toggle" onclick="toggleRTA()"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
+    <div class="nav-children" id="rta-children">
+      <div class="nav-sub">
+        <a class="nav-item" href="atfrn.html"><span class="icon">&#128221;</span> Admin RT FRN</a>
+        <a class="nav-item" href="atob.html"><span class="icon">&#128230;</span> Admin RT OB</a>
+        <a class="nav-item" href="atur.html"><span class="icon">&#128736;&#65039;</span> Admin RT UR</a>
+        <a class="nav-item" href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
+        <a class="nav-item" href="admin-re-repair-atrr.html"><span class="icon">&#128260;</span> Admin ATRR</a>
+        <a class="nav-item" href="admin-closed-re-repair-atcrr.html"><span class="icon">&#128683;</span> Admin ATCRR</a>
+      </div>
+    </div>
+    <div class="nav-section">Admin</div>
+    <button class="nav-item" onclick="window.location.href='usermanagement.html'"><span class="icon">&#128101;</span> User Management</button>
+    <button class="nav-item" onclick="window.location.href='Reports.html'"><span class="icon">&#128200;</span> Reports</button>
+    <button class="nav-item" onclick="window.location.href='settings.html'"><span class="icon">&#9881;&#65039;</span> Settings</button>
+    <button class="nav-item" onclick="window.location.href='notifications.html'"><span class="icon">&#128276;</span> Notifications</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="admin-avatar">A</div>
+      <div>
+        <div class="user-name" id="admin-name">Admin</div>
+        <div class="user-role">Administrator</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="breadcrumb"><a href="admin-dashboard.html">Dashboard</a><span>&#8250;</span><span>Activity Register</span><span>&#8250;</span><span>Pending Activity</span></div>
+      <div class="page-title">Admin Pending Activity List</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-outline btn-sm" onclick="loadData()">&#128259; Refresh</button>
+      <button class="btn btn-outline btn-sm" onclick="exportCSV()">&#128228; Export</button>
+      <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add Activity</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="stats-grid">
+      <div class="sc"><div class="sc-ico">&#128202;</div><div><div class="sc-lbl">Total Pending</div></div><div class="sc-val" id="s-total">-</div></div>
+      <div class="sc"><div class="sc-ico">&#128100;</div><div><div class="sc-lbl">Admin</div></div><div class="sc-val" id="s-admin">-</div></div>
+      <div class="sc"><div class="sc-ico">&#128119;</div><div><div class="sc-lbl">Employee</div></div><div class="sc-val" id="s-emp">-</div></div>
+      <div class="sc"><div class="sc-ico">&#128300;</div><div><div class="sc-lbl">Product Team</div></div><div class="sc-val" id="s-pt">-</div></div>
+    </div>
+
+    <div class="filter-bar">
+      <span class="fl-label">From</span><input type="date" class="fl-input" id="fl-from" onchange="applyFilters()"/>
+      <span class="fl-label">To</span><input type="date" class="fl-input" id="fl-to" onchange="applyFilters()"/>
+      <button class="btn btn-outline btn-sm" onclick="clearDates()">Clear</button><div class="fl-div"></div>
+      <span class="fl-label">Division</span>
+      <select class="fl-select" id="fl-div" onchange="applyFilters()">
+        <option value="">All Divisions</option>
+        <option>PATIENT MONITORS</option>
+        <option>SAG</option>
+        <option>VENTILATOR</option>
+        <option>DEFIBRILLATOR</option>
+        <option>ECG</option>
+        <option>SYRINGE PUMP</option>
+        <option>INFUSION PUMP</option>
+        <option>ULTRASOUND</option>
+        <option>ANAESTHESIA</option>
+        <option>OTHER</option>
+      </select>
+      <span class="fl-label">Source</span>
+      <select class="fl-select" id="fl-source" onchange="applyFilters()">
+        <option value="">All Sources</option>
+        <option value="ADMIN">Admin</option>
+        <option value="EMP">Employee</option>
+        <option value="PT">Product Team</option>
+      </select>
+    </div>
+
+    <div class="table-card">
+      <div class="table-topbar">
+        <div class="table-title">Pending Activity Tracker <span class="count-chip" id="tbl-count">- entries</span></div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <div>Show 
+            <select class="fl-select" id="per-page" onchange="renderTable()">
+              <option>10</option><option>25</option><option>50</option><option>100</option>
+            </select>
+          </div>
+          <div class="search-wrap">
+            <span class="search-ico">&#128269;</span>
+            <input id="tbl-search" placeholder="Search engineer, activity, division..." oninput="applyFilters()"/>
+          </div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Actions</th>
+              <th onclick="sortBy('_source')">Source</th>
+              <th onclick="sortBy('division')">Division</th>
+              <th onclick="sortBy('scEngineer')">SC Engineer</th>
+              <th onclick="sortBy('initiatedDate')">Initiated Date</th>
+              <th onclick="sortBy('activity')">Model / Activity</th>
+              <th onclick="sortBy('description')">Activity Details</th>
+              <th onclick="sortBy('responsible')">Resp Person</th>
+              <th onclick="sortBy('targetDate')">Target Date</th>
+              <th onclick="sortBy('pendingFrom')">Completed Date</th>
+              <th>Remarks</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <tr><td colspan="11" class="empty">Loading records...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-foot"><span id="tbl-info">-</span><div class="pager-row" id="pagination"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="modal-title">&#128221; Add Pending Activity</div>
+        <div class="modal-sub">Create or update a pending activity record</div>
+      </div>
+      <button class="modal-close" onclick="closeAddModal()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-msg" id="modal-msg"></div>
+      <input type="hidden" id="edit-id"/>
+      <input type="hidden" id="edit-source"/>
+      
+      <div class="modal-grid">
+        <div class="field span-2">
+          <label>Division <span class="req">*</span></label>
+          <select id="m-division" required>
+            <option value="">Select Division</option>
+            <option>PATIENT MONITORS</option>
+            <option>SAG</option>
+            <option>VENTILATOR</option>
+            <option>DEFIBRILLATOR</option>
+            <option>ECG</option>
+            <option>SYRINGE PUMP</option>
+            <option>INFUSION PUMP</option>
+            <option>ULTRASOUND</option>
+            <option>ANAESTHESIA</option>
+            <option>OTHER</option>
+          </select>
+        </div>
+        <div class="field span-2">
+          <label>SC Engineer <span class="req">*</span></label>
+          <input type="text" id="m-sceng" required placeholder="Engineer name..."/>
+        </div>
+        
+        <div class="field span-1">
+          <label>Initiated Date <span class="req">*</span></label>
+          <input type="date" id="m-initiated" required/>
+        </div>
+        <div class="field span-3">
+          <label>Model / Activity <span class="req">*</span></label>
+          <input type="text" id="m-activity" required placeholder="Model or activity name..."/>
+        </div>
+        
+        <div class="field span-4">
+          <label>Activity Details</label>
+          <textarea id="m-description" rows="2" placeholder="Describe the activity..."></textarea>
+        </div>
+        
+        <div class="field span-1">
+          <label>Resp Person</label>
+          <input type="text" id="m-responsible" placeholder="Responsible..."/>
+        </div>
+        <div class="field span-1">
+          <label>Target Date</label>
+          <input type="date" id="m-target-date"/>
+        </div>
+        <div class="field span-1">
+          <label>Completed Date</label>
+          <input type="date" id="m-pending-from"/>
+        </div>
+        <div class="field span-1">
+          <label>Remarks</label>
+          <input type="text" id="m-remarks" placeholder="Enter remarks..."/>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline btn-sm" onclick="closeAddModal()">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="modal-save-btn" onclick="saveEntry()">&#128190; Save Activity</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+const API = '';
+let DATA = [], filtered = [], sortKey = 'initiatedDate', sortDir = -1, currentPage = 1;
+const expandedTextCells = new Set();
+
+(function init(){
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
+  if(u.name){
+    uName('admin-name', u.name);
+    uName('admin-avatar', u.name.charAt(0).toUpperCase());
+  }
+  loadData();
+})();
+
+function uName(id, v){ const el = document.getElementById(id); if(el) el.textContent = v; }
+function toggleSF(){ document.getElementById('sf-toggle').classList.toggle('open'); document.getElementById('sf-children').classList.toggle('open'); }
+function toggleAR(){ document.getElementById('ar-toggle').classList.toggle('open'); document.getElementById('ar-children').classList.toggle('open'); }
+function toggleRTA(){ document.getElementById('rta-toggle').classList.toggle('open'); document.getElementById('rta-children').classList.toggle('open'); }
+
+function authHeaders(){ return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (sessionStorage.getItem('schiller_token') || '') }; }
+function handleUnauth(res){
+  if(res.status === 401){
+    showToast('Session expired. Please log in.');
+    setTimeout(() => location.href = 'login.html', 900);
+    throw new Error('Unauthorized');
+  }
+}
+
+async function loadData(){
+  setLoading();
+  try{
+    const r = await fetch(API + '/api/admin/apa', { headers: authHeaders() });
+    handleUnauth(r);
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    DATA = (await r.json()).map(d => ({ ...d, id: d.id || d._id }));
+    applyFilters();
+    updateStats();
+  }catch(e){
+    if(e.message === 'Unauthorized') return;
+    setError('Could not load Pending Activity records.');
+    showToast('Load failed: ' + e.message);
+  }
+}
+
+function updateStats(){
+  uName('s-total', DATA.length);
+  uName('s-admin', DATA.filter(d => d._source === 'ADMIN').length);
+  uName('s-emp', DATA.filter(d => d._source === 'EMP').length);
+  uName('s-pt', DATA.filter(d => d._source === 'PT').length);
+}
+
+function clearDates(){
+  document.getElementById('fl-from').value = '';
+  document.getElementById('fl-to').value = '';
+  applyFilters();
+}
+
+function applyFilters(){
+  const q = document.getElementById('tbl-search').value.toLowerCase();
+  const dv = document.getElementById('fl-div').value;
+  const src = document.getElementById('fl-source').value;
+  const fr = document.getElementById('fl-from').value;
+  const to = document.getElementById('fl-to').value;
+
+  filtered = DATA.filter(d => {
+    const matchesSearch = !q || Object.values(d).some(v => String(v || '').toLowerCase().includes(q));
+    const matchesDiv = !dv || d.division === dv;
+    const matchesSrc = !src || d._source === src;
+    const matchesFrom = !fr || (d.initiatedDate || '') >= fr;
+    const matchesTo = !to || (d.initiatedDate || '') <= to;
+    return matchesSearch && matchesDiv && matchesSrc && matchesFrom && matchesTo;
+  });
+
+  sortArr();
+  currentPage = 1;
+  renderTable();
+}
+
+function sortBy(k){ if(sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = -1; } sortArr(); renderTable(); }
+function sortArr(){
+  filtered.sort((a, b) => {
+    const av = a[sortKey] ?? '', bv = b[sortKey] ?? '';
+    return String(av).toLowerCase() < String(bv).toLowerCase() ? -sortDir : String(av).toLowerCase() > String(bv).toLowerCase() ? sortDir : 0;
+  });
+}
+
+function compactText(value, key, strong = false){
+  const text = String(value || '-');
+  const expanded = expandedTextCells.has(key);
+  const needsToggle = text.length > 48;
+  return `<div class="compact-text ${strong ? 'strong' : ''} ${expanded ? 'expanded' : ''}" title="${esc(text)}">
+    <div class="compact-preview">${esc(text)}</div>
+    ${needsToggle ? `<button type="button" class="show-more-btn" onclick="toggleTextCell('${key}')">${expanded ? 'Show less' : 'Show more'}</button>` : ''}
+  </div>`;
+}
+
+function toggleTextCell(key){
+  if(expandedTextCells.has(key)) expandedTextCells.delete(key); else expandedTextCells.add(key);
+  renderTable();
+}
+
+function renderTable(){
+  const pp = parseInt(document.getElementById('per-page').value) || 10;
+  const total = filtered.length;
+  const pages = Math.max(1, Math.ceil(total / pp));
+  if(currentPage > pages) currentPage = pages;
+  const rows = filtered.slice((currentPage - 1) * pp, currentPage * pp);
+
+  document.getElementById('tbl-count').textContent = total + ' entr' + (total === 1 ? 'y' : 'ies');
+  const tbody = document.getElementById('tbody');
+
+  if(!total){
+    tbody.innerHTML = `<tr><td colspan="11" class="empty">${DATA.length ? 'No records match filters.' : 'Pending activities from Admin, Employee and Product Team appear here.'}</td></tr>`;
+  } else {
+    tbody.innerHTML = rows.map((d, i) => {
+      const rid = d.id;
+      return `<tr>
+        <td>
+          <button class="btn-xs update" onclick="openEditModal('${rid}')">Edit</button>
+          <button class="btn-xs update" onclick="closeActivity('${rid}')" style="margin-left: 2px;">Close</button>
+          <button class="btn-xs delete" onclick="deleteActivity('${rid}')" style="margin-left: 2px;">Delete</button>
+        </td>
+        <td>${sourceBadge(d._source)}</td>
+        <td><span class="div-tag">${esc(d.division || '-')}</span></td>
+        <td style="font-weight:600;">${esc(d.scEngineer || '-')}</td>
+        <td>${fmtDate(d.initiatedDate)}</td>
+        <td class="compact-cell">${compactText(d.activity, rid + '-activity', true)}</td>
+        <td class="compact-cell">${compactText(d.description, rid + '-desc')}</td>
+        <td>${esc(d.responsible || '-')}</td>
+        <td>${fmtDate(d.targetDate)}</td>
+        <td>${fmtDate(d.pendingFrom)}</td>
+        <td style="max-width:150px;white-space:normal;font-size:11px;">${esc(d.remarks || '-')}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  const start = total ? (currentPage - 1) * pp + 1 : 0;
+  document.getElementById('tbl-info').textContent = total ? `Showing ${start} to ${Math.min(currentPage * pp, total)} of ${total} entries` : '0 entries';
+  renderPagination(pages);
+}
+
+function sourceBadge(s){
+  const cls = s === 'ADMIN' ? 'src-admin' : s === 'EMP' ? 'src-emp' : 'src-pt';
+  const label = s === 'ADMIN' ? 'Admin' : s === 'EMP' ? 'Employee' : 'Product Team';
+  return `<span class="src ${cls}">${label}</span>`;
+}
+
+function renderPagination(pages){
+  const el = document.getElementById('pagination');
+  if(pages <= 1){ el.innerHTML = ''; return; }
+  let h = `<button class="pager" ${currentPage === 1 ? 'disabled' : ''} onclick="goPage(${currentPage - 1})">Prev</button>`;
+  for(let i = 1; i <= pages; i++){
+    if(i === 1 || i === pages || Math.abs(i - currentPage) <= 2){
+      h += `<button class="pager ${i === currentPage ? 'active' : ''}" onclick="goPage(${i})">${i}</button>`;
+    }
+  }
+  h += `<button class="pager" ${currentPage === pages ? 'disabled' : ''} onclick="goPage(${currentPage + 1})">Next</button>`;
+  el.innerHTML = h;
+}
+
+function goPage(p){ currentPage = p; renderTable(); }
+
+function openAddModal(){
+  document.getElementById('edit-id').value = '';
+  document.getElementById('edit-source').value = 'ADMIN';
+  document.getElementById('modal-title').innerHTML = '&#128221; Add Pending Activity';
+  clearForm();
+  setFieldsLock(false);
+  document.getElementById('m-sceng').value = 'Admin';
+  document.getElementById('m-initiated').value = new Date().toISOString().split('T')[0];
+  document.getElementById('add-modal').classList.add('open');
+}
+
+function openEditModal(id){
+  const d = DATA.find(x => x.id === id);
+  if(!d) return;
+
+  document.getElementById('edit-id').value = id;
+  document.getElementById('edit-source').value = d._source;
+  document.getElementById('modal-title').innerHTML = '&#128394;&#65039; Edit Pending Activity';
+
+  clearForm();
+  document.getElementById('m-division').value = d.division === '-' ? '' : d.division;
+  document.getElementById('m-sceng').value = d.scEngineer;
+  document.getElementById('m-initiated').value = d.initiatedDate;
+  document.getElementById('m-activity').value = d.activity;
+  document.getElementById('m-description').value = d.description;
+  document.getElementById('m-responsible').value = d.responsible;
+  document.getElementById('m-target-date').value = d.targetDate;
+  document.getElementById('m-pending-from').value = d.pendingFrom;
+  document.getElementById('m-remarks').value = d.remarks;
+
+  // Lock fields if edit source is Employee or Product Team
+  if(d._source !== 'ADMIN'){
+    setFieldsLock(true);
+  } else {
+    setFieldsLock(false);
+  }
+
+  document.getElementById('add-modal').classList.add('open');
+}
+
+function closeAddModal(){ document.getElementById('add-modal').classList.remove('open'); }
+
+function setFieldsLock(locked){
+  ['m-division', 'm-sceng', 'm-initiated', 'm-activity', 'm-description', 'm-responsible', 'm-target-date', 'm-pending-from'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.disabled = locked;
+  });
+}
+
+function clearForm(){
+  ['m-division', 'm-sceng', 'm-initiated', 'm-activity', 'm-description', 'm-responsible', 'm-target-date', 'm-pending-from', 'm-remarks'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  const msg = document.getElementById('modal-msg');
+  if(msg){ msg.textContent = ''; msg.className = 'form-msg'; }
+}
+
+async function saveEntry(){
+  const id = document.getElementById('edit-id').value;
+  const source = document.getElementById('edit-source').value;
+
+  const payload = {
+    division: document.getElementById('m-division').value,
+    scEngineer: document.getElementById('m-sceng').value,
+    initiatedDate: document.getElementById('m-initiated').value,
+    activity: document.getElementById('m-activity').value,
+    description: document.getElementById('m-description').value,
+    responsible: document.getElementById('m-responsible').value,
+    targetDate: document.getElementById('m-target-date').value,
+    pendingFrom: document.getElementById('m-pending-from').value,
+    remarks: document.getElementById('m-remarks').value,
+  };
+
+  if(source === 'ADMIN' && (!payload.division || !payload.scEngineer || !payload.initiatedDate || !payload.activity)){
+    showModalErr('Required: Division, SC Engineer, Initiated Date, and Model/Activity.');
+    return;
+  }
+
+  const method = id ? 'PUT' : 'POST';
+  const url = id ? `${API}/api/admin/apa/${source}/${id}` : `${API}/api/admin/apa`;
+
+  const btn = document.getElementById('modal-save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  try{
+    const res = await fetch(url, {
+      method,
+      headers: authHeaders(),
+      body: JSON.stringify(payload)
+    });
+    handleUnauth(res);
+    const json = await res.json();
+    if(!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
+
+    showToast(`Activity successfully saved.`, 'ok');
+    closeAddModal();
+    loadData();
+  }catch(e){
+    if(e.message === 'Unauthorized') return;
+    showModalErr('Save failed: ' + e.message);
+  }finally{
+    btn.disabled = false;
+    btn.textContent = 'Save Activity';
+  }
+}
+
+async function deleteActivity(id){
+  const d = DATA.find(x => x.id === id);
+  if(!d) return;
+
+  if(!confirm(`Are you sure you want to delete this pending activity from ${d._source}?`)) return;
+
+  try{
+    const res = await fetch(`${API}/api/admin/apa/${d._source}/${id}`, {
+      method: 'DELETE',
+      headers: authHeaders()
+    });
+    handleUnauth(res);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    showToast('Activity successfully deleted.');
+    loadData();
+  }catch(e){
+    if(e.message === 'Unauthorized') return;
+    showToast('Delete failed: ' + e.message);
+  }
+}
+
+async function closeActivity(id){
+  const d = DATA.find(x => x.id === id);
+  if(!d) return;
+
+  if(!confirm(`Are you sure you want to close this activity and move it to Closed Activity?`)) return;
+
+  try{
+    const res = await fetch(`${API}/api/admin/apa/${d._source}/${id}/close`, {
+      method: 'POST',
+      headers: authHeaders()
+    });
+    handleUnauth(res);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    showToast('Activity successfully marked as Completed.');
+    loadData();
+  }catch(e){
+    if(e.message === 'Unauthorized') return;
+    showToast('Close failed: ' + e.message);
+  }
+}
+
+function showModalErr(msg){
+  const el = document.getElementById('modal-msg');
+  if(el){ el.textContent = msg; el.className = 'form-msg err'; }
+}
+
+function setLoading(){
+  document.getElementById('tbody').innerHTML = `<tr><td colspan="11" class="empty"><span class="spin"></span>Loading pending activity records...</td></tr>`;
+}
+
+function setError(m){
+  document.getElementById('tbody').innerHTML = `<tr><td colspan="11" class="empty" style="color:var(--red);font-weight:600;">&#9888; ${esc(m)}</td></tr>`;
+}
+
+function fmtDate(d){
+  if(!d) return '-';
+  const p = String(d).split('T')[0].split('-');
+  return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : String(d);
+}
+
+function esc(s){ return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function showToast(msg){
+  const w = document.getElementById('toast-wrap'), e = document.createElement('div');
+  e.className = 'toast';
+  e.textContent = msg;
+  w.appendChild(e);
+  setTimeout(() => e.remove(), 3200);
+}
+
+function exportCSV() {
+  if (!filtered.length) { alert('No data to export.'); return; }
+  const headers = ['Source', 'Division', 'SC Engineer', 'Initiated Date', 'Model / Activity', 'Activity Details', 'Resp Person', 'Target Date', 'Completed Date', 'Remarks'];
+  const keys = ['sourceLabel', 'division', 'scEngineer', 'initiatedDate', 'activity', 'description', 'responsible', 'targetDate', 'pendingFrom', 'remarks'];
+  let csv = headers.join(',') + '\n';
+  filtered.forEach(r => {
+    csv += keys.map(k => {
+      let val = r[k] || '';
+      if(k === 'initiatedDate' || k === 'pendingFrom' || k === 'targetDate') val = fmtDate(val);
+      return '"' + String(val).replace(/"/g, '""') + '"';
+    }).join(',') + '\n';
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'admin_pending_activities_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function logout(){ sessionStorage.clear(); localStorage.clear(); location.href = 'login.html'; }
+</script>
+<script src="tab-fix.js"></script>
+</body>
+</html>

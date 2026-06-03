@@ -24,14 +24,30 @@ const scrapSchema = new mongoose.Schema(
     region:     { type: String, default: '' },          // Region
     engineer:   { type: String, default: '' },          // Field Engineer
     customer:   { type: String, required: true, trim: true },
+    year:       { type: String, default: '' },
+    vendorName: { type: String, default: '' },
     model:      { type: String, default: '' },
+    unitSerialNo: { type: String, default: '' },
     unitStatus: {
       type: String,
       enum: ['OW', 'LAMC', 'CAMC', 'EW', 'REPEAT', 'STOCK', 'IW', 'Buy Back', 'Demo', ''],
       default: '',
     },
+    problemDetails: { type: String, default: '' },
+    partNo:     { type: String, default: '' },
+    itemDescription: { type: String, default: '' },
     defMod:     { type: String, default: '' },          // Defective Module / Board
     defGir:     { type: String, default: '' },          // DEF GIR No
+    defPartSn:  { type: String, default: '' },
+    vendorTicketNumber: { type: String, default: '' },
+    commercialToDetails: { type: String, default: '' },
+    docketDetails: { type: String, default: '' },
+    receivedDateAtEsskay: { type: String, default: '' },
+    receivedBackAtSvc: { type: String, default: '' },
+    repairStatus: { type: String, default: '' },
+    amountChargedForRepair: { type: String, default: '' },
+    softwareDetails: { type: String, default: '' },
+    serviceCentreComments: { type: String, default: '' },
     typeWork:   { type: String, default: 'SCRAPPED' },  // Type of Work
     rcvdDate:   { type: String, default: '' },          // Received Date at Service Centre
 
