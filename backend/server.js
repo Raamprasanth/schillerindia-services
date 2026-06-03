@@ -41,6 +41,7 @@ const atobRoutes    = require('./routes/atobRoutes');
 const rturRoutes = require('./routes/rturRoutes');
 const aturRoutes = require('./routes/aturRoutes');
 const rtrrRoutes    = require('./routes/rtrrRoutes');
+const atrrRoutes    = require('./routes/atrrRoutes');
 const rtcrlRoutes   = require('./routes/rtcrlRoutes');
 const rtcrrRoutes   = require('./routes/rtcrrRoutes');
 const atcrlRoutes = require('./routes/atcrlRoutes');
@@ -186,6 +187,7 @@ app.use('/api/atob', atobRoutes);
 app.use('/api/rtur', rturRoutes);
 app.use('/api/atur', aturRoutes);
 app.use('/api/rtrr', rtrrRoutes);
+app.use('/api/atrr', atrrRoutes);
 app.use('/api/rtcrl', rtcrlRoutes);
 app.use('/api/rtcrr', rtcrrRoutes);
 app.use('/api/atcrl', atcrlRoutes);  // Admin CRL Ã¢â‚¬â€  same rtcrls collection, read-only
@@ -311,6 +313,7 @@ app.get('/ptclose.html',               (req, res) => res.sendFile(path.join(fron
 app.get('/notifications.html',         (req, res) => res.sendFile(path.join(frontendPath, 'notifications.html')));
 app.get('/Atcrl.html',                 (req, res) => res.sendFile(path.join(frontendPath, 'Atcrl.html')));
 app.get('/atcrl.html',                 (req, res) => res.sendFile(path.join(frontendPath, 'Atcrl.html')));
+app.get('/admin-re-repair-atrr.html',  (req, res) => res.sendFile(path.join(frontendPath, 'admin-re-repair-atrr.html')));
 
 // Ã¢â€â‚¬Ã¢â€â‚¬ 404 FOR UNKNOWN API ROUTES Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 app.use('/api/*', (req, res) => {

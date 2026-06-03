@@ -6,9 +6,9 @@
 <script>(function(){
   const token = sessionStorage.getItem('schiller_token');
   const role  = (sessionStorage.getItem('schiller_role')||'').toLowerCase();
-  if (!token || !['admin','superadmin','administrator'].includes(role)) window.location.href = 'login.html';
+  if (!token || !['repair','repair_team','admin'].includes(role)) window.location.href = 'login.html';
 })();</script>
-<title>SchillerIndia - Admin RT FRN</title>
+<title>SchillerIndia - Admin ATRR</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
@@ -32,35 +32,26 @@
 }
 body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
 
-/* -- SIDEBAR - Admin style -- */
-.sidebar{width:240px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 12px rgba(0,80,120,0.06);}
-.sidebar-header{padding:20px 20px 16px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#450a0a,#b91c1c);}
-.sidebar-logo{display:flex;align-items:center;gap:10px;}
-.sidebar-logo-text{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;}
-.sidebar-logo-text .sub{font-size:10px;color:rgba(255,255,255,0.6);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;}
-.role-badge{margin:10px 20px 0;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;display:inline-block;background:rgba(185,28,28,0.1);color:#b91c1c;border:1px solid rgba(185,28,28,0.25);}
-.sidebar-nav{flex:1;padding:12px 10px;}
-.nav-section{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;padding:10px 8px 5px;}
-.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:500;cursor:pointer;transition:all 0.2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;}
-.nav-item:hover{background:var(--surface2);color:var(--text);}
-.nav-item.active{background:rgba(185,28,28,0.1);color:#b91c1c;font-weight:600;}
-.nav-item .icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
-.nav-group-toggle{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:var(--soft);font-size:12.5px;font-weight:600;cursor:pointer;transition:all 0.2s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;}
-.nav-group-toggle:hover{background:var(--surface2);color:var(--text);}
-.nav-group-toggle .icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
-.caret{margin-left:auto;font-size:9px;transition:transform 0.25s;}
-.nav-group-toggle.open .caret{transform:rotate(90deg);}
-.nav-children{max-height:0;overflow:hidden;transition:max-height 0.3s ease;}
-.nav-children.open{max-height:400px;}
-.nav-sub .nav-item{padding:6px 10px 6px 28px;font-size:12px;color:var(--muted);}
-.nav-sub .nav-item:hover{color:var(--text);}
-.nav-sub .nav-item.active{color:#b91c1c;background:rgba(185,28,28,0.07);}
-.sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);}
-.user-info{display:flex;align-items:center;gap:10px;}
-.user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#b91c1c,#ef4444);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
-.user-name{font-size:13px;font-weight:600;color:var(--text);}
-.user-role{font-size:11px;color:var(--muted);}
-.logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s;}
+/* -- SIDEBAR - Repair Team style -- */
+.sidebar{width:230px;min-height:100vh;background:#ffffff;border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;box-shadow:2px 0 14px rgba(0,60,120,0.06);}
+.sidebar-header{padding:18px 18px 14px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,#052e16,#059669);}
+.logo-wrap{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:36px;height:36px;background:rgba(255,255,255,0.15);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#fff;border:1.5px solid rgba(255,255,255,0.25);}
+.logo-text{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#fff;line-height:1.2;}
+.logo-text span{display:block;font-size:10px;color:rgba(255,255,255,0.55);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;}
+.repair-badge{margin:8px 12px 0;padding:3px 10px;border-radius:20px;font-size:9.5px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;display:inline-block;background:rgba(5,150,105,0.2);color:#6ee7b7;border:1px solid rgba(5,150,105,0.4);}
+.sidebar-nav{flex:1;padding:10px 8px;}
+.nav-sec{font-size:9px;font-weight:700;color:#6b8ca8;letter-spacing:0.12em;text-transform:uppercase;padding:10px 8px 4px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;color:#4a6a8a;font-size:12.5px;font-weight:500;cursor:pointer;transition:all 0.18s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;}
+.nav-item:hover{background:#eaf1f6;color:#1a2a3a;}
+.nav-item.active{background:rgba(5,150,105,0.12);color:var(--rep);font-weight:700;border-left:3px solid var(--rep);padding-left:8px;}
+.nav-item .ico{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.sidebar-footer{padding:12px 14px;border-top:1px solid var(--border);background:#f0fdf4;}
+.user-row{display:flex;align-items:center;gap:9px;}
+.user-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--rep),var(--rep2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;}
+.user-nm{font-size:12.5px;font-weight:600;color:#1a2a3a;}
+.user-rl{font-size:10px;color:#6b8ca8;}
+.logout-btn{margin-left:auto;background:none;border:1px solid var(--border);color:#6b8ca8;border-radius:7px;padding:4px 9px;cursor:pointer;font-size:10.5px;font-weight:600;transition:all 0.2s;}
 .logout-btn:hover{border-color:var(--red);color:var(--red);}
 
 /* -- MAIN -- */
@@ -178,10 +169,10 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
 
 /* 5-column info strip */
 .info-strip{display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface3);border-bottom:1px solid var(--border);}
-.info-cell{padding:11px 18px;border-right:1px solid var(--border);}
+.info-cell{padding:14px 20px;border-right:1px solid var(--border);}
 .info-cell:last-child{border-right:none;}
-.info-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:3px;}
-.info-val{font-size:12px;font-weight:700;color:var(--accent);}
+.info-lbl{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:5px;}
+.info-val{font-size:13px;font-weight:500;color:var(--accent);line-height:1.2;word-break:break-word;}
 .info-val.dark{color:var(--text);font-weight:600;}
 
 .modal-scroll{flex:1;overflow-y:auto;}
@@ -200,7 +191,7 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
 .ff input:focus,.ff select:focus,.ff textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,104,181,0.08);}
 .ff textarea{resize:none;height:72px;}
 .ff input::placeholder,.ff textarea::placeholder{color:var(--muted);font-size:11.5px;}
-.ff input.err,.ff select.err{border-color:var(--red)!important;}
+.ff input.err,.ff select.err,.ff textarea.err{border-color:var(--red)!important;}
 .form-err{font-size:12px;color:var(--red);padding:8px 12px;border-radius:7px;background:var(--red-bg);border:1px solid rgba(185,28,28,0.2);display:none;margin-bottom:12px;}
 .form-err.show{display:block;}
 .modal-foot{padding:14px 28px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;justify-content:flex-end;background:var(--surface3);flex-shrink:0;}
@@ -236,13 +227,31 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
 ::-webkit-scrollbar{width:7px;height:7px;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
 
-    </style>
-  <link rel="stylesheet" href="global-typography.css">
-  <link rel="stylesheet" href="employee-theme.css">
-  <script src="employee-theme.js"></script>
-  <link rel="stylesheet" href="topbar-alignment.css">
-  <link rel="stylesheet" href="brand-logo.css">
-  <script src="brand-logo.js" defer></script>
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+.qa-spinner {
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top: 2px solid #fff;
+  width: 12px;
+  height: 12px;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+</style>
+<link rel="stylesheet" href="global-typography.css">
+<link rel="stylesheet" href="employee-theme.css">
+<script src="employee-theme.js"></script>
+<link rel="stylesheet" href="topbar-alignment.css">
+<link rel="stylesheet" href="brand-logo.css">
+<script src="brand-logo.js" defer></script>
 </head>
 <body>
 <!-- -- FULL-SCREEN UPDATE MODAL -- -->
@@ -251,7 +260,7 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
     <div class="modal-head">
       <div>
         <div class="modal-htitle">
-          &#9998; Update Admin RT FRN Record
+          &#9998; Update Re-repair List Record
           <span class="modal-badge" id="modal-scref">-</span>
         </div>
         <div style="font-size:11px;color:var(--muted);margin-top:2px;">Update repair tracking details and dispatch info below.</div>
@@ -265,28 +274,26 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
       <div class="info-cell"><div class="info-lbl">Division</div><div class="info-val dark" id="ri-div">-</div></div>
       <div class="info-cell"><div class="info-lbl">DEF GIR No</div><div class="info-val" id="ri-defgir">-</div></div>
       <div class="info-cell"><div class="info-lbl">Model</div><div class="info-val dark" id="ri-model">-</div></div>
-      <div class="info-cell"><div class="info-lbl">Category</div><div class="info-val dark" id="ri-cat">-</div></div>
+      <div class="info-cell"><div class="info-lbl">DOI (Date of Installation)</div><div class="info-val dark" id="ri-doi">-</div></div>
       <div class="info-cell"><div class="info-lbl">Def Brd/Mod Name</div><div class="info-val dark" id="ri-defbrd">-</div></div>
       <div class="info-cell"><div class="info-lbl">Entry Date</div><div class="info-val dark" id="ri-date">-</div></div>
       <div class="info-cell"><div class="info-lbl">No of Days</div><div class="info-val" id="ri-days">-</div></div>
-      <div class="info-cell"><div class="info-lbl">Status</div><div class="info-val dark" id="ri-status">-</div></div>
       <div class="info-cell"><div class="info-lbl">Submitted By</div><div class="info-val dark" id="ri-by">-</div></div>
     </div>
 
     <div class="modal-scroll">
       <div class="modal-body">
         <div class="form-err" id="modal-err"></div>
-
         <!-- Section 1 - Remarks -->
         <div class="form-sec">
           <div class="form-sec-title">&#128172; Remarks & Findings</div>
           <div class="fg-3">
-            <div class="ff"><label>Technical Remarks</label><textarea id="u-techremarks" rows="1" style="height:38px;min-height:38px;resize:none;" placeholder="Root cause, technical diagnosis"></textarea></div>
-            <div class="ff"><label>Repair Team Remarks</label><textarea id="u-repairremarks" rows="1" style="height:38px;min-height:38px;resize:none;" placeholder="Repair team observations and findings"></textarea></div>
-            <div class="ff"><label>Components Used</label><textarea id="u-components" rows="1" style="height:38px;min-height:38px;resize:none;" placeholder="List components replaced or used"></textarea></div>
-            <div class="ff"><label>Cost</label><input type="text" id="u-cost" placeholder=""/></div>
-            <div class="ff"><label>Time Taken to Repair</label><input type="text" id="u-timetaken" placeholder=""/></div>
-            <div class="ff"><label>Repair Status</label><select id="u-repairstatus"><option value="">Select...</option><option value="not_repairable">Not Repairable</option><option value="returned_as_is">Returned as it is</option></select></div>
+            <div class="ff"><label>Technical Remarks</label><textarea id="u-techremarks" rows="1" style="height:38px;min-height:38px;resize:none;background-color:var(--surface2);cursor:not-allowed;" readonly></textarea></div>
+            <div class="ff"><label>Repair Team Remarks <span class="req">*</span></label><textarea id="u-repairremarks" rows="1" style="height:38px;min-height:38px;resize:none;"></textarea></div>
+            <div class="ff"><label>Components Used to Repaired <span class="req">*</span></label><textarea id="u-components" rows="1" style="height:38px;min-height:38px;resize:none;"></textarea></div>
+            <div class="ff"><label>Cost in INR <span class="req">*</span></label><input type="number" id="u-cost" min="0" step="0.01" inputmode="decimal"/></div>
+            <div class="ff"><label>Time Taken to Repair <span class="req">*</span></label><input type="time" id="u-timetaken" step="1"/></div>
+            <div class="ff"><label>Repair Status <span class="req">*</span></label><select id="u-repairstatus"><option value="">Select...</option><option value="repaired">Repaired</option><option value="supplier_repair">Supplier Repair</option><option value="wrong_entry">Wrong Entry</option><option value="no_fault">No Fault</option><option value="not_repairable">Not Repairable</option><option value="returned_as_is">Returned as it is</option></select></div>
           </div>
         </div>
 
@@ -294,7 +301,6 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
         <div class="form-sec">
           <div class="form-sec-title">&#128196; Details</div>
           <div class="fg-4">
-            <div class="ff"><label>DOI (Date of Installation)</label><input type="text" id="u-doi" readonly style="background-color:var(--surface2);cursor:not-allowed;" placeholder="" /></div>
             <div class="ff">
               <label>Repaired By <span class="req">*</span></label>
               <select id="u-repairedby">
@@ -305,16 +311,14 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
                 <option value="Thilipan">Thilipan</option>
               </select>
             </div>
+            <div class="ff"><label>Repaired Date <span class="req">*</span></label><input type="date" id="u-repaireddate"/></div>
             <div class="ff">
               <label>Status <span class="req">*</span></label>
               <select id="u-status">
                 <option value="">Select...</option>
-                <option value="pending">Pending</option>
                 <option value="completed">Completed</option>
               </select>
             </div>
-            <div class="ff"><label>Repaired Date</label><input type="date" id="u-repaireddate"/></div>
-            <div class="ff"><label>Completed Date</label><input type="date" id="u-completeddate"/></div>
           </div>
         </div>
 
@@ -331,57 +335,80 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
 
 <div class="toast-wrap" id="toast-wrap"></div>
 
-<!-- == SIDEBAR == -->
-<aside class="sidebar">
-  <div class="sidebar-header">
-    <div class="sidebar-logo">
-      <img class="brand-logo-img" src="logo.png" alt="SCHILLER">
+<!-- AI DIAGNOSTICS MODAL -->
+<div class="overlay" id="modal-ai-diagnostics">
+  <div class="modal" style="max-width:820px;">
+    <div class="modal-head">
+      <div>
+        <div class="modal-htitle">&#129504; Free AI Diagnostics <span class="modal-badge" id="qa-modal-ref">-</span></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">Upload a defect photo to get English and Tamil visual analysis.</div>
+      </div>
+      <button class="modal-close" onclick="closeAIModal()">&#10005;</button>
+    </div>
+    <div class="modal-scroll">
+      <div class="modal-body">
+        <div class="form-sec" style="background: rgba(16, 185, 129, 0.03); border: 1.5px dashed rgba(16, 185, 129, 0.25); border-radius: 12px; padding: 14px; margin-bottom: 16px; transition: all 0.3s ease;">
+          <div class="form-sec-title" style="color: #059669; font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+            <span>&#128247;</span> Multimodal Visual QA &amp; Defect Analysis <span class="count-pill" style="background: #059669; color: #fff; font-size: 9px; padding: 1px 6px;">Free AI</span>
+          </div>
+          <div id="gemini-alert-banner" style="display: none; margin-bottom: 12px; padding: 10px 12px; border-radius: 8px; font-size: 11.5px; line-height: 1.4; transition: all 0.3s ease;"></div>
+          <div style="display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 220px;">
+              <div style="position: relative; border: 2.5px dashed var(--border); border-radius: 8px; padding: 16px; text-align: center; background: var(--surface2); cursor: pointer; transition: all 0.2s;" id="drag-drop-zone">
+                <input type="file" id="qa-image-input" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer;" onchange="handleQAImageSelect(event)">
+                <div style="font-size: 20px; margin-bottom: 6px;">&#128247;</div>
+                <div style="font-size: 12.5px; font-weight: 600; color: var(--text);">Click or Drag Photo Here</div>
+                <div style="font-size: 10.5px; color: var(--muted); margin-top: 4px;">Supports PNG, JPG, JPEG</div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center; min-width: 170px; flex: 1;">
+              <div id="qa-preview-wrap" style="display: none; position: relative; width: 110px; height: 110px; border-radius: 8px; border: 1px solid var(--border); overflow: hidden; background: var(--surface3);">
+                <img id="qa-preview-img" style="width: 100%; height: 100%; object-fit: cover;">
+                <button type="button" onclick="clearQAImage()" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6); color: #fff; border: none; width: 18px; height: 18px; border-radius: 50%; font-size: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center;">x</button>
+              </div>
+              <button type="button" class="btn btn-ob btn-sm" id="run-qa-btn" onclick="runAIDiagnostics()" disabled style="width: 100%; justify-content: center; opacity: 0.5;">
+                <span id="qa-btn-spinner" class="qa-spinner" style="display: none; margin-right: 5px;"></span>
+                <span>Run Free AI Analysis</span>
+              </button>
+            </div>
+          </div>
+          <div id="qa-result-box" style="display:none;margin-top:14px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);font-size:12px;line-height:1.45;color:var(--text);white-space:pre-wrap;"></div>
+        </div>
+      </div>
     </div>
   </div>
-  <div style="padding:10px 20px 0;"><span class="role-badge">Admin</span></div>
+</div>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-wrap">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="logo-text">SchillerIndia<span>Services Portal</span></div>
+    </div>
+  </div>
+  <div style="padding:7px 12px 0;"><span class="crl-badge">&#128737;&#65039; Admin View</span></div>
   <nav class="sidebar-nav">
     <div class="nav-section">Main</div>
     <button class="nav-item" onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
-    <button class="nav-item" onclick="window.location.href='company-section.html'"><span class="icon">&#127970;</span> Company</button>
-    <button class="nav-item" onclick="window.location.href='division-section.html'"><span class="icon">&#128309;</span> Division</button>
-    <button class="nav-item" onclick="window.location.href='engineer-section.html'"><span class="icon">&#128119;</span> Engineers</button>
-    <button class="nav-item" onclick="window.location.href='dealer-section.html'"><span class="icon">&#129309;</span> Dealers</button>
     <div class="nav-section">Operations</div>
-    <button class="nav-group-toggle" id="sf-toggle" onclick="toggleSF()">
-      <span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span>
-    </button>
+    <button class="nav-group-toggle" id="sf-toggle" onclick="toggleGroup('sf-toggle','sf-children')"><span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span></button>
     <div class="nav-children" id="sf-children">
       <div class="nav-sub">
         <button class="nav-item" onclick="window.location.href='service-list.html'"><span class="icon">&#128225;</span> Services</button>
         <button class="nav-item" onclick="window.location.href='pending-frn.html'"><span class="icon">&#128221;</span> Pending FRN</button>
         <button class="nav-item" onclick="window.location.href='ob-pending.html'"><span class="icon">&#128194;</span> OB Pending</button>
-        <button class="nav-item" onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
         <button class="nav-item" onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
         <button class="nav-item" onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
-        <button class="nav-item" onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
-        <button class="nav-item" onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
       </div>
     </div>
-    <button class="nav-group-toggle" id="ar-toggle" onclick="toggleAR()"><span class="icon">&#128196;</span> Activity Register <span class="caret">&#9656;</span></button>
-    <div class="nav-children" id="ar-children">
-      <div class="nav-sub">
-        <a class="nav-item" href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
-        <a class="nav-item" href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
-        <a class="nav-item" href="aprfob.html"><span class="icon">&#128203;</span> TO/SO List</a>
-        <a class="nav-item" href="acr.html"><span class="icon">&#128209;</span> Closed TO/SO</a>
-        <a class="nav-item" href="ans.html"><span class="icon">&#128230;</span> Non Saleable</a>
-        <a class="nav-item" href="as.html"><span class="icon">&#128176;</span> Saleable</a>
-        <a class="nav-item" href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
-        <a class="nav-item" href="acbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
-      </div>
-    </div>
-    <button class="nav-group-toggle open" id="rta-toggle" onclick="toggleRTA()"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
+    <button class="nav-group-toggle open" id="rta-toggle" onclick="toggleGroup('rta-toggle','rta-children')"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
     <div class="nav-children open" id="rta-children">
       <div class="nav-sub">
-        <a class="nav-item active" href="atfrn.html"><span class="icon">&#128221;</span> Admin RT FRN</a>
+        <a class="nav-item" href="atfrn.html"><span class="icon">&#128221;</span> Admin RT FRN</a>
         <a class="nav-item" href="atob.html"><span class="icon">&#128230;</span> Admin RT OB</a>
         <a class="nav-item" href="atur.html"><span class="icon">&#128736;&#65039;</span> Admin RT UR</a>
-        <a class="nav-item " href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
+        <a class="nav-item" href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
+        <a class="nav-item active" href="admin-re-repair-atrr.html"><span class="icon">&#128260;</span> Admin ATRR</a>
       </div>
     </div>
     <div class="nav-section">Admin</div>
@@ -391,12 +418,9 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
     <button class="nav-item" onclick="window.location.href='notifications.html'"><span class="icon">&#128276;</span> Notifications</button>
   </nav>
   <div class="sidebar-footer">
-    <div class="user-info">
-      <div class="user-avatar" id="emp-avatar">A</div>
-      <div>
-        <div class="user-name" id="emp-name">Admin</div>
-        <div class="user-role">Administrator</div>
-      </div>
+    <div class="user-row">
+      <div class="user-av" id="emp-avatar">A</div>
+      <div><div class="user-nm" id="emp-name">Admin</div><div class="user-rl" id="emp-role">Administrator</div></div>
       <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
     </div>
   </div>
@@ -407,18 +431,16 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
   <div class="topbar">
     <div>
       <div class="breadcrumb">
-        <a href="admin-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
-        <span>Operations</span><span class="sep">&#8250;</span>
-        <span>Admin RT FRN</span>
+        <a href="Repair-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
+        <span>Repair Work</span><span class="sep">&#8250;</span>
+        <span>Re-repair List</span>
       </div>
-      <div class="topbar-title">Admin — Repair Activity List (PFRN)</div>
+      <div class="topbar-title">Re-repair List</div>
     </div>
     <div style="display:flex;align-items:center;gap:9px;">
       <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
-      <button type="button" class="btn btn-outline btn-sm" onclick="window.location.href='admin-dashboard.html'">Admin dashboard</button>
       <button class="btn btn-outline btn-sm" onclick="loadData()">&#128260; Refresh</button>
       <button class="btn btn-success btn-sm" onclick="exportCSV()">&#128228; Export</button>
-      <button class="btn btn-primary btn-sm" onclick="toggleAddPanel()">+ Add Record</button>
     </div>
   </div>
 
@@ -426,36 +448,36 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
 
     <!-- -- STATS -- -->
     <div class="stats-row">
-      <div class="stat-card sc-blue">
+      <div class="stat-card sc-blue" onclick="setSummaryFilter('all')">
         <div class="stat-ico si-blue">&#128736;&#65039;</div>
-        <div class="stat-lbl">Total RT FRN</div>
+        <div class="stat-lbl">Total Re-repair List</div>
         <div class="stat-val" id="st-total">-</div>
         <div class="stat-sub">Active records</div>
       </div>
-      <div class="stat-card sc-amber">
-        <div class="stat-ico si-amber">&#9203;</div>
-        <div class="stat-lbl">Pending</div>
-        <div class="stat-val" id="st-pending">-</div>
-        <div class="stat-sub">Awaiting repair</div>
+      <div class="stat-card sc-green" onclick="setSummaryFilter('below-2')">
+        <div class="stat-ico si-green">&#9203;</div>
+        <div class="stat-lbl">Below 2 Days</div>
+        <div class="stat-val" id="st-below-2">-</div>
+        <div class="stat-sub">0 to 1 day</div>
       </div>
-      <div class="stat-card sc-red">
+      <div class="stat-card sc-amber" onclick="setSummaryFilter('2-to-5')">
+        <div class="stat-ico si-amber">&#128337;</div>
+        <div class="stat-lbl">2 to 5 Days</div>
+        <div class="stat-val" id="st-2-to-5">-</div>
+        <div class="stat-sub">Needs follow-up</div>
+      </div>
+      <div class="stat-card sc-red" onclick="setSummaryFilter('above-5')">
         <div class="stat-ico si-red">&#9888;&#65039;</div>
-        <div class="stat-lbl">Critical (>30 days)</div>
-        <div class="stat-val" id="st-critical">-</div>
-        <div class="stat-sub">Needs immediate action</div>
-      </div>
-      <div class="stat-card sc-green">
-        <div class="stat-ico si-green">&#9989;</div>
-        <div class="stat-lbl">Completed</div>
-        <div class="stat-val" id="st-completed">-</div>
-        <div class="stat-sub">Resolved records</div>
+        <div class="stat-lbl">Above 5 Days</div>
+        <div class="stat-val" id="st-above-5">-</div>
+        <div class="stat-sub">Needs priority action</div>
       </div>
     </div>
 
     <!-- -- ADD RECORD PANEL -- -->
     <div class="add-panel" id="add-panel">
       <div class="add-panel-hdr">
-        <div class="add-panel-title">&#10133; Add New RT FRN Record</div>
+        <div class="add-panel-title">&#10133; Add New Re-repair List Record</div>
         <button class="close-panel" onclick="toggleAddPanel()">&#10005;</button>
       </div>
       <div class="fg-4" style="margin-bottom:14px;">
@@ -484,7 +506,7 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
         <div class="ff">
           <label>Category</label>
           <select id="a-category">
-            <option value="PFRN">PFRN</option>
+            <option value="PFRN">Re-repair List</option>
             <option value="OB">OB</option>
             <option value="UR">UR</option>
           </select>
@@ -508,7 +530,6 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
         <div class="ff">
           <label>Status</label>
           <select id="a-status">
-            <option value="pending">Pending</option>
             <option value="inprogress">In Progress</option>
             <option value="completed">Completed</option>
           </select>
@@ -526,7 +547,7 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
     <div class="table-card">
       <div class="table-top">
         <div class="table-title">
-          Repair Activity PFRN
+          Re-repair List
           <span class="count-pill" id="count-pill">- entries</span>
         </div>
         <div class="toolbar-r">
@@ -546,22 +567,22 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
       <div class="table-wrap">
         <table class="rt-table">
           <thead><tr>
+            <th onclick="sortBy('revertedDate')">Reverted Date <span class="si">&#8693;</span></th>
             <th onclick="sortBy('entryDate')" class="sorted">Entry Date <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('closedDate')">Closed Date <span class="si">&#8693;</span></th>
             <th>Update</th>
-            <th>Del</th>
             <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('category')">Category <span class="si">&#8693;</span></th>
             <th onclick="sortBy('scRefNo')">SC Ref No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('defGirNo')">DEF GIR No <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('category')">Category <span class="si">&#8693;</span></th>
             <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
             <th onclick="sortBy('defBrdModName')">Def Brd/Mod Name <span class="si">&#8693;</span></th>
             <th onclick="sortBy('noOfDays')" class="sorted">No of Days <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('status')">Status <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('raEng')">Repaired By <span class="si">&#8693;</span></th>
             <th onclick="sortBy('submittedBy')">Submitted By <span class="si">&#8693;</span></th>
+            <th>Action</th>
           </tr></thead>
           <tbody id="rt-tbody">
-            <tr><td colspan="12" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading from database...</td></tr>
+            <tr><td colspan="13" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading from database...</td></tr>
           </tbody>
         </table>
       </div>
@@ -575,16 +596,30 @@ table.rt-table tbody tr:last-child td{border-bottom:none;}
   </div>
 </div>
 
+<script src="repair-suggestions.js"></script>
 <script>
 const API      = '';
-const ATFRN_API = '/api/atfrn';
 const LUSER    = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
 const EMP_NAME = LUSER.name || '';
+const IS_ADMIN = ['admin','superadmin','administrator'].includes((LUSER.role || '').toLowerCase());
 
 let allData = [], filtered = [], sortKey = 'entryDate', sortDir = -1, currentPage = 1;
+let editingDoi = '';
 let editingId = null;
+let activeSummary = 'all';
 
 function authHeaders() { return { 'Content-Type':'application/json', Authorization:'Bearer ' + (sessionStorage.getItem('schiller_token') || '') }; }
+function setupRepairSuggestions() {
+  if (!window.RepairSuggestions) return;
+  RepairSuggestions.bind({
+    'a-screfno': ['scRefNo','scRno','scRef','scReferenceNo'],
+    'a-defgirno': ['defGirNo','defGir','girNo'],
+    'a-defbrdmod': ['defBrdModName'],
+    'u-repairremarks': ['repairRemarks'],
+    'u-components': ['components'],
+    'u-cost': ['cost']
+  }, () => allData);
+}
 async function syncRepairSessionUser(){
   try{
     const res=await fetch('/api/auth/me',{headers:authHeaders()});
@@ -606,10 +641,13 @@ async function syncRepairSessionUser(){
   (document.getElementById('topbar-date')||{}).textContent =
     new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   const today = new Date().toISOString().split('T')[0];
+  const uRep = document.getElementById('u-repaireddate');
+  if(uRep) { uRep.min = today; uRep.max = today; }
   document.getElementById('a-entrydate').value = today;
   ['fl-from','fl-to'].forEach(id => { const e=document.getElementById(id); if(e) e.max=today; });
   syncRepairSessionUser();
   loadData();
+  setupRepairSuggestions();
 })();
 
 function getToken()    { return sessionStorage.getItem('schiller_token') || ''; }
@@ -628,24 +666,25 @@ function handleUnauth(r){
 // -- LOAD DATA ---------------------------------------------
 async function loadData() {
   try {
-    const res = await fetch(`${API}${ATFRN_API}`, { headers: authHeaders() });
+    const endpoint = IS_ADMIN ? `${API}/api/atrr` : `${API}/api/atrr/employee`;
+    const res = await fetch(endpoint, { headers: authHeaders() });
     handleUnauth(res);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    allData = data.map(d => ({ ...d, id: d._id || d.id, noOfDays: calcDays(d.createdAt, d.entryDate) }));
+    allData = data.map(d => ({ ...d, id: d._id || d.id, noOfDays: calcDays(d.createdAt, d.entryDate, d) }));
     applyFilters();
     updateStats();
     showToast('Loaded ' + allData.length + ' record' + (allData.length !== 1 ? 's' : ''), 'info');
   } catch (e) {
     if (e.message === 'Unauthorized') return;
     document.getElementById('rt-tbody').innerHTML =
-      `<tr><td colspan="12" style="text-align:center;padding:40px;color:var(--red);">&#9888;&#65039; ${esc(e.message)} - ensure backend is running.</td></tr>`;
+      `<tr><td colspan="13" style="text-align:center;padding:40px;color:var(--red);">&#9888;&#65039; ${esc(e.message)} - ensure backend is running.</td></tr>`;
     showToast('Load failed: ' + e.message, 'err');
   } finally { }
 }
 
-function calcDays(createdAt, entryDate) {
-  const ref = createdAt || entryDate;
+function calcDays(createdAt, entryDate, d) {
+  const ref = d.revertedDate || createdAt || entryDate;
   if (!ref) return 0;
   const diff = Math.floor((Date.now() - new Date(ref).getTime()) / 86400000);
   return isNaN(diff) ? 0 : Math.max(0, diff);
@@ -654,22 +693,64 @@ function calcDays(createdAt, entryDate) {
 // -- STATS -------------------------------------------------
 function updateStats() {
   (document.getElementById('st-total')||{}).textContent = allData.length;
-  (document.getElementById('st-pending')||{}).textContent = allData.filter(d => d.status === 'pending').length;
-  (document.getElementById('st-critical')||{}).textContent = allData.filter(d => d.noOfDays > 30 && d.status !== 'completed').length;
-  (document.getElementById('st-completed')||{}).textContent = allData.filter(d => d.status === 'completed').length;
+  (document.getElementById('st-below-2')||{}).textContent = allData.filter(d => d.noOfDays < 2).length;
+  (document.getElementById('st-2-to-5')||{}).textContent = allData.filter(d => d.noOfDays >= 2 && d.noOfDays <= 5).length;
+  (document.getElementById('st-above-5')||{}).textContent = allData.filter(d => d.noOfDays > 5).length;
 }
 
 // -- FILTERS -----------------------------------------------
 function clearDates() { applyFilters(); }
 function clearAllFilters() {
   document.getElementById('tbl-search').value = '';
+  activeSummary = 'all';
   applyFilters();
 }
 
+function setSummaryFilter(type) {
+  activeSummary = type || 'all';
+  applyFilters();
+}
+
+// -- SORT & RENDER ------------------------------------------
+function summaryMatches(d) {
+  if (activeSummary === 'below-2') return d.noOfDays < 2;
+  if (activeSummary === '2-to-5') return d.noOfDays >= 2 && d.noOfDays <= 5;
+  if (activeSummary === 'above-5') return d.noOfDays > 5;
+  return true;
+}
+
+function norm(v) {
+  return String(v ?? '').toLowerCase().trim();
+}
+
+function rtSearchText(d) {
+  return [
+    d.entryDate,
+    d.division,
+    d.scRefNo,
+    d.scRno,
+    d.scRef,
+    d.scReferenceNo,
+    d.defGirNo,
+    d.defGir,
+    d.girNo,
+    d.category,
+    d.model,
+    d.defBrdModName,
+    d.status,
+    d.submittedBy,
+    d.customer,
+    d.eng,
+    d.scEng,
+    d.frnNo,
+    d.noOfDays
+  ].map(norm).join(' ');
+}
+
 function applyFilters() {
-  const q = document.getElementById('tbl-search').value.toLowerCase();
+  const q = norm(document.getElementById('tbl-search').value);
   filtered = allData.filter(d => {
-    return !q || ((d.scRno||'')+' '+(d.customer||'')+' '+(d.eng||'')+' '+(d.scEng||'')+' '+(d.frnNo||'')+' '+(d.model||'')+' '+(d.defGir||'')).toLowerCase().includes(q);
+    return (!q || rtSearchText(d).includes(q)) && summaryMatches(d);
   });
   sortArr(); currentPage = 1; renderTable();
 }
@@ -694,32 +775,28 @@ function renderTable() {
   const tbody = document.getElementById('rt-tbody');
 
   if (!slice.length) {
-    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-st">
+    tbody.innerHTML = `<tr><td colspan="13"><div class="empty-st">
       <div class="ei">&#128196;</div>
-      <div class="et">${allData.length ? 'No records match filters' : 'No RT FRN Records'}</div>
-      <div class="es">${allData.length ? 'Try clearing the filters.' : 'Click + Add Record to create the first entry.'}</div>
+      <div class="et">${allData.length ? 'No records match filters' : 'No Re-repair List Records'}</div>
+      <div class="es">${allData.length ? 'Try clearing the filters.' : 'No Re-repair List records available.'}</div>
     </div></td></tr>`;
   } else {
     tbody.innerHTML = slice.map(d => {
       const id = d._id || d.id;
       const pdCls = d.noOfDays > 30 ? 'day-crit' : d.noOfDays > 14 ? 'day-warn' : 'day-ok';
-      const stCls = d.status==='completed'?'sp-completed':d.status==='inprogress'?'sp-inprogress':d.noOfDays>30?'sp-critical':'sp-pending';
-      const stLbl = {pending:'Pending',inprogress:'In Progress',completed:'Completed',on_hold:'On Hold',scrapped:'Scrapped'}[d.status] || (d.status||'Pending');
       return `<tr>
+        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.revertedDate)}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
+        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.closedDate)}</td>
         <td><button class="btn-xs upd" onclick="openUpdate('${id}')" title="Update">&#9999;&#65039;</button></td>
-        <td><button class="btn-xs del" onclick="confirmDelete('${id}','${esc(d.scRefNo||id)}')" title="Delete">&#128465;</button></td>
         <td><span class="div-tag">${esc(d.division||'-')}</span></td>
+        <td><span class="badge badge-outline" style="background:#f3f4f6;color:#374151;border-color:#d1d5db">${esc(d.category||'-')}</span></td>
         <td style="font-size:13.5px;font-weight:800;color:var(--accent);">${esc(d.scRefNo||'-')}</td>
         <td style="font-size:13.5px;font-weight:900;color:var(--purple);font-family:monospace;">${esc(d.defGirNo||'-')}</td>
-        <td><span class="cat-tag">${esc(d.category||'PFRN')}</span></td>
         <td style="font-weight:600;">${esc(d.model||'-')}</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.defBrdModName||'')}">${esc(d.defBrdModName||'-')}</td>
         <td><span class="${pdCls}">${d.noOfDays}</span></td>
-        <td><span class="status-pill ${stCls}">${stLbl}</span></td>
-        <td style="font-size:11.5px;">${esc(d.raEng||'-')}</td>
-        <td style="font-size:11px;color:var(--muted);">${esc(d.submittedBy||'-')}</td>
-      </tr>`;
+        <td style="font-size:11px;color:var(--muted);">${esc(d.submittedBy||'-')}</td><td><button class="btn-xs del" onclick="deleteRecord('${id}')">Delete</button></td></tr>`;
     }).join('');
   }
 
@@ -761,18 +838,18 @@ async function submitAdd() {
 
   try {
     const payload = { entryDate, division, scRefNo, defGirNo, category, model, defBrdModName, status, submittedBy: EMP_NAME, submittedAt: new Date().toISOString() };
-    const res = await fetch(`${API}${ATFRN_API}`, { method:'POST', headers:authHeaders(), body:JSON.stringify(payload) });
+    const res = await fetch(`${API}/api/atrr`, { method:'POST', headers:authHeaders(), body:JSON.stringify(payload) });
     handleUnauth(res);
     if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(e.message||'Save failed'); }
     const saved = await res.json();
-    allData.unshift({ ...saved, id:saved._id||saved.id, noOfDays:calcDays(saved.createdAt, saved.entryDate) });
+    allData.unshift({ ...saved, id:saved._id||saved.id, noOfDays:calcDays(saved.createdAt, saved.entryDate, saved) });
     applyFilters(); updateStats();
     document.getElementById('add-panel').classList.remove('show');
     showToast('Record added successfully!', 'ok');
     ['a-screfno','a-defgirno','a-defbrdmod'].forEach(id => document.getElementById(id).value='');
     document.getElementById('a-division').value='';
     document.getElementById('a-model').value='';
-    document.getElementById('a-status').value='pending';
+    document.getElementById('a-status').value='inprogress';
   } catch(e) {
     if (e.message !== 'Unauthorized') { errEl.textContent=e.message; errEl.style.display='block'; }
   } finally {
@@ -781,33 +858,40 @@ async function submitAdd() {
 }
 
 // -- UPDATE MODAL ------------------------------------------
+function cleanRevertTechnicalRemarks(value) {
+  return String(value || '')
+    .split('|')
+    .map(part => part.trim())
+    .filter(part => part && part.toLowerCase() !== 're-repair requested' && !/^problem observed:/i.test(part))
+    .join(' | ');
+}
+
 function openUpdate(id) {
   const d = allData.find(x => (x._id||x.id) === id);
   if (!d) return;
   editingId = id;
+  clearQAImage();
   (document.getElementById('modal-scref')||{}).textContent = d.scRefNo || '-';
   (document.getElementById('ri-scref')||{}).textContent = d.scRefNo || '-';
   (document.getElementById('ri-div')||{}).textContent = d.division || '-';
   (document.getElementById('ri-defgir')||{}).textContent = d.defGirNo || '-';
   (document.getElementById('ri-model')||{}).textContent = d.model || '-';
-  (document.getElementById('ri-cat')||{}).textContent = d.category || '-';
+  (document.getElementById('ri-doi')||{}).textContent = d.doi || '-';
   (document.getElementById('ri-defbrd')||{}).textContent = d.defBrdModName || '-';
   (document.getElementById('ri-date')||{}).textContent = fmtDate(d.entryDate);
   (document.getElementById('ri-days')||{}).textContent = d.noOfDays + ' days';
-  (document.getElementById('ri-status')||{}).textContent = d.status || '-';
   (document.getElementById('ri-by')||{}).textContent = d.submittedBy || '-';
   const set = (id, v) => { const el=document.getElementById(id); if(el) el.value=v||''; };
-  set('u-doi', d.doi||'');
+  editingDoi = d.doi || '';
   set('u-repairedby',  d.repairedBy||'');
-  set('u-status',      d.status||'pending');
-  set('u-repaireddate',d.repairedDate||'');
-  set('u-techremarks',   d.techRemarks||'');
+  set('u-status',      d.status||'');
+  set('u-repaireddate', new Date().toISOString().split('T')[0]);
+  set('u-techremarks',   cleanRevertTechnicalRemarks(d.techRemarks));
   set('u-repairremarks', d.repairRemarks||'');
   set('u-components',    d.components||'');
   set('u-cost',          d.cost||'');
   set('u-timetaken',     d.timeTaken||'');
   set('u-repairstatus',  d.repairStatus||'');
-  set('u-completeddate', d.completedDate||'');
   document.getElementById('modal-err').classList.remove('show');
   document.getElementById('modal-ok').classList.remove('show');
   document.getElementById('modal-update').classList.add('open');
@@ -816,6 +900,7 @@ function openUpdate(id) {
 function closeModal() {
   document.getElementById('modal-update').classList.remove('open');
   editingId = null;
+  editingDoi = '';
 }
 
 async function submitUpdate() {
@@ -825,40 +910,60 @@ async function submitUpdate() {
   const okEl  = document.getElementById('modal-ok');
   errEl.classList.remove('show'); okEl.classList.remove('show');
 
-  if (!repairedBy || !status) {
-    errEl.textContent = '⚠ Repaired By and Status are required.';
+  const requiredFields = [
+    ['u-repairremarks', 'Repair Team Remarks'],
+    ['u-components', 'Components Used to Repaired'],
+    ['u-cost', 'Cost in INR'],
+    ['u-timetaken', 'Time Taken to Repair'],
+    ['u-repairstatus', 'Repair Status'],
+    ['u-repairedby', 'Repaired By'],
+    ['u-repaireddate', 'Repaired Date'],
+    ['u-status', 'Status'],
+  ];
+  const missing = requiredFields.filter(([id]) => {
+    const el = document.getElementById(id);
+    const isMissing = !String(el?.value || '').trim();
+    if (el) el.classList.toggle('err', isMissing);
+    return isMissing;
+  }).map(([, label]) => label);
+
+  if (missing.length) {
+    errEl.textContent = 'Required: ' + missing.join(', ');
     errEl.classList.add('show'); return;
   }
 
   const btn = document.getElementById('update-btn');
   btn.disabled = true; btn.textContent = '\uD83D\uDCBE Saving...';
+  const timeTakenValue = document.getElementById('u-timetaken').value.trim();
+  const normalizedTimeTaken = /^\d{2}:\d{2}$/.test(timeTakenValue) ? `${timeTakenValue}:00` : timeTakenValue;
+  const repairRemarks = document.getElementById('u-repairremarks').value.trim();
 
   const payload = {
     repairedBy,
     status,
-    doi:           document.getElementById('u-doi').value,
+    doi:           editingDoi,
     repairedDate:  document.getElementById('u-repaireddate').value,
-    completedDate: document.getElementById('u-completeddate').value,
+    
     techRemarks:   document.getElementById('u-techremarks').value.trim(),
-    repairRemarks: document.getElementById('u-repairremarks').value.trim(),
+    repairRemarks,
     components:    document.getElementById('u-components').value.trim(),
     cost:          document.getElementById('u-cost').value.trim(),
-    timeTaken:     document.getElementById('u-timetaken').value.trim(),
+    timeTaken:     normalizedTimeTaken,
     repairStatus:  document.getElementById('u-repairstatus').value,
     updatedBy:     EMP_NAME,
     updatedAt:     new Date().toISOString(),
   };
 
   try {
-    const res = await fetch(`${API}${ATFRN_API}/${editingId}`, { method:'PUT', headers:authHeaders(), body:JSON.stringify(payload) });
+    const res = await fetch(`${API}/api/atrr/${editingId}`, { method:'PUT', headers:authHeaders(), body:JSON.stringify(payload) });
     handleUnauth(res);
     if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(e.message||'Update failed'); }
     const saved = await res.json();
     if (saved.completed) {
       allData = allData.filter(x => (x._id||x.id) !== editingId);
       applyFilters(); updateStats();
-      okEl.textContent = '? Repair completed! Moved to RTCRL.'; okEl.classList.add('show');
-      showToast('Repair completed and moved to RTCRL.', 'ok');
+      okEl.textContent = '? Repair completed! Moved to RTCRR.'; okEl.classList.add('show');
+      showToast('Repair completed and moved to RTCRR.', 'ok');
       setTimeout(closeModal, 1200);
     } else {
       const idx = allData.findIndex(x=>(x._id||x.id)===editingId);
@@ -878,36 +983,22 @@ async function submitUpdate() {
   }
 }
 
-// -- DELETE RECORD ---------------------------------------
-function confirmDelete(id, ref) {
-  if (!confirm(`Delete record "${ref}"?\n\nThis action cannot be undone.`)) return;
-  deleteRecord(id, ref);
-}
-async function deleteRecord(id, ref) {
-  try {
-    const res = await fetch(`${API}${ATFRN_API}/${id}`, { method: 'DELETE', headers: authHeaders() });
-    handleUnauth(res);
-    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || 'Delete failed'); }
-    allData = allData.filter(x => (x._id||x.id) !== id);
-    applyFilters(); updateStats();
-    showToast(`Record "${ref}" deleted.`, 'ok');
-  } catch(e) {
-    if (e.message !== 'Unauthorized') showToast('Delete failed: ' + e.message, 'err');
-  }
-}
-
 // -- EXPORT CSV --------------------------------------------
 function exportCSV() {
-  const headers = ['Entry Date','Division','SC Ref No','DEF GIR No','Category','Model','Def Brd/Mod Name','No of Days','Status','RA Engineer','Submitted By','Type of Work','Final Remarks'];
+  const headers = [
+    'Reverted Date', 'Entry Date', 'Closed Date', 'Division', 'Category', 'SC Ref No', 'DEF GIR No', 'Model', 'Def Brd/Mod Name', 'DOI (Date of Installation)',
+    'Technical Remarks', 'Repair Team Remarks', 'Components Used to Repaired', 'Cost in INR', 'Time Taken to Repair', 'Repair Status',
+    'Repaired By', 'Repaired Date', 'Submitted By', 'No of Days', 'Status'
+  ];
   const rows = filtered.map(d => [
-    fmtDate(d.entryDate), d.division, d.scRefNo, d.defGirNo, d.category,
-    d.model, d.defBrdModName, d.noOfDays, d.status, d.raEng||'-',
-    d.submittedBy||'-', d.typeWork||'-', d.finalRemarks||'-',
+    `\t${fmtDate(d.revertedDate)}`, `\t${fmtDate(d.entryDate)}`, `\t${fmtDate(d.closedDate)}`, d.division || '-', d.category || '-', d.scRefNo || '-', d.defGirNo || '-', d.model || '-', d.defBrdModName || '-', d.doi || '-',
+    d.techRemarks || '-', d.repairRemarks || '-', d.components || d.compUsedToRepair || '-', d.cost || '-', d.timeTaken || '-', d.repairStatus || '-',
+    d.repairedBy || '-', d.repairedDate ? fmtDate(d.repairedDate) : '-', d.submittedBy || '-', d.noOfDays || 0, d.status || '-'
   ]);
   const csv = [headers, ...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-  a.download = 'atfrn-' + new Date().toISOString().split('T')[0] + '.csv';
+  a.download = 'rtfrn-' + new Date().toISOString().split('T')[0] + '.csv';
   a.click();
   showToast('Exported ' + filtered.length + ' records.', 'ok');
 }
@@ -935,8 +1026,27 @@ function gp(p) { currentPage=p; renderTable(); }
 // -- HELPERS -----------------------------------------------
 function fmtDate(d) {
   if (!d) return '-';
-  const p = String(d).split('T')[0].split('-');
-  if (p.length < 3) return String(d);
+  let str = String(d).trim();
+  const match = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) {
+    const year = match[1];
+    const monthIdx = parseInt(match[2], 10) - 1;
+    const day = match[3];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${day} ${months[monthIdx] || ''} ${year}`;
+  }
+  try {
+    const dt = new Date(d);
+    if (!isNaN(dt.getTime())) {
+      const day = String(dt.getDate()).padStart(2, '0');
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const month = months[dt.getMonth()];
+      const year = dt.getFullYear();
+      return `${day} ${month} ${year}`;
+    }
+  } catch (_) {}
+  const p = str.split('T')[0].split('-');
+  if (p.length < 3) return str;
   return p[2] + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1] + ' ' + p[0];
 }
 function esc(s) {
@@ -947,26 +1057,199 @@ function showToast(msg, type='ok') {
   el.className='toast '+type; el.innerHTML='<span class="td"></span>'+msg;
   w.appendChild(el); setTimeout(()=>el.remove(), 3500);
 }
-function toggleSF() {
-  document.getElementById('sf-toggle').classList.toggle('open');
-  document.getElementById('sf-children').classList.toggle('open');
-}
-function toggleAR() {
-  document.getElementById('ar-toggle').classList.toggle('open');
-  document.getElementById('ar-children').classList.toggle('open');
-}
-function toggleRTA() {
-  document.getElementById('rta-toggle').classList.toggle('open');
-  document.getElementById('rta-children').classList.toggle('open');
-}
 function logout() { sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; }
 
 document.getElementById('modal-update').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeModal();
 });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+document.getElementById('modal-ai-diagnostics').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeAIModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeAIModal(); } });
+
+let qaImageBase64 = null;
+let qaImageMimeType = null;
+
+function openAIDiagnostics(id) {
+  const d = allData.find(x => (x._id || x.id) === id);
+  const ref = d ? (d.scRefNo || d.defGirNo || id) : id;
+  (document.getElementById('qa-modal-ref') || {}).textContent = ref || '-';
+  clearQAImage();
+  document.getElementById('modal-ai-diagnostics').classList.add('open');
+}
+function closeAIModal() {
+  document.getElementById('modal-ai-diagnostics').classList.remove('open');
+  clearQAImage();
+}
+function resizeQAImageFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const maxSide = 1280;
+        const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+        const width = Math.max(1, Math.round(img.width * scale));
+        const height = Math.max(1, Math.round(img.height * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve({ dataUrl: canvas.toDataURL('image/jpeg', 0.82), mimeType: 'image/jpeg' });
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleQAImageSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    showToast('Invalid file format. Please upload an image.', 'err');
+    return;
+  }
+
+  try {
+    const optimized = await resizeQAImageFile(file);
+    qaImageMimeType = optimized.mimeType;
+    qaImageBase64 = optimized.dataUrl;
+    document.getElementById('qa-preview-img').src = qaImageBase64;
+    document.getElementById('qa-preview-wrap').style.display = 'block';
+
+    const btn = document.getElementById('run-qa-btn');
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  } catch (err) {
+    console.error('Image optimize failed:', err);
+    showToast('Could not prepare image for AI diagnostics.', 'err');
+  }
+}
+function clearQAImage() {
+  qaImageBase64 = null;
+  qaImageMimeType = null;
+  const inputEl = document.getElementById('qa-image-input');
+  if (inputEl) inputEl.value = '';
+  const previewWrap = document.getElementById('qa-preview-wrap');
+  if (previewWrap) previewWrap.style.display = 'none';
+  const previewImg = document.getElementById('qa-preview-img');
+  if (previewImg) previewImg.src = '';
+  
+  const btn = document.getElementById('run-qa-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+  }
+  
+  const alertBanner = document.getElementById('gemini-alert-banner');
+  if (alertBanner) {
+    alertBanner.style.display = 'none';
+    alertBanner.innerHTML = '';
+  }
+  const resultBox = document.getElementById('qa-result-box');
+  if (resultBox) {
+    resultBox.style.display = 'none';
+    resultBox.innerHTML = '';
+  }
+}
+
+async function runAIDiagnostics() {
+  if (!qaImageBase64) return;
+
+  const btn = document.getElementById('run-qa-btn');
+  const spinner = document.getElementById('qa-btn-spinner');
+  const alertBanner = document.getElementById('gemini-alert-banner');
+  const resultBox = document.getElementById('qa-result-box');
+
+  btn.disabled = true;
+  btn.style.opacity = '0.7';
+  spinner.style.display = 'inline-block';
+  alertBanner.style.display = 'none';
+  alertBanner.innerHTML = '';
+  resultBox.style.display = 'none';
+  resultBox.innerHTML = '';
+
+  try {
+    const res = await fetch(`${API}/api/defect-analysis/analyze`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ mimeType: qaImageMimeType, data: qaImageBase64 })
+    });
+
+    handleUnauth(res);
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || 'Analysis failed.');
+    }
+
+    const result = await res.json();
+    if (result.success && result.analysis) {
+      const analysis = result.analysis;
+      const risk = (analysis.warrantyFraudRisk || 'low').toLowerCase();
+      const riskLabel = risk === 'high' ? 'HIGH WARRANTY RISK' : risk === 'medium' ? 'MEDIUM WARRANTY RISK' : 'LOW WARRANTY RISK';
+
+      resultBox.innerHTML = `
+        <div style="font-weight:800;margin-bottom:8px;color:var(--accent);">AI Analysis Result / AI Ã Â®â€ Ã Â®Â¯Ã Â¯ÂÃ Â®ÂµÃ Â¯Â Ã Â®Â®Ã Â¯ÂÃ Â®Å¸Ã Â®Â¿Ã Â®ÂµÃ Â¯Â</div>
+        <div style="margin-bottom:8px;"><b>Technical Diagnosis / Ã Â®Â¤Ã Â¯Å Ã Â®Â´Ã Â®Â¿Ã Â®Â²Ã Â¯ÂÃ Â®Â¨Ã Â¯ÂÃ Â®Å¸Ã Â¯ÂÃ Â®Âª Ã Â®â€¢Ã Â®Â£Ã Â¯ÂÃ Â®Å¸Ã Â®Â±Ã Â®Â¿Ã Â®Â¤Ã Â®Â²Ã Â¯Â:</b><br>${esc(analysis.technicalDiagnosis || '-')}</div>
+        <div style="margin-bottom:8px;"><b>Root Cause / Ã Â®Â®Ã Â¯â€šÃ Â®Â² Ã Â®â€¢Ã Â®Â¾Ã Â®Â°Ã Â®Â£Ã Â®Â®Ã Â¯Â:</b><br>${esc(analysis.rootCause || '-')}</div>
+        <div style="margin-bottom:8px;"><b>Warranty Risk / Ã Â®ÂµÃ Â®Â¾Ã Â®Â°Ã Â®Â£Ã Â¯ÂÃ Â®Å¸Ã Â®Â¿ Ã Â®â€¦Ã Â®ÂªÃ Â®Â¾Ã Â®Â¯Ã Â®Â®Ã Â¯Â:</b> ${esc(riskLabel)}</div>
+        <div><b>Warranty Remarks / Ã Â®ÂµÃ Â®Â¾Ã Â®Â°Ã Â®Â£Ã Â¯ÂÃ Â®Å¸Ã Â®Â¿ Ã Â®â€¢Ã Â¯ÂÃ Â®Â±Ã Â®Â¿Ã Â®ÂªÃ Â¯ÂÃ Â®ÂªÃ Â¯ÂÃ Â®â€¢Ã Â®Â³Ã Â¯Â:</b><br>${esc(analysis.warrantyRemarks || '-')}</div>
+      `;
+      resultBox.style.display = 'block';
+
+      if (risk === 'high' || risk === 'medium') {
+        const bg = risk === 'high' ? '#fee2e2' : '#fef3c7';
+        const border = risk === 'high' ? '#ef4444' : '#f59e0b';
+        const text = risk === 'high' ? '#991b1b' : '#92400e';
+        alertBanner.style.background = bg;
+        alertBanner.style.border = `1.5px solid ${border}`;
+        alertBanner.style.color = text;
+        alertBanner.innerHTML = `<div style="font-weight: 700; margin-bottom: 3px;">${riskLabel}</div><div>${esc(analysis.warrantyRemarks || '')}</div>`;
+      } else {
+        alertBanner.style.background = '#d1fae5';
+        alertBanner.style.border = '1.5px solid #10b981';
+        alertBanner.style.color = '#065f46';
+        alertBanner.innerHTML = `<div style="font-weight: 700; margin-bottom: 2px;">LOW WARRANTY RISK</div><div>${esc(analysis.warrantyRemarks || '')}</div>`;
+      }
+      alertBanner.style.display = 'block';
+      showToast('AI diagnostics successfully completed!', 'ok');
+    }
+  } catch (error) {
+    console.error('AI Diagnostics error:', error);
+    showToast('AI Diagnostics failed: ' + error.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    spinner.style.display = 'none';
+  }
+}
+</script>
 </script>
 <script src="tab-fix.js"></script>
+<script>
+function deleteRecord(id) {
+  if (!confirm('Are you sure you want to delete this record?')) return;
+  fetch('/api/atrr/' + id, {
+    method: 'DELETE',
+    headers: authHeaders()
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (!d.success) throw new Error(d.message || 'Failed to delete');
+    showToast(d.message || 'Deleted successfully', 'ok');
+    loadData();
+  })
+  .catch(e => {
+    showToast(e.message, 'err');
+  });
+}
+</script>
 </body>
 </html>
 
