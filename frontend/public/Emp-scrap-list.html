@@ -683,11 +683,11 @@ function fieldValue(d, key) {
   return '';
 }
 
-async function deleteRecord(id) {
-  if(!confirm('Are you sure you want to delete this record? This action cannot be undone.')) return;
+async function moveToCsw(id) {
+  if(!confirm('Are you sure you want to move this record to Closed Supplier Warranty?')) return;
   try {
-    const res = await fetch(`${API}/api/scrap/${id}`, {
-      method: 'DELETE',
+    const res = await fetch(`${API}/api/csw/move/${id}`, {
+      method: 'POST',
       headers: authHeaders()
     });
     handleUnauth(res);
@@ -702,9 +702,9 @@ async function deleteRecord(id) {
     
     applyFilters();
     if(typeof updateStats === 'function') updateStats();
-    showToast('Record deleted successfully.', 'ok');
+    showToast('Record moved to CSW successfully.', 'ok');
   } catch(e) {
-    showToast('Delete failed: ' + e.message, 'err');
+    showToast('Move failed: ' + e.message, 'err');
   }
 }
 
@@ -835,8 +835,8 @@ function renderTable() {
       return `<tr title="Record Row">
         <td>
           <div style="display:flex;gap:5px;">
-            <button class="btn-xs update" onclick="openUpdateModal('${rid}')" title="Update">&#9999;&#65039;</button>
-            <button class="btn-xs update" onclick="deleteRecord('${rid}')" title="Delete" style="color:var(--red);border-color:rgba(220,38,38,0.3);">&#128465;&#65039;</button>
+              <button class="btn-xs update" onclick="openUpdateModal('${rid}')" title="Update">&#9999;&#65039;</button>
+              <button class="btn-xs update" onclick="moveToCsw('${rid}')" title="Move to CSW" style="color:var(--green);border-color:rgba(34,197,94,0.3);">&#10004;&#65039;</button>
           </div>
         </td>
         ${SUPPLIER_COLUMNS.map(col => {
