@@ -191,18 +191,16 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
 .cat-tab.ob.active{background:var(--teal);border-color:var(--teal);}
 ::-webkit-scrollbar{width:7px;height:7px;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
-
-    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
-    </style>
-  <link rel="stylesheet" href="global-typography.css">
-  <link rel="stylesheet" href="admin-sidebar.css">
-  <link rel="stylesheet" href="dashboard-topbar-actions.css">
-  <script src="dashboard-topbar-actions.js" defer></script>
-  <link rel="stylesheet" href="employee-theme.css">
-  
-  
-  
-  
+</style>
+<link rel="stylesheet" href="global-typography.css">
+<link rel="stylesheet" href="admin-sidebar.css">
+<link rel="stylesheet" href="dashboard-topbar-actions.css">
+<script src="dashboard-topbar-actions.js" defer></script>
+<link rel="stylesheet" href="employee-theme.css">
+<script src="employee-theme.js"></script>
+<link rel="stylesheet" href="topbar-alignment.css">
+<link rel="stylesheet" href="brand-logo.css">
+<script src="brand-logo.js" defer></script>
 </head>
 <body>
 <!-- -- FULL-SCREEN UPDATE MODAL -- -->
@@ -329,15 +327,15 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
     </div>
   </div>
 </div>
+
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-header">
-    <div class="logo-wrap">
-      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
-      <div class="logo-text">SchillerIndia<span>Services Portal</span></div>
+    <div class="sidebar-logo">
+      <img class="brand-logo-img" src="logo.png" alt="SCHILLER">
     </div>
   </div>
-  <div style="padding:7px 12px 0;"><span class="crl-badge">&#128737;&#65039; Admin View</span></div>
+  <div style="padding:10px 20px 0;"><span class="role-badge">Admin View</span></div>
   <nav class="sidebar-nav">
     <div class="nav-section">Main</div>
     <button class="nav-item" onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
@@ -447,75 +445,6 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
       </div>
     </div>
 
-    <!-- -- ADD RECORD PANEL -- -->
-    <div class="add-panel" id="add-panel">
-      <div class="add-panel-hdr">
-        <div class="add-panel-title">&#10133; Add New Re-repair List Record</div>
-        <button class="close-panel" onclick="toggleAddPanel()">&#10005;</button>
-      </div>
-      <div class="fg-4" style="margin-bottom:14px;">
-        <div class="ff">
-          <label>Entry Date <span class="req">*</span></label>
-          <input type="date" id="a-entrydate"/>
-        </div>
-        <div class="ff">
-          <label>Division <span class="req">*</span></label>
-          <select id="a-division">
-            <option value="">Select Division-</option>
-            <option>PATIENT MONITORS</option><option>SAG</option><option>VENTILATOR</option>
-            <option>DEFIBRILLATOR</option><option>ECG</option><option>SYRINGE PUMP</option>
-            <option>INFUSION PUMP</option><option>ULTRASOUND</option><option>ANAESTHESIA</option>
-            <option>OTHER</option>
-          </select>
-        </div>
-        <div class="ff">
-          <label>SC Ref No <span class="req">*</span></label>
-          <input type="text" id="a-screfno" placeholder=""/>
-        </div>
-        <div class="ff">
-          <label>DEF GIR No <span class="req">*</span></label>
-          <input type="text" id="a-defgirno" placeholder=""/>
-        </div>
-        <div class="ff">
-          <label>Category</label>
-          <select id="a-category">
-            <option value="PFRN">Re-repair List</option>
-            <option value="OB">OB</option>
-            <option value="UR">UR</option>
-          </select>
-        </div>
-        <div class="ff">
-          <label>Model <span class="req">*</span></label>
-          <select id="a-model">
-            <option value="">Select Model-</option>
-            <option>TS II</option><option>TS III</option><option>AT-102 G2</option>
-            <option>TS_ULTRA Q7</option><option>BR-102 Plus</option>
-            <option>AT-10 Plus</option><option>CS-200</option><option>DEFIGARD 5000</option>
-            <option>Hamilton-C1</option><option>Hamilton-G5</option><option>SV300</option>
-            <option>GRAPHNET TS</option><option>GRAPHNET NEO</option><option>DKDS50</option>
-            <option>uMEC 10</option><option>BIOVISION CMS</option>
-          </select>
-        </div>
-        <div class="ff">
-          <label>Def Brd/Mod Name <span class="req">*</span></label>
-          <input type="text" id="a-defbrdmod" placeholder=""/>
-        </div>
-        <div class="ff">
-          <label>Status</label>
-          <select id="a-status">
-            <option value="inprogress">In Progress</option>
-            <option value="completed">Completed</option>
-          </select>
-        </div>
-      </div>
-      <div id="add-err" style="font-size:12px;color:var(--red);padding:7px 12px;border-radius:7px;background:var(--red-bg);border:1px solid rgba(185,28,28,0.2);display:none;margin-bottom:10px;"></div>
-      <div style="display:flex;gap:10px;">
-        <button class="btn btn-primary" id="add-btn" onclick="submitAdd()">&#128190; Save Record</button>
-        <button class="btn btn-outline btn-sm" onclick="toggleAddPanel()">Cancel</button>
-      </div>
-    </div>
-
-    <!-- -- FILTER BAR -- -->
     <!-- -- TABLE CARD -- -->
     <div class="table-card">
       <div class="table-top">
@@ -538,7 +467,7 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
       </div>
 
       <div class="table-wrap">
-        <table class="rt-table">
+        <table class="crl-table">
           <thead><tr>
             <th onclick="sortBy('revertedDate')">Reverted Date <span class="si">&#8693;</span></th>
             <th onclick="sortBy('entryDate')" class="sorted">Entry Date <span class="si">&#8693;</span></th>
@@ -581,13 +510,9 @@ let editingDoi = '';
 let editingId = null;
 let activeSummary = 'all';
 
-// authHeaders defined below
 function setupRepairSuggestions() {
   if (!window.RepairSuggestions) return;
   RepairSuggestions.bind({
-    'a-screfno': ['scRefNo','scRno','scRef','scReferenceNo'],
-    'a-defgirno': ['defGirNo','defGir','girNo'],
-    'a-defbrdmod': ['defBrdModName'],
     'u-repairremarks': ['repairRemarks'],
     'u-components': ['components'],
     'u-cost': ['cost']
@@ -616,8 +541,6 @@ async function syncRepairSessionUser(){
   const today = new Date().toISOString().split('T')[0];
   const uRep = document.getElementById('u-repaireddate');
   if(uRep) { uRep.min = today; uRep.max = today; }
-  document.getElementById('a-entrydate').value = today;
-  ['fl-from','fl-to'].forEach(id => { const e=document.getElementById(id); if(e) e.max=today; });
   syncRepairSessionUser();
   loadData();
   setupRepairSuggestions();
@@ -654,7 +577,7 @@ async function loadData() {
     document.getElementById('rt-tbody').innerHTML =
       `<tr><td colspan="13" style="text-align:center;padding:40px;color:var(--red);">&#9888;&#65039; ${esc(e.message)} - ensure backend is running.</td></tr>`;
     showToast('Load failed: ' + e.message, 'err');
-  } finally { }
+  }
 }
 
 function calcDays(createdAt, entryDate, d) {
@@ -738,7 +661,6 @@ function sortArr() {
   });
 }
 
-// -- RENDER TABLE ------------------------------------------
 function renderTable() {
   const perPage = parseInt(document.getElementById('per-page').value) || 10;
   const total   = filtered.length;
@@ -779,56 +701,6 @@ function renderTable() {
     ? `Showing ${fr} to ${Math.min(currentPage*perPage,total)} of ${total} entries`
     : '0 entries';
   renderPagination(pages);
-}
-
-// -- ADD PANEL ---------------------------------------------
-function toggleAddPanel() {
-  const p = document.getElementById('add-panel');
-  p.classList.toggle('show');
-  if (p.classList.contains('show'))
-    document.getElementById('a-entrydate').value = new Date().toISOString().split('T')[0];
-  document.getElementById('add-err').style.display = 'none';
-}
-
-async function submitAdd() {
-  const entryDate    = document.getElementById('a-entrydate').value;
-  const division     = document.getElementById('a-division').value;
-  const scRefNo      = document.getElementById('a-screfno').value.trim();
-  const defGirNo     = document.getElementById('a-defgirno').value.trim();
-  const category     = document.getElementById('a-category').value;
-  const model        = document.getElementById('a-model').value;
-  const defBrdModName= document.getElementById('a-defbrdmod').value.trim();
-  const status       = document.getElementById('a-status').value;
-  const errEl = document.getElementById('add-err');
-
-  if (!entryDate || !division || !scRefNo || !defGirNo || !model || !defBrdModName) {
-    errEl.textContent = '? Please fill all required fields.';
-    errEl.style.display = 'block'; return;
-  }
-  errEl.style.display = 'none';
-
-  const btn = document.getElementById('add-btn');
-  btn.disabled = true; btn.textContent = '\uD83D\uDCBE Saving...';
-
-  try {
-    const payload = { entryDate, division, scRefNo, defGirNo, category, model, defBrdModName, status, submittedBy: EMP_NAME, submittedAt: new Date().toISOString() };
-    const res = await fetch(`${API}/api/atrr`, { method:'POST', headers:authHeaders(), body:JSON.stringify(payload) });
-    handleUnauth(res);
-    if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(e.message||'Save failed'); }
-    const saved = await res.json();
-    allData.unshift({ ...saved, id:saved._id||saved.id, noOfDays:calcDays(saved.createdAt, saved.entryDate, saved) });
-    applyFilters(); updateStats();
-    document.getElementById('add-panel').classList.remove('show');
-    showToast('Record added successfully!', 'ok');
-    ['a-screfno','a-defgirno','a-defbrdmod'].forEach(id => document.getElementById(id).value='');
-    document.getElementById('a-division').value='';
-    document.getElementById('a-model').value='';
-    document.getElementById('a-status').value='inprogress';
-  } catch(e) {
-    if (e.message !== 'Unauthorized') { errEl.textContent=e.message; errEl.style.display='block'; }
-  } finally {
-    btn.disabled=false; btn.innerHTML ='&#128190; Save Record';
-  }
 }
 
 // -- UPDATE MODAL ------------------------------------------
@@ -1031,6 +903,11 @@ function showToast(msg, type='ok') {
   el.className='toast '+type; el.innerHTML='<span class="td"></span>'+msg;
   w.appendChild(el); setTimeout(()=>el.remove(), 3500);
 }
+function toggleGroup(toggleId, childId) {
+  var btn = document.getElementById(toggleId);
+  var panel = document.getElementById(childId);
+  if (btn && panel) { btn.classList.toggle('open'); panel.classList.toggle('open'); }
+}
 function logout() { sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; }
 
 document.getElementById('modal-update').addEventListener('click', e => {
@@ -1169,11 +1046,11 @@ async function runAIDiagnostics() {
       const riskLabel = risk === 'high' ? 'HIGH WARRANTY RISK' : risk === 'medium' ? 'MEDIUM WARRANTY RISK' : 'LOW WARRANTY RISK';
 
       resultBox.innerHTML = `
-        <div style="font-weight:800;margin-bottom:8px;color:var(--accent);">AI Analysis Result / AI Ã Â®â€ Ã Â®Â¯Ã Â¯ÂÃ Â®ÂµÃ Â¯Â Ã Â®Â®Ã Â¯ÂÃ Â®Å¸Ã Â®Â¿Ã Â®ÂµÃ Â¯Â</div>
-        <div style="margin-bottom:8px;"><b>Technical Diagnosis / Ã Â®Â¤Ã Â¯Å Ã Â®Â´Ã Â®Â¿Ã Â®Â²Ã Â¯ÂÃ Â®Â¨Ã Â¯ÂÃ Â®Å¸Ã Â¯ÂÃ Â®Âª Ã Â®â€¢Ã Â®Â£Ã Â¯ÂÃ Â®Å¸Ã Â®Â±Ã Â®Â¿Ã Â®Â¤Ã Â®Â²Ã Â¯Â:</b><br>${esc(analysis.technicalDiagnosis || '-')}</div>
-        <div style="margin-bottom:8px;"><b>Root Cause / Ã Â®Â®Ã Â¯â€šÃ Â®Â² Ã Â®â€¢Ã Â®Â¾Ã Â®Â°Ã Â®Â£Ã Â®Â®Ã Â¯Â:</b><br>${esc(analysis.rootCause || '-')}</div>
-        <div style="margin-bottom:8px;"><b>Warranty Risk / Ã Â®ÂµÃ Â®Â¾Ã Â®Â°Ã Â®Â£Ã Â¯ÂÃ Â®Å¸Ã Â®Â¿ Ã Â®â€¦Ã Â®ÂªÃ Â®Â¾Ã Â®Â¯Ã Â®Â®Ã Â¯Â:</b> ${esc(riskLabel)}</div>
-        <div><b>Warranty Remarks / Ã Â®ÂµÃ Â®Â¾Ã Â®Â°Ã Â®Â£Ã Â¯ÂÃ Â®Å¸Ã Â®Â¿ Ã Â®â€¢Ã Â¯ÂÃ Â®Â±Ã Â®Â¿Ã Â®ÂªÃ Â¯ÂÃ Â®ÂªÃ Â¯ÂÃ Â®â€¢Ã Â®Â³Ã Â¯Â:</b><br>${esc(analysis.warrantyRemarks || '-')}</div>
+        <div style="font-weight:800;margin-bottom:8px;color:var(--accent);">AI Analysis Result / AI Ã Â®â€ Ã Â®Â¯Ã Â¯Â ÃÂ®ÂµÃ Â¯Â  Ã Â®Â®Ã Â¯Â Ã Â®Å¸Ã Â®Â¿Ã Â®ÂµÃ Â¯Â </div>
+        <div style="margin-bottom:8px;"><b>Technical Diagnosis / Ã Â®Â¤Ã Â¯Å Ã Â®Â´Ã Â®Â¿Ã Â®Â²Ã Â¯Â Ã Â®Â¨Ã Â¯Â Ã Â®Å¸Ã Â¯Â Ã Â®Âª Ã Â®â€¢Ã Â®Â£Ã Â¯Â Ã Â®Å¸Ã Â®Â±Ã Â®Â¿Ã Â®Â¤Ã Â®Â²Ã Â¯Â :</b><br>${esc(analysis.technicalDiagnosis || '-')}</div>
+        <div style="margin-bottom:8px;"><b>Root Cause / Ã Â®Â®Ã Â¯â€šÃ Â®Â² Ã Â®â€¢Ã Â®Â¾Ã Â®Â°Ã Â®Â£Ã Â®Â®Ã Â¯Â :</b><br>${esc(analysis.rootCause || '-')}</div>
+        <div style="margin-bottom:8px;"><b>Warranty Risk / Ã Â®ÂµÃ Â®Â¾Ã Â®Â°Ã Â®Â£Ã Â¯Â Ã Â®Å¸Ã Â®Â¿ Ã Â®â€¦Ã Â®ÂªÃ Â®Â¾Ã Â®Â¯Ã Â®Â®Ã Â¯Â :</b> ${esc(riskLabel)}</div>
+        <div><b>Warranty Remarks / Ã Â®ÂµÃ Â®Â¾Ã Â®Â°Ã Â®Â£Ã Â¯Â Ã Â®Å¸Ã Â®Â¿ Ã Â®â€¢Ã Â¯Â Ã Â®Â±Ã Â®Â¿Ã Â®ÂªÃ Â¯Â Ã Â®ÂªÃ Â¯Â Ã Â®â€¢Ã Â®Â³Ã Â¯Â :</b><br>${esc(analysis.warrantyRemarks || '-')}</div>
       `;
       resultBox.style.display = 'block';
 
@@ -1204,7 +1081,6 @@ async function runAIDiagnostics() {
   }
 }
 </script>
-<script src="tab-fix.js"></script>
 <script>
 function deleteRecord(id) {
   if (!confirm('Are you sure you want to delete this record?')) return;
@@ -1225,7 +1101,3 @@ function deleteRecord(id) {
 </script>
 </body>
 </html>
-
-
-
-
