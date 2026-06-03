@@ -486,8 +486,9 @@ async function loadData(){
       const divData = await divRes.json();
       const divSelect = document.getElementById('fl-division');
       const curVal = divSelect.value;
+      const divs = Array.isArray(divData) ? divData : (divData?.data || []);
       divSelect.innerHTML = '<option value="">All Divisions</option>' + 
-        divData.data.map(d => `<option value="${d.name}">${d.name}</option>`).join('');
+        divs.map(d => `<option value="${d.name}">${d.name}</option>`).join('');
       divSelect.value = curVal;
     }
 
