@@ -369,7 +369,7 @@ table.js-grid tbody td input::placeholder{color:var(--muted);font-size:11px;}
     </div>
   </div>
 
-  <div class="content">
+  <div class="content" style="position:relative;">
     <div class="mail-ack-wrap" id="mail-ack-wrap"></div>
 
     <div class="view-tabs">
@@ -378,8 +378,8 @@ table.js-grid tbody td input::placeholder{color:var(--muted);font-size:11px;}
     </div>
 
     <!-- DYNAMIC UPDATE MODAL -->
-    <div class="overlay" id="dynamic-update-overlay">
-      <div class="modal" style="max-height:85vh;">
+    <div class="overlay" id="dynamic-update-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:100; align-items:stretch; justify-content:stretch; padding:0;">
+      <div class="modal" style="max-height:none; width:100%; max-width:100%; border-radius:0; box-shadow:none; display:flex; flex-direction:column; flex:1;">
         <div class="modal-header">
           <div>
             <div class="modal-title">Update Record</div>
@@ -723,12 +723,12 @@ function openUpdateModal(id) {
     
     let controlHtml = '';
     if (isTextarea) {
-      controlHtml = `<textarea id="dyn-${field.key}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);resize:vertical;min-height:72px;" placeholder="Enter ${esc(field.label)}">${esc(val)}</textarea>`;
+      controlHtml = `<input id="dyn-${field.key}" type="text" value="${esc(val)}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);" />`;
     } else if (isDate) {
       const fmt = val ? new Date(val).toISOString().slice(0,10) : '';
       controlHtml = `<input id="dyn-${field.key}" type="date" value="${fmt}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);"/>`;
     } else {
-      controlHtml = `<input id="dyn-${field.key}" type="text" value="${esc(val)}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);" placeholder="Enter ${esc(field.label)}"/>`;
+      controlHtml = `<input id="dyn-${field.key}" type="text" value="${esc(val)}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);" />`;
     }
 
     const html = `<div style="display:flex;flex-direction:column;gap:5px;">
@@ -887,12 +887,12 @@ function openJS(id) {
   tbody.innerHTML = Array.from({ length: 5 }, (_, i) => {
     const row = rows[i] || {};
     return `<tr>
-      <td><input type="date" class="js-repdate" value="${esc(row.repairDate||'')}" placeholder="nil"/></td>
-      <td><input type="text" class="js-eng" value="${esc(row.engineerName||'')}" placeholder="Engineer name"/></td>
-      <td><input type="text" class="js-obs" value="${esc(row.observation||'')}" placeholder="Observation..."/></td>
-      <td><input type="text" class="js-act" value="${esc(row.repairActivity||'')}" placeholder="Repair activity..."/></td>
-      <td><input type="text" class="js-time" value="${esc(row.timeSpent||'')}" placeholder=""/></td>
-      <td><input type="text" class="js-rem" value="${esc(row.remark||'')}" placeholder="Remark..."/></td>
+      <td><input type="date" class="js-repdate" value="${esc(row.repairDate||'')}"/></td>
+      <td><input type="text" class="js-eng" value="${esc(row.engineerName||'')}"/></td>
+      <td><input type="text" class="js-obs" value="${esc(row.observation||'')}"/></td>
+      <td><input type="text" class="js-act" value="${esc(row.repairActivity||'')}"/></td>
+      <td><input type="text" class="js-time" value="${esc(row.timeSpent||'')}"/></td>
+      <td><input type="text" class="js-rem" value="${esc(row.remark||'')}"/></td>
     </tr>`;
   }).join('');
 
