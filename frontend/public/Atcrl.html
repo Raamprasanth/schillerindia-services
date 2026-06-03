@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -280,6 +280,10 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
   <nav class="sidebar-nav">
     <div class="nav-section">Main</div>
     <button class="nav-item" onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
+    <button class="nav-item" onclick="window.location.href='company-section.html'"><span class="icon">&#127970;</span> Company</button>
+    <button class="nav-item" onclick="window.location.href='division-section.html'"><span class="icon">&#128309;</span> Division</button>
+    <button class="nav-item" onclick="window.location.href='engineer-section.html'"><span class="icon">&#128119;</span> Engineers</button>
+    <button class="nav-item" onclick="window.location.href='dealer-section.html'"><span class="icon">&#129309;</span> Dealers</button>
     <div class="nav-section">Operations</div>
     <button class="nav-group-toggle" id="sf-toggle" onclick="toggleGroup('sf-toggle','sf-children')"><span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span></button>
     <div class="nav-children" id="sf-children">
@@ -287,8 +291,26 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
         <button class="nav-item" onclick="window.location.href='service-list.html'"><span class="icon">&#128225;</span> Services</button>
         <button class="nav-item" onclick="window.location.href='pending-frn.html'"><span class="icon">&#128221;</span> Pending FRN</button>
         <button class="nav-item" onclick="window.location.href='ob-pending.html'"><span class="icon">&#128194;</span> OB Pending</button>
+        <button class="nav-item" onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
         <button class="nav-item" onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
         <button class="nav-item" onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
+        <button class="nav-item" onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
+        <button class="nav-item" onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
+      </div>
+    </div>
+    <button class="nav-group-toggle" id="ar-toggle" onclick="toggleGroup('ar-toggle','ar-children')"><span class="icon">&#128196;</span> Activity Register <span class="caret">&#9656;</span></button>
+    <div class="nav-children" id="ar-children">
+      <div class="nav-sub">
+        <a class="nav-item" href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
+        <a class="nav-item" href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
+        <a class="nav-item" href="aprfob.html"><span class="icon">&#128203;</span> TO/SO List</a>
+        <a class="nav-item" href="acr.html"><span class="icon">&#128209;</span> Closed TO/SO</a>
+        <a class="nav-item" href="ans.html"><span class="icon">&#128230;</span> Non Saleable</a>
+        <a class="nav-item" href="as.html"><span class="icon">&#128176;</span> Saleable</a>
+        <a class="nav-item" href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
+        <a class="nav-item" href="acbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
+        <a class="nav-item" href="apa.html"><span class="icon">&#128221;</span> Pending Activity</a>
+        <a class="nav-item" href="acpa.html"><span class="icon">&#9989;</span> Closed Activity</a>
       </div>
     </div>
     <button class="nav-group-toggle open" id="rta-toggle" onclick="toggleGroup('rta-toggle','rta-children')"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
@@ -300,7 +322,7 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
         <a class="nav-item active" href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
         <a class="nav-item" href="admin-re-repair-atrr.html"><span class="icon">&#128260;</span> Admin ATRR</a>
         <a class="nav-item" href="admin-closed-re-repair-atcrr.html"><span class="icon">&#128683;</span> Admin ATCRR</a>
-        </div>
+      </div>
     </div>
     <div class="nav-section">Admin</div>
     <button class="nav-item" onclick="window.location.href='usermanagement.html'"><span class="icon">&#128101;</span> User Management</button>

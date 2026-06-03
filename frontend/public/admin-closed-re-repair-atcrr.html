@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -299,7 +299,7 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
     <div style="display: flex; align-items: center; gap: 12px;">
       <div style="width: 42px; height: 42px; border-radius: 50%; background: rgba(185,28,28,0.1); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink:0;">&#9888;&#65039;</div>
       <div>
-        <h3 style="font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 3px;">Problem Observed â€” NW Report</h3>
+        <h3 style="font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 3px;">Problem Observed Ã¢â‚¬â€ NW Report</h3>
         <p style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0;" id="problem-scref-display">SC Ref: -</p>
       </div>
     </div>
@@ -323,83 +323,6 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
         &#128228; Confirm &amp; Revert
       </button>
     </div>
-.mono{font-family:monospace;font-size:10.5px;color:var(--muted);}
-.pager-row{display:flex;align-items:center;gap:3px;}
-.pager{min-width:28px;height:28px;padding:0 7px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--soft);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.18s;font-family:'Plus Jakarta Sans',sans-serif;}
-.pager:hover{border-color:var(--crl);color:var(--crl);}
-.pager.active{background:var(--crl);border-color:var(--crl);color:#fff;}
-.pager:disabled{opacity:0.3;cursor:not-allowed;}
-/* DETAIL MODAL */
-.overlay{position:fixed;inset:0;background:rgba(5,18,38,0.55);backdrop-filter:blur(5px);z-index:500;display:none;align-items:stretch;}
-.overlay.open{display:flex;animation:fadeIn 0.18s ease;}
-@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
-.modal{background:var(--surface);width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;}
-.modal-head{padding:16px 28px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative;}
-.modal-head-accent{position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--crl),var(--crl2),transparent);}
-.modal-htitle{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:10px;}
-.modal-badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:10px;background:var(--crl-bg);color:var(--crl);border:1px solid rgba(5,150,105,0.25);}
-.modal-close{width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:15px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
-.modal-close:hover{background:var(--red-bg);color:var(--red);border-color:rgba(185,28,28,0.3);}
-.info-strip{display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface3);border-bottom:1px solid var(--border);}
-.info-cell{padding:11px 18px;border-right:1px solid var(--border);}
-.info-cell:last-child{border-right:none;}
-.info-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:3px;}
-.info-val{font-size:12px;font-weight:700;color:var(--crl);}
-.info-val.dark{color:var(--text);font-weight:600;}
-.modal-scroll{flex:1;overflow-y:auto;}
-.modal-body{padding:24px 28px;}
-.detail-sec{margin-bottom:22px;}
-.detail-sec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:13px;padding-bottom:8px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:7px;}
-.dg-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
-.dg-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
-.dg-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
-.df{display:flex;flex-direction:column;gap:5px;}
-.df label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
-.df .dval{padding:9px 12px;border:1.5px solid var(--border2);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface3);min-height:40px;}
-.df .dval.long{min-height:72px;line-height:1.5;}
-.df .dval.hl{color:var(--crl);font-weight:600;}
-.df .dval.empty{color:var(--muted);font-style:italic;}
-.modal-foot{padding:14px 28px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;justify-content:flex-end;background:var(--surface3);flex-shrink:0;}
-.spin{display:inline-block;width:15px;height:15px;border:2px solid var(--border);border-top-color:var(--crl);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:8px;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.empty-st{text-align:center;padding:56px 20px;}
-.ei{font-size:42px;margin-bottom:12px;opacity:0.25;}
-.et{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:5px;}
-.es{font-size:12px;color:var(--muted);}
-
-.auth-warn{display:none;background:linear-gradient(90deg,#fef3c7,#fffbeb);border:1px solid #fbbf24;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#92400e;align-items:center;gap:10px;}
-.auth-warn.show{display:flex;}
-.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:700;display:flex;flex-direction:column;gap:7px;}
-.toast{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:11px 15px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:9px;min-width:230px;animation:fadeUp 0.28s ease;box-shadow:0 8px 22px rgba(0,0,0,0.1);}
-.toast.ok{border-color:rgba(5,150,105,0.35);}.toast.ok .td{background:var(--green);}
-.toast.err{border-color:rgba(185,28,28,0.35);}.toast.err .td{background:var(--red);}
-.toast.info{border-color:rgba(5,150,105,0.4);}.toast.info .td{background:var(--crl);}
-.td{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
-/* CATEGORY TABS */
-.cat-tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
-.cat-tab{padding:6px 16px;border-radius:20px;font-size:11.5px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:none;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.18s;}
-.cat-tab:hover{border-color:var(--crl);color:var(--crl);}
-.cat-tab.active{background:var(--crl);border-color:var(--crl);color:#fff;}
-.cat-tab.pfrn.active{background:var(--purple);border-color:var(--purple);}
-.cat-tab.ur.active{background:var(--blue);border-color:var(--blue);}
-.cat-tab.ob.active{background:var(--teal);border-color:var(--teal);}
-::-webkit-scrollbar{width:7px;height:7px;}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
-
-    .organ-logo{display:flex;gap:3px;border-radius:10px;overflow:hidden;height:32px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.20)}.organ-panel{width:28px;height:32px;display:flex;align-items:center;justify-content:center}.op-yellow{background:#F5C518}.op-orange{background:#F4845F}.op-red{background:#C0392B}@keyframes heartpulse{0%,65%,100%{transform:scale(1)}15%{transform:scale(1.30)}35%{transform:scale(1.10)}50%{transform:scale(1.22)}}@keyframes lungbreathe{0%,100%{transform:scale(1)}50%{transform:scaleX(1.10) scaleY(1.08)}}@keyframes anabeat{0%,60%,100%{transform:scale(1) rotate(-4deg)}18%{transform:scale(1.26) rotate(-4deg)}38%{transform:scale(1.08) rotate(-4deg)}}.anim-heart{animation:heartpulse 1.4s ease-in-out infinite;transform-origin:center}.anim-lungs{animation:lungbreathe 2.8s ease-in-out infinite;transform-origin:center bottom}.anim-ana{animation:anabeat 1.4s ease-in-out infinite 0.2s;transform-origin:center}
-    </style>
-  <link rel="stylesheet" href="global-typography.css">
-  <link rel="stylesheet" href="admin-sidebar.css">
-  <link rel="stylesheet" href="dashboard-topbar-actions.css">
-  <script src="dashboard-topbar-actions.js" defer></script>
-  <link rel="stylesheet" href="employee-theme.css">
-  
-  
-  
-  
-</head>
-<body>
 <!-- DETAIL VIEW MODAL -->
 <div class="overlay" id="modal-detail">
   <div class="modal">
@@ -494,7 +417,7 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
     <div style="display: flex; align-items: center; gap: 12px;">
       <div style="width: 42px; height: 42px; border-radius: 50%; background: rgba(185,28,28,0.1); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink:0;">&#9888;&#65039;</div>
       <div>
-        <h3 style="font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 3px;">Problem Observed â€” NW Report</h3>
+        <h3 style="font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 3px;">Problem Observed Ã¢â‚¬â€ NW Report</h3>
         <p style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0;" id="problem-scref-display">SC Ref: -</p>
       </div>
     </div>
@@ -528,34 +451,83 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-header">
-    <div class="logo">SCHILLER</div>
+    <div class="logo-wrap">
+      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
+      <div class="logo-text">SchillerIndia<span>Services Portal</span></div>
+    </div>
   </div>
+  <div style="padding:7px 12px 0;"><span class="crl-badge">&#128737;&#65039; Admin View</span></div>
   <nav class="sidebar-nav">
     <div class="nav-section">Main</div>
     <button class="nav-item" onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
+    <button class="nav-item" onclick="window.location.href='company-section.html'"><span class="icon">&#127970;</span> Company</button>
+    <button class="nav-item" onclick="window.location.href='division-section.html'"><span class="icon">&#128309;</span> Division</button>
+    <button class="nav-item" onclick="window.location.href='engineer-section.html'"><span class="icon">&#128119;</span> Engineers</button>
+    <button class="nav-item" onclick="window.location.href='dealer-section.html'"><span class="icon">&#129309;</span> Dealers</button>
     <div class="nav-section">Operations</div>
-    <button class="nav-group-toggle" id="sf-toggle" onclick="toggleSF()"><span class="icon">&#128295;</span> Services & Filter <span class="caret">&#9656;</span></button>
+    <button class="nav-group-toggle" id="sf-toggle" onclick="toggleGroup('sf-toggle','sf-children')"><span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span></button>
     <div class="nav-children" id="sf-children">
       <div class="nav-sub">
         <button class="nav-item" onclick="window.location.href='service-list.html'"><span class="icon">&#128225;</span> Services</button>
         <button class="nav-item" onclick="window.location.href='pending-frn.html'"><span class="icon">&#128221;</span> Pending FRN</button>
+        <button class="nav-item" onclick="window.location.href='ob-pending.html'"><span class="icon">&#128194;</span> OB Pending</button>
+        <button class="nav-item" onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
         <button class="nav-item" onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
         <button class="nav-item" onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
+        <button class="nav-item" onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
+        <button class="nav-item" onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
       </div>
     </div>
-    <button class="nav-group-toggle" id="rta-toggle" onclick="toggleRTA()"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
-    <div class="nav-children" id="rta-children">
+    <button class="nav-group-toggle" id="ar-toggle" onclick="toggleGroup('ar-toggle','ar-children')"><span class="icon">&#128196;</span> Activity Register <span class="caret">&#9656;</span></button>
+    <div class="nav-children" id="ar-children">
+      <div class="nav-sub">
+        <a class="nav-item" href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
+        <a class="nav-item" href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
+        <a class="nav-item" href="aprfob.html"><span class="icon">&#128203;</span> TO/SO List</a>
+        <a class="nav-item" href="acr.html"><span class="icon">&#128209;</span> Closed TO/SO</a>
+        <a class="nav-item" href="ans.html"><span class="icon">&#128230;</span> Non Saleable</a>
+        <a class="nav-item" href="as.html"><span class="icon">&#128176;</span> Saleable</a>
+        <a class="nav-item" href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
+        <a class="nav-item" href="acbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
+        <a class="nav-item" href="apa.html"><span class="icon">&#128221;</span> Pending Activity</a>
+        <a class="nav-item" href="acpa.html"><span class="icon">&#9989;</span> Closed Activity</a>
+      </div>
+    </div>
+    <button class="nav-group-toggle open" id="rta-toggle" onclick="toggleGroup('rta-toggle','rta-children')"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
+    <div class="nav-children open" id="rta-children">
       <div class="nav-sub">
         <a class="nav-item" href="atfrn.html"><span class="icon">&#128221;</span> Admin RT FRN</a>
         <a class="nav-item" href="atob.html"><span class="icon">&#128230;</span> Admin RT OB</a>
         <a class="nav-item" href="atur.html"><span class="icon">&#128736;&#65039;</span> Admin RT UR</a>
         <a class="nav-item" href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
         <a class="nav-item" href="admin-re-repair-atrr.html"><span class="icon">&#128260;</span> Admin ATRR</a>
+        <a class="nav-item active" href="admin-closed-re-repair-atcrr.html"><span class="icon">&#128683;</span> Admin ATCRR</a>
+      </div>
+    </div>
+    <div class="nav-section">Admin</div>
+    <button class="nav-item" onclick="window.location.href='usermanagement.html'"><span class="icon">&#128101;</span> User Management</button>
+    <button class="nav-item" onclick="window.location.href='Reports.html'"><span class="icon">&#128200;</span> Reports</button>
+    <button class="nav-item" onclick="window.location.href='settings.html'"><span class="icon">&#9881;&#65039;</span> Settings</button>
+    <button class="nav-item" onclick="window.location.href='notifications.html'"><span class="icon">&#128276;</span> Notifications</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="user-av" id="emp-avatar">A</div>
+      <div><div class="user-nm" id="emp-name">Admin</div><div class="user-rl" id="emp-role">Administrator</div></div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
       <div class="breadcrumb">
         <a href="admin-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
-        <span>Repair Team</span><span class="sep">&#8250;</span><span>Admin Closed Repair List</span>
+        <span>Repair Team</span><span class="sep">&#8250;</span><span>Admin Closed Re-Repair List</span>
       </div>
-      <div class="topbar-title">Admin Closed Repair List</div>
+      <div class="topbar-title">Admin Closed Re-Repair List</div>
     </div>
     <div style="display:flex;align-items:center;gap:9px;">
       <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
@@ -961,7 +933,7 @@ function handleNW() {
     currentRecheckButtonEl.style.background = 'rgba(185,28,28,0.08)';
     currentRecheckButtonEl.style.color = 'var(--red)';
     currentRecheckButtonEl.style.borderColor = 'rgba(185,28,28,0.3)';
-    currentRecheckButtonEl.title = 'NW â€” awaiting problem description';
+    currentRecheckButtonEl.title = 'NW Ã¢â‚¬â€ awaiting problem description';
   }
   // Close recheck modal, open problem observed modal
   closeRecheckModal();
