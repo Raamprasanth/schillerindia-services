@@ -331,47 +331,70 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-header">
-    <div class="logo-wrap">
-      <div class="organ-logo"><div class="organ-panel op-yellow"><svg class="anim-heart" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C18 32 4 23 4 13.5 C4 8 8.5 4.5 14 4.5 C17 4.5 19.2 6.2 20 8 C20.8 6.2 23 4.5 26 4.5 C31.5 4.5 36 8 36 13.5 C36 23 22 32 20 34Z" fill="#E8266E" stroke="#B0104A" stroke-width="0.8"/><ellipse cx="14" cy="11" rx="3" ry="2.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20 14 11)"/></svg></div><div class="organ-panel op-orange"><svg class="anim-lungs" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><rect x="18.5" y="2.5" width="3" height="9" rx="1.5" fill="#5B2C6F"/><path d="M18.5 10 C14 10 9 12 7 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M21.5 10 C26 10 31 12 33 16" stroke="#5B2C6F" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="9.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="30.5" cy="24" rx="8" ry="11.5" fill="#7D3C98" opacity="0.9"/><ellipse cx="9.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/><ellipse cx="30.5" cy="27" rx="5.5" ry="7.5" fill="#9B59B6" opacity="0.55"/></svg></div><div class="organ-panel op-red"><svg class="anim-ana" viewBox="0 0 40 38" width="17" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C17 31 7 23 5.5 15 C4.5 9 8.5 5 14 5 C17 5 19 7 20 9.5 C21 7 23.5 5 27 5 C32.5 5 35.5 10 34 16 C32.5 23 24 31 20 34Z" fill="#C0392B" stroke="#7B241C" stroke-width="0.8"/><path d="M22 8 Q22 3 26 2.5 Q30.5 2 31 5 Q31.5 7.5 28 8" stroke="#641E16" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 9.5 Q18 6 15 5 Q12 4 10 6" stroke="#922B21" stroke-width="2" fill="none" stroke-linecap="round"/><line x1="24.5" y1="6.5" x2="24.5" y2="2" stroke="#4A4E69" stroke-width="1.5" stroke-linecap="round"/><path d="M12.5 14 Q20 11 27.5 15" stroke="#7B241C" stroke-width="0.6" fill="none" opacity="0.45"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2.5" fill="rgba(255,200,190,0.22)" transform="rotate(-25 13 12.5)"/></svg></div></div>
-      <div class="logo-text">SchillerIndia<span>Services Portal</span></div>
+    <div class="sidebar-logo">
+      <img class="brand-logo-img" src="logo.png" alt="SCHILLER">
     </div>
   </div>
-  <div style="padding:7px 12px 0;"><span class="crl-badge">&#128737;&#65039; Admin View</span></div>
+  <div style="padding:10px 20px 0;"><span class="role-badge">Admin</span></div>
   <nav class="sidebar-nav">
     <div class="nav-section">Main</div>
-    <button class="nav-item" onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
+    <button class="nav-item active" onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
+    <button class="nav-item " onclick="window.location.href='company-section.html'"><span class="icon">&#127970;</span> Company</button>
+    <button class="nav-item " onclick="window.location.href='division-section.html'"><span class="icon">&#128309;</span> Division</button>
+    <button class="nav-item " onclick="window.location.href='engineer-section.html'"><span class="icon">&#128119;</span> Engineers</button>
+    <button class="nav-item " onclick="window.location.href='dealer-section.html'"><span class="icon">&#129309;</span> Dealers</button>
     <div class="nav-section">Operations</div>
-    <button class="nav-group-toggle" id="sf-toggle" onclick="toggleGroup('sf-toggle','sf-children')"><span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span></button>
-    <div class="nav-children" id="sf-children">
+    <button class="nav-group-toggle " id="sf-toggle" onclick="toggleSF()">
+      <span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span>
+    </button>
+    <div class="nav-children " id="sf-children">
       <div class="nav-sub">
-        <button class="nav-item" onclick="window.location.href='service-list.html'"><span class="icon">&#128225;</span> Services</button>
-        <button class="nav-item" onclick="window.location.href='pending-frn.html'"><span class="icon">&#128221;</span> Pending FRN</button>
-        <button class="nav-item" onclick="window.location.href='ob-pending.html'"><span class="icon">&#128194;</span> OB Pending</button>
-        <button class="nav-item" onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
-        <button class="nav-item" onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
+        <button class="nav-item " onclick="window.location.href='service-list.html'"><span class="icon">&#128225;</span> Services</button>
+        <button class="nav-item " onclick="window.location.href='pending-frn.html'"><span class="icon">&#128221;</span> Pending FRN</button>
+        <button class="nav-item " onclick="window.location.href='ob-pending.html'"><span class="icon">&#128194;</span> OB Pending</button>
+        <button class="nav-item " onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
+        <button class="nav-item " onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
+        <button class="nav-item " onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
+        <button class="nav-item " onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
+        <button class="nav-item " onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
       </div>
     </div>
-    <button class="nav-group-toggle open" id="rta-toggle" onclick="toggleGroup('rta-toggle','rta-children')"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
-    <div class="nav-children open" id="rta-children">
+    <button class="nav-group-toggle " id="ar-toggle" onclick="toggleAR()"><span class="icon">&#128196;</span> Activity Register <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="ar-children">
       <div class="nav-sub">
-        <a class="nav-item" href="atfrn.html"><span class="icon">&#128221;</span> Admin RT FRN</a>
-        <a class="nav-item" href="atob.html"><span class="icon">&#128230;</span> Admin RT OB</a>
-        <a class="nav-item" href="atur.html"><span class="icon">&#128736;&#65039;</span> Admin RT UR</a>
-        <a class="nav-item" href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
+        <a class="nav-item " href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
+        <a class="nav-item " href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
+        <a class="nav-item " href="aprfob.html"><span class="icon">&#128203;</span> TO/SO List</a>
+        <a class="nav-item " href="acr.html"><span class="icon">&#128209;</span> Closed TO/SO</a>
+        <a class="nav-item " href="ans.html"><span class="icon">&#128230;</span> Non Saleable</a>
+        <a class="nav-item " href="as.html"><span class="icon">&#128176;</span> Saleable</a>
+        <a class="nav-item " href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
+        <a class="nav-item " href="acbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
+      </div>
+    </div>
+    <button class="nav-group-toggle " id="rta-toggle" onclick="toggleRTA()"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="rta-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="atfrn.html"><span class="icon">&#128221;</span> Admin RT FRN</a>
+        <a class="nav-item " href="atob.html"><span class="icon">&#128230;</span> Admin RT OB</a>
+        <a class="nav-item " href="atur.html"><span class="icon">&#128736;&#65039;</span> Admin RT UR</a>
+        <a class="nav-item " href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
         <a class="nav-item" href="admin-re-repair-atrr.html"><span class="icon">&#128260;</span> Admin ATRR</a>
         <a class="nav-item active" href="admin-closed-re-repair-atcrr.html"><span class="icon">&#128683;</span> Admin ATCRR</a>
-        </div>
+      </div>
     </div>
     <div class="nav-section">Admin</div>
-    <button class="nav-item" onclick="window.location.href='usermanagement.html'"><span class="icon">&#128101;</span> User Management</button>
-    <button class="nav-item" onclick="window.location.href='Reports.html'"><span class="icon">&#128200;</span> Reports</button>
-    <button class="nav-item" onclick="window.location.href='settings.html'"><span class="icon">&#9881;&#65039;</span> Settings</button>
-    <button class="nav-item" onclick="window.location.href='notifications.html'"><span class="icon">&#128276;</span> Notifications</button>
+    <button class="nav-item " onclick="window.location.href='usermanagement.html'"><span class="icon">&#128101;</span> User Management</button>
+    <button class="nav-item " onclick="window.location.href='Reports.html'"><span class="icon">&#128200;</span> Reports</button>
+    <button class="nav-item " onclick="window.location.href='settings.html'"><span class="icon">&#9881;&#65039;</span> Settings</button>
   </nav>
   <div class="sidebar-footer">
-    <div class="user-row">
-      <div class="user-av" id="emp-avatar">A</div>
-      <div><div class="user-nm" id="emp-name">Admin</div><div class="user-rl" id="emp-role">Administrator</div></div>
+    <div class="user-info">
+      <div class="user-avatar" id="admin-avatar">A</div>
+      <div>
+        <div class="user-name" id="admin-name">Admin</div>
+        <div class="user-role">Administrator</div>
+      </div>
       <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
     </div>
   </div>
@@ -883,5 +906,6 @@ function deleteRecord(id) {
 </script>
 </body>
 </html>
+
 
 
