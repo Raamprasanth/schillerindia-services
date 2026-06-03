@@ -5,6 +5,26 @@ const { protect, adminOnly } = require('../middleware/authMiddleware');
 const { resolveDivision } = require('../utils/visibility');
 const { buildExternalRepairEscalationRow, enqueueLatestEscalationSnapshot } = require('../services/escalationService');
 
+const REGISTER_FIELDS = [
+  'supplier', 'sbrRmaBltNo', 'frnNumber', 'warrantyReportedDate',
+  'warrantyApprovedStatus', 'warrantyApprovedDate', 'defGirNumber',
+  'unitSerialNo', 'partNo', 'description', 'defPartSerialNumber',
+  'problemDetails', 'licenceVersionModelConfiguration', 'customerName',
+  'warrantyType', 'supplierWarrantyStatus', 'dcInvoiceNumberSupplier',
+  'frnEntryDate', 'shipDateFromServiceCenter', 'dcInvoiceNo',
+  'dcInvoiceDate', 'awbNo', 'awbDate', 'replacementReceivedStatus',
+  'replacementReceivedDate', 'typeOfWorkSupplier', 'receivedPartInvoiceNumber',
+  'receivedPartInvoiceDate', 'replacementGirNo', 'receivedPartSerialNumber',
+  'serviceCentreRemarks',
+];
+
+function pickRegisterFields(body = {}) {
+  return REGISTER_FIELDS.reduce((acc, key) => {
+    if (Object.prototype.hasOwnProperty.call(body, key)) acc[key] = body[key] || '';
+    return acc;
+  }, {});
+}
+
 // ── Helper: compute live pdays ────────────────────────────
 function livePdays(doc) {
   if (doc.pdays !== null && doc.pdays !== undefined) return doc.pdays;
@@ -30,6 +50,7 @@ function toDTO(d) {
     unitStatus:   d.unitStatus   || '',
     defMod:       d.defMod       || '',
     defGir:       d.defGir       || '',
+    ...pickRegisterFields(d),
     raEng:        d.raEng        || '',
     repBrdDate:   d.repBrdDate   || '',
     dcNo:         d.dcNo         || '',
@@ -99,6 +120,35 @@ router.get('/:id', protect, async (req, res) => {
 // ── PUT — employee updates a record ──────────────────────
 router.put('/:id', protect, async (req, res) => {
   try {
+    const registerPatch = pickRegisterFields(req.body);
+    const hasRegisterPatch = Object.keys(registerPatch).length > 0;
+    const hasModalPatch = [
+      'raEng', 'repBrdDate', 'dcNo', 'defUnitGir', 'repGirSno',
+      'finalRemarks', 'techRemarks', 'components', 'typeWork',
+      'reportType', 'destination', 'shipDateSC', 'shipDateComm',
+    ].some((key) => Object.prototype.hasOwnProperty.call(req.body, key));
+
+    if (hasRegisterPatch && !hasModalPatch) {
+      const patch = {
+        ...registerPatch,
+        entryDate: req.body.frnEntryDate || req.body.entryDate || undefined,
+        frnNo: req.body.frnNumber || undefined,
+        customer: req.body.customerName || undefined,
+        defGir: req.body.defGirNumber || undefined,
+        shipDateSC: req.body.shipDateFromServiceCenter || undefined,
+        typeWork: req.body.typeOfWorkSupplier || undefined,
+        updatedBy: req.user.name,
+      };
+      Object.keys(patch).forEach((key) => patch[key] === undefined && delete patch[key]);
+      const doc = await SCCompletedFRN.findByIdAndUpdate(
+        req.params.id,
+        patch,
+        { new: true, runValidators: true }
+      ).lean();
+      if (!doc) return res.status(404).json({ message: 'Record not found.' });
+      return res.json(toDTO(doc));
+    }
+
     const {
       raEng, repBrdDate, dcNo, defUnitGir, repGirSno,
       finalRemarks, techRemarks, components,
@@ -159,8 +209,10 @@ router.post('/', protect, async (req, res) => {
       region, eng, customer, model, unitStatus,
       defMod, defGir, typeWork, pdays,
     } = req.body;
+    const registerFields = pickRegisterFields(req.body);
+    const finalScRno = scRno || registerFields.sbrRmaBltNo || registerFields.frnNumber || registerFields.dcInvoiceNo || `EXT-${Date.now()}`;
 
-    if (!scRno) return res.status(400).json({ message: 'scRno is required.' });
+    if (!finalScRno) return res.status(400).json({ message: 'Reference number is required.' });
 
     // Resolve division from the linked Service record
     let divisionName = '';
@@ -175,16 +227,31 @@ router.post('/', protect, async (req, res) => {
         if (divDoc) divisionName = divDoc.name;
       }
     } catch (_) { /* non-fatal */ }
+    if (!divisionName) {
+      const divDoc = await resolveDivision(req.user);
+      divisionName = divDoc ? divDoc.name : '';
+    }
 
     const doc = await SCCompletedFRN.create({
       serviceId, frnId,
-      entryDate, scRno, scEng, frnNo,
-      region, eng, customer, model, unitStatus,
-      defMod, defGir,
-      typeWork:  typeWork || '',
+      entryDate: entryDate || registerFields.frnEntryDate || '',
+      scRno: finalScRno,
+      scEng: scEng || req.user.name || '',
+      frnNo: frnNo || registerFields.frnNumber || '',
+      region,
+      eng,
+      customer: customer || registerFields.customerName || '',
+      model: model || registerFields.model || '',
+      unitStatus,
+      defMod: defMod || registerFields.description || '',
+      defGir: defGir || registerFields.defGirNumber || '',
+      ...registerFields,
+      shipDateSC: registerFields.shipDateFromServiceCenter || '',
+      typeWork:  typeWork || registerFields.typeOfWorkSupplier || '',
       pdays:     pdays ?? null,
       status:    'pending_update',
       division:  divisionName,
+      updatedBy: req.user.name || '',
     });
     await enqueueLatestEscalationSnapshot(
       'external_repair',
