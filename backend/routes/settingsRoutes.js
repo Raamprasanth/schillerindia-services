@@ -5,22 +5,14 @@ const router = express.Router();
 
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 const AppSetting = require('../models/AppSetting');
+const {
+  getEscalationLabelMap,
+  saveEscalationLabelMap,
+  getEscalationTypesWithLabels,
+} = require('../utils/escalationLabels');
 
 const ESCALATION_KEY = 'escalation_emails';
 const ESCALATION_SENDER_KEY = 'escalation_sender';
-const ESCALATION_TYPES = [
-  { value: 'all_escalation', label: 'All Escalation' },
-  { value: 'main_combined', label: 'Main Combined Escalation' },
-  { value: 'pending_frn', label: 'Pending FRN Escalation' },
-  { value: 'estimation_pending', label: 'Estimation Pending Escalation' },
-  { value: 'sr_escalation', label: 'SR Escalation' },
-  { value: 'to_escalation', label: 'TO Escalation' },
-  { value: 'ur_followup', label: 'Under Repair Stock / Follow-up Escalation' },
-  { value: 'ur_scrap', label: 'Under Repair Scrap Escalation' },
-  { value: 'prf_ob_escalation', label: 'PRF/OB Escalation' },
-  { value: 'supplier_warranty_escalation', label: 'Supplier Warranty Escalation' },
-  { value: 'external_repair_escalation', label: 'External Repair Escalation' },
-];
 
 function normalizeEmail(value) {
   return String(value || '').trim().toLowerCase();
@@ -108,12 +100,12 @@ async function getEffectiveEntries() {
   return splitCsv(process.env.ESCALATION_EMAIL_TO).map((email) => normalizeEntry({ email }));
 }
 
-function buildResponse(entries) {
+async function buildResponse(entries) {
   return {
     success: true,
     entries,
     emails: entries.map((item) => item.email),
-    escalationTypes: ESCALATION_TYPES,
+    escalationTypes: await getEscalationTypesWithLabels(),
   };
 }
 
@@ -122,7 +114,16 @@ router.use(protect);
 router.get('/escalation-emails', async (req, res) => {
   try {
     const entries = await getEffectiveEntries();
-    res.json(buildResponse(entries));
+    res.json(await buildResponse(entries));
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.get('/escalation-labels', async (req, res) => {
+  try {
+    const labels = await getEscalationLabelMap();
+    res.json({ success: true, labels, escalationTypes: await getEscalationTypesWithLabels() });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -159,7 +160,7 @@ router.post('/escalation-emails', async (req, res) => {
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
-    res.status(201).json(buildResponse(Array.isArray(saved.value) ? saved.value.map(normalizeEntry) : next));
+    res.status(201).json(await buildResponse(Array.isArray(saved.value) ? saved.value.map(normalizeEntry) : next));
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -194,7 +195,7 @@ router.put('/escalation-emails/:id', async (req, res) => {
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
-    res.json(buildResponse(Array.isArray(saved.value) ? saved.value.map(normalizeEntry) : next));
+    res.json(await buildResponse(Array.isArray(saved.value) ? saved.value.map(normalizeEntry) : next));
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -219,7 +220,16 @@ router.delete('/escalation-emails/:id', async (req, res) => {
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
-    res.json(buildResponse(Array.isArray(saved.value) ? saved.value.map(normalizeEntry) : next));
+    res.json(await buildResponse(Array.isArray(saved.value) ? saved.value.map(normalizeEntry) : next));
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.put('/escalation-labels', async (req, res) => {
+  try {
+    const labels = await saveEscalationLabelMap(req.body?.labels || req.body || {}, req.user?.name || '');
+    res.json({ success: true, labels, escalationTypes: await getEscalationTypesWithLabels() });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

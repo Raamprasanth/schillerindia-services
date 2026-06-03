@@ -5,6 +5,7 @@ const { protect, adminOnly } = require('../middleware/authMiddleware');
 const EscalationRunLog = require('../models/EscalationRunLog');
 const EscalationQueue = require('../models/EscalationQueue');
 const { runEscalationSlot, runSrEscalationSlot, runToEscalationSlot, runUrEscalationSlot, runCustomEscalationSlot, getEscalationRecipients, getSrSlotWindow, getToSlotWindow } = require('../services/escalationService');
+const { getEscalationLabelMap, labelFor, composeSlotLabel } = require('../utils/escalationLabels');
 
 const IST_OFFSET_MINUTES = 330;
 const IST_OFFSET_MS = IST_OFFSET_MINUTES * 60 * 1000;
@@ -337,6 +338,7 @@ function getActiveCustomQueueWindow(config, referenceDate = new Date()) {
 }
 
 router.get('/status', protect, async (req, res) => {
+  const labels = await getEscalationLabelMap();
   const latest = await EscalationRunLog.findOne({
     $or: [{ category: 'main' }, { category: { $exists: false } }],
   }).sort({ createdAt: -1 }).lean();
@@ -347,11 +349,12 @@ router.get('/status', protect, async (req, res) => {
     EscalationQueue.countDocuments({ module: 'est', queuedAt: { $gte: queueWindow.windowStart, $lte: queueWindow.windowEnd } }),
   ]);
   res.json({
+    label: labelFor(labels, 'main_combined'),
     latest: latest || null,
     recipients,
     queue: {
       slot: queueWindow.slot,
-      slotLabel: queueWindow.slotLabel,
+      slotLabel: composeSlotLabel(labels, 'main_combined', queueWindow.slotLabel),
       nextRunLabel: queueWindow.nextRunLabel,
       windowDate: queueWindow.windowDate,
       frnCount: frnQueued,
@@ -362,6 +365,7 @@ router.get('/status', protect, async (req, res) => {
 });
 
 router.get('/status/under-repair', protect, async (req, res) => {
+  const labels = await getEscalationLabelMap();
   const [scrapRecipients, followupRecipients] = await Promise.all([
     getEscalationRecipients('ur_scrap'),
     getEscalationRecipients('ur_followup'),
@@ -380,13 +384,17 @@ router.get('/status/under-repair', protect, async (req, res) => {
   ]);
 
   res.json({
+    labels: {
+      scrap: labelFor(labels, 'ur_scrap'),
+      followup: labelFor(labels, 'ur_followup'),
+    },
     recipients: Array.from(new Set([...(scrapRecipients || []), ...(followupRecipients || [])])),
     scrap: {
       recipients: scrapRecipients,
       latest: latestScrap || null,
       queue: {
         slot: scrapQueueWindow.slot,
-        slotLabel: scrapQueueWindow.slotLabel,
+        slotLabel: composeSlotLabel(labels, 'ur_scrap', scrapQueueWindow.slotLabel),
         nextRunLabel: scrapQueueWindow.nextRunLabel,
         windowDate: scrapQueueWindow.windowDate,
         totalCount: scrapQueued,
@@ -397,7 +405,7 @@ router.get('/status/under-repair', protect, async (req, res) => {
       latest: latestFollowup || null,
       queue: {
         slot: followupQueueWindow.slot,
-        slotLabel: followupQueueWindow.slotLabel,
+        slotLabel: composeSlotLabel(labels, 'ur_followup', followupQueueWindow.slotLabel),
         nextRunLabel: followupQueueWindow.nextRunLabel,
         windowDate: followupQueueWindow.windowDate,
         totalCount: followupQueued,
@@ -407,6 +415,7 @@ router.get('/status/under-repair', protect, async (req, res) => {
 });
 
 router.get('/status/sr', protect, async (req, res) => {
+  const labels = await getEscalationLabelMap();
   const recipients = await getEscalationRecipients('sr_escalation');
   const [latestMorning, latestAfternoon] = await Promise.all([
     EscalationRunLog.findOne({ slot: 'sr_morning', category: 'sr' }).sort({ createdAt: -1 }).lean(),
@@ -425,12 +434,13 @@ router.get('/status/sr', protect, async (req, res) => {
     ? { frnCount: activeFrn, estCount: activeEst, totalCount: activeTotal, windowDate: activeQueueWindow.windowDate }
     : { frnCount: 0, estCount: 0, totalCount: 0, windowDate: getSrSlotWindow('sr_afternoon', new Date()).jobDate };
   res.json({
+    label: labelFor(labels, 'sr_escalation'),
     recipients,
     morning: {
       latest: latestMorning || null,
       queue: {
         slot: 'sr_morning',
-        slotLabel: 'SR Morning',
+        slotLabel: composeSlotLabel(labels, 'sr_escalation', 'SR Morning'),
         nextRunLabel: '11:00 AM',
         windowDate: morningData.windowDate,
         frnCount: morningData.frnCount,
@@ -442,7 +452,7 @@ router.get('/status/sr', protect, async (req, res) => {
       latest: latestAfternoon || null,
       queue: {
         slot: 'sr_afternoon',
-        slotLabel: 'SR Afternoon',
+        slotLabel: composeSlotLabel(labels, 'sr_escalation', 'SR Afternoon'),
         nextRunLabel: '3:00 PM',
         windowDate: afternoonData.windowDate,
         frnCount: afternoonData.frnCount,
@@ -454,6 +464,7 @@ router.get('/status/sr', protect, async (req, res) => {
 });
 
 router.get('/status/to', protect, async (req, res) => {
+  const labels = await getEscalationLabelMap();
   const recipients = await getEscalationRecipients('to_escalation');
   const [latestMorning, latestEvening] = await Promise.all([
     EscalationRunLog.findOne({ slot: 'to_morning', category: 'to' }).sort({ createdAt: -1 }).lean(),
@@ -473,12 +484,13 @@ router.get('/status/to', protect, async (req, res) => {
     ? { frnCount: activeFrn, estCount: activeEst, urCount: activeUr, totalCount: activeTotal, windowDate: activeQueueWindow.windowDate }
     : { frnCount: 0, estCount: 0, urCount: 0, totalCount: 0, windowDate: getToSlotWindow('to_evening', new Date()).jobDate };
   res.json({
+    label: labelFor(labels, 'to_escalation'),
     recipients,
     morning: {
       latest: latestMorning || null,
       queue: {
         slot: 'to_morning',
-        slotLabel: 'TO Morning',
+        slotLabel: composeSlotLabel(labels, 'to_escalation', 'TO Morning'),
         nextRunLabel: '11:00 AM',
         windowDate: morningData.windowDate,
         frnCount: morningData.frnCount,
@@ -491,7 +503,7 @@ router.get('/status/to', protect, async (req, res) => {
       latest: latestEvening || null,
       queue: {
         slot: 'to_evening',
-        slotLabel: 'TO Evening',
+        slotLabel: composeSlotLabel(labels, 'to_escalation', 'TO Evening'),
         nextRunLabel: '4:30 PM',
         windowDate: eveningData.windowDate,
         frnCount: eveningData.frnCount,
@@ -506,6 +518,7 @@ router.get('/status/to', protect, async (req, res) => {
 router.get('/status/:kind', protect, async (req, res) => {
   const config = CUSTOM_ESCALATION_STATUS[String(req.params.kind || '').toLowerCase()];
   if (!config) return res.status(404).json({ message: 'Escalation status not found.' });
+  const labels = await getEscalationLabelMap();
 
   const [recipients, latest] = await Promise.all([
     getEscalationRecipients(config.reportType),
@@ -518,11 +531,12 @@ router.get('/status/:kind', protect, async (req, res) => {
   });
 
   res.json({
+    label: labelFor(labels, config.reportType),
     recipients,
     latest: latest || null,
     queue: {
       slot: queueWindow.slot,
-      slotLabel: queueWindow.slotLabel,
+      slotLabel: composeSlotLabel(labels, config.reportType, queueWindow.slotLabel),
       nextRunLabel: queueWindow.nextRunLabel,
       windowDate: queueWindow.windowDate,
       totalCount,

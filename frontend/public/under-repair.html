@@ -1027,10 +1027,10 @@ function ensureUrEscalationBanners(){
   wrap.className='esc-banner-stack';
   wrap.innerHTML=`
     <div class="esc-banner" id="ur-esc-banner-scrap">
-      <div class="esc-banner-left"><div class="esc-banner-dot scrap"></div><div><div class="esc-banner-title">Scrap Escalation</div><div class="esc-banner-text" id="ur-esc-text-scrap">Checking latest mail status...</div><div class="esc-banner-sub" id="ur-esc-sub-scrap">Receivers: -</div><div class="esc-banner-meta" id="ur-esc-meta-scrap">Queued records: -</div></div></div><div class="esc-banner-count scrap" id="ur-esc-count-scrap">-</div>
+      <div class="esc-banner-left"><div class="esc-banner-dot scrap"></div><div><div class="esc-banner-title" id="ur-esc-title-scrap">Scrap Escalation</div><div class="esc-banner-text" id="ur-esc-text-scrap">Checking latest mail status...</div><div class="esc-banner-sub" id="ur-esc-sub-scrap">Receivers: -</div><div class="esc-banner-meta" id="ur-esc-meta-scrap">Queued records: -</div></div></div><div class="esc-banner-count scrap" id="ur-esc-count-scrap">-</div>
     </div>
     <div class="esc-banner" id="ur-esc-banner-followup">
-      <div class="esc-banner-left"><div class="esc-banner-dot"></div><div><div class="esc-banner-title">Stock / Follow-up Escalation</div><div class="esc-banner-text" id="ur-esc-text-followup">Checking latest mail status...</div><div class="esc-banner-sub" id="ur-esc-sub-followup">Receivers: -</div><div class="esc-banner-meta" id="ur-esc-meta-followup">Queued records: -</div></div></div><div class="esc-banner-count" id="ur-esc-count-followup">-</div>
+      <div class="esc-banner-left"><div class="esc-banner-dot"></div><div><div class="esc-banner-title" id="ur-esc-title-followup">Stock / Follow-up Escalation</div><div class="esc-banner-text" id="ur-esc-text-followup">Checking latest mail status...</div><div class="esc-banner-sub" id="ur-esc-sub-followup">Receivers: -</div><div class="esc-banner-meta" id="ur-esc-meta-followup">Queued records: -</div></div></div><div class="esc-banner-count" id="ur-esc-count-followup">-</div>
     </div>`;
   stats.insertAdjacentElement('afterend',wrap);
 }
@@ -1080,6 +1080,12 @@ async function loadUrEscalationStatus(){
     if(!res.ok) throw new Error('Unable to fetch under-repair escalation status');
     const data=await res.json();
     const recipients=Array.isArray(data&&data.recipients)?data.recipients:[];
+    if(data&&data.labels){
+      const scrapTitle=document.getElementById('ur-esc-title-scrap');
+      const followupTitle=document.getElementById('ur-esc-title-followup');
+      if(scrapTitle && data.labels.scrap) scrapTitle.textContent=data.labels.scrap;
+      if(followupTitle && data.labels.followup) followupTitle.textContent=data.labels.followup;
+    }
     applyUrEscalationBox('scrap',data&&data.scrap?data.scrap:null,recipients);
     applyUrEscalationBox('followup',data&&data.followup?data.followup:null,recipients);
   }catch(e){

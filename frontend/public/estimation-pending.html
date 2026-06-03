@@ -1156,7 +1156,7 @@ function ensureEscalationBanner(moduleKey){
   const banner=document.createElement('div');
   banner.id='escalation-status-banner';
   banner.className='esc-banner';
-  banner.innerHTML=`<div class="esc-banner-left"><div class="esc-banner-dot"></div><div><div class="esc-banner-title">Mail Escalation</div><div class="esc-banner-text" id="esc-banner-text-${moduleKey}">Checking latest mail status...</div><div class="esc-banner-sub" id="esc-banner-sub-${moduleKey}">Receivers: -</div><div class="esc-banner-meta" id="esc-banner-meta-${moduleKey}">Pending FRN: - | SO Pending: - | Total: -</div></div></div><div class="esc-banner-count" id="esc-banner-count-${moduleKey}">-</div>`;
+  banner.innerHTML=`<div class="esc-banner-left"><div class="esc-banner-dot"></div><div><div class="esc-banner-title" id="esc-banner-title-${moduleKey}">Mail Escalation</div><div class="esc-banner-text" id="esc-banner-text-${moduleKey}">Checking latest mail status...</div><div class="esc-banner-sub" id="esc-banner-sub-${moduleKey}">Receivers: -</div><div class="esc-banner-meta" id="esc-banner-meta-${moduleKey}">Pending FRN: - | SO Pending: - | Total: -</div></div></div><div class="esc-banner-count" id="esc-banner-count-${moduleKey}">-</div>`;
   row.appendChild(banner);
 }
 function fmtEscalationTs(d){
@@ -1186,6 +1186,7 @@ function bumpEscalationQueue(moduleKey,delta=1){
 async function loadEscalationStatus(moduleKey){
   ensureEscalationBanner(moduleKey);
   const textEl=document.getElementById(`esc-banner-text-${moduleKey}`);
+  const titleEl=document.getElementById(`esc-banner-title-${moduleKey}`);
   const subEl=document.getElementById(`esc-banner-sub-${moduleKey}`);
   const metaEl=document.getElementById(`esc-banner-meta-${moduleKey}`);
   const countEl=document.getElementById(`esc-banner-count-${moduleKey}`);
@@ -1194,6 +1195,7 @@ async function loadEscalationStatus(moduleKey){
     if(res.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
     if(!res.ok) throw new Error('Unable to fetch escalation status');
     const data=await res.json();
+    if(titleEl && data.label) titleEl.textContent=data.label;
     const log=data&&data.latest?data.latest:null;
     const recipients=Array.isArray(data&&data.recipients)?data.recipients:[];
     const queue=data&&data.queue?data.queue:null;
@@ -1240,7 +1242,7 @@ function ensureSrEscalationBanner(moduleKey){
   banner.className='esc-banner';
   banner.style.borderColor='rgba(180,83,9,0.18)';
   banner.style.background='linear-gradient(135deg,rgba(245,158,11,0.10),rgba(251,191,36,0.06))';
-  banner.innerHTML=`<div class="esc-banner-left"><div class="esc-banner-dot" style="background:var(--amber);box-shadow:0 0 0 4px rgba(245,158,11,0.14);"></div><div><div class="esc-banner-title">SR Escalation</div><div class="esc-banner-text" id="sr-banner-text-${moduleKey}">Checking latest SR mail status...</div><div class="esc-banner-sub" id="sr-banner-sub-${moduleKey}">Receivers: -</div><div class="esc-banner-meta" id="sr-banner-meta-${moduleKey}">Morning: - | Afternoon: - | Total: -</div></div></div><div class="esc-banner-count" id="sr-banner-count-${moduleKey}" style="color:var(--amber);">-</div>`;
+  banner.innerHTML=`<div class="esc-banner-left"><div class="esc-banner-dot" style="background:var(--amber);box-shadow:0 0 0 4px rgba(245,158,11,0.14);"></div><div><div class="esc-banner-title" id="sr-banner-title-${moduleKey}">SR Escalation</div><div class="esc-banner-text" id="sr-banner-text-${moduleKey}">Checking latest SR mail status...</div><div class="esc-banner-sub" id="sr-banner-sub-${moduleKey}">Receivers: -</div><div class="esc-banner-meta" id="sr-banner-meta-${moduleKey}">Morning: - | Afternoon: - | Total: -</div></div></div><div class="esc-banner-count" id="sr-banner-count-${moduleKey}" style="color:var(--amber);">-</div>`;
   row.appendChild(banner);
 }
 function ensureToEscalationBanner(moduleKey){
@@ -1259,7 +1261,7 @@ function ensureToEscalationBanner(moduleKey){
   banner.className='esc-banner';
   banner.style.borderColor='rgba(124,58,237,0.18)';
   banner.style.background='linear-gradient(135deg,rgba(124,58,237,0.10),rgba(168,85,247,0.06))';
-  banner.innerHTML=`<div class="esc-banner-left"><div class="esc-banner-dot" style="background:#7c3aed;box-shadow:0 0 0 4px rgba(124,58,237,0.14);"></div><div><div class="esc-banner-title">TO Escalation</div><div class="esc-banner-text" id="to-banner-text-${moduleKey}">Checking latest TO mail status...</div><div class="esc-banner-sub" id="to-banner-sub-${moduleKey}">Receivers: -</div><div class="esc-banner-meta" id="to-banner-meta-${moduleKey}">Morning: - | Evening: - | Total: -</div></div></div><div class="esc-banner-count" id="to-banner-count-${moduleKey}" style="color:#7c3aed;">-</div>`;
+  banner.innerHTML=`<div class="esc-banner-left"><div class="esc-banner-dot" style="background:#7c3aed;box-shadow:0 0 0 4px rgba(124,58,237,0.14);"></div><div><div class="esc-banner-title" id="to-banner-title-${moduleKey}">TO Escalation</div><div class="esc-banner-text" id="to-banner-text-${moduleKey}">Checking latest TO mail status...</div><div class="esc-banner-sub" id="to-banner-sub-${moduleKey}">Receivers: -</div><div class="esc-banner-meta" id="to-banner-meta-${moduleKey}">Morning: - | Evening: - | Total: -</div></div></div><div class="esc-banner-count" id="to-banner-count-${moduleKey}" style="color:#7c3aed;">-</div>`;
   row.appendChild(banner);
 }
 function getPreferredSrLatest(morning,afternoon){
@@ -1327,6 +1329,7 @@ function bumpToEscalationQueue(delta=1){
 async function loadSrEscalationStatus(moduleKey){
   ensureSrEscalationBanner(moduleKey);
   const textEl=document.getElementById(`sr-banner-text-${moduleKey}`);
+  const titleEl=document.getElementById(`sr-banner-title-${moduleKey}`);
   const subEl=document.getElementById(`sr-banner-sub-${moduleKey}`);
   const metaEl=document.getElementById(`sr-banner-meta-${moduleKey}`);
   const countEl=document.getElementById(`sr-banner-count-${moduleKey}`);
@@ -1335,6 +1338,7 @@ async function loadSrEscalationStatus(moduleKey){
     if(res.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
     if(!res.ok) throw new Error('Unable to fetch SR escalation status');
     const data=await res.json();
+    if(titleEl && data.label) titleEl.textContent=data.label;
     const recipients=Array.isArray(data&&data.recipients)?data.recipients:[];
     const morning=data&&data.morning?data.morning:null;
     const afternoon=data&&data.afternoon?data.afternoon:null;
@@ -1372,6 +1376,7 @@ async function loadSrEscalationStatus(moduleKey){
 async function loadToEscalationStatus(moduleKey){
   ensureToEscalationBanner(moduleKey);
   const textEl=document.getElementById(`to-banner-text-${moduleKey}`);
+  const titleEl=document.getElementById(`to-banner-title-${moduleKey}`);
   const subEl=document.getElementById(`to-banner-sub-${moduleKey}`);
   const metaEl=document.getElementById(`to-banner-meta-${moduleKey}`);
   const countEl=document.getElementById(`to-banner-count-${moduleKey}`);
@@ -1380,6 +1385,7 @@ async function loadToEscalationStatus(moduleKey){
     if(res.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
     if(!res.ok) throw new Error('Unable to fetch TO escalation status');
     const data=await res.json();
+    if(titleEl && data.label) titleEl.textContent=data.label;
     const recipients=Array.isArray(data&&data.recipients)?data.recipients:[];
     const morning=data&&data.morning?data.morning:null;
     const evening=data&&data.evening?data.evening:null;

@@ -1252,12 +1252,17 @@ const DEFAULT_ESCALATION_TYPES = [
   { value:'pending_frn', label:'Pending FRN Escalation' },
   { value:'estimation_pending', label:'Estimation Pending Escalation' },
   { value:'sr_escalation', label:'SR Escalation' },
+  { value:'to_escalation', label:'TO Escalation' },
   { value:'ur_followup', label:'Under Repair Stock / Follow-up Escalation' },
-  { value:'ur_scrap', label:'Under Repair Scrap Escalation' }
+  { value:'ur_scrap', label:'Under Repair Scrap Escalation' },
+  { value:'prf_ob_escalation', label:'PRF/OB Escalation' },
+  { value:'supplier_warranty_escalation', label:'Supplier Warranty Escalation' },
+  { value:'external_repair_escalation', label:'External Repair Escalation' }
 ];
 
 function populateEscalationTypeOptions(types){
   const list=Array.isArray(types)&&types.length ? types : DEFAULT_ESCALATION_TYPES;
+  list.forEach(t=>{ if(t&&t.value) RT_LABEL[t.value]=t.label||t.value; });
   const formSel=document.getElementById('f-reporttype');
   const filterSel=document.getElementById('fl-rtype');
   if(formSel){
@@ -1418,6 +1423,128 @@ deleteMail = async function(encodedId){
 
 configureEscalationMailUi();
 loadMails();
+
+function ensureEscalationNameCard(){
+  if(document.getElementById('escalation-name-card')) return;
+  const mailHeader=Array.from(document.querySelectorAll('.page-hdr')).find(h=>/Mail ID Management/i.test(h.textContent||''));
+  const card=document.createElement('section');
+  card.className='sec-card';
+  card.id='escalation-name-card';
+  card.innerHTML=`
+    <div class="sec-card-title"><span class="sec-ico" style="background:rgba(124,58,237,0.10);color:#7c3aed;">N</span> Rename Escalations</div>
+    <div style="padding:18px 20px 20px;">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Change the escalation display names used in Settings dropdowns and escalation status boxes.</div>
+      <div id="esc-name-ok" class="form-ok-bar" style="margin-bottom:12px;"></div>
+      <div id="esc-name-err" class="form-err-bar" style="margin-bottom:12px;"></div>
+      <div class="form-grid" id="esc-name-grid"></div>
+      <div style="margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div id="esc-name-summary" style="font-size:12px;color:var(--muted);">Loading escalation names...</div>
+        <button id="esc-name-save-btn" class="btn btn-primary" onclick="saveEscalationNames()">Save Names</button>
+      </div>
+    </div>
+  `;
+  if(mailHeader){
+    mailHeader.parentNode.insertBefore(card,mailHeader);
+  }else{
+    document.querySelector('.content')?.appendChild(card);
+  }
+}
+
+function renderEscalationNameFields(types){
+  const grid=document.getElementById('esc-name-grid');
+  if(!grid) return;
+  const list=Array.isArray(types)&&types.length ? types : DEFAULT_ESCALATION_TYPES;
+  populateEscalationTypeOptions(list);
+  grid.innerHTML=list.map(t=>`
+    <div class="ff">
+      <label>${esc(t.defaultLabel||t.label||t.value)}</label>
+      <input class="esc-name-input" data-key="${esc(t.value)}" type="text" value="${esc(t.label||'')}" placeholder="${esc(t.defaultLabel||t.label||'')}"/>
+    </div>
+  `).join('');
+}
+
+function setEscNameSummary(text,tone){
+  const el=document.getElementById('esc-name-summary');
+  if(!el) return;
+  el.textContent=text||'';
+  el.style.color=tone==='ok'?'var(--green)':tone==='err'?'var(--red)':'var(--muted)';
+}
+
+async function loadEscalationNames(){
+  ensureEscalationNameCard();
+  const okEl=document.getElementById('esc-name-ok');
+  const errEl=document.getElementById('esc-name-err');
+  if(okEl) okEl.classList.remove('show');
+  if(errEl) errEl.classList.remove('show');
+  setEscNameSummary('Loading escalation names...');
+  try{
+    const res=await fetch(`${API}/api/settings/escalation-labels`,{headers:authHeaders()});
+    if(res.status===401){logout();return;}
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'Failed to load escalation names');
+    renderEscalationNameFields(data.escalationTypes||DEFAULT_ESCALATION_TYPES);
+    setEscNameSummary('Escalation names loaded.','ok');
+  }catch(e){
+    renderEscalationNameFields(DEFAULT_ESCALATION_TYPES);
+    setEscNameSummary(e.message||'Could not load escalation names','err');
+    if(errEl){
+      errEl.textContent='Error: '+(e.message||'Could not load escalation names');
+      errEl.classList.add('show');
+    }
+  }
+}
+
+async function saveEscalationNames(){
+  ensureEscalationNameCard();
+  const okEl=document.getElementById('esc-name-ok');
+  const errEl=document.getElementById('esc-name-err');
+  if(okEl) okEl.classList.remove('show');
+  if(errEl) errEl.classList.remove('show');
+  const labels={};
+  document.querySelectorAll('.esc-name-input').forEach(input=>{
+    labels[input.dataset.key]=input.value.trim();
+  });
+  const missing=Object.entries(labels).find(([,value])=>!value);
+  if(missing){
+    if(errEl){
+      errEl.textContent='Every escalation name must have a value.';
+      errEl.classList.add('show');
+    }
+    document.querySelector(`.esc-name-input[data-key="${missing[0]}"]`)?.focus();
+    return;
+  }
+  const btn=document.getElementById('esc-name-save-btn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin"></span> Saving...';
+  try{
+    const res=await fetch(`${API}/api/settings/escalation-labels`,{
+      method:'PUT',
+      headers:authHeaders(),
+      body:JSON.stringify({labels})
+    });
+    if(res.status===401){logout();return;}
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'Save failed');
+    renderEscalationNameFields(data.escalationTypes||DEFAULT_ESCALATION_TYPES);
+    if(okEl){
+      okEl.textContent='Escalation names saved successfully.';
+      okEl.classList.add('show');
+    }
+    setEscNameSummary('Saved. Open the respective pages or refresh them to see the new names.','ok');
+    showToast('Escalation names saved.','ok');
+    await loadMails();
+  }catch(e){
+    if(errEl){
+      errEl.textContent='Error: '+e.message;
+      errEl.classList.add('show');
+    }
+    setEscNameSummary(e.message||'Save failed','err');
+    showToast('Name save failed: '+e.message,'err');
+  }finally{
+    btn.disabled=false;
+    btn.textContent='Save Names';
+  }
+}
 
 function ensureSenderSettingsCard(){
   if(document.getElementById('sender-settings-card')) return;
@@ -1589,6 +1716,8 @@ saveSenderSettings = async function(){
 
 ensureSenderSettingsCard();
 loadSenderSettings();
+ensureEscalationNameCard();
+loadEscalationNames();
 </script>
 <script src="tab-fix.js"></script>
 </body>
