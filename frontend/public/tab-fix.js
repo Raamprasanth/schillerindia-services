@@ -88,3 +88,19 @@
     }
   }
 })();
+
+if (typeof window.toggleGroup !== 'function') {
+  window.toggleGroup = function (toggleId, panelId) {
+    var btn = document.getElementById(toggleId);
+    var panel = document.getElementById(panelId);
+    if (!btn || !panel) return;
+    btn.classList.toggle('open');
+    panel.classList.toggle('open');
+  };
+}
+
+if (typeof window.toggleRTA !== 'function') {
+  window.toggleRTA = function () {
+    window.toggleGroup('rta-toggle', 'rta-children');
+  };
+}
