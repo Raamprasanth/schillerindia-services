@@ -384,6 +384,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <input type="text" id="bulk-to-no" class="f-inp" placeholder="TO No" style="width:110px;padding:5px 8px;font-size:11px;height:28px;">
         <input type="date" id="bulk-to-date" class="f-inp" style="width:120px;padding:5px 8px;font-size:11px;height:28px;">
         <button class="btn btn-success btn-sm" onclick="applyBulkTo()" style="padding:4px 12px;font-size:11px;height:28px;box-shadow:none;">Apply</button>
+        <button class="btn btn-primary btn-sm" onclick="applyBulkFulfill()" style="padding:4px 12px;font-size:11px;height:28px;box-shadow:none;">Fulfill</button>
       </div>
 
       <button class="btn btn-primary btn-sm" onclick="exportCSV()">&#128228; Export</button>
@@ -748,6 +749,46 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       showToast('Successfully applied TO details to selected entries.', 'ok');
     } catch(e) {
       alert('Bulk apply failed: ' + e.message);
+    }
+  }
+
+  async function applyBulkFulfill() {
+    const checkedBoxes = document.querySelectorAll('.row-select:checked');
+    if (checkedBoxes.length === 0) {
+      alert('Please select at least one entry.');
+      return;
+    }
+
+    const ids = [];
+    for (const cb of checkedBoxes) {
+      const id = cb.value;
+      const record = records.find(x => x._id === id);
+      if (!record || !record.toNo || !record.toRaisedDate) {
+        alert('All selected entries must have a TO NO and TO Raised Date before they can be fulfilled.');
+        return;
+      }
+      ids.push(id);
+    }
+
+    try {
+      const res = await fetch('/api/todr/bulk-fulfill', {
+        method: 'POST',
+        headers: hdrs(),
+        body: JSON.stringify({ ids })
+      });
+      const json = await res.json().catch(() => {});
+      if (!res.ok) throw new Error(json?.message || 'Server error');
+
+      // Filter out fulfilled records from local state
+      records = records.filter(r => !ids.includes(r._id));
+
+      // Uncheck header checkbox
+      document.getElementById('select-all').checked = false;
+
+      renderTable();
+      showToast(`Successfully fulfilled ${ids.length} selected entry/entries.`, 'ok');
+    } catch (e) {
+      alert('Bulk fulfillment failed: ' + e.message);
     }
   }
 

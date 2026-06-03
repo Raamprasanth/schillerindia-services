@@ -130,6 +130,47 @@ router.post('/:id/fulfill', protect, async (req, res) => {
   }
 });
 
+// POST bulk fulfill TODR entries
+router.post('/bulk-fulfill', protect, async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids)) {
+      return res.status(400).json({ message: 'ids array is required' });
+    }
+    const fulfilledDate = todayIso();
+    const results = [];
+    for (const id of ids) {
+      const record = await Todr.findById(id).lean();
+      if (record) {
+        const closedRecord = await Ctodr.create({
+          entryDate: record.entryDate,
+          frnNo: record.frnNo,
+          partNo: record.partNo,
+          model: record.model || '',
+          description: record.description,
+          action: record.action,
+          toNo: record.toNo || '',
+          toRaisedDate: record.toRaisedDate || null,
+          sparesReceivedDate: record.sparesReceivedDate || null,
+          fulfilledDate,
+          fulfilledBy: req.user?.name || '',
+          sourceId: record.sourceId || '',
+          sourceModule: record.sourceModule || '',
+          queuedBy: record.queuedBy || '',
+          createdAt: record.createdAt || new Date(),
+          updatedAt: new Date()
+        });
+        await Todr.findByIdAndDelete(id);
+        results.push(closedRecord);
+      }
+    }
+    res.json({ success: true, fulfilledCount: results.length });
+  } catch (error) {
+    console.error('Error bulk fulfilling TODR records:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // PUT bulk update TODR entries
 router.put('/bulk-update', protect, async (req, res) => {
   try {
