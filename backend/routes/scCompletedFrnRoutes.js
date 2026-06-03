@@ -271,7 +271,7 @@ router.post('/', protect, async (req, res) => {
 });
 
 // ── DELETE (Admin only) ───────────────────────────────────
-router.delete('/:id', protect, adminOnly, async (req, res) => {
+router.delete('/:id', protect, async (req, res) => {
   try {
     const doc = await SCCompletedFRN.findByIdAndDelete(req.params.id);
     if (!doc) return res.status(404).json({ message: 'Record not found.' });
@@ -282,3 +282,4 @@ router.delete('/:id', protect, adminOnly, async (req, res) => {
 });
 
 module.exports = router;
+
