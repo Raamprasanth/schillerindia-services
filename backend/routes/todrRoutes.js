@@ -130,6 +130,32 @@ router.post('/:id/fulfill', protect, async (req, res) => {
   }
 });
 
+// PUT bulk update TODR entries
+router.put('/bulk-update', protect, async (req, res) => {
+  try {
+    const { ids, toNo, toRaisedDate } = req.body;
+    if (!ids || !Array.isArray(ids)) {
+      return res.status(400).json({ message: 'ids array is required' });
+    }
+    const dateError = validateDatePayload({ toRaisedDate });
+    if (dateError) return res.status(400).json({ message: dateError });
+
+    const results = [];
+    for (const id of ids) {
+      const record = await Todr.findByIdAndUpdate(
+        id,
+        { toNo, toRaisedDate, updatedAt: new Date() },
+        { new: true }
+      );
+      if (record) results.push(record);
+    }
+    res.json(results);
+  } catch (error) {
+    console.error('Error bulk updating TODR records:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // PUT update a TODR entry
 router.put('/:id', protect, async (req, res) => {
   try {

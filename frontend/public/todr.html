@@ -376,6 +376,15 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     </div>
     <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
       <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
+      
+      <!-- Bulk apply inputs -->
+      <div style="display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:10px;padding:4px 10px;background:var(--surface3);">
+        <span style="font-size:11px;font-weight:700;color:var(--soft);text-transform:uppercase;letter-spacing:0.04em;">Bulk Apply:</span>
+        <input type="text" id="bulk-to-no" class="f-inp" placeholder="TO No" style="width:110px;padding:5px 8px;font-size:11px;height:28px;">
+        <input type="date" id="bulk-to-date" class="f-inp" style="width:120px;padding:5px 8px;font-size:11px;height:28px;">
+        <button class="btn btn-success btn-sm" onclick="applyBulkTo()" style="padding:4px 12px;font-size:11px;height:28px;box-shadow:none;">Apply</button>
+      </div>
+
       <button class="btn btn-primary btn-sm" onclick="exportCSV()">&#128228; Export</button>
     </div>
   </div>
@@ -391,6 +400,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <table class="frn-table">
           <thead>
             <tr>
+              <th style="width: 40px;" class="no-sort"><input type="checkbox" id="select-all" onclick="toggleSelectAll(this)" style="cursor:pointer;width:15px;height:15px;vertical-align:middle;"></th>
               <th>TO Req Date</th>
               <th>FRN No</th>
               <th>Part No</th>
@@ -405,7 +415,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             </tr>
           </thead>
           <tbody id="tb">
-            <tr><td colspan="8" style="text-align:center;padding:30px;">Loading...</td></tr>
+            <tr><td colspan="12" style="text-align:center;padding:30px;">Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -480,10 +490,11 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   function renderTable() {
     const tb = document.getElementById('tb');
-    if(!records.length) { tb.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:30px;">No TO entries found.</td></tr>'; return; }
+    if(!records.length) { tb.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:30px;">No TO entries found.</td></tr>'; return; }
     
     tb.innerHTML = records.map(r => `
       <tr>
+        <td><input type="checkbox" class="row-select" value="${r._id}" onclick="updateSelectAllHeader()" style="cursor:pointer;width:15px;height:15px;vertical-align:middle;"></td>
         <td>${r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-'}</td>
         <td><span style="font-weight:700;color:var(--accent);">${esc(r.frnNo)}</span></td>
         <td>${esc(r.partNo)}</td>
@@ -659,6 +670,85 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   // Close modal when clicking outside
   document.getElementById('todr-modal').addEventListener('click', e => { if(e.target.id==='todr-modal') closeModal(); });
   document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+  // Set min/max for bulk date input
+  const bulkDateInp = document.getElementById('bulk-to-date');
+  if (bulkDateInp) {
+    bulkDateInp.min = TODAY_ISO;
+    bulkDateInp.max = TODAY_ISO;
+  }
+
+  function showToast(msg, type = 'ok') {
+    const wrap = document.getElementById('toast-wrap');
+    if (!wrap) return;
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `<span class="td"></span>${msg}`;
+    wrap.appendChild(el);
+    setTimeout(() => el.remove(), 3200);
+  }
+
+  function toggleSelectAll(master) {
+    const checkboxes = document.querySelectorAll('.row-select');
+    checkboxes.forEach(cb => cb.checked = master.checked);
+  }
+
+  function updateSelectAllHeader() {
+    const master = document.getElementById('select-all');
+    if (!master) return;
+    const checkboxes = document.querySelectorAll('.row-select');
+    const checkedCount = document.querySelectorAll('.row-select:checked').length;
+    master.checked = checkboxes.length > 0 && checkedCount === checkboxes.length;
+  }
+
+  async function applyBulkTo() {
+    const toNo = document.getElementById('bulk-to-no').value.trim();
+    const toRaisedDate = document.getElementById('bulk-to-date').value;
+
+    if (!toNo || !toRaisedDate) {
+      alert('Please enter both TO No and TO Raised Date.');
+      return;
+    }
+
+    if (toRaisedDate !== TODAY_ISO) {
+      alert('TO Raised Date can be only today.');
+      return;
+    }
+
+    const checkedBoxes = document.querySelectorAll('.row-select:checked');
+    if (checkedBoxes.length === 0) {
+      alert('Please select at least one entry.');
+      return;
+    }
+
+    const ids = Array.from(checkedBoxes).map(cb => cb.value);
+
+    try {
+      const res = await fetch('/api/todr/bulk-update', {
+        method: 'PUT',
+        headers: hdrs(),
+        body: JSON.stringify({ ids, toNo, toRaisedDate })
+      });
+      const json = await res.json().catch(() => {});
+      if (!res.ok) throw new Error(json?.message || 'Server error');
+
+      // Update in memory records
+      json.forEach(updatedRecord => {
+        const record = records.find(x => x._id === updatedRecord._id);
+        if (record) Object.assign(record, updatedRecord);
+      });
+
+      // Clear selection and inputs
+      document.getElementById('select-all').checked = false;
+      document.getElementById('bulk-to-no').value = '';
+      document.getElementById('bulk-to-date').value = '';
+      
+      renderTable();
+      showToast('Successfully applied TO details to selected entries.', 'ok');
+    } catch(e) {
+      alert('Bulk apply failed: ' + e.message);
+    }
+  }
 
   loadData();
 </script>
