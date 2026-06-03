@@ -734,7 +734,7 @@ router.get('/history', verifyToken, async (req, res) => {
 // ══════════════════════════════════════════════════════════════════════════
 //  GET /api/reports/:id
 // ══════════════════════════════════════════════════════════════════════════
-router.get('/:id', verifyToken, async (req, res) => {
+router.get('/:id([0-9a-fA-F]{24})', verifyToken, async (req, res) => {
   try {
     const report = await Report.findById(req.params.id).lean();
     if (!report) return res.status(404).json({ success:false, message:'Report not found.' });
@@ -747,7 +747,7 @@ router.get('/:id', verifyToken, async (req, res) => {
 // ══════════════════════════════════════════════════════════════════════════
 //  DELETE /api/reports/:id
 // ══════════════════════════════════════════════════════════════════════════
-router.delete('/:id', verifyToken, async (req, res) => {
+router.delete('/:id([0-9a-fA-F]{24})', verifyToken, async (req, res) => {
   try {
     const deleted = await Report.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ success:false, message:'Report not found.' });
