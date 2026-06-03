@@ -455,12 +455,6 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <button class="btn btn-success" id="entry-save-btn" onclick="saveEntry()">Save Entry</button>
       </div>
     </div>
-    <div class="stats-row" id="stats-panel">
-      <div class="stat-card sc-blue"><div class="stat-icon si-blue">&#128202;</div><div class="stat-label">Total Records</div><div class="stat-value" id="s-total">-</div><div class="stat-sub">External Repair entries</div></div>
-      <div class="stat-card sc-red"><div class="stat-icon si-red">&#128308;</div><div class="stat-label">Critical (&gt;150 days)</div><div class="stat-value" id="s-critical">-</div><div class="stat-sub">Needs immediate action</div></div>
-      <div class="stat-card sc-amber"><div class="stat-icon si-amber">&#9888;</div><div class="stat-label">Warning (80-150)</div><div class="stat-value" id="s-warn">-</div><div class="stat-sub">Monitor closely</div></div>
-      <div class="stat-card sc-green"><div class="stat-icon si-green">&#9201;&#65039;</div><div class="stat-label">Avg Pending Days</div><div class="stat-value" id="s-avg">-</div><div class="stat-sub">Days average</div></div>
-    </div>
 
     <div class="table-card" id="list-panel">
       <div class="table-top">
@@ -628,7 +622,6 @@ async function loadData(){
       pdays: d.pdays ?? Math.floor((Date.now() - new Date(d.createdAt).getTime()) / 86400000)
     }));
     applyFilters();
-    updateStats();
     const b = document.getElementById('sidebar-sc-count');
     if(b) b.textContent = DATA.length;
     if(mailAckVisible) loadMailAckStatus();
@@ -641,10 +634,6 @@ async function loadData(){
 }
 
 function updateStats(){
-  (document.getElementById('s-total')||{}).textContent = DATA.length;
-  (document.getElementById('s-critical')||{}).textContent = DATA.filter(d => d.pdays > 150).length;
-  (document.getElementById('s-warn')||{}).textContent = DATA.filter(d => d.pdays >= 80 && d.pdays <= 150).length;
-  (document.getElementById('s-avg')||{}).textContent = DATA.length ? Math.round(DATA.reduce((s,d) => s + d.pdays, 0) / DATA.length) : 0;
 }
 
 // -- FILTERS ---------------------------------------------------------------
@@ -970,7 +959,6 @@ function gp(p){ currentPage = p; renderTable(); }
 // -- HELPERS ---------------------------------------------------------------
 function setLoading(){
   document.getElementById('sc-tbody').innerHTML = `<tr class="loading-row"><td colspan="${EXTERNAL_COLUMNS.length}"><span class="spin"></span>Loading from database...</td></tr>`;
-  ['s-total','s-critical','s-warn','s-avg'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '-'; });
 }
 function fmtDate(d){ if(!d) return '-'; const p = String(d).split('T')[0].split('-'); if(p.length<3) return String(d); return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0]; }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }

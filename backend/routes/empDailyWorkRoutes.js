@@ -1,23 +1,11 @@
 const express = require('express');
-const PtDailyWork = require('../models/PtDailyWork');
+const EmpDailyWork = require('../models/EmpDailyWork');
 const ADailyWork = require('../models/ADailyWork');
 const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
 router.use(protect);
-
-function canUsePtDw(user) {
-  const role = String(user?.role || '').toLowerCase();
-  return ['pt', 'product team', 'product', 'product_team', 'admin', 'superadmin', 'administrator'].includes(role);
-}
-
-router.use((req, res, next) => {
-  if (!canUsePtDw(req.user)) {
-    return res.status(403).json({ message: 'Not allowed to access Product Team daily work.' });
-  }
-  next();
-});
 
 function ownerFilter(user) {
   const role = String(user?.role || '').toLowerCase();
@@ -27,10 +15,10 @@ function ownerFilter(user) {
 
 router.get('/', async (req, res) => {
   try {
-    const docs = await PtDailyWork.find(ownerFilter(req.user)).sort({ date: -1, fromTime: -1 }).lean();
+    const docs = await EmpDailyWork.find(ownerFilter(req.user)).sort({ date: -1, fromTime: -1 }).lean();
     res.json(docs);
   } catch (err) {
-    console.error('[GET /api/ptdw]', err);
+    console.error('[GET /api/empdw]', err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
@@ -42,7 +30,7 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'Required fields missing.' });
     }
 
-    const doc = await PtDailyWork.create({
+    const doc = await EmpDailyWork.create({
       date: body.date,
       activity: body.activity,
       fromTime: body.fromTime,
@@ -53,6 +41,7 @@ router.post('/', async (req, res) => {
       userId: req.user?._id,
     });
 
+    // Mirror to ADailyWork
     await ADailyWork.create({
       date: doc.date,
       activity: doc.activity,
@@ -62,13 +51,13 @@ router.post('/', async (req, res) => {
       dayTotal: doc.dayTotal,
       addedBy: doc.addedBy,
       userId: doc.userId,
-      sourceType: 'Product Team',
+      sourceType: 'Employee',
       sourceId: doc._id
     });
 
     res.status(201).json(doc);
   } catch (err) {
-    console.error('[POST /api/ptdw]', err);
+    console.error('[POST /api/empdw]', err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
@@ -76,14 +65,15 @@ router.post('/', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const filter = { _id: req.params.id, ...ownerFilter(req.user) };
-    const doc = await PtDailyWork.findOneAndDelete(filter);
+    const doc = await EmpDailyWork.findOneAndDelete(filter);
     if (!doc) return res.status(404).json({ message: 'Daily work record not found.' });
 
-    await ADailyWork.findOneAndDelete({ sourceType: 'Product Team', sourceId: doc._id });
+    // Remove from ADailyWork
+    await ADailyWork.findOneAndDelete({ sourceType: 'Employee', sourceId: doc._id });
 
     res.json({ success: true, id: req.params.id });
   } catch (err) {
-    console.error('[DELETE /api/ptdw/:id]', err);
+    console.error('[DELETE /api/empdw/:id]', err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
@@ -97,7 +87,7 @@ router.put('/:id', async (req, res) => {
       return res.status(400).json({ message: 'Required fields missing.' });
     }
 
-    const doc = await PtDailyWork.findOneAndUpdate(
+    const doc = await EmpDailyWork.findOneAndUpdate(
       filter,
       {
         date: body.date,
@@ -112,8 +102,9 @@ router.put('/:id', async (req, res) => {
 
     if (!doc) return res.status(404).json({ message: 'Daily work record not found.' });
 
+    // Update ADailyWork
     await ADailyWork.findOneAndUpdate(
-      { sourceType: 'Product Team', sourceId: doc._id },
+      { sourceType: 'Employee', sourceId: doc._id },
       {
         date: doc.date,
         activity: doc.activity,
@@ -126,7 +117,7 @@ router.put('/:id', async (req, res) => {
 
     res.json(doc);
   } catch (err) {
-    console.error('[PUT /api/ptdw/:id]', err);
+    console.error('[PUT /api/empdw/:id]', err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });

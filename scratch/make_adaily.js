@@ -1,0 +1,331 @@
+const fs = require('fs');
+const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+(function(){
+  document.documentElement.setAttribute('data-theme', localStorage.getItem('si_theme') || 'light');
+  const token = sessionStorage.getItem('schiller_token');
+  const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
+  if (!token || !['admin','superadmin','administrator'].includes(role)) window.location.href = 'login.html';
+})();
+</script>
+<title>SchillerIndia - Admin Daily Work</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="global-typography.css">
+<link rel="stylesheet" href="employee-theme.css">
+<link rel="stylesheet" href="admin-sidebar.css">
+<script src="employee-theme.js"></script>
+<link rel="stylesheet" href="topbar-alignment.css">
+<link rel="stylesheet" href="brand-logo.css">
+<link rel="stylesheet" href="dashboard-topbar-actions.css">
+<script src="dashboard-topbar-actions.js" defer></script>
+<script src="brand-logo.js" defer></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f0f4f8;--surface:#fff;--surface2:#e8f0f7;--surface3:#f8fafc;--border:#ccdde8;--accent:#0068b5;--accent3:rgba(0,104,181,0.08);--green:#059669;--green2:#047857;--red:#b91c1c;--text:#0f2236;--muted:#6b8ca8;--soft:#3d6480;--card:#fff;--shadow:0 1px 8px rgba(0,60,120,.07);--shadow-md:0 4px 12px rgba(0,60,120,.1);--shadow-lg:0 8px 24px rgba(0,60,120,.15)}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;height:100vh;overflow:hidden;}
+.topbar{padding:13px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:var(--shadow);gap:14px}
+.topbar-left{min-width:0}
+.breadcrumb{display:flex;align-items:center;gap:5px;font-size:10.5px;margin-bottom:2px;color:var(--muted);flex-wrap:wrap}
+.breadcrumb a{color:var(--muted);text-decoration:none}
+.breadcrumb a:hover{color:var(--accent)}
+.breadcrumb .sep{color:#b8cad8}
+.page-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);line-height:1.2}
+.topbar-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.content{padding:20px 24px;overflow:auto;flex:1;}
+.btn{border:none;border-radius:8px;padding:8px 15px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;display:inline-flex;align-items:center;gap:6px}.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#005a9e}.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{background:#991b1b}.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--soft)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+
+.filter-bar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;background:var(--surface);padding:14px;border-radius:12px;box-shadow:var(--shadow);border:1px solid var(--border);}
+.filter-bar input, .filter-bar select{padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);outline:none;}
+.filter-bar input:focus, .filter-bar select:focus{border-color:var(--accent);}
+
+.grid-layout{display:grid;grid-template-columns:1fr;gap:20px;}
+.kb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+.kb-card{background:var(--card);border:2px solid var(--border);border-radius:14px;padding:16px 20px;box-shadow:var(--shadow);transition:transform 0.2s, box-shadow 0.2s;display:flex;flex-direction:column;position:relative;overflow:hidden;}
+.kb-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:var(--accent);}
+.kb-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent);border-radius:4px 0 0 4px;}
+.kb-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.kb-time{font-size:11.5px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:4px;}
+.kb-activity{font-size:14px;font-weight:600;color:var(--text);line-height:1.4;flex:1;margin-bottom:12px;max-height:80px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;}
+.kb-foot{margin-top:auto;padding-top:12px;border-top:1px dashed var(--border);display:flex;justify-content:space-between;align-items:center;}
+.kb-user{font-size:10.5px;color:var(--muted);display:flex;align-items:center;gap:5px;}
+.kb-user span{background:var(--surface2);padding:2px 6px;border-radius:6px;color:var(--soft);font-weight:600;}
+.kb-view{background:rgba(0,104,181,0.08);color:var(--accent);border:1px solid rgba(0,104,181,0.15);height:28px;border-radius:6px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;font-size:11px;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;}
+.kb-view:hover{background:var(--accent);color:#fff;}
+
+.view-overlay{position:fixed;inset:0;background:rgba(5,18,38,0.45);backdrop-filter:blur(4px);z-index:2100;display:none;align-items:center;justify-content:center;padding:20px}
+.view-overlay.open{display:flex}
+.view-box{background:var(--surface);width:min(680px,96vw);max-height:90vh;border-radius:16px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;overflow:hidden;animation:fadeUp 0.2s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.modal-head{padding:18px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800}
+.modal-sub{font-size:11.5px;color:var(--muted);margin-top:3px}
+.modal-close{width:34px;height:34px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:15px}
+.modal-body{padding:22px 28px;overflow-y:auto;flex:1;}
+.view-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.view-detail{border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--surface3)}
+.view-detail.full{grid-column:1/-1}
+.view-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:5px}
+.view-value{font-size:13.5px;font-weight:700;color:var(--text);white-space:pre-wrap;line-height:1.5}
+.modal-foot{padding:16px 28px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;background:var(--surface3);flex-shrink:0}
+
+.source-badge{font-size:9.5px;font-weight:800;padding:3px 8px;border-radius:12px;text-transform:uppercase;}
+.source-emp{background:rgba(4,120,87,0.12);color:#059669;border:1px solid rgba(4,120,87,0.2);}
+.source-pt{background:rgba(0,104,181,0.12);color:#0068b5;border:1px solid rgba(0,104,181,0.2);}
+
+.checkbox-wrap{position:absolute;top:10px;right:10px;}
+.row-checkbox{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;}
+</style>
+</head>
+<body>
+<!-- === SIDEBAR === -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <img class="brand-logo-img" src="logo.png" alt="SCHILLER">
+    </div>
+  </div>
+  <div style="padding:10px 20px 0;"><span class="role-badge">Admin</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <button class="nav-item" onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
+    
+    <div class="nav-section">Operations</div>
+    <button class="nav-group-toggle open" id="ar-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');"><span class="icon">&#128196;</span> Activity Register <span class="caret">&#9656;</span></button>
+    <div class="nav-children open" id="ar-children">
+      <div class="nav-sub">
+        <a class="nav-item" href="atour.html"><span class="icon">&#128205;</span> Tour Summary</a>
+        <a class="nav-item active" href="adaily.html"><span class="icon">&#128197;</span> Daily Work</a>
+        <a class="nav-item" href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
+      </div>
+    </div>
+  </nav>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="breadcrumb"><a href="admin-dashboard.html">Dashboard</a><span class="sep">&#8250;</span><span>Activity Register</span><span class="sep">&#8250;</span><span>Daily Work</span></div>
+      <div class="page-title">Admin Daily Work</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-danger" id="bulk-del-btn" style="display:none;" onclick="bulkDelete()">&#128465; Delete Selected</button>
+      <button class="btn btn-outline" onclick="loadData()">&#10227; Refresh</button>
+      <button class="btn btn-primary" style="background:#047857;" onclick="exportToExcel()">&#128229; Export All</button>
+      <button class="btn btn-outline" onclick="logout()">&#8617;&#65039; Logout</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="filter-bar">
+      <input type="date" id="filter-date" onchange="renderCards()">
+      <input type="text" id="filter-user" placeholder="Added By (Name)" onkeyup="renderCards()">
+      <input type="text" id="filter-team" placeholder="Team/Division" onkeyup="renderCards()">
+      <select id="filter-source" onchange="renderCards()">
+        <option value="">All Sources</option>
+        <option value="Employee">Employee</option>
+        <option value="Product Team">Product Team</option>
+      </select>
+    </div>
+    
+    <div class="grid-layout">
+      <div class="kb-grid" id="kb-grid">
+        <div style="padding:40px; text-align:center; grid-column:1/-1; color:var(--muted);">Loading entries...</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="view-overlay" id="dw-view-overlay">
+  <div class="view-box">
+    <div class="modal-head"><div><div class="modal-title">Daily Work Detail</div><div class="modal-sub" id="view-sub">Read-only admin view</div></div><button class="modal-close" onclick="closeDwView()">&#10005;</button></div>
+    <div class="modal-body" id="dw-view-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-danger" id="view-del-btn">&#128465; Delete</button>
+      <button class="btn btn-outline" onclick="closeDwView()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentData = [];
+let selectedIds = new Set();
+
+async function loadData() {
+  try {
+    const res = await fetch('/api/adaily', {
+      headers: { 'Authorization': \`Bearer \${sessionStorage.getItem('schiller_token')}\` }
+    });
+    if (!res.ok) throw new Error('Failed to load');
+    currentData = await res.json();
+    selectedIds.clear();
+    updateBulkBtn();
+    renderCards();
+  } catch(e) {
+    console.error(e);
+    document.getElementById('kb-grid').innerHTML = \`<div style="color:var(--red);padding:20px;grid-column:1/-1;">Error loading data.</div>\`;
+  }
+}
+
+function renderCards() {
+  const grid = document.getElementById('kb-grid');
+  const fDate = document.getElementById('filter-date').value;
+  const fUser = document.getElementById('filter-user').value.toLowerCase();
+  const fTeam = document.getElementById('filter-team').value.toLowerCase();
+  const fSource = document.getElementById('filter-source').value;
+
+  const filtered = currentData.filter(t => {
+    if (fDate && t.date !== fDate) return false;
+    if (fUser && !(t.addedBy || '').toLowerCase().includes(fUser)) return false;
+    if (fTeam && !(t.team || '').toLowerCase().includes(fTeam)) return false;
+    if (fSource && t.sourceType !== fSource) return false;
+    return true;
+  });
+
+  if (!filtered.length) {
+    grid.innerHTML = \`<div style="padding:60px 20px; text-align:center; grid-column:1/-1; color:var(--muted); background:var(--card); border-radius:12px; border:1.5px dashed var(--border);">No entries found matching filters.</div>\`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(t => {
+    const srcClass = t.sourceType === 'Employee' ? 'source-emp' : 'source-pt';
+    const isChecked = selectedIds.has(t._id) ? 'checked' : '';
+    const dateStr = t.date ? new Date(t.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '--';
+    
+    return \`
+    <div class="kb-card">
+      <div class="checkbox-wrap">
+        <input type="checkbox" class="row-checkbox" data-id="\${t._id}" \${isChecked} onchange="toggleSelect(this, '\${t._id}')">
+      </div>
+      <div class="kb-top">
+        <div class="source-badge \${srcClass}">\${t.sourceType}</div>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;">\${dateStr} &bull; \${t.fromTime||'--'} to \${t.toTime||'--'}</div>
+      <div class="kb-activity">\${esc(t.activity||'')}</div>
+      <div class="kb-foot">
+        <div class="kb-user">By <span>\${esc(t.addedBy||'User')}</span></div>
+        <button class="kb-view" onclick="viewDw('\${t._id}')">View</button>
+      </div>
+    </div>\`;
+  }).join('');
+}
+
+function toggleSelect(cb, id) {
+  if (cb.checked) selectedIds.add(id);
+  else selectedIds.delete(id);
+  updateBulkBtn();
+}
+
+function updateBulkBtn() {
+  const btn = document.getElementById('bulk-del-btn');
+  if (selectedIds.size > 0) {
+    btn.style.display = 'inline-flex';
+    btn.textContent = \`Delete Selected (\${selectedIds.size})\`;
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+async function bulkDelete() {
+  if(!confirm(\`Delete \${selectedIds.size} selected entries? This cannot be undone.\`)) return;
+  try {
+    const res = await fetch('/api/adaily/bulk-delete', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': \`Bearer \${sessionStorage.getItem('schiller_token')}\` 
+      },
+      body: JSON.stringify({ ids: Array.from(selectedIds) })
+    });
+    if(!res.ok) throw new Error('Delete failed');
+    selectedIds.clear();
+    updateBulkBtn();
+    await loadData();
+  } catch(e) {
+    alert(e.message);
+  }
+}
+
+function viewDw(id) {
+  const entry = currentData.find(d => d._id === id);
+  if(!entry) return;
+  const date = entry.date ? new Date(entry.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '-';
+  document.getElementById('view-sub').textContent = date + ' (' + entry.sourceType + ')';
+  document.getElementById('dw-view-body').innerHTML = \`
+    <div class="view-detail-grid">
+      <div class="view-detail"><div class="view-label">Date</div><div class="view-value">\${esc(date)}</div></div>
+      <div class="view-detail"><div class="view-label">Team / Division</div><div class="view-value">\${esc(entry.team || '-')}</div></div>
+      <div class="view-detail"><div class="view-label">From</div><div class="view-value">\${esc(entry.fromTime || '-')}</div></div>
+      <div class="view-detail"><div class="view-label">To</div><div class="view-value">\${esc(entry.toTime || '-')}</div></div>
+      <div class="view-detail"><div class="view-label">Total Day Hours</div><div class="view-value">\${esc(entry.dayTotal || '-')}</div></div>
+      <div class="view-detail"><div class="view-label">Added By</div><div class="view-value">\${esc(entry.addedBy || '-')}</div></div>
+      <div class="view-detail full"><div class="view-label">Activity</div><div class="view-value">\${esc(entry.activity || '-')}</div></div>
+    </div>\`;
+  
+  const delBtn = document.getElementById('view-del-btn');
+  delBtn.onclick = async () => {
+    if(!confirm('Delete this entry?')) return;
+    try {
+      await fetch('/api/adaily/' + id, {
+        method: 'DELETE',
+        headers: { 'Authorization': \`Bearer \${sessionStorage.getItem('schiller_token')}\` }
+      });
+      closeDwView();
+      loadData();
+    } catch(e) { alert(e.message); }
+  };
+  
+  document.getElementById('dw-view-overlay').classList.add('open');
+}
+
+function closeDwView(){ document.getElementById('dw-view-overlay').classList.remove('open'); }
+
+function exportToExcel() {
+  if(!currentData.length) return alert('No data to export.');
+  
+  const data = currentData.map(item => {
+     let mins = 0;
+     if(item.fromTime && item.toTime){
+        const [fh, fm] = item.fromTime.split(':').map(Number);
+        const [th, tm] = item.toTime.split(':').map(Number);
+        mins = (th*60+tm) - (fh*60+fm);
+        if(mins < 0) mins += 24*60;
+     }
+     const h = Math.floor(mins/60);
+     const m = mins%60;
+     
+     return {
+        'Date': item.date,
+        'Source': item.sourceType,
+        'Added By': item.addedBy,
+        'Team / Division': item.team || '',
+        'Activity': item.activity,
+        'From Time': item.fromTime,
+        'To Time': item.toTime,
+        'Duration': \`\${h}h \${m}m\`,
+        'Day Total': item.dayTotal || ''
+     };
+  });
+  
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Admin Daily Work");
+  XLSX.writeFile(wb, "Admin_Daily_Work.xlsx");
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; }
+
+window.onload = loadData;
+</script>
+</body>
+</html>
+`;
+
+fs.writeFileSync('frontend/public/adaily.html', html);
+console.log('Done');
