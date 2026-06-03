@@ -110,6 +110,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .entry-field.wide{grid-column:span 2;}
 .entry-foot{padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end;gap:9px;background:var(--surface3);}
 .entry-msg{margin-right:auto;font-size:11.5px;font-weight:700;color:var(--muted);}
+.view-tabs{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.view-tab{padding:7px 13px;border:1.5px solid var(--border);background:var(--surface);color:var(--soft);border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;}
+.view-tab.active{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(0,104,181,.18);}
 @media(max-width:1180px){.entry-grid{grid-template-columns:repeat(3,minmax(160px,1fr));}}
 @media(max-width:820px){.entry-grid{grid-template-columns:repeat(2,minmax(150px,1fr));}.entry-field.wide{grid-column:span 2;}}
 @media(max-width:560px){.entry-grid{grid-template-columns:1fr;}.entry-field.wide{grid-column:span 1;}}
@@ -392,6 +395,11 @@ table.js-grid tbody td input::placeholder{color:var(--muted);font-size:11px;}
   <div class="content">
     <div class="mail-ack-wrap" id="mail-ack-wrap"></div>
 
+    <div class="view-tabs">
+      <button class="view-tab active" id="tab-list" onclick="showListTab()">Scrap List</button>
+      <button class="view-tab" id="tab-entry" onclick="openEntryPanel()">Add New</button>
+    </div>
+
     <div class="entry-panel" id="entry-panel">
       <div class="entry-head">
         <div>
@@ -412,18 +420,8 @@ table.js-grid tbody td input::placeholder{color:var(--muted);font-size:11px;}
       </div>
     </div>
 
-    <!-- STATS -->
-    <div class="stats-grid">
-      <div class="sc sc-blue"><div class="sc-ico ic-blue">&#128202;</div><div class="sc-lbl">Total Records</div><div class="sc-val" id="s-total">-</div><div class="sc-sub">All scrap entries</div></div>
-      <div class="sc sc-red"><div class="sc-ico ic-red">&#128465;</div><div class="sc-lbl">Scrapped</div><div class="sc-val" id="s-scrapped">-</div><div class="sc-sub">Confirmed scrap</div></div>
-      <div class="sc sc-amber"><div class="sc-ico ic-amber">&#9888;</div><div class="sc-lbl">Pending</div><div class="sc-val" id="s-pending">-</div><div class="sc-sub">Awaiting approval</div></div>
-      <div class="sc sc-green"><div class="sc-ico ic-green">&#9989;</div><div class="sc-lbl">Avg Pend Days</div><div class="sc-val" id="s-avg">-</div><div class="sc-sub">PFRN average</div></div>
-      <div class="sc sc-purple"><div class="sc-ico ic-purple">&#128221;</div><div class="sc-lbl">Job Sheets</div><div class="sc-val" id="s-js">-</div><div class="sc-sub">Updated records</div></div>
-    </div>
-
-
     <!-- TABLE CARD -->
-    <div class="table-card">
+    <div class="table-card" id="list-panel">
       <div class="table-top">
         <div class="table-title">
           Scrap List <span class="count-chip" id="count-chip">- entries</span>
@@ -704,10 +702,13 @@ function fieldValue(d, key) {
 
 function openEntryPanel(id = '') {
   const panel = document.getElementById('entry-panel');
+  const listPanel = document.getElementById('list-panel');
   const title = document.getElementById('entry-title');
   const recordId = document.getElementById('sw-record-id');
   if (!panel) return;
   panel.classList.add('open');
+  if (listPanel) listPanel.style.display = 'none';
+  setActiveTab('entry');
   recordId.value = id || '';
   const record = id ? SCRAP.find(x => (x._id || x.id) === id) : null;
   ENTRY_FIELDS.forEach(field => {
@@ -720,11 +721,22 @@ function openEntryPanel(id = '') {
   }
   if (title) title.textContent = id ? 'Update Supplier Warranty Entry' : 'Add Supplier Warranty Entry';
   clearEntryMsg();
-  panel.scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
 function closeEntryPanel() {
+  showListTab();
+}
+
+function showListTab() {
   document.getElementById('entry-panel')?.classList.remove('open');
+  const listPanel = document.getElementById('list-panel');
+  if (listPanel) listPanel.style.display = '';
+  setActiveTab('list');
+}
+
+function setActiveTab(tab) {
+  document.getElementById('tab-list')?.classList.toggle('active', tab === 'list');
+  document.getElementById('tab-entry')?.classList.toggle('active', tab === 'entry');
 }
 
 function resetEntryForm() {
@@ -960,7 +972,7 @@ function getRange(c,t){if(t<=7)return Array.from({length:t},(_,i)=>i+1);if(c<=4)
 function gp(p){currentPage=p;renderTable();}
 
 // -- HELPERS -----------------------------------------------
-function setLoading(){document.getElementById('sc-tbody').innerHTML=`<tr class="loading-row"><td colspan="${SUPPLIER_COLUMNS.length}"><span class="spin"></span>Loading from database...</td></tr>`;['s-total','s-scrapped','s-pending','s-avg','s-js'].forEach(id=>document.getElementById(id).textContent='-');}
+function setLoading(){document.getElementById('sc-tbody').innerHTML=`<tr class="loading-row"><td colspan="${SUPPLIER_COLUMNS.length}"><span class="spin"></span>Loading from database...</td></tr>`;['s-total','s-scrapped','s-pending','s-avg','s-js'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='-';});}
 function setError(msg){document.getElementById('sc-tbody').innerHTML=`<tr class="loading-row"><td colspan="${SUPPLIER_COLUMNS.length}" style="color:var(--red);">&#9888; ${esc(msg)}</td></tr>`;}
 function fmtDate(d){if(!d)return'-';const p=String(d).split('T')[0].split('-');if(p.length<3)return String(d);return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0];}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -559,7 +559,7 @@ let editingDoi = '';
 let editingId = null;
 let activeSummary = 'all';
 
-function authHeaders() { return { 'Content-Type':'application/json', Authorization:'Bearer ' + (sessionStorage.getItem('schiller_token') || '') }; }
+// authHeaders defined below
 function setupRepairSuggestions() {
   if (!window.RepairSuggestions) return;
   RepairSuggestions.bind({
@@ -617,12 +617,13 @@ function handleUnauth(r){
 // -- LOAD DATA ---------------------------------------------
 async function loadData() {
   try {
-    const endpoint = IS_ADMIN ? `${API}/api/atrr` : `${API}/api/atrr/employee`;
+    const endpoint = `${API}/api/atrr`;
     const res = await fetch(endpoint, { headers: authHeaders() });
     handleUnauth(res);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    allData = data.map(d => ({ ...d, id: d._id || d.id, noOfDays: calcDays(d.createdAt, d.entryDate, d) }));
+    const list = Array.isArray(data) ? data : (data.data || data.records || []);
+    allData = list.map(d => ({ ...d, id: d._id || d.id, noOfDays: calcDays(d.createdAt, d.entryDate, d) }));
     applyFilters();
     updateStats();
     showToast('Loaded ' + allData.length + ' record' + (allData.length !== 1 ? 's' : ''), 'info');
