@@ -227,38 +227,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 </head>
 <body>
 
-<!-- DYNAMIC UPDATE MODAL -->
-<div class="overlay" id="dynamic-update-overlay">
-  <div class="modal" style="max-height:85vh;">
-    <div class="modal-header">
-      <div>
-        <div class="modal-title">Update Record</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px;">Edit filled details or complete empty boxes.</div>
-      </div>
-      <button class="modal-close" onclick="closeDynamicUpdate()">&#10005;</button>
-    </div>
 
-    <div class="modal-scroll" style="flex:1;overflow-y:auto;padding:24px 28px;">
-      <input type="hidden" id="dyn-upd-id"/>
-
-      <div class="form-section" id="dyn-filled-section">
-        <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--muted);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);">Filled Data</div>
-        <div style="display:grid;grid-template-columns:repeat(4,minmax(160px,1fr));gap:14px;" id="dyn-filled-grid"></div>
-      </div>
-
-      <div class="form-section" id="dyn-empty-section" style="margin-top:24px;">
-        <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--muted);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);">Details to Fill</div>
-        <div style="display:grid;grid-template-columns:repeat(4,minmax(160px,1fr));gap:14px;" id="dyn-empty-grid"></div>
-      </div>
-    </div>
-
-    <div class="modal-footer" style="padding:16px 28px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;justify-content:flex-end;background:var(--surface3);flex-shrink:0;">
-      <div class="form-msg" id="dyn-upd-msg" style="margin-right:auto;display:none;padding:7px 13px;border-radius:7px;font-size:11.5px;font-weight:600;"></div>
-      <button class="btn btn-outline btn-sm" onclick="closeDynamicUpdate()">Cancel</button>
-      <button class="btn btn-success" id="dyn-save-btn" onclick="submitDynamicUpdate()">&#128190; Save Update</button>
-    </div>
-  </div>
-</div>
 
 <div class="toast-wrap" id="toast-wrap"></div>
 
@@ -330,7 +299,40 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     </div>
   </div>
 
-  <div class="content">
+  <div class="content" style="position:relative;">
+
+    <!-- DYNAMIC UPDATE MODAL -->
+    <div class="overlay" id="dynamic-update-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:100; align-items:stretch; justify-content:stretch; padding:0;">
+  <div class="modal" style="max-height:none; width:100%; max-width:100%; border-radius:0; box-shadow:none; display:flex; flex-direction:column; flex:1;">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Update Record</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">Edit filled details or complete empty boxes.</div>
+      </div>
+      <button class="modal-close" onclick="closeDynamicUpdate()">&#10005;</button>
+    </div>
+
+    <div class="modal-scroll" style="flex:1;overflow-y:auto;padding:24px 28px;">
+      <input type="hidden" id="dyn-upd-id"/>
+
+      <div class="form-section" id="dyn-filled-section">
+        <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--muted);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);">Filled Data</div>
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(160px,1fr));gap:14px;" id="dyn-filled-grid"></div>
+      </div>
+
+      <div class="form-section" id="dyn-empty-section" style="margin-top:24px;">
+        <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--muted);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);">Details to Fill</div>
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(160px,1fr));gap:14px;" id="dyn-empty-grid"></div>
+      </div>
+    </div>
+
+    <div class="modal-footer" style="padding:16px 28px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;justify-content:flex-end;background:var(--surface3);flex-shrink:0;">
+      <div class="form-msg" id="dyn-upd-msg" style="margin-right:auto;display:none;padding:7px 13px;border-radius:7px;font-size:11.5px;font-weight:600;"></div>
+      <button class="btn btn-outline btn-sm" onclick="closeDynamicUpdate()">Cancel</button>
+      <button class="btn btn-success" id="dyn-save-btn" onclick="submitDynamicUpdate()">&#128190; Save Update</button>
+    </div>
+  </div>
+</div>
     <div class="mail-ack-wrap" id="mail-ack-wrap"></div>
 
     <div class="table-card" id="list-panel">
@@ -706,12 +708,12 @@ function openUpdateModal(id) {
     
     let controlHtml = '';
     if (isTextarea) {
-      controlHtml = `<textarea id="dyn-${field.key}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);resize:vertical;min-height:72px;" placeholder="Enter ${esc(field.label)}">${esc(val)}</textarea>`;
+      controlHtml = `<input id="dyn-${field.key}" type="text" value="${esc(val)}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);" />`;
     } else if (isDate) {
       const fmt = val ? new Date(val).toISOString().slice(0,10) : '';
       controlHtml = `<input id="dyn-${field.key}" type="date" value="${fmt}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);"/>`;
     } else {
-      controlHtml = `<input id="dyn-${field.key}" type="text" value="${esc(val)}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);" placeholder="Enter ${esc(field.label)}"/>`;
+      controlHtml = `<input id="dyn-${field.key}" type="text" value="${esc(val)}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);" />`;
     }
 
     const html = `<div style="display:flex;flex-direction:column;gap:5px;">
@@ -832,6 +834,7 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape') closeUpdateMo
 <script src="tab-fix.js"></script>
 </body>
 </html>
+
 
 
 
