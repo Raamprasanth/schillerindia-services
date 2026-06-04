@@ -10,6 +10,7 @@ const EscalationRunLog = require('../models/EscalationRunLog');
 const EscalationQueue = require('../models/EscalationQueue');
 const AppSetting = require('../models/AppSetting');
 const { getEscalationTimeMap, parseTime, formatTimeLabel } = require('../utils/escalationSchedule');
+const { runEscalationMailer } = require('../utils/escalationMailer');
 
 const IST_OFFSET_MINUTES = 330;
 const IST_OFFSET_MS = IST_OFFSET_MINUTES * 60 * 1000;
@@ -1146,55 +1147,11 @@ async function sendEscalationWorkbookWithNode(payload, outputPath, sender) {
 }
 
 async function sendEscalationWorkbook(payload, outputPath, senderConfig = null) {
-  const tmpInput = path.join(os.tmpdir(), `schiller-escalation-${Date.now()}.json`);
-  fs.writeFileSync(tmpInput, JSON.stringify(payload, null, 2), 'utf8');
-  const sender = senderConfig || await getReadyEscalationSenderConfig();
-  let meaningfulError = null;
   try {
-    await sendEscalationWorkbookWithNode(payload, outputPath, sender);
-    try { fs.unlinkSync(tmpInput); } catch (_) {}
-    return;
+    await runEscalationMailer(payload, outputPath);
   } catch (error) {
-    meaningfulError = error;
+    throw new Error(`NodeJS Escalation Mailer failed: ${error.message}`);
   }
-  const childEnv = {
-    ...process.env,
-    ESCALATION_SMTP_HOST: sender.smtpHost || '',
-    ESCALATION_SMTP_PORT: String(sender.smtpPort || '587'),
-    ESCALATION_SMTP_USER: sender.smtpUser || '',
-    ESCALATION_SMTP_PASS: sender.smtpPass || '',
-    ESCALATION_EMAIL_FROM: sender.fromEmail || '',
-    ESCALATION_SMTP_STARTTLS: sender.startTls ? 'true' : 'false',
-    ESCALATION_SMTP_SSL: sender.ssl ? 'true' : 'false',
-  };
-
-  let lastError = null;
-  for (const candidate of getPythonCandidates()) {
-    for (let attempt = 1; attempt <= MAIL_ATTEMPTS; attempt += 1) {
-      try {
-        await execFileAsync(candidate.command, [...candidate.argsPrefix, PYTHON_SCRIPT, tmpInput, outputPath], {
-          cwd: path.join(__dirname, '..'),
-          env: childEnv,
-          timeout: MAIL_TIMEOUT_MS,
-          killSignal: 'SIGKILL',
-          windowsHide: true,
-        });
-        try { fs.unlinkSync(tmpInput); } catch (_) {}
-        return;
-      } catch (error) {
-        lastError = error;
-        if (error.code !== 'ENOENT') meaningfulError = error;
-        if (attempt < MAIL_ATTEMPTS) await sleep(1000 * attempt);
-      }
-    }
-  }
-
-  try { fs.unlinkSync(tmpInput); } catch (_) {}
-  const finalError = meaningfulError || lastError;
-  const stderr = String(finalError?.stderr || '').trim();
-  const stdout = String(finalError?.stdout || '').trim();
-  const message = stderr || stdout || finalError?.message || 'No usable Python runtime found';
-  throw new Error(message);
 }
 
 async function sendEscalationSenderTest(toEmail = '') {
