@@ -74,6 +74,7 @@ const serviceSchema = new mongoose.Schema(
     // ── Remarks ───────────────────────────────────────────────
     fieldRemarks: { type: String, default: '' },
     commWarrDetails: { type: String, default: '' },
+    bscon: { type: String, default: '' },
     techRemarks:  { type: String, default: '' },
     components:   { type: String, default: '' },
     finalRemarks: { type: String, default: '' },

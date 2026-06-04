@@ -211,6 +211,8 @@ router.get('/:id', protect, async (req, res) => {
 router.post('/', protect, async (req, res) => {
   try {
     const body = { ...req.body };
+    body.bscon = String(body.bscon || '').trim();
+    if (!body.bscon) return res.status(400).json({ message: 'BSCON is required.' });
 
     body.scEng       = req.user.name || body.scEng || '';
     body.submittedBy = req.user.name || '';
@@ -303,6 +305,8 @@ router.put('/:id', protect, async (req, res) => {
     }
 
     const body = { ...req.body };
+    body.bscon = String(body.bscon || '').trim();
+    if (!body.bscon) return res.status(400).json({ message: 'BSCON is required.' });
     body.scEng       = req.user.name || body.scEng || svc.scEng;
     body.submittedBy = svc.submittedBy || req.user.name || '';
     body.updatedAt   = new Date().toISOString();

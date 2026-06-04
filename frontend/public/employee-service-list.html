@@ -533,8 +533,9 @@ table.svc-table tbody tr:last-child td{border-bottom:none;}
               <span class="field-hint" id="repgirno-hint">Becomes mandatory when REP Type = TO/ADV SO</span>
             </div>
             <div class="fg-field"><label>Field Remarks <span class="req">*</span></label><input type="text" id="f-fieldremarks" placeholder="Describe the issue observed in the field" required/></div>
-            <div class="fg-field"><label>OB Details</label><input type="text" id="f-Obd" placeholder="OB notes..." disabled/></div>
-            <div class="fg-field"><label>Comm Warr Details</label><input type="text" id="f-commwarrdetails" placeholder="Commercial / warranty details..."/></div>
+            <div class="fg-field"><label>OB Details</label><input type="text" id="f-Obd" disabled/></div>
+            <div class="fg-field"><label>Comm Warr Details</label><input type="text" id="f-commwarrdetails"/></div>
+            <div class="fg-field"><label>BSCON <span class="req">*</span></label><input type="text" id="f-bscon" required/></div>
           </div>
         </div>
       </div>
@@ -1253,6 +1254,7 @@ function editService(id) {
     set('f-reptype',s.repType); set('f-repgirno',s.repGirNo);
     set('f-fieldremarks',s.fieldRemarks);
     set('f-commwarrdetails',s.commWarrDetails);
+    set('f-bscon',s.bscon);
     updateRepTypeOptions(); onRepTypeChange(); checkAutoTriggers();
   },150);
   window.scrollTo(0,0);
@@ -1319,7 +1321,7 @@ async function createSoPendingFromService(serviceRecord) {
 async function submitForm() {
   const msg=document.getElementById('form-msg');
   msg.className='form-validate-msg';
-  const reqs=['f-screfno','f-frnno','f-frndate','f-sercomm','f-rcvdatesc','f-stkcust','f-region','f-branch','f-engineer','f-dealer','f-customer','f-supplier','f-model','f-unitsl','f-unitstatus','f-partno','f-modbrd','f-defpartsno','f-deftype','f-typeacc','f-defgirno','f-reptype','f-fieldremarks'];
+  const reqs=['f-screfno','f-frnno','f-frndate','f-sercomm','f-rcvdatesc','f-stkcust','f-region','f-branch','f-engineer','f-dealer','f-customer','f-supplier','f-model','f-unitsl','f-unitstatus','f-partno','f-modbrd','f-defpartsno','f-deftype','f-typeacc','f-defgirno','f-reptype','f-fieldremarks','f-bscon'];
   if(document.getElementById('f-reptype').value==='TO/ADV SO') reqs.push('f-repgirno');
   const errors=[];
   reqs.forEach(fid=>{const el=document.getElementById(fid);if(!el)return;if(!el.value.trim()){el.classList.add('err');errors.push(fid);}else el.classList.remove('err');});
@@ -1378,6 +1380,7 @@ async function submitForm() {
     typeWork:     typeWorkVal, type:typeWorkVal, typeReport:'Service Center',
     fieldRemarks: document.getElementById('f-fieldremarks').value.trim(),
     commWarrDetails: document.getElementById('f-commwarrdetails').value.trim(),
+    bscon: document.getElementById('f-bscon').value.trim(),
     obDetails:    obdVal, finalRemarks:'', components:'', commRemarks:'',
     pdPfrn:0, pdEstp:0, pdUrp:0, pdScc:0,
     submittedBy:  EMP_NAME, submittedAt:new Date().toISOString(),

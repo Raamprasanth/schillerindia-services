@@ -39,6 +39,7 @@ const empfrnSchema = new mongoose.Schema(
 
     // ── Work Details ──────────────────────────────────────
     typeWork:    { type: String, trim: true },
+    bscon:       { type: String, trim: true, default: '' },
     finalRemarks:{ type: String, trim: true },
     techRemarks: { type: String, trim: true },
     components:  { type: String, trim: true },

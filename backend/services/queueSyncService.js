@@ -89,6 +89,7 @@ async function tryCreateFRNPending(svc, user) {
           defPartSno: svc.defPartSno || '',
           partNo:     svc.partNo || '',
           typeWork:   svc.typeWork || svc.type || '',
+          bscon:      svc.bscon || '',
           updatedAt:  new Date().toISOString(),
         }
       );
@@ -117,6 +118,7 @@ async function tryCreateFRNPending(svc, user) {
       defPartSno:  svc.defPartSno || '',
       partNo:      svc.partNo     || '',
       typeWork:    svc.typeWork || svc.type || '',
+      bscon:       svc.bscon || '',
       remarks:     svc.finalRemarks || '',
       status:      'pending',
       submittedBy: svc.submittedBy || (user ? user.name : ''),
