@@ -694,6 +694,46 @@
       </div>
     </div>
 
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card" onclick="window.location.href='emppendingfrn.html'" style="cursor:pointer;">
+        <div class="stat-label">Pending FRN</div><div class="stat-icon">&#128203;</div>
+        <div class="stat-value" id="val-frn" style="color:var(--accent)">-</div>
+        <div class="stat-breakdown">
+          <span class="bd-normal" title="< 80 Days">Norm: <span id="frn-n">-</span></span>
+          <span class="bd-warning" title="80 - 150 Days">Warn: <span id="frn-w">-</span></span>
+          <span class="bd-critical" title="> 150 Days">Crit: <span id="frn-c">-</span></span>
+        </div>
+      </div>
+      <div class="stat-card" onclick="window.location.href='employee-ob-pending.html'" style="cursor:pointer;">
+        <div class="stat-label">Estimation Pending</div><div class="stat-icon">&#128230;</div>
+        <div class="stat-value" id="val-ob" style="color:var(--accent2)">-</div>
+        <div class="stat-breakdown">
+          <span class="bd-normal" title="< 30 Days">Norm: <span id="ob-n">-</span></span>
+          <span class="bd-warning" title="30 - 90 Days">Warn: <span id="ob-w">-</span></span>
+          <span class="bd-critical" title="> 90 Days">Crit: <span id="ob-c">-</span></span>
+        </div>
+      </div>
+      <div class="stat-card" onclick="window.location.href='empestpend.html'" style="cursor:pointer;">
+        <div class="stat-label">SO Pending</div><div class="stat-icon">&#128203;</div>
+        <div class="stat-value" id="val-est" style="color:var(--amber)">-</div>
+        <div class="stat-breakdown">
+          <span class="bd-normal" title="< 20 Days">Norm: <span id="est-n">-</span></span>
+          <span class="bd-warning" title="20 - 60 Days">Warn: <span id="est-w">-</span></span>
+          <span class="bd-critical" title="> 60 Days">Crit: <span id="est-c">-</span></span>
+        </div>
+      </div>
+      <div class="stat-card" onclick="window.location.href='empunderep.html'" style="cursor:pointer;">
+        <div class="stat-label">Under Repair</div><div class="stat-icon">&#128736;&#65039;</div>
+        <div class="stat-value" id="val-ur" style="color:var(--red)">-</div>
+        <div class="stat-breakdown">
+          <span class="bd-normal" title="<= 15 Days">Norm: <span id="ur-n">-</span></span>
+          <span class="bd-warning" title="16 - 30 Days">Warn: <span id="ur-w">-</span></span>
+          <span class="bd-critical" title="> 30 Days">Crit: <span id="ur-c">-</span></span>
+        </div>
+      </div>
+    </div>
+
     <div class="perf-grid">
       <div class="perf-card">
         <div class="perf-head">
@@ -748,46 +788,6 @@
         </div>
         <div class="panel-body" id="pa-tracker-body">
           <div style="color:var(--muted); font-size:13px;">Loading Mondays...</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Stats -->
-    <div class="stats-grid">
-      <div class="stat-card" onclick="window.location.href='emppendingfrn.html'" style="cursor:pointer;">
-        <div class="stat-label">Pending FRN</div><div class="stat-icon">&#128203;</div>
-        <div class="stat-value" id="val-frn" style="color:var(--accent)">-</div>
-        <div class="stat-breakdown">
-          <span class="bd-normal" title="< 80 Days">Norm: <span id="frn-n">-</span></span>
-          <span class="bd-warning" title="80 - 150 Days">Warn: <span id="frn-w">-</span></span>
-          <span class="bd-critical" title="> 150 Days">Crit: <span id="frn-c">-</span></span>
-        </div>
-      </div>
-      <div class="stat-card" onclick="window.location.href='employee-ob-pending.html'" style="cursor:pointer;">
-        <div class="stat-label">Estimation Pending</div><div class="stat-icon">&#128230;</div>
-        <div class="stat-value" id="val-ob" style="color:var(--accent2)">-</div>
-        <div class="stat-breakdown">
-          <span class="bd-normal" title="< 30 Days">Norm: <span id="ob-n">-</span></span>
-          <span class="bd-warning" title="30 - 90 Days">Warn: <span id="ob-w">-</span></span>
-          <span class="bd-critical" title="> 90 Days">Crit: <span id="ob-c">-</span></span>
-        </div>
-      </div>
-      <div class="stat-card" onclick="window.location.href='empestpend.html'" style="cursor:pointer;">
-        <div class="stat-label">SO Pending</div><div class="stat-icon">&#128203;</div>
-        <div class="stat-value" id="val-est" style="color:var(--amber)">-</div>
-        <div class="stat-breakdown">
-          <span class="bd-normal" title="< 20 Days">Norm: <span id="est-n">-</span></span>
-          <span class="bd-warning" title="20 - 60 Days">Warn: <span id="est-w">-</span></span>
-          <span class="bd-critical" title="> 60 Days">Crit: <span id="est-c">-</span></span>
-        </div>
-      </div>
-      <div class="stat-card" onclick="window.location.href='empunderep.html'" style="cursor:pointer;">
-        <div class="stat-label">Under Repair</div><div class="stat-icon">&#128736;&#65039;</div>
-        <div class="stat-value" id="val-ur" style="color:var(--red)">-</div>
-        <div class="stat-breakdown">
-          <span class="bd-normal" title="<= 15 Days">Norm: <span id="ur-n">-</span></span>
-          <span class="bd-warning" title="16 - 30 Days">Warn: <span id="ur-w">-</span></span>
-          <span class="bd-critical" title="> 30 Days">Crit: <span id="ur-c">-</span></span>
         </div>
       </div>
     </div>
@@ -2266,7 +2266,10 @@
     let html = '<div style="display:flex; flex-direction:column; gap:10px;">';
     
     dateObjs.forEach(dateObj => {
-      const dateStr = dateObj.toISOString().split('T')[0]; // YYYY-MM-DD
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const d = String(dateObj.getDate()).padStart(2, '0');
+      const dateStr = `${y}-${m}-${d}`;
       const isSubmitted = submissions.some(s => s.type === type && s.reportDate === dateStr);
       
       const btnClass = isSubmitted ? 'task-check done' : 'task-check';
