@@ -640,10 +640,11 @@ function fillScEngineerSelect(selected, recordDivision){
 /* ?"??"? INIT ?"??"? */
 (function init(){
   const u = LOGGED_USER;
-  if(u.name){
-    (document.getElementById('admin-name')||{}).textContent = u.name;
-    (document.getElementById('admin-avatar')||{}).textContent = u.name.charAt(0).toUpperCase();
-    (document.getElementById('admin-role')||{}).textContent = u.role === 'admin' ? 'Administrator' : 'Field Engineer';
+  const name = u.name || sessionStorage.getItem('schiller_name');
+  if(name){
+    (document.getElementById('emp-name')||{}).textContent = name;
+    (document.getElementById('emp-avatar')||{}).textContent = name.charAt(0).toUpperCase();
+    (document.getElementById('emp-desig')||{}).textContent = u.designation || (u.role === 'admin' ? 'Administrator' : 'Field Engineer');
   }
   (document.getElementById('topbar-date')||{}).textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   engineersReadyPromise = fetchAllEngineers();

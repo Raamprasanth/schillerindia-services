@@ -280,10 +280,10 @@ table.cf-table tbody tr:last-child td{border-bottom:none;}
   </nav>
   <div class="sidebar-footer">
     <div class="user-row">
-      <div class="user-av" id="u-avatar">E</div>
+      <div class="user-av" id="emp-avatar">E</div>
       <div>
-        <div class="user-nm" id="u-name">Employee</div>
-        <div class="user-rl" id="u-role">Field Engineer</div>
+        <div class="user-nm" id="emp-name">Employee</div>
+        <div class="user-rl" id="emp-desig">Field Engineer</div>
       </div>
       <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
     </div>
@@ -466,10 +466,11 @@ let DATA = [], filtered = [], sortKey = 'serviceId', sortDir = -1, currentPage =
 // -- INIT --------------------------------------------------
 (function init() {
   const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
-  if (u.name) {
-    (document.getElementById('u-name')||{}).textContent = u.name;
-    (document.getElementById('u-avatar')||{}).textContent = u.name.charAt(0).toUpperCase();
-    (document.getElementById('u-role')||{}).textContent = u.role === 'admin' ? 'Administrator' : 'Field Engineer';
+  const name = u.name || sessionStorage.getItem('schiller_name');
+  if (name) {
+    (document.getElementById('emp-name')||{}).textContent = name;
+    (document.getElementById('emp-avatar')||{}).textContent = name.charAt(0).toUpperCase();
+    (document.getElementById('emp-desig')||{}).textContent = u.designation || 'Field Engineer';
     (document.getElementById('sb-role')||{}).textContent = u.role === 'admin' ? 'Admin' : 'Employee';
   }
   (document.getElementById('topbar-date')||{}).textContent = new Date().toLocaleDateString('en-IN', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
