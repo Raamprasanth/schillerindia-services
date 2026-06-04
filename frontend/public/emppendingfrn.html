@@ -413,7 +413,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             </div>
             <div class="ff">
               <label>DEF Part SNO</label>
-              <input type="text" id="upd-defpartsno" class="locked-field" readonly />
+              <input type="text" id="upd-defpartsno" />
             </div>
           </div>
         </div>
@@ -825,7 +825,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('unitStatus')">Unit St <span class="si">&#8693;</span></th>
             <th onclick="sortBy('defMod')">Def Mod / Brd <span class="si">&#8693;</span></th>
             <th onclick="sortBy('defGir')">Def Gir No <span class="si">&#8693;</span></th>
-            <th>Final Remarks</th>
+            <th onclick="sortBy('bscon')">BSCON <span class="si">&#8693;</span></th>
             <th onclick="sortBy('pdays')" class="sorted">Pend Days <span class="si">&#8693;</span></th>
             <th>Repair</th>
             <th>Spares Req</th>
@@ -1085,7 +1085,7 @@ function renderTable(){
     <td>${unitPill(d.unitStatus)}</td>
     <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;font-size:11px;">${esc(d.defMod||'-')}</td>
     <td><span class="gir-badge">${esc(d.defGir||'-')}</span></td>
-    <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--soft);">${esc(d.finalRemarks||d.remarks||'-')}</td>
+    <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--soft);" title="${esc(d.bscon||'-')}">${esc(d.bscon||'-')}</td>
     <td style="font-weight:600;">${d.pdays}</td>
     <td>${renderRepairStateButton(rid,!!d.rtfrnSent,!!d.rtfrnCompleted,'RT FRN')}</td>
   </tr>`;}).join('');}
@@ -1883,7 +1883,7 @@ async function submitUpdate(){
   if(err){showUpdMsg('Please fill all required fields: RA Engineer, Ship Date, Destination, Technical Remarks, Final Remarks, Type of Work, Revalue.','err');return;}
   // Yes ? Completed FRN | No ? Under Repair
   const statusVal=(selectedTypeWork==='Upgrade' || sameGir==='yes')?'completed':'under_repair';
-  const payload={raEng:document.getElementById('upd-raeng').value,defUnitGir:repGirNo,repGirNo:repGirNo,finalRemarks:document.getElementById('upd-finalremarks').value.trim(),techRemarks:document.getElementById('upd-techremarks').value,components:document.getElementById('upd-components').value,revalue:document.getElementById('upd-revalue').value?Number(document.getElementById('upd-revalue').value):0,shipSc:document.getElementById('upd-shipsc').value,destination:document.getElementById('upd-destination').value,typeWork:selectedTypeWork,status:statusVal,updatedAt:new Date().toISOString()};
+  const payload={raEng:document.getElementById('upd-raeng').value,defUnitGir:repGirNo,repGirNo:repGirNo,finalRemarks:document.getElementById('upd-finalremarks').value.trim(),techRemarks:document.getElementById('upd-techremarks').value,components:document.getElementById('upd-components').value,revalue:document.getElementById('upd-revalue').value?Number(document.getElementById('upd-revalue').value):0,shipSc:document.getElementById('upd-shipsc').value,destination:document.getElementById('upd-destination').value,typeWork:selectedTypeWork,status:statusVal,defPartSno:document.getElementById('upd-defpartsno').value.trim(),updatedAt:new Date().toISOString()};
   const btn=document.getElementById('upd-save-btn');btn.disabled=true;btn.textContent='\uD83D\uDCBE Saving...';
   try{
     const res=await fetch(`${API}/api/emp/frn/${id}/update`,{method:'PUT',headers:authHeaders(),body:JSON.stringify(payload)});
@@ -2200,7 +2200,7 @@ async function submitToEscalationQueue(){
     btn.textContent='Queue to In House FRN Replacement';
   }
 }
-function exportCSV(){const headers=['#','Entry Date','SC RNo','SC Eng','FRN No','Branch','Engineer','Customer','Model','Unit Status','Def Mod','Def Gir No','Final Remarks','Type of Work','Pend Days'];const rows=filtered.map((d,i)=>[i+1,d.entryDate,d.scRno,d.scEng,d.frnNo,d.branch||d.region,d.eng,d.customer,d.model,d.unitStatus,d.defMod,d.defGir,d.finalRemarks||d.remarks,d.typeWork,d.pdays]);const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='pending-frn-'+new Date().toISOString().split('T')[0]+'.csv';a.click();showToast('Exported '+filtered.length+' records.','ok');}
+function exportCSV(){const headers=['#','Entry Date','SC RNo','SC Eng','FRN No','Branch','Engineer','Customer','Model','Unit Status','Def Mod','Def Gir No','BSCON','Type of Work','Pend Days'];const rows=filtered.map((d,i)=>[i+1,d.entryDate,d.scRno,d.scEng,d.frnNo,d.branch||d.region,d.eng,d.customer,d.model,d.unitStatus,d.defMod,d.defGir,d.bscon,d.typeWork,d.pdays]);const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='pending-frn-'+new Date().toISOString().split('T')[0]+'.csv';a.click();showToast('Exported '+filtered.length+' records.','ok');}
 
 function configurePendingStatCards(){
   const cards=document.querySelectorAll('.stats-row .stat-card');
@@ -2256,7 +2256,7 @@ function renderTable(){
     <td><span class="s-pill ${pillCls(d.unitStatus)}">${esc(d.unitStatus||'NA')}</span></td>
     <td>${esc(d.defMod||'-')}</td>
     <td><span class="gir-badge">${esc(d.defGir||'-')}</span></td>
-    <td title="${esc(d.finalRemarks||d.remarks||'-')}">${esc((d.finalRemarks||d.remarks||'-').slice(0,42))}${(d.finalRemarks||d.remarks||'').length>42?'...':''}</td>
+    <td title="${esc(d.bscon||'-')}">${esc((d.bscon||'-').slice(0,42))}${(d.bscon||'').length>42?'...':''}</td>
     <td style="font-weight:600;">${d.pdays}</td>
     <td>${renderRepairStateButton(rid,!!d.rtfrnSent,!!d.rtfrnCompleted,'RT FRN')}</td>
     <td><button class="btn-xs ${d.srEscalationQueuedAt?'dr-queued':'dr-action'}" onclick="queueSrEscalation('${rid}')" title="${d.srEscalationQueuedAt?'Already queued for DR escalation':'Queue to DR escalation'}">DR</button></td>
@@ -2612,7 +2612,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeUpdateModal();
 const AUTO_MAIL_TO='raam3124@gmail.com';
 function getMailWindow(now){const h=now.getHours(),m=now.getMinutes(),mins=h*60+m;if(mins>=660&&mins<=899)return'W1';if(mins>=900||mins<=659)return'W2';return null;}
 function getWindowKey(win,now){let d;if(win==='W1'){d=now.toISOString().split('T')[0];}else{const h=now.getHours();if(h<11){const y=new Date(now);y.setDate(y.getDate()-1);d=y.toISOString().split('T')[0];}else{d=now.toISOString().split('T')[0];}}return`frn_automail_${win}_${d}`;}
-function buildAutoMailBody(records){const now=new Date().toLocaleString('en-IN');const lines=['---------------------------------------------------------------','SCHILLERINDIA - PENDING FRN AUTO SUMMARY REPORT',`Generated : ${now}`,`Total Records : ${records.length}`,'---------------------------------------------------------------',''];records.forEach((d,i)=>{lines.push(`[${i+1}] SC Ref: ${d.scRno||'-'} | FRN: ${d.frnNo||'-'} | Customer: ${d.customer||'-'}`);lines.push(`    Model: ${d.model||'-'} | Unit Status: ${d.unitStatus||'-'} | Branch: ${d.branch||d.region||'-'}`);lines.push(`    Engineer: ${d.eng||d.scEng||'-'} | Pend Days: ${d.pdays} | Type: ${d.typeWork||'-'}`);lines.push(`    Final Remarks: ${d.finalRemarks||d.remarks||'-'}`);lines.push('');});lines.push('-------------------------------------------------------------','This is an automated summary from SchillerIndia Services Portal.');return lines.join('\n');}
+function buildAutoMailBody(records){const now=new Date().toLocaleString('en-IN');const lines=['---------------------------------------------------------------','SCHILLERINDIA - PENDING FRN AUTO SUMMARY REPORT',`Generated : ${now}`,`Total Records : ${records.length}`,'---------------------------------------------------------------',''];records.forEach((d,i)=>{lines.push(`[${i+1}] SC Ref: ${d.scRno||'-'} | FRN: ${d.frnNo||'-'} | Customer: ${d.customer||'-'}`);lines.push(`    Model: ${d.model||'-'} | Unit Status: ${d.unitStatus||'-'} | Branch: ${d.branch||d.region||'-'}`);lines.push(`    Engineer: ${d.eng||d.scEng||'-'} | Pend Days: ${d.pdays} | Type: ${d.typeWork||'-'}`);lines.push(`    BSCON: ${d.bscon||'-'}`);lines.push('');});lines.push('-------------------------------------------------------------','This is an automated summary from SchillerIndia Services Portal.');return lines.join('\n');}
 function triggerAutoMail(win){if(!FRN_DATA.length)return;const key=getWindowKey(win,new Date());if(localStorage.getItem(key)==='sent')return;const winLabel=win==='W1'?'Morning (11 AM - 3 PM)':'Afternoon/Night (3 PM - 11 AM)';const subject=encodeURIComponent(`[SchillerIndia] Pending FRN Summary - ${winLabel} - ${new Date().toLocaleDateString('en-IN')} - ${FRN_DATA.length} records`);const body=encodeURIComponent(buildAutoMailBody(FRN_DATA));localStorage.setItem(key,'sent');localStorage.setItem(AM_TS_KEY,new Date().toISOString());updateAutoMailBadge();window.location.href=`mailto:${AUTO_MAIL_TO}?subject=${subject}&body=${body}`;showToast(`&#128231; Auto-mail triggered (${winLabel}) - ${FRN_DATA.length} records`,'ok');}
 function checkAutoMail(){const win=getMailWindow(new Date());if(!win)return;const key=getWindowKey(win,new Date());if(localStorage.getItem(key)!=='sent'&&FRN_DATA.length>0)triggerAutoMail(win);}
 function startAutoMailScheduler(){setInterval(checkAutoMail,60_000);}
