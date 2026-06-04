@@ -634,6 +634,78 @@ router.get('/performance/summary', verifyToken, async (req, res) => {
   }
 });
 
+// ══════════════════════════════════════════════════════════════════════════
+//  GET /api/reports/performance/leaderboard  — all divisions for a month
+// ══════════════════════════════════════════════════════════════════════════
+router.get('/performance/leaderboard', verifyToken, async (req, res) => {
+  try {
+    const { month } = req.query;
+    if (!month) return res.status(400).json({ success: false, message: 'month is required' });
+    const { getPerformanceReviewOptions } = require('../services/performanceReviewService');
+    const options = await getPerformanceReviewOptions();
+    const divisions = (options.divisions || []).map(d => d.name || d).filter(Boolean);
+
+    const { getPerformanceReviewData } = require('../services/performanceReviewService');
+    const results = await Promise.all(
+      divisions.map(async (div) => {
+        try {
+          const data = await getPerformanceReviewData({ scope: 'division', month, division: div });
+          const s = summarizePerformanceRows(data);
+          return {
+            division: div,
+            totalTracked: s.totalTracked || 0,
+            completedCount: s.completedCount || 0,
+            completionRate: s.completionRate || 0,
+            criticalPendingCount: s.criticalPendingCount || 0,
+            pendingCount: s.pendingCount || 0,
+          };
+        } catch (_e) {
+          return { division: div, totalTracked: 0, completedCount: 0, completionRate: 0, criticalPendingCount: 0, pendingCount: 0 };
+        }
+      })
+    );
+    results.sort((a, b) => b.completionRate - a.completionRate);
+    return res.json({ success: true, month, leaderboard: results });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+//  GET /api/reports/performance/trend  — 6-month history for scope
+// ══════════════════════════════════════════════════════════════════════════
+router.get('/performance/trend', verifyToken, async (req, res) => {
+  try {
+    const { scope, division, employee, months: monthsParam } = req.query;
+    if (!scope) return res.status(400).json({ success: false, message: 'scope is required' });
+    const count = Math.min(parseInt(monthsParam) || 6, 12);
+
+    const { getPerformanceReviewData } = require('../services/performanceReviewService');
+
+    // Build list of last N months
+    const now = new Date();
+    const monthList = [];
+    for (let i = count - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      monthList.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+    }
+
+    const points = await Promise.all(
+      monthList.map(async (month) => {
+        try {
+          const data = await getPerformanceReviewData({ scope, month, division, employee });
+          const s = summarizePerformanceRows(data);
+          return { month, completionRate: s.completionRate || 0, totalTracked: s.totalTracked || 0, completedCount: s.completedCount || 0 };
+        } catch (_e) {
+          return { month, completionRate: 0, totalTracked: 0, completedCount: 0 };
+        }
+      })
+    );
+    return res.json({ success: true, scope, division, employee, trend: points });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
 
 router.get('/stats', verifyToken, async (req, res) => {
   try {
