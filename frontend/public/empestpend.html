@@ -754,6 +754,7 @@ table.est-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('custName')">Customer <span class="si">&#8693;</span></th>
             <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
             <th onclick="sortBy('unitSts')">Unit Sts <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('partNo')">Part No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('defMod')">Def Mod / Brd <span class="si">&#8693;</span></th>
             <th onclick="sortBy('defGir')">Def GIR No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('estAmount')">Est. Amount <span class="si">&#8693;</span></th>
@@ -1533,6 +1534,7 @@ function renderTable(){
         <td style="max-width:170px;overflow:hidden;text-overflow:ellipsis;font-weight:500;">${esc(s.custName||s.customer||'-')}</td>
         <td style="font-weight:600;color:var(--accent2);">${esc(s.model||'-')}</td>
         <td><span class="s-pill ${s.unitSts==='OW'?'sp-hold':'sp-pending'}">${esc(s.unitSts||'-')}</span></td>
+        <td>${esc(s.partNo||'-')}</td>
         <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;font-size:11px;">${esc(s.defMod||'-')}</td>
         <td><span class="gir-badge">${esc(s.defGir||'-')}</span></td>
         <td class="amount-cell">${amt}</td>

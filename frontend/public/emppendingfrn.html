@@ -826,6 +826,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('customer')">Cust Name <span class="si">&#8693;</span></th>
             <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
             <th onclick="sortBy('unitStatus')">Unit St <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('partNo')">Part No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('defMod')">Def Mod / Brd <span class="si">&#8693;</span></th>
             <th onclick="sortBy('defGir')">Def Gir No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('bscon')">BSCON <span class="si">&#8693;</span></th>
@@ -2260,6 +2261,7 @@ function renderTable(){
     <td>${esc(d.customer||'-')}</td>
     <td>${esc(d.model||'-')}</td>
     <td><span class="s-pill ${pillCls(d.unitStatus)}">${esc(d.unitStatus||'NA')}</span></td>
+    <td>${esc(d.partNo||'-')}</td>
     <td>${esc(d.defMod||'-')}</td>
     <td><span class="gir-badge">${esc(d.defGir||'-')}</span></td>
     <td title="${esc(d.bscon||'-')}">${esc((d.bscon||'-').slice(0,42))}${(d.bscon||'').length>42?'...':''}</td>

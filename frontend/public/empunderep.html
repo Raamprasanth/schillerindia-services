@@ -544,6 +544,7 @@ body.panel-open .main{display:none;}
             <th onclick="sortBy('custName')">Cust Name <span class="si">&#8693;</span></th>
             <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
             <th onclick="sortBy('unitSts')">Unit St <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('partNo')">Part No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('defMod')">Def Mod / Brd Name <span class="si">&#8693;</span></th>
             <th onclick="sortBy('defGir')">Def Gir No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('finalRemarks')">Final Remarks <span class="si">&#8693;</span></th>
@@ -1009,6 +1010,7 @@ function renderTable(){
         <td style="max-width:170px;overflow:hidden;text-overflow:ellipsis;font-size:12px;" title="${esc(d.custName||d.customer||'')}">${esc(d.custName||d.customer||'-')}</td>
         <td style="font-weight:600;font-size:12px;color:var(--accent2);">${esc(d.model||'-')}</td>
         <td>${unitPill(d.unitSts)}</td>
+        <td>${esc(d.partNo||'-')}</td>
         <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;font-size:11px;" title="${esc(d.defMod||'')}">${esc(d.defMod||'-')}</td>
         <td><span class="gir-badge">${esc(d.defGir||'-')}</span></td>
         <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--soft);" title="${esc(d.finalRemarks||'')}">${esc(d.finalRemarks||'-')}</td>
