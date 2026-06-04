@@ -65,6 +65,13 @@ function pad(value) {
   return String(value).padStart(2, '0');
 }
 
+function visibleLatestLog(log, activeTotal = 0) {
+  if (!log) return null;
+  const logTotal = Number(log.totalCount || 0);
+  if (activeTotal === 0 && log.status === 'failed' && logTotal === 0) return null;
+  return log;
+}
+
 function getPreviousIstDateParts(parts) {
   const current = makeUtcFromIst(parts.year, parts.month, parts.day, 0, 0, 0, 0);
   const previous = toIstDate(new Date(current.getTime() - 24 * 60 * 60 * 1000));
@@ -348,9 +355,10 @@ router.get('/status', protect, async (req, res) => {
     EscalationQueue.countDocuments({ module: 'frn', queuedAt: { $gte: queueWindow.windowStart, $lte: queueWindow.windowEnd } }),
     EscalationQueue.countDocuments({ module: 'est', queuedAt: { $gte: queueWindow.windowStart, $lte: queueWindow.windowEnd } }),
   ]);
+  const totalQueued = frnQueued + estQueued;
   res.json({
     label: labelFor(labels, 'main_combined'),
-    latest: latest || null,
+    latest: visibleLatestLog(latest, totalQueued),
     recipients,
     queue: {
       slot: queueWindow.slot,
@@ -359,7 +367,7 @@ router.get('/status', protect, async (req, res) => {
       windowDate: queueWindow.windowDate,
       frnCount: frnQueued,
       estCount: estQueued,
-      totalCount: frnQueued + estQueued,
+      totalCount: totalQueued,
     },
   });
 });
@@ -391,7 +399,7 @@ router.get('/status/under-repair', protect, async (req, res) => {
     recipients: Array.from(new Set([...(scrapRecipients || []), ...(followupRecipients || [])])),
     scrap: {
       recipients: scrapRecipients,
-      latest: latestScrap || null,
+      latest: visibleLatestLog(latestScrap, scrapQueued),
       queue: {
         slot: scrapQueueWindow.slot,
         slotLabel: composeSlotLabel(labels, 'ur_scrap', scrapQueueWindow.slotLabel),
@@ -402,7 +410,7 @@ router.get('/status/under-repair', protect, async (req, res) => {
     },
     followup: {
       recipients: followupRecipients,
-      latest: latestFollowup || null,
+      latest: visibleLatestLog(latestFollowup, followupQueued),
       queue: {
         slot: followupQueueWindow.slot,
         slotLabel: composeSlotLabel(labels, 'ur_followup', followupQueueWindow.slotLabel),
@@ -437,7 +445,7 @@ router.get('/status/sr', protect, async (req, res) => {
     label: labelFor(labels, 'sr_escalation'),
     recipients,
     morning: {
-      latest: latestMorning || null,
+      latest: visibleLatestLog(latestMorning, morningData.totalCount),
       queue: {
         slot: 'sr_morning',
         slotLabel: composeSlotLabel(labels, 'sr_escalation', 'SR Morning'),
@@ -449,7 +457,7 @@ router.get('/status/sr', protect, async (req, res) => {
       },
     },
     afternoon: {
-      latest: latestAfternoon || null,
+      latest: visibleLatestLog(latestAfternoon, afternoonData.totalCount),
       queue: {
         slot: 'sr_afternoon',
         slotLabel: composeSlotLabel(labels, 'sr_escalation', 'SR Afternoon'),
@@ -487,7 +495,7 @@ router.get('/status/to', protect, async (req, res) => {
     label: labelFor(labels, 'to_escalation'),
     recipients,
     morning: {
-      latest: latestMorning || null,
+      latest: visibleLatestLog(latestMorning, morningData.totalCount),
       queue: {
         slot: 'to_morning',
         slotLabel: composeSlotLabel(labels, 'to_escalation', 'TO Morning'),
@@ -500,7 +508,7 @@ router.get('/status/to', protect, async (req, res) => {
       },
     },
     evening: {
-      latest: latestEvening || null,
+      latest: visibleLatestLog(latestEvening, eveningData.totalCount),
       queue: {
         slot: 'to_evening',
         slotLabel: composeSlotLabel(labels, 'to_escalation', 'TO Evening'),
@@ -533,7 +541,7 @@ router.get('/status/:kind', protect, async (req, res) => {
   res.json({
     label: labelFor(labels, config.reportType),
     recipients,
-    latest: latest || null,
+    latest: visibleLatestLog(latest, totalCount),
     queue: {
       slot: queueWindow.slot,
       slotLabel: composeSlotLabel(labels, config.reportType, queueWindow.slotLabel),

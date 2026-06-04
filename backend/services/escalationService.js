@@ -14,7 +14,8 @@ const IST_OFFSET_MINUTES = 330;
 const IST_OFFSET_MS = IST_OFFSET_MINUTES * 60 * 1000;
 const REPORT_DIR = path.join(__dirname, '..', 'generated-reports', 'escalations');
 const PYTHON_SCRIPT = path.join(__dirname, '..', 'scripts', 'send_escalation_mail.py');
-const BUNDLED_PYTHON = 'C:\\Users\\Raamprasanth\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe';
+const BUNDLED_PYTHON = path.join(os.homedir(), '.cache', 'codex-runtimes', 'codex-primary-runtime', 'dependencies', 'python', process.platform === 'win32' ? 'python.exe' : 'bin/python');
+const MAIL_ATTEMPTS = Math.max(1, parseInt(process.env.ESCALATION_MAIL_ATTEMPTS || '2', 10) || 2);
 const UR_DAILY_TYPES = ['UR Stock', 'WS Stock', 'External Repair', 'Completed', 'Supplier Warrenty', 'No Fault', 'Given to PSP'];
 const CUSTOM_ESCALATIONS = {
   prf_ob: {
@@ -114,6 +115,31 @@ async function getEscalationSenderConfig() {
       ssl: String(process.env.ESCALATION_SMTP_SSL || 'false').trim().toLowerCase() === 'true',
     };
   }
+}
+
+function getEscalationSenderConfigError(sender = {}) {
+  if (!String(sender.smtpHost || '').trim()) return 'Escalation sender SMTP host is not configured.';
+  if (!String(sender.fromEmail || '').trim()) return 'Escalation sender from email is not configured.';
+  return '';
+}
+
+async function getReadyEscalationSenderConfig() {
+  const sender = await getEscalationSenderConfig();
+  const error = getEscalationSenderConfigError(sender);
+  if (error) {
+    const err = new Error(error);
+    err.code = 'ESCALATION_SENDER_NOT_CONFIGURED';
+    throw err;
+  }
+  return sender;
+}
+
+function isSkippedEscalationError(error) {
+  return error && error.code === 'ESCALATION_SENDER_NOT_CONFIGURED';
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function toIstDate(date = new Date()) {
@@ -936,9 +962,11 @@ function buildToMailPayload(slotWindow, data) {
 
 function getPythonCandidates() {
   const candidates = [];
-  if (process.env.ESCALATION_PYTHON) candidates.push({ command: process.env.ESCALATION_PYTHON, argsPrefix: [] });
+  const configuredPython = String(process.env.ESCALATION_PYTHON || process.env.PYTHON || '').trim();
+  if (configuredPython) candidates.push({ command: configuredPython, argsPrefix: [] });
   if (fs.existsSync(BUNDLED_PYTHON)) candidates.push({ command: BUNDLED_PYTHON, argsPrefix: [] });
-  candidates.push({ command: 'py', argsPrefix: ['-3'] });
+  if (process.platform === 'win32') candidates.push({ command: 'py', argsPrefix: ['-3'] });
+  candidates.push({ command: 'python3', argsPrefix: [] });
   candidates.push({ command: 'python', argsPrefix: [] });
   return candidates;
 }
@@ -957,10 +985,10 @@ function execFileAsync(command, args, options) {
   });
 }
 
-async function sendEscalationWorkbook(payload, outputPath) {
+async function sendEscalationWorkbook(payload, outputPath, senderConfig = null) {
   const tmpInput = path.join(os.tmpdir(), `schiller-escalation-${Date.now()}.json`);
   fs.writeFileSync(tmpInput, JSON.stringify(payload, null, 2), 'utf8');
-  const sender = await getEscalationSenderConfig();
+  const sender = senderConfig || await getReadyEscalationSenderConfig();
   const childEnv = {
     ...process.env,
     ESCALATION_SMTP_HOST: sender.smtpHost || '',
@@ -974,16 +1002,19 @@ async function sendEscalationWorkbook(payload, outputPath) {
 
   let lastError = null;
   for (const candidate of getPythonCandidates()) {
-    try {
-      await execFileAsync(candidate.command, [...candidate.argsPrefix, PYTHON_SCRIPT, tmpInput, outputPath], {
-        cwd: path.join(__dirname, '..'),
-        env: childEnv,
-        windowsHide: true,
-      });
-      try { fs.unlinkSync(tmpInput); } catch (_) {}
-      return;
-    } catch (error) {
-      lastError = error;
+    for (let attempt = 1; attempt <= MAIL_ATTEMPTS; attempt += 1) {
+      try {
+        await execFileAsync(candidate.command, [...candidate.argsPrefix, PYTHON_SCRIPT, tmpInput, outputPath], {
+          cwd: path.join(__dirname, '..'),
+          env: childEnv,
+          windowsHide: true,
+        });
+        try { fs.unlinkSync(tmpInput); } catch (_) {}
+        return;
+      } catch (error) {
+        lastError = error;
+        if (attempt < MAIL_ATTEMPTS) await sleep(1000 * attempt);
+      }
     }
   }
 
@@ -1035,9 +1066,22 @@ async function runEscalationSlot(slot, options = {}) {
 
     fs.mkdirSync(REPORT_DIR, { recursive: true });
     const reportPath = path.join(REPORT_DIR, `dispatch-escalation-${slotWindow.slot}-${slotWindow.jobDate}.xlsx`);
+    log = await EscalationRunLog.findByIdAndUpdate(
+      log._id,
+      {
+        $set: {
+          frnCount: data.frnRows.length,
+          estCount: data.estimationRows.length,
+          totalCount,
+          reportPath,
+        },
+      },
+      { new: true }
+    );
+    const sender = await getReadyEscalationSenderConfig();
     const payload = buildMailPayload(slotWindow, data);
     payload.to = recipients;
-    await sendEscalationWorkbook(payload, reportPath);
+    await sendEscalationWorkbook(payload, reportPath, sender);
 
     log = await EscalationRunLog.findByIdAndUpdate(
       log._id,
@@ -1056,8 +1100,9 @@ async function runEscalationSlot(slot, options = {}) {
 
     return { ok: true, message: 'Escalation report sent successfully.', log };
   } catch (error) {
-    log = await EscalationRunLog.findByIdAndUpdate(log._id, { $set: { status: 'failed', error: error.message || 'Unknown error' } }, { new: true });
-    return { ok: false, message: error.message || 'Escalation failed.', log };
+    const skipped = isSkippedEscalationError(error);
+    log = await EscalationRunLog.findByIdAndUpdate(log._id, { $set: { status: skipped ? 'skipped' : 'failed', error: error.message || 'Unknown error' } }, { new: true });
+    return { ok: false, skipped, message: error.message || 'Escalation failed.', log };
   }
 }
 
@@ -1104,9 +1149,21 @@ async function runUrEscalationSlot(slot, options = {}) {
 
     fs.mkdirSync(REPORT_DIR, { recursive: true });
     const reportPath = path.join(REPORT_DIR, slotWindow.reportName);
+    log = await EscalationRunLog.findByIdAndUpdate(
+      log._id,
+      {
+        $set: {
+          urCount: data.rows.length,
+          totalCount: data.rows.length,
+          reportPath,
+        },
+      },
+      { new: true }
+    );
+    const sender = await getReadyEscalationSenderConfig();
     const payload = buildUrMailPayload(slotWindow, data);
     payload.to = recipients;
-    await sendEscalationWorkbook(payload, reportPath);
+    await sendEscalationWorkbook(payload, reportPath, sender);
 
     log = await EscalationRunLog.findByIdAndUpdate(
       log._id,
@@ -1124,8 +1181,9 @@ async function runUrEscalationSlot(slot, options = {}) {
 
     return { ok: true, message: 'Under-repair escalation report sent successfully.', log };
   } catch (error) {
-    log = await EscalationRunLog.findByIdAndUpdate(log._id, { $set: { status: 'failed', error: error.message || 'Unknown error' } }, { new: true });
-    return { ok: false, message: error.message || 'Under-repair escalation failed.', log };
+    const skipped = isSkippedEscalationError(error);
+    log = await EscalationRunLog.findByIdAndUpdate(log._id, { $set: { status: skipped ? 'skipped' : 'failed', error: error.message || 'Unknown error' } }, { new: true });
+    return { ok: false, skipped, message: error.message || 'Under-repair escalation failed.', log };
   }
 }
 
@@ -1173,9 +1231,22 @@ async function runSrEscalationSlot(slot, options = {}) {
 
     fs.mkdirSync(REPORT_DIR, { recursive: true });
     const reportPath = path.join(REPORT_DIR, slotWindow.reportName);
+    log = await EscalationRunLog.findByIdAndUpdate(
+      log._id,
+      {
+        $set: {
+          frnCount: data.frnRows.length,
+          estCount: data.estimationRows.length,
+          totalCount,
+          reportPath,
+        },
+      },
+      { new: true }
+    );
+    const sender = await getReadyEscalationSenderConfig();
     const payload = buildSrMailPayload(slotWindow, data);
     payload.to = recipients;
-    await sendEscalationWorkbook(payload, reportPath);
+    await sendEscalationWorkbook(payload, reportPath, sender);
     await clearSrEscalationQueue(data.queueDocs || []);
 
     log = await EscalationRunLog.findByIdAndUpdate(
@@ -1195,8 +1266,9 @@ async function runSrEscalationSlot(slot, options = {}) {
 
     return { ok: true, message: 'SR escalation report sent successfully.', log };
   } catch (error) {
-    log = await EscalationRunLog.findByIdAndUpdate(log._id, { $set: { status: 'failed', error: error.message || 'Unknown error' } }, { new: true });
-    return { ok: false, message: error.message || 'SR escalation failed.', log };
+    const skipped = isSkippedEscalationError(error);
+    log = await EscalationRunLog.findByIdAndUpdate(log._id, { $set: { status: skipped ? 'skipped' : 'failed', error: error.message || 'Unknown error' } }, { new: true });
+    return { ok: false, skipped, message: error.message || 'SR escalation failed.', log };
   }
 }
 
@@ -1244,9 +1316,23 @@ async function runToEscalationSlot(slot, options = {}) {
 
     fs.mkdirSync(REPORT_DIR, { recursive: true });
     const reportPath = path.join(REPORT_DIR, slotWindow.reportName);
+    log = await EscalationRunLog.findByIdAndUpdate(
+      log._id,
+      {
+        $set: {
+          frnCount: data.frnRows.length,
+          estCount: data.estimationRows.length,
+          urCount: (data.underRepairRows || []).length,
+          totalCount,
+          reportPath,
+        },
+      },
+      { new: true }
+    );
+    const sender = await getReadyEscalationSenderConfig();
     const payload = buildToMailPayload(slotWindow, data);
     payload.to = recipients;
-    await sendEscalationWorkbook(payload, reportPath);
+    await sendEscalationWorkbook(payload, reportPath, sender);
     await clearToEscalationQueue(data.queueDocs || []);
 
     log = await EscalationRunLog.findByIdAndUpdate(
@@ -1267,8 +1353,9 @@ async function runToEscalationSlot(slot, options = {}) {
 
     return { ok: true, message: 'TO escalation report sent successfully.', log };
   } catch (error) {
-    log = await EscalationRunLog.findByIdAndUpdate(log._id, { $set: { status: 'failed', error: error.message || 'Unknown error' } }, { new: true });
-    return { ok: false, message: error.message || 'TO escalation failed.', log };
+    const skipped = isSkippedEscalationError(error);
+    log = await EscalationRunLog.findByIdAndUpdate(log._id, { $set: { status: skipped ? 'skipped' : 'failed', error: error.message || 'Unknown error' } }, { new: true });
+    return { ok: false, skipped, message: error.message || 'TO escalation failed.', log };
   }
 }
 
@@ -1315,9 +1402,20 @@ async function runCustomEscalationSlot(slot, options = {}) {
 
     fs.mkdirSync(REPORT_DIR, { recursive: true });
     const reportPath = path.join(REPORT_DIR, slotWindow.reportName);
+    log = await EscalationRunLog.findByIdAndUpdate(
+      log._id,
+      {
+        $set: {
+          totalCount: data.rows.length,
+          reportPath,
+        },
+      },
+      { new: true }
+    );
+    const sender = await getReadyEscalationSenderConfig();
     const payload = buildCustomMailPayload(slotWindow, data);
     payload.to = recipients;
-    await sendEscalationWorkbook(payload, reportPath);
+    await sendEscalationWorkbook(payload, reportPath, sender);
 
     log = await EscalationRunLog.findByIdAndUpdate(
       log._id,
@@ -1334,8 +1432,9 @@ async function runCustomEscalationSlot(slot, options = {}) {
 
     return { ok: true, message: `${slotWindow.title} sent successfully.`, log };
   } catch (error) {
-    log = await EscalationRunLog.findByIdAndUpdate(log._id, { $set: { status: 'failed', error: error.message || 'Unknown error' } }, { new: true });
-    return { ok: false, message: error.message || `${slotWindow.title} failed.`, log };
+    const skipped = isSkippedEscalationError(error);
+    log = await EscalationRunLog.findByIdAndUpdate(log._id, { $set: { status: skipped ? 'skipped' : 'failed', error: error.message || 'Unknown error' } }, { new: true });
+    return { ok: false, skipped, message: error.message || `${slotWindow.title} failed.`, log };
   }
 }
 
