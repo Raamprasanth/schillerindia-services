@@ -10,6 +10,11 @@ const {
   saveEscalationLabelMap,
   getEscalationTypesWithLabels,
 } = require('../utils/escalationLabels');
+const {
+  getEscalationTimeMap,
+  saveEscalationTimeMap,
+  applyEscalationTimes,
+} = require('../utils/escalationSchedule');
 const { sendEscalationSenderTest } = require('../services/escalationService');
 
 const ESCALATION_KEY = 'escalation_emails';
@@ -137,7 +142,14 @@ router.get('/escalation-emails', async (req, res) => {
 router.get('/escalation-labels', async (req, res) => {
   try {
     const labels = await getEscalationLabelMap();
-    res.json({ success: true, labels, escalationTypes: await getEscalationTypesWithLabels() });
+    const times = await getEscalationTimeMap();
+    res.json({
+      success: true,
+      labels,
+      times,
+      escalationTypes: await getEscalationTypesWithLabels(),
+      escalationTimes: applyEscalationTimes(times),
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -243,7 +255,16 @@ router.delete('/escalation-emails/:id', async (req, res) => {
 router.put('/escalation-labels', async (req, res) => {
   try {
     const labels = await saveEscalationLabelMap(req.body?.labels || req.body || {}, req.user?.name || '');
-    res.json({ success: true, labels, escalationTypes: await getEscalationTypesWithLabels() });
+    const times = req.body?.times
+      ? await saveEscalationTimeMap(req.body.times, req.user?.name || '')
+      : await getEscalationTimeMap();
+    res.json({
+      success: true,
+      labels,
+      times,
+      escalationTypes: await getEscalationTypesWithLabels(),
+      escalationTimes: applyEscalationTimes(times),
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

@@ -9,6 +9,7 @@ const EstimationPending = require('../models/EstimationPending');
 const EscalationRunLog = require('../models/EscalationRunLog');
 const EscalationQueue = require('../models/EscalationQueue');
 const AppSetting = require('../models/AppSetting');
+const { getEscalationTimeMap, parseTime, formatTimeLabel } = require('../utils/escalationSchedule');
 
 const IST_OFFSET_MINUTES = 330;
 const IST_OFFSET_MS = IST_OFFSET_MINUTES * 60 * 1000;
@@ -199,18 +200,23 @@ function addIstDays(parts, days) {
   };
 }
 
-function getNextSupplierWarrantyRun(parts, referenceDate) {
+function scheduledTime(times, key, fallback) {
+  return parseTime(times?.[key], fallback);
+}
+
+function getNextSupplierWarrantyRun(parts, referenceDate, times = {}) {
   const weekday = toIstDate(referenceDate).getUTCDay();
   const minutes = parts.hour * 60 + parts.minute;
-  const runMinutes = 20 * 60 + 30;
-  if (weekday === 2 && minutes <= runMinutes) return { parts, label: 'Supplier Warranty Tuesday', startOffset: -4 };
-  if (weekday === 5 && minutes <= runMinutes) return { parts, label: 'Supplier Warranty Friday', startOffset: -3 };
+  const run = scheduledTime(times, 'supplier_warranty', '20:30');
+  const runLabel = formatTimeLabel(run.value);
+  if (weekday === 2 && minutes <= run.minutes) return { parts, label: `Supplier Warranty Tuesday ${runLabel}`, startOffset: -4, run };
+  if (weekday === 5 && minutes <= run.minutes) return { parts, label: `Supplier Warranty Friday ${runLabel}`, startOffset: -3, run };
   const daysUntilTuesday = (9 - weekday) % 7 || 7;
   const daysUntilFriday = (12 - weekday) % 7 || 7;
   if (daysUntilTuesday < daysUntilFriday) {
-    return { parts: addIstDays(parts, daysUntilTuesday), label: 'Supplier Warranty Tuesday', startOffset: -4 };
+    return { parts: addIstDays(parts, daysUntilTuesday), label: `Supplier Warranty Tuesday ${runLabel}`, startOffset: -4, run };
   }
-  return { parts: addIstDays(parts, daysUntilFriday), label: 'Supplier Warranty Friday', startOffset: -3 };
+  return { parts: addIstDays(parts, daysUntilFriday), label: `Supplier Warranty Friday ${runLabel}`, startOffset: -3, run };
 }
 
 function pad(value) {
@@ -222,29 +228,35 @@ function formatIstStamp(date) {
   return `${parts.year}-${pad(parts.month)}-${pad(parts.day)} ${pad(parts.hour)}:${pad(parts.minute)} IST`;
 }
 
-function getSlotWindow(slot, referenceDate = new Date()) {
+async function getSlotWindow(slot, referenceDate = new Date()) {
   const nowIst = getIstParts(referenceDate);
+  const times = await getEscalationTimeMap();
+  const morning = scheduledTime(times, 'morning', '11:30');
+  const evening = scheduledTime(times, 'evening', '18:15');
   if (slot === 'morning') {
     const prev = getPreviousIstDateParts(nowIst);
     return {
       slot,
       slotLabel: 'Morning',
       jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
-      windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, 18, 16, 0, 0),
-      windowEnd: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 11, 29, 59, 999),
+      windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, evening.hour, evening.minute + 1, 0, 0),
+      windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, morning.hour, morning.minute, 0, 0).getTime() - 1),
     };
   }
   return {
     slot,
     slotLabel: 'Evening',
     jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
-    windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 11, 30, 0, 0),
-    windowEnd: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 18, 14, 59, 999),
+    windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, morning.hour, morning.minute, 0, 0),
+    windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, evening.hour, evening.minute, 0, 0).getTime() - 1),
   };
 }
 
-function getSrSlotWindow(slot, referenceDate = new Date()) {
+async function getSrSlotWindow(slot, referenceDate = new Date()) {
   const nowIst = getIstParts(referenceDate);
+  const times = await getEscalationTimeMap();
+  const morning = scheduledTime(times, 'sr_morning', '11:00');
+  const afternoon = scheduledTime(times, 'sr_afternoon', '15:00');
   if (slot === 'sr_morning') {
     const prev = getPreviousIstDateParts(nowIst);
     return {
@@ -252,8 +264,8 @@ function getSrSlotWindow(slot, referenceDate = new Date()) {
       category: 'sr',
       slotLabel: 'SR Morning',
       jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
-      windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, 16, 0, 0, 0),
-      windowEnd: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 10, 59, 59, 999),
+      windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, afternoon.hour, afternoon.minute, 0, 0),
+      windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, morning.hour, morning.minute, 0, 0).getTime() - 1),
       reportName: `sr-escalation-morning-${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}.xlsx`,
     };
   }
@@ -262,14 +274,17 @@ function getSrSlotWindow(slot, referenceDate = new Date()) {
     category: 'sr',
     slotLabel: 'SR Afternoon',
     jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
-    windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 11, 0, 0, 0),
-    windowEnd: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 14, 59, 59, 999),
+    windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, morning.hour, morning.minute, 0, 0),
+    windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, afternoon.hour, afternoon.minute, 0, 0).getTime() - 1),
     reportName: `sr-escalation-afternoon-${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}.xlsx`,
   };
 }
 
-function getToSlotWindow(slot, referenceDate = new Date()) {
+async function getToSlotWindow(slot, referenceDate = new Date()) {
   const nowIst = getIstParts(referenceDate);
+  const times = await getEscalationTimeMap();
+  const morning = scheduledTime(times, 'to_morning', '11:00');
+  const evening = scheduledTime(times, 'to_evening', '16:30');
   if (slot === 'to_morning') {
     const prev = getPreviousIstDateParts(nowIst);
     return {
@@ -277,8 +292,8 @@ function getToSlotWindow(slot, referenceDate = new Date()) {
       category: 'to',
       slotLabel: 'TO Morning',
       jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
-      windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, 16, 30, 0, 0),
-      windowEnd: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 10, 59, 59, 999),
+      windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, evening.hour, evening.minute, 0, 0),
+      windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, morning.hour, morning.minute, 0, 0).getTime() - 1),
       reportName: `to-escalation-morning-${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}.xlsx`,
     };
   }
@@ -287,8 +302,8 @@ function getToSlotWindow(slot, referenceDate = new Date()) {
     category: 'to',
     slotLabel: 'TO Evening',
     jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
-    windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 11, 0, 0, 0),
-    windowEnd: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 16, 29, 59, 999),
+    windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, morning.hour, morning.minute, 0, 0),
+    windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, evening.hour, evening.minute, 0, 0).getTime() - 1),
     reportName: `to-escalation-evening-${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}.xlsx`,
   };
 }
@@ -313,8 +328,11 @@ function getPreviousSundayIstDateParts(parts) {
   };
 }
 
-function getUrSlotWindow(slot, referenceDate = new Date()) {
+async function getUrSlotWindow(slot, referenceDate = new Date()) {
   const nowIst = getIstParts(referenceDate);
+  const times = await getEscalationTimeMap();
+  const scrapTime = scheduledTime(times, 'ur_scrap', '11:00');
+  const followupTime = scheduledTime(times, 'ur_followup', '20:00');
   if (slot === 'ur_scrap') {
     const previousSunday = getPreviousSundayIstDateParts(nowIst);
     return {
@@ -322,8 +340,8 @@ function getUrSlotWindow(slot, referenceDate = new Date()) {
       category: 'ur_scrap',
       slotLabel: 'Weekly Scrap',
       jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
-      windowStart: makeUtcFromIst(previousSunday.year, previousSunday.month, previousSunday.day, 11, 0, 0, 0),
-      windowEnd: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 10, 59, 59, 999),
+      windowStart: makeUtcFromIst(previousSunday.year, previousSunday.month, previousSunday.day, scrapTime.hour, scrapTime.minute, 0, 0),
+      windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, scrapTime.hour, scrapTime.minute, 0, 0).getTime() - 1),
       reportName: `ur-scrap-escalation-${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}.xlsx`,
     };
   }
@@ -333,26 +351,29 @@ function getUrSlotWindow(slot, referenceDate = new Date()) {
     category: 'ur_followup',
     slotLabel: 'Daily Under Repair Follow-up',
     jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
-    windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, 20, 0, 0, 0),
-    windowEnd: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 19, 59, 59, 999),
+    windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, followupTime.hour, followupTime.minute, 0, 0),
+    windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, followupTime.hour, followupTime.minute, 0, 0).getTime() - 1),
     reportName: `ur-followup-escalation-${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}.xlsx`,
   };
 }
 
-function getCustomEscalationSlotWindow(slot, referenceDate = new Date()) {
-  const config = CUSTOM_ESCALATIONS[slot];
+async function getCustomEscalationSlotWindow(slot, referenceDate = new Date()) {
+  const times = await getEscalationTimeMap();
+  const baseConfig = CUSTOM_ESCALATIONS[slot];
+  const slotTime = scheduledTime(times, slot, baseConfig ? `${pad(baseConfig.runHour)}:${pad(baseConfig.runMinute)}` : '00:00');
+  const config = baseConfig ? { ...baseConfig, runHour: slotTime.hour, runMinute: slotTime.minute } : null;
   if (!config) throw new Error(`Unknown escalation slot: ${slot}`);
   const nowIst = getIstParts(referenceDate);
   if (slot === 'supplier_warranty') {
-    const run = getNextSupplierWarrantyRun(nowIst, referenceDate);
+    const run = getNextSupplierWarrantyRun(nowIst, referenceDate, times);
     const start = addIstDays(run.parts, run.startOffset);
-    const runAt = makeUtcFromIst(run.parts.year, run.parts.month, run.parts.day, config.runHour, config.runMinute, 0, 0);
+    const runAt = makeUtcFromIst(run.parts.year, run.parts.month, run.parts.day, run.run.hour, run.run.minute, 0, 0);
     const scheduledRunTime = Math.abs(referenceDate.getTime() - runAt.getTime()) < 60 * 1000;
     return {
       ...config,
       slotLabel: run.label,
       jobDate: `${run.parts.year}-${pad(run.parts.month)}-${pad(run.parts.day)}`,
-      windowStart: makeUtcFromIst(start.year, start.month, start.day, 20, 31, 0, 0),
+      windowStart: makeUtcFromIst(start.year, start.month, start.day, run.run.hour, run.run.minute + 1, 0, 0),
       windowEnd: scheduledRunTime ? new Date(runAt.getTime() - 60 * 1000) : referenceDate,
       reportName: `${config.reportPrefix}-${run.parts.year}-${pad(run.parts.month)}-${pad(run.parts.day)}.xlsx`,
     };
@@ -368,28 +389,37 @@ function getCustomEscalationSlotWindow(slot, referenceDate = new Date()) {
   };
 }
 
-function getSlotsForCurrentTime(date = new Date()) {
+async function getSlotsForCurrentTime(date = new Date()) {
   const parts = getIstParts(date);
+  const times = await getEscalationTimeMap();
   const slots = [];
-  if (parts.hour === 11 && parts.minute === 0) {
+  const matches = (key, fallback) => {
+    const time = scheduledTime(times, key, fallback);
+    return parts.hour === time.hour && parts.minute === time.minute;
+  };
+  if (matches('sr_morning', '11:00')) {
     slots.push('sr_morning');
-    slots.push('to_morning');
-    if (toIstDate(date).getUTCDay() === 0) slots.push('ur_scrap');
   }
-  if (parts.hour === 11 && parts.minute === 30) slots.push('morning');
-  if (parts.hour === 15 && parts.minute === 0) slots.push('sr_afternoon');
-  if (parts.hour === 15 && parts.minute === 30) {
+  if (matches('to_morning', '11:00')) {
+    slots.push('to_morning');
+  }
+  if (matches('ur_scrap', '11:00') && toIstDate(date).getUTCDay() === 0) slots.push('ur_scrap');
+  if (matches('morning', '11:30')) slots.push('morning');
+  if (matches('sr_afternoon', '15:00')) slots.push('sr_afternoon');
+  if (matches('external_repair', '15:30')) {
     slots.push('external_repair');
   }
-  if (parts.hour === 20 && parts.minute === 30 && [2, 5].includes(toIstDate(date).getUTCDay())) {
+  if (matches('supplier_warranty', '20:30') && [2, 5].includes(toIstDate(date).getUTCDay())) {
     slots.push('supplier_warranty');
   }
-  if (parts.hour === 16 && parts.minute === 30) {
+  if (matches('to_evening', '16:30')) {
     slots.push('to_evening');
+  }
+  if (matches('prf_ob', '16:30')) {
     slots.push('prf_ob');
   }
-  if (parts.hour === 18 && parts.minute === 15) slots.push('evening');
-  if (parts.hour === 20 && parts.minute === 0) slots.push('ur_followup');
+  if (matches('evening', '18:15')) slots.push('evening');
+  if (matches('ur_followup', '20:00')) slots.push('ur_followup');
   return slots;
 }
 
@@ -1083,7 +1113,7 @@ async function runEscalationSlot(slot, options = {}) {
     return { ok: false, skipped: true, message: 'MongoDB is not connected.' };
   }
 
-  const slotWindow = getSlotWindow(slot, options.referenceDate || new Date());
+  const slotWindow = await getSlotWindow(slot, options.referenceDate || new Date());
   const jobKey = buildJobKey(slotWindow);
   const existing = await EscalationRunLog.findOne({ jobKey }).lean();
   if (existing && !options.force) {
@@ -1167,7 +1197,7 @@ async function runUrEscalationSlot(slot, options = {}) {
     return { ok: false, skipped: true, message: 'MongoDB is not connected.' };
   }
 
-  const slotWindow = getUrSlotWindow(slot, options.referenceDate || new Date());
+  const slotWindow = await getUrSlotWindow(slot, options.referenceDate || new Date());
   const jobKey = buildJobKey(slotWindow);
   const existing = await EscalationRunLog.findOne({ jobKey }).lean();
   if (existing && !options.force) {
@@ -1248,7 +1278,7 @@ async function runSrEscalationSlot(slot, options = {}) {
     return { ok: false, skipped: true, message: 'MongoDB is not connected.' };
   }
 
-  const slotWindow = getSrSlotWindow(slot, options.referenceDate || new Date());
+  const slotWindow = await getSrSlotWindow(slot, options.referenceDate || new Date());
   const jobKey = buildJobKey(slotWindow);
   const existing = await EscalationRunLog.findOne({ jobKey }).lean();
   if (existing && !options.force) {
@@ -1333,7 +1363,7 @@ async function runToEscalationSlot(slot, options = {}) {
     return { ok: false, skipped: true, message: 'MongoDB is not connected.' };
   }
 
-  const slotWindow = getToSlotWindow(slot, options.referenceDate || new Date());
+  const slotWindow = await getToSlotWindow(slot, options.referenceDate || new Date());
   const jobKey = buildJobKey(slotWindow);
   const existing = await EscalationRunLog.findOne({ jobKey }).lean();
   if (existing && !options.force) {
@@ -1420,7 +1450,7 @@ async function runCustomEscalationSlot(slot, options = {}) {
     return { ok: false, skipped: true, message: 'MongoDB is not connected.' };
   }
 
-  const slotWindow = getCustomEscalationSlotWindow(slot, options.referenceDate || new Date());
+  const slotWindow = await getCustomEscalationSlotWindow(slot, options.referenceDate || new Date());
   const jobKey = buildJobKey(slotWindow);
   const existing = await EscalationRunLog.findOne({ jobKey }).lean();
   if (existing && !options.force) {
@@ -1500,10 +1530,10 @@ function initEscalationScheduler() {
     return;
   }
 
-  console.log('[Escalation] Scheduler armed for SR 11:00 AM & 3:00 PM, supplier warranty Tue/Fri 8:30 PM, external 3:30 PM, main 11:30 AM & 6:15 PM, PRF/OB 4:30 PM, Sunday 11:00 AM scrap, and daily 8:00 PM UR follow-up IST.');
+  console.log('[Escalation] Scheduler armed with configurable escalation timings from Settings.');
   const timer = setInterval(async () => {
     try {
-      const slots = getSlotsForCurrentTime(new Date());
+      const slots = await getSlotsForCurrentTime(new Date());
       if (!slots.length) return;
       for (const slot of slots) {
         const result = slot === 'morning' || slot === 'evening'

@@ -1259,6 +1259,19 @@ const DEFAULT_ESCALATION_TYPES = [
   { value:'supplier_warranty_escalation', label:'Supplier Warranty Escalation' },
   { value:'external_repair_escalation', label:'External Repair Escalation' }
 ];
+const DEFAULT_ESCALATION_TIMES = [
+  { key:'morning', label:'Dispatch Morning', defaultTime:'11:30' },
+  { key:'evening', label:'Dispatch Evening', defaultTime:'18:15' },
+  { key:'sr_morning', label:'FRN Replacement Morning', defaultTime:'11:00' },
+  { key:'sr_afternoon', label:'FRN Replacement Afternoon', defaultTime:'15:00' },
+  { key:'to_morning', label:'In House FRN Replacement Morning', defaultTime:'11:00' },
+  { key:'to_evening', label:'In House FRN Replacement Evening', defaultTime:'16:30' },
+  { key:'ur_scrap', label:'Under Repair Scrap Sunday', defaultTime:'11:00' },
+  { key:'ur_followup', label:'Stock Escalation Daily', defaultTime:'20:00' },
+  { key:'prf_ob', label:'PRF/OB Daily', defaultTime:'16:30' },
+  { key:'supplier_warranty', label:'Supplier Warranty Tue/Fri', defaultTime:'20:30' },
+  { key:'external_repair', label:'External Repair Daily', defaultTime:'15:30' }
+];
 
 function populateEscalationTypeOptions(types){
   const list=Array.isArray(types)&&types.length ? types : DEFAULT_ESCALATION_TYPES;
@@ -1431,15 +1444,17 @@ function ensureEscalationNameCard(){
   card.className='sec-card';
   card.id='escalation-name-card';
   card.innerHTML=`
-    <div class="sec-card-title"><span class="sec-ico" style="background:rgba(124,58,237,0.10);color:#7c3aed;">N</span> Rename Escalations</div>
+    <div class="sec-card-title"><span class="sec-ico" style="background:rgba(124,58,237,0.10);color:#7c3aed;">N</span> Escalation Names & Timings</div>
     <div style="padding:18px 20px 20px;">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Change the escalation display names used in Settings dropdowns and escalation status boxes.</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Change the escalation display names and run timings used by the backend scheduler and acknowledgement boxes.</div>
       <div id="esc-name-ok" class="form-ok-bar" style="margin-bottom:12px;"></div>
       <div id="esc-name-err" class="form-err-bar" style="margin-bottom:12px;"></div>
       <div class="form-grid" id="esc-name-grid"></div>
+      <div style="font-size:12px;color:var(--muted);font-weight:700;margin:18px 0 10px;text-transform:uppercase;letter-spacing:.06em;">Escalation Timings</div>
+      <div class="form-grid" id="esc-time-grid"></div>
       <div style="margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-        <div id="esc-name-summary" style="font-size:12px;color:var(--muted);">Loading escalation names...</div>
-        <button id="esc-name-save-btn" class="btn btn-primary" onclick="saveEscalationNames()">Save Names</button>
+        <div id="esc-name-summary" style="font-size:12px;color:var(--muted);">Loading escalation names and timings...</div>
+        <button id="esc-name-save-btn" class="btn btn-primary" onclick="saveEscalationNames()">Save</button>
       </div>
     </div>
   `;
@@ -1450,7 +1465,7 @@ function ensureEscalationNameCard(){
   }
 }
 
-function renderEscalationNameFields(types){
+function renderEscalationNameFields(types,times){
   const grid=document.getElementById('esc-name-grid');
   if(!grid) return;
   const list=Array.isArray(types)&&types.length ? types : DEFAULT_ESCALATION_TYPES;
@@ -1459,6 +1474,19 @@ function renderEscalationNameFields(types){
     <div class="ff">
       <label>${esc(t.defaultLabel||t.label||t.value)}</label>
       <input class="esc-name-input" data-key="${esc(t.value)}" type="text" value="${esc(t.label||'')}" placeholder="${esc(t.defaultLabel||t.label||'')}"/>
+    </div>
+  `).join('');
+  renderEscalationTimeFields(times);
+}
+
+function renderEscalationTimeFields(times){
+  const grid=document.getElementById('esc-time-grid');
+  if(!grid) return;
+  const map=times&&typeof times==='object'?times:{};
+  grid.innerHTML=DEFAULT_ESCALATION_TIMES.map(t=>`
+    <div class="ff">
+      <label>${esc(t.label)}</label>
+      <input class="esc-time-input" data-key="${esc(t.key)}" type="time" value="${esc(map[t.key]||t.defaultTime)}"/>
     </div>
   `).join('');
 }
@@ -1476,17 +1504,17 @@ async function loadEscalationNames(){
   const errEl=document.getElementById('esc-name-err');
   if(okEl) okEl.classList.remove('show');
   if(errEl) errEl.classList.remove('show');
-  setEscNameSummary('Loading escalation names...');
+  setEscNameSummary('Loading escalation names and timings...');
   try{
     const res=await fetch(`${API}/api/settings/escalation-labels`,{headers:authHeaders()});
     if(res.status===401){logout();return;}
     const data=await res.json();
     if(!res.ok) throw new Error(data.message||'Failed to load escalation names');
-    renderEscalationNameFields(data.escalationTypes||DEFAULT_ESCALATION_TYPES);
-    setEscNameSummary('Escalation names loaded.','ok');
+    renderEscalationNameFields(data.escalationTypes||DEFAULT_ESCALATION_TYPES,data.times||{});
+    setEscNameSummary('Escalation names and timings loaded.','ok');
   }catch(e){
-    renderEscalationNameFields(DEFAULT_ESCALATION_TYPES);
-    setEscNameSummary(e.message||'Could not load escalation names','err');
+    renderEscalationNameFields(DEFAULT_ESCALATION_TYPES,{});
+    setEscNameSummary(e.message||'Could not load escalation names and timings','err');
     if(errEl){
       errEl.textContent='Error: '+(e.message||'Could not load escalation names');
       errEl.classList.add('show');
@@ -1504,6 +1532,10 @@ async function saveEscalationNames(){
   document.querySelectorAll('.esc-name-input').forEach(input=>{
     labels[input.dataset.key]=input.value.trim();
   });
+  const times={};
+  document.querySelectorAll('.esc-time-input').forEach(input=>{
+    times[input.dataset.key]=input.value;
+  });
   const missing=Object.entries(labels).find(([,value])=>!value);
   if(missing){
     if(errEl){
@@ -1520,18 +1552,18 @@ async function saveEscalationNames(){
     const res=await fetch(`${API}/api/settings/escalation-labels`,{
       method:'PUT',
       headers:authHeaders(),
-      body:JSON.stringify({labels})
+      body:JSON.stringify({labels,times})
     });
     if(res.status===401){logout();return;}
     const data=await res.json();
     if(!res.ok) throw new Error(data.message||'Save failed');
-    renderEscalationNameFields(data.escalationTypes||DEFAULT_ESCALATION_TYPES);
+    renderEscalationNameFields(data.escalationTypes||DEFAULT_ESCALATION_TYPES,data.times||times);
     if(okEl){
-      okEl.textContent='Escalation names saved successfully.';
+      okEl.textContent='Escalation names and timings saved successfully.';
       okEl.classList.add('show');
     }
-    setEscNameSummary('Saved. Open the respective pages or refresh them to see the new names.','ok');
-    showToast('Escalation names saved.','ok');
+    setEscNameSummary('Saved. Open the respective pages or refresh them to see the new names and timings.','ok');
+    showToast('Escalation names and timings saved.','ok');
     await loadMails();
   }catch(e){
     if(errEl){
@@ -1539,10 +1571,10 @@ async function saveEscalationNames(){
       errEl.classList.add('show');
     }
     setEscNameSummary(e.message||'Save failed','err');
-    showToast('Name save failed: '+e.message,'err');
+    showToast('Name/timing save failed: '+e.message,'err');
   }finally{
     btn.disabled=false;
-    btn.textContent='Save Names';
+    btn.textContent='Save';
   }
 }
 

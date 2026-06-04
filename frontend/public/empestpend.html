@@ -1876,7 +1876,7 @@ async function loadSrEscalationStatus(moduleKey){
     const latest=getPreferredSrLatest(morning,afternoon);
     if(textEl){
       if(totalCount>0){
-        const nextSlot=getNextSrRunLabel();
+        const nextSlot=morning?.queue?.nextRunLabel||afternoon?.queue?.nextRunLabel||getNextSrRunLabel();
         textEl.textContent=`${totalCount} FRN Replacement entr${totalCount===1?'y is':'ies are'} queued for ${nextSlot}.`;
       }else if(latest){
         const slotLabel=String(latest.slot||'SR').replace(/_/g,' ').replace(/\b\w/g,m=>m.toUpperCase());
@@ -1886,7 +1886,7 @@ async function loadSrEscalationStatus(moduleKey){
         textEl.textContent='No FRN Replacement Escalation mail has been sent yet.';
       }
     }
-    if(subEl) subEl.textContent=`Receivers: ${recipients.length?recipients.join(', '):'-'} | Excel queued for 11:00 AM and 3:00 PM`;
+    if(subEl) subEl.textContent=`Receivers: ${recipients.length?recipients.join(', '):'-'} | Excel queued for ${morning?.queue?.nextRunLabel||'morning slot'} and ${afternoon?.queue?.nextRunLabel||'afternoon slot'}`;
     if(metaEl) metaEl.textContent=`Morning: ${morningCount} | Afternoon: ${afternoonCount} | Total: ${totalCount}`;
     if(countEl) countEl.textContent=String(totalCount);
   }catch(e){
@@ -1921,7 +1921,8 @@ async function loadToEscalationStatus(moduleKey){
     const latest=getPreferredToLatest(morning,evening);
     if(textEl){
       if(totalCount>0){
-        textEl.textContent=`${totalCount} In House FRN Replacement entr${totalCount===1?'y is':'ies are'} queued for ${getNextToRunLabel()}.`;
+        const nextSlot=morning?.queue?.nextRunLabel||evening?.queue?.nextRunLabel||getNextToRunLabel();
+        textEl.textContent=`${totalCount} In House FRN Replacement entr${totalCount===1?'y is':'ies are'} queued for ${nextSlot}.`;
       }else if(latest){
         const slotLabel=String(latest.slot||'TO').replace(/_/g,' ').replace(/\b\w/g,m=>m.toUpperCase());
         const statusLabel=(latest.status||'pending').replace(/_/g,' ');
@@ -1930,7 +1931,7 @@ async function loadToEscalationStatus(moduleKey){
         textEl.textContent='No In House FRN Replacement mail has been sent yet.';
       }
     }
-    if(subEl) subEl.textContent=`Receivers: ${recipients.length?recipients.join(', '):'-'} | Excel queued for 11:00 AM and 4:30 PM`;
+    if(subEl) subEl.textContent=`Receivers: ${recipients.length?recipients.join(', '):'-'} | Excel queued for ${morning?.queue?.nextRunLabel||'morning slot'} and ${evening?.queue?.nextRunLabel||'evening slot'}`;
     if(metaEl) metaEl.textContent=`Morning: ${morningCount} | Evening: ${eveningCount} | Total: ${totalCount}`;
     if(countEl) countEl.textContent=String(totalCount);
   }catch(e){
