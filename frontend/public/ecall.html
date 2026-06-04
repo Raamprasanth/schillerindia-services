@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<script>(function(){
+  const token = sessionStorage.getItem('schiller_token');
+  const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
+  if (!token || !['employee','admin','superadmin'].includes(role)) window.location.href = 'login.html';
+})();</script>
 <title>SchillerIndia - Call Register</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
 <style>
@@ -562,6 +567,31 @@ let CURRENT_USER = {};
 let BRANCH_OPTIONS = [];
 let REGION_OPTIONS = [];
 let MODEL_OPTIONS = [];
+let DB_ENGINEERS = [];
+
+function branchMatch(b1, b2) {
+  if(!b1 || !b2) return false;
+  let s1 = String(b1).toLowerCase().replace('shipl', '').replace(/[^a-z0-9]/g, '');
+  let s2 = String(b2).toLowerCase().replace('shipl', '').replace(/[^a-z0-9]/g, '');
+  if(!s1 || !s2) return false;
+  if(s1 === s2 || s1.includes(s2) || s2.includes(s1)) return true;
+  const aliases = [['banglore', 'bengaluru', 'bangalore'], ['trivandrum', 'trivandram', 'thiruvananthapuram'], ['hubili', 'hubli'], ['villupurum', 'villupuram'], ['chandigar', 'chandigarh'], ['trichy', 'tiruchirappalli']];
+  for (let grp of aliases) { if (grp.some(a => s1.includes(a)) && grp.some(a => s2.includes(a))) return true; }
+  return false;
+}
+
+async function loadEngineers() {
+  try {
+    const res = await fetch(`${API}/api/engineers?active=Yes`, { headers: authHeaders() });
+    handleUnauth(res);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const payload = await res.json();
+    DB_ENGINEERS = payload?.data || [];
+  } catch(e) {
+    if(e.message === 'Unauthorized') return;
+    DB_ENGINEERS = [];
+  }
+}
 
 /* -- INIT -- */
 (function init(){
@@ -577,6 +607,7 @@ let MODEL_OPTIONS = [];
   document.getElementById('m-calldate').value = new Date().toISOString().split('T')[0];
   loadCurrentUser();
   loadBranchOptions();
+  loadEngineers();
   loadData();
 })();
 
@@ -759,20 +790,17 @@ async function onBranchChange(selectedEngineer = '') {
     engSel.innerHTML = '<option value="">Select Engineer-</option>';
     return;
   }
-  engSel.innerHTML = '<option value="">Loading...</option>';
-  try {
-    const res = await fetch(`${API}/api/engineers?branch=${encodeURIComponent(branch)}&active=Yes`, { headers: authHeaders() });
-    handleUnauth(res);
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    const payload = await res.json();
-    const engineers = payload?.data || [];
-    engSel.innerHTML = '<option value="">Select Engineer-</option>' + 
-      engineers.map(e => `<option value="${esc(e.name)}">${esc(e.name)}</option>`).join('');
-    if(selectedEngineer) engSel.value = selectedEngineer;
-  } catch(e) {
-    if(e.message === 'Unauthorized') return;
-    engSel.innerHTML = '<option value="">Error loading</option>';
+  
+  if (!DB_ENGINEERS || DB_ENGINEERS.length === 0) {
+    engSel.innerHTML = '<option value="">Loading...</option>';
+    await loadEngineers();
   }
+
+  // Filter client-side using robust branchMatch logic
+  const engineers = DB_ENGINEERS.filter(e => branchMatch(e.branch || e.branchName, branch));
+  engSel.innerHTML = '<option value="">Select Engineer-</option>' + 
+    engineers.map(e => `<option value="${esc(e.name)}">${esc(e.name)}</option>`).join('');
+  if(selectedEngineer) engSel.value = selectedEngineer;
 }
 
 /* -- DATA -- */

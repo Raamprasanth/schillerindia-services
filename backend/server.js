@@ -133,6 +133,15 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
+
+// Disable Cache/bfcache for HTML files (prevents back-button access after logout)
+app.use((req, res, next) => {
+  if (req.path.endsWith('.html') || req.path === '/' || req.path === '/login') {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  }
+  next();
+});
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
