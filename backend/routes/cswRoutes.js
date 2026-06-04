@@ -58,4 +58,59 @@ router.post('/move/:id', protect, async (req, res) => {
   }
 });
 
+
+const canAccessCswDoc = async (doc, user) => {
+  const role = String(user.role || '').toLowerCase();
+  if (role === 'admin' || role === 'superadmin') return true;
+  const divDoc = await resolveDivision(user);
+  if (divDoc && doc.division === divDoc.name) return true;
+  const empName = String(user.name || '').trim();
+  if (empName && (doc.scEng === empName || doc.engineer === empName || doc.addedBy === empName)) return true;
+  return false;
+};
+
+router.put('/:id/jobsheet', protect, async (req, res) => {
+  try {
+    const { jobSheetRows, jobSheetStatus, jobSheetUpdated } = req.body;
+    const existing = await Csw.findById(req.params.id).lean();
+    if (!existing) return res.status(404).json({ message: 'Record not found.' });
+    if (!(await canAccessCswDoc(existing, req.user))) {
+      return res.status(403).json({ message: 'Not authorized.' });
+    }
+    const doc = await Csw.findByIdAndUpdate(
+      req.params.id,
+      { jobSheetRows, jobSheetStatus, jobSheetUpdated, updatedBy: req.user.name },
+      { new: true, runValidators: true }
+    );
+    res.json({ success: true, doc });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+
+router.put('/:id', protect, async (req, res) => {
+  try {
+    const existing = await Csw.findById(req.params.id).lean();
+    if (!existing) return res.status(404).json({ message: 'Record not found.' });
+    if (!(await canAccessCswDoc(existing, req.user))) {
+      return res.status(403).json({ message: 'Not authorized to update this record.' });
+    }
+    const customerName = req.body.customerName || req.body.customer;
+    const receivedDate = req.body.receivedDateAtEsskay || req.body.rcvdDate || req.body.entryDate;
+    const patch = { ...req.body, updatedBy: req.user.name };
+    if (customerName) patch.customer = customerName;
+    if (receivedDate) {
+      patch.receivedDateAtEsskay = receivedDate;
+      patch.rcvdDate = receivedDate;
+      patch.entryDate = req.body.entryDate || receivedDate;
+    }
+    if (!patch.typeWork && patch.repairStatus) patch.typeWork = patch.repairStatus;
+    delete patch.customerName;
+    const doc = await Csw.findByIdAndUpdate(req.params.id, patch, { new: true, runValidators: true });
+    res.json({ success: true, doc });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+
 module.exports = router;

@@ -190,12 +190,12 @@ async function buildTemplateXlsx(payload, outputPath) {
   await workbook.xlsx.writeFile(outputPath);
 }
 
-async function sendEmail(payload, attachmentPath) {
-  const smtpHost = (process.env.ESCALATION_SMTP_HOST || "").trim();
-  const smtpPort = parseInt(process.env.ESCALATION_SMTP_PORT || "587", 10);
-  const smtpUser = (process.env.ESCALATION_SMTP_USER || "").trim();
-  let smtpPass = (process.env.ESCALATION_SMTP_PASS || "").trim();
-  const fromAddr = (process.env.ESCALATION_EMAIL_FROM || smtpUser).trim();
+async function sendEmail(payload, attachmentPath, senderConfig) {
+  const smtpHost = (senderConfig?.smtpHost || process.env.ESCALATION_SMTP_HOST || "").trim();
+  const smtpPort = parseInt(senderConfig?.smtpPort || process.env.ESCALATION_SMTP_PORT || "587", 10);
+  const smtpUser = (senderConfig?.smtpUser || process.env.ESCALATION_SMTP_USER || "").trim();
+  let smtpPass = (senderConfig?.smtpPass || process.env.ESCALATION_SMTP_PASS || "").trim();
+  const fromAddr = (senderConfig?.fromEmail || process.env.ESCALATION_EMAIL_FROM || smtpUser).trim();
   
   if (smtpHost.toLowerCase().includes("gmail.com")) {
     smtpPass = smtpPass.replace(/\s+/g, "");
@@ -210,7 +210,7 @@ async function sendEmail(payload, attachmentPath) {
   }
   
   const ccAddrs = (process.env.ESCALATION_EMAIL_CC || "").split(",").map(x => x.trim()).filter(Boolean);
-  const useSsl = (process.env.ESCALATION_SMTP_SSL || "false").trim().toLowerCase() === "true";
+  const useSsl = senderConfig && typeof senderConfig.ssl !== 'undefined' ? Boolean(senderConfig.ssl) : (process.env.ESCALATION_SMTP_SSL || "false").trim().toLowerCase() === "true";
 
   if (!smtpHost || !fromAddr || toAddrs.length === 0) {
     throw new Error("Email settings are incomplete. Set ESCALATION_SMTP_HOST, ESCALATION_EMAIL_FROM and ESCALATION_EMAIL_TO.");
@@ -219,11 +219,15 @@ async function sendEmail(payload, attachmentPath) {
   const transporter = nodemailer.createTransport({
     host: smtpHost,
     port: smtpPort,
-    secure: useSsl, // true for 465, false for other ports
+    secure: useSsl || smtpPort === 465, 
+    requireTLS: senderConfig ? !senderConfig.ssl : undefined,
     auth: smtpUser ? {
       user: smtpUser,
       pass: smtpPass
-    } : undefined
+    } : undefined,
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 15000,
   });
 
   const attachmentName = path.basename(attachmentPath);
@@ -246,7 +250,7 @@ async function sendEmail(payload, attachmentPath) {
   await transporter.sendMail(mailOptions);
 }
 
-async function runEscalationMailer(payload, outputPath) {
+async function runEscalationMailer(payload, outputPath, senderConfig) {
   try {
     const isXlsx = (payload.format || "").toLowerCase() === "xlsx" || outputPath.toLowerCase().endsWith('.xlsx');
     
@@ -263,7 +267,7 @@ async function runEscalationMailer(payload, outputPath) {
       await buildXlsx(payload, outputPath);
     }
     
-    await sendEmail(payload, outputPath);
+    await sendEmail(payload, outputPath, senderConfig);
     return { success: true, outputPath };
   } catch (error) {
     console.error("Error running escalation mailer:", error);

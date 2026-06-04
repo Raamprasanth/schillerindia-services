@@ -1148,7 +1148,8 @@ async function sendEscalationWorkbookWithNode(payload, outputPath, sender) {
 
 async function sendEscalationWorkbook(payload, outputPath, senderConfig = null) {
   try {
-    await runEscalationMailer(payload, outputPath);
+    const sender = senderConfig || await getReadyEscalationSenderConfig();
+    await runEscalationMailer(payload, outputPath, sender);
   } catch (error) {
     throw new Error(`NodeJS Escalation Mailer failed: ${error.message}`);
   }
