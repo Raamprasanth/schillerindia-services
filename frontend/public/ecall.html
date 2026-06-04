@@ -367,7 +367,7 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
         </div>
         <div class="ff">
           <label>Duration</label>
-          <input type="text" id="m-duration" placeholder="" pattern="\d{2}:\d{2}:\d{2}"/>
+          <input type="time" id="m-duration" step="1"/>
         </div>
       </div>
       <div class="form-grid" style="margin-bottom:14px;">
@@ -619,6 +619,14 @@ function handleUnauth(res){
     setTimeout(()=>window.location.href='login.html', 1500);
     throw new Error('Unauthorized');
   }
+}
+
+function normalizeDurationValue(value){
+  const raw = String(value || '').trim();
+  if(!raw) return '';
+  const parts = raw.split(':').map(v => String(parseInt(v, 10) || 0).padStart(2, '0'));
+  while(parts.length < 3) parts.push('00');
+  return parts.slice(0, 3).join(':');
 }
 
 async function loadCurrentUser(){
@@ -977,7 +985,7 @@ async function openEditModal(id){
   await onBranchChange(d.engineer);
   set('m-calltype', d.callType);
   set('m-commtype', d.commType);
-  set('m-duration', d.duration);
+  set('m-duration', normalizeDurationValue(d.duration));
   set('m-remarks', d.remarks);
   clearModalMsg();
   document.getElementById('add-modal').classList.add('open');
@@ -1027,7 +1035,7 @@ async function saveEntry(){
     call:       document.getElementById('m-call').value,
     callType:   document.getElementById('m-calltype').value,
     commType:   document.getElementById('m-commtype').value,
-    duration:   document.getElementById('m-duration').value.trim(),
+    duration:   normalizeDurationValue(document.getElementById('m-duration').value),
     status:     'Pending',
     remarks:    document.getElementById('m-remarks').value.trim(),
     submittedBy: u.name || '',
