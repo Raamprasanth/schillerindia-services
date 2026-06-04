@@ -36,6 +36,7 @@ const estimationPendingSchema = new mongoose.Schema(
     unitSts:   { type: String, trim: true, default: '' },
     defMod:    { type: String, trim: true, default: '' },
     defGir:    { type: String, trim: true, default: '' },
+    defPartSno:{ type: String, trim: true, default: '' },
     typeWork:  { type: String, trim: true, default: '' },
     repType:   { type: String, trim: true, default: 'NA' },
 

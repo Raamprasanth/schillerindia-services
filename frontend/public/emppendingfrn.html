@@ -411,6 +411,10 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
               <label>Revalue <span class="req">*</span></label>
               <input type="number" id="upd-revalue" min="0" step="0.01" placeholder=""/>
             </div>
+            <div class="ff">
+              <label>DEF Part SNO</label>
+              <input type="text" id="upd-defpartsno" class="locked-field" readonly />
+            </div>
           </div>
         </div>
 
@@ -628,13 +632,14 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
                   <th style="width:110px;">FRN No</th>
                   <th style="width:170px;">Mod / Brd Name</th>
                   <th style="width:140px;">Model</th>
-                  <th style="width:150px;">Part No</th>
+                  
+                  <th style="width:150px;">Description</th>
                   <th style="width:90px;">Quantity</th>
                   <th style="width:72px;">Action</th>
                 </tr>
               </thead>
               <tbody id="to-lineitems-body">
-                <tr><td colspan="7" style="text-align:center;color:var(--muted);">No TO rows added.</td></tr>
+                <tr><td colspan="8" style="text-align:center;color:var(--muted);">No TO rows added.</td></tr>
               </tbody>
             </table>
           </div>
@@ -1229,6 +1234,7 @@ async function openUpdateModal(id){
   set('upd-shipsc',d.shipSc||'');
   set('upd-typework',displayTypeWork==='Supplier Warrenty'?'Supplier Warranty':displayTypeWork);
   set('upd-revalue',d.revalue||'');
+  set('upd-defpartsno',d.defPartSno||'');
   set('upd-destination',d.destination||'');
   const revalueInput=document.getElementById('upd-revalue');
   if(revalueInput){revalueInput.readOnly=false;revalueInput.classList.remove('gir-autofill');}
@@ -2154,6 +2160,7 @@ function renderToEscalationRows(){
     <td><span class="to-static">${esc(currentToRecord.defMod||'-')}</span></td>
     <td><span class="to-static to-soft">${esc(currentToRecord.model||'-')}</span></td>
     <td><input type="text" value="${esc(row.partNo||'')}" oninput="updateToEscalationRow(${index},'partNo',this.value)" placeholder="Part no"/></td>
+    <td><input type="text" value="${esc(row.description||'')}" oninput="updateToEscalationRow(${index},'description',this.value)" placeholder="Description"/></td>
     <td><input type="number" min="1" step="1" value="${row.qty||1}" onchange="updateToEscalationRow(${index},'qty',this.value)"/></td>
     <td><button class="to-action" type="button" onclick="removeToEscalationRow(${index})">Del</button></td>
   </tr>`).join('');
@@ -2161,7 +2168,7 @@ function renderToEscalationRows(){
 }
 async function submitToEscalationQueue(){
   if(!currentToRecord){showToast('Record not found.','err');return;}
-  const cleanItems=currentToRows.map(row=>({partNo:String(row.partNo||'').trim(),qty:Math.max(1,parseInt(row.qty,10)||1)})).filter(row=>row.partNo);
+  const cleanItems=currentToRows.map(row=>({partNo:String(row.partNo||'').trim(), description:String(row.description||'').trim(),qty:Math.max(1,parseInt(row.qty,10)||1)})).filter(row=>row.partNo);
   const msg=getToMsgEl();
   if(!cleanItems.length){
     if(msg){msg.textContent='Add at least one TO row with Part No and Quantity.';msg.className='form-msg err';}
@@ -2253,7 +2260,7 @@ function renderTable(){
     <td style="font-weight:600;">${d.pdays}</td>
     <td>${renderRepairStateButton(rid,!!d.rtfrnSent,!!d.rtfrnCompleted,'RT FRN')}</td>
     <td><button class="btn-xs ${d.srEscalationQueuedAt?'dr-queued':'dr-action'}" onclick="queueSrEscalation('${rid}')" title="${d.srEscalationQueuedAt?'Already queued for DR escalation':'Queue to DR escalation'}">DR</button></td>
-    <td><button class="btn-xs ${d.toEscalationQueuedAt?'to-queued':'to-action'}" onclick="openToEscalationModal('${rid}')" title="${d.toEscalationQueuedAt?'Already queued for In House FRN Replacement':'Queue to In House FRN Replacement'}">TO</button></td>
+    <td><button class="btn-xs ${d.toEscalationQueuedAt?'to-queued':'to-action'}" onclick="openToEscalationModal('${rid}')" title="${d.toEscalationQueuedAt?'Already queued for In House FRN Replacement':'Queue to In House FRN Replacement'}" ${d.srEscalationQueuedAt ? 'disabled' : ''}>TO</button></td>
   </tr>`;}).join('');}
   const fr=total?(currentPage-1)*perPage+1:0;
   (document.getElementById('tbl-info')||{}).textContent =total?`Showing ${fr} to ${Math.min(currentPage*perPage,total)} of ${total} entr${total===1?'y':'ies'}`:'0 entries';

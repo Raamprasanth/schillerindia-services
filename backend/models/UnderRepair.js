@@ -29,6 +29,7 @@ const underRepairSchema = new mongoose.Schema(
     unitStatus:    { type: String,  default: '' },   // "CAMC" | "EW" | "STOCK" | "AMC" | "OW" | "IW" | "LAMC"
     defModBrdName: { type: String,  default: '' },   // "PSU Sophie Bebro"
     defGirNo:      { type: String,  default: '' },   // "X-99061"
+    defPartSno:    { type: String,  default: '' },
     repGirNo:      { type: String,  default: '' },   // replacement GIR number if applicable
     revalue:       { type: Number,  default: 0  },   // amount inr
     

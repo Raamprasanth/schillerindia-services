@@ -5,6 +5,8 @@ const CompletedFRN = require('../models/CompletedFRN');
 const SCCompletedFRN = require('../models/SCCompletedFRN');
 const Scrap = require('../models/Scrap');
 const Service = require('../models/Service');
+const Todr = require('../models/Todr');
+const Dr = require('../models/Dr');
 const RTUR = require('../models/rturModel');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 const {
@@ -50,9 +52,10 @@ router.get('/', protect, async (req, res) => {
       ]);
     }
 
-    const docs = await UnderRepair.find(filter).sort({ createdAt: -1 }).lean();
+    const docs = await UnderRepair.find(filter).populate('serviceId', 'defPartSno').sort({ createdAt: -1 }).lean();
     res.json(docs.map(d => ({
       ...d,
+      defPartSno: d.defPartSno || (d.serviceId ? d.serviceId.defPartSno : '') || '',
       pdays: Math.floor((Date.now() - new Date(d.rcvdDate || d.entryDate || d.createdAt).getTime()) / 86400000),
     })));
   } catch (e) {
@@ -65,14 +68,16 @@ router.get('/', protect, async (req, res) => {
 // ══════════════════════════════════════════════════════════
 router.get('/:id', protect, async (req, res) => {
   try {
-    const doc = await UnderRepair.findById(req.params.id);
+    const doc = await UnderRepair.findById(req.params.id).populate('serviceId', 'defPartSno').lean();
     if (!doc) return res.status(404).json({ message: 'Record not found.' });
     if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
       const { hasDivisionAccessToService } = require('../utils/visibility');
       const allowed = await hasDivisionAccessToService(req.user, doc.serviceId);
       if (!allowed) return res.status(403).json({ message: 'Access denied.' });
     }
-    res.json(withPdays(doc));
+    const d = withPdays(doc);
+    d.defPartSno = doc.defPartSno || (doc.serviceId ? doc.serviceId.defPartSno : '') || '';
+    res.json(d);
   } catch (e) {
     res.status(500).json({ message: e.message });
   }
@@ -87,7 +92,7 @@ router.post('/', protect, async (req, res) => {
     const { serviceId, scRno, scEng, frnNo, region, engineer,
             custName, customer, model, unitStatus,
             defMod, defModBrdName, defGir, defGirNo,
-            finalRemarks, typeWork, typeOfWork,
+            defPartSno, finalRemarks, typeWork, typeOfWork,
             repGirNo, entryDate } = req.body;
 
     if (!scRno) {
@@ -112,6 +117,7 @@ router.post('/', protect, async (req, res) => {
       defModBrdName:defModBrdName || defMod || '',
       defGir:       defGir || defGirNo || '',
       defGirNo:     defGirNo || defGir || '',
+      defPartSno:   defPartSno || '',
       finalRemarks: finalRemarks || '',
       typeWork:     typeWork || typeOfWork || 'UNDER REPAIR',
       typeOfWork:   typeOfWork || typeWork || 'UNDER REPAIR',
@@ -195,6 +201,7 @@ router.put('/:id/update', protect, async (req, res) => {
           defModBrdName: svc.defMod || '',
           defGir:        svc.defGir || '',
           defGirNo:      svc.defGir || '',
+          defPartSno:    svc.defPartSno || '',
           defUnitGir:    svc.defUnitGir || '',
           finalRemarks:  svc.finalRemarks || '',
           techRemarks:   svc.techRemarks || '',
@@ -587,6 +594,7 @@ router.post('/:id/to', protect, async (req, res) => {
       req.user?.name || '',
       buildToEscalationRow(service.toObject(), cleanItems)
     );
+    await mirrorUrToTodr(service, 'TO', cleanItems, req.user?.name || '');
 
     return res.json({
       success: true,

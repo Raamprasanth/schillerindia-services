@@ -375,13 +375,14 @@ body.panel-open .main{display:none;}
                   <th style="width:110px;">FRN No</th>
                   <th style="width:170px;">Mod / Brd Name</th>
                   <th style="width:140px;">Model</th>
-                  <th style="width:150px;">Part No</th>
+                  
+                  <th style="width:150px;">Description</th>
                   <th style="width:90px;">Quantity</th>
                   <th style="width:72px;">Action</th>
                 </tr>
               </thead>
               <tbody id="to-lineitems-body">
-                <tr><td colspan="7" style="text-align:center;color:var(--muted);">No TO rows added.</td></tr>
+                <tr><td colspan="8" style="text-align:center;color:var(--muted);">No TO rows added.</td></tr>
               </tbody>
             </table>
           </div>
@@ -633,6 +634,10 @@ body.panel-open .main{display:none;}
           <div class="field">
             <label>Revalue (INR)<span class="field-req">*</span></label>
             <input type="number" id="m-revalue" placeholder="" min="0"/>
+          </div>
+          <div class="field">
+            <label>DEF Part SNO</label>
+            <input type="text" id="m-defpartsno" class="locked-field" readonly />
           </div>
         </div>
       </div>
@@ -899,8 +904,8 @@ function renderRepairStateButton(id,isSent,isCompleted,titlePrefix='RT UR'){
   const stateTitle=isCompleted?'Repair completed':isSent?`Sent to ${titlePrefix}`:`Send to ${titlePrefix}`;
   return `<button class="btn-xs repair-state ${stateClass}" onclick="openRepairModal('${id}')" title="${stateTitle}">${stateLabel}</button>`;
 }
-function renderToEscalationButton(id,isQueued){
-  return `<button class="btn-xs ${isQueued?'to-queued':'to-action'}" onclick="openToEscalationModal('${id}')" title="${isQueued?'Already queued for In House FRN Replacement':'Queue to In House FRN Replacement'}">TO</button>`;
+function renderToEscalationButton(id,isQueued,srQueued){
+  return `<button class="btn-xs ${isQueued?'to-queued':'to-action'}" onclick="openToEscalationModal('${id}')" title="${isQueued?'Already queued for In House FRN Replacement':'Queue to In House FRN Replacement'}" ${srQueued?'disabled':''}>TO</button>`;
 }
 
 function updateStats() {
@@ -1006,7 +1011,7 @@ function renderTable(){
         <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--soft);" title="${esc(d.finalRemarks||'')}">${esc(d.finalRemarks||'-')}</td>
         <td style="font-weight:600;">${d.pdays}</td>
         <td>${renderRepairStateButton(rid,isSent,isCompleted,'RT UR')}</td>
-        <td>${renderToEscalationButton(rid,isToQueued)}</td>
+        <td>${renderToEscalationButton(rid,isToQueued, !!d.srEscalationQueuedAt)}</td>
       </tr>`;
     }).join('');
   }
@@ -1126,6 +1131,7 @@ async function openUpdate(id){
   set('m-repbrd',      d.repBrd||'');
   set('m-repgirno',    d.repGirNo||'');
   set('m-revalue',     d.revalue||'');
+  set('m-defpartsno',   d.defPartSno||'');
   set('m-finalremarks',d.finalRemarks||'');
   set('m-techremarks', d.techRemarks||'');
   set('m-components',  d.components||'');
@@ -1506,7 +1512,7 @@ function renderToEscalationRows(){
   const current=currentToRecord;
   if(!body) return;
   if(!current || !currentToRows.length){
-    body.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);">No TO rows added.</td></tr>';
+    body.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);">No TO rows added.</td></tr>';
     if(note) note.textContent='Add the required part numbers and quantities here.';
     return;
   }

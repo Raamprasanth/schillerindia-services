@@ -35,6 +35,7 @@ const empfrnSchema = new mongoose.Schema(
     defMod:      { type: String, trim: true },
     defGir:      { type: String, trim: true },
     defUnitGir:  { type: String, trim: true },
+    defPartSno:  { type: String, trim: true, default: '' },
 
     // ── Work Details ──────────────────────────────────────
     typeWork:    { type: String, trim: true },

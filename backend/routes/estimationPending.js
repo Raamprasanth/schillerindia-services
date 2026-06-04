@@ -10,6 +10,8 @@ const SCCompletedFRN    = require('../models/SCCompletedFRN');
 const Scrap             = require('../models/Scrap');
 const Service           = require('../models/Service');
 const Division          = require('../models/Division');
+const Todr              = require('../models/Todr');
+const Dr                = require('../models/Dr');
 const { protect }       = require('../middleware/authMiddleware');
 const {
   buildEstimationEscalationRow,
@@ -54,10 +56,11 @@ router.get('/', async (req, res) => {
       const { getServiceIdsFilter } = require('../utils/visibility');
       query = await getServiceIdsFilter(req.user);
     }
-    const records = await EstimationPending.find(query).populate('serviceId', 'dealer').sort({ createdAt: -1 }).lean();
+    const records = await EstimationPending.find(query).populate('serviceId', 'dealer defPartSno').sort({ createdAt: -1 }).lean();
     res.json(records.map(record => ({
       ...record,
       dealer: record.dealer || (record.serviceId ? record.serviceId.dealer : '') || '',
+      defPartSno: record.defPartSno || (record.serviceId ? record.serviceId.defPartSno : '') || '',
     })));
   } catch (err) {
     console.error('[GET /api/emp/estimation]', err);
@@ -72,10 +75,11 @@ router.get('/employee', async (req, res) => {
   try {
     const { getServiceIdsFilter } = require('../utils/visibility');
     const query = await getServiceIdsFilter(req.user);
-    const records = await EstimationPending.find(query).populate('serviceId', 'dealer').sort({ createdAt: -1 }).lean();
+    const records = await EstimationPending.find(query).populate('serviceId', 'dealer defPartSno').sort({ createdAt: -1 }).lean();
     res.json(records.map(record => ({
       ...record,
       dealer: record.dealer || (record.serviceId ? record.serviceId.dealer : '') || '',
+      defPartSno: record.defPartSno || (record.serviceId ? record.serviceId.defPartSno : '') || '',
     })));
   } catch (err) {
     console.error('[GET /api/emp/estimation/employee]', err);
@@ -88,7 +92,7 @@ router.get('/employee', async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/:id', async (req, res) => {
   try {
-    const record = await EstimationPending.findById(req.params.id).populate('serviceId', 'dealer').lean();
+    const record = await EstimationPending.findById(req.params.id).populate('serviceId', 'dealer defPartSno').lean();
     if (!record) return res.status(404).json({ message: 'Record not found' });
     if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
       const { hasDivisionAccessToService } = require('../utils/visibility');
@@ -98,6 +102,7 @@ router.get('/:id', async (req, res) => {
     res.json({
       ...record,
       dealer: record.dealer || (record.serviceId ? record.serviceId.dealer : '') || '',
+      defPartSno: record.defPartSno || (record.serviceId ? record.serviceId.defPartSno : '') || '',
     });
   } catch (err) {
     console.error('[GET /api/emp/estimation/:id]', err);
@@ -200,6 +205,7 @@ router.post('/from-ob', async (req, res) => {
       unitSts:     body.unitSts     || body.unitStatus || '',
       defMod:      body.defMod      || body.defMod || '',
       defGir:      body.defGir      || body.defGirNo || '',
+      defPartSno:  body.defPartSno  || '',
       typeWork:    body.typeWork    || '',
       repType:     body.repType     || 'NA',
 
@@ -546,6 +552,7 @@ router.post('/:id/sr', async (req, res) => {
       name || '',
       buildEstimationEscalationRow(record.toObject())
     );
+    await mirrorEstToTodr(record, 'DR', [], name || '');
 
     res.json({
       success: true,
@@ -611,6 +618,7 @@ router.post('/:id/to', async (req, res) => {
       name || '',
       buildToEscalationRow(record.toObject(), cleanItems)
     );
+    await mirrorEstToTodr(record, 'TO', cleanItems, name || '');
 
     res.json({
       success: true,

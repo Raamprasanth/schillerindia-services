@@ -34,7 +34,7 @@ router.get('/', protect, async (req, res) => {
         
         if (doc) {
           const mName = doc.model || '';
-          const bName = doc.defMod || doc.defBrdModName || r.description || '';
+          const bName = (r.description && r.description !== 'TO/DR entry') ? r.description : (doc.defMod || doc.defBrdModName || r.description || '');
           if (mName) r.model = mName;
           if (bName) r.description = bName;
           r.unitStatus = doc.unitSts || doc.unitStatus || '';
