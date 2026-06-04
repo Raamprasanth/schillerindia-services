@@ -56,14 +56,10 @@ function toDTO(d) {
 // ── GET — records for the logged-in employee (read-only) ──
 router.get('/', protect, async (req, res) => {
   try {
-    const empName = req.user.name;
     let filter = {};
     if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
       const { getServiceIdsFilter } = require('../utils/visibility');
-      filter = await getServiceIdsFilter(req.user, [
-        { eng:   { $regex: new RegExp(empName, 'i') } },
-        { scEng: { $regex: new RegExp(empName, 'i') } },
-      ]);
+      filter = await getServiceIdsFilter(req.user);
     }
 
     const docs = await CompletedFRN.find(filter).sort({ createdAt: -1 }).lean();
