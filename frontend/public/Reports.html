@@ -791,7 +791,6 @@ body{
           </div>
           <div class="perf-footer">
             <button class="btn btn-primary" style="flex:1;justify-content:center;" id="perf-preview-btn" onclick="loadPerfSummary()">&#128065; Preview Summary</button>
-            <button class="btn btn-green" id="perf-export-btn" onclick="exportPerf()" disabled>&#128229; Export Excel</button>
           </div>
         </div>
 
@@ -1157,7 +1156,6 @@ function setScope(scope){
   document.getElementById('scope-emp-btn').classList.toggle('active',scope==='employee');
   document.getElementById('perf-div-field').style.display=scope==='division'?'block':'none';
   document.getElementById('perf-emp-field').style.display=scope==='employee'?'block':'none';
-  document.getElementById('perf-export-btn').disabled=true;
 }
 
 async function loadPerfOptions(){
@@ -1228,7 +1226,6 @@ async function loadPerfSummary(){
     const d=await res.json();
     if(!res.ok) throw new Error(d.message||'Failed');
     renderPerfSummary(d.data,params);
-    document.getElementById('perf-export-btn').disabled=false;
     document.getElementById('perf-out-title').textContent=
       perfScope==='division'?`Division: ${params.division}`:`Employee: ${params.employee}`;
     document.getElementById('perf-out-meta').textContent=`Month: ${params.month}  Scope: ${perfScope}`;
@@ -1287,36 +1284,6 @@ function renderPerfSummary(data,params){
     </div>`:'';
 
   document.getElementById('perf-out-body').innerHTML=summaryHtml+tableHtml;
-}
-
-async function exportPerf(){
-  const month=document.getElementById('perf-month').value;
-  if(!month) return;
-  let params={scope:perfScope,month};
-  if(perfScope==='division'){
-    params.division=document.getElementById('perf-division').value;
-  } else {
-    params.employee=document.getElementById('perf-employee').value;
-    const empDiv=document.getElementById('perf-emp-division').value;
-    if(empDiv) params.division=empDiv;
-  }
-  const qs=new URLSearchParams(params).toString();
-  const btn=document.getElementById('perf-export-btn');
-  btn.disabled=true;btn.innerHTML='? Exporting';
-  try{
-    const res=await fetch('/api/reports/performance/export?'+qs,{headers:{Authorization:'Bearer '+token}});
-    if(!res.ok){const d=await res.json().catch(()=>({}));throw new Error(d.message||'Export failed');}
-    const blob=await res.blob();
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');a.href=url;
-    a.download=`performance-review-${perfScope}-${month}.xlsm`;
-    document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
-    toast('Excel file downloaded!','success');
-  }catch(e){
-    toast('Export failed: '+e.message,'error');
-  } finally {
-    btn.disabled=false;btn.innerHTML='&#128229; Export Excel';
-  }
 }
 
 // --------------------------------------------------------------

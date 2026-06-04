@@ -61,13 +61,6 @@ const genAI = (GoogleGenAI && geminiKey)
 const PERFORMANCE_REVIEW_SCRIPT = path.join(__dirname, '..', 'scripts', 'generate_performance_review.py');
 const PERFORMANCE_DIVISION_TEMPLATE = path.join(__dirname, '..', 'templates', 'performance-review-individual-division.xlsm');
 const PERFORMANCE_PERSON_TEMPLATE = path.join(__dirname, '..', 'templates', 'performance-review-individual-person.xlsm');
-const PYTHON_CANDIDATES = [
-  process.env.PERFORMANCE_REVIEW_PYTHON,
-  process.env.BUNDLED_PYTHON,
-  'C:\\Users\\Raamprasanth\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe',
-  'python',
-  'py',
-].filter(Boolean);
 
 // ══════════════════════════════════════════════════════════════════════════
 //  HELPERS
@@ -429,49 +422,6 @@ function buildFallbackReport(reportType, params, data) {
   return lines.join('\n');
 }
 
-function sanitizeFileChunk(value, fallback = 'report') {
-  return String(value || fallback)
-    .replace(/[^\w.-]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '') || fallback;
-}
-
-function choosePythonExecutable() {
-  for (const candidate of PYTHON_CANDIDATES) {
-    if (candidate === 'python' || candidate === 'py') return candidate;
-    if (fs.existsSync(candidate)) return candidate;
-  }
-  return 'python';
-}
-
-async function buildPerformanceWorkbook(payload, templatePath) {
-  if (!fs.existsSync(templatePath)) {
-    throw new Error(`Template not found: ${templatePath}`);
-  }
-  if (!fs.existsSync(PERFORMANCE_REVIEW_SCRIPT)) {
-    throw new Error('Performance review generator script is missing.');
-  }
-
-  const tempDir = path.join(os.tmpdir(), 'schiller-performance-reviews');
-  fs.mkdirSync(tempDir, { recursive: true });
-
-  const tag = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  const payloadPath = path.join(tempDir, `payload-${tag}.json`);
-  const outputPath = path.join(tempDir, `report-${tag}.xlsm`);
-
-  fs.writeFileSync(payloadPath, JSON.stringify(payload), 'utf8');
-
-  try {
-    const python = choosePythonExecutable();
-    const args = python === 'py'
-      ? ['-3', PERFORMANCE_REVIEW_SCRIPT, payloadPath, templatePath, outputPath]
-      : [PERFORMANCE_REVIEW_SCRIPT, payloadPath, templatePath, outputPath];
-    await execFileAsync(python, args, { windowsHide: true });
-    return outputPath;
-  } finally {
-    fs.rmSync(payloadPath, { force: true });
-  }
-}
 
 function summarizePerformanceRows(data) {
   const rows = Array.isArray(data?.activityRows) ? data.activityRows : [];
@@ -645,25 +595,6 @@ router.get('/performance/summary', verifyToken, async (req, res) => {
   }
 });
 
-router.get('/performance/export', verifyToken, async (req, res) => {
-  let outputPath = null;
-  try {
-    const { scope, month, division, employee } = req.query;
-    const data = await getPerformanceReviewData({ scope, month, division, employee });
-    const templatePath = scope === 'division' ? PERFORMANCE_DIVISION_TEMPLATE : PERFORMANCE_PERSON_TEMPLATE;
-    outputPath = await buildPerformanceWorkbook(data, templatePath);
-
-    const subject = scope === 'division' ? data.division : data.employee;
-    const fileName = `performance-review-${scope}-${sanitizeFileChunk(subject)}-${sanitizeFileChunk(data.month)}.xlsm`;
-
-    res.download(outputPath, fileName, () => {
-      if (outputPath) fs.rmSync(outputPath, { force: true });
-    });
-  } catch (err) {
-    if (outputPath) fs.rmSync(outputPath, { force: true });
-    return res.status(400).json({ success: false, message: err.message });
-  }
-});
 
 router.get('/stats', verifyToken, async (req, res) => {
   try {

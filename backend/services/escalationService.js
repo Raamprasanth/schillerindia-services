@@ -17,6 +17,7 @@ const PYTHON_SCRIPT = path.join(__dirname, '..', 'scripts', 'send_escalation_mai
 const PROJECT_PYTHON = path.join(__dirname, '..', '..', '.venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
 const BUNDLED_PYTHON = path.join(os.homedir(), '.cache', 'codex-runtimes', 'codex-primary-runtime', 'dependencies', 'python', process.platform === 'win32' ? 'python.exe' : 'bin/python');
 const MAIL_ATTEMPTS = Math.max(1, parseInt(process.env.ESCALATION_MAIL_ATTEMPTS || '2', 10) || 2);
+const MAIL_TIMEOUT_MS = Math.max(30000, parseInt(process.env.ESCALATION_MAIL_TIMEOUT_MS || '120000', 10) || 120000);
 const UR_DAILY_TYPES = ['UR Stock', 'WS Stock', 'External Repair', 'Completed', 'Supplier Warrenty', 'No Fault', 'Given to PSP'];
 const CUSTOM_ESCALATIONS = {
   prf_ob: {
@@ -977,6 +978,9 @@ function execFileAsync(command, args, options) {
   return new Promise((resolve, reject) => {
     execFile(command, args, options, (error, stdout, stderr) => {
       if (error) {
+        if (error.killed || error.signal) {
+          error.message = `Escalation mailer timed out after ${Math.round((options.timeout || MAIL_TIMEOUT_MS) / 1000)} seconds. Check SMTP sender settings and retry.`;
+        }
         error.stdout = stdout;
         error.stderr = stderr;
         reject(error);
@@ -1009,6 +1013,8 @@ async function sendEscalationWorkbook(payload, outputPath, senderConfig = null) 
         await execFileAsync(candidate.command, [...candidate.argsPrefix, PYTHON_SCRIPT, tmpInput, outputPath], {
           cwd: path.join(__dirname, '..'),
           env: childEnv,
+          timeout: MAIL_TIMEOUT_MS,
+          killSignal: 'SIGKILL',
           windowsHide: true,
         });
         try { fs.unlinkSync(tmpInput); } catch (_) {}

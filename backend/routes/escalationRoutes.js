@@ -41,6 +41,7 @@ const CUSTOM_ESCALATION_STATUS = {
     runMinute: 30,
   },
 };
+const STALE_RUNNING_MS = Math.max(5 * 60 * 1000, parseInt(process.env.ESCALATION_STALE_RUNNING_MS || '180000', 10) || 180000);
 
 function toIstDate(date = new Date()) {
   return new Date(date.getTime() + IST_OFFSET_MS);
@@ -70,6 +71,24 @@ function visibleLatestLog(log, activeTotal = 0) {
   const logTotal = Number(log.totalCount || 0);
   if (activeTotal === 0 && log.status === 'failed' && logTotal === 0) return null;
   return log;
+}
+
+async function markStaleRunningEscalations(req, res, next) {
+  try {
+    const staleBefore = new Date(Date.now() - STALE_RUNNING_MS);
+    await EscalationRunLog.updateMany(
+      { status: 'running', updatedAt: { $lt: staleBefore } },
+      {
+        $set: {
+          status: 'failed',
+          error: 'Escalation timed out before mail completion. Check SMTP sender settings and retry.',
+        },
+      }
+    );
+  } catch (error) {
+    console.warn('[escalation-status] stale running cleanup failed:', error.message);
+  }
+  next();
 }
 
 function getPreviousIstDateParts(parts) {
@@ -343,6 +362,8 @@ function getActiveCustomQueueWindow(config, referenceDate = new Date()) {
     windowDate: `${next.year}-${pad(next.month)}-${pad(next.day)}`,
   };
 }
+
+router.use('/status', protect, markStaleRunningEscalations);
 
 router.get('/status', protect, async (req, res) => {
   const labels = await getEscalationLabelMap();
