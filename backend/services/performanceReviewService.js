@@ -1,4 +1,6 @@
 const Service = require('../models/Service');
+const EmpFRN = require('../models/EmpFRN');
+const EmpOBPending = require('../models/EmpOBPending');
 const UnderRepair = require('../models/UnderRepair');
 const EstimationPending = require('../models/EstimationPending');
 const CompletedFRN = require('../models/CompletedFRN');
@@ -178,12 +180,19 @@ function targetNext(prevRate) {
   return Math.max(0.85, Math.min(1, Number(prevRate) + 0.05));
 }
 
-function makeActivityRow(label, total, withinTarget, prevRateValue = null) {
+function makeActivityRow(label, total, withinTarget, prevRateValue = null, targetDays = null) {
+  const safeTotal = Math.max(0, Number(total) || 0);
+  const safeWithin = Math.max(0, Math.min(safeTotal, Number(withinTarget) || 0));
+  const outOfTarget = Math.max(0, safeTotal - safeWithin);
   return {
     label,
-    total,
-    withinTarget,
-    currentRate: rate(withinTarget, total),
+    total: safeTotal,
+    withinTarget: safeWithin,
+    outOfTarget,
+    targetDays,
+    currentRate: rate(safeWithin, safeTotal),
+    withinPercent: completionPercent(safeWithin, safeTotal),
+    outOfTargetPercent: completionPercent(outOfTarget, safeTotal),
     prevRate: prevRateValue,
     nextRate: targetNext(prevRateValue),
   };
@@ -214,16 +223,16 @@ function makeAuxiliaryMetrics(base, activityRows = []) {
     weeklyCrm: completionRateValue,
     pendingActivity: percentFromRate(averageRate),
     nonSaleable: rowRate('Non-Saleable'),
-    supplierWarranty: rowRate('No. of Warranty Board received & given for re-export'),
+    supplierWarranty: rowRate('Pending FRN'),
     supplierPendingReview: supplierPending > 0
-      ? Math.max(0, rowRate('No. of Warranty Board received & given for re-export') - supplierPending * 5)
-      : rowRate('No. of Warranty Board received & given for re-export'),
+      ? Math.max(0, rowRate('Pending FRN') - supplierPending * 5)
+      : rowRate('Pending FRN'),
     criticalPending: criticalPendingRate,
-    purchaseIndent: rowRate('No of Estimation given for out of warranty.'),
+    purchaseIndent: rowRate('Estimation'),
     quarterlyBuyback: Math.max(0, percentFromRate(averageRate) - scrapDelayed * 5),
     callReportToHod: completionRateValue,
     fiveSRate: percentFromRate(averageRate),
-    repairReport: rowRate('Under Repair except warrenty spares'),
+    repairReport: rowRate('Under Repair'),
   };
 }
 
@@ -368,13 +377,16 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
   });
 
   const serviceIds = baseServices.map((record) => String(record._id));
+  const serviceById = new Map(services.map((record) => [String(record._id), record]));
   const relatedFilter = serviceIds.length ? { serviceId: { $in: serviceIds } } : { _id: null };
 
   const empRegex = employee ? new RegExp(`^${safeRegex(employee)}$`, 'i') : null;
-  const [underRepairDocs, estimationDocs, completedDocs, scCompletedDocs, scrapDocs, eprfobDocs, ecrDocs, fqcNonsaleableDocs, fqcNonSaleableFsDocs, birDocs, closedBirDocs] = await Promise.all([
+  const [empFrnDocs, empObPendingDocs, underRepairDocs, estimationDocs, completedDocs, scCompletedDocs, scrapDocs, eprfobDocs, ecrDocs, fqcNonsaleableDocs, fqcNonSaleableFsDocs, birDocs, closedBirDocs] = await Promise.all([
+    EmpFRN.find(scope === 'division' ? {} : { $or: [{ submittedBy: empRegex }, { scEng: empRegex }, { eng: empRegex }, { raEng: empRegex }] }).populate('division', 'name').lean(),
+    EmpOBPending.find(scope === 'division' ? {} : { $or: [{ employeeName: empRegex }, { submittedBy: empRegex }, { scEng: empRegex }, { eng: empRegex }] }).lean(),
     UnderRepair.find(scope === 'division' ? {} : { $or: [{ engineer: empRegex }, { scEng: empRegex }, { raEng: empRegex }] }).lean(),
     EstimationPending.find(scope === 'division' ? {} : { $or: [{ submittedBy: empRegex }, { scEng: empRegex }, { eng: empRegex }] }).lean(),
-    CompletedFRN.find(relatedFilter).lean(),
+    CompletedFRN.find(scope === 'division' ? {} : { $or: [{ closedBy: empRegex }, { scEng: empRegex }, { eng: empRegex }, { raEng: empRegex }] }).lean(),
     SCCompletedFRN.find(relatedFilter).lean(),
     Scrap.find(scope === 'division' ? {} : { $or: [{ addedBy: empRegex }, { scEng: empRegex }, { engineer: empRegex }] }).lean(),
     EPrfOb.find(scope === 'division' ? {} : { engineer: empRegex }).lean(),
@@ -384,6 +396,34 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     Bir.find(scope === 'division' ? {} : { $or: [{ engineer: empRegex }, { scEngineer: empRegex }] }).lean(),
     ClosedBir.find().lean(),
   ]);
+
+  const baseServiceIdSet = new Set(serviceIds);
+  const recordInScope = (record) => {
+    const serviceId = String(record?.serviceId || '');
+    const linkedService = serviceId ? serviceById.get(serviceId) : null;
+    if (scope === 'division') {
+      if (linkedService && normalizeDivisionName(linkedService, divisionLookup) === normalizeUpper(selectedDivision)) return true;
+      if (serviceId && baseServiceIdSet.has(serviceId)) return true;
+      const recordDivision = normalizeDivisionName(record, divisionLookup);
+      const fallbackDivision = normalizeUpper(record?.divisionName || record?.division || record?.region || '');
+      return recordDivision === normalizeUpper(selectedDivision) || fallbackDivision === normalizeUpper(selectedDivision);
+    }
+    return matchesEmployee(record, employee) ||
+      (linkedService && matchesEmployee(linkedService, employee)) ||
+      normalizeUpper(record?.employeeName) === normalizeUpper(employee);
+  };
+  const inSelectedMonth = (record, dateFields = ['entryDate', 'createdAt']) => {
+    const firstDate = dateFields.map((field) => parseAnyDate(record?.[field])).find(Boolean);
+    const fallbackDate = parseAnyDate(record?.createdAt);
+    return isDateInRange(firstDate || fallbackDate, monthInfo.start, monthInfo.end);
+  };
+  const firstDate = (...values) => values.map((value) => parseAnyDate(value)).find(Boolean) || null;
+  const firstByServiceId = (records, serviceId) => records
+    .filter((record) => String(record?.serviceId || '') === String(serviceId || ''))
+    .sort((a, b) => (firstDate(a.closedAt, a.createdAt, a.updatedAt)?.getTime() || 0) - (firstDate(b.closedAt, b.createdAt, b.updatedAt)?.getTime() || 0))[0] || null;
+  const firstByMatcher = (records, matcher, datePicker) => records
+    .filter(matcher)
+    .sort((a, b) => ((datePicker(a)?.getTime() || 0) - (datePicker(b)?.getTime() || 0)))[0] || null;
 
   const filteredUnderRepair = underRepairDocs.filter((record) => {
     const recordDate = parseAnyDate(record.entryDate, record.createdAt);
@@ -436,14 +476,12 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
   const isWarrantyReexportRecord = (record) => /(RE[- ]?EXPORT|SUPPLIER WARR?ANTY|SUPPLIER WARRANTY|EXTERNAL REPAIR)/i.test(joinedText(record));
   const isSupplierWarrantyUnderRepair = (record) => /(SUPPLIER WARR?ANTY|SUPPLIER WARRANTY)/i.test(joinedText(record));
 
-  const iwCamcStock = baseServices.filter((record) => ['IW', 'CAMC', 'STOCK'].includes(normalizeUpper(record.unitSts)));
-  const pcbRows = iwCamcStock.filter((record) => !isConsumable(record));
-  const consumableRows = iwCamcStock.filter((record) => isConsumable(record));
-  const obRows = baseServices.filter((record) => ['OW', 'LAMC'].includes(normalizeUpper(record.unitSts)));
-  const prfRows = baseServices.filter((record) => /PRF/i.test(String(record.typeReport || record.repType || record.type || '')));
-  const birRows = baseServices.filter((record) => isBirRecord(record));
-  const reExportRows = baseServices.filter((record) => isWarrantyReexportRecord(record));
+  const pendingFrnRows = empFrnDocs.filter((record) => inSelectedMonth(record, ['entryDate', 'createdAt']) && recordInScope(record));
+  const obPendingRows = empObPendingDocs.filter((record) => inSelectedMonth(record, ['entryDate', 'createdAt']) && recordInScope(record));
   const underRepairRows = filteredUnderRepair.filter((record) => !isSupplierWarrantyUnderRepair(record));
+  const toSoRows = eprfobDocs.filter((record) => ['TO', 'SO'].includes(normalizeUpper(record.type)) && inSelectedMonth(record, ['entryDate', 'raisedDate', 'createdAt']) && recordInScope(record));
+  const nonSaleableRows = fqcNonsaleableDocs.filter((record) => inSelectedMonth(record, ['entryDate', 'fqcInDate', 'createdAt']) && recordInScope(record));
+  const birListRows = birDocs.filter((record) => inSelectedMonth(record, ['unitInwardDate', 'fqcInwardDate', 'createdAt']) && recordInScope(record));
 
   const countWithinTarget = (records, targetDays) => records.filter((record) => {
     const endDate = terminalDateForService(record, related);
@@ -474,39 +512,79 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     return days !== null && days <= targetDays;
   }).length;
 
+  const pendingFrnWithin = pendingFrnRows.filter((record) => {
+    const startDate = firstDate(record.entryDate, record.createdAt);
+    const underRepairMatch = firstByServiceId(underRepairDocs, record.serviceId);
+    const completedMatch = firstByServiceId(completedDocs, record.serviceId);
+    const endDate = [
+      firstDate(underRepairMatch?.createdAt, underRepairMatch?.updatedAt),
+      firstDate(completedMatch?.closedAt, completedMatch?.createdAt),
+    ].filter(Boolean).sort((a, b) => a - b)[0] || null;
+    const days = diffDays(startDate, endDate);
+    return days !== null && days <= 3;
+  }).length;
+
+  const estimationWithin = obPendingRows.filter((record) => {
+    const startDate = firstDate(record.entryDate, record.createdAt);
+    const estimationMatch = firstByServiceId(estimationDocs, record.serviceId);
+    const endDate = firstDate(estimationMatch?.createdAt, estimationMatch?.submittedAt, estimationMatch?.obUpdatedAt);
+    const days = diffDays(startDate, endDate);
+    return days !== null && days <= 3;
+  }).length;
+
+  const underRepairWithin = underRepairRows.filter((record) => {
+    const startDate = firstDate(record.entryDate, record.createdAt);
+    const completedMatch = firstByServiceId(completedDocs, record.serviceId);
+    const endDate = firstDate(completedMatch?.closedAt, completedMatch?.createdAt);
+    const days = diffDays(startDate, endDate);
+    return days !== null && days <= 7;
+  }).length;
+
+  const toSoWithin = toSoRows.filter((record) => {
+    const startDate = firstDate(record.entryDate, record.raisedDate, record.createdAt);
+    const ecrMatch = firstByMatcher(
+      ecrDocs,
+      (doc) => String(doc.sourceEPrfObId || '') === String(record._id || '') ||
+        (normalizeUpper(doc.refNo) === normalizeUpper(record.refNo) && normalizeUpper(doc.type) === normalizeUpper(record.type) && normalizeUpper(doc.division) === normalizeUpper(record.division)),
+      (doc) => firstDate(doc.executedDate, doc.receivedDate, doc.createdAt)
+    );
+    const endDate = firstDate(ecrMatch?.executedDate, ecrMatch?.receivedDate, ecrMatch?.createdAt);
+    const days = diffDays(startDate, endDate);
+    return days !== null && days <= 3;
+  }).length;
+
+  const nonSaleableWithin = nonSaleableRows.filter((record) => {
+    const startDate = firstDate(record.entryDate, record.fqcInDate, record.createdAt);
+    const fsMatch = firstByMatcher(
+      fqcNonSaleableFsDocs,
+      (doc) => normalizeUpper(doc.modelSn) === normalizeUpper(record.modelSn) && (!record.division || normalizeUpper(doc.division) === normalizeUpper(record.division)),
+      (doc) => firstDate(doc.entryDate, doc.fqcInwardDate, doc.updatedAt, doc.createdAt)
+    );
+    const endDate = firstDate(fsMatch?.entryDate, fsMatch?.fqcInwardDate, fsMatch?.updatedAt, fsMatch?.createdAt);
+    const days = diffDays(startDate, endDate);
+    return days !== null && days <= 5;
+  }).length;
+
+  const birWithin = birListRows.filter((record) => {
+    const startDate = firstDate(record.unitInwardDate, record.fqcInwardDate, record.createdAt);
+    const closedMatch = firstByMatcher(
+      closedBirDocs,
+      (doc) => (normalizeUpper(doc.birRef) && normalizeUpper(doc.birRef) === normalizeUpper(record.birRef)) ||
+        (normalizeUpper(doc.serial) && normalizeUpper(doc.serial) === normalizeUpper(record.serial) && normalizeUpper(doc.model) === normalizeUpper(record.model)),
+      (doc) => firstDate(doc.approvedDate, doc.createdAt)
+    );
+    const endDate = firstDate(closedMatch?.approvedDate, closedMatch?.createdAt);
+    const days = diffDays(startDate, endDate);
+    return days !== null && days <= 7;
+  }).length;
+
   const currentActivityRows = [
-    makeActivityRow('W/CAMC/STOCK - PCB, Sub units, Units & Spares', pcbRows.length, countWithinTarget(pcbRows, 3)),
-    makeActivityRow('OB/LAMC', filteredEstimation.length, filteredEstimation.filter((record) => {
-      const startDate = parseAnyDate(record.entryDate, record.createdAt);
-      const endDate = parseAnyDate(record.estUpdatedAt || record.estDate || record.createdAt, record.createdAt);
-      const days = diffDays(startDate, endDate);
-      return days !== null && days <= 3;
-    }).length),
-    makeActivityRow('Under Repair', underRepairRows.length, countUnderRepairWithinTarget(underRepairRows, 7)),
-    makeActivityRow('PRF', eprfobDocs.length, eprfobDocs.filter((record) => {
-      const startDate = parseAnyDate(record.entryDate, record.createdAt);
-      const ecrMatch = ecrDocs.find(e => String(e.serviceId) === String(record.serviceId));
-      const endDate = ecrMatch ? parseAnyDate(ecrMatch.createdAt, ecrMatch.closedAt) : null;
-      if (!endDate) return false;
-      const days = diffDays(startDate, endDate);
-      return days !== null && days <= 3;
-    }).length),
-    makeActivityRow('Non-Saleable', fqcNonsaleableDocs.length, fqcNonsaleableDocs.filter((record) => {
-      const startDate = parseAnyDate(record.entryDate, record.fqcInDate);
-      const fsMatch = fqcNonSaleableFsDocs.find(f => String(f.modelSn) === String(record.modelSn) || String(f._id) === String(record._id));
-      const endDate = fsMatch ? parseAnyDate(fsMatch.createdAt, fsMatch.fqcInDate) : null;
-      if (!endDate) return false;
-      const days = diffDays(startDate, endDate);
-      return days !== null && days <= 5;
-    }).length),
-    makeActivityRow('BIR List', birDocs.length, birDocs.filter((record) => {
-      const startDate = parseAnyDate(record.entryDate, record.createdAt);
-      const cbMatch = closedBirDocs.find(c => String(c.serviceId) === String(record.serviceId) || String(c.birId) === String(record._id));
-      const endDate = cbMatch ? parseAnyDate(cbMatch.createdAt, cbMatch.closedAt) : null;
-      if (!endDate) return false;
-      const days = diffDays(startDate, endDate);
-      return days !== null && days <= 7;
-    }).length),
+    makeActivityRow('Pending FRN', pendingFrnRows.length, pendingFrnWithin, null, 3),
+    makeActivityRow('Estimation', obPendingRows.length, estimationWithin, null, 3),
+    makeActivityRow('Under Repair', underRepairRows.length, underRepairWithin, null, 7),
+    makeActivityRow('TO/SO', toSoRows.length, toSoWithin, null, 3),
+    makeActivityRow('Non-Saleable', nonSaleableRows.length, nonSaleableWithin, null, 5),
+    makeActivityRow('BIR List', birListRows.length, birWithin, null, 7),
   ];
 
   let row14 = null;
@@ -659,13 +737,15 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     baseSummary,
     [...currentActivityRows, ...(row14 ? [row14] : []), ...(row15 ? [row15] : [])]
   );
-  const narratives = await buildAiNarratives(
-    scope === 'division'
-      ? `${selectedDivision} division review`
-      : `${normalizeText(employee)} individual review`,
-    baseSummary,
-    [...currentActivityRows, ...(row14 ? [row14] : []), ...(row15 ? [row15] : [])]
-  );
+  const narratives = {
+    ...fallbackNarratives(
+      scope === 'division'
+        ? `${selectedDivision} division review`
+        : `${normalizeText(employee)} individual review`,
+      baseSummary
+    ),
+    source: 'manual',
+  };
 
   return {
     scope,
