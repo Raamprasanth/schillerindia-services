@@ -389,6 +389,32 @@
         </div>
       </div>
     </div>
+    
+    <!-- Division Weekly Trackers -->
+    <div class="panel" style="margin-bottom:20px;">
+      <div class="panel-header">
+        <div class="panel-title">Employee Weekly Trackers (Division Wise)</div>
+        <span class="panel-action" onclick="loadAdminTrackers()">Refresh</span>
+      </div>
+      <div class="panel-body">
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Division</th>
+                <th>Employees</th>
+                <th>CRM Reports (Tuesdays)</th>
+                <th>Pending Activity (Mondays)</th>
+              </tr>
+            </thead>
+            <tbody id="admin-tracker-body">
+              <tr><td colspan="4" style="text-align:center;color:var(--muted);padding:22px;">Loading tracker data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
 
     <!-- SUB PAGES (same as before) -->
     <div class="page" id="page-svc-services">
@@ -968,12 +994,68 @@ function clearFormMsg(){const el=document.getElementById('add-form-msg');el.text
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function showToast(msg,type='ok'){const wrap=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="tdot"></span>'+msg;wrap.appendChild(el);setTimeout(()=>el.remove(),3200);}
 function logout(){sessionStorage.removeItem('schiller_token');sessionStorage.removeItem('schiller_user');sessionStorage.removeItem('schiller_role');window.location.href='login.html';}
+
+async function loadAdminTrackers() {
+  const tbody = document.getElementById('admin-tracker-body');
+  if (!tbody) return;
+
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:22px;">Loading tracker data...</td></tr>';
+  
+  const today = new Date();
+  const monthStr = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}`;
+  
+  try {
+    const res = await fetch(`/api/tracker/stats?month=${monthStr}`, {
+      headers: { Authorization: 'Bearer ' + sessionStorage.getItem('schiller_token') }
+    });
+    
+    if (!res.ok) throw new Error('Failed to fetch stats');
+    const data = await res.json();
+    
+    if (data.success && data.stats && data.stats.length > 0) {
+      let html = '';
+      data.stats.forEach(div => {
+        html += `
+          <tr>
+            <td style="font-weight:600;">${esc(div.name)}</td>
+            <td>${div.empCount}</td>
+            <td>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="flex:1; height:6px; background:var(--surface2); border-radius:3px; overflow:hidden;">
+                  <div style="height:100%; width:${div.crmPercent}%; background:var(--green);"></div>
+                </div>
+                <span style="font-size:12px; font-weight:700; width:40px; text-align:right;">${div.crmPercent}%</span>
+              </div>
+            </td>
+            <td>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="flex:1; height:6px; background:var(--surface2); border-radius:3px; overflow:hidden;">
+                  <div style="height:100%; width:${div.pendingPercent}%; background:var(--accent);"></div>
+                </div>
+                <span style="font-size:12px; font-weight:700; width:40px; text-align:right;">${div.pendingPercent}%</span>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    } else {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:22px;">No tracker data found for this month.</td></tr>';
+    }
+  } catch (err) {
+    console.error('Tracker load error:', err);
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--red);padding:22px;">Failed to load tracker stats.</td></tr>';
+  }
+}
+
+// Hook into existing load loop
+const _origLoadStats = window.loadStats;
+window.loadStats = function() {
+  if (typeof _origLoadStats === 'function') _origLoadStats();
+  loadAdminTrackers();
+};
 </script>
 </body>
-</html>
-
-
-
 
 
 

@@ -732,6 +732,26 @@
       </div>
     </div>
 
+    <!-- Weekly Trackers -->
+    <div class="grid-2" id="weekly-trackers">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">CRM Reports (Tuesdays)</div>
+        </div>
+        <div class="panel-body" id="crm-tracker-body">
+          <div style="color:var(--muted); font-size:13px;">Loading Tuesdays...</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Pending Activity (Mondays)</div>
+        </div>
+        <div class="panel-body" id="pa-tracker-body">
+          <div style="color:var(--muted); font-size:13px;">Loading Mondays...</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Stats -->
     <div class="stats-grid">
       <div class="stat-card" onclick="window.location.href='emppendingfrn.html'" style="cursor:pointer;">
@@ -2200,6 +2220,120 @@
   }
 
   function escH(s){ const d=document.createElement('div');d.textContent=s;return d.innerHTML; }
+
+  // --- WEEKLY TRACKERS LOGIC ---
+  async function loadWeeklyTrackers() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1; // 1-12
+    const monthStr = `${year}-${month.toString().padStart(2, '0')}`;
+    
+    // Get all Mondays and Tuesdays for current month
+    const mondays = getDaysInMonth(year, today.getMonth(), 1);
+    const tuesdays = getDaysInMonth(year, today.getMonth(), 2);
+    
+    let submissions = [];
+    try {
+      const res = await fetch(`/api/tracker/me?month=${monthStr}`, {
+        headers: { Authorization: 'Bearer ' + sessionStorage.getItem('schiller_token') }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) submissions = data.submissions;
+      }
+    } catch(e) { console.error('Failed to load trackers', e); }
+
+    renderTrackerList('crm-tracker-body', tuesdays, submissions, 'CRM', monthStr);
+    renderTrackerList('pa-tracker-body', mondays, submissions, 'PendingActivity', monthStr);
+  }
+
+  function getDaysInMonth(year, monthIndex, dayOfWeek) {
+    let d = new Date(year, monthIndex, 1);
+    let days = [];
+    while (d.getMonth() === monthIndex) {
+      if (d.getDay() === dayOfWeek) {
+        days.push(new Date(d));
+      }
+      d.setDate(d.getDate() + 1);
+    }
+    return days;
+  }
+
+  function renderTrackerList(containerId, dateObjs, submissions, type, monthStr) {
+    const container = document.getElementById(containerId);
+    if(!container) return;
+    
+    let html = '<div style="display:flex; flex-direction:column; gap:10px;">';
+    
+    dateObjs.forEach(dateObj => {
+      const dateStr = dateObj.toISOString().split('T')[0]; // YYYY-MM-DD
+      const isSubmitted = submissions.some(s => s.type === type && s.reportDate === dateStr);
+      
+      const btnClass = isSubmitted ? 'task-check done' : 'task-check';
+      const checkMark = isSubmitted ? '&#10003;' : '';
+      const displayDate = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      
+      html += `
+        <div class="task-item" style="cursor:pointer;" onclick="toggleTracker('${type}', '${dateStr}', '${monthStr}', ${isSubmitted})">
+          <div class="${btnClass}" id="check-${type}-${dateStr}">${checkMark}</div>
+          <div class="task-info">
+            <div class="task-title">${displayDate}</div>
+            <div class="task-sub">${isSubmitted ? 'Submitted' : 'Pending'}</div>
+          </div>
+        </div>
+      `;
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
+  async function toggleTracker(type, reportDate, monthStr, currentlySubmitted) {
+    const newStatus = currentlySubmitted ? 'pending' : 'submitted';
+    
+    // Optimistic UI update
+    const checkEl = document.getElementById(`check-${type}-${reportDate}`);
+    if(checkEl) {
+      if(newStatus === 'submitted') {
+        checkEl.className = 'task-check done';
+        checkEl.innerHTML = '&#10003;';
+        checkEl.nextElementSibling.querySelector('.task-sub').textContent = 'Submitted';
+      } else {
+        checkEl.className = 'task-check';
+        checkEl.innerHTML = '';
+        checkEl.nextElementSibling.querySelector('.task-sub').textContent = 'Pending';
+      }
+    }
+    
+    try {
+      const res = await fetch('/api/tracker/submit', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + sessionStorage.getItem('schiller_token') 
+        },
+        body: JSON.stringify({ type, reportDate, month: monthStr, status: newStatus })
+      });
+      const data = await res.json();
+      if(!data.success) {
+        showToast('err', data.message || 'Failed to update tracker');
+        loadWeeklyTrackers(); // revert
+      } else {
+        showToast('ok', `${type} marked as ${newStatus}`);
+        loadWeeklyTrackers(); // Refresh
+      }
+    } catch(e) {
+      console.error(e);
+      loadWeeklyTrackers(); // revert
+    }
+  }
+
+  // Hook into dashboard load
+  const originalInit = window.onload;
+  window.onload = function() {
+    if (typeof originalInit === 'function') originalInit();
+    setTimeout(loadWeeklyTrackers, 500); // load after UI settles
+  };
 
 </script>
 <script src="tab-fix.js"></script>
