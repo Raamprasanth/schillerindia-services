@@ -7,7 +7,7 @@ const Division = require('../models/Division');
 const CompletedFRN = require('../models/CompletedFRN');
 const SCCompletedFRN = require('../models/SCCompletedFRN');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
-const { buildPerformanceInsight } = require('../services/geminiPerformanceService');
+const { buildPerformanceInsight } = require('../services/performanceIndexService');
 
 // ── GET /api/dashboard/admin ────────────────────
 router.get('/admin', protect, adminOnly, async (req, res) => {
