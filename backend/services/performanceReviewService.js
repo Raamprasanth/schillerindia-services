@@ -6,6 +6,7 @@ const SCCompletedFRN = require('../models/SCCompletedFRN');
 const Scrap = require('../models/Scrap');
 const Employee = require('../models/Employee');
 const Division = require('../models/Division');
+const { getNextKey } = require('../utils/geminiKeys');
 
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
 const geminiBackoffByScope = new Map();
@@ -250,7 +251,8 @@ function extractJson(text) {
 
 async function buildAiNarratives(scopeLabel, base, activityRows) {
   const fallback = fallbackNarratives(scopeLabel, base);
-  const apiKey = normalizeText(process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY_BACKUP);
+  let apiKey = '';
+  try { apiKey = getNextKey(); } catch (e) { /* no keys configured */ }
   if (!apiKey) return { ...fallback, source: 'fallback' };
 
   const cooldownUntil = geminiBackoffByScope.get(scopeLabel);

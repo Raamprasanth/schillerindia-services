@@ -19,6 +19,7 @@ const { promisify } = require('util');
 const { execFile } = require('child_process');
 const execFileAsync = promisify(execFile);
 const { getPerformanceReviewOptions, getPerformanceReviewData } = require('../services/performanceReviewService');
+const { getNextKey } = require('../utils/geminiKeys');
 
 let GoogleGenAI = null;
 try { GoogleGenAI = require('@google/generative-ai'); } catch (e) {}
@@ -52,11 +53,17 @@ function adminOrCoord(req, res, next) {
   next();
 }
 
-// ── Anthropic client ───────────────────────────────────────────────────────
-const geminiKey = process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY_BACKUP;
-const genAI = (GoogleGenAI && geminiKey)
-  ? new GoogleGenAI.GoogleGenerativeAI(geminiKey)
-  : null;
+// ── Gemini client factory (per-request, uses key rotator) ─────────────────
+function createGenAI() {
+  if (!GoogleGenAI) return null;
+  try {
+    const key = getNextKey();
+    return new GoogleGenAI.GoogleGenerativeAI(key);
+  } catch (e) {
+    console.warn('[reports] No Gemini API key available:', e.message);
+    return null;
+  }
+}
 
 const PERFORMANCE_REVIEW_SCRIPT = path.join(__dirname, '..', 'scripts', 'generate_performance_review.py');
 const PERFORMANCE_DIVISION_TEMPLATE = path.join(__dirname, '..', 'templates', 'performance-review-individual-division.xlsm');
@@ -506,6 +513,7 @@ router.post('/generate', verifyToken, async (req, res) => {
       generationTimeMs: 0,
     };
 
+    const genAI = createGenAI();
     if (genAI) {
       const model = genAI.getGenerativeModel({ 
         model: 'gemini-pro',

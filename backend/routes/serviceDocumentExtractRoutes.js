@@ -1,6 +1,7 @@
 const express = require('express');
 const zlib = require('zlib');
 const { protect } = require('../middleware/authMiddleware');
+const { getNextKey } = require('../utils/geminiKeys');
 
 const router = express.Router();
 
@@ -200,8 +201,7 @@ function simplifyGeminiError(err) {
 }
 
 async function extractWithGemini({ mimeType, base64 }) {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY_BACKUP || process.env.GOOGLE_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-  if (!apiKey) return null;
+  const apiKey = getNextKey();
   const { GoogleGenerativeAI } = require('@google/generative-ai');
   const genAI = new GoogleGenerativeAI(apiKey);
   const preferred = process.env.SERVICE_DOC_GEMINI_MODEL || process.env.GEMINI_DOCUMENT_MODEL || '';
