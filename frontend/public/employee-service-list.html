@@ -1425,16 +1425,63 @@ async function submitForm() {
 }
 
 function exportCSV() {
-  const rows=[['Status','Entry Date','Sc ReNo','Sc Eng','FRN No','Branch','Eng','Cust Name','Model','Unit Sts','Def Mod','Def Gir','Type of Work','Auto-sent to','PD PFRN','PD ESTP','PD URP','PD SCC']];
+  const headers=[
+    'Status','SC Engineer','Division','Entry Date','SC Ref No','FRN No','FRN Date','Ser Comm Inward Date','Received Date at SC',
+    'STOCK / CUST','Region','Branch','Engineer','Dealer Name','Customer Name','Supplier','Model','Model Configuration',
+    'Unit SL No','Unit Status','Part Number','Mod / Brd Name','DEF Type','Type of Acc','DOI','DEF Part SNO','DEF GIR No',
+    'REP Type','REP GIR SNO','Field Remarks','OB Details','Comm Warr Details','BSCON','Type of Work','Auto-sent to',
+    'PD PFRN','PD ESTP','PD URP','PD SCC'
+  ];
+  const rows=[headers];
   filtered.forEach(s=>{
     const tags=[];
     if(FRN_UNIT_STATUSES.includes(s.unitSts)&&(s.repType==='NA'||s.frnCreated))tags.push('Pending FRN');
     if(EST_UNIT_STATUSES.includes(s.unitSts)&&s.repType!=='BS/SO'&&(s.repType==='NA'||s.estPending))tags.push('Estimation Pending');
     if(EST_UNIT_STATUSES.includes(s.unitSts)&&(s.repType==='BS/SO'||s.soPending))tags.push('SO Pending');
     if(s.repType==='TO/ADV SO')tags.push('Under Repair');
-    rows.push([s.status,s.entryDate,s.scReNo,s.scEng,s.frnNo,s.branch,s.eng,s.custName||s.customer,s.model,s.unitSts,s.defMod,s.defGir,s.typeWork||s.type,tags.join(' + ')||'',s.pdPfrn,s.pdEstp||s.pdObp,s.pdUrp,s.pdScc]);
+    rows.push([
+      s.status,
+      s.scEng,
+      s.divisionName || s.division || '',
+      s.entryDate,
+      s.scReNo,
+      s.frnNo,
+      s.frnDate,
+      s.serComm,
+      s.rcvdDate,
+      s.stkCust,
+      s.reg,
+      s.branch,
+      s.eng,
+      s.dealer,
+      s.custName || s.customer,
+      s.supplier,
+      s.model,
+      s.modelConfig,
+      s.unitSl,
+      s.unitSts,
+      s.partNo,
+      s.defMod,
+      s.defType,
+      s.typeAcc,
+      s.doi,
+      s.defPartSno,
+      s.defGir,
+      s.repType,
+      s.repGirNo,
+      s.fieldRemarks,
+      s.obDetails,
+      s.commWarrDetails,
+      s.bscon,
+      s.typeWork || s.type,
+      tags.join(' + ') || '',
+      s.pdPfrn,
+      s.pdEstp || s.pdObp,
+      s.pdUrp,
+      s.pdScc
+    ]);
   });
-  const csv=rows.map(r=>r.map(v=>`"${v||''}"`).join(',')).join('\n');
+  const csv=rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
   a.download='all-services-'+new Date().toISOString().split('T')[0]+'.csv'; a.click();
   showToast('CSV exported  '+filtered.length+' records.','ok');
