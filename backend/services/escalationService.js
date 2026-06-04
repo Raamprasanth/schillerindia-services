@@ -14,6 +14,7 @@ const IST_OFFSET_MINUTES = 330;
 const IST_OFFSET_MS = IST_OFFSET_MINUTES * 60 * 1000;
 const REPORT_DIR = path.join(__dirname, '..', 'generated-reports', 'escalations');
 const PYTHON_SCRIPT = path.join(__dirname, '..', 'scripts', 'send_escalation_mail.py');
+const PROJECT_PYTHON = path.join(__dirname, '..', '..', '.venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
 const BUNDLED_PYTHON = path.join(os.homedir(), '.cache', 'codex-runtimes', 'codex-primary-runtime', 'dependencies', 'python', process.platform === 'win32' ? 'python.exe' : 'bin/python');
 const MAIL_ATTEMPTS = Math.max(1, parseInt(process.env.ESCALATION_MAIL_ATTEMPTS || '2', 10) || 2);
 const UR_DAILY_TYPES = ['UR Stock', 'WS Stock', 'External Repair', 'Completed', 'Supplier Warrenty', 'No Fault', 'Given to PSP'];
@@ -964,6 +965,7 @@ function getPythonCandidates() {
   const candidates = [];
   const configuredPython = String(process.env.ESCALATION_PYTHON || process.env.PYTHON || '').trim();
   if (configuredPython) candidates.push({ command: configuredPython, argsPrefix: [] });
+  if (fs.existsSync(PROJECT_PYTHON)) candidates.push({ command: PROJECT_PYTHON, argsPrefix: [] });
   if (fs.existsSync(BUNDLED_PYTHON)) candidates.push({ command: BUNDLED_PYTHON, argsPrefix: [] });
   if (process.platform === 'win32') candidates.push({ command: 'py', argsPrefix: ['-3'] });
   candidates.push({ command: 'python3', argsPrefix: [] });

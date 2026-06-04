@@ -6,7 +6,7 @@
     "check:html": "node scripts/check-html-scripts.js",
     "check:reports": "node scripts/check-report-page.js",
     "install:backend": "npm install --prefix backend",
-    "install:python": "python -m pip install -r requirements.txt || python3 -m pip install -r requirements.txt || py -3 -m pip install -r requirements.txt",
+    "install:python": "python3 -m venv .venv && .venv/bin/python -m pip install --upgrade pip && .venv/bin/python -m pip install -r requirements.txt",
     "postinstall": "npm run install:backend && npm run install:python",
     "build": "npm run install:backend && npm run install:python",
     "start": "npm start --prefix backend"
