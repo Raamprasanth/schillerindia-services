@@ -10,6 +10,7 @@ const {
   saveEscalationLabelMap,
   getEscalationTypesWithLabels,
 } = require('../utils/escalationLabels');
+const { sendEscalationSenderTest } = require('../services/escalationService');
 
 const ESCALATION_KEY = 'escalation_emails';
 const ESCALATION_SENDER_KEY = 'escalation_sender';
@@ -46,15 +47,28 @@ function toBool(value, fallback) {
   return !!fallback;
 }
 
+function normalizeSmtpPassword(password, config = {}) {
+  const value = String(password || '').trim();
+  const host = String(config.smtpHost || '').toLowerCase();
+  const user = String(config.smtpUser || config.fromEmail || '').toLowerCase();
+  if (host.includes('gmail.com') || user.endsWith('@gmail.com')) {
+    return value.replace(/\s+/g, '');
+  }
+  return value;
+}
+
 function normalizeSenderConfig(config = {}, existing = {}) {
-  const smtpPass = String(config.smtpPass ?? '').trim();
+  const smtpHost = String(config.smtpHost || existing.smtpHost || process.env.ESCALATION_SMTP_HOST || '').trim();
+  const smtpUser = normalizeEmail(config.smtpUser || existing.smtpUser || process.env.ESCALATION_SMTP_USER || '');
+  const fromEmail = normalizeEmail(config.fromEmail || existing.fromEmail || process.env.ESCALATION_EMAIL_FROM || process.env.ESCALATION_SMTP_USER);
+  const smtpPass = normalizeSmtpPassword(config.smtpPass ?? '', { smtpHost, smtpUser, fromEmail });
   const fallbackPass = String(existing.smtpPass ?? '').trim();
   return {
-    fromEmail: normalizeEmail(config.fromEmail || existing.fromEmail || process.env.ESCALATION_EMAIL_FROM || process.env.ESCALATION_SMTP_USER),
-    smtpHost: String(config.smtpHost || existing.smtpHost || process.env.ESCALATION_SMTP_HOST || '').trim(),
+    fromEmail,
+    smtpHost,
     smtpPort: String(config.smtpPort || existing.smtpPort || process.env.ESCALATION_SMTP_PORT || '587').trim() || '587',
-    smtpUser: normalizeEmail(config.smtpUser || existing.smtpUser || process.env.ESCALATION_SMTP_USER || ''),
-    smtpPass: smtpPass || fallbackPass || String(process.env.ESCALATION_SMTP_PASS || '').trim(),
+    smtpUser,
+    smtpPass: smtpPass || normalizeSmtpPassword(fallbackPass || process.env.ESCALATION_SMTP_PASS || '', { smtpHost, smtpUser, fromEmail }),
     startTls: toBool(config.startTls, existing.startTls ?? String(process.env.ESCALATION_SMTP_STARTTLS || 'true').trim().toLowerCase() !== 'false'),
     ssl: toBool(config.ssl, existing.ssl ?? String(process.env.ESCALATION_SMTP_SSL || 'false').trim().toLowerCase() === 'true'),
   };
@@ -266,6 +280,19 @@ router.put('/escalation-sender', async (req, res) => {
     res.json(sanitizeSenderResponse(saved?.value || sender));
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.post('/escalation-sender/test', async (req, res) => {
+  try {
+    const result = await sendEscalationSenderTest(req.body?.to || '');
+    res.json({
+      success: true,
+      message: `Test mail sent to ${result.to}.`,
+      result,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message || 'Sender test failed.' });
   }
 });
 

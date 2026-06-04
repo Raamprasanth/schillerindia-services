@@ -72,6 +72,16 @@ function toBool(value, fallback = false) {
   return !!fallback;
 }
 
+function normalizeSmtpPassword(password, sender = {}) {
+  const value = String(password || '').trim();
+  const host = String(sender.smtpHost || '').toLowerCase();
+  const user = String(sender.smtpUser || sender.fromEmail || '').toLowerCase();
+  if (host.includes('gmail.com') || user.endsWith('@gmail.com')) {
+    return value.replace(/\s+/g, '');
+  }
+  return value;
+}
+
 async function getEscalationRecipients(reportType = '') {
   try {
     const doc = await AppSetting.findOne({ key: 'escalation_emails' }).lean();
@@ -101,18 +111,22 @@ async function getEscalationSenderConfig() {
     const smtpHost = String(value.smtpHost || process.env.ESCALATION_SMTP_HOST || '').trim();
     const smtpPort = String(value.smtpPort || process.env.ESCALATION_SMTP_PORT || '587').trim() || '587';
     const smtpUser = String(value.smtpUser || process.env.ESCALATION_SMTP_USER || '').trim();
-    const smtpPass = String(value.smtpPass || process.env.ESCALATION_SMTP_PASS || '').trim();
+    const rawSmtpPass = String(value.smtpPass || process.env.ESCALATION_SMTP_PASS || '').trim();
     const fromEmail = String(value.fromEmail || process.env.ESCALATION_EMAIL_FROM || smtpUser).trim();
     const startTls = toBool(value.startTls, String(process.env.ESCALATION_SMTP_STARTTLS || 'true').trim().toLowerCase() !== 'false');
     const ssl = toBool(value.ssl, String(process.env.ESCALATION_SMTP_SSL || 'false').trim().toLowerCase() === 'true');
+    const smtpPass = normalizeSmtpPassword(rawSmtpPass, { smtpHost, smtpUser, fromEmail });
     return { smtpHost, smtpPort, smtpUser, smtpPass, fromEmail, startTls, ssl };
   } catch (_) {
+    const smtpHost = String(process.env.ESCALATION_SMTP_HOST || '').trim();
+    const smtpUser = String(process.env.ESCALATION_SMTP_USER || '').trim();
+    const fromEmail = String(process.env.ESCALATION_EMAIL_FROM || process.env.ESCALATION_SMTP_USER || '').trim();
     return {
-      smtpHost: String(process.env.ESCALATION_SMTP_HOST || '').trim(),
+      smtpHost,
       smtpPort: String(process.env.ESCALATION_SMTP_PORT || '587').trim() || '587',
-      smtpUser: String(process.env.ESCALATION_SMTP_USER || '').trim(),
-      smtpPass: String(process.env.ESCALATION_SMTP_PASS || '').trim(),
-      fromEmail: String(process.env.ESCALATION_EMAIL_FROM || process.env.ESCALATION_SMTP_USER || '').trim(),
+      smtpUser,
+      smtpPass: normalizeSmtpPassword(process.env.ESCALATION_SMTP_PASS, { smtpHost, smtpUser, fromEmail }),
+      fromEmail,
       startTls: String(process.env.ESCALATION_SMTP_STARTTLS || 'true').trim().toLowerCase() !== 'false',
       ssl: String(process.env.ESCALATION_SMTP_SSL || 'false').trim().toLowerCase() === 'true',
     };
@@ -122,6 +136,8 @@ async function getEscalationSenderConfig() {
 function getEscalationSenderConfigError(sender = {}) {
   if (!String(sender.smtpHost || '').trim()) return 'Escalation sender SMTP host is not configured.';
   if (!String(sender.fromEmail || '').trim()) return 'Escalation sender from email is not configured.';
+  if (!String(sender.smtpUser || '').trim()) return 'Escalation sender SMTP user is not configured.';
+  if (!String(sender.smtpPass || '').trim()) return 'Escalation sender SMTP password is not configured.';
   return '';
 }
 
@@ -1030,6 +1046,38 @@ async function sendEscalationWorkbook(payload, outputPath, senderConfig = null) 
   throw new Error(lastError ? (lastError.stderr || lastError.message || 'Python mailer failed') : 'No usable Python runtime found');
 }
 
+async function sendEscalationSenderTest(toEmail = '') {
+  const sender = await getReadyEscalationSenderConfig();
+  const to = String(toEmail || sender.fromEmail || sender.smtpUser || '').trim();
+  if (!to) throw new Error('Test receiver email is missing.');
+  const outputPath = path.join(os.tmpdir(), `schiller-escalation-smtp-test-${Date.now()}.xlsx`);
+  const payload = {
+    to: [to],
+    subject: '[SchillerIndia] Escalation sender test',
+    body: 'This is a test email from the SchillerIndia escalation sender configuration.',
+    format: 'xlsx',
+    sheets: [
+      {
+        name: 'SMTP Test',
+        rows: [
+          {
+            Status: 'SMTP sender test',
+            From: sender.fromEmail,
+            Host: `${sender.smtpHost}:${sender.smtpPort || '587'}`,
+            Time: new Date().toISOString(),
+          },
+        ],
+      },
+    ],
+  };
+  try {
+    await sendEscalationWorkbook(payload, outputPath, sender);
+    return { to, from: sender.fromEmail, host: sender.smtpHost, port: sender.smtpPort || '587' };
+  } finally {
+    try { fs.unlinkSync(outputPath); } catch (_) {}
+  }
+}
+
 async function runEscalationSlot(slot, options = {}) {
   if (!mongoose.connection || mongoose.connection.readyState !== 1) {
     return { ok: false, skipped: true, message: 'MongoDB is not connected.' };
@@ -1500,4 +1548,5 @@ module.exports = {
   runToEscalationSlot,
   runUrEscalationSlot,
   runCustomEscalationSlot,
+  sendEscalationSenderTest,
 };

@@ -1598,7 +1598,10 @@ function ensureSenderSettingsCard(){
       </div>
       <div style="margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
         <div id="sender-summary" style="font-size:12px;color:var(--muted);">Loading sender configuration...</div>
-        <button id="sender-save-btn" class="btn btn-primary" onclick="saveSenderSettings()">Save Sender</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button id="sender-test-btn" class="btn btn-outline" onclick="testSenderSettings()">Test Sender</button>
+          <button id="sender-save-btn" class="btn btn-primary" onclick="saveSenderSettings()">Save Sender</button>
+        </div>
       </div>
     </div>
   `;
@@ -1671,6 +1674,9 @@ saveSenderSettings = async function(){
     startTls:document.getElementById('sender-starttls').value==='true',
     ssl:document.getElementById('sender-ssl').value==='true',
   };
+  if(payload.smtpHost.toLowerCase().includes('gmail.com') || payload.smtpUser.endsWith('@gmail.com')){
+    payload.smtpPass=payload.smtpPass.replace(/\s+/g,'');
+  }
 
   if(!payload.fromEmail || !payload.smtpHost || !payload.smtpPort || !payload.smtpUser){
     if(errEl){
@@ -1711,6 +1717,43 @@ saveSenderSettings = async function(){
   }finally{
     btn.disabled=false;
     btn.textContent='Save Sender';
+  }
+};
+
+testSenderSettings = async function(){
+  ensureSenderSettingsCard();
+  const okEl=document.getElementById('sender-ok');
+  const errEl=document.getElementById('sender-err');
+  if(okEl) okEl.classList.remove('show');
+  if(errEl) errEl.classList.remove('show');
+  const btn=document.getElementById('sender-test-btn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin"></span> Testing...';
+  try{
+    const res=await fetch(`${API}/api/settings/escalation-sender/test`,{
+      method:'POST',
+      headers:authHeaders(),
+      body:JSON.stringify({to:document.getElementById('sender-from-email').value.trim().toLowerCase()})
+    });
+    if(res.status===401){logout();return;}
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'Sender test failed');
+    if(okEl){
+      okEl.textContent=data.message||'Test mail sent successfully.';
+      okEl.classList.add('show');
+    }
+    setSenderSummary(data.message||'Test mail sent successfully.','ok');
+    showToast('Sender test mail sent.','ok');
+  }catch(e){
+    if(errEl){
+      errEl.textContent='Test failed: '+e.message;
+      errEl.classList.add('show');
+    }
+    setSenderSummary(e.message||'Sender test failed','err');
+    showToast('Sender test failed: '+e.message,'err');
+  }finally{
+    btn.disabled=false;
+    btn.textContent='Test Sender';
   }
 };
 
