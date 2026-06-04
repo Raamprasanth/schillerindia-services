@@ -1065,6 +1065,18 @@ function attachmentContentType(filePath) {
     : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 }
 
+function withMailTimeout(promise) {
+  let timer = null;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => {
+      reject(new Error(`Escalation mailer timed out after ${Math.round(MAIL_TIMEOUT_MS / 1000)} seconds. Check SMTP sender settings and retry.`));
+    }, MAIL_TIMEOUT_MS + 5000);
+  });
+  return Promise.race([promise, timeout]).finally(() => {
+    if (timer) clearTimeout(timer);
+  });
+}
+
 async function buildWorkbookWithNode(payload, outputPath) {
   const ExcelJS = requireMailerDependency('exceljs');
   const workbook = new ExcelJS.Workbook();
@@ -1119,7 +1131,7 @@ async function sendEscalationWorkbookWithNode(payload, outputPath, sender) {
     greetingTimeout: MAIL_TIMEOUT_MS,
     socketTimeout: MAIL_TIMEOUT_MS,
   });
-  await transporter.sendMail({
+  await withMailTimeout(transporter.sendMail({
     from: sender.fromEmail || sender.smtpUser,
     to,
     cc,
@@ -1130,7 +1142,7 @@ async function sendEscalationWorkbookWithNode(payload, outputPath, sender) {
       path: outputPath,
       contentType: attachmentContentType(outputPath),
     }],
-  });
+  }));
 }
 
 async function sendEscalationWorkbook(payload, outputPath, senderConfig = null) {
