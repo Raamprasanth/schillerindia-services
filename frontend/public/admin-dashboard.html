@@ -378,13 +378,11 @@
                   <th>Division</th>
                   <th>Service Activity</th>
                   <th>Pending</th>
-                  <th>In Progress</th>
-                  <th>Escalated</th>
                   <th>Completed FRN Activity</th>
                 </tr>
               </thead>
               <tbody id="division-breakdown-body">
-                <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:22px;">Loading division breakdown...</td></tr>
+                <tr><td colspan="4" style="text-align:center;color:var(--muted);padding:22px;">Loading division breakdown...</td></tr>
               </tbody>
             </table>
           </div>
@@ -680,7 +678,7 @@ function renderDivisionBreakdown(rows){
   if(!tbody) return;
   const list = Array.isArray(rows) ? rows : [];
   if(!list.length){
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:22px;">No division activity found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:22px;">No division activity found.</td></tr>';
     return;
   }
   tbody.innerHTML = list.map(row => `
@@ -688,8 +686,6 @@ function renderDivisionBreakdown(rows){
       <td><strong>${esc(row.division || 'Unassigned')}</strong></td>
       <td class="breakdown-total">${Number(row.serviceTotal || 0)}</td>
       <td>${Number(row.pending || 0)}</td>
-      <td>${Number(row.inProgress || 0)}</td>
-      <td>${Number(row.escalated || 0)}</td>
       <td class="breakdown-total">${Number(row.completedFrn || 0)}</td>
     </tr>
   `).join('');
