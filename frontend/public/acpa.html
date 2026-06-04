@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -48,7 +48,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .compact-cell{width:240px;max-width:240px;white-space:normal!important}
 .compact-text{font-size:11px;line-height:1.35;color:var(--soft)}
 .compact-text.strong{font-weight:700;color:var(--accent)}
-.compact-preview{max-height:32px;overflow:hidden;word-break:break-word}
+.compact-preview{max-height:3.2em;overflow:hidden;word-break:break-word;white-space:pre-wrap;}
 .compact-text.expanded .compact-preview{max-height:none}
 .show-more-btn{margin-top:3px;border:none;background:none;color:var(--accent);font-size:10.5px;font-weight:800;cursor:pointer;padding:0;font-family:'Plus Jakarta Sans',sans-serif}
 .show-more-btn:hover{text-decoration:underline}
@@ -393,7 +393,7 @@ function sortArr(){
 function compactText(value, key, strong = false){
   const text = String(value || '-');
   const expanded = expandedTextCells.has(key);
-  const needsToggle = text.length > 48;
+  const needsToggle = text.length > 48 || (text.match(/\n/g) || []).length > 1;
   return `<div class="compact-text ${strong ? 'strong' : ''} ${expanded ? 'expanded' : ''}" title="${esc(text)}">
     <div class="compact-preview">${esc(text)}</div>
     ${needsToggle ? `<button type="button" class="show-more-btn" onclick="toggleTextCell('${key}')">${expanded ? 'Show less' : 'Show more'}</button>` : ''}
@@ -649,3 +649,4 @@ function logout(){ sessionStorage.clear(); localStorage.clear(); location.href =
 <script src="tab-fix.js"></script>
 </body>
 </html>
+
