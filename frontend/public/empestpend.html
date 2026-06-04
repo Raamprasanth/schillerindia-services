@@ -586,12 +586,13 @@ table.est-table tbody tr:last-child td{border-bottom:none;}
                   <th style="width:170px;">Mod / Brd Name</th>
                   <th style="width:140px;">Model</th>
                   <th style="width:150px;">Part No</th>
+                  <th style="width:180px;">Description</th>
                   <th style="width:90px;">Quantity</th>
                   <th style="width:72px;">Action</th>
                 </tr>
               </thead>
               <tbody id="to-lineitems-body">
-                <tr><td colspan="7" style="text-align:center;color:var(--muted);">No TO rows added.</td></tr>
+                <tr><td colspan="8" style="text-align:center;color:var(--muted);">No TO rows added.</td></tr>
               </tbody>
             </table>
           </div>
@@ -911,8 +912,10 @@ async function queueSrEscalation(id){
   const current=allRecords.find(x=>(x._id||x.id)===id);
   if(!current){showToast('Record not found.','err');return;}
   if(current.srEscalationQueuedAt){showToast('Already queued for FRN Replacement Escalation.','info');return;}
+  const enteredPartNo=prompt('Part No for DR escalation (optional). Leave blank to use existing Part No.', current.partNo || '');
+  if(enteredPartNo===null)return;
   try{
-    const res=await fetch(API_BASE+'/api/emp/estimation/'+id+'/sr',{method:'POST',headers:authHeaders()});
+    const res=await fetch(API_BASE+'/api/emp/estimation/'+id+'/sr',{method:'POST',headers:authHeaders(),body:JSON.stringify({partNo:enteredPartNo.trim()})});
     if(res.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
     const data=await res.json().catch(()=>({}));
     if(!res.ok) throw new Error(data.message||('HTTP '+res.status));
@@ -959,6 +962,7 @@ function removeToEscalationRow(index){
 function updateToEscalationRow(index,field,value){
   if(!currentToRows[index]) return;
   if(field==='partNo') currentToRows[index].partNo=String(value||'');
+  if(field==='description') currentToRows[index].description=String(value||'');
   if(field==='qty') currentToRows[index].qty=Math.max(1,parseInt(value,10)||1);
 }
 function renderToEscalationRows(){
@@ -971,6 +975,7 @@ function renderToEscalationRows(){
     <td><span class="to-static">${esc(currentToRecord.defMod||'-')}</span></td>
     <td><span class="to-static to-soft">${esc(currentToRecord.model||'-')}</span></td>
     <td><input type="text" value="${esc(row.partNo||'')}" oninput="updateToEscalationRow(${index},'partNo',this.value)" placeholder="Part no"/></td>
+    <td><input type="text" value="${esc(row.description||'')}" oninput="updateToEscalationRow(${index},'description',this.value)" placeholder="Description"/></td>
     <td><input type="number" min="1" step="1" value="${row.qty||1}" onchange="updateToEscalationRow(${index},'qty',this.value)"/></td>
     <td><button class="to-action" type="button" onclick="removeToEscalationRow(${index})">Del</button></td>
   </tr>`).join('');
@@ -978,7 +983,7 @@ function renderToEscalationRows(){
 }
 async function submitToEscalationQueue(){
   if(!currentToRecord){showToast('Record not found.','err');return;}
-  const cleanItems=currentToRows.map(row=>({partNo:String(row.partNo||'').trim(),qty:Math.max(1,parseInt(row.qty,10)||1)})).filter(row=>row.partNo);
+  const cleanItems=currentToRows.map(row=>({partNo:String(row.partNo||'').trim(),description:String(row.description||'').trim(),qty:Math.max(1,parseInt(row.qty,10)||1)})).filter(row=>row.partNo);
   const err=document.getElementById('to-modal-err');
   if(!cleanItems.length){
     if(err){err.textContent='Add at least one TO row with Part No and Quantity.';err.classList.add('show');}

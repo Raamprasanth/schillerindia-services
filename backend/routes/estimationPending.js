@@ -542,6 +542,9 @@ router.post('/:id/sr', async (req, res) => {
       });
     }
 
+    const escalationPartNo = String(req.body?.partNo || '').trim() || record.partNo || '';
+    const escalationRecord = { ...record.toObject(), partNo: escalationPartNo };
+
     record.srEscalationQueuedAt = new Date();
     record.srEscalationQueuedBy = name || '';
     await record.save();
@@ -550,9 +553,9 @@ router.post('/:id/sr', async (req, res) => {
       'sr_est',
       record._id,
       name || '',
-      buildEstimationEscalationRow(record.toObject())
+      buildEstimationEscalationRow(escalationRecord)
     );
-    await mirrorEstToTodr(record, 'DR', [], name || '');
+    await mirrorEstToTodr(escalationRecord, 'DR', [], name || '');
 
     res.json({
       success: true,
@@ -601,6 +604,7 @@ router.post('/:id/to', async (req, res) => {
     const cleanItems = rawItems
       .map((item) => ({
         partNo: String(item?.partNo || '').trim(),
+        description: String(item?.description || '').trim(),
         qty: Math.max(1, parseInt(item?.qty, 10) || 1),
       }))
       .filter((item) => item.partNo);

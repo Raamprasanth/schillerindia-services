@@ -375,8 +375,8 @@ body.panel-open .main{display:none;}
                   <th style="width:110px;">FRN No</th>
                   <th style="width:170px;">Mod / Brd Name</th>
                   <th style="width:140px;">Model</th>
-                  
-                  <th style="width:150px;">Description</th>
+                  <th style="width:150px;">Part No</th>
+                  <th style="width:180px;">Description</th>
                   <th style="width:90px;">Quantity</th>
                   <th style="width:72px;">Action</th>
                 </tr>
@@ -1524,6 +1524,7 @@ function renderToEscalationRows(){
       <td><span class="to-soft">${esc(current.defMod||'-')}</span></td>
       <td><span class="to-static">${esc(current.model||'-')}</span></td>
       <td><input type="text" value="${esc(row.partNo||'')}" placeholder="Enter part no" oninput="updateToEscalationRow(${index},'partNo',this.value)"></td>
+      <td><input type="text" value="${esc(row.description||'')}" placeholder="Description" oninput="updateToEscalationRow(${index},'description',this.value)"></td>
       <td><input type="number" min="1" value="${Math.max(1,parseInt(row.qty,10)||1)}" oninput="updateToEscalationRow(${index},'qty',this.value)"></td>
       <td><button class="to-action" type="button" onclick="removeToEscalationRow(${index})">Remove</button></td>
     </tr>`).join('');
@@ -1535,7 +1536,7 @@ async function submitToEscalationQueue(){
   const msgEl=getToMsgEl();
   const btn=document.getElementById('to-queue-btn');
   const cleanItems=currentToRows
-    .map((item)=>({ partNo:String(item?.partNo||'').trim().toUpperCase(), qty:Math.max(1,parseInt(item?.qty,10)||1) }))
+    .map((item)=>({ partNo:String(item?.partNo||'').trim().toUpperCase(), description:String(item?.description||'').trim(), qty:Math.max(1,parseInt(item?.qty,10)||1) }))
     .filter((item)=>item.partNo);
   if(!cleanItems.length){
     if(msgEl){ msgEl.textContent='Add at least one TO row with Part No and Quantity.'; msgEl.className='fm-msg err'; }

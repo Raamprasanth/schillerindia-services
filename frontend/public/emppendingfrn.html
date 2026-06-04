@@ -632,8 +632,8 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
                   <th style="width:110px;">FRN No</th>
                   <th style="width:170px;">Mod / Brd Name</th>
                   <th style="width:140px;">Model</th>
-                  
-                  <th style="width:150px;">Description</th>
+                  <th style="width:150px;">Part No</th>
+                  <th style="width:180px;">Description</th>
                   <th style="width:90px;">Quantity</th>
                   <th style="width:72px;">Action</th>
                 </tr>
@@ -2095,10 +2095,12 @@ async function queueSrEscalation(id){
   const current=FRN_DATA.find(x=>(x._id||x.id)===id);
   if(!current){showToast('Record not found.','err');return;}
   if(current.srEscalationQueuedAt){showToast('Already queued for FRN Replacement Escalation.','info');return;}
+  const enteredPartNo=prompt('Part No for DR escalation (optional). Leave blank to use existing Part No.', current.partNo || '');
+  if(enteredPartNo===null)return;
   const btns=[...document.querySelectorAll(`button[onclick="queueSrEscalation('${id}')"]`)];
   btns.forEach(btn=>{btn.disabled=true;btn.textContent='...';});
   try{
-    const res=await fetch(`${API}/api/emp/frn/${id}/sr`,{method:'POST',headers:{'Content-Type':'application/json',...authHeaders()}});
+    const res=await fetch(`${API}/api/emp/frn/${id}/sr`,{method:'POST',headers:{'Content-Type':'application/json',...authHeaders()},body:JSON.stringify({partNo:enteredPartNo.trim()})});
     handleUnauth(res);
     const data=await res.json().catch(()=>({}));
     if(!res.ok) throw new Error(data.message||'Failed to queue FRN Replacement Escalation');
@@ -2148,6 +2150,7 @@ function removeToEscalationRow(index){
 function updateToEscalationRow(index,field,value){
   if(!currentToRows[index]) return;
   if(field==='partNo') currentToRows[index].partNo=String(value||'').trim();
+  if(field==='description') currentToRows[index].description=String(value||'');
   if(field==='qty') currentToRows[index].qty=Math.max(1,parseInt(value,10)||1);
 }
 function renderToEscalationRows(){

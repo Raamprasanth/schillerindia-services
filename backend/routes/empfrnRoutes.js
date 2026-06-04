@@ -760,6 +760,9 @@ router.post('/:id/sr', protect, async (req, res) => {
       });
     }
 
+    const escalationPartNo = String(req.body?.partNo || '').trim() || doc.partNo || '';
+    const escalationDoc = { ...doc.toObject(), partNo: escalationPartNo };
+
     doc.srEscalationQueuedAt = new Date();
     doc.srEscalationQueuedBy = req.user?.name || '';
     await doc.save();
@@ -768,9 +771,9 @@ router.post('/:id/sr', protect, async (req, res) => {
       'sr_frn',
       doc._id,
       req.user?.name || '',
-      buildFrnEscalationRow(doc.toObject())
+      buildFrnEscalationRow(escalationDoc)
     );
-    await mirrorFrnToTodr(doc, 'DR', [], req.user?.name || '');
+    await mirrorFrnToTodr(escalationDoc, 'DR', [], req.user?.name || '');
 
     res.json({
       success: true,
