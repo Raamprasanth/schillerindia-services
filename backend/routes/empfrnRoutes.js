@@ -429,7 +429,7 @@ router.put('/:id/update', protect, async (req, res) => {
 
     // ── Whitelisted fields ────────────────────────────────
     const allowed = [
-      'raEng', 'defUnitGir', 'repBrd',
+      'defPartSno', 'raEng', 'defUnitGir', 'repBrd',
       'finalRemarks', 'techRemarks', 'components', 'revalue',
       'typeWork', 'shipSc', 'shipComm',
       'repGirNo', 'typeReport', 'dcNo', 'destination',

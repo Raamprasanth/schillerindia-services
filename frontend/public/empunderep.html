@@ -637,7 +637,7 @@ body.panel-open .main{display:none;}
           </div>
           <div class="field">
             <label>DEF Part SNO</label>
-            <input type="text" id="m-defpartsno" class="locked-field" readonly />
+            <input type="text" id="m-defpartsno" />
           </div>
         </div>
       </div>
@@ -1183,6 +1183,7 @@ async function saveUpdate(){
     urTypeWork:   typeWork,
     typeWork,
     urRepairTeam: raEng,
+    defPartSno:   document.getElementById('m-defpartsno').value.trim(),
     updatedBy:    EMP_NAME,
     updatedAt:    new Date().toISOString(),
   };

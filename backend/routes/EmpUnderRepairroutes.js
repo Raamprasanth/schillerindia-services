@@ -142,6 +142,7 @@ router.post('/', protect, async (req, res) => {
 router.put('/:id/update', protect, async (req, res) => {
   try {
     const {
+      defPartSno,
       raEng, defUnitGir, repBrd,
       finalRemarks, techRemarks, components,
       typeWork, typeOfWork,
@@ -172,6 +173,7 @@ router.put('/:id/update', protect, async (req, res) => {
       dcNo:         dcNo        || '',
       typeReport:   typeReport  || '',
       destination:  destination || '',
+      defPartSno:   defPartSno || '',
       updatedBy:    req.user.name,
       updatedAt:    new Date(),
     };
