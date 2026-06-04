@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SchillerIndia - Scrap List</title>
+<title>SchillerIndia - Supplier Warranty</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
@@ -476,8 +476,8 @@ const SUPPLIER_COLUMNS = [
   { key:'problemDetails', label:'Problem Details', wide:true },
   { key:'licenceVersion', label:'Licence version/Model configuration', wide:true },
   { key:'customerName', label:'Customer Name' },
-  { key:'warrType', label:'Warr type' },
-  { key:'supplierWarrStatus', label:'Supplier warr status' },
+  { key:'warrType', label:'Warr type-Schiller india' },
+  { key:'supplierWarrStatus', label:'Warr type-Supplier' },
   { key:'defInvoiceNoSupplier', label:'Def Invoice number supplier' },
   { key:'frnEntryDate', label:'FRN entry date', type:'date' },
   { key:'shipDateFromSc', label:'ship date from sc', type:'date' },
@@ -485,6 +485,7 @@ const SUPPLIER_COLUMNS = [
   { key:'dcInvoiceDate', label:'DC/Invoice Date', type:'date' },
   { key:'awbNo', label:'AWB No' },
   { key:'awbDate', label:'AWB DATE', type:'date' },
+  { key:'repRepaired', label:'Rep/Repaired' },
   { key:'replacementReceivedStatus', label:'Replacement received status' },
   { key:'replacementReceivedDate', label:'Replacement received date', type:'date' },
   { key:'typeWorkSupplier', label:'Type of work supplier' },
@@ -727,7 +728,33 @@ function openUpdateModal(id) {
     const isDate = field.type === 'date';
     
     let controlHtml = '';
-    if (isTextarea) {
+    
+    if (field.key === 'warrApprovedStatus' || field.key === 'repRepaired') {
+      const opts = ['Yes', 'No'];
+      controlHtml = `<select id="dyn-${field.key}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);">
+        <option value="">-Select-</option>
+        ${opts.map(o => `<option value="${o}" ${String(val).toLowerCase()===o.toLowerCase()?'selected':''}>${o}</option>`).join('')}
+      </select>`;
+    } else if (field.key === 'warrType') {
+      const opts = ['OW', 'LAMC', 'CAMC', 'EW', 'REPEAT', 'STOCK', 'IW', 'Buy Back', 'Demo'];
+      const currentVal = val || record.unitStatus || '';
+      controlHtml = `<select id="dyn-${field.key}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);">
+        <option value="">-Select-</option>
+        ${opts.map(o => `<option value="${o}" ${String(currentVal).toLowerCase()===o.toLowerCase()?'selected':''}>${o}</option>`).join('')}
+      </select>`;
+    } else if (field.key === 'supplierWarrStatus') {
+      const opts = ['IW', 'OW'];
+      controlHtml = `<select id="dyn-${field.key}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);">
+        <option value="">-Select-</option>
+        ${opts.map(o => `<option value="${o}" ${String(val).toLowerCase()===o.toLowerCase()?'selected':''}>${o}</option>`).join('')}
+      </select>`;
+    } else if (field.key === 'replacementReceivedStatus') {
+      const opts = ['repaired', 'pending from supplier', 'pending from commercial', 'pending from Re-export'];
+      controlHtml = `<select id="dyn-${field.key}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);">
+        <option value="">-Select-</option>
+        ${opts.map(o => `<option value="${o}" ${String(val).toLowerCase()===o.toLowerCase()?'selected':''}>${o}</option>`).join('')}
+      </select>`;
+    } else if (isTextarea) {
       controlHtml = `<input id="dyn-${field.key}" type="text" value="${esc(val)}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);" />`;
     } else if (isDate) {
       const fmt = val ? new Date(val).toISOString().slice(0,10) : '';

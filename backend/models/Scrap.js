@@ -51,6 +51,28 @@ const scrapSchema = new mongoose.Schema(
     typeWork:   { type: String, default: 'SCRAPPED' },  // Type of Work
     rcvdDate:   { type: String, default: '' },          // Received Date at Service Centre
 
+    // ── Supplier Warranty Fields ──────────────────────────────────
+    supplier:   { type: String, default: '' },
+    srrRmaBltNo: { type: String, default: '' },
+    warrReportedDate: { type: String, default: '' },
+    warrApprovedStatus: { type: String, default: '' },
+    warrApprovedDate: { type: String, default: '' },
+    warrType:   { type: String, default: '' },
+    supplierWarrStatus: { type: String, default: '' },
+    defInvoiceNoSupplier: { type: String, default: '' },
+    shipDateFromSc: { type: String, default: '' },
+    dcInvoiceNo: { type: String, default: '' },
+    dcInvoiceDate: { type: String, default: '' },
+    awbNo:      { type: String, default: '' },
+    awbDate:    { type: String, default: '' },
+    repRepaired: { type: String, default: '' },
+    replacementReceivedStatus: { type: String, default: '' },
+    replacementReceivedDate: { type: String, default: '' },
+    typeWorkSupplier: { type: String, default: '' },
+    rcdPartInvoiceNo: { type: String, default: '' },
+    rcdPartInvoiceDate: { type: String, default: '' },
+    repGirNo:   { type: String, default: '' },
+    rcdPartSerialNo: { type: String, default: '' },
     // ── Pending day counters (computed or stored) ─────────────────
     pdPfrn:     { type: Number, default: 0 },           // Pending Days (PFRN)
     pdObp:      { type: Number, default: 0 },           // Pending Days (OBP)

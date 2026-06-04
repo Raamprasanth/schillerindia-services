@@ -455,8 +455,8 @@ const SUPPLIER_COLUMNS = [
   { key:'problemDetails', label:'Problem Details', wide:true },
   { key:'licenceVersion', label:'Licence version/Model configuration', wide:true },
   { key:'customerName', label:'Customer Name' },
-  { key:'warrType', label:'Warr type' },
-  { key:'supplierWarrStatus', label:'Supplier warr status' },
+  { key:'warrType', label:'Warr type-Schiller india' },
+  { key:'supplierWarrStatus', label:'Warr type-Supplier' },
   { key:'defInvoiceNoSupplier', label:'Def Invoice number supplier' },
   { key:'frnEntryDate', label:'FRN entry date', type:'date' },
   { key:'shipDateFromSc', label:'ship date from sc', type:'date' },
@@ -464,6 +464,7 @@ const SUPPLIER_COLUMNS = [
   { key:'dcInvoiceDate', label:'DC/Invoice Date', type:'date' },
   { key:'awbNo', label:'AWB No' },
   { key:'awbDate', label:'AWB DATE', type:'date' },
+  { key:'repRepaired', label:'Rep/Repaired' },
   { key:'replacementReceivedStatus', label:'Replacement received status' },
   { key:'replacementReceivedDate', label:'Replacement received date', type:'date' },
   { key:'typeWorkSupplier', label:'Type of work supplier' },
@@ -794,13 +795,10 @@ async function saveJobSheet() {
 
 // -- EXPORT CSV --------------------------------------------
 function exportCSV() {
-  const h = ['Status','Entry Date','SC RNo','SC Eng','FRN No','Region','Engineer','Customer','Model','Unit Status','Def Mod','Def Gir No','Type of Work','PD(PFRN)','PD(OBP)','PD(URP)','PD(SCC)'];
-  const rows = filtered.map(d => [
-    d.typeWork?.toUpperCase().includes('SCRAP') ? 'Scrapped' : (d.jobSheetStatus||'Pending'),
-    d.entryDate, d.scRno, d.scEng, d.frnNo, d.region, d.engineer, d.customer,
-    d.model, d.unitStatus, d.defMod, d.defGir, d.typeWork,
-    d.pdPfrn, d.pdObp, d.pdUrp, d.pdScc,
-  ]);
+  const h = SUPPLIER_COLUMNS.map(col => col.label);
+  const rows = filtered.map((d, i) => SUPPLIER_COLUMNS.map(col => (
+    col.key === 'sn' ? i + 1 : fieldValue(d, col.key)
+  )));
   const csv = [h,...rows].map(r => r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
