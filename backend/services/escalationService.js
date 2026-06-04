@@ -238,6 +238,7 @@ async function getSlotWindow(slot, referenceDate = new Date()) {
     return {
       slot,
       slotLabel: 'Morning',
+      runTime: morning.value,
       jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
       windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, evening.hour, evening.minute + 1, 0, 0),
       windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, morning.hour, morning.minute, 0, 0).getTime() - 1),
@@ -246,6 +247,7 @@ async function getSlotWindow(slot, referenceDate = new Date()) {
   return {
     slot,
     slotLabel: 'Evening',
+    runTime: evening.value,
     jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
     windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, morning.hour, morning.minute, 0, 0),
     windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, evening.hour, evening.minute, 0, 0).getTime() - 1),
@@ -263,6 +265,7 @@ async function getSrSlotWindow(slot, referenceDate = new Date()) {
       slot,
       category: 'sr',
       slotLabel: 'SR Morning',
+      runTime: morning.value,
       jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
       windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, afternoon.hour, afternoon.minute, 0, 0),
       windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, morning.hour, morning.minute, 0, 0).getTime() - 1),
@@ -273,6 +276,7 @@ async function getSrSlotWindow(slot, referenceDate = new Date()) {
     slot,
     category: 'sr',
     slotLabel: 'SR Afternoon',
+    runTime: afternoon.value,
     jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
     windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, morning.hour, morning.minute, 0, 0),
     windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, afternoon.hour, afternoon.minute, 0, 0).getTime() - 1),
@@ -291,6 +295,7 @@ async function getToSlotWindow(slot, referenceDate = new Date()) {
       slot,
       category: 'to',
       slotLabel: 'TO Morning',
+      runTime: morning.value,
       jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
       windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, evening.hour, evening.minute, 0, 0),
       windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, morning.hour, morning.minute, 0, 0).getTime() - 1),
@@ -301,6 +306,7 @@ async function getToSlotWindow(slot, referenceDate = new Date()) {
     slot,
     category: 'to',
     slotLabel: 'TO Evening',
+    runTime: evening.value,
     jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
     windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, morning.hour, morning.minute, 0, 0),
     windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, evening.hour, evening.minute, 0, 0).getTime() - 1),
@@ -339,6 +345,7 @@ async function getUrSlotWindow(slot, referenceDate = new Date()) {
       slot,
       category: 'ur_scrap',
       slotLabel: 'Weekly Scrap',
+      runTime: scrapTime.value,
       jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
       windowStart: makeUtcFromIst(previousSunday.year, previousSunday.month, previousSunday.day, scrapTime.hour, scrapTime.minute, 0, 0),
       windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, scrapTime.hour, scrapTime.minute, 0, 0).getTime() - 1),
@@ -350,6 +357,7 @@ async function getUrSlotWindow(slot, referenceDate = new Date()) {
     slot,
     category: 'ur_followup',
     slotLabel: 'Daily Under Repair Follow-up',
+    runTime: followupTime.value,
     jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
     windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, followupTime.hour, followupTime.minute, 0, 0),
     windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, followupTime.hour, followupTime.minute, 0, 0).getTime() - 1),
@@ -372,6 +380,7 @@ async function getCustomEscalationSlotWindow(slot, referenceDate = new Date()) {
     return {
       ...config,
       slotLabel: run.label,
+      runTime: run.run.value,
       jobDate: `${run.parts.year}-${pad(run.parts.month)}-${pad(run.parts.day)}`,
       windowStart: makeUtcFromIst(start.year, start.month, start.day, run.run.hour, run.run.minute + 1, 0, 0),
       windowEnd: scheduledRunTime ? new Date(runAt.getTime() - 60 * 1000) : referenceDate,
@@ -383,6 +392,7 @@ async function getCustomEscalationSlotWindow(slot, referenceDate = new Date()) {
   return {
     ...config,
     jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
+    runTime: slotTime.value,
     windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, config.runHour, config.runMinute, 0, 0),
     windowEnd: new Date(runAt.getTime() - 1),
     reportName: `${config.reportPrefix}-${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}.xlsx`,
@@ -424,7 +434,8 @@ async function getSlotsForCurrentTime(date = new Date()) {
 }
 
 function buildJobKey(slotWindow) {
-  return `${slotWindow.jobDate}-${slotWindow.slot}`;
+  const runTime = String(slotWindow.runTime || '').trim().replace(':', '');
+  return `${slotWindow.jobDate}-${slotWindow.slot}${runTime ? `-${runTime}` : ''}`;
 }
 
 function buildFrnEscalationRow(doc) {
