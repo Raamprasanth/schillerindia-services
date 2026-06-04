@@ -358,6 +358,12 @@ router.put('/:id', protect, async (req, res) => {
             rtobSent: true,
             rtobCompleted: true,
             rtobCompletedAt: new Date().toISOString(),
+            components: updated.components || '',
+            obComponents: updated.components || '',
+            techRemarks: updated.techRemarks || '',
+            repairRemarks: updated.repairRemarks || '',
+            finalRemarks: updated.finalRemarks || '',
+            repairStatus: updated.repairStatus || '',
           });
         } catch (srcErr) {
           console.error('RTOB → source RC flag failed:', srcErr.message);
