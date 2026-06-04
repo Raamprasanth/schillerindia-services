@@ -1376,6 +1376,30 @@ function renderPerfSummary(data,params){
   const summaryHtml=`
     <div class="perf-summary-grid">
       <div class="ps-card"><div class="ps-val">${data.totalTracked??0}</div><div class="ps-label">Total Tracked</div></div>
+      <div style="display:grid;gap:8px;">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:12.5px;line-height:1.6;">
+          <span style="font-weight:700;color:var(--text);">Justification: </span>${aiNarr.justification||''}
+        </div>
+        <div style="background:rgba(185,28,28,0.04);border:1px solid rgba(185,28,28,0.15);border-radius:8px;padding:10px 14px;font-size:12.5px;line-height:1.6;">
+          <span style="font-weight:700;color:#b91c1c;">Corrective Action: </span>${aiNarr.corrective||''}
+        </div>
+        <div style="background:rgba(5,150,105,0.04);border:1px solid rgba(5,150,105,0.15);border-radius:8px;padding:10px 14px;font-size:12.5px;line-height:1.6;">
+          <span style="font-weight:700;color:#059669;">HOD Summary: </span>${aiNarr.hod||''}
+        </div>
+      </div>
+    </div>`:'';
+
+  const alertBanner=isCritical?`
+    <div style="margin:0 20px 0;padding:10px 14px;background:rgba(185,28,28,0.08);border:1px solid rgba(185,28,28,0.25);border-radius:8px;display:flex;align-items:center;gap:8px;font-size:12.5px;color:#b91c1c;font-weight:600;">
+      <strong>Critical Performance:</strong> Completion rate is ${rate}% — below 60% threshold. Immediate action required.
+    </div>`:isWarning?`
+    <div style="margin:0 20px 0;padding:10px 14px;background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.25);border-radius:8px;display:flex;align-items:center;gap:8px;font-size:12.5px;color:#d97706;font-weight:600;">
+      <strong>At Risk:</strong> Completion rate is ${rate}% — below 75% target. Review pending items.
+    </div>`:''
+
+  const summaryHtml=`
+    <div class="perf-summary-grid">
+      <div class="ps-card"><div class="ps-val">${data.totalTracked??0}</div><div class="ps-label">Total Tracked</div></div>
       <div class="ps-card"><div class="ps-val" style="color:#059669;">${data.completedCount??0}</div><div class="ps-label">Completed</div></div>
       <div class="ps-card"><div class="ps-val" style="color:${isCritical?'#b91c1c':isWarning?'#d97706':'var(--text)'}">${data.pendingCount??0}</div><div class="ps-label">Pending</div></div>
       <div class="ps-card ${isCritical?'critical':''}"><div class="ps-val" style="color:${isCritical?'#b91c1c':isWarning?'#d97706':'var(--text)'}">${rate}%</div><div class="ps-label">Completion Rate ${flagBadge(rate)}</div></div>
@@ -1386,22 +1410,15 @@ function renderPerfSummary(data,params){
   let tableRows='';
   (data.activities||[]).forEach(act=>{
     const p=pct(act.completionPercent);
-    const out=pct(act.outOfTargetPercent);
     const fillCls=pctFillClass(p);
+    const flagTxt=p<60?'<span class="flag-badge flag-critical">Critical</span>':p<75?'<span class="flag-badge flag-warning">At Risk</span>':'';
     const rowAlert=p<60?'style="background:rgba(185,28,28,0.03);"':p<75?'style="background:rgba(217,119,6,0.03);"':'';
     tableRows+=`<tr ${rowAlert}>
-      <td style="font-weight:600;">${act.label||''} ${p<60?'<span class="flag-badge flag-critical" style="font-size:9px;">&#128680;</span>':p<75?'<span class="flag-badge flag-warning" style="font-size:9px;">&#9888;</span>':''}</td>
+      <td style="font-weight:600;">${act.label||''} ${flagTxt}</td>
       <td style="text-align:center;">${act.total||0}</td>
       <td style="text-align:center;">${act.targetDays?act.targetDays+' days':'-'}</td>
       <td style="text-align:center;">${act.withinTarget||0}</td>
-      <td style="min-width:150px;">
-        <div class="pct-bar-wrap">
-          <div class="pct-bar"><div class="pct-fill ${fillCls}" style="width:${p}%;"></div></div>
-          <div class="pct-text" style="color:${p<60?'#b91c1c':p<75?'#d97706':'var(--text)'}">${p}%</div>
-        </div>
-      </td>
       <td style="text-align:center;color:${(act.outOfTarget||0)>0?'#b91c1c':'var(--muted)'};font-weight:${(act.outOfTarget||0)>0?'700':'500'};">${act.outOfTarget||0}</td>
-      <td style="text-align:center;color:${out>0?'#b91c1c':'var(--muted)'};">${out}%</td>
     </tr>`;
   });
 
@@ -1409,7 +1426,7 @@ function renderPerfSummary(data,params){
     <div class="perf-table-wrap">
       <table class="perf-table" id="perf-table-excel">
         <thead><tr>
-          <th>Activity</th><th style="text-align:center;">Total</th><th style="text-align:center;">Target</th><th style="text-align:center;">Within Target</th><th style="width:170px;">Within %</th><th style="text-align:center;">Out of Target</th><th style="text-align:center;">Out %</th>
+          <th>Activity</th><th style="text-align:center;">Total</th><th style="text-align:center;">Target Days</th><th style="text-align:center;">Within Target</th><th style="text-align:center;">Out of Target</th>
         </tr></thead>
         <tbody>${tableRows}</tbody>
       </table>
@@ -1418,8 +1435,8 @@ function renderPerfSummary(data,params){
 
   const exportBtn=`
     <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;">
-      <button class="btn btn-green btn-sm" onclick="exportPDF()">&#128196; Export PDF</button>
-      <button class="btn btn-ghost btn-sm" onclick="exportPriorityDivisionPDF()">&#128196; Division Pack PDF</button>
+      <button class="btn btn-green btn-sm" onclick="exportPDF()">Export PDF</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportPriorityDivisionPDF()">Division Pack PDF</button>
     </div>`;
 
   document.getElementById('perf-pane-summary').innerHTML=
@@ -1439,7 +1456,7 @@ async function loadTrend(){
     if(!res.ok) throw new Error(d.message||'Failed');
     renderTrendChart(d.trend||[]);
   }catch(e){
-    pane.innerHTML=`<div class="empty-state" style="padding:40px;"><div class="empty-icon">&#128683;</div><div class="empty-title">Trend Failed</div><div class="empty-sub">${e.message}</div></div>`;
+    pane.innerHTML=`<div class="empty-state" style="padding:40px;"><div class="empty-icon">!</div><div class="empty-title">Trend Failed</div><div class="empty-sub">${e.message}</div></div>`;
   }
 }
 
@@ -1483,7 +1500,7 @@ async function loadLeaderboard(){
     if(!res.ok) throw new Error(d.message||'Failed');
     renderLeaderboard(d.leaderboard||[],month);
   }catch(e){
-    pane.innerHTML=`<div class="empty-state" style="padding:40px;"><div class="empty-icon">&#128683;</div><div class="empty-title">Leaderboard Failed</div><div class="empty-sub">${e.message}</div></div>`;
+    pane.innerHTML=`<div class="empty-state" style="padding:40px;"><div class="empty-icon">!</div><div class="empty-title">Leaderboard Failed</div><div class="empty-sub">${e.message}</div></div>`;
     toast('Leaderboard failed: '+e.message,'error');
   }
 }
@@ -1491,31 +1508,23 @@ async function loadLeaderboard(){
 function renderLeaderboard(rows,month){
   const pane=document.getElementById('perf-pane-leaderboard');
   if(!rows.length){
-    pane.innerHTML='<div class="empty-state" style="padding:40px;"><div class="empty-icon">&#127942;</div><div class="empty-title">No Divisions Found</div></div>';
+    pane.innerHTML='<div class="empty-state" style="padding:40px;"><div class="empty-icon">#</div><div class="empty-title">No Divisions Found</div></div>';
     return;
   }
-  const medals=['&#129351;','&#129352;','&#129353;'];
   let tbl=`<div style="padding:20px;">
-    <div style="font-family:Syne,sans-serif;font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;">&#127942; Division Leaderboard — ${month}</div>
+    <div style="font-family:Syne,sans-serif;font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;">Division Leaderboard — ${month}</div>
     <table class="lb-table">
-      <thead><tr><th style="width:40px;">Rank</th><th>Division</th><th style="text-align:center;">Tracked</th><th style="text-align:center;">Completed</th><th style="text-align:center;">Pending</th><th style="text-align:center;">Critical</th><th style="width:220px;">Completion</th><th>Status</th></tr></thead>
+      <thead><tr><th style="width:40px;">Rank</th><th>Division</th><th style="text-align:center;">Tracked</th><th style="text-align:center;">Completed</th><th style="text-align:center;">Pending</th><th style="text-align:center;">Critical</th><th>Status</th></tr></thead>
       <tbody>`;
   rows.forEach((r,i)=>{
     const p=Math.min(100,Math.max(0,r.completionRate||0));
-    const fillCls=pctFillClass(p);
     tbl+=`<tr>
-      <td><span class="lb-rank">${i<3?medals[i]:(i+1)}</span></td>
+      <td><span class="lb-rank">${i+1}</span></td>
       <td style="font-weight:600;">${r.division}</td>
       <td style="text-align:center;">${r.totalTracked}</td>
       <td style="text-align:center;color:#059669;font-weight:700;">${r.completedCount}</td>
       <td style="text-align:center;color:${r.pendingCount>0?'#d97706':'var(--muted)'}">${r.pendingCount}</td>
       <td style="text-align:center;color:${r.criticalPendingCount>0?'#b91c1c':'var(--muted)'}">${r.criticalPendingCount}</td>
-      <td>
-        <div class="pct-bar-wrap">
-          <div class="pct-bar"><div class="pct-fill ${fillCls}" style="width:${p}%;"></div></div>
-          <div class="pct-text" style="color:${p<60?'#b91c1c':p<75?'#d97706':'var(--text)'}">${p}%</div>
-        </div>
-      </td>
       <td>${flagBadge(p)}</td>
     </tr>`;
   });
@@ -1524,30 +1533,57 @@ function renderLeaderboard(rows,month){
 }
 
 function exportPDF() {
-  const summaryEl = document.getElementById('perf-pane-summary');
-  if (!summaryEl) return;
-  const month = perfCurrentParams?.month||'Report';
-  const scope = perfCurrentParams?.division||perfCurrentParams?.employee||'';
-  const header = `<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #b91c1c;">
-    <div style="font-family:serif;font-size:22px;font-weight:700;color:#b91c1c;">SchillerIndia</div>
-    <div style="flex:1;"><div style="font-size:15px;font-weight:700;">Performance Review — ${scope}</div><div style="font-size:12px;color:#666;">Month: ${month} | Generated: ${new Date().toLocaleDateString('en-IN')}</div></div>
-  </div>`;
-  const clone = summaryEl.cloneNode(true);
-  // Remove export button from clone
-  clone.querySelectorAll('.btn').forEach(b=>b.remove());
-  const wrapper = document.createElement('div');
-  wrapper.style.cssText='font-family:sans-serif;padding:24px;max-width:900px;';
-  wrapper.innerHTML=header;
-  wrapper.appendChild(clone);
-  const opt = {
-    margin: 0.4,
-    filename: `Performance_${scope}_${month}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-  };
-  html2pdf().set(opt).from(wrapper).save();
-  toast('PDF export started...','info');
+  if(!perfCurrentParams) return;
+  const month = perfCurrentParams.month||'Report';
+  const scope = perfCurrentParams.division||perfCurrentParams.employee||'';
+  const data = window._lastPerfData;
+  if(!data){ toast('Generate a preview first','error'); return; }
+  const rate = data.completionRate||0;
+  const isCrit = rate<60;
+  const isWarn = rate>=60 && rate<75;
+  const sColor = isCrit?'#b91c1c': isWarn?'#d97706':'#059669';
+  const sTxt = isCrit?'CRITICAL': isWarn?'AT RISK':'ON TRACK';
+
+  const actRows=(data.activities||[]).map((act,i)=>{
+    const bg = i%2===0?'#ffffff':'#f9fbfd';
+    const oot=act.outOfTarget||0;
+    return `<tr style="background:${bg};">
+      <td style="border:1px solid #d0e0ec;padding:8px 10px;font-weight:600;font-size:11px;">${escapeHtml(act.label)}</td>
+      <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;">${act.total||0}</td>
+      <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;">${act.targetDays?act.targetDays+' days':'-'}</td>
+      <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;color:#059669;font-weight:700;">${act.withinTarget||0}</td>
+      <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;color:${oot>0?'#b91c1c':'#666'};font-weight:${oot>0?'700':'500'};">${oot}</td>
+    </tr>`;
+  }).join('');
+
+  const html=`
+    <div style="font-family:Arial,sans-serif;padding:32px;color:#1a2a3a;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #b91c1c;">
+        <div><div style="font-size:20px;font-weight:700;color:#b91c1c;font-family:Georgia,serif;">SchillerIndia</div><div style="font-size:12px;color:#666;">Performance Report</div></div>
+        <div style="text-align:right;"><div style="font-size:14px;font-weight:700;">${scope}</div><div style="font-size:11px;color:#666;">Month: ${month}</div></div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
+        <tr>
+          <td style="border:1px solid #d0e0ec;padding:10px;width:25%;"><div style="font-size:18px;font-weight:700;">${data.totalTracked||0}</div><div style="font-size:10px;color:#666;">Total</div></td>
+          <td style="border:1px solid #d0e0ec;padding:10px;width:25%;"><div style="font-size:18px;font-weight:700;color:#059669;">${data.completedCount||0}</div><div style="font-size:10px;color:#666;">Within Target</div></td>
+          <td style="border:1px solid #d0e0ec;padding:10px;width:25%;"><div style="font-size:18px;font-weight:700;color:#b91c1c;">${data.pendingCount||0}</div><div style="font-size:10px;color:#666;">Out of Target</div></td>
+          <td style="border:1px solid #d0e0ec;padding:10px;width:25%;background:${isCrit?'#fff5f5':isWarn?'#fffbeb':'#f0fdf4'};"><div style="font-size:18px;font-weight:700;color:${sColor};">${rate}%</div><div style="font-size:10px;color:${sColor};font-weight:600;">${sTxt}</div></td>
+        </tr>
+      </table>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr style="background:#f4f7fa;">
+          <th style="border:1px solid #d0e0ec;padding:8px;text-align:left;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Activity</th>
+          <th style="border:1px solid #d0e0ec;padding:8px;text-align:center;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Total</th>
+          <th style="border:1px solid #d0e0ec;padding:8px;text-align:center;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Target Days</th>
+          <th style="border:1px solid #d0e0ec;padding:8px;text-align:center;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Within Target</th>
+          <th style="border:1px solid #d0e0ec;padding:8px;text-align:center;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Out of Target</th>
+        </tr></thead>
+        <tbody>${actRows}</tbody>
+      </table>
+    </div>`;
+  const wrapper=document.createElement('div');
+  wrapper.innerHTML=html;
+  html2pdf().set({margin:0.3,filename:`Performance_${scope}_${month}.pdf`,image:{type:'jpeg',quality:0.99},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'in',format:'a4',orientation:'portrait'}}).from(wrapper).save();
 }
 
 function escapeHtml(value){
@@ -1555,41 +1591,64 @@ function escapeHtml(value){
 }
 
 function buildPerfPdfPage(data,label,month){
-  const rows=(data.activities||[]).map(act=>{
-    const within=Math.min(100,Math.max(0,act.completionPercent||0));
-    const out=Math.min(100,Math.max(0,act.outOfTargetPercent||0));
-    return `<tr>
-      <td>${escapeHtml(act.label)}</td>
-      <td style="text-align:center;">${act.total||0}</td>
-      <td style="text-align:center;">${act.targetDays?act.targetDays+' days':'-'}</td>
-      <td style="text-align:center;color:#059669;font-weight:700;">${act.withinTarget||0}</td>
-      <td style="text-align:center;">${within}%</td>
-      <td style="text-align:center;color:${(act.outOfTarget||0)>0?'#b91c1c':'#666'};font-weight:${(act.outOfTarget||0)>0?'700':'500'};">${act.outOfTarget||0}</td>
-      <td style="text-align:center;">${out}%</td>
+  const rows=(data.activities||[]).map((act,i)=>{
+    const bg=i%2===0?'#ffffff':'#f9fbfd';
+    const oot=act.outOfTarget||0;
+    return `<tr style="background:${bg};">
+      <td style="border:1px solid #d0e0ec;padding:8px 10px;font-weight:600;font-size:11px;">${escapeHtml(act.label)}</td>
+      <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;">${act.total||0}</td>
+      <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;">${act.targetDays?act.targetDays+' days':'-'}</td>
+      <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;color:#059669;font-weight:700;">${act.withinTarget||0}</td>
+      <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;color:${oot>0?'#b91c1c':'#666'};font-weight:${oot>0?'700':'500'};">${oot}</td>
     </tr>`;
   }).join('');
-  return `<section style="page-break-after:always;padding:24px;font-family:Arial,sans-serif;color:#1a2a3a;">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid #b91c1c;">
-      <div style="font-family:serif;font-size:22px;font-weight:700;color:#b91c1c;">SchillerIndia</div>
-      <div style="flex:1;"><div style="font-size:15px;font-weight:700;">Performance Review - ${escapeHtml(label)}</div><div style="font-size:12px;color:#666;">Month: ${escapeHtml(month)} | Generated: ${new Date().toLocaleDateString('en-IN')}</div></div>
+  const rate=data.completionRate||0;
+  const isCrit=rate<60;
+  const isWarn=rate>=60&&rate<75;
+  const sColor=isCrit?'#b91c1c':isWarn?'#d97706':'#059669';
+  const sTxt=isCrit?'CRITICAL':isWarn?'AT RISK':'ON TRACK';
+  return `<section style="page-break-after:always;padding:28px;font-family:Arial,sans-serif;color:#1a2a3a;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid #b91c1c;">
+      <div>
+        <div style="font-size:20px;font-weight:700;color:#b91c1c;font-family:Georgia,serif;">SchillerIndia</div>
+        <div style="font-size:12px;color:#666;">Performance Review Report</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:13px;font-weight:700;">${escapeHtml(label)}</div>
+        <div style="font-size:11px;color:#666;">Month: ${escapeHtml(month)} | Generated: ${new Date().toLocaleDateString('en-IN')}</div>
+      </div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">
-      <div style="border:1px solid #d0e0ec;padding:10px;"><b>${data.totalTracked||0}</b><br><span style="font-size:11px;color:#666;">Total Tracked</span></div>
-      <div style="border:1px solid #d0e0ec;padding:10px;"><b style="color:#059669;">${data.completedCount||0}</b><br><span style="font-size:11px;color:#666;">Within Target</span></div>
-      <div style="border:1px solid #d0e0ec;padding:10px;"><b style="color:#b91c1c;">${data.pendingCount||0}</b><br><span style="font-size:11px;color:#666;">Out of Target</span></div>
-      <div style="border:1px solid #d0e0ec;padding:10px;"><b>${data.completionRate||0}%</b><br><span style="font-size:11px;color:#666;">Within Target %</span></div>
-    </div>
-    <table style="width:100%;border-collapse:collapse;font-size:11px;">
-      <thead><tr style="background:#f4f7fa;">
-        <th style="border:1px solid #d0e0ec;padding:7px;text-align:left;">Activity</th>
-        <th style="border:1px solid #d0e0ec;padding:7px;">Total</th>
-        <th style="border:1px solid #d0e0ec;padding:7px;">Target</th>
-        <th style="border:1px solid #d0e0ec;padding:7px;">Within Target</th>
-        <th style="border:1px solid #d0e0ec;padding:7px;">Within %</th>
-        <th style="border:1px solid #d0e0ec;padding:7px;">Out of Target</th>
-        <th style="border:1px solid #d0e0ec;padding:7px;">Out %</th>
-      </tr></thead>
-      <tbody>${rows||'<tr><td colspan="7" style="border:1px solid #d0e0ec;padding:14px;text-align:center;color:#666;">No activity data found.</td></tr>'}</tbody>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
+      <tr>
+        <td style="border:1px solid #d0e0ec;padding:10px 14px;width:25%;">
+          <div style="font-size:18px;font-weight:700;">${data.totalTracked||0}</div>
+          <div style="font-size:10px;color:#666;margin-top:3px;">Total Tracked</div>
+        </td>
+        <td style="border:1px solid #d0e0ec;padding:10px 14px;width:25%;">
+          <div style="font-size:18px;font-weight:700;color:#059669;">${data.completedCount||0}</div>
+          <div style="font-size:10px;color:#666;margin-top:3px;">Within Target</div>
+        </td>
+        <td style="border:1px solid #d0e0ec;padding:10px 14px;width:25%;">
+          <div style="font-size:18px;font-weight:700;color:#b91c1c;">${data.pendingCount||0}</div>
+          <div style="font-size:10px;color:#666;margin-top:3px;">Out of Target</div>
+        </td>
+        <td style="border:1px solid #d0e0ec;padding:10px 14px;width:25%;background:${isCrit?'#fff5f5':isWarn?'#fffbeb':'#f0fdf4'};">
+          <div style="font-size:18px;font-weight:700;color:${sColor};">${rate}%</div>
+          <div style="font-size:10px;color:${sColor};margin-top:3px;font-weight:600;">${sTxt}</div>
+        </td>
+      </tr>
+    </table>
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr style="background:#f4f7fa;">
+          <th style="border:1px solid #d0e0ec;padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#7a9ab0;">Activity</th>
+          <th style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#7a9ab0;">Total</th>
+          <th style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#7a9ab0;">Target Days</th>
+          <th style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#7a9ab0;">Within Target</th>
+          <th style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#7a9ab0;">Out of Target</th>
+        </tr>
+      </thead>
+      <tbody>${rows||'<tr><td colspan="5" style="border:1px solid #d0e0ec;padding:14px;text-align:center;color:#999;">No activity data found.</td></tr>'}</tbody>
     </table>
   </section>`;
 }
