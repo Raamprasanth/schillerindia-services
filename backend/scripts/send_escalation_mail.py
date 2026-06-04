@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import smtplib
 import ssl
 import sys
@@ -253,6 +254,9 @@ def send_email(payload, attachment_path):
     smtp_user = os.getenv("ESCALATION_SMTP_USER", "").strip()
     smtp_pass = os.getenv("ESCALATION_SMTP_PASS", "").strip()
     from_addr = os.getenv("ESCALATION_EMAIL_FROM", smtp_user).strip()
+    smtp_timeout = int(os.getenv("ESCALATION_SMTP_TIMEOUT", "60") or "60")
+    if "gmail.com" in smtp_host.lower():
+        smtp_pass = re.sub(r"\s+", "", smtp_pass)
     payload_to = payload.get("to", []) if isinstance(payload, dict) else []
     to_addrs = [str(x).strip() for x in payload_to if str(x).strip()]
     if not to_addrs:
@@ -286,13 +290,13 @@ def send_email(payload, attachment_path):
     recipients = to_addrs + cc_addrs
     try:
         if use_ssl:
-            with smtplib.SMTP_SSL(smtp_host, smtp_port, context=ssl.create_default_context()) as server:
+            with smtplib.SMTP_SSL(smtp_host, smtp_port, context=ssl.create_default_context(), timeout=smtp_timeout) as server:
                 if smtp_user:
                     server.login(smtp_user, smtp_pass)
                 server.send_message(msg, from_addr=from_addr, to_addrs=recipients)
             return
 
-        with smtplib.SMTP(smtp_host, smtp_port) as server:
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=smtp_timeout) as server:
             server.ehlo()
             if use_starttls:
                 server.starttls(context=ssl.create_default_context())
