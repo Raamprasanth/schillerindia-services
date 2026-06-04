@@ -322,7 +322,7 @@ table.js-grid tbody td input::placeholder{color:var(--muted);font-size:11px;}
     <div class="nav-children nav-sub open">
       <a class="nav-item active" href="Emp-scrap-list.html"><span class="ico">&#9888;&#65039;</span> Supplier Warranty</a>
       <a class="nav-item" href="csw.html"><span class="ico">&#128274;</span> Closed Supp Warr</a>
-      <a class="nav-item" href="sc-completed-frn.html"><span class="ico">&#128257;</span> External Repair</a>
+      <a class="nav-item" href="sc-completed-frn.html"><span class="ico">&#128257;</span> Supplier Warranty</a>
       <a class="nav-item" href="cer.html"><span class="ico">&#128274;</span> Closed Ext Rep</a>
     </div>
     <button class="nav-group-toggle" type="button" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');"><span class="ico">&#128193;</span><span>Activity Register</span><span class="caret">&#9656;</span></button>
@@ -415,7 +415,7 @@ table.js-grid tbody td input::placeholder{color:var(--muted);font-size:11px;}
     <div class="table-card" id="list-panel">
       <div class="table-top">
         <div class="table-title">
-          Details of Services - External Repair <span class="count-chip" id="count-chip">- entries</span>
+          Details of Services - Supplier Warranty <span class="count-chip" id="count-chip">- entries</span>
         </div>
         <div class="toolbar-r">
           <div class="show-row">
@@ -462,6 +462,7 @@ let mailAckVisible = localStorage.getItem(MAIL_ACK_KEY) === '1';
 const SUPPLIER_COLUMNS = [
   { key:'sn', label:'S/N' },
   { key:'supplier', label:'Supplier' },
+    { key:'division', label:'Division' },
   { key:'srrRmaBltNo', label:'SRR/RMA/BLT No' },
   { key:'frnNo', label:'FRN No' },
   { key:'warrReportedDate', label:'Warr reported date', type:'date' },
