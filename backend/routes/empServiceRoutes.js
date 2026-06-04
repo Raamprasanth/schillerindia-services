@@ -2,6 +2,7 @@
 const router              = require('express').Router();
 const mongoose            = require('mongoose');
 const Service             = require('../models/Service');
+const Division            = require('../models/Division');
 const { protect }         = require('../middleware/authMiddleware');
 const { tryCreateFRNPending, tryCreateUnderRepair, cleanupLinkedRecords } = require('../services/queueSyncService');
 const { buildUrEscalationRow, enqueueEscalationSnapshot, UR_DAILY_TYPES } = require('../services/escalationService');
@@ -73,6 +74,25 @@ function getRequestedEmployeeDivision(user) {
   return String(user?.activeDivision || user?.division || '').trim();
 }
 
+function escapeRegex(value) {
+  return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+async function getCurrentEmployeeDivisionFilter(user) {
+  if (!user || user.role === 'admin' || user.role === 'superadmin') return {};
+
+  const currentDivision = getRequestedEmployeeDivision(user);
+  if (!currentDivision) return { _id: null };
+
+  if (mongoose.Types.ObjectId.isValid(currentDivision)) {
+    return { division: new mongoose.Types.ObjectId(currentDivision) };
+  }
+
+  const pattern = new RegExp('^' + escapeRegex(currentDivision) + '$', 'i');
+  const divDoc = await Division.findOne({ $or: [{ name: pattern }, { displayName: pattern }] }).lean();
+  return divDoc ? { division: divDoc._id } : { _id: null };
+}
+
 function pickUrEscalationModule(typeWork) {
   if (!typeWork) return '';
   if (typeWork === 'Scrap') return 'ur_scrap';
@@ -141,12 +161,7 @@ router.get('/ob-pending', protect, async (req, res) => {
 // ════════════════════════════════════════════════════════════════
 router.get('/', protect, async (req, res) => {
   try {
-    const { getDivisionFilter } = require('../utils/visibility');
-    const visibilityFilter = await getDivisionFilter(req.user, [
-      { eng: req.user.name },
-      { scEng: req.user.name },
-      { submittedBy: req.user.name }
-    ]);
+    const visibilityFilter = await getCurrentEmployeeDivisionFilter(req.user);
 
     const records = await Service.find(visibilityFilter)
       .populate('division', 'name')
@@ -230,7 +245,6 @@ router.post('/', protect, async (req, res) => {
     }
 
     if (!body.division || !mongoose.Types.ObjectId.isValid(body.division)) {
-      const Division = require('../models/Division');
       const divName = (!mongoose.Types.ObjectId.isValid(body.division) && body.division)
         || body.divisionName
         || forcedEmployeeDivision
@@ -239,8 +253,8 @@ router.post('/', protect, async (req, res) => {
       delete body.division;
       delete body.divisionName;
       if (divName) {
-        const escaped = divName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const divDoc  = await Division.findOne({ name: new RegExp('^' + escaped + '$', 'i') });
+        const escaped = escapeRegex(divName);
+        const divDoc  = await Division.findOne({ $or: [{ name: new RegExp('^' + escaped + '$', 'i') }, { displayName: new RegExp('^' + escaped + '$', 'i') }] });
         if (divDoc) body.division = divDoc._id;
       }
     } else {
