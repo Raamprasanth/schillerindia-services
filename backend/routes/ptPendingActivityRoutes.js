@@ -67,6 +67,9 @@ router.post('/:id/close', async (req, res) => {
     const filter = { _id: req.params.id, ...ownerFilter(req.user) };
     const existing = await PtPendingActivity.findOne(filter).lean();
     if (!existing) return res.status(404).json({ message: 'Record not found.' });
+    if (!String(existing.pendingFrom || '').trim() || !String(existing.remarks || '').trim()) {
+      return res.status(400).json({ message: 'Completed Date and Remarks are required before closing.' });
+    }
 
     const closedDoc = await PtClosedActivity.create({
       scEngineer: existing.scEngineer,
@@ -105,7 +108,10 @@ router.put('/:id', async (req, res) => {
     const filter = { _id: req.params.id, ...ownerFilter(req.user) };
     const doc = await PtPendingActivity.findOneAndUpdate(
       filter,
-      { remarks: req.body.remarks || '' },
+      {
+        pendingFrom: req.body.pendingFrom || '',
+        remarks: req.body.remarks || '',
+      },
       { new: true, runValidators: true }
     );
     if (!doc) return res.status(404).json({ message: 'Record not found.' });

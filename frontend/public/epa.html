@@ -529,7 +529,7 @@ function renderTable(){
         <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:normal;font-size:11px;color:var(--soft);" title="${esc(d.remarks||'')}">${esc(d.remarks||'-')}</td>
         <td>
           <button class="btn-xs update" title="Update" onclick="openEditModal('${rid}')">Edit</button>
-          <button class="btn-xs update" title="Close" onclick="closeActivity('${rid}')" style="margin-left:4px;">Close</button>
+          <button class="btn-xs update" title="${canCloseActivity(d)?'Close':'Enter Completed Date and Remarks in Edit before closing'}" onclick="closeActivity('${rid}')" style="margin-left:4px;" ${canCloseActivity(d) ? '' : 'disabled'}>Close</button>
         </td>
       </tr>`;
     }).join('');
@@ -566,9 +566,9 @@ function openEditModal(id){
   const d = ACTIVITY_DATA.find(x => (x._id||x.id) === id);
   if(!d) return;
   editMode = true;
-  document.getElementById('edit-id').value = id;
   document.getElementById('modal-title').innerHTML = '&#128394;&#65039; Edit Pending Activity';
   clearModalForm();
+  document.getElementById('edit-id').value = id;
   
   const set = (elId,val) => { const el=document.getElementById(elId); if(el) el.value=val||''; };
   set('m-division', d.division);
@@ -589,12 +589,20 @@ function openEditModal(id){
   document.getElementById('add-modal').classList.add('open');
 }
 
+function canCloseActivity(item){
+  return !!(String(item?.pendingFrom || '').trim() && String(item?.remarks || '').trim());
+}
+
 function closeAddModal(){ document.getElementById('add-modal').classList.remove('open'); }
 
 function setEditFieldLock(locked){
-  ['m-initiated','m-activity','m-description','m-responsible','m-pending-from','m-target-date'].forEach(id => {
+  ['m-initiated','m-activity','m-description','m-responsible','m-target-date'].forEach(id => {
     const el = document.getElementById(id);
     if(el) el.disabled = locked;
+  });
+  ['m-pending-from','m-remarks'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.disabled = false;
   });
 }
 
@@ -671,6 +679,8 @@ async function saveEntry(){
 
 /* -- CLOSE -- */
 async function closeActivity(id){
+  const doc = ACTIVITY_DATA.find(x => (x._id || x.id) === id);
+  if(!canCloseActivity(doc)){ showToast('Enter Completed Date and Remarks in Edit before closing.', 'err'); return; }
   if(!confirm('Close this activity and move it to Closed Activity?')) return;
   try{
     const res = await fetch(`${API}/api/epa/${id}/close`, {

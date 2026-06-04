@@ -108,7 +108,10 @@ router.put('/:id', async (req, res) => {
 
     const updated = await EmpPendingActivity.findByIdAndUpdate(
       req.params.id,
-      { remarks: req.body.remarks || '' },
+      {
+        pendingFrom: req.body.pendingFrom || '',
+        remarks: req.body.remarks || '',
+      },
       { new: true, runValidators: true }
     );
     res.json(updated);
@@ -125,6 +128,9 @@ router.post('/:id/close', async (req, res) => {
     if (!existing) return res.status(404).json({ message: 'Record not found.' });
     if (!canAccessDivision(req.user, existing.division)) {
       return res.status(403).json({ message: 'Access denied' });
+    }
+    if (!String(existing.pendingFrom || '').trim() || !String(existing.remarks || '').trim()) {
+      return res.status(400).json({ message: 'Completed Date and Remarks are required before closing.' });
     }
 
     const closedDoc = await EmpCompletedActivity.create({
