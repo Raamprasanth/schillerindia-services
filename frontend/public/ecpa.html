@@ -397,11 +397,10 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
               <th>Remarks</th>
               <th>SC Incharge Remarks</th>
               <th onclick="sortBy('status')">Status &#8597;</th>
-              <th>Actions</th>
             </tr>
           </thead>
           <tbody id="call-tbody">
-            <tr class="loading-row"><td colspan="13" style="text-align:center;padding:30px;"><span class="spin"></span>Loading from database...</td></tr>
+            <tr class="loading-row"><td colspan="12" style="text-align:center;padding:30px;"><span class="spin"></span>Loading from database...</td></tr>
           </tbody>
         </table>
       </div>
@@ -483,11 +482,11 @@ async function loadData(){
 }
 
 function setLoading(){
-  document.getElementById('call-tbody').innerHTML = `<tr class="loading-row"><td colspan="13" style="text-align:center;padding:30px;"><span class="spin"></span>Loading from database...</td></tr>`;
+  document.getElementById('call-tbody').innerHTML = `<tr class="loading-row"><td colspan="12" style="text-align:center;padding:30px;"><span class="spin"></span>Loading from database...</td></tr>`;
 }
 
 function setError(msg){
-  document.getElementById('call-tbody').innerHTML = `<tr><td colspan="13" style="text-align:center;padding:30px;color:var(--red);font-weight:600;">&#9888; ${esc(msg)}</td></tr>`;
+  document.getElementById('call-tbody').innerHTML = `<tr><td colspan="12" style="text-align:center;padding:30px;color:var(--red);font-weight:600;">&#9888; ${esc(msg)}</td></tr>`;
 }
 
 function updateStats(){
@@ -527,7 +526,7 @@ function renderTable(){
   const tbody = document.getElementById('call-tbody');
   
   if(!total){
-    tbody.innerHTML=`<tr><td colspan="13"><div class="empty-st">
+    tbody.innerHTML=`<tr><td colspan="12"><div class="empty-st">
       <div class="ei">&#9989;</div>
       <div class="et">${ACTIVITY_DATA.length?'No activities match the filters':'No Completed Activities yet'}</div>
       <div class="es">${ACTIVITY_DATA.length?'Try clearing or changing your search criteria.':'Click + Add Completed Activity to register your first record.'}</div>
@@ -549,10 +548,6 @@ function renderTable(){
         <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:normal;font-size:11px;color:var(--soft);" title="${esc(d.remarks||'')}">${esc(d.remarks||'-')}</td>
         <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:normal;font-size:11px;color:var(--soft);" title="${esc(d.scInchargeRemarks||'')}">${esc(d.scInchargeRemarks||'-')}</td>
         <td><span class="status-pill ${statCls}">${esc(d.status||'Completed')}</span></td>
-        <td>
-          <button class="btn-xs update" title="Update" onclick="openEditModal('${rid}')">Edit</button>
-          <button class="btn-xs delete" title="Delete" onclick="triggerDelete('${rid}')" style="margin-left:4px;">Del</button>
-        </td>
       </tr>`;
     }).join('');
   }

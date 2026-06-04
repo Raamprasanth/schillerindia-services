@@ -338,7 +338,7 @@ tr:hover td{background:var(--surface3);}
       <div class="table-responsive">
         <table>
           <thead>
-            <tr><th>Actions</th>
+            <tr>
               <th>SC Engineer</th>
               <th>Initiated Date</th>
               <th>Activity</th>
@@ -444,7 +444,7 @@ async function fetchData() {
 function renderTable() {
   const tbody = document.getElementById('table-body');
   if(!currentData.length){
-    tbody.innerHTML = `<tr><td colspan="10" class="empty-state">No pending activities found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="empty-state">No pending activities found.</td></tr>`;
     return;
   }
   
@@ -455,9 +455,6 @@ function renderTable() {
     if(s==='closed'||s==='completed') statCls='closed';
     
     return `<tr>
-      <td>
-        <button class="btn btn-outline btn-sm" onclick="viewData('${t._id}')">View</button>
-      </td>
       <td><b>${esc(t.scEngineer)}</b></td>
       <td>${formatDate(t.initiatedDate)}</td>
       <td><b>${esc(t.activity)}</b></td>
