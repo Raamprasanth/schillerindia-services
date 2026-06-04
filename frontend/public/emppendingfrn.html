@@ -2404,7 +2404,8 @@ async function loadEscalationStatus(moduleKey){
       if(log){
         const slot=(log.slot||'').charAt(0).toUpperCase()+(log.slot||'').slice(1);
         const statusLabel=(log.status||'pending').replace(/_/g,' ');
-        textEl.textContent=`${slot||'Latest'} escalation ${statusLabel} on ${fmtEscalationTs(log.sentAt||log.createdAt)}.`;
+        const errorText=String(log.error||'').trim();
+        textEl.textContent=`${slot||'Latest'} escalation ${statusLabel} on ${fmtEscalationTs(log.sentAt||log.createdAt)}.${errorText?' Error: '+errorText:''}`;
       }else{
         textEl.textContent='No escalation mail has been sent yet.';
       }
@@ -2468,11 +2469,7 @@ function getPreferredSrLatest(morning,afternoon){
   return (afternoon&&afternoon.latest)||(morning&&morning.latest)||null;
 }
 function getNextSrRunLabel(){
-  const now=new Date();
-  const minutes=now.getHours()*60+now.getMinutes();
-  if(minutes<660) return 'Morning 11:00 AM';
-  if(minutes<900) return 'Afternoon 3:00 PM';
-  return 'Morning 11:00 AM';
+  return 'configured FRN Replacement slot';
 }
 function getPreferredToLatest(morning,evening){
   const now=new Date();
@@ -2481,11 +2478,7 @@ function getPreferredToLatest(morning,evening){
   return (evening&&evening.latest)||(morning&&morning.latest)||null;
 }
 function getNextToRunLabel(){
-  const now=new Date();
-  const minutes=now.getHours()*60+now.getMinutes();
-  if(minutes<660) return 'Morning 11:00 AM';
-  if(minutes<990) return 'Evening 4:30 PM';
-  return 'Morning 11:00 AM';
+  return 'configured In House FRN Replacement slot';
 }
 function bumpSrEscalationQueue(delta=1){
   const countEl=document.getElementById('sr-banner-count-frn');
@@ -2553,7 +2546,8 @@ async function loadSrEscalationStatus(moduleKey){
       }else if(latest){
         const slotLabel=String(latest.slot||'SR').replace(/_/g,' ').replace(/\b\w/g,m=>m.toUpperCase());
         const statusLabel=(latest.status||'pending').replace(/_/g,' ');
-        textEl.textContent=`${slotLabel} escalation ${statusLabel} on ${fmtEscalationTs(latest.sentAt||latest.createdAt)}.`;
+        const errorText=String(latest.error||'').trim();
+        textEl.textContent=`${slotLabel} escalation ${statusLabel} on ${fmtEscalationTs(latest.sentAt||latest.createdAt)}.${errorText?' Error: '+errorText:''}`;
       }else{
         textEl.textContent='No FRN Replacement Escalation mail has been sent yet.';
       }
@@ -2598,7 +2592,8 @@ async function loadToEscalationStatus(moduleKey){
       }else if(latest){
         const slotLabel=String(latest.slot||'TO').replace(/_/g,' ').replace(/\b\w/g,m=>m.toUpperCase());
         const statusLabel=(latest.status||'pending').replace(/_/g,' ');
-        textEl.textContent=`${slotLabel} escalation ${statusLabel} on ${fmtEscalationTs(latest.sentAt||latest.createdAt)}.`;
+        const errorText=String(latest.error||'').trim();
+        textEl.textContent=`${slotLabel} escalation ${statusLabel} on ${fmtEscalationTs(latest.sentAt||latest.createdAt)}.${errorText?' Error: '+errorText:''}`;
       }else{
         textEl.textContent='No In House FRN Replacement mail has been sent yet.';
       }

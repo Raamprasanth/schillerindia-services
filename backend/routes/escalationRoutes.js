@@ -74,7 +74,7 @@ function scheduledTime(times, key, fallback) {
 function visibleLatestLog(log, activeTotal = 0) {
   if (!log) return null;
   const logTotal = Number(log.totalCount || 0);
-  if (activeTotal === 0 && log.status === 'failed' && logTotal === 0) return null;
+  if (activeTotal === 0 && log.status === 'failed' && logTotal === 0 && !String(log.error || '').trim()) return null;
   return log;
 }
 

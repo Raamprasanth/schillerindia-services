@@ -1037,10 +1037,103 @@ function execFileAsync(command, args, options) {
   });
 }
 
+function requireMailerDependency(name) {
+  try {
+    return require(name);
+  } catch (error) {
+    if (error && error.code === 'MODULE_NOT_FOUND') {
+      error.message = `${name} is not installed. Run npm install in backend or redeploy so backend/package.json dependencies are installed.`;
+    }
+    throw error;
+  }
+}
+
+function attachmentContentType(filePath) {
+  return String(path.extname(filePath || '')).toLowerCase() === '.pdf'
+    ? 'application/pdf'
+    : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+}
+
+async function buildWorkbookWithNode(payload, outputPath) {
+  const ExcelJS = requireMailerDependency('exceljs');
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = 'SchillerIndia Services';
+  workbook.created = new Date();
+  const sheets = Array.isArray(payload.sheets) && payload.sheets.length ? payload.sheets : [{ name: 'Report', rows: [] }];
+  sheets.forEach((sheet, index) => {
+    const rows = Array.isArray(sheet.rows) ? sheet.rows : [];
+    const keys = [];
+    rows.forEach((row) => {
+      Object.keys(row || {}).forEach((key) => {
+        if (!keys.includes(key)) keys.push(key);
+      });
+    });
+    const worksheet = workbook.addWorksheet(String(sheet.name || sheet.template || `Sheet${index + 1}`).slice(0, 31));
+    worksheet.addRow([String(payload.subject || 'Escalation Report')]);
+    worksheet.addRow([String(payload.body || '').split(/\r?\n/).filter(Boolean).join(' | ')]);
+    worksheet.addRow([]);
+    if (!keys.length) {
+      worksheet.addRow(['No records']);
+      return;
+    }
+    worksheet.addRow(keys);
+    rows.forEach((row) => worksheet.addRow(keys.map((key) => row?.[key] ?? '')));
+    worksheet.getRow(1).font = { bold: true, size: 14 };
+    worksheet.getRow(4).font = { bold: true };
+    worksheet.columns = keys.map((key) => ({ width: Math.min(Math.max(String(key).length + 4, 14), 34) }));
+  });
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+  await workbook.xlsx.writeFile(outputPath);
+}
+
+async function sendEscalationWorkbookWithNode(payload, outputPath, sender) {
+  if (!fs.existsSync(outputPath)) {
+    await buildWorkbookWithNode(payload, outputPath);
+  }
+  const nodemailer = requireMailerDependency('nodemailer');
+  const port = Number(sender.smtpPort || 587);
+  const to = Array.isArray(payload.to) && payload.to.length ? payload.to : splitCsv(process.env.ESCALATION_EMAIL_TO);
+  const cc = splitCsv(process.env.ESCALATION_EMAIL_CC);
+  if (!to.length) throw new Error('ESCALATION_EMAIL_TO is empty.');
+  const transporter = nodemailer.createTransport({
+    host: sender.smtpHost,
+    port,
+    secure: Boolean(sender.ssl) || port === 465,
+    auth: {
+      user: sender.smtpUser,
+      pass: sender.smtpPass,
+    },
+    requireTLS: !sender.ssl,
+    connectionTimeout: MAIL_TIMEOUT_MS,
+    greetingTimeout: MAIL_TIMEOUT_MS,
+    socketTimeout: MAIL_TIMEOUT_MS,
+  });
+  await transporter.sendMail({
+    from: sender.fromEmail || sender.smtpUser,
+    to,
+    cc,
+    subject: payload.subject || 'Escalation Report',
+    text: payload.body || 'Please find the attached escalation report.',
+    attachments: [{
+      filename: path.basename(outputPath),
+      path: outputPath,
+      contentType: attachmentContentType(outputPath),
+    }],
+  });
+}
+
 async function sendEscalationWorkbook(payload, outputPath, senderConfig = null) {
   const tmpInput = path.join(os.tmpdir(), `schiller-escalation-${Date.now()}.json`);
   fs.writeFileSync(tmpInput, JSON.stringify(payload, null, 2), 'utf8');
   const sender = senderConfig || await getReadyEscalationSenderConfig();
+  let meaningfulError = null;
+  try {
+    await sendEscalationWorkbookWithNode(payload, outputPath, sender);
+    try { fs.unlinkSync(tmpInput); } catch (_) {}
+    return;
+  } catch (error) {
+    meaningfulError = error;
+  }
   const childEnv = {
     ...process.env,
     ESCALATION_SMTP_HOST: sender.smtpHost || '',
@@ -1067,13 +1160,18 @@ async function sendEscalationWorkbook(payload, outputPath, senderConfig = null) 
         return;
       } catch (error) {
         lastError = error;
+        if (error.code !== 'ENOENT') meaningfulError = error;
         if (attempt < MAIL_ATTEMPTS) await sleep(1000 * attempt);
       }
     }
   }
 
   try { fs.unlinkSync(tmpInput); } catch (_) {}
-  throw new Error(lastError ? (lastError.stderr || lastError.message || 'Python mailer failed') : 'No usable Python runtime found');
+  const finalError = meaningfulError || lastError;
+  const stderr = String(finalError?.stderr || '').trim();
+  const stdout = String(finalError?.stdout || '').trim();
+  const message = stderr || stdout || finalError?.message || 'No usable Python runtime found';
+  throw new Error(message);
 }
 
 async function sendEscalationSenderTest(toEmail = '') {
