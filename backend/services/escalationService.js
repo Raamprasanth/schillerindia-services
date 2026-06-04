@@ -230,7 +230,7 @@ function getSlotWindow(slot, referenceDate = new Date()) {
       slot,
       slotLabel: 'Morning',
       jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
-      windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, 16, 1, 0, 0),
+      windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, 18, 16, 0, 0),
       windowEnd: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 11, 29, 59, 999),
     };
   }
@@ -239,7 +239,7 @@ function getSlotWindow(slot, referenceDate = new Date()) {
     slotLabel: 'Evening',
     jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
     windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 11, 30, 0, 0),
-    windowEnd: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 15, 59, 59, 999),
+    windowEnd: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 18, 14, 59, 999),
   };
 }
 
@@ -388,7 +388,7 @@ function getSlotsForCurrentTime(date = new Date()) {
     slots.push('to_evening');
     slots.push('prf_ob');
   }
-  if (parts.hour === 16 && parts.minute === 0) slots.push('evening');
+  if (parts.hour === 18 && parts.minute === 15) slots.push('evening');
   if (parts.hour === 20 && parts.minute === 0) slots.push('ur_followup');
   return slots;
 }
@@ -1500,7 +1500,7 @@ function initEscalationScheduler() {
     return;
   }
 
-  console.log('[Escalation] Scheduler armed for SR 11:00 AM & 3:00 PM, supplier warranty Tue/Fri 8:30 PM, external 3:30 PM, main 11:30 AM & 4:00 PM, PRF/OB 4:30 PM, Sunday 11:00 AM scrap, and daily 8:00 PM UR follow-up IST.');
+  console.log('[Escalation] Scheduler armed for SR 11:00 AM & 3:00 PM, supplier warranty Tue/Fri 8:30 PM, external 3:30 PM, main 11:30 AM & 6:15 PM, PRF/OB 4:30 PM, Sunday 11:00 AM scrap, and daily 8:00 PM UR follow-up IST.');
   const timer = setInterval(async () => {
     try {
       const slots = getSlotsForCurrentTime(new Date());

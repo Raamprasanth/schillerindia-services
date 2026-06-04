@@ -157,17 +157,17 @@ function getActiveQueueWindow(referenceDate = new Date()) {
       slot: 'morning',
       slotLabel: 'Morning',
       nextRunLabel: '11:30 AM',
-      windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, 16, 1, 0, 0),
+      windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, 18, 16, 0, 0),
       windowEnd: referenceDate,
       windowDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
     };
   }
 
-  if (minutes < 960) {
+  if (minutes < 1095) {
     return {
       slot: 'evening',
       slotLabel: 'Evening',
-      nextRunLabel: '4:00 PM',
+      nextRunLabel: '6:15 PM',
       windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 11, 30, 0, 0),
       windowEnd: referenceDate,
       windowDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
@@ -179,7 +179,7 @@ function getActiveQueueWindow(referenceDate = new Date()) {
     slot: 'morning',
     slotLabel: 'Morning',
     nextRunLabel: '11:30 AM',
-    windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 16, 1, 0, 0),
+    windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 18, 16, 0, 0),
     windowEnd: referenceDate,
     windowDate: `${next.year}-${pad(next.month)}-${pad(next.day)}`,
   };
