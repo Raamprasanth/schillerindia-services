@@ -90,13 +90,15 @@ function getDateFilter(dateRange) {
 
 function buildDivisionFilter(division) {
   if (!division || division === 'all') return {};
-  return {
-    $or: [
-      { division:     division },
-      { divisionName: division },
-      { 'division.name': division },
-    ]
-  };
+  const isObjectId = /^[0-9a-fA-F]{24}$/.test(String(division));
+  const orConditions = [
+    { divisionName: division },
+    { 'division.name': division }
+  ];
+  if (isObjectId) {
+    orConditions.push({ division: division });
+  }
+  return { $or: orConditions };
 }
 
 function buildRegionFilter(region) {
