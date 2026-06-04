@@ -513,26 +513,55 @@ router.post('/generate', verifyToken, async (req, res) => {
       generationTimeMs: 0,
     };
 
-    const genAI = createGenAI();
-    if (genAI) {
-      const model = genAI.getGenerativeModel({ 
-        model: 'gemini-pro',
-        systemInstruction: { parts: [{ text: systemPrompt }] }
-      });
-      
-      const chat = model.startChat();
-      
-      const result = await chat.sendMessage(userPrompt);
-      const response = result.response;
-      
-      generatedContent = response.text();
+    const { getAllKeys } = require('../utils/geminiKeys');
+    const https = require('https');
+    const allKeys = getAllKeys();
+    const groqKey = allKeys.find(k => k.startsWith('gsk_')) || process.env.GEMINI_API_KEY_2;
 
-      aiUsage = {
-        model:            'gemini-pro',
-        inputTokens:      response.usageMetadata?.promptTokenCount  || 0,
-        outputTokens:     response.usageMetadata?.candidatesTokenCount || 0,
-        generationTimeMs: 0,
-      };
+    if (groqKey) {
+      try {
+        const groqData = await new Promise((resolve, reject) => {
+          const req = https.request('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${groqKey}`
+            }
+          }, (res) => {
+            let body = '';
+            res.on('data', chunk => body += chunk);
+            res.on('end', () => {
+              if (res.statusCode >= 200 && res.statusCode < 300) {
+                try { resolve(JSON.parse(body)); } catch (e) { reject(e); }
+              } else {
+                reject(new Error(`Groq API Error: ${res.statusCode} ${body}`));
+              }
+            });
+          });
+          req.on('error', reject);
+          req.write(JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt }
+            ],
+            temperature: 0.3
+          }));
+          req.end();
+        });
+
+        generatedContent = groqData.choices?.[0]?.message?.content || '';
+
+        aiUsage = {
+          model: 'llama-3.3-70b-versatile (Groq)',
+          inputTokens: groqData.usage?.prompt_tokens || 0,
+          outputTokens: groqData.usage?.completion_tokens || 0,
+          generationTimeMs: Date.now() - startTime,
+        };
+      } catch (err) {
+        console.error('[reports] Groq API failed:', err);
+        generatedContent = buildFallbackReport(reportType, { reportType, dateRange, filters, format, customPrompt, title }, data);
+      }
     } else {
       generatedContent = buildFallbackReport(reportType, { reportType, dateRange, filters, format, customPrompt, title }, data);
     }
