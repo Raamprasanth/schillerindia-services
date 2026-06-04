@@ -6,14 +6,6 @@
 <script>(function(){
   document.documentElement.setAttribute('data-theme',localStorage.getItem('si_theme')||'light');
   const t=sessionStorage.getItem('schiller_token');
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<script>(function(){
-  document.documentElement.setAttribute('data-theme',localStorage.getItem('si_theme')||'light');
-  const t=sessionStorage.getItem('schiller_token');
   if(!t)window.location.href='login.html';
 })();</script>
 <title>SchillerIndia  AI Reports</title>
@@ -21,10 +13,10 @@
 <link rel="stylesheet" href="global-typography.css">
 <link rel="stylesheet" href="employee-theme.css">
 <link rel="stylesheet" href="admin-sidebar.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 :root{
@@ -522,6 +514,801 @@ body{
         <a class="nav-item " href="atur.html"><span class="icon">&#128736;&#65039;</span> Admin RT UR</a>
         <a class="nav-item " href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
         <a class="nav-item" href="admin-re-repair-atrr.html"><span class="icon">&#128260;</span> Admin ATRR</a>
+        <a class="nav-item" href="admin-closed-re-repair-atcrr.html"><span class="icon">&#128683;</span> Admin ATCRR</a>
+      </div>
+    </div>
+    <div class="nav-section">Admin</div>
+    <button class="nav-item " onclick="window.location.href='usermanagement.html'"><span class="icon">&#128101;</span> User Management</button>
+    <button class="nav-item active" onclick="window.location.href='Reports.html'"><span class="icon">&#128200;</span> Reports</button>
+    <button class="nav-item " onclick="window.location.href='settings.html'"><span class="icon">&#9881;&#65039;</span> Settings</button>
+    <button class="nav-item " onclick="window.location.href='notifications.html'"><span class="icon">&#128276;</span> Notifications</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="admin-avatar">A</div>
+      <div>
+        <div class="user-name" id="admin-name">Admin</div>
+        <div class="user-role">Administrator</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<!-- -- MAIN -- -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title">&#128202; AI Reports &amp; Analytics</div>
+      <div class="topbar-sub">Generate intelligent reports, review performance, and explore analytics</div>
+    </div>
+    <div class="topbar-right">
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('generator')">&#128161; AI Generator</button>
+        <button class="tab-btn" onclick="switchTab('performance')">&#128200; Performance Review</button>
+        <button class="tab-btn" onclick="switchTab('analytics')">&#128202; Analytics</button>
+        <button class="tab-btn" onclick="switchTab('history')">&#128214; History</button>
+        <button class="tab-btn" onclick="switchTab('kanban')">&#128203; Workload Board</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- --------------------------------------------------
+         TAB 1  AI GENERATOR
+    -------------------------------------------------- -->
+    <div id="tab-generator" class="tab-pane active">
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon s-red">&#128200;</div>
+          <div class="stat-body">
+            <div class="stat-val" id="stat-total"></div>
+            <div class="stat-label">Total Reports</div>
+            <div class="stat-sub">All time</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon s-blue">&#128221;</div>
+          <div class="stat-body">
+            <div class="stat-val" id="stat-month"></div>
+            <div class="stat-label">This Month</div>
+            <div class="stat-sub">Generated</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon s-green">&#8986;</div>
+          <div class="stat-body">
+            <div class="stat-val" id="stat-time"></div>
+            <div class="stat-label">Avg Gen Time</div>
+            <div class="stat-sub">Seconds</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon s-purple">&#128202;</div>
+          <div class="stat-body">
+            <div class="stat-val">Gemini</div>
+            <div class="stat-label">AI Model</div>
+            <div class="stat-sub">Powered by Google</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Builder + Output -->
+      <div class="gen-layout">
+
+        <!-- Builder -->
+        <div class="builder-card">
+          <div class="builder-head">
+            <div class="builder-head-icon">&#128161;</div>
+            <div>
+              <div class="builder-head-title">Report Builder</div>
+              <div class="builder-head-sub">Configure and generate AI report</div>
+            </div>
+          </div>
+          <div class="builder-body">
+
+            <!-- Report Type -->
+            <div>
+              <label class="field-label">Report Type</label>
+              <select class="field-select" id="report-type">
+                <option value="service_summary">Service Summary</option>
+                <option value="pending_frn">Pending FRN Analysis</option>
+                <option value="under_repair">Under Repair Analysis</option>
+                <option value="ob_pending">OB Pending Analysis</option>
+                <option value="estimation_pending">Estimation Pending</option>
+                <option value="engineer_performance">Engineer Performance</option>
+                <option value="division_analytics">Division Analytics</option>
+                <option value="escalation_report">Escalation Report</option>
+              </select>
+            </div>
+
+            <!-- Date Range -->
+            <div>
+              <label class="field-label">Date Range</label>
+              <div class="date-range-wrap">
+                <div class="date-range-tabs">
+                  <button class="date-range-tab active" onclick="setDateMode('preset',this)">Preset</button>
+                  <button class="date-range-tab" onclick="setDateMode('custom',this)">Custom</button>
+                </div>
+                <div id="date-preset">
+                  <select class="field-select" id="date-days">
+                    <option value="7">Last 7 Days</option>
+                    <option value="30" selected>Last 30 Days</option>
+                    <option value="60">Last 60 Days</option>
+                    <option value="90">Last 90 Days</option>
+                    <option value="180">Last 6 Months</option>
+                    <option value="365">Last 1 Year</option>
+                  </select>
+                </div>
+                <div id="date-custom" style="display:none;">
+                  <div class="field-row">
+                    <div>
+                      <label class="field-label" style="margin-bottom:3px;">From</label>
+                      <input type="date" class="field-input" id="date-from"/>
+                    </div>
+                    <div>
+                      <label class="field-label" style="margin-bottom:3px;">To</label>
+                      <input type="date" class="field-input" id="date-to"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Division & Region -->
+            <div class="field-row">
+              <div>
+                <label class="field-label">Division</label>
+                <select class="field-select" id="filter-division">
+                  <option value="all">All Divisions</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">Region</label>
+                <select class="field-select" id="filter-region">
+                  <option value="all">All Regions</option>
+                  <option value="North">North</option>
+                  <option value="South">South</option>
+                  <option value="East">East</option>
+                  <option value="West">West</option>
+                  <option value="Central">Central</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Format -->
+            <div>
+              <label class="field-label">Report Format</label>
+              <select class="field-select" id="report-format">
+                <option value="detailed">&#128221; Detailed  Full analysis with tables</option>
+                <option value="summary">&#128202; Summary  Concise executive overview</option>
+                <option value="technical">&#128200; Technical  Deep-dive with statistics</option>
+                <option value="action">&#128293; Action  Priority actions only</option>
+              </select>
+            </div>
+
+            <!-- Custom Title -->
+            <div>
+              <label class="field-label">Report Title <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+              <input type="text" class="field-input" id="report-title" placeholder="Auto-generated if blank"/>
+            </div>
+
+            <!-- Custom Prompt -->
+            <div>
+              <label class="field-label">Special Instructions <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+              <textarea class="field-textarea" id="custom-prompt" maxlength="500" placeholder="" oninput="updateCharCount(this)"></textarea>
+              <div class="char-count"><span id="char-count">0</span>/500</div>
+            </div>
+
+          </div>
+          <div class="builder-footer">
+            <button class="btn btn-primary" style="width:100%;justify-content:center;" id="gen-btn" onclick="generateReport()">
+              &#10024; Generate AI Report
+            </button>
+          </div>
+        </div>
+
+        <!-- Output -->
+        <div class="output-card">
+          <div class="output-head">
+            <div class="output-head-left">
+              <div>
+                <div class="output-head-title" id="output-title">Generated Report</div>
+                <div class="output-head-meta" id="output-meta">Configure and generate a report</div>
+              </div>
+            </div>
+            <div class="output-actions" id="output-actions" style="display:none;">
+              <button class="btn btn-ghost btn-sm" onclick="copyReport()">&#128203; Copy</button>
+              <button class="btn btn-ghost btn-sm" onclick="printReport()">&#128424; Print</button>
+            </div>
+          </div>
+          <div class="output-body" id="output-body">
+            <div class="empty-state">
+              <div class="empty-icon">&#128196;</div>
+              <div class="empty-title">No Report Yet</div>
+              <div class="empty-sub">Fill in the builder form and click "Generate AI Report" to create an AI-powered analysis.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-generator -->
+
+    <!-- --------------------------------------------------
+         TAB 2  PERFORMANCE REVIEW
+    -------------------------------------------------- -->
+    <div id="tab-performance" class="tab-pane">
+
+      <div class="perf-layout">
+
+        <!-- Builder -->
+        <div class="perf-builder">
+          <div class="perf-head">
+            <div class="perf-head-title">&#128200; Performance Review</div>
+            <div class="perf-head-sub">Generate monthly performance reports by division or employee</div>
+          </div>
+          <div class="perf-body">
+
+            <!-- Scope -->
+            <div>
+              <label class="field-label">Scope</label>
+              <div class="scope-tabs">
+                <button class="scope-tab active" id="scope-div-btn" onclick="setScope('division')">&#127986; By Division</button>
+                <button class="scope-tab" id="scope-emp-btn" onclick="setScope('employee')">&#128100; By Employee</button>
+              </div>
+            </div>
+
+            <!-- Month -->
+            <div>
+              <label class="field-label">Month</label>
+              <input type="month" class="field-input" id="perf-month"/>
+            </div>
+
+            <!-- Division Select -->
+            <div id="perf-div-field">
+              <label class="field-label">Division</label>
+              <select class="field-select" id="perf-division">
+                <option value=""> Select Division </option>
+              </select>
+            </div>
+
+            <!-- Employee Select -->
+            <div id="perf-emp-field" style="display:none;">
+              <label class="field-label">Employee</label>
+              <select class="field-select" id="perf-employee">
+                <option value=""> Select Employee </option>
+              </select>
+              <div style="margin-top:8px;">
+                <label class="field-label">Employee's Division</label>
+                <select class="field-select" id="perf-emp-division">
+                  <option value=""> Division (for report) </option>
+                </select>
+              </div>
+            </div>
+
+          </div>
+          <div class="perf-footer">
+            <button class="btn btn-primary" style="flex:1;justify-content:center;" id="perf-preview-btn" onclick="loadPerfSummary()">&#128065; Preview Summary</button>
+          </div>
+        </div>
+
+        <!-- Output -->
+        <div class="perf-output">
+          <div class="perf-output-head">
+            <div class="perf-output-title" id="perf-out-title">Performance Summary</div>
+            <div id="perf-out-meta" style="font-size:11px;color:var(--muted);">Select scope and generate preview</div>
+          </div>
+
+          <div id="perf-out-body">
+            <div class="empty-state" style="padding:50px 24px;">
+              <div class="empty-icon">&#128196;</div>
+              <div class="empty-title">No Preview Yet</div>
+              <div class="empty-sub">Select scope, month, and division/employee  then click Preview Summary.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-performance -->
+
+    <!-- --------------------------------------------------
+         TAB 3  ANALYTICS
+    -------------------------------------------------- -->
+    <div id="tab-analytics" class="tab-pane">
+
+      <div class="analytics-controls">
+        <label class="field-label" style="margin:0;white-space:nowrap;">Date Range:</label>
+        <select class="field-select" id="analytics-range" style="width:180px;" onchange="loadAnalyticsCharts()">
+          <option value="7">Last 7 Days</option>
+          <option value="30" selected>Last 30 Days</option>
+          <option value="90">Last 90 Days</option>
+          <option value="180">Last 6 Months</option>
+          <option value="365">Last 1 Year</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="loadAnalyticsCharts()">&#8635; Refresh</button>
+      </div>
+
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="chart-head">
+            <div class="chart-title">Workload Trend (Calls, FRNs, BIRs)</div>
+          </div>
+          <div class="chart-container"><canvas id="trendChart"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-head">
+            <div class="chart-title">Division Distribution</div>
+          </div>
+          <div class="chart-container"><canvas id="divisionChart"></canvas></div>
+        </div>
+      </div>
+      <div class="chart-card-full">
+        <div class="chart-head">
+          <div class="chart-title">Top Engineer Performance (Completed Tasks)</div>
+        </div>
+        <div class="chart-container"><canvas id="engineerChart"></canvas></div>
+      </div>
+
+    </div><!-- /tab-analytics -->
+
+    <!-- --------------------------------------------------
+         TAB 4  HISTORY
+    -------------------------------------------------- -->
+    <div id="tab-history" class="tab-pane">
+      <div class="table-card">
+        <div class="table-head-row">
+          <div class="table-head-title">
+            Report History
+            <span class="count-pill" id="hist-count">0</span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <select class="field-select" id="hist-type-filter" style="width:200px;" onchange="loadHistory(1)">
+              <option value="">All Types</option>
+              <option value="service_summary">Service Summary</option>
+              <option value="pending_frn">Pending FRN</option>
+              <option value="under_repair">Under Repair</option>
+              <option value="ob_pending">OB Pending</option>
+              <option value="estimation_pending">Estimation Pending</option>
+              <option value="engineer_performance">Engineer Performance</option>
+              <option value="division_analytics">Division Analytics</option>
+              <option value="escalation_report">Escalation Report</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="loadHistory(1)">&#8635; Refresh</button>
+          </div>
+        </div>
+        <table class="hist-table">
+          <thead>
+            <tr>
+              <th style="width:35%;">Title / Type</th>
+              <th>Format</th>
+              <th>Division</th>
+              <th>Period</th>
+              <th>Generated</th>
+              <th>Status</th>
+              <th style="text-align:center;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="hist-body">
+            <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted);">Loading history</td></tr>
+          </tbody>
+        </table>
+        <div class="pagination">
+          <div class="page-info" id="hist-page-info"></div>
+          <div class="page-btns">
+            <button class="btn btn-ghost btn-sm" id="hist-prev" onclick="histPage(-1)" disabled>&#8592; Prev</button>
+            <button class="btn btn-ghost btn-sm" id="hist-next" onclick="histPage(1)" disabled>Next &#8594;</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tab-history -->
+
+    <!-- --------------------------------------------------
+         TAB 5  KANBAN BOARD
+    -------------------------------------------------- -->
+    <div id="tab-kanban" class="tab-pane">
+      <div class="kanban-header">
+        <h2 style="font-family:'Syne',sans-serif;font-size:18px;color:var(--text);margin-bottom:4px;">Engineer Workload Board</h2>
+        <p style="font-size:12px;color:var(--muted);">Drag and drop pending FRN tickets to reassign workload across engineers.</p>
+        <div style="margin-top:16px;display:flex;gap:10px;">
+          <select class="field-select" id="kanban-div-filter" style="width:200px;" onchange="loadKanbanBoard()">
+            <option value="all">All Divisions</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="loadKanbanBoard()">&#8635; Refresh Board</button>
+        </div>
+      </div>
+      
+      <div class="kanban-board-container" id="kanban-container">
+        <!-- Columns will be injected here dynamically -->
+        <div class="loading-state" style="width:100%;">
+          <div class="spinner"></div>
+          <div class="loading-title">Loading Kanban Board</div>
+        </div>
+      </div>
+    </div><!-- /tab-kanban -->
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- Toast container -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script src="employee-theme.js"></script>
+<script>
+// -- NAV HELPERS -----------------------------------------------
+function toggleSF(){document.getElementById('sf-children').classList.toggle('open');document.getElementById('sf-toggle').classList.toggle('open');}
+function toggleAR(){document.getElementById('ar-children').classList.toggle('open');document.getElementById('ar-toggle').classList.toggle('open');}
+function logout(){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';}
+
+// -- AUTH ------------------------------------------------------
+const token=sessionStorage.getItem('schiller_token')||'';
+function hdrs(){return{'Content-Type':'application/json','Authorization':'Bearer '+token};}
+
+// -- TAB SWITCHING ---------------------------------------------
+let currentTab='generator';
+let kanbanLoaded=false;
+function switchTab(tab){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  const idx={'generator':0,'performance':1,'analytics':2,'history':3,'kanban':4}[tab]||0;
+  document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+  currentTab=tab;
+  if(tab==='analytics' && !analyticsLoaded) loadAnalyticsCharts();
+  if(tab==='history' && !histLoaded) loadHistory(1);
+  if(tab==='performance' && !perfOptionsLoaded) loadPerfOptions();
+  if(tab==='kanban' && !kanbanLoaded) { loadKanbanBoard(); kanbanLoaded = true; }
+}
+
+// -- TOAST -----------------------------------------------------
+function toast(msg,type='info'){
+  const wrap=document.getElementById('toast-wrap');
+  const t=document.createElement('div');
+  t.className='toast '+type;
+  const icons={success:'&#10004;',error:'&#10006;',info:'&#8505;'};
+  t.innerHTML=`<span>${icons[type]||'&#8505;'}</span><span>${msg}</span>`;
+  wrap.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transform='translateY(8px)';t.style.transition='all 0.25s';setTimeout(()=>t.remove(),260);},3500);
+}
+
+// -- USER INFO -------------------------------------------------
+(function(){
+  try{const u=JSON.parse(atob(token.split('.')[1]));const n=u.name||u.username||'Admin';document.getElementById('admin-name').textContent=n;document.getElementById('admin-avatar').textContent=n[0].toUpperCase();}catch(e){}
+})();
+
+// --------------------------------------------------------------
+//  TAB 1  AI GENERATOR
+// --------------------------------------------------------------
+
+let dateMode='preset';
+function setDateMode(mode,btn){
+  dateMode=mode;
+  document.querySelectorAll('.date-range-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('date-preset').style.display=mode==='preset'?'block':'none';
+  document.getElementById('date-custom').style.display=mode==='custom'?'block':'none';
+}
+
+function updateCharCount(el){
+  document.getElementById('char-count').textContent=el.value.length;
+}
+
+let currentReport=null;
+
+async function generateReport(){
+  const reportType=document.getElementById('report-type').value;
+  const format=document.getElementById('report-format').value;
+  const title=document.getElementById('report-title').value.trim();
+  const customPrompt=document.getElementById('custom-prompt').value.trim();
+  const division=document.getElementById('filter-division').value;
+  const region=document.getElementById('filter-region').value;
+
+  let dateRange={};
+  if(dateMode==='preset'){
+    dateRange={days:parseInt(document.getElementById('date-days').value)};
+  } else {
+    const from=document.getElementById('date-from').value;
+    const to=document.getElementById('date-to').value;
+    if(!from||!to){toast('Please select both from and to dates.','error');return;}
+    dateRange={from,to};
+  }
+
+  const body={reportType,dateRange,filters:{division,region},format,customPrompt,title};
+
+  // Show loading
+  const btn=document.getElementById('gen-btn');
+  btn.disabled=true;
+  btn.innerHTML='? Generating';
+  document.getElementById('output-body').innerHTML=`
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <div class="loading-title">Generating AI Report</div>
+      <div class="loading-sub">Gemini is analysing your data. This may take 1030 seconds.</div>
+    </div>`;
+  document.getElementById('output-actions').style.display='none';
+  document.getElementById('output-title').textContent='Generating';
+  document.getElementById('output-meta').textContent='Please wait';
+
+  try{
+    const res=await fetch('/api/reports/generate',{method:'POST',headers:hdrs(),body:JSON.stringify(body)});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'Generation failed');
+
+    currentReport=data;
+    renderReport(data);
+    loadStats();
+    toast('Report generated successfully!','success');
+  }catch(e){
+    document.getElementById('output-body').innerHTML=`
+      <div class="empty-state">
+        <div class="empty-icon">?</div>
+        <div class="empty-title">Generation Failed</div>
+        <div class="empty-sub">${e.message}</div>
+      </div>`;
+    document.getElementById('output-title').textContent='Failed';
+    document.getElementById('output-meta').textContent=e.message;
+    toast('Generation failed: '+e.message,'error');
+  } finally {
+    btn.disabled=false;
+    btn.innerHTML='&#10024; Generate AI Report';
+  }
+}
+
+function renderReport(data){
+  const typeLabels={service_summary:'Service Summary',pending_frn:'Pending FRN',under_repair:'Under Repair',ob_pending:'OB Pending',estimation_pending:'Estimation Pending',engineer_performance:'Engineer Performance',division_analytics:'Division Analytics',escalation_report:'Escalation Report'};
+  const formatLabels={detailed:'Detailed',summary:'Summary',technical:'Technical',action:'Action'};
+  const fmtBadge={detailed:'badge-blue',summary:'badge-green',technical:'badge-purple',action:'badge-amber'};
+
+  document.getElementById('output-title').textContent=data.title||'AI Report';
+  const genMs=data.generationTimeMs||data.aiUsage?.generationTimeMs||0;
+  document.getElementById('output-meta').textContent=`Generated ${new Date(data.createdAt||Date.now()).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'})}  ${genMs>0?(genMs/1000).toFixed(1)+'s':''}  ${data.aiUsage?.model||''}`;
+  document.getElementById('output-actions').style.display='flex';
+
+  const divVal=(data.filters?.division&&data.filters.division!=='all')?data.filters.division:'All Divisions';
+  const regVal=(data.filters?.region&&data.filters.region!=='all')?data.filters.region:'All Regions';
+  const periodVal=data.dateRange?.days?`Last ${data.dateRange.days} days`:`${data.dateRange?.from||''} ? ${data.dateRange?.to||''}`;
+
+  const html=`
+    <div class="report-meta-bar">
+      <span class="meta-chip red">&#128221; ${typeLabels[data.reportType]||data.reportType}</span>
+      <span class="meta-chip ${fmtBadge[data.format]||''}">&#128203; ${formatLabels[data.format]||data.format}</span>
+      <span class="meta-chip">&#128197; ${periodVal}</span>
+      <span class="meta-chip blue">&#127986; ${divVal}</span>
+      <span class="meta-chip">&#128205; ${regVal}</span>
+    </div>
+    <div class="md-content" id="md-output"></div>`;
+  document.getElementById('output-body').innerHTML=html;
+
+  try{
+    if(typeof marked!=='undefined'){
+      document.getElementById('md-output').innerHTML=marked.parse(data.content||'No content.');
+    } else {
+      document.getElementById('md-output').textContent=data.content||'No content.';
+    }
+  } catch(e){
+    document.getElementById('md-output').textContent=data.content||'No content.';
+  }
+}
+
+function copyReport(){
+  if(!currentReport) return;
+  navigator.clipboard.writeText(currentReport.content||'').then(()=>toast('Report copied to clipboard','success')).catch(()=>toast('Copy failed','error'));
+}
+
+function printReport(){
+  const content=document.getElementById('md-output');
+  if(!content){toast('No report to print','error');return;}
+  const w=window.open('','_blank');
+  w.document.write(`<html><head><title>Report</title><style>body{font-family:sans-serif;max-width:900px;margin:40px auto;line-height:1.7;} table{border-collapse:collapse;width:100%;} th,td{border:1px solid #ccc;padding:8px 12px;} th{background:#f4f7fa;} h1,h2,h3{font-weight:700;} blockquote{border-left:3px solid #b91c1c;padding:8px 14px;background:#fff5f5;margin:10px 0;}</style></head><body>${content.innerHTML}<script src="tab-fix.js"><\/script>
+</body></html>`);
+  w.document.close();w.print();
+}
+
+// -- LOAD STATS ------------------------------------------------
+async function loadStats(){
+  try{
+    const res=await fetch('/api/reports/stats',{headers:hdrs()});
+    if(!res.ok)return;
+    const d=await res.json();
+    document.getElementById('stat-total').textContent=d.total??'';
+    document.getElementById('stat-month').textContent=d.thisMonth??'';
+    document.getElementById('stat-time').textContent=d.avgTime?d.avgTime+'s':'';
+  }catch(e){}
+}
+
+// -- LOAD DIVISIONS --------------------------------------------
+async function loadDivisions(){
+  try{
+    const res=await fetch('/api/reports/performance/options',{headers:hdrs()});
+    if(!res.ok)return;
+    const d=await res.json();
+    const divs=d.divisions||[];
+    const sel=document.getElementById('filter-division');
+    const kanbanSel = document.getElementById('kanban-div-filter');
+    sel.innerHTML='<option value="all">All Divisions</option>';
+    if(kanbanSel) kanbanSel.innerHTML='<option value="all">All Divisions</option>';
+    divs.forEach(div=>{
+      const name = div.name || div;
+      const o=document.createElement('option');
+      o.value=name;o.textContent=name;
+      sel.appendChild(o);
+      if(kanbanSel) {
+        const ko=document.createElement('option');
+        ko.value=name;ko.textContent=name;
+        kanbanSel.appendChild(ko);
+      }
+    });
+  }catch(e){}
+}
+
+// --------------------------------------------------------------
+//  TAB 2  PERFORMANCE REVIEW
+// --------------------------------------------------------------
+
+let perfScope='division';
+let perfOptionsLoaded=false;
+let perfOptions={divisions:[],employees:[]};
+
+function setScope(scope){
+  perfScope=scope;
+  document.getElementById('scope-div-btn').classList.toggle('active',scope==='division');
+  document.getElementById('scope-emp-btn').classList.toggle('active',scope==='employee');
+  document.getElementById('perf-div-field').style.display=scope==='division'?'block':'none';
+  document.getElementById('perf-emp-field').style.display=scope==='employee'?'block':'none';
+}
+
+async function loadPerfOptions(){
+  perfOptionsLoaded=true;
+  // Set current month as default
+  const now=new Date();
+  document.getElementById('perf-month').value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+
+  try{
+    const res=await fetch('/api/reports/performance/options',{headers:hdrs()});
+    if(!res.ok)return;
+    const d=await res.json();
+    perfOptions=d;
+
+    const divSel=document.getElementById('perf-division');
+    divSel.innerHTML='<option value=""> Select Division </option>';
+    (d.divisions||[]).forEach(div=>{
+      const name = div.name || div;
+      const o=document.createElement('option');o.value=name;o.textContent=name;divSel.appendChild(o);
+    });
+
+    const empDivSel=document.getElementById('perf-emp-division');
+    empDivSel.innerHTML='<option value=""> Division (for report) </option>';
+    (d.divisions||[]).forEach(div=>{
+      const name = div.name || div;
+      const o=document.createElement('option');o.value=name;o.textContent=name;empDivSel.appendChild(o);
+    });
+
+    const empSel=document.getElementById('perf-employee');
+    empSel.innerHTML='<option value=""> Select Employee </option>';
+    (d.employees||[]).forEach(emp=>{
+      const name=emp.name||emp;
+      const o=document.createElement('option');o.value=name;o.textContent=name;empSel.appendChild(o);
+    });
+  }catch(e){toast('Could not load performance options: '+e.message,'error');}
+}
+
+async function loadPerfSummary(){
+  const month=document.getElementById('perf-month').value;
+  if(!month){toast('Please select a month','error');return;}
+
+  let params={scope:perfScope,month};
+  if(perfScope==='division'){
+    const div=document.getElementById('perf-division').value;
+    if(!div){toast('Please select a division','error');return;}
+    params.division=div;
+  } else {
+    const emp=document.getElementById('perf-employee').value;
+    if(!emp){toast('Please select an employee','error');return;}
+    params.employee=emp;
+    const empDiv=document.getElementById('perf-emp-division').value;
+    if(empDiv) params.division=empDiv;
+  }
+
+  const btn=document.getElementById('perf-preview-btn');
+  btn.disabled=true;btn.innerHTML='? Loading';
+
+  document.getElementById('perf-out-body').innerHTML=`
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <div class="loading-title">Loading Performance Data</div>
+      <div class="loading-sub">Fetching and computing metrics.</div>
+    </div>`;
+
+  try{
+    const qs=new URLSearchParams(params).toString();
+    const res=await fetch('/api/reports/performance/summary?'+qs,{headers:hdrs()});
+    const d=await res.json();
+    if(!res.ok) throw new Error(d.message||'Failed');
+    renderPerfSummary(d.data,params);
+    document.getElementById('perf-out-title').textContent=
+      perfScope==='division'?`Division: ${params.division}`:`Employee: ${params.employee}`;
+    document.getElementById('perf-out-meta').textContent=`Month: ${params.month}  Scope: ${perfScope}`;
+    toast('Performance summary loaded','success');
+  }catch(e){
+    document.getElementById('perf-out-body').innerHTML=`
+      <div class="empty-state" style="padding:40px;">
+        <div class="empty-icon">?</div>
+        <div class="empty-title">Failed to Load</div>
+        <div class="empty-sub">${e.message}</div>
+      </div>`;
+    toast('Failed: '+e.message,'error');
+  } finally {
+    btn.disabled=false;btn.innerHTML='&#128065; Preview Summary';
+  }
+}
+
+function renderPerfSummary(data,params){
+  if(!data){document.getElementById('perf-out-body').innerHTML='<div class="empty-state"><div class="empty-icon">&#128196;</div><div class="empty-title">No Data</div></div>';return;}
+  const pct=n=>Math.min(100,Math.max(0,n||0));
+  const summaryHtml=`
+    <div class="perf-summary-grid">
+      <div class="ps-card"><div class="ps-val">${data.totalTracked??''}</div><div class="ps-label">Total Tracked</div></div>
+      <div class="ps-card"><div class="ps-val">${data.completedCount??''}</div><div class="ps-label">Completed</div></div>
+      <div class="ps-card"><div class="ps-val">${data.pendingCount??''}</div><div class="ps-label">Pending</div></div>
+      <div class="ps-card"><div class="ps-val">${data.completionRate!=null?data.completionRate+'%':''}</div><div class="ps-label">Completion Rate</div></div>
+      <div class="ps-card"><div class="ps-val">${data.criticalPendingCount??''}</div><div class="ps-label">Critical Pending</div></div>
+      <div class="ps-card"><div class="ps-val">${data.serviceCount??''}</div><div class="ps-label">Service Calls</div></div>
+    </div>`;
+
+  let tableRows='';
+  (data.activities||[]).forEach(act=>{
+    const p=pct(act.completionPercent);
+    const cls=p>=70?'green':'';
+    tableRows+=`<tr>
+      <td style="font-weight:600;">${act.label||''}</td>
+      <td style="text-align:center;">${act.total||0}</td>
+      <td style="text-align:center;">${act.withinTarget||0}</td>
+      <td>
+        <div class="pct-bar-wrap">
+          <div class="pct-bar"><div class="pct-fill ${cls}" style="width:${p}%;"></div></div>
+          <div class="pct-text">${p}%</div>
+        </div>
+      </td>
+    </tr>`;
+  });
+
+  const tableHtml=tableRows?`
+    <div class="perf-table-wrap">
+      <table class="perf-table" id="perf-table-excel">
+        <thead><tr>
+          <th>Activity</th><th style="text-align:center;">Total</th><th style="text-align:center;">Within Target</th><th style="width:200px;">Completion</th>
+        </tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>
+    <div style="margin-top:16px;text-align:right;">
+      <button class="btn btn-green btn-sm" onclick="exportPDF()">
+        &#128196; Export to PDF
+      </button>
+    </div>`:'';
+
+  document.getElementById('perf-out-body').innerHTML=summaryHtml+tableHtml;
+}
+
+function exportPDF() {
+  const content = document.getElementById('perf-out-body');
+  if (!content) return;
+  const opt = {
+    margin:       0.5,
+    filename:     'Performance_Report.pdf',
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2 },
+    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(content).save();
+}
+
+// --------------------------------------------------------------
+//  TAB 3  ANALYTICS
+// --------------------------------------------------------------
+
 let analyticsLoaded=false;
 let trendInst=null,divInst=null,engInst=null;
 
