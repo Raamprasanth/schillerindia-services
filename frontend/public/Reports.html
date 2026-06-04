@@ -1367,35 +1367,11 @@ function renderPerfSummary(data,params){
 
   const alertBanner=isCritical?`
     <div style="margin:0 20px 0;padding:10px 14px;background:rgba(185,28,28,0.08);border:1px solid rgba(185,28,28,0.25);border-radius:8px;display:flex;align-items:center;gap:8px;font-size:12.5px;color:#b91c1c;font-weight:600;">
-      &#128680; <strong>Critical Performance:</strong> Completion rate is ${rate}% — below 60% threshold. Immediate action required.
-    </div>`:isWarning?`
-    <div style="margin:0 20px 0;padding:10px 14px;background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.25);border-radius:8px;display:flex;align-items:center;gap:8px;font-size:12.5px;color:#d97706;font-weight:600;">
-      &#9888;&#65039; <strong>At Risk:</strong> Completion rate is ${rate}% — below 75% target. Review pending items.
-    </div>`:''
-
-  const summaryHtml=`
-    <div class="perf-summary-grid">
-      <div class="ps-card"><div class="ps-val">${data.totalTracked??0}</div><div class="ps-label">Total Tracked</div></div>
-      <div style="display:grid;gap:8px;">
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:12.5px;line-height:1.6;">
-          <span style="font-weight:700;color:var(--text);">Justification: </span>${aiNarr.justification||''}
-        </div>
-        <div style="background:rgba(185,28,28,0.04);border:1px solid rgba(185,28,28,0.15);border-radius:8px;padding:10px 14px;font-size:12.5px;line-height:1.6;">
-          <span style="font-weight:700;color:#b91c1c;">Corrective Action: </span>${aiNarr.corrective||''}
-        </div>
-        <div style="background:rgba(5,150,105,0.04);border:1px solid rgba(5,150,105,0.15);border-radius:8px;padding:10px 14px;font-size:12.5px;line-height:1.6;">
-          <span style="font-weight:700;color:#059669;">HOD Summary: </span>${aiNarr.hod||''}
-        </div>
-      </div>
-    </div>`:'';
-
-  const alertBanner=isCritical?`
-    <div style="margin:0 20px 0;padding:10px 14px;background:rgba(185,28,28,0.08);border:1px solid rgba(185,28,28,0.25);border-radius:8px;display:flex;align-items:center;gap:8px;font-size:12.5px;color:#b91c1c;font-weight:600;">
       <strong>Critical Performance:</strong> Completion rate is ${rate}% — below 60% threshold. Immediate action required.
     </div>`:isWarning?`
     <div style="margin:0 20px 0;padding:10px 14px;background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.25);border-radius:8px;display:flex;align-items:center;gap:8px;font-size:12.5px;color:#d97706;font-weight:600;">
       <strong>At Risk:</strong> Completion rate is ${rate}% — below 75% target. Review pending items.
-    </div>`:''
+    </div>`:'';
 
   const summaryHtml=`
     <div class="perf-summary-grid">
@@ -1410,7 +1386,6 @@ function renderPerfSummary(data,params){
   let tableRows='';
   (data.activities||[]).forEach(act=>{
     const p=pct(act.completionPercent);
-    const fillCls=pctFillClass(p);
     const flagTxt=p<60?'<span class="flag-badge flag-critical">Critical</span>':p<75?'<span class="flag-badge flag-warning">At Risk</span>':'';
     const rowAlert=p<60?'style="background:rgba(185,28,28,0.03);"':p<75?'style="background:rgba(217,119,6,0.03);"':'';
     tableRows+=`<tr ${rowAlert}>
