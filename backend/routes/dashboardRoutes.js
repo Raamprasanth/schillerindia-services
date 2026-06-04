@@ -9,6 +9,77 @@ const SCCompletedFRN = require('../models/SCCompletedFRN');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 const { buildPerformanceInsight } = require('../services/performanceIndexService');
 
+function divisionLabelFromDoc(doc = {}) {
+  const division = doc.division;
+  if (division && typeof division === 'object' && division.name) return String(division.name).trim();
+  if (doc.divisionName) return String(doc.divisionName).trim();
+  if (doc.reg) return String(doc.reg).trim();
+  if (doc.region) return String(doc.region).trim();
+  return 'Unassigned';
+}
+
+async function buildAdminDivisionBreakdown() {
+  const [services, completedFrns] = await Promise.all([
+    Service.find()
+      .select('division divisionName reg region status')
+      .populate('division', 'name')
+      .lean(),
+    CompletedFRN.find()
+      .select('serviceId region')
+      .lean(),
+  ]);
+
+  const serviceIds = completedFrns
+    .map((doc) => String(doc.serviceId || '').trim())
+    .filter((id) => /^[a-f\d]{24}$/i.test(id));
+  const sourceServices = serviceIds.length
+    ? await Service.find({ _id: { $in: serviceIds } })
+      .select('division divisionName reg region')
+      .populate('division', 'name')
+      .lean()
+    : [];
+  const serviceById = new Map(sourceServices.map((doc) => [String(doc._id), doc]));
+  const rows = new Map();
+
+  const ensure = (division) => {
+    const key = division || 'Unassigned';
+    if (!rows.has(key)) {
+      rows.set(key, {
+        division: key,
+        serviceTotal: 0,
+        pending: 0,
+        inProgress: 0,
+        completedServices: 0,
+        escalated: 0,
+        completedFrn: 0,
+      });
+    }
+    return rows.get(key);
+  };
+
+  services.forEach((service) => {
+    const row = ensure(divisionLabelFromDoc(service));
+    row.serviceTotal += 1;
+    if (service.status === 'pending') row.pending += 1;
+    else if (service.status === 'in_progress') row.inProgress += 1;
+    else if (service.status === 'completed') row.completedServices += 1;
+    else if (service.status === 'escalated') row.escalated += 1;
+  });
+
+  completedFrns.forEach((doc) => {
+    const source = serviceById.get(String(doc.serviceId || ''));
+    const row = ensure(source ? divisionLabelFromDoc(source) : divisionLabelFromDoc(doc));
+    row.completedFrn += 1;
+  });
+
+  return Array.from(rows.values()).sort((a, b) => {
+    const totalA = a.serviceTotal + a.completedFrn;
+    const totalB = b.serviceTotal + b.completedFrn;
+    if (totalB !== totalA) return totalB - totalA;
+    return a.division.localeCompare(b.division);
+  });
+}
+
 // ── GET /api/dashboard/admin ────────────────────
 router.get('/admin', protect, adminOnly, async (req, res) => {
   try {
@@ -18,6 +89,7 @@ router.get('/admin', protect, adminOnly, async (req, res) => {
       totalDealers, activeDealers,
       totalDivisions,
       recentServices,
+      divisionBreakdown,
     ] = await Promise.all([
       Engineer.countDocuments(),
       Engineer.countDocuments({ status: 'active' }),
@@ -34,6 +106,7 @@ router.get('/admin', protect, adminOnly, async (req, res) => {
         .limit(5)
         .populate('engineer', 'name')
         .populate('division', 'name'),
+      buildAdminDivisionBreakdown(),
     ]);
 
     // Last 7 days service counts
@@ -56,6 +129,7 @@ router.get('/admin', protect, adminOnly, async (req, res) => {
       },
       recentServices,
       weeklyData,
+      divisionBreakdown,
     });
   } catch (err) { res.status(500).json({ message: err.message }); }
 });

@@ -102,6 +102,9 @@
     .data-table td{padding:12px;font-size:13px;border-bottom:1px solid rgba(0,80,120,0.07);color:var(--text);}
     .data-table tr:last-child td{border-bottom:none;}
     .data-table tr:hover td{background:rgba(0,119,204,0.03);}
+    .breakdown-table th,.breakdown-table td{text-align:center;}
+    .breakdown-table th:first-child,.breakdown-table td:first-child{text-align:left;}
+    .breakdown-total{font-weight:800;color:var(--accent);}
     .status{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
     .status::before{content:'';width:6px;height:6px;border-radius:50%;display:block;}
     .status-active{background:rgba(5,150,105,0.12);color:var(--green);}.status-active::before{background:var(--green);}
@@ -359,6 +362,31 @@
             <div style="display:flex; gap:6px; margin-top:8px; font-size:11px; color:var(--muted); text-align:center;" id="completed-bar-labels">
               <!-- labels dynamically populated -->
             </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Division Wise Breakdown</div>
+          <span class="panel-action" onclick="loadStats()">Refresh</span>
+        </div>
+        <div class="panel-body">
+          <div style="overflow-x:auto;">
+            <table class="data-table breakdown-table">
+              <thead>
+                <tr>
+                  <th>Division</th>
+                  <th>Service Activity</th>
+                  <th>Pending</th>
+                  <th>In Progress</th>
+                  <th>Escalated</th>
+                  <th>Completed FRN Activity</th>
+                </tr>
+              </thead>
+              <tbody id="division-breakdown-body">
+                <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:22px;">Loading division breakdown...</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -647,6 +675,26 @@ function renderFrnTable(){
   }).join('');
 }
 
+function renderDivisionBreakdown(rows){
+  const tbody = document.getElementById('division-breakdown-body');
+  if(!tbody) return;
+  const list = Array.isArray(rows) ? rows : [];
+  if(!list.length){
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:22px;">No division activity found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(row => `
+    <tr>
+      <td><strong>${esc(row.division || 'Unassigned')}</strong></td>
+      <td class="breakdown-total">${Number(row.serviceTotal || 0)}</td>
+      <td>${Number(row.pending || 0)}</td>
+      <td>${Number(row.inProgress || 0)}</td>
+      <td>${Number(row.escalated || 0)}</td>
+      <td class="breakdown-total">${Number(row.completedFrn || 0)}</td>
+    </tr>
+  `).join('');
+}
+
 // ?"??"? Read ?page= param on load ?"??"?
 (function(){
   const p=new URLSearchParams(window.location.search).get('page');
@@ -683,6 +731,7 @@ async function loadStats() {
     if(document.getElementById('stat-ob-pending')) document.getElementById('stat-ob-pending').textContent = ob.length || 0;
     if(document.getElementById('stat-under-repair')) document.getElementById('stat-under-repair').textContent = ur.length || 0;
     if(document.getElementById('stat-completed-frn')) document.getElementById('stat-completed-frn').textContent = closed.length || 0;
+    renderDivisionBreakdown(dashboardData?.divisionBreakdown || []);
 
     // Populate the weekly activity bar chart
     if (dashboardData && dashboardData.weeklyData) {
