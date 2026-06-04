@@ -707,7 +707,7 @@ function buildExternalRepairEscalationRow(doc) {
 async function collectEscalationData(slotWindow) {
   const queueDocs = await EscalationQueue.find({
     module: { $in: ['frn', 'est'] },
-    queuedAt: { $gte: slotWindow.windowStart, $lte: slotWindow.windowEnd }
+    queuedAt: { $lte: slotWindow.windowEnd }
   }).sort({ queuedAt: 1 }).lean();
 
   const frnRows = [];
@@ -727,7 +727,7 @@ async function collectUrEscalationData(slotWindow) {
   const moduleName = slotWindow.slot === 'ur_scrap' ? 'ur_scrap' : 'ur_followup';
   const queueDocs = await EscalationQueue.find({
     module: moduleName,
-    queuedAt: { $gte: slotWindow.windowStart, $lte: slotWindow.windowEnd }
+    queuedAt: { $lte: slotWindow.windowEnd }
   }).sort({ queuedAt: 1 }).lean();
 
   return {
@@ -738,7 +738,7 @@ async function collectUrEscalationData(slotWindow) {
 async function collectCustomEscalationData(slotWindow) {
   const queueDocs = await EscalationQueue.find({
     module: slotWindow.module,
-    queuedAt: { $gte: slotWindow.windowStart, $lte: slotWindow.windowEnd }
+    queuedAt: { $lte: slotWindow.windowEnd }
   }).sort({ queuedAt: 1 }).lean();
 
   return {
@@ -749,7 +749,7 @@ async function collectCustomEscalationData(slotWindow) {
 async function collectSrEscalationData(slotWindow) {
   const queueDocs = await EscalationQueue.find({
     module: { $in: ['sr_frn', 'sr_est'] },
-    queuedAt: { $gte: slotWindow.windowStart, $lte: slotWindow.windowEnd }
+    queuedAt: { $lte: slotWindow.windowEnd }
   }).sort({ queuedAt: 1 }).lean();
 
   const frnRows = [];
@@ -901,7 +901,7 @@ function buildCustomMailPayload(slotWindow, data) {
 async function collectToEscalationData(slotWindow) {
   const rows = await EscalationQueue.find({
     module: { $in: ['to_frn', 'to_est', 'to_ur'] },
-    queuedAt: { $gte: slotWindow.windowStart, $lte: slotWindow.windowEnd },
+    queuedAt: { $lte: slotWindow.windowEnd },
   }).sort({ queuedAt: 1 }).lean();
 
   const frnRows = rows.filter((item) => item.module === 'to_frn').map((item) => item.row || {});
