@@ -1,7 +1,6 @@
 const express = require('express');
-const Sr = require('../models/Sr');
-const Csr = require('../models/Csr');
 const ScSr = require('../models/ScSr');
+const ScCsr = require('../models/ScCsr');
 const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -52,22 +51,22 @@ router.get('/', async (req, res) => {
       if (!division) filter.division = { $in: userDivisions };
     }
 
-    const docs = await Sr.find(filter).sort({ date: -1, createdAt: -1 }).lean();
+    const docs = await ScSr.find(filter).sort({ date: -1, createdAt: -1 }).lean();
     res.json(docs);
   } catch (err) {
-    console.error('[GET /api/sr]', err);
+    console.error('[GET /api/scsr]', err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
 
 router.post('/', async (req, res) => {
   try {
-    const { date, division, partNo, description, qty, girNo, fromLocation, toLocation, remarks } = req.body || {};
+    const { date, division, partNo, description, qty, girNo, fromLocation, toLocation, remarks, toNo, toRaisedDate, sparesReceivedDate } = req.body || {};
     if (!date || !division || !partNo || !description || !girNo) {
       return res.status(400).json({ message: 'Required: date, division, part no, description and GIR no.' });
     }
 
-    const doc = await Sr.create({
+    const doc = await ScSr.create({
       date,
       division,
       partNo,
@@ -76,12 +75,15 @@ router.post('/', async (req, res) => {
       girNo,
       fromLocation,
       toLocation,
+      toNo,
+      toRaisedDate,
+      sparesReceivedDate,
       remarks,
       createdBy: req.user?.name || req.user?.email || '',
     });
     res.status(201).json(doc);
   } catch (err) {
-    console.error('[POST /api/sr]', err);
+    console.error('[POST /api/scsr]', err);
     if (err.name === 'ValidationError') return res.status(400).json({ message: err.message });
     res.status(500).json({ message: 'Server error', error: err.message });
   }
@@ -90,19 +92,19 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const updates = {};
-    ['date', 'division', 'partNo', 'description', 'qty', 'girNo', 'fromLocation', 'toLocation', 'remarks'].forEach((field) => {
+    ['date', 'division', 'partNo', 'description', 'qty', 'girNo', 'fromLocation', 'toLocation', 'remarks', 'toNo', 'toRaisedDate', 'sparesReceivedDate'].forEach((field) => {
       if (req.body[field] !== undefined) updates[field] = req.body[field];
     });
     updates.updatedBy = req.user?.name || req.user?.email || '';
 
-    const doc = await Sr.findByIdAndUpdate(req.params.id, updates, {
+    const doc = await ScSr.findByIdAndUpdate(req.params.id, updates, {
       new: true,
       runValidators: true,
     }).lean();
     if (!doc) return res.status(404).json({ message: 'SR item not found.' });
     res.json(doc);
   } catch (err) {
-    console.error('[PUT /api/sr/:id]', err);
+    console.error('[PUT /api/scsr/:id]', err);
     if (err.name === 'ValidationError') return res.status(400).json({ message: err.message });
     res.status(500).json({ message: 'Server error', error: err.message });
   }
@@ -110,22 +112,22 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
-    const doc = await Sr.findByIdAndDelete(req.params.id);
+    const doc = await ScSr.findByIdAndDelete(req.params.id);
     if (!doc) return res.status(404).json({ message: 'SR item not found.' });
     res.json({ success: true, id: req.params.id });
   } catch (err) {
-    console.error('[DELETE /api/sr/:id]', err);
+    console.error('[DELETE /api/scsr/:id]', err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
 
 router.post('/:id/close', async (req, res) => {
   try {
-    const doc = await Sr.findById(req.params.id);
+    const doc = await ScSr.findById(req.params.id);
     if (!doc) return res.status(404).json({ message: 'SR item not found.' });
     
     // Create CSR
-    const csrDoc = await Csr.create({
+    const csrDoc = await ScCsr.create({
       date: doc.date,
       closeDate: new Date().toISOString().split('T')[0],
       division: doc.division,
@@ -136,32 +138,20 @@ router.post('/:id/close', async (req, res) => {
       fromLocation: doc.fromLocation,
       toLocation: doc.toLocation,
       remarks: doc.remarks,
+      toNo: doc.toNo,
+      toRaisedDate: doc.toRaisedDate,
+      sparesReceivedDate: doc.sparesReceivedDate,
       createdBy: doc.createdBy,
       updatedBy: doc.updatedBy,
       closedBy: req.user?.name || req.user?.email || '',
     });
     
-    // Create ScSr
-    const scsrDoc = await ScSr.create({
-      date: doc.date,
-      division: doc.division,
-      partNo: doc.partNo,
-      description: doc.description,
-      qty: doc.qty,
-      girNo: doc.girNo,
-      fromLocation: doc.fromLocation,
-      toLocation: doc.toLocation,
-      remarks: doc.remarks,
-      createdBy: doc.createdBy,
-      updatedBy: doc.updatedBy,
-    });
-    
     // Delete from Sr
-    await Sr.findByIdAndDelete(req.params.id);
+    await ScSr.findByIdAndDelete(req.params.id);
     
     res.json({ success: true, csrItem: csrDoc });
   } catch (err) {
-    console.error('[POST /api/sr/:id/close]', err);
+    console.error('[POST /api/scsr/:id/close]', err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });

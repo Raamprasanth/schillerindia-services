@@ -868,8 +868,39 @@
 </div>
 
 <script>
+  const EMP_AUTH_TIMEOUT_MS = 7000;
+  let empDashboardBooted = false;
+  let empMessagePollTimer = null;
+
+  function showEmployeeDashboardShell(){
+    const guard = document.getElementById('auth-guard');
+    const sidebar = document.getElementById('sidebar');
+    const main = document.getElementById('main-content');
+    if(guard) guard.style.display = 'none';
+    if(sidebar) sidebar.style.display = 'flex';
+    if(main) main.style.display = 'flex';
+  }
+
+  function clearEmployeeSession(){
+    sessionStorage.removeItem('schiller_token');
+    sessionStorage.removeItem('schiller_user');
+    sessionStorage.removeItem('schiller_role');
+  }
+
+  async function fetchWithTimeout(url, options = {}, timeoutMs = EMP_AUTH_TIMEOUT_MS){
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      return await fetch(url, { ...options, signal: controller.signal });
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   // -- AUTH GUARD: redirect to login if not employee --
-  (async function() {
+  (async function bootEmployeeDashboard() {
+    if(empDashboardBooted) return;
+    empDashboardBooted = true;
     const token = sessionStorage.getItem('schiller_token');
     
     let localUser = {};
@@ -883,21 +914,20 @@
     }
 
     if (!token) {
+      clearEmployeeSession();
       window.location.href = 'login.html';
       return;
     }
 
-    // Optimistically hide auth guard to prevent buffering delay
-    document.getElementById('auth-guard').style.display   = 'none';
-    document.getElementById('sidebar').style.display      = 'flex';
-    document.getElementById('main-content').style.display = 'flex';
+    showEmployeeDashboardShell();
 
     let user = localUser;
     try {
-      const res = await fetch('/api/auth/me', {
+      const res = await fetchWithTimeout('/api/auth/me', {
         headers: { Authorization: 'Bearer ' + token }
       });
       if (res.status === 401) {
+        clearEmployeeSession();
         window.location.href = 'login.html';
         return;
       }
@@ -908,11 +938,12 @@
         sessionStorage.setItem('schiller_role', String(user.role || 'employee').toLowerCase());
       }
     } catch (err) {
-      console.warn('Dashboard user fetch failed:', err);
+      console.warn('Dashboard user fetch failed, continuing with cached session:', err);
     }
 
     const normalizedRole = String(user.role || sessionStorage.getItem('schiller_role') || '').toLowerCase();
     if (normalizedRole && normalizedRole !== 'employee') {
+      clearEmployeeSession();
       window.location.href = 'login.html';
       return;
     }
@@ -942,10 +973,11 @@
   let empMsgNotificationReady = false;
 
   function initEmpMessages(){
+    if(empMessagePollTimer) clearInterval(empMessagePollTimer);
     loadEmpMessageDivisions();
     loadEmpMessageRecipients();
     loadEmpMessageThreads();
-    setInterval(loadEmpMessageThreads, 30000);
+    empMessagePollTimer = setInterval(loadEmpMessageThreads, 30000);
     if (location.hash === '#messages') showEmpMessages();
     if (location.hash === '#tour') window.location.href = 'tours.html';
     window.addEventListener('hashchange', () => {
@@ -1223,6 +1255,18 @@
     return { 'Content-Type':'application/json', Authorization:'Bearer ' + (sessionStorage.getItem('schiller_token') || '') };
   }
 
+  async function empFetchJson(url, options = {}, timeoutMs = 10000){
+    const res = await fetchWithTimeout(url, options, timeoutMs);
+    if(res.status === 401){
+      clearEmployeeSession();
+      window.location.href = 'login.html';
+      throw new Error('Session expired');
+    }
+    const data = await res.json().catch(() => ({}));
+    if(!res.ok) throw new Error(data.message || 'HTTP ' + res.status);
+    return data;
+  }
+
   function fmtEmpMsgTime(value){
     if (!value) return '';
     const d = new Date(value);
@@ -1285,7 +1329,7 @@
     };
 
     try {
-      fetch('/api/dashboard/employee', { headers: authHeaders }).then(r=>r.json()).then(data=>{
+      empFetchJson('/api/dashboard/employee', { headers: authHeaders }).then(data=>{
         const stats = data?.stats || {};
         const perf = data?.performance || {};
         const engineer = perf.engineer || {};
@@ -1346,10 +1390,7 @@
 
       // 1. Pending FRN
       const frnUrl = isAdmin ? '/api/emp/frn' : '/api/emp/frn/employee';
-      fetch(frnUrl, { headers: authHeaders }).then(async r=>{
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
-      }).then(data=>{
+      empFetchJson(frnUrl, { headers: authHeaders }).then(data=>{
         setCardCount('frn', data, d => d.pdays ?? getPdays(d.rcvdDate || d.entryDate || d.createdAt), { warning: 80, critical: 150 });
       }).catch(e=>{
         console.warn('FRN err:', e);
@@ -1357,26 +1398,17 @@
       });
 
       // 2. OB Pending
-      fetch('/api/emp/services/ob-pending', { headers: authHeaders }).then(async r=>{
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
-      }).then(data=>{
+      empFetchJson('/api/emp/services/ob-pending', { headers: authHeaders }).then(data=>{
         setCardCount('ob', data, d => d.pdOb ?? getPdays(d.rcvdDate || d.entryDate), { warning: 30, critical: 90 });
       }).catch(e=>{ console.warn('OB err:',e); clearCardCount('ob'); });
 
       // 3. Estimation Pending
-      fetch('/api/emp/estimation', { headers: authHeaders }).then(async r=>{
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
-      }).then(data=>{
+      empFetchJson('/api/emp/estimation', { headers: authHeaders }).then(data=>{
         setCardCount('est', data, d => getPdays(d.rcvdDate || d.entryDate), { warning: 20, critical: 60 });
       }).catch(e=>{ console.warn('EST err:',e); clearCardCount('est'); });
 
       // 4. Under Repair
-      fetch('/api/emp/services', { headers: authHeaders }).then(async r=>{
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
-      }).then(data=>{
+      empFetchJson('/api/emp/services', { headers: authHeaders }).then(data=>{
         const urData = Array.isArray(data) ? data.filter(isActiveUnderRepairRecord) : [];
         setCardCount('ur', urData, d => getPdays(d.rcvdDate || d.entryDate || d.createdAt), { warning: 16, critical: 30 });
       }).catch(e=>{ console.warn('UR err:',e); clearCardCount('ur'); });
@@ -2298,10 +2330,10 @@
 
     let submissions = [];
     try {
-      const res = await fetch(`/api/tracker/me?month=${monthStr}`, {
+      const d = await empFetchJson(`/api/tracker/me?month=${monthStr}`, {
         headers: { Authorization: 'Bearer ' + sessionStorage.getItem('schiller_token') }
       });
-      if (res.ok) { const d = await res.json(); if (d.success) submissions = d.submissions; }
+      if (d.success) submissions = d.submissions || [];
     } catch(e) { console.error('Failed to load trackers', e); }
 
     renderTrackerPanel('crm-tracker-body', tuesdays, submissions, 'CRM', monthStr);

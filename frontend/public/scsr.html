@@ -9,7 +9,7 @@
   const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
   if (!token || !['employee','service_coordinator','admin','superadmin'].includes(role)) window.location.href = 'login.html';
 })();</script>
-<title>SchillerIndia - DR Register</title>
+<title>SchillerIndia - SC Service Request</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
@@ -157,6 +157,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 .btn-xs{padding:4px 10px;font-size:11px;border-radius:6px;border:1.5px solid var(--border);background:none;color:var(--soft);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;font-weight:600;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;}
 .btn-xs:hover{border-color:var(--accent);color:var(--accent);background:var(--accent3);}
 .btn-xs.update{color:var(--accent);border-color:rgba(0,104,181,0.3);background:var(--accent3);}
+.btn-xs:disabled, .btn-xs.update:disabled{opacity:0.4;cursor:not-allowed;background:var(--surface2);border-color:var(--border);color:var(--muted);pointer-events:none;}
 
 /* -- LOADING / EMPTY -- */
 .loading-row td{text-align:center;padding:50px 20px;color:var(--muted);font-size:13px;}
@@ -344,9 +345,9 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     <div class="nav-sec">Work Orders</div>
     <a class="nav-item" href="todr.html"><span class="ico">&#128196;</span> TO</a>
     <a class="nav-item" href="ctodr.html"><span class="ico">&#128274;</span> Closed TO</a>
-    <a class="nav-item active" href="dr.html"><span class="ico">&#128196;</span> DR</a>
+    <a class="nav-item" href="dr.html"><span class="ico">&#128196;</span> DR</a>
     <a class="nav-item" href="cdr.html"><span class="ico">&#128274;</span> Closed DR</a>
-    <a class="nav-item" href="scsr.html"><span class="ico">&#128221;</span> SR</a>
+    <a class="nav-item active" href="scsr.html"><span class="ico">&#128221;</span> SR</a>
     <a class="nav-item" href="sccsr.html"><span class="ico">&#9989;</span> Closed SR</a>
     <a class="nav-item" href="scprfob.html"><span class="ico">&#128203;</span> TO/SO Register</a>
     <a class="nav-item" href="sccr.html"><span class="ico">&#128274;</span> Closed TO/SO Register</a>
@@ -372,39 +373,53 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       <div class="breadcrumb">
         <a href="Sc-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
         <span>Work Orders</span><span class="sep">&#8250;</span>
-        <span>Direct dispatch</span>
+        <span>SC Service Request</span>
       </div>
-      <div class="page-title">Direct dispatch</div>
+      <div class="page-title">SC Service Request</div>
     </div>
     <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
       <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
+      
+      <!-- Bulk apply inputs -->
+      <div style="display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:10px;padding:4px 10px;background:var(--surface3);">
+        <span style="font-size:11px;font-weight:700;color:var(--soft);text-transform:uppercase;letter-spacing:0.04em;">Bulk Apply:</span>
+        <input type="text" id="bulk-to-no" class="f-inp" placeholder="TO No" style="width:110px;padding:5px 8px;font-size:11px;height:28px;">
+        <input type="date" id="bulk-to-date" class="f-inp" style="width:120px;padding:5px 8px;font-size:11px;height:28px;">
+        <button class="btn btn-success btn-sm" onclick="applyBulkTo()" style="padding:4px 12px;font-size:11px;height:28px;box-shadow:none;">Apply</button>
+        <button class="btn btn-primary btn-sm" onclick="applyBulkFulfill()" style="padding:4px 12px;font-size:11px;height:28px;box-shadow:none;">Fulfill</button>
+      </div>
+
       <button class="btn btn-primary btn-sm" onclick="exportCSV()">&#128228; Export</button>
     </div>
   </div>
+
   
   <div class="content">
     <div class="table-card">
       <div class="table-top">
-        <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;">Direct dispatch</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;">SC Service Request</div>
       </div>
       
       <div class="table-wrap">
         <table class="frn-table">
           <thead>
             <tr>
-              <th>DR req date</th>
-              <th>Division</th>
-              <th>FRN No</th>
+              <th style="width: 40px;" class="no-sort"><input type="checkbox" id="select-all" onclick="toggleSelectAll(this)" style="cursor:pointer;width:15px;height:15px;vertical-align:middle;"></th>
               <th>Part No</th>
-              <th>Model</th>
               <th>Description</th>
-              <th>Unit Status</th>
-              <th>Spares rcd date</th>
+              <th>Qty</th>
+              <th>GIR No</th>
+              <th>From Location</th>
+              <th>To Location</th>
+              <th>Remarks</th>
+              <th>To No</th>
+              <th>To Raised Date</th>
+              <th>Spares Rcd Date</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody id="tb">
-            <tr><td colspan="9" style="text-align:center;padding:30px;">Loading...</td></tr>
+            <tr><td colspan="11" style="text-align:center;padding:30px;">Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -413,11 +428,11 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 </main>
 
 <!-- ADD / UPDATE MODAL -->
-<div class="modal-overlay" id="dr-modal">
+<div class="modal-overlay" id="todr-modal">
   <div class="add-modal-box">
     <div class="modal-head">
       <div>
-        <div class="modal-title" id="m-title">Add DR</div>
+        <div class="modal-title" id="m-title">Add TO</div>
         <div class="modal-sub">Fill out the form below</div>
       </div>
       <button class="modal-close" onclick="closeModal()">&#10005;</button>
@@ -460,12 +475,17 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   function hdrs(){ return {"Content-Type":"application/json", "Authorization":"Bearer "+(sessionStorage.getItem('schiller_token')||"")}; }
   function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href="login.html"; }
+  function localDateIso(d = new Date()) {
+    const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+    return local.toISOString().split('T')[0];
+  }
 
+  const TODAY_ISO = localDateIso();
   let records = [];
 
   async function loadData() {
     try {
-      const res = await fetch('/api/dr', { headers: hdrs() });
+      const res = await fetch('/api/scsr', { headers: hdrs() });
       if(res.status===401||res.status===403) return logout();
       const data = await res.json();
       if(res.ok) { records = data; renderTable(); }
@@ -474,51 +494,86 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   function renderTable() {
     const tb = document.getElementById('tb');
-    if(!records.length) { tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;">No DR entries found.</td></tr>'; return; }
+    if(!records.length) { tb.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:30px;">No SC Service Requests found.</td></tr>'; return; }
     
     tb.innerHTML = records.map(r => `
       <tr>
-        <td>${r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-'}</td>
-        <td>${esc(r.division || '-')}</td>
-        <td><span style="font-weight:700;color:var(--accent);">${esc(r.frnNo)}</span></td>
-        <td>${esc(r.partNo)}</td>
-        <td>${esc(r.model || '-')}</td>
+        <td><input type="checkbox" class="row-select" value="${r._id}" onclick="updateSelectAllHeader()" style="cursor:pointer;width:15px;height:15px;vertical-align:middle;"></td>
+        <td><span style="font-weight:700;color:var(--accent);">${esc(r.partNo)}</span></td>
         <td class="wrap-cell">${esc(r.description)}</td>
-        <td>${esc(r.unitStatus || '-')}</td>
-        <td><input type="date" max="${TODAY_ISO}" value="${dateInputValue(r.sparesReceivedDate)}" onchange="updateDateField('${r._id}','sparesReceivedDate',this.value)" style="width:130px; padding:4px; border:1px solid var(--border); border-radius:4px; font-family:'Plus Jakarta Sans',sans-serif; font-size:12px;"></td>
-        <td style="text-align:center;"><button class="btn btn-primary btn-sm" onclick="markFulfilled('${r._id}')">Fulfilled</button></td>
+        <td>${esc(r.qty || '-')}</td>
+        <td class="mono">${esc(r.girNo || '-')}</td>
+        <td>${esc(r.fromLocation || '-')}</td>
+        <td>${esc(r.toLocation || '-')}</td>
+        <td>${esc(r.remarks || '-')}</td>
+        <td><input type="text" class="f-inp" value="${esc(r.toNo || '')}" onchange="updateTextField('${r._id}','toNo',this.value)" style="width:100px;"></td>
+        <td><input type="date" class="f-inp" min="${TODAY_ISO}" max="${TODAY_ISO}" value="${dateInputValue(r.toRaisedDate)}" onchange="updateDateField('${r._id}','toRaisedDate',this.value)" style="width:140px;"></td>
+        <td><input type="date" class="f-inp" max="${TODAY_ISO}" value="${dateInputValue(r.sparesReceivedDate)}" onchange="updateDateField('${r._id}','sparesReceivedDate',this.value)" style="width:140px;"></td>
+        <td><button class="btn-xs update" onclick="closeRecord('${r._id}')">&#10003; Close</button></td>
       </tr>
     `).join('');
   }
 
-  const TODAY_ISO = new Date().toISOString().split('T')[0];
-  function dateInputValue(val) {
-    if (!val) return '';
-    const d = new Date(val);
-    return Number.isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
+  function dateInputValue(v) {
+    if(!v) return '';
+    const d = new Date(v);
+    if(Number.isNaN(d.getTime())) return '';
+    return d.toISOString().split('T')[0];
   }
 
   async function updateDateField(id, field, value) {
+    const record = records.find(x => x._id === id);
+    if(!record) return;
+    if(field === 'toRaisedDate' && value && value !== TODAY_ISO) {
+      alert('TO Raised Date can be only today.');
+      renderTable();
+      return;
+    }
+    if(field === 'sparesReceivedDate' && value && value > TODAY_ISO) {
+      alert('Spares Rcd Date cannot be a future date.');
+      renderTable();
+      return;
+    }
+    const payload = { [field]: value || null };
     try {
-      const payload = {};
-      payload[field] = value;
-      const res = await fetch(`/api/dr/${id}`, {
-        method: 'PUT',
-        headers: hdrs(),
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json().catch(()=>{});
-      if(!res.ok) {
-        msg(data.message || 'Failed to update date', true);
-        loadData();
-      } else {
-        const idx = records.findIndex(r => r._id === id);
-        if (idx !== -1) records[idx][field] = value;
-        msg('Date updated successfully');
-      }
+      const res = await fetch(`/api/scsr/${id}`, { method: 'PUT', headers: hdrs(), body: JSON.stringify(payload) });
+      const json = await res.json().catch(()=>{});
+      if(!res.ok) throw new Error(json?.message || 'Server error');
+      Object.assign(record, json);
+      renderTable();
     } catch(e) {
-      msg('Error updating date: ' + e.message, true);
-      loadData();
+      alert('Date update failed: ' + e.message);
+      renderTable();
+    }
+  }
+
+  async function updateTextField(id, field, value) {
+    const record = records.find(x => x._id === id);
+    if(!record) return;
+    const payload = { [field]: value || '' };
+    try {
+      const res = await fetch(`/api/scsr/${id}`, { method: 'PUT', headers: hdrs(), body: JSON.stringify(payload) });
+      const json = await res.json().catch(()=>{});
+      if(!res.ok) throw new Error(json?.message || 'Server error');
+      Object.assign(record, json);
+      renderTable();
+    } catch(e) {
+      alert('Update failed: ' + e.message);
+      renderTable();
+    }
+  }
+
+  async function closeRecord(id) {
+    if(!confirm('Close this Service Request?')) return;
+    try {
+      const res = await fetch(`/api/scsr/${id}/close`, { method: 'POST', headers: hdrs() });
+      const json = await res.json().catch(()=>{});
+      if(!res.ok) throw new Error(json?.message || 'Server error');
+      records = records.filter(r => r._id !== id);
+      renderTable();
+      showToast('SR closed and moved to Closed SR.', 'ok');
+    } catch(e) {
+      alert('Close failed: ' + e.message);
     }
   }
 
@@ -529,9 +584,9 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     document.getElementById('f-part').value = '';
     document.getElementById('f-desc').value = '';
     document.getElementById('f-action').value = '';
-    document.getElementById('m-title').innerHTML = '&#10133; Add DR';
+    document.getElementById('m-title').innerHTML = '&#10133; Add TO';
     msg('');
-    document.getElementById('dr-modal').classList.add('open');
+    document.getElementById('todr-modal').classList.add('open');
   }
 
   function openEdit(id) {
@@ -543,12 +598,12 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     document.getElementById('f-part').value = r.partNo || '';
     document.getElementById('f-desc').value = r.description || '';
     document.getElementById('f-action').value = r.action || '';
-    document.getElementById('m-title').innerHTML = '&#9998; Edit DR';
+    document.getElementById('m-title').innerHTML = '&#9998; Edit TO';
     msg('');
-    document.getElementById('dr-modal').classList.add('open');
+    document.getElementById('todr-modal').classList.add('open');
   }
 
-  function closeModal() { document.getElementById('dr-modal').classList.remove('open'); }
+  function closeModal() { document.getElementById('todr-modal').classList.remove('open'); }
   function msg(m, err=false) { 
     const e=document.getElementById('m-msg'); 
     e.textContent=m; 
@@ -573,7 +628,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     const btn = document.getElementById('save-btn');
     btn.disabled=true; btn.textContent='Saving...';
     try {
-      const url = id ? `/api/dr/${id}` : '/api/dr';
+      const url = id ? `/api/scsr/${id}` : '/api/scsr';
       const method = id ? 'PUT' : 'POST';
       const res = await fetch(url, { method, headers: hdrs(), body: JSON.stringify(payload) });
       const json = await res.json().catch(()=>{});
@@ -590,39 +645,156 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   async function delRecord(id) {
     if(!confirm('Delete this record permanently?')) return;
     try {
-      await fetch(`/api/dr/${id}`, { method: 'DELETE', headers: hdrs() });
+      await fetch(`/api/scsr/${id}`, { method: 'DELETE', headers: hdrs() });
       loadData();
     } catch(e) { alert('Failed to delete'); }
   }
 
-  async function markFulfilled(id) {
-    if(!confirm('Mark this DR as fulfilled and move to closed?')) return;
-    try {
-      const r = records.find(x => x._id === id);
-      if(!r) return;
-      
-      const payload = { ...r };
-      delete payload._id;
-      delete payload.__v;
-      payload.closedDate = new Date();
-
-      const res = await fetch('/api/cdr', { 
-        method: 'POST', 
-        headers: hdrs(), 
-        body: JSON.stringify(payload) 
-      });
-      if(!res.ok) throw new Error('Failed to move to closed DR');
-      
-      await fetch(`/api/dr/${id}`, { method: 'DELETE', headers: hdrs() });
-      loadData();
-    } catch(e) { alert(e.message); }
+  function exportCSV() {
+    const headers = ['Part No','Description','Qty','GIR No','From Location','To Location','Remarks','TO NO','TO Raised Date','Spares Rcd Date'];
+    const rows = records.map(r => [
+      r.partNo || '-',
+      r.description || '-',
+      r.qty || '-',
+      r.girNo || '-',
+      r.fromLocation || '-',
+      r.toLocation || '-',
+      r.remarks || '-',
+      r.toNo || '-',
+      r.toRaisedDate ? new Date(r.toRaisedDate).toLocaleDateString('en-IN') : '-',
+      r.sparesReceivedDate ? new Date(r.sparesReceivedDate).toLocaleDateString('en-IN') : '-'
+    ]);
+    const csv = [headers, ...rows].map(row => row.map(v => `"${String(v || '').replace(/"/g,'""')}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'sc-service-request-' + TODAY_ISO + '.csv';
+    a.click();
   }
 
   function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
   
   // Close modal when clicking outside
-  document.getElementById('dr-modal').addEventListener('click', e => { if(e.target.id==='dr-modal') closeModal(); });
+  document.getElementById('todr-modal').addEventListener('click', e => { if(e.target.id==='todr-modal') closeModal(); });
   document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+  // Set min/max for bulk date input
+  const bulkDateInp = document.getElementById('bulk-to-date');
+  if (bulkDateInp) {
+    bulkDateInp.min = TODAY_ISO;
+    bulkDateInp.max = TODAY_ISO;
+  }
+
+  function showToast(msg, type = 'ok') {
+    const wrap = document.getElementById('toast-wrap');
+    if (!wrap) return;
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `<span class="td"></span>${msg}`;
+    wrap.appendChild(el);
+    setTimeout(() => el.remove(), 3200);
+  }
+
+  function toggleSelectAll(master) {
+    const checkboxes = document.querySelectorAll('.row-select');
+    checkboxes.forEach(cb => cb.checked = master.checked);
+  }
+
+  function updateSelectAllHeader() {
+    const master = document.getElementById('select-all');
+    if (!master) return;
+    const checkboxes = document.querySelectorAll('.row-select');
+    const checkedCount = document.querySelectorAll('.row-select:checked').length;
+    master.checked = checkboxes.length > 0 && checkedCount === checkboxes.length;
+  }
+
+  async function applyBulkTo() {
+    const toNo = document.getElementById('bulk-to-no').value.trim();
+    const toRaisedDate = document.getElementById('bulk-to-date').value;
+
+    if (!toNo || !toRaisedDate) {
+      alert('Please enter both TO No and TO Raised Date.');
+      return;
+    }
+
+    if (toRaisedDate !== TODAY_ISO) {
+      alert('TO Raised Date can be only today.');
+      return;
+    }
+
+    const checkedBoxes = document.querySelectorAll('.row-select:checked');
+    if (checkedBoxes.length === 0) {
+      alert('Please select at least one entry.');
+      return;
+    }
+
+    const ids = Array.from(checkedBoxes).map(cb => cb.value);
+
+    try {
+      const res = await fetch('/api/scsr/bulk-update', {
+        method: 'PUT',
+        headers: hdrs(),
+        body: JSON.stringify({ ids, toNo, toRaisedDate })
+      });
+      const json = await res.json().catch(() => {});
+      if (!res.ok) throw new Error(json?.message || 'Server error');
+
+      // Update in memory records
+      json.forEach(updatedRecord => {
+        const record = records.find(x => x._id === updatedRecord._id);
+        if (record) Object.assign(record, updatedRecord);
+      });
+
+      // Clear selection and inputs
+      document.getElementById('select-all').checked = false;
+      document.getElementById('bulk-to-no').value = '';
+      document.getElementById('bulk-to-date').value = '';
+      
+      renderTable();
+      showToast('Successfully applied TO details to selected entries.', 'ok');
+    } catch(e) {
+      alert('Bulk apply failed: ' + e.message);
+    }
+  }
+
+  async function applyBulkFulfill() {
+    const checkedBoxes = document.querySelectorAll('.row-select:checked');
+    if (checkedBoxes.length === 0) {
+      alert('Please select at least one entry.');
+      return;
+    }
+
+    const ids = [];
+    for (const cb of checkedBoxes) {
+      const id = cb.value;
+      const record = records.find(x => x._id === id);
+      if (!record || !record.toNo || !record.toRaisedDate) {
+        alert('All selected entries must have a TO NO and TO Raised Date before they can be fulfilled.');
+        return;
+      }
+      ids.push(id);
+    }
+
+    try {
+      const res = await fetch('/api/scsr/bulk-fulfill', {
+        method: 'POST',
+        headers: hdrs(),
+        body: JSON.stringify({ ids })
+      });
+      const json = await res.json().catch(() => {});
+      if (!res.ok) throw new Error(json?.message || 'Server error');
+
+      // Filter out fulfilled records from local state
+      records = records.filter(r => !ids.includes(r._id));
+
+      // Uncheck header checkbox
+      document.getElementById('select-all').checked = false;
+
+      renderTable();
+      showToast(`Successfully fulfilled ${ids.length} selected entry/entries.`, 'ok');
+    } catch (e) {
+      alert('Bulk fulfillment failed: ' + e.message);
+    }
+  }
 
   loadData();
 </script>

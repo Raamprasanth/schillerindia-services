@@ -9,7 +9,7 @@
   const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
   if (!token || !['employee','service_coordinator','admin','superadmin'].includes(role)) window.location.href = 'login.html';
 })();</script>
-<title>SchillerIndia - DR Register</title>
+<title>SchillerIndia - Closed TO</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
@@ -344,10 +344,10 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     <div class="nav-sec">Work Orders</div>
     <a class="nav-item" href="todr.html"><span class="ico">&#128196;</span> TO</a>
     <a class="nav-item" href="ctodr.html"><span class="ico">&#128274;</span> Closed TO</a>
-    <a class="nav-item active" href="dr.html"><span class="ico">&#128196;</span> DR</a>
+    <a class="nav-item" href="dr.html"><span class="ico">&#128196;</span> DR</a>
     <a class="nav-item" href="cdr.html"><span class="ico">&#128274;</span> Closed DR</a>
     <a class="nav-item" href="scsr.html"><span class="ico">&#128221;</span> SR</a>
-    <a class="nav-item" href="sccsr.html"><span class="ico">&#9989;</span> Closed SR</a>
+    <a class="nav-item active" href="sccsr.html"><span class="ico">&#9989;</span> Closed SR</a>
     <a class="nav-item" href="scprfob.html"><span class="ico">&#128203;</span> TO/SO Register</a>
     <a class="nav-item" href="sccr.html"><span class="ico">&#128274;</span> Closed TO/SO Register</a>
     <a class="nav-item" href="lt.html"><span class="ico">&#128230;</span> Loan Item</a>
@@ -372,39 +372,52 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       <div class="breadcrumb">
         <a href="Sc-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
         <span>Work Orders</span><span class="sep">&#8250;</span>
-        <span>Direct dispatch</span>
+        <span>SC Closed Service Request</span>
       </div>
-      <div class="page-title">Direct dispatch</div>
+      <div class="page-title">SC Closed Service Request</div>
     </div>
     <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
       <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
+      <button class="btn btn-outline btn-sm" onclick="loadData()">&#10227; Refresh</button>
       <button class="btn btn-primary btn-sm" onclick="exportCSV()">&#128228; Export</button>
     </div>
   </div>
+
   
   <div class="content">
     <div class="table-card">
       <div class="table-top">
-        <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;">Direct dispatch</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;">SC Closed Service Request</div>
+        <div style="display:flex;gap:10px;">
+        </div>
       </div>
-      
+            <div class="filter-strip">
+        <label>From</label>
+        <input type="date" class="f-inp" id="fl-from" onchange="applyFilters()">
+        <label>To</label>
+        <input type="date" class="f-inp" id="fl-to" onchange="applyFilters()">
+        <button class="btn btn-outline btn-sm" onclick="clearFilters()" style="margin-left:auto;">&#10005; Clear</button>
+      </div>
       <div class="table-wrap">
         <table class="frn-table">
           <thead>
             <tr>
-              <th>DR req date</th>
-              <th>Division</th>
-              <th>FRN No</th>
               <th>Part No</th>
-              <th>Model</th>
               <th>Description</th>
-              <th>Unit Status</th>
-              <th>Spares rcd date</th>
-              <th>Action</th>
+              <th>Qty</th>
+              <th>GIR No</th>
+              <th>From Location</th>
+              <th>To Location</th>
+              <th>Remarks</th>
+              <th>To No</th>
+              <th>To Raised Date</th>
+              <th>Spares Rcd Date</th>
+              <th>Closed By</th>
+              <th>Close Date</th>
             </tr>
           </thead>
           <tbody id="tb">
-            <tr><td colspan="9" style="text-align:center;padding:30px;">Loading...</td></tr>
+            <tr><td colspan="12" style="text-align:center;padding:30px;">Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -413,11 +426,11 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 </main>
 
 <!-- ADD / UPDATE MODAL -->
-<div class="modal-overlay" id="dr-modal">
+<div class="modal-overlay" id="ctodr-modal">
   <div class="add-modal-box">
     <div class="modal-head">
       <div>
-        <div class="modal-title" id="m-title">Add DR</div>
+        <div class="modal-title" id="m-title">Add Closed TO</div>
         <div class="modal-sub">Fill out the form below</div>
       </div>
       <button class="modal-close" onclick="closeModal()">&#10005;</button>
@@ -462,63 +475,81 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href="login.html"; }
 
   let records = [];
+  let filtered = [];
+
+  
+  function populateDivisions() {
+    const sel = document.getElementById('fl-division');
+    if (!sel) return;
+    const divs = [...new Set(records.map(r => r.division).filter(Boolean))].sort();
+    const current = sel.value;
+    sel.innerHTML = '<option value="">All Divisions</option>' + divs.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
+    sel.value = current;
+  }
+
+  function clearFilters() {
+    ['fl-from','fl-to','fl-division'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const from = document.getElementById('fl-from')?.value || '';
+    const to = document.getElementById('fl-to')?.value || '';
+    const division = document.getElementById('fl-division')?.value || '';
+    
+    filtered = records.filter(d => {
+      const entryDateStr = d.entryDate ? new Date(d.entryDate).toISOString().split('T')[0] : '';
+      return (!from || entryDateStr >= from) &&
+             (!to || entryDateStr <= to) &&
+             (!division || d.division === division);
+    });
+    renderTable();
+  }
 
   async function loadData() {
     try {
-      const res = await fetch('/api/dr', { headers: hdrs() });
+      const res = await fetch('/api/sccsr', { headers: hdrs() });
       if(res.status===401||res.status===403) return logout();
       const data = await res.json();
-      if(res.ok) { records = data; renderTable(); }
+      if(res.ok) { records = data; populateDivisions(); applyFilters(); }
     } catch(e) { console.error(e); }
   }
 
   function renderTable() {
     const tb = document.getElementById('tb');
-    if(!records.length) { tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;">No DR entries found.</td></tr>'; return; }
+    if(!filtered.length) { tb.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:30px;">No closed SC Service Requests found.</td></tr>'; return; }
     
-    tb.innerHTML = records.map(r => `
+    tb.innerHTML = filtered.map(r => `
       <tr>
-        <td>${r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-'}</td>
-        <td>${esc(r.division || '-')}</td>
-        <td><span style="font-weight:700;color:var(--accent);">${esc(r.frnNo)}</span></td>
-        <td>${esc(r.partNo)}</td>
-        <td>${esc(r.model || '-')}</td>
+        <td><span style="font-weight:700;color:var(--accent);">${esc(r.partNo)}</span></td>
         <td class="wrap-cell">${esc(r.description)}</td>
-        <td>${esc(r.unitStatus || '-')}</td>
-        <td><input type="date" max="${TODAY_ISO}" value="${dateInputValue(r.sparesReceivedDate)}" onchange="updateDateField('${r._id}','sparesReceivedDate',this.value)" style="width:130px; padding:4px; border:1px solid var(--border); border-radius:4px; font-family:'Plus Jakarta Sans',sans-serif; font-size:12px;"></td>
-        <td style="text-align:center;"><button class="btn btn-primary btn-sm" onclick="markFulfilled('${r._id}')">Fulfilled</button></td>
+        <td>${esc(r.qty || '-')}</td>
+        <td class="mono">${esc(r.girNo || '-')}</td>
+        <td>${esc(r.fromLocation || '-')}</td>
+        <td>${esc(r.toLocation || '-')}</td>
+        <td>${esc(r.remarks || '-')}</td>
+        <td>${esc(r.toNo || '-')}</td>
+        <td>${r.toRaisedDate ? new Date(r.toRaisedDate).toLocaleDateString('en-IN') : '-'}</td>
+        <td>${r.sparesReceivedDate ? new Date(r.sparesReceivedDate).toLocaleDateString('en-IN') : '-'}</td>
+        <td>${esc(r.closedBy || '-')}</td>
+        <td>${r.closeDate ? new Date(r.closeDate).toLocaleDateString('en-IN') : '-'}</td>
       </tr>
     `).join('');
   }
 
-  const TODAY_ISO = new Date().toISOString().split('T')[0];
-  function dateInputValue(val) {
-    if (!val) return '';
-    const d = new Date(val);
-    return Number.isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
-  }
-
-  async function updateDateField(id, field, value) {
+  async function updateTextField(id, field, value) {
+    const record = records.find(x => x._id === id);
+    if(!record) return;
+    const payload = { [field]: value || '' };
     try {
-      const payload = {};
-      payload[field] = value;
-      const res = await fetch(`/api/dr/${id}`, {
-        method: 'PUT',
-        headers: hdrs(),
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json().catch(()=>{});
-      if(!res.ok) {
-        msg(data.message || 'Failed to update date', true);
-        loadData();
-      } else {
-        const idx = records.findIndex(r => r._id === id);
-        if (idx !== -1) records[idx][field] = value;
-        msg('Date updated successfully');
-      }
+      const res = await fetch(`/api/sccsr/${id}`, { method: 'PUT', headers: hdrs(), body: JSON.stringify(payload) });
+      const json = await res.json().catch(()=>{});
+      if(!res.ok) throw new Error(json?.message || 'Server error');
+      Object.assign(record, json);
+      renderTable();
     } catch(e) {
-      msg('Error updating date: ' + e.message, true);
-      loadData();
+      alert('Update failed: ' + e.message);
+      renderTable();
     }
   }
 
@@ -529,9 +560,9 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     document.getElementById('f-part').value = '';
     document.getElementById('f-desc').value = '';
     document.getElementById('f-action').value = '';
-    document.getElementById('m-title').innerHTML = '&#10133; Add DR';
+    document.getElementById('m-title').innerHTML = '&#10133; Add TO';
     msg('');
-    document.getElementById('dr-modal').classList.add('open');
+    document.getElementById('ctodr-modal').classList.add('open');
   }
 
   function openEdit(id) {
@@ -543,12 +574,12 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     document.getElementById('f-part').value = r.partNo || '';
     document.getElementById('f-desc').value = r.description || '';
     document.getElementById('f-action').value = r.action || '';
-    document.getElementById('m-title').innerHTML = '&#9998; Edit DR';
+    document.getElementById('m-title').innerHTML = '&#9998; Edit Closed TO';
     msg('');
-    document.getElementById('dr-modal').classList.add('open');
+    document.getElementById('ctodr-modal').classList.add('open');
   }
 
-  function closeModal() { document.getElementById('dr-modal').classList.remove('open'); }
+  function closeModal() { document.getElementById('ctodr-modal').classList.remove('open'); }
   function msg(m, err=false) { 
     const e=document.getElementById('m-msg'); 
     e.textContent=m; 
@@ -573,7 +604,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     const btn = document.getElementById('save-btn');
     btn.disabled=true; btn.textContent='Saving...';
     try {
-      const url = id ? `/api/dr/${id}` : '/api/dr';
+      const url = id ? `/api/sccsr/${id}` : '/api/sccsr';
       const method = id ? 'PUT' : 'POST';
       const res = await fetch(url, { method, headers: hdrs(), body: JSON.stringify(payload) });
       const json = await res.json().catch(()=>{});
@@ -590,38 +621,38 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   async function delRecord(id) {
     if(!confirm('Delete this record permanently?')) return;
     try {
-      await fetch(`/api/dr/${id}`, { method: 'DELETE', headers: hdrs() });
+      await fetch(`/api/sccsr/${id}`, { method: 'DELETE', headers: hdrs() });
       loadData();
     } catch(e) { alert('Failed to delete'); }
   }
 
-  async function markFulfilled(id) {
-    if(!confirm('Mark this DR as fulfilled and move to closed?')) return;
-    try {
-      const r = records.find(x => x._id === id);
-      if(!r) return;
-      
-      const payload = { ...r };
-      delete payload._id;
-      delete payload.__v;
-      payload.closedDate = new Date();
-
-      const res = await fetch('/api/cdr', { 
-        method: 'POST', 
-        headers: hdrs(), 
-        body: JSON.stringify(payload) 
-      });
-      if(!res.ok) throw new Error('Failed to move to closed DR');
-      
-      await fetch(`/api/dr/${id}`, { method: 'DELETE', headers: hdrs() });
-      loadData();
-    } catch(e) { alert(e.message); }
+  function exportCSV() {
+    const headers = ['Part No','Description','Qty','GIR No','From Location','To Location','Remarks','TO NO','TO Raised Date','Spares Rcd Date','Closed By','Close Date'];
+    const rows = records.map(r => [
+      r.partNo || '-',
+      r.description || '-',
+      r.qty || '-',
+      r.girNo || '-',
+      r.fromLocation || '-',
+      r.toLocation || '-',
+      r.remarks || '-',
+      r.toNo || '-',
+      r.toRaisedDate ? new Date(r.toRaisedDate).toLocaleDateString('en-IN') : '-',
+      r.sparesReceivedDate ? new Date(r.sparesReceivedDate).toLocaleDateString('en-IN') : '-',
+      r.closedBy || '-',
+      r.closeDate ? new Date(r.closeDate).toLocaleDateString('en-IN') : '-'
+    ]);
+    const csv = [headers, ...rows].map(row => row.map(v => `"${String(v || '').replace(/"/g,'""')}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'sc-closed-service-request.csv';
+    a.click();
   }
 
   function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
   
   // Close modal when clicking outside
-  document.getElementById('dr-modal').addEventListener('click', e => { if(e.target.id==='dr-modal') closeModal(); });
+  document.getElementById('ctodr-modal').addEventListener('click', e => { if(e.target.id==='ctodr-modal') closeModal(); });
   document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
 
   loadData();
