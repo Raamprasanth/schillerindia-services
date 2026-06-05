@@ -893,25 +893,38 @@ function handleEstimateSameGir(val){
   const revalue=document.getElementById('u-revalue');
   const typeWork=document.getElementById('u-typework');
   const safeDefGir=defGir;
+  
   if(!input) return;
+  
+  if(typeWork) {
+    const replOpt = Array.from(typeWork.options).find(o => o.value === 'Replacement given');
+    if(val === 'yes') {
+      if(replOpt) replOpt.style.display = 'none';
+      if(typeWork.value === 'Replacement given') typeWork.value = '';
+      typeWork.disabled = false;
+      typeWork.classList.remove('locked-field');
+    } else {
+      if(replOpt) replOpt.style.display = '';
+      typeWork.disabled = false;
+      typeWork.classList.remove('locked-field');
+    }
+  }
+
   if(val==='yes'){
     input.value=safeDefGir;
     input.readOnly=true;
     input.classList.add('gir-autofill');
     if(revalue){revalue.readOnly=false;revalue.classList.remove('gir-autofill');}
-    if(typeWork){typeWork.value='Replacement given';typeWork.disabled=true;typeWork.classList.add('locked-field');}
   }else if(val==='no'){
     input.value='';
     input.readOnly=false;
     input.classList.remove('gir-autofill');
     if(revalue){revalue.readOnly=false;revalue.classList.remove('gir-autofill');}
-    if(typeWork){typeWork.disabled=false;typeWork.classList.remove('locked-field');}
   }else{
     input.value='';
     input.readOnly=false;
     input.classList.remove('gir-autofill');
     if(revalue){revalue.readOnly=false;revalue.classList.remove('gir-autofill');}
-    if(typeWork){typeWork.disabled=false;typeWork.classList.remove('locked-field');}
   }
 }
 

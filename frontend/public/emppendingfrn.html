@@ -1848,8 +1848,24 @@ function handleSameGir(val){
   const defGir=String(current.defGir||'').trim();
   const input=document.getElementById('upd-defunitgir');
   const revalue=document.getElementById('upd-revalue');
+  const typeWork=document.getElementById('upd-typework');
   const safeDefGir=defGir;
   if(!input) return;
+
+  if(typeWork) {
+    const replOpt = Array.from(typeWork.options).find(o => o.value === 'Replacement given');
+    if(val === 'yes') {
+      if(replOpt) replOpt.style.display = 'none';
+      if(typeWork.value === 'Replacement given') typeWork.value = '';
+      typeWork.disabled = false;
+      typeWork.classList.remove('locked-field');
+    } else {
+      if(replOpt) replOpt.style.display = '';
+      typeWork.disabled = false;
+      typeWork.classList.remove('locked-field');
+    }
+  }
+
   if(val==='yes'){
     input.value=safeDefGir;
     input.readOnly=true;
