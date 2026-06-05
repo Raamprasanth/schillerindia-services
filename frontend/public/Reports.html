@@ -2481,7 +2481,11 @@ async function loadAllDivisionTrackers() {
           const percent = Math.min(100, Math.max(0, report.percent || 0));
           const done = report.complete || (report.expected > 0 && report.actual >= report.expected);
           const fillClass = done ? 'done' : percent >= 60 ? 'warn' : '';
-          return `
+            let missingTooltip = '';
+            if (report.missingNames && report.missingNames.length > 0) {
+              missingTooltip = ` <span title="Missing: ${escapeHtml(report.missingNames.join(', '))}" style="cursor:help;color:var(--amber);font-size:11px;">&#9888;</span>`;
+            }
+            return `
             <tr>
               <td style="font-weight:700;">${escapeHtml(div.name)}</td>
               <td style="text-align:center;">${div.empCount || 0}</td>
@@ -2490,7 +2494,7 @@ async function loadAllDivisionTrackers() {
                 <div class="rpt-tracker-progress">
                   <div class="rpt-tracker-bar"><div class="rpt-tracker-fill ${fillClass}" style="width:${percent}%;"></div></div>
                   <span class="rpt-tracker-pct">${percent}%</span>
-                  <span class="rpt-tracker-check ${done ? 'done' : ''}">${done ? '&#10003;' : '-'}</span>
+                  <span class="rpt-tracker-check ${done ? 'done' : ''}">${done ? '&#10003;' : '-'}</span>${missingTooltip}
                 </div>
               </td>
             </tr>`;

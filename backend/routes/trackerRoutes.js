@@ -22,8 +22,8 @@ router.get('/me', protect, async (req, res) => {
 // Toggle a submission for a specific date
 router.post('/submit', protect, async (req, res) => {
   try {
-    const { type, reportDate, month, status } = req.body;
-    if (!type || !reportDate || !month) {
+    const { type, reportDates, month, status } = req.body;
+    if (!type || !reportDates || !Array.isArray(reportDates) || !month) {
       return res.status(400).json({ success: false, message: 'Missing required fields' });
     }
 
@@ -31,19 +31,19 @@ router.post('/submit', protect, async (req, res) => {
       // Find employee's division
       const user = await User.findById(req.user._id).lean();
       
-      await TrackerSubmission.findOneAndUpdate(
-        { employee: req.user._id, type, reportDate },
-        { 
-          $set: { 
-            month, 
-            division: user.division 
-          } 
-        },
-        { upsert: true, new: true }
-      );
+      const bulkOps = reportDates.map(date => ({
+        updateOne: {
+          filter: { employee: req.user._id, type, reportDate: date },
+          update: { $set: { month, division: user.division } },
+          upsert: true
+        }
+      }));
+      if (bulkOps.length > 0) {
+        await TrackerSubmission.bulkWrite(bulkOps);
+      }
     } else {
       // Un-submit
-      await TrackerSubmission.findOneAndDelete({ employee: req.user._id, type, reportDate });
+      await TrackerSubmission.deleteMany({ employee: req.user._id, type, reportDate: { $in: reportDates } });
     }
 
     res.json({ success: true });
@@ -137,19 +137,24 @@ router.get('/stats', protect, async (req, res) => {
           id: divId,
           name: emp.division ? emp.division.name : 'Unassigned',
           empCount: 0,
+          employees: [], // Keep track of employees to calculate missing
           reports: reportDefinitions.reduce((acc, report) => {
             acc[report.type] = {
               type: report.type,
               label: report.label,
               schedule: report.schedule,
               expected: 0,
-              actual: 0
+              actual: 0,
+              employeeActuals: {} // Map employeeId -> actual submissions
             };
             return acc;
           }, {})
         };
+          }, {})
+        };
       }
       divisionsMap[divId].empCount++;
+      divisionsMap[divId].employees.push({ id: emp._id.toString(), name: emp.name });
       reportDefinitions.forEach(report => {
         divisionsMap[divId].reports[report.type].expected += report.expectedPerEmployee;
       });
@@ -163,6 +168,10 @@ router.get('/stats', protect, async (req, res) => {
       const division = divisionsMap[divId];
       if (division && division.reports[sub.type]) {
         division.reports[sub.type].actual++;
+        const empIdStr = sub.employee ? sub.employee.toString() : null;
+        if (empIdStr) {
+          division.reports[sub.type].employeeActuals[empIdStr] = (division.reports[sub.type].employeeActuals[empIdStr] || 0) + 1;
+        }
       }
     });
 
@@ -170,10 +179,28 @@ router.get('/stats', protect, async (req, res) => {
       const reports = reportDefinitions.map(report => {
         const item = div.reports[report.type];
         const percent = item.expected > 0 ? Math.round((item.actual / item.expected) * 100) : 0;
+        
+        // Calculate missing employees for this report
+        const missingNames = [];
+        const requiredCount = report.expectedPerEmployee;
+        if (requiredCount > 0) {
+          div.employees.forEach(emp => {
+            const actualForEmp = item.employeeActuals[emp.id] || 0;
+            if (actualForEmp < requiredCount) {
+              missingNames.push(emp.name);
+            }
+          });
+        }
+        
         return {
-          ...item,
+          type: item.type,
+          label: item.label,
+          schedule: item.schedule,
+          expected: item.expected,
+          actual: item.actual,
           percent: Math.min(100, percent),
-          complete: item.expected > 0 && item.actual >= item.expected
+          complete: item.expected > 0 && item.actual >= item.expected,
+          missingNames
         };
       });
       const reportByType = reports.reduce((acc, report) => {

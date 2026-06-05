@@ -799,6 +799,10 @@
     </div>
 
     <!-- Report Trackers -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);">Monthly Report Submission</div>
+      <input type="month" id="tracker-month-select" class="field-input" style="width:auto;padding:6px 12px;" onchange="loadWeeklyTrackers()" />
+    </div>
     <div class="report-trackers-grid" id="weekly-trackers">
       <div class="panel">
         <div class="panel-header">
@@ -2332,11 +2336,19 @@
 
   async function loadWeeklyTrackers() {
     const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth() + 1;
-    const monthStr = `${year}-${month.toString().padStart(2, '0')}`;
-    const mondays = getDaysInMonth(year, today.getMonth(), 1);
-    const tuesdays = getDaysInMonth(year, today.getMonth(), 2);
+    const monthInput = document.getElementById('tracker-month-select');
+    const currentMonthStr = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}`;
+    
+    if (monthInput && !monthInput.value) {
+      monthInput.value = currentMonthStr;
+    }
+    const monthStr = monthInput ? monthInput.value : currentMonthStr;
+    const [yearStr, mStr] = monthStr.split('-');
+    const year = parseInt(yearStr, 10);
+    const monthIndex = parseInt(mStr, 10) - 1;
+
+    const mondays = getDaysInMonth(year, monthIndex, 1);
+    const tuesdays = getDaysInMonth(year, monthIndex, 2);
 
     let submissions = [];
     try {
@@ -2348,10 +2360,10 @@
 
     renderTrackerPanel('crm-tracker-body', tuesdays, submissions, 'CRM', monthStr);
     renderTrackerPanel('pa-tracker-body', mondays, submissions, 'PendingActivity', monthStr);
-    renderTrackerPanel('nonsaleable-tracker-body', getMonthDates(year, today.getMonth(), [2, 16]), submissions, 'NonSaleable', monthStr);
-    renderTrackerPanel('supplierwarranty-tracker-body', getMonthDates(year, today.getMonth(), [3, 16]), submissions, 'SupplierWarranty', monthStr);
-    renderTrackerPanel('criticalpending-tracker-body', getMonthDates(year, today.getMonth(), [2]), submissions, 'CriticalPendingReport', monthStr);
-    renderTrackerPanel('pirequest-tracker-body', getMonthDates(year, today.getMonth(), [5]), submissions, 'PIRequest', monthStr);
+    renderTrackerPanel('nonsaleable-tracker-body', getMonthDates(year, monthIndex, [2, 16]), submissions, 'NonSaleable', monthStr);
+    renderTrackerPanel('supplierwarranty-tracker-body', getMonthDates(year, monthIndex, [3, 16]), submissions, 'SupplierWarranty', monthStr);
+    renderTrackerPanel('criticalpending-tracker-body', getMonthDates(year, monthIndex, [2]), submissions, 'CriticalPendingReport', monthStr);
+    renderTrackerPanel('pirequest-tracker-body', getMonthDates(year, monthIndex, [5]), submissions, 'PIRequest', monthStr);
   }
 
   function getDaysInMonth(year, monthIndex, dayOfWeek) {
