@@ -2240,73 +2240,58 @@ function exportPDF(type) {
   const params = isDiv ? perfDivCurrentParams : perfCurrentParams;
   if(!params) return;
   const month = params.month||'Report';
-  const scope = params.division||params.employee||'';
+  const scope = params.division||params.employee||'Performance';
 
   const containerId = isDiv ? 'perf-pane-div-summary' : 'perf-pane-summary';
   const originalNode = document.getElementById(containerId);
   if (!originalNode) return;
 
-  const clone = originalNode.cloneNode(true);
-  
-  // Remove buttons
-  const buttons = clone.querySelectorAll('.btn');
-  buttons.forEach(btn => {
-    const parent = btn.parentElement;
-    if (parent && parent.style.justifyContent === 'flex-end') {
-      parent.remove();
-    } else {
-      btn.remove();
-    }
+  const sourceTable = originalNode.querySelector('#perf-table-excel') || originalNode.querySelector('.excel-table') || originalNode.querySelector('table');
+  if(!sourceTable){ toast('No performance table found to export.', 'error'); return; }
+
+  const tableClone = sourceTable.cloneNode(true);
+  tableClone.removeAttribute('id');
+  tableClone.style.width = '100%';
+  tableClone.style.borderCollapse = 'collapse';
+  tableClone.style.border = '1px solid #000';
+  tableClone.style.fontFamily = "Calibri, Arial, sans-serif";
+  tableClone.style.fontSize = '10.5px';
+  tableClone.style.color = '#000';
+  tableClone.style.background = '#fff';
+
+  tableClone.querySelectorAll('th,td').forEach(cell => {
+    cell.style.border = '1px solid #000';
+    cell.style.padding = '4px 6px';
+    cell.style.color = '#000';
+    cell.style.verticalAlign = 'middle';
+    cell.style.lineHeight = '1.18';
   });
 
-  // Add Logo and Title
-  const header = document.createElement('div');
-  header.innerHTML = `
-    <div class="pdf-header" style="text-align:center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #005a9c;">
-      <img src="logo.png" alt="Schiller Logo" style="height: 50px; object-fit: contain; margin-bottom: 10px;" />
-      <h2 style="font-family:Arial,sans-serif; color:#005a9c; margin: 0; font-size: 22px; text-transform: uppercase;">Performance Analysis</h2>
-      <h4 style="font-family:Arial,sans-serif; color:#666; margin-top: 5px; font-size: 15px; font-weight: normal;">${scope} | ${month}</h4>
+  const wrapper = document.createElement('div');
+  wrapper.style.width = '1080px';
+  wrapper.style.background = '#fff';
+  wrapper.style.color = '#000';
+  wrapper.style.padding = '14px';
+  wrapper.style.border = '1px solid #000';
+  wrapper.style.boxSizing = 'border-box';
+  wrapper.style.fontFamily = "Calibri, Arial, sans-serif";
+  wrapper.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #000;padding:0 0 8px;margin-bottom:8px;">
+      <img src="logo.png" alt="SCHILLER" style="height:46px;max-width:230px;object-fit:contain;">
+      <div style="text-align:right;color:#000;">
+        <div style="font-size:16px;font-weight:700;letter-spacing:.4px;">PERFORMANCE ANALYSIS</div>
+        <div style="font-size:12px;font-weight:700;margin-top:3px;">${isDiv ? 'Division' : 'Employee'}: ${escapeHtml(scope)}</div>
+        <div style="font-size:12px;font-weight:700;margin-top:2px;">Month: ${escapeHtml(month)}</div>
+      </div>
     </div>
   `;
-  clone.insertBefore(header, clone.firstChild);
-
-  // Set fixed width so wide tables don't squish during canvas rendering
-  clone.style.width = '1100px';
-  clone.style.padding = '25px';
-  clone.style.background = '#fff';
-  clone.style.fontFamily = 'Arial, sans-serif';
-  clone.style.border = '2px solid #222';
-  clone.style.borderRadius = '0';
-  clone.style.boxShadow = 'none';
-  clone.style.boxSizing = 'border-box';
-
-  // Restore regular font sizes for neatness since we are now using landscape
-  const tables = clone.querySelectorAll('table');
-  tables.forEach(t => {
-    t.style.fontSize = '12.5px'; 
-    t.style.marginBottom = '20px';
-    t.style.lineHeight = '1.4';
-    const cells = t.querySelectorAll('th, td');
-    cells.forEach(cell => {
-      cell.style.padding = '8px 12px'; 
-    });
-  });
-
-  // Remove original dashboard header
-  const origHeader = clone.querySelector('div[style*="border-bottom: 2px solid #e2e8f0"]');
-  if (origHeader) origHeader.remove();
-  const origHeader2 = clone.querySelector('div[style*="border-bottom:2px solid #e2e8f0"]');
-  if (origHeader2) origHeader2.remove();
-
-  // Create an invisible wrapper to ensure html2pdf takes the exact size of the clone
-  const wrapper = document.createElement('div');
-  wrapper.appendChild(clone);
+  wrapper.appendChild(tableClone);
   
   html2pdf().set({
-    margin: 0.3, // clean generous margin
+    margin: 0.18,
     filename: `Performance_Analysis_${scope}_${month}.pdf`,
     image: { type: 'jpeg', quality: 1.0 },
-    html2canvas: { scale: 2, useCORS: true, windowWidth: 1150 },
+    html2canvas: { scale: 2.5, useCORS: true, backgroundColor: '#ffffff', windowWidth: 1120 },
     jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
   }).from(wrapper).save();
 }
