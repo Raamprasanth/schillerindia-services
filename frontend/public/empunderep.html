@@ -1341,7 +1341,7 @@ function ensureUrEscalationBanners(){
       <div class="esc-banner-left"><div class="esc-banner-dot"></div><div><div class="esc-banner-title">Stock Escalation</div><div class="esc-banner-text" id="ur-esc-text-followup">Checking latest mail status...</div><div class="esc-banner-sub" id="ur-esc-sub-followup">Receivers: -</div><div class="esc-banner-meta" id="ur-esc-meta-followup">Queued records: -</div></div></div><div class="esc-banner-count" id="ur-esc-count-followup">-</div>
     </div>
     <div class="esc-banner to-banner" id="ur-esc-banner-to">
-      <div class="esc-banner-left"><div class="esc-banner-dot" style="background:#7c3aed;box-shadow:0 0 0 4px rgba(124,58,237,0.14);"></div><div><div class="esc-banner-title">In House FRN Replacement</div><div class="esc-banner-text" id="ur-esc-text-to">Checking latest in house FRN replacement mail status...</div><div class="esc-banner-sub" id="ur-esc-sub-to">Receivers: -</div><div class="esc-banner-meta" id="ur-esc-meta-to">Morning: - | Evening: - | Total: -</div></div></div><div class="esc-banner-count" id="ur-esc-count-to" style="color:#7c3aed;">-</div>
+      <div class="esc-banner-left"><div class="esc-banner-dot" style="background:#7c3aed;box-shadow:0 0 0 4px rgba(124,58,237,0.14);"></div><div><div class="esc-banner-title">In House FRN Replacement</div><div class="esc-banner-text" id="ur-esc-text-to">Checking latest in house FRN replacement mail status...</div><div class="esc-banner-sub" id="ur-esc-sub-to">Receivers: -</div><div class="esc-banner-meta" id="ur-esc-meta-to">Total Queued: - | Next Run: -</div></div></div><div class="esc-banner-count" id="ur-esc-count-to" style="color:#7c3aed;">-</div>
     </div>`;
   stats.insertAdjacentElement('afterend',wrap);
   
@@ -1425,15 +1425,7 @@ function bumpToEscalationQueue(delta=1){
   const next=Math.max(0,current+delta);
   if(countEl) countEl.textContent=String(next);
   if(textEl && next>0) textEl.textContent=`${next} In House FRN Replacement entr${next===1?'y is':'ies are'} queued for ${getNextToRunLabel()}.`;
-  if(metaEl){
-    const parts=(metaEl.textContent.match(/\d+/g)||['0','0','0']).map(v=>parseInt(v,10)||0);
-    const minutes=new Date().getHours()*60+new Date().getMinutes();
-    let morning=parts[0]||0, evening=parts[1]||0;
-    if(minutes<660) morning=Math.max(0,morning+delta);
-    else if(minutes<990) evening=Math.max(0,evening+delta);
-    else morning=Math.max(0,morning+delta);
-    metaEl.textContent=`Morning: ${morning} | Evening: ${evening} | Total: ${Math.max(0,morning+evening)}`;
-  }
+  if(metaEl){const currentTotal=parseInt((metaEl.textContent.match(/\d+/)||['0'])[0],10)||0; metaEl.textContent=`Total Queued: ${Math.max(0,currentTotal+delta)} | Next Run: ${getNextToRunLabel()}`;}
 }
 async function loadToEscalationStatus(){
   ensureUrEscalationBanners();
@@ -1477,7 +1469,7 @@ async function loadToEscalationStatus(){
   }catch(e){
     if(textEl) textEl.textContent='In House FRN Replacement status unavailable right now.';
     if(subEl) subEl.textContent='Receivers: -';
-    if(metaEl) metaEl.textContent='Morning: - | Evening: - | Total: -';
+    if(metaEl) metaEl.textContent='Total Queued: - | Next Run: -';
     if(countEl) countEl.textContent='-';
   }
 }

@@ -512,7 +512,10 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     return days !== null && days <= targetDays;
   }).length;
 
-  const pendingFrnWithin = pendingFrnRows.filter((record) => {
+  const pendingFrnConRows = pendingFrnRows.filter(isConsumable);
+  const pendingFrnNonConRows = pendingFrnRows.filter((record) => !isConsumable(record));
+
+  const pendingFrnWithin = pendingFrnNonConRows.filter((record) => {
     const startDate = firstDate(record.entryDate, record.createdAt);
     const underRepairMatch = firstByServiceId(underRepairDocs, record.serviceId);
     const completedMatch = firstByServiceId(completedDocs, record.serviceId);
@@ -520,6 +523,27 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
       firstDate(underRepairMatch?.createdAt, underRepairMatch?.updatedAt),
       firstDate(completedMatch?.closedAt, completedMatch?.createdAt),
     ].filter(Boolean).sort((a, b) => a - b)[0] || null;
+    const days = diffDays(startDate, endDate);
+    return days !== null && days <= 3;
+  }).length;
+
+  const pendingFrnConWithin = pendingFrnConRows.filter((record) => {
+    const startDate = firstDate(record.entryDate, record.createdAt);
+    const underRepairMatch = firstByServiceId(underRepairDocs, record.serviceId);
+    const completedMatch = firstByServiceId(completedDocs, record.serviceId);
+    const endDate = [
+      firstDate(underRepairMatch?.createdAt, underRepairMatch?.updatedAt),
+      firstDate(completedMatch?.closedAt, completedMatch?.createdAt),
+    ].filter(Boolean).sort((a, b) => a - b)[0] || null;
+    const days = diffDays(startDate, endDate);
+    return days !== null && days <= 3;
+  }).length;
+
+  const soPendingRows = estimationDocs;
+  const soPendingWithin = soPendingRows.filter((record) => {
+    const startDate = firstDate(record.estUpdatedAt, record.estDate, record.createdAt);
+    const completedMatch = firstByServiceId(completedDocs, record.serviceId);
+    const endDate = firstDate(completedMatch?.closedAt, completedMatch?.createdAt);
     const days = diffDays(startDate, endDate);
     return days !== null && days <= 3;
   }).length;
@@ -532,14 +556,6 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     return days !== null && days <= 3;
   }).length;
 
-  const underRepairWithin = underRepairRows.filter((record) => {
-    const startDate = firstDate(record.entryDate, record.createdAt);
-    const completedMatch = firstByServiceId(completedDocs, record.serviceId);
-    const endDate = firstDate(completedMatch?.closedAt, completedMatch?.createdAt);
-    const days = diffDays(startDate, endDate);
-    return days !== null && days <= 7;
-  }).length;
-
   const toSoWithin = toSoRows.filter((record) => {
     const startDate = firstDate(record.entryDate, record.raisedDate, record.createdAt);
     const ecrMatch = firstByMatcher(
@@ -550,7 +566,7 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     );
     const endDate = firstDate(ecrMatch?.executedDate, ecrMatch?.receivedDate, ecrMatch?.createdAt);
     const days = diffDays(startDate, endDate);
-    return days !== null && days <= 3;
+    return days !== null && days <= 5;
   }).length;
 
   const nonSaleableWithin = nonSaleableRows.filter((record) => {
@@ -575,16 +591,17 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     );
     const endDate = firstDate(closedMatch?.approvedDate, closedMatch?.createdAt);
     const days = diffDays(startDate, endDate);
-    return days !== null && days <= 7;
+    return days !== null && days <= 5;
   }).length;
 
   const currentActivityRows = [
-    makeActivityRow('Pending FRN', pendingFrnRows.length, pendingFrnWithin, null, 3),
-    makeActivityRow('Estimation', obPendingRows.length, estimationWithin, null, 3),
-    makeActivityRow('Under Repair', underRepairRows.length, underRepairWithin, null, 7),
-    makeActivityRow('TO/SO', toSoRows.length, toSoWithin, null, 3),
+    makeActivityRow('Pending frn', pendingFrnNonConRows.length, pendingFrnWithin, null, 3),
+    makeActivityRow('pending FRN con', pendingFrnConRows.length, pendingFrnConWithin, null, 3),
+    makeActivityRow('SO Pending', soPendingRows.length, soPendingWithin, null, 3),
+    makeActivityRow('TO/SO', toSoRows.length, toSoWithin, null, 5),
     makeActivityRow('Non-Saleable', nonSaleableRows.length, nonSaleableWithin, null, 5),
-    makeActivityRow('BIR List', birListRows.length, birWithin, null, 7),
+    makeActivityRow('BIR list', birListRows.length, birWithin, null, 5),
+    makeActivityRow('Estimation', obPendingRows.length, estimationWithin, null, 3),
   ];
 
   let row14 = null;
@@ -651,25 +668,28 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
   });
 
   const previousIwCamcStock = previousServices.filter((record) => ['IW', 'CAMC', 'STOCK'].includes(normalizeUpper(record.unitSts)));
+  const previousPendingFrnCon = previousIwCamcStock.filter(isConsumable);
+  const previousPendingFrnNonCon = previousIwCamcStock.filter((record) => !isConsumable(record));
   const previousBirRows = previousServices.filter((record) => isBirRecord(record));
-  const previousReExportRows = previousServices.filter((record) => isWarrantyReexportRecord(record));
-  const previousUnderRepairRows = previousUnderRepair.filter((record) => !isSupplierWarrantyUnderRepair(record));
+
   const previousRows = [
-    previousIwCamcStock.filter((record) => !isConsumable(record)),
+    previousPendingFrnNonCon,
+    previousPendingFrnCon,
     previousEstimation,
-    previousUnderRepairRows,
-    previousServices.filter((record) => /PRF/i.test(String(record.typeReport || record.repType || record.type || ''))),
-    previousScrap, // Fallback for Non-Saleable previous
+    previousServices.filter((record) => /PRF|TO|SO/i.test(String(record.typeReport || record.repType || record.type || ''))),
+    previousScrap,
     previousBirRows,
+    previousServices.filter((r) => false),
   ];
 
   const previousWithinCounters = [
-    (rows) => countWithinTarget(rows, 3), // Pending FRN
-    (rows) => countEstimationWithinTarget(rows), // OB/LAMC
-    (rows) => countUnderRepairWithinTarget(rows, 7), // Under Repair
-    (rows) => countWithinTarget(rows, 3), // PRF
+    (rows) => countWithinTarget(rows, 3), // Pending frn
+    (rows) => countWithinTarget(rows, 3), // pending FRN con
+    (rows) => countWithinTarget(rows, 3), // SO Pending
+    (rows) => countWithinTarget(rows, 5), // TO/SO
     (rows) => countScrapWithinTarget(rows, 5), // Non-Saleable
-    (rows) => countWithinTarget(rows, 7), // BIR List
+    (rows) => countWithinTarget(rows, 5), // BIR list
+    (rows) => countEstimationWithinTarget(rows), // Estimation
   ];
 
   currentActivityRows.forEach((row, index) => {

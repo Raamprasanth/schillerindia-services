@@ -400,107 +400,58 @@ router.get('/status/under-repair', protect, async (req, res) => {
 
 router.get('/status/sr', protect, async (req, res) => {
   const labels = await getEscalationLabelMap();
-  const times = await getEscalationTimeMap();
-  const srSendTime1Label = formatTimeLabel(scheduledTime(times, 'sr_morning', '11:00').value);
-  const srSendTime2Label = formatTimeLabel(scheduledTime(times, 'sr_afternoon', '15:00').value);
   const recipients = await getEscalationRecipients('sr_escalation');
-  const [latestMorning, latestAfternoon] = await Promise.all([
-    EscalationRunLog.findOne({ slot: 'sr_morning', category: 'sr' }).sort({ createdAt: -1 }).lean(),
-    EscalationRunLog.findOne({ slot: 'sr_afternoon', category: 'sr' }).sort({ createdAt: -1 }).lean(),
-  ]);
+  const latest = await EscalationRunLog.findOne({ category: 'sr' }).sort({ createdAt: -1 }).lean();
   const activeQueueWindow = await getActiveSrQueueWindow(new Date());
+  
   const [activeFrn, activeEst] = await Promise.all([
     EscalationQueue.countDocuments({ module: 'sr_frn', queuedAt: { $lte: activeQueueWindow.windowEnd } }),
     EscalationQueue.countDocuments({ module: 'sr_est', queuedAt: { $lte: activeQueueWindow.windowEnd } }),
   ]);
-  const activeTotal = activeFrn + activeEst;
-  const sendTime1Data = activeQueueWindow.queueKey === 'send1'
-    ? { frnCount: activeFrn, estCount: activeEst, totalCount: activeTotal, windowDate: activeQueueWindow.windowDate }
-    : { frnCount: 0, estCount: 0, totalCount: 0, windowDate: (await getSrSlotWindow('sr_morning', new Date())).jobDate };
-  const sendTime2Data = activeQueueWindow.queueKey === 'send2'
-    ? { frnCount: activeFrn, estCount: activeEst, totalCount: activeTotal, windowDate: activeQueueWindow.windowDate }
-    : { frnCount: 0, estCount: 0, totalCount: 0, windowDate: (await getSrSlotWindow('sr_afternoon', new Date())).jobDate };
+  const totalCount = activeFrn + activeEst;
+
   res.json({
     label: labelFor(labels, 'sr_escalation'),
     recipients,
-    morning: {
-      latest: visibleLatestLog(latestMorning, sendTime1Data.totalCount),
-      queue: {
-        slot: 'sr_morning',
-        slotLabel: composeSlotLabel(labels, 'sr_escalation', 'SR Send Time 1'),
-        nextRunLabel: srSendTime1Label,
-        windowDate: sendTime1Data.windowDate,
-        frnCount: sendTime1Data.frnCount,
-        estCount: sendTime1Data.estCount,
-        totalCount: sendTime1Data.totalCount,
-      },
-    },
-    afternoon: {
-      latest: visibleLatestLog(latestAfternoon, sendTime2Data.totalCount),
-      queue: {
-        slot: 'sr_afternoon',
-        slotLabel: composeSlotLabel(labels, 'sr_escalation', 'SR Send Time 2'),
-        nextRunLabel: srSendTime2Label,
-        windowDate: sendTime2Data.windowDate,
-        frnCount: sendTime2Data.frnCount,
-        estCount: sendTime2Data.estCount,
-        totalCount: sendTime2Data.totalCount,
-      },
+    latest: visibleLatestLog(latest, totalCount),
+    queue: {
+      slot: activeQueueWindow.slot,
+      slotLabel: composeSlotLabel(labels, 'sr_escalation', activeQueueWindow.slotLabel),
+      nextRunLabel: activeQueueWindow.nextRunLabel,
+      windowDate: activeQueueWindow.windowDate,
+      frnCount: activeFrn,
+      estCount: activeEst,
+      totalCount: totalCount,
     },
   });
 });
 
 router.get('/status/to', protect, async (req, res) => {
   const labels = await getEscalationLabelMap();
-  const times = await getEscalationTimeMap();
-  const toSendTime1Label = formatTimeLabel(scheduledTime(times, 'to_morning', '11:00').value);
-  const toSendTime2Label = formatTimeLabel(scheduledTime(times, 'to_evening', '16:30').value);
   const recipients = await getEscalationRecipients('to_escalation');
-  const [latestMorning, latestEvening] = await Promise.all([
-    EscalationRunLog.findOne({ slot: 'to_morning', category: 'to' }).sort({ createdAt: -1 }).lean(),
-    EscalationRunLog.findOne({ slot: 'to_evening', category: 'to' }).sort({ createdAt: -1 }).lean(),
-  ]);
+  const latest = await EscalationRunLog.findOne({ category: 'to' }).sort({ createdAt: -1 }).lean();
   const activeQueueWindow = await getActiveToQueueWindow(new Date());
+  
   const [activeFrn, activeEst, activeUr] = await Promise.all([
     EscalationQueue.countDocuments({ module: 'to_frn', queuedAt: { $lte: activeQueueWindow.windowEnd } }),
     EscalationQueue.countDocuments({ module: 'to_est', queuedAt: { $lte: activeQueueWindow.windowEnd } }),
     EscalationQueue.countDocuments({ module: 'to_ur', queuedAt: { $lte: activeQueueWindow.windowEnd } }),
   ]);
-  const activeTotal = activeFrn + activeEst + activeUr;
-  const sendTime1Data = activeQueueWindow.queueKey === 'send1'
-    ? { frnCount: activeFrn, estCount: activeEst, urCount: activeUr, totalCount: activeTotal, windowDate: activeQueueWindow.windowDate }
-    : { frnCount: 0, estCount: 0, urCount: 0, totalCount: 0, windowDate: (await getToSlotWindow('to_morning', new Date())).jobDate };
-  const sendTime2Data = activeQueueWindow.queueKey === 'send2'
-    ? { frnCount: activeFrn, estCount: activeEst, urCount: activeUr, totalCount: activeTotal, windowDate: activeQueueWindow.windowDate }
-    : { frnCount: 0, estCount: 0, urCount: 0, totalCount: 0, windowDate: (await getToSlotWindow('to_evening', new Date())).jobDate };
+  const totalCount = activeFrn + activeEst + activeUr;
+
   res.json({
     label: labelFor(labels, 'to_escalation'),
     recipients,
-    morning: {
-      latest: visibleLatestLog(latestMorning, sendTime1Data.totalCount),
-      queue: {
-        slot: 'to_morning',
-        slotLabel: composeSlotLabel(labels, 'to_escalation', 'TO Send Time 1'),
-        nextRunLabel: toSendTime1Label,
-        windowDate: sendTime1Data.windowDate,
-        frnCount: sendTime1Data.frnCount,
-        estCount: sendTime1Data.estCount,
-        urCount: sendTime1Data.urCount,
-        totalCount: sendTime1Data.totalCount,
-      },
-    },
-    evening: {
-      latest: visibleLatestLog(latestEvening, sendTime2Data.totalCount),
-      queue: {
-        slot: 'to_evening',
-        slotLabel: composeSlotLabel(labels, 'to_escalation', 'TO Send Time 2'),
-        nextRunLabel: toSendTime2Label,
-        windowDate: sendTime2Data.windowDate,
-        frnCount: sendTime2Data.frnCount,
-        estCount: sendTime2Data.estCount,
-        urCount: sendTime2Data.urCount,
-        totalCount: sendTime2Data.totalCount,
-      },
+    latest: visibleLatestLog(latest, totalCount),
+    queue: {
+      slot: activeQueueWindow.slot,
+      slotLabel: composeSlotLabel(labels, 'to_escalation', activeQueueWindow.slotLabel),
+      nextRunLabel: activeQueueWindow.nextRunLabel,
+      windowDate: activeQueueWindow.windowDate,
+      frnCount: activeFrn,
+      estCount: activeEst,
+      urCount: activeUr,
+      totalCount: totalCount,
     },
   });
 });

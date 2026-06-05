@@ -1703,7 +1703,7 @@ function ensureEscalationBanner(moduleKey){
   const banner=document.createElement('div');
   banner.id='escalation-status-banner';
   banner.className='esc-banner';
-  banner.innerHTML=`<div class="esc-banner-left"><div class="esc-banner-dot"></div><div><div class="esc-banner-title">Dispatch Escalation</div><div class="esc-banner-text" id="esc-banner-text-${moduleKey}">Checking latest mail status...</div><div class="esc-banner-sub" id="esc-banner-sub-${moduleKey}">Receivers: -</div><div class="esc-banner-meta" id="esc-banner-meta-${moduleKey}">Pending FRN: - | SO Pending: - | Total: -</div></div></div><div class="esc-banner-count" id="esc-banner-count-${moduleKey}">-</div>`;
+  banner.innerHTML=`<div class="esc-banner-left"><div class="esc-banner-dot"></div><div><div class="esc-banner-title">Dispatch Escalation</div><div class="esc-banner-text" id="esc-banner-text-${moduleKey}">Checking latest mail status...</div><div class="esc-banner-sub" id="esc-banner-sub-${moduleKey}">Receivers: -</div><div class="esc-banner-meta" id="esc-banner-meta-${moduleKey}">Total Queued: - | Next Run: -</div></div></div><div class="esc-banner-count" id="esc-banner-count-${moduleKey}">-</div>`;
   row.appendChild(banner);
   
 }
@@ -1763,13 +1763,13 @@ async function loadEscalationStatus(moduleKey){
         textEl.textContent='No escalation mail has been sent yet.';
       }
     }
-    if(subEl) subEl.textContent=`Receivers: ${recipients.length?recipients.join(', '):'-'} | Combined Excel queued for ${queue?`${queue.slotLabel} ${queue.nextRunLabel}`:'next slot'}`;
-    if(metaEl) metaEl.textContent=`Pending FRN: ${frnCount} | SO Pending: ${estCount} | Total: ${totalCount}`;
+    if(subEl) subEl.textContent=`Receivers: ${recipients.length?recipients.join(', '):'-'}`;
+    if(metaEl) metaEl.textContent=`Total Queued: ${totalCount} | Next Run: ${queue?queue.nextRunLabel:'-'}`;
     if(countEl) countEl.textContent=String(totalCount);
   }catch(e){
     if(textEl) textEl.textContent='Escalation status unavailable right now.';
     if(subEl) subEl.textContent='Receivers: -';
-    if(metaEl) metaEl.textContent='Pending FRN: - | SO Pending: - | Total: -';
+    if(metaEl) metaEl.textContent='Total Queued: - | Next Run: -';
     if(countEl) countEl.textContent='-';
   }
 }
@@ -1790,7 +1790,7 @@ function ensureSrEscalationBanner(moduleKey){
   banner.className='esc-banner';
   banner.style.borderColor='rgba(180,83,9,0.18)';
   banner.style.background='linear-gradient(135deg,rgba(245,158,11,0.10),rgba(251,191,36,0.06))';
-  banner.innerHTML=`<div class="esc-banner-left"><div class="esc-banner-dot" style="background:var(--amber);box-shadow:0 0 0 4px rgba(245,158,11,0.14);"></div><div><div class="esc-banner-title">FRN Replacement Escalation</div><div class="esc-banner-text" id="sr-banner-text-${moduleKey}">Checking latest FRN replacement mail status...</div><div class="esc-banner-sub" id="sr-banner-sub-${moduleKey}">Receivers: -</div><div class="esc-banner-meta" id="sr-banner-meta-${moduleKey}">Morning: - | Afternoon: - | Total: -</div></div></div><div class="esc-banner-count" id="sr-banner-count-${moduleKey}" style="color:var(--amber);">-</div>`;
+  banner.innerHTML=`<div class="esc-banner-left"><div class="esc-banner-dot" style="background:var(--amber);box-shadow:0 0 0 4px rgba(245,158,11,0.14);"></div><div><div class="esc-banner-title">FRN Replacement Escalation</div><div class="esc-banner-text" id="sr-banner-text-${moduleKey}">Checking latest FRN replacement mail status...</div><div class="esc-banner-sub" id="sr-banner-sub-${moduleKey}">Receivers: -</div><div class="esc-banner-meta" id="sr-banner-meta-${moduleKey}">Total Queued: - | Next Run: -</div></div></div><div class="esc-banner-count" id="sr-banner-count-${moduleKey}" style="color:var(--amber);">-</div>`;
   row.appendChild(banner);
   
 }
@@ -1811,7 +1811,7 @@ function ensureToEscalationBanner(moduleKey){
   banner.className='esc-banner';
   banner.style.borderColor='rgba(124,58,237,0.18)';
   banner.style.background='linear-gradient(135deg,rgba(124,58,237,0.10),rgba(168,85,247,0.06))';
-  banner.innerHTML=`<div class="esc-banner-left"><div class="esc-banner-dot" style="background:#7c3aed;box-shadow:0 0 0 4px rgba(124,58,237,0.14);"></div><div><div class="esc-banner-title">In House FRN Replacement</div><div class="esc-banner-text" id="to-banner-text-${moduleKey}">Checking latest in house FRN replacement mail status...</div><div class="esc-banner-sub" id="to-banner-sub-${moduleKey}">Receivers: -</div><div class="esc-banner-meta" id="to-banner-meta-${moduleKey}">Morning: - | Evening: - | Total: -</div></div></div><div class="esc-banner-count" id="to-banner-count-${moduleKey}" style="color:#7c3aed;">-</div>`;
+  banner.innerHTML=`<div class="esc-banner-left"><div class="esc-banner-dot" style="background:#7c3aed;box-shadow:0 0 0 4px rgba(124,58,237,0.14);"></div><div><div class="esc-banner-title">In House FRN Replacement</div><div class="esc-banner-text" id="to-banner-text-${moduleKey}">Checking latest in house FRN replacement mail status...</div><div class="esc-banner-sub" id="to-banner-sub-${moduleKey}">Receivers: -</div><div class="esc-banner-meta" id="to-banner-meta-${moduleKey}">Total Queued: - | Next Run: -</div></div></div><div class="esc-banner-count" id="to-banner-count-${moduleKey}" style="color:#7c3aed;">-</div>`;
   row.appendChild(banner);
   
 }
@@ -1841,15 +1841,7 @@ function bumpSrEscalationQueue(delta=1){
   const next=Math.max(0,current+delta);
   if(countEl) countEl.textContent=String(next);
   if(textEl && next>0) textEl.textContent=`${next} FRN Replacement entr${next===1?'y is':'ies are'} queued for ${getNextSrRunLabel()}.`;
-  if(metaEl){
-    const parts=(metaEl.textContent.match(/\d+/g)||['0','0','0']).map(v=>parseInt(v,10)||0);
-    const minutes=new Date().getHours()*60+new Date().getMinutes();
-    let morning=parts[0]||0, afternoon=parts[1]||0;
-    if(minutes<660) morning=Math.max(0,morning+delta);
-    else if(minutes<900) afternoon=Math.max(0,afternoon+delta);
-    else morning=Math.max(0,morning+delta);
-    metaEl.textContent=`Morning: ${morning} | Afternoon: ${afternoon} | Total: ${Math.max(0,morning+afternoon)}`;
-  }
+  if(metaEl){const currentTotal=parseInt((metaEl.textContent.match(/\d+/)||['0'])[0],10)||0; metaEl.textContent=`Total Queued: ${Math.max(0,currentTotal+delta)} | Next Run: ${getNextSrRunLabel()}`;}
 }
 function bumpToEscalationQueue(delta=1){
   const countEl=document.getElementById('to-banner-count-est');
@@ -1859,15 +1851,7 @@ function bumpToEscalationQueue(delta=1){
   const next=Math.max(0,current+delta);
   if(countEl) countEl.textContent=String(next);
   if(textEl && next>0) textEl.textContent=`${next} In House FRN Replacement entr${next===1?'y is':'ies are'} queued for ${getNextToRunLabel()}.`;
-  if(metaEl){
-    const parts=(metaEl.textContent.match(/\d+/g)||['0','0','0']).map(v=>parseInt(v,10)||0);
-    const minutes=new Date().getHours()*60+new Date().getMinutes();
-    let morning=parts[0]||0, evening=parts[1]||0;
-    if(minutes<660) morning=Math.max(0,morning+delta);
-    else if(minutes<990) evening=Math.max(0,evening+delta);
-    else morning=Math.max(0,morning+delta);
-    metaEl.textContent=`Morning: ${morning} | Evening: ${evening} | Total: ${Math.max(0,morning+evening)}`;
-  }
+  if(metaEl){const currentTotal=parseInt((metaEl.textContent.match(/\d+/)||['0'])[0],10)||0; metaEl.textContent=`Total Queued: ${Math.max(0,currentTotal+delta)} | Next Run: ${getNextToRunLabel()}`;}
 }
 async function loadSrEscalationStatus(moduleKey){
   ensureSrEscalationBanner(moduleKey);
@@ -1881,21 +1865,18 @@ async function loadSrEscalationStatus(moduleKey){
     if(!res.ok) throw new Error('Unable to fetch FRN Replacement Escalation status');
     const data=await res.json();
     const recipients=Array.isArray(data&&data.recipients)?data.recipients:[];
-    const morning=data&&data.morning?data.morning:null;
-    const afternoon=data&&data.afternoon?data.afternoon:null;
-    const morningCount=morning&&morning.queue?Number(morning.queue.totalCount||0):0;
-    const afternoonCount=afternoon&&afternoon.queue?Number(afternoon.queue.totalCount||0):0;
-    const totalCount=morningCount+afternoonCount;
+    const totalCount=data?.queue?.totalCount||0;
+    
     if(totalCount===0){
-      allRecords=allRecords.map(item=>item&&item.srEscalationQueuedAt?{...item,srEscalationQueuedAt:null,srEscalationQueuedBy:''}:item);
-      filtered=filtered.map(item=>item&&item.srEscalationQueuedAt?{...item,srEscalationQueuedAt:null,srEscalationQueuedBy:''}:item);
-      renderTable();
+      if(typeof allRecords !== 'undefined') allRecords=allRecords.map(item=>item&&item.srEscalationQueuedAt?{...item,srEscalationQueuedAt:null,srEscalationQueuedBy:''}:item);
+      if(typeof filtered !== 'undefined') filtered=filtered.map(item=>item&&item.srEscalationQueuedAt?{...item,srEscalationQueuedAt:null,srEscalationQueuedBy:''}:item);
+      if(typeof renderTable === 'function') renderTable();
     }
-    const latest=getPreferredSrLatest(morning,afternoon);
+    
+    const latest=data.latest;
     if(textEl){
       if(totalCount>0){
-        const nextSlot=morning?.queue?.nextRunLabel||afternoon?.queue?.nextRunLabel||getNextSrRunLabel();
-        textEl.textContent=`${totalCount} FRN Replacement entr${totalCount===1?'y is':'ies are'} queued for ${nextSlot}.`;
+        textEl.textContent=`${totalCount} FRN Replacement entr${totalCount===1?'y is':'ies are'} queued for ${data?.queue?.nextRunLabel||getNextSrRunLabel()}.`;
       }else if(latest){
         const slotLabel=String(latest.slot||'SR').replace(/_/g,' ').replace(/\b\w/g,m=>m.toUpperCase());
         const statusLabel=(latest.status||'pending').replace(/_/g,' ');
@@ -1905,13 +1886,13 @@ async function loadSrEscalationStatus(moduleKey){
         textEl.textContent='No FRN Replacement Escalation mail has been sent yet.';
       }
     }
-    if(subEl) subEl.textContent=`Receivers: ${recipients.length?recipients.join(', '):'-'} | Excel queued for ${morning?.queue?.nextRunLabel||'morning slot'} and ${afternoon?.queue?.nextRunLabel||'afternoon slot'}`;
-    if(metaEl) metaEl.textContent=`Morning: ${morningCount} | Afternoon: ${afternoonCount} | Total: ${totalCount}`;
+    if(subEl) subEl.textContent=`Receivers: ${recipients.length?recipients.join(', '):'-'}`;
+    if(metaEl) metaEl.textContent=`Total Queued: ${totalCount} | Next Run: ${data?.queue?.nextRunLabel||'-'}`;
     if(countEl) countEl.textContent=String(totalCount);
   }catch(e){
     if(textEl) textEl.textContent='FRN Replacement Escalation status unavailable right now.';
     if(subEl) subEl.textContent='Receivers: -';
-    if(metaEl) metaEl.textContent='Morning: - | Afternoon: - | Total: -';
+    if(metaEl) metaEl.textContent='Total Queued: - | Next Run: -';
     if(countEl) countEl.textContent='-';
   }
 }
@@ -1927,21 +1908,18 @@ async function loadToEscalationStatus(moduleKey){
     if(!res.ok) throw new Error('Unable to fetch In House FRN Replacement status');
     const data=await res.json();
     const recipients=Array.isArray(data&&data.recipients)?data.recipients:[];
-    const morning=data&&data.morning?data.morning:null;
-    const evening=data&&data.evening?data.evening:null;
-    const morningCount=morning&&morning.queue?Number(morning.queue.totalCount||0):0;
-    const eveningCount=evening&&evening.queue?Number(evening.queue.totalCount||0):0;
-    const totalCount=morningCount+eveningCount;
+    const totalCount=data?.queue?.totalCount||0;
+
     if(totalCount===0){
-      allRecords=allRecords.map(item=>item&&item.toEscalationQueuedAt?{...item,toEscalationQueuedAt:null,toEscalationQueuedBy:''}:item);
-      filtered=filtered.map(item=>item&&item.toEscalationQueuedAt?{...item,toEscalationQueuedAt:null,toEscalationQueuedBy:''}:item);
-      renderTable();
+      if(typeof allRecords !== 'undefined') allRecords=allRecords.map(item=>item&&item.toEscalationQueuedAt?{...item,toEscalationQueuedAt:null,toEscalationQueuedBy:''}:item);
+      if(typeof filtered !== 'undefined') filtered=filtered.map(item=>item&&item.toEscalationQueuedAt?{...item,toEscalationQueuedAt:null,toEscalationQueuedBy:''}:item);
+      if(typeof renderTable === 'function') renderTable();
     }
-    const latest=getPreferredToLatest(morning,evening);
+    
+    const latest=data.latest;
     if(textEl){
       if(totalCount>0){
-        const nextSlot=morning?.queue?.nextRunLabel||evening?.queue?.nextRunLabel||getNextToRunLabel();
-        textEl.textContent=`${totalCount} In House FRN Replacement entr${totalCount===1?'y is':'ies are'} queued for ${nextSlot}.`;
+        textEl.textContent=`${totalCount} In House FRN Replacement entr${totalCount===1?'y is':'ies are'} queued for ${data?.queue?.nextRunLabel||getNextToRunLabel()}.`;
       }else if(latest){
         const slotLabel=String(latest.slot||'TO').replace(/_/g,' ').replace(/\b\w/g,m=>m.toUpperCase());
         const statusLabel=(latest.status||'pending').replace(/_/g,' ');
@@ -1951,13 +1929,13 @@ async function loadToEscalationStatus(moduleKey){
         textEl.textContent='No In House FRN Replacement mail has been sent yet.';
       }
     }
-    if(subEl) subEl.textContent=`Receivers: ${recipients.length?recipients.join(', '):'-'} | Excel queued for ${morning?.queue?.nextRunLabel||'morning slot'} and ${evening?.queue?.nextRunLabel||'evening slot'}`;
-    if(metaEl) metaEl.textContent=`Morning: ${morningCount} | Evening: ${eveningCount} | Total: ${totalCount}`;
+    if(subEl) subEl.textContent=`Receivers: ${recipients.length?recipients.join(', '):'-'}`;
+    if(metaEl) metaEl.textContent=`Total Queued: ${totalCount} | Next Run: ${data?.queue?.nextRunLabel||'-'}`;
     if(countEl) countEl.textContent=String(totalCount);
   }catch(e){
     if(textEl) textEl.textContent='In House FRN Replacement status unavailable right now.';
     if(subEl) subEl.textContent='Receivers: -';
-    if(metaEl) metaEl.textContent='Morning: - | Evening: - | Total: -';
+    if(metaEl) metaEl.textContent='Total Queued: - | Next Run: -';
     if(countEl) countEl.textContent='-';
   }
 }
