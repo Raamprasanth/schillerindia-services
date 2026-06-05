@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const ExcelJS = require('exceljs');
-const nodemailer = require('nodemailer');
+const https = require('https');
 
 const TEMPLATE_PATH = path.join(__dirname, '..', 'templates', 'escalation_formats.xlsx');
 const MAIL_ATTEMPTS = Math.max(1, parseInt(process.env.ESCALATION_MAIL_ATTEMPTS || '3', 10) || 3);
@@ -14,6 +13,28 @@ const HEADERS = [
   "REP_GIR_NO", "DEF_UNIT_GIR_NO", "FINAL_REMARKS", "DESTINATION",
   "SHIPMENT REF NUMBER", "REF DATE"
 ];
+
+function getExcelJS() {
+  try {
+    return require('exceljs');
+  } catch (error) {
+    const installHint = 'Missing dependency "exceljs". Run npm install in the root/backend project or redeploy with package install enabled.';
+    const wrapped = new Error(`${installHint} Original error: ${error.message}`);
+    wrapped.code = error.code;
+    throw wrapped;
+  }
+}
+
+function getNodemailer() {
+  try {
+    return require('nodemailer');
+  } catch (error) {
+    const installHint = 'Missing dependency "nodemailer". Run npm install in the root/backend project or use an API mail provider.';
+    const wrapped = new Error(`${installHint} Original error: ${error.message}`);
+    wrapped.code = error.code;
+    throw wrapped;
+  }
+}
 
 function truncate(value, limit = 42) {
   const text = String(value || '');
@@ -41,6 +62,7 @@ function cleanMailerError(error) {
 }
 
 function createTransporter(config) {
+  const nodemailer = getNodemailer();
   const secure = config.useSsl || config.smtpPort === 465;
   return nodemailer.createTransport({
     host: config.smtpHost,
@@ -59,6 +81,127 @@ function createTransporter(config) {
       rejectUnauthorized: String(process.env.ESCALATION_SMTP_REJECT_UNAUTHORIZED || 'true').trim().toLowerCase() !== 'false'
     }
   });
+}
+
+function splitEmailList(value) {
+  return String(value || '').split(',').map(x => x.trim()).filter(Boolean);
+}
+
+function resolveApiProvider() {
+  const requested = String(process.env.ESCALATION_MAIL_PROVIDER || '').trim().toLowerCase();
+  const providers = {
+    sendgrid: {
+      name: 'sendgrid',
+      key: process.env.SENDGRID_API_KEY || process.env.ESCALATION_SENDGRID_API_KEY,
+      host: 'api.sendgrid.com',
+      path: '/v3/mail/send',
+      authHeader: (key) => ({ Authorization: `Bearer ${key}` }),
+    },
+    resend: {
+      name: 'resend',
+      key: process.env.RESEND_API_KEY || process.env.ESCALATION_RESEND_API_KEY,
+      host: 'api.resend.com',
+      path: '/emails',
+      authHeader: (key) => ({ Authorization: `Bearer ${key}` }),
+    },
+    brevo: {
+      name: 'brevo',
+      key: process.env.BREVO_API_KEY || process.env.SENDINBLUE_API_KEY || process.env.ESCALATION_BREVO_API_KEY,
+      host: 'api.brevo.com',
+      path: '/v3/smtp/email',
+      authHeader: (key) => ({ 'api-key': key }),
+    },
+  };
+  if (requested && requested !== 'smtp' && providers[requested]?.key) return providers[requested];
+  return Object.values(providers).find(provider => provider.key) || null;
+}
+
+function postJson(provider, body) {
+  const json = JSON.stringify(body);
+  const headers = {
+    'Content-Type': 'application/json',
+    'Content-Length': Buffer.byteLength(json),
+    ...provider.authHeader(provider.key),
+  };
+  return new Promise((resolve, reject) => {
+    const req = https.request({
+      method: 'POST',
+      hostname: provider.host,
+      path: provider.path,
+      headers,
+      timeout: MAIL_TIMEOUT_MS,
+    }, (res) => {
+      const chunks = [];
+      res.on('data', chunk => chunks.push(chunk));
+      res.on('end', () => {
+        const text = Buffer.concat(chunks).toString('utf8');
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve({ statusCode: res.statusCode, body: text });
+          return;
+        }
+        reject(new Error(`${provider.name} API failed with HTTP ${res.statusCode}: ${text.substring(0, 500)}`));
+      });
+    });
+    req.on('timeout', () => req.destroy(new Error(`${provider.name} API request timed out`)));
+    req.on('error', reject);
+    req.write(json);
+    req.end();
+  });
+}
+
+function buildApiBody(providerName, mailOptions, attachmentPath) {
+  const attachmentName = path.basename(attachmentPath);
+  const attachmentContent = fs.readFileSync(attachmentPath).toString('base64');
+  const to = splitEmailList(mailOptions.to);
+  const cc = splitEmailList(mailOptions.cc);
+
+  if (providerName === 'sendgrid') {
+    const personalization = { to: to.map(email => ({ email })) };
+    if (cc.length) personalization.cc = cc.map(email => ({ email }));
+    return {
+      personalizations: [personalization],
+      from: { email: mailOptions.from },
+      subject: mailOptions.subject,
+      content: [{ type: 'text/plain', value: mailOptions.text }],
+      attachments: [{
+        content: attachmentContent,
+        filename: attachmentName,
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        disposition: 'attachment',
+      }],
+    };
+  }
+
+  if (providerName === 'resend') {
+    const body = {
+      from: mailOptions.from,
+      to,
+      subject: mailOptions.subject,
+      text: mailOptions.text,
+      attachments: [{ filename: attachmentName, content: attachmentContent }],
+    };
+    if (cc.length) body.cc = cc;
+    return body;
+  }
+
+  const body = {
+    sender: { email: mailOptions.from },
+    to: to.map(email => ({ email })),
+    subject: mailOptions.subject,
+    textContent: mailOptions.text,
+    attachment: [{ name: attachmentName, content: attachmentContent }],
+  };
+  if (cc.length) body.cc = cc.map(email => ({ email }));
+  return body;
+}
+
+async function sendEmailViaApiProvider(mailOptions, attachmentPath) {
+  const provider = resolveApiProvider();
+  if (!provider) return false;
+  const body = buildApiBody(provider.name, mailOptions, attachmentPath);
+  await postJson(provider, body);
+  console.log(`[EscalationMailer] Mail sent via ${provider.name} API.`);
+  return true;
 }
 
 function getHeaders(rows, preferred = null) {
@@ -81,6 +224,7 @@ function copyCellStyle(source, target) {
 }
 
 async function buildXlsx(payload, outputPath) {
+  const ExcelJS = getExcelJS();
   const workbook = new ExcelJS.Workbook();
   const sheets = payload.sheets || [];
 
@@ -147,6 +291,7 @@ function templateHeaders(templateWs, headerRowIdx) {
 }
 
 async function buildTemplateXlsx(payload, outputPath) {
+  const ExcelJS = getExcelJS();
   const templatePath = payload.templatePath || process.env.ESCALATION_TEMPLATE_PATH || TEMPLATE_PATH;
   
   if (!fs.existsSync(templatePath)) {
@@ -250,10 +395,10 @@ async function sendEmail(payload, attachmentPath, senderConfig) {
     toAddrs = payload.to.map(x => String(x).trim()).filter(Boolean);
   }
   if (toAddrs.length === 0) {
-    toAddrs = (process.env.ESCALATION_EMAIL_TO || "").split(",").map(x => x.trim()).filter(Boolean);
+    toAddrs = splitEmailList(process.env.ESCALATION_EMAIL_TO || "");
   }
   
-  const ccAddrs = (process.env.ESCALATION_EMAIL_CC || "").split(",").map(x => x.trim()).filter(Boolean);
+  const ccAddrs = splitEmailList(process.env.ESCALATION_EMAIL_CC || "");
   const useSsl = senderConfig && typeof senderConfig.ssl !== 'undefined' ? Boolean(senderConfig.ssl) : (process.env.ESCALATION_SMTP_SSL || "false").trim().toLowerCase() === "true";
   const startTls = senderConfig && typeof senderConfig.startTls !== 'undefined'
     ? Boolean(senderConfig.startTls)
@@ -280,6 +425,15 @@ async function sendEmail(payload, attachmentPath, senderConfig) {
     ]
   };
 
+  if (String(process.env.ESCALATION_MAIL_PROVIDER || '').trim().toLowerCase() !== 'smtp') {
+    try {
+      const sentViaApi = await sendEmailViaApiProvider(mailOptions, attachmentPath);
+      if (sentViaApi) return;
+    } catch (error) {
+      console.warn(`[EscalationMailer] API provider failed before SMTP fallback: ${error.message}`);
+    }
+  }
+
   let lastError = null;
   for (let attempt = 1; attempt <= MAIL_ATTEMPTS; attempt++) {
     const transporter = createTransporter({
@@ -303,6 +457,13 @@ async function sendEmail(payload, attachmentPath, senderConfig) {
     } finally {
       try { transporter.close(); } catch (_) {}
     }
+  }
+
+  try {
+    const sentViaApi = await sendEmailViaApiProvider(mailOptions, attachmentPath);
+    if (sentViaApi) return;
+  } catch (error) {
+    console.warn(`[EscalationMailer] API fallback failed after SMTP retries: ${error.message}`);
   }
 
   throw new Error(`${cleanMailerError(lastError)} Attempts: ${MAIL_ATTEMPTS}. Attachment kept at ${attachmentPath}`);

@@ -150,8 +150,6 @@ router.get('/stats', protect, async (req, res) => {
             return acc;
           }, {})
         };
-          }, {})
-        };
       }
       divisionsMap[divId].empCount++;
       divisionsMap[divId].employees.push({ id: emp._id.toString(), name: emp.name });
