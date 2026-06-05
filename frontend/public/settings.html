@@ -1259,29 +1259,33 @@ const DEFAULT_ESCALATION_TYPES = [
   { value:'supplier_warranty_escalation', label:'Supplier Warranty Escalation' },
   { value:'external_repair_escalation', label:'External Repair Escalation' }
 ];
-const DEFAULT_ESCALATION_TIMES = [
-  { key:'morning', reportType:'main_combined', label:'Send Time 1', defaultTime:'11:30' },
-  { key:'evening', reportType:'main_combined', label:'Send Time 2', defaultTime:'18:15' },
-  { key:'sr_morning', reportType:'sr_escalation', label:'Send Time 1', defaultTime:'11:00' },
-  { key:'sr_afternoon', reportType:'sr_escalation', label:'Send Time 2', defaultTime:'15:00' },
-  { key:'to_morning', reportType:'to_escalation', label:'Send Time 1', defaultTime:'11:00' },
-  { key:'to_evening', reportType:'to_escalation', label:'Send Time 2', defaultTime:'16:30' },
-  { key:'ur_scrap', reportType:'ur_scrap', label:'Send Time', defaultTime:'11:00' },
-  { key:'ur_followup', reportType:'ur_followup', label:'Send Time', defaultTime:'20:00' },
-  { key:'prf_ob', reportType:'prf_ob_escalation', label:'Send Time', defaultTime:'16:30' },
-  { key:'supplier_warranty', reportType:'supplier_warranty_escalation', label:'Send Time', defaultTime:'20:30' },
-  { key:'external_repair', reportType:'external_repair_escalation', label:'Send Time', defaultTime:'15:30' }
-];
 const DEFAULT_ESCALATION_GROUPS = [
-  { reportType:'main_combined', label:'Dispatch Escalation', slots:['morning','evening'], defaultRunCount:2 },
-  { reportType:'sr_escalation', label:'FRN Replacement Escalation', slots:['sr_morning','sr_afternoon'], defaultRunCount:2 },
-  { reportType:'to_escalation', label:'In House FRN Replacement', slots:['to_morning','to_evening'], defaultRunCount:2 },
-  { reportType:'ur_scrap', label:'Under Repair Scrap Escalation', slots:['ur_scrap'], defaultRunCount:1 },
-  { reportType:'ur_followup', label:'Stock Escalation', slots:['ur_followup'], defaultRunCount:1 },
-  { reportType:'prf_ob_escalation', label:'PRF/OB Escalation', slots:['prf_ob'], defaultRunCount:1 },
-  { reportType:'supplier_warranty_escalation', label:'Supplier Warranty Escalation', slots:['supplier_warranty'], defaultRunCount:1 },
-  { reportType:'external_repair_escalation', label:'External Repair Escalation', slots:['external_repair'], defaultRunCount:1 }
+  { reportType: 'main_combined', label: 'Dispatch Escalation', defaultRunCount: 2, defaultTimes: ['11:30', '18:15', '20:00', '22:00'] },
+  { reportType: 'sr_escalation', label: 'FRN Replacement Escalation', defaultRunCount: 2, defaultTimes: ['11:00', '15:00', '18:00', '20:00'] },
+  { reportType: 'to_escalation', label: 'In House FRN Replacement', defaultRunCount: 2, defaultTimes: ['11:00', '16:30', '18:30', '20:30'] },
+  { reportType: 'ur_scrap', label: 'Under Repair Scrap Escalation', defaultRunCount: 1, defaultTimes: ['11:00', '15:00', '18:00', '20:00'] },
+  { reportType: 'ur_followup', label: 'Stock Escalation', defaultRunCount: 1, defaultTimes: ['20:00', '22:00', '23:00', '23:59'] },
+  { reportType: 'prf_ob_escalation', label: 'PRF/OB Escalation', defaultRunCount: 1, defaultTimes: ['16:30', '18:30', '20:30', '22:30'] },
+  { reportType: 'supplier_warranty_escalation', label: 'Supplier Warranty Escalation', defaultRunCount: 1, defaultTimes: ['20:30', '22:30', '23:30', '23:59'] },
+  { reportType: 'external_repair_escalation', label: 'External Repair Escalation', defaultRunCount: 1, defaultTimes: ['15:30', '18:30', '20:30', '22:30'] },
 ];
+
+const MAX_RUNS_PER_DAY = 4;
+const DEFAULT_ESCALATION_TIMES = [];
+DEFAULT_ESCALATION_GROUPS.forEach(group => {
+  group.slots = [];
+  for (let i = 0; i < MAX_RUNS_PER_DAY; i++) {
+    const key = `${group.reportType}_slot_${i + 1}`;
+    group.slots.push(key);
+    DEFAULT_ESCALATION_TIMES.push({
+      key,
+      reportType: group.reportType,
+      label: `Send Time ${i + 1}`,
+      defaultTime: group.defaultTimes[i] || '11:00',
+      order: i + 1
+    });
+  }
+});
 const ESCALATION_WEEKDAYS = [
   { value:1, label:'Mon' },
   { value:2, label:'Tue' },

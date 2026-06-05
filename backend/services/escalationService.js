@@ -390,29 +390,13 @@ async function getSlotsForCurrentTime(date = new Date()) {
       && dueAge >= 0
       && dueAge < SCHEDULER_GRACE_MS;
   };
-  if (matches('sr_morning', '11:00')) {
-    slots.push('sr_morning');
+  
+  const { DEFAULT_ESCALATION_TIMES } = require('../utils/escalationSchedule');
+  for (const item of DEFAULT_ESCALATION_TIMES) {
+    if (matches(item.key, item.defaultTime)) {
+      slots.push(item.key);
+    }
   }
-  if (matches('to_morning', '11:00')) {
-    slots.push('to_morning');
-  }
-  if (matches('ur_scrap', '11:00')) slots.push('ur_scrap');
-  if (matches('morning', '11:30')) slots.push('morning');
-  if (matches('sr_afternoon', '15:00')) slots.push('sr_afternoon');
-  if (matches('external_repair', '15:30')) {
-    slots.push('external_repair');
-  }
-  if (matches('supplier_warranty', '20:30')) {
-    slots.push('supplier_warranty');
-  }
-  if (matches('to_evening', '16:30')) {
-    slots.push('to_evening');
-  }
-  if (matches('prf_ob', '16:30')) {
-    slots.push('prf_ob');
-  }
-  if (matches('evening', '18:15')) slots.push('evening');
-  if (matches('ur_followup', '20:00')) slots.push('ur_followup');
   return slots;
 }
 
@@ -702,6 +686,7 @@ async function collectEscalationData(slotWindow) {
   return {
     frnRows,
     estimationRows,
+    queueDocs,
   };
 }
 
@@ -714,6 +699,7 @@ async function collectUrEscalationData(slotWindow) {
 
   return {
     rows: queueDocs.map((doc) => doc.row || {}),
+    queueDocs,
   };
 }
 
@@ -725,6 +711,7 @@ async function collectCustomEscalationData(slotWindow) {
 
   return {
     rows: queueDocs.map((doc) => doc.row || {}),
+    queueDocs,
   };
 }
 
@@ -789,12 +776,43 @@ async function clearToEscalationQueue(queueDocs = []) {
     ));
   }
   if (urIds.length) {
-    ops.push(Service.updateMany(
+    ops.push(mongoose.model('Service').updateMany(
       { _id: { $in: urIds } },
       { $set: { toEscalationQueuedAt: null, toEscalationQueuedBy: '' } }
     ));
   }
   await Promise.all(ops);
+}
+
+async function clearGenericEscalationQueue(queueDocs = []) {
+  if (!queueDocs.length) return;
+  const queueIds = queueDocs.map((doc) => doc._id).filter(Boolean);
+  const frnIds = [...new Set(queueDocs.filter((doc) => doc.module === 'frn' && doc.sourceId).map((doc) => doc.sourceId))];
+  const estIds = [...new Set(queueDocs.filter((doc) => doc.module === 'est' && doc.sourceId).map((doc) => doc.sourceId))];
+
+  const ops = [];
+  if (queueIds.length) ops.push(EscalationQueue.deleteMany({ _id: { $in: queueIds } }));
+  if (frnIds.length) {
+    ops.push(Empfrn.updateMany(
+      { _id: { $in: frnIds } },
+      { $set: { escalationQueuedAt: null, escalationQueuedBy: '' } }
+    ));
+  }
+  if (estIds.length) {
+    ops.push(EstimationPending.updateMany(
+      { _id: { $in: estIds } },
+      { $set: { escalationQueuedAt: null, escalationQueuedBy: '' } }
+    ));
+  }
+  await Promise.all(ops);
+}
+
+async function clearUrCustomEscalationQueue(queueDocs = []) {
+  if (!queueDocs.length) return;
+  const queueIds = queueDocs.map((doc) => doc._id).filter(Boolean);
+  if (queueIds.length) {
+    await EscalationQueue.deleteMany({ _id: { $in: queueIds } });
+  }
 }
 
 async function enqueueEscalationSnapshot(module, sourceId, queuedBy, row) {
@@ -1221,6 +1239,7 @@ async function runEscalationSlot(slot, options = {}) {
     const payload = buildMailPayload(slotWindow, data);
     payload.to = recipients;
     await sendEscalationWorkbook(payload, reportPath, sender);
+    await clearGenericEscalationQueue(data.queueDocs || []);
 
     log = await EscalationRunLog.findByIdAndUpdate(
       log._id,
@@ -1295,6 +1314,7 @@ async function runUrEscalationSlot(slot, options = {}) {
     const payload = buildUrMailPayload(slotWindow, data);
     payload.to = recipients;
     await sendEscalationWorkbook(payload, reportPath, sender);
+    await clearUrCustomEscalationQueue(data.queueDocs || []);
 
     log = await EscalationRunLog.findByIdAndUpdate(
       log._id,
@@ -1523,6 +1543,7 @@ async function runCustomEscalationSlot(slot, options = {}) {
     const payload = buildCustomMailPayload(slotWindow, data);
     payload.to = recipients;
     await sendEscalationWorkbook(payload, reportPath, sender);
+    await clearUrCustomEscalationQueue(data.queueDocs || []);
 
     log = await EscalationRunLog.findByIdAndUpdate(
       log._id,
@@ -1552,21 +1573,26 @@ function initEscalationScheduler() {
   }
 
   console.log('[Escalation] Scheduler armed with configurable escalation timings from Settings.');
+  const { getReportTypeForSlot } = require('../utils/escalationSchedule');
   const timer = setInterval(async () => {
     try {
       const slots = await getSlotsForCurrentTime(new Date());
       if (!slots.length) return;
       for (const slot of slots) {
-        const result = slot === 'morning' || slot === 'evening'
-          ? await runEscalationSlot(slot, { trigger: 'scheduler' })
-          : slot === 'sr_morning' || slot === 'sr_afternoon'
-            ? await runSrEscalationSlot(slot, { trigger: 'scheduler' })
-            : slot === 'to_morning' || slot === 'to_evening'
-              ? await runToEscalationSlot(slot, { trigger: 'scheduler' })
-            : slot === 'ur_scrap' || slot === 'ur_followup'
-              ? await runUrEscalationSlot(slot, { trigger: 'scheduler' })
-            : await runCustomEscalationSlot(slot, { trigger: 'scheduler' });
-        if (!result.skipped) console.log(`[Escalation] ${slot} slot: ${result.message}`);
+        const reportType = getReportTypeForSlot(slot);
+        let result;
+        if (reportType === 'main_combined') {
+          result = await runEscalationSlot(slot, { trigger: 'scheduler' });
+        } else if (reportType === 'sr_escalation') {
+          result = await runSrEscalationSlot(slot, { trigger: 'scheduler' });
+        } else if (reportType === 'to_escalation') {
+          result = await runToEscalationSlot(slot, { trigger: 'scheduler' });
+        } else if (reportType === 'ur_scrap' || reportType === 'ur_followup') {
+          result = await runUrEscalationSlot(slot, { trigger: 'scheduler' });
+        } else {
+          result = await runCustomEscalationSlot(slot, { trigger: 'scheduler' });
+        }
+        if (result && !result.skipped) console.log(`[Escalation] ${slot} slot: ${result.message}`);
       }
     } catch (error) {
       console.error('[Escalation] Scheduler error:', error.message);

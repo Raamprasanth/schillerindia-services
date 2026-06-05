@@ -851,11 +851,262 @@ body{
                 </div>
                 <div style="font-size:12.5px;color:var(--muted);">All dashboard submit-report boxes will appear here.</div>
               </div>
-              <div class="empty-state" style="padding:50px 24px;">
-                <div class="empty-icon">&#128196;</div>
-                <div class="empty-title">No Preview Yet</div>
-                <div class="empty-sub">Select division and month then click Preview.</div>
-              </div>
+              <div class="perf-review-table-container" style="overflow-x:auto; padding:20px;">
+  <style>
+    .excel-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: Calibri, 'Segoe UI', sans-serif;
+      font-size: 13px;
+      border: 2px solid #333;
+      background: #fff;
+    }
+    .excel-table th, .excel-table td {
+      border: 1px solid #333;
+      padding: 6px 10px;
+      text-align: center;
+      vertical-align: middle;
+      color: #000;
+    }
+    .excel-table .text-left { text-align: left; font-weight: bold; }
+    .excel-table .text-right { text-align: right; }
+    .excel-table .bg-gray { background-color: #a5b0c0; color: #1e3a8a; } /* title background */
+    .excel-table .bg-green { background-color: #e2efda; }
+    .excel-table .bg-peach { background-color: #fce4d6; }
+    .excel-table .bg-blue { background-color: #dae3f3; }
+    .excel-table .bg-yellow { background-color: #fff2cc; }
+    .excel-table .bg-white { background-color: #ffffff; }
+    .excel-table .bg-dark-blue { background-color: #b4c6e7; } /* overall perf background */
+    .excel-table .title-cell {
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .excel-table .red-text { color: red; font-size: 11px; font-weight: normal; display: block; }
+    .excel-table .bold { font-weight: bold; }
+    .excel-table .row-sep td { border-left: none; border-right: none; height: 10px; padding: 0; background: #fff; }
+  </style>
+
+  <table class="excel-table">
+    <!-- Header Rows -->
+    <tr>
+      <th colspan="4" rowspan="2" class="bg-gray title-cell">PERFORMANCE REVIEW</th>
+      <th class="bg-peach text-right bold">For the month of</th>
+      <th class="bg-peach"></th>
+    </tr>
+    <tr>
+      <th class="bg-yellow text-right bold">Division</th>
+      <th class="bg-yellow"></th>
+    </tr>
+
+    <!-- Column Headers -->
+    <tr>
+      <th rowspan="2" class="bg-green">Activity</th>
+      <th rowspan="2" class="bg-green">Total Inward<br><span class="red-text">(If not applicable mark zero)</span></th>
+      <th rowspan="2" class="bg-green">No of Executions within target date</th>
+      <th rowspan="2" class="bg-green">Percentage of Executions out from target date</th>
+      <th colspan="2" class="bg-green">Target Percentage</th>
+    </tr>
+    <tr>
+      <th class="bg-blue">Prev Month</th>
+      <th class="bg-yellow">Next Month</th>
+    </tr>
+
+    <!-- Section 1: Standard Activities -->
+    <tr>
+      <td class="bg-green text-left">IW/CAMC/STOCK - PCB, Sub units, Units &amp; Spares</td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach bold">0%</td>
+      <td class="bg-blue"></td>
+      <td class="bg-peach"></td>
+    </tr>
+    <tr>
+      <td class="bg-green text-left">IW/CAMC/Stock - All consumables</td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach bold">0%</td>
+      <td class="bg-blue"></td>
+      <td class="bg-peach"></td>
+    </tr>
+    <tr>
+      <td class="bg-green text-left">OB/LAMC</td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach bold">0%</td>
+      <td class="bg-blue"></td>
+      <td class="bg-peach"></td>
+    </tr>
+    <tr>
+      <td class="bg-green text-left">PRF</td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach bold">0%</td>
+      <td class="bg-blue"></td>
+      <td class="bg-peach"></td>
+    </tr>
+    <tr>
+      <td class="bg-green text-left">Non-Saleable</td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach bold">0%</td>
+      <td class="bg-blue"></td>
+      <td class="bg-peach"></td>
+    </tr>
+    <tr>
+      <td class="bg-green text-left">Under Repair except warrenty spares</td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach bold">0%</td>
+      <td class="bg-blue"></td>
+      <td class="bg-peach"></td>
+    </tr>
+    <tr>
+      <td class="bg-green text-left">BIR</td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach bold">0%</td>
+      <td class="bg-blue"></td>
+      <td class="bg-peach"></td>
+    </tr>
+    <tr>
+      <td class="bg-green text-left">No. of Warranty Board received &amp; given for<br>re-export</td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach bold">0%</td>
+      <td class="bg-blue"></td>
+      <td class="bg-peach"></td>
+    </tr>
+    <tr>
+      <td class="bg-green text-left">No of Estimation given for out of warranty.</td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach bold">0%</td>
+      <td class="bg-blue"></td>
+      <td class="bg-peach"></td>
+    </tr>
+
+    <!-- Separator -->
+    <tr class="row-sep"><td colspan="6"></td></tr>
+
+    <!-- Section 2: Weekly CRM Reports -->
+    <tr>
+      <td rowspan="5" class="bg-green text-left">Weekly CRM Reports</td>
+      <td class="bg-blue">1st week</td>
+      <td rowspan="5" class="bg-green text-left" style="vertical-align:top;">Pending activity on<br>Monday</td>
+      <td class="bg-blue">1st week</td>
+      <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Non-Saleable<br><span class="red-text">If not applicable mark<br>NA</span></td>
+      <td class="bg-blue"></td>
+    </tr>
+    <tr>
+      <td class="bg-blue">2nd week</td>
+      <td class="bg-blue">2nd week</td>
+      <td class="bg-blue"></td>
+    </tr>
+    <tr>
+      <td class="bg-blue">3rd week</td>
+      <td class="bg-blue">3rd week</td>
+      <td class="bg-blue"></td>
+    </tr>
+    <tr>
+      <td class="bg-blue">4th week</td>
+      <td class="bg-blue">4th week</td>
+      <td rowspan="2" class="bg-green"></td>
+      <td class="bg-peach bold">0</td>
+    </tr>
+    <tr>
+      <td class="bg-peach bold">0</td>
+      <td class="bg-peach bold">0</td>
+      <td class="bg-peach"></td>
+    </tr>
+
+    <!-- Separator -->
+    <tr class="row-sep"><td colspan="6"></td></tr>
+
+    <!-- Section 3: Supplier Warranty -->
+    <tr>
+      <td rowspan="4" class="bg-green text-left" style="vertical-align:top;">Supplier Warranty transaction<br><span class="red-text">If not applicable mark NA</span></td>
+      <td class="bg-blue"></td>
+      <td rowspan="4" class="bg-green text-left" style="vertical-align:top;">Supplier pending issue<br>review<br><span class="red-text">If not applicable mark<br>NA</span></td>
+      <td class="bg-blue"></td>
+      <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Critical Pending report<br><span class="red-text">If not applicable mark<br>NA</span></td>
+      <td class="bg-green"></td>
+    </tr>
+    <tr>
+      <td class="bg-blue"></td>
+      <td class="bg-blue"></td>
+      <td class="bg-green"></td>
+    </tr>
+    <tr>
+      <td class="bg-blue"></td>
+      <td class="bg-blue"></td>
+      <td class="bg-peach bold">100</td>
+    </tr>
+    <tr>
+      <td class="bg-peach bold">100</td>
+      <td class="bg-peach bold">100</td>
+      <td class="bg-green"></td>
+      <td class="bg-peach"></td>
+    </tr>
+
+    <!-- Separator -->
+    <tr class="row-sep"><td colspan="6"></td></tr>
+
+    <!-- Section 4: Purchase Indent -->
+    <tr>
+      <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Purchase indent request to commercial<br><span class="red-text">If not applicable mark NA</span></td>
+      <td class="bg-blue"></td>
+      <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Quarterly Buy Back &amp;<br>Standby unit review<br><span class="red-text">If not applicable mark<br>NA</span></td>
+      <td class="bg-blue"></td>
+      <td class="bg-green bold">5s Rate</td>
+      <td class="bg-dark-blue bold">78</td>
+    </tr>
+    <tr>
+      <td class="bg-blue"></td>
+      <td class="bg-blue"></td>
+      <td colspan="2" class="bg-peach bold">Good</td>
+    </tr>
+    <tr>
+      <td class="bg-peach bold">100</td>
+      <td class="bg-peach bold">100</td>
+      <td class="bg-green bold">Repair Report</td>
+      <td class="bg-dark-blue bold">100%</td>
+    </tr>
+
+    <!-- Separator -->
+    <tr class="row-sep"><td colspan="6"></td></tr>
+
+    <!-- Section 5: Overall -->
+    <tr>
+      <td class="bg-dark-blue text-left bold">Overall performance percentage</td>
+      <td class="bg-dark-blue bold">87</td>
+      <td colspan="2" class="bg-white"></td>
+      <td class="bg-white bold text-right">Overall Grade</td>
+      <td class="bg-yellow bold">Satisfactory</td>
+    </tr>
+
+    <!-- Separator -->
+    <tr class="row-sep"><td colspan="6"></td></tr>
+
+    <!-- Section 6: Comments -->
+    <tr>
+      <td class="bg-white text-left bold" style="vertical-align:top;">Justification for delay</td>
+      <td colspan="5" class="bg-white" style="height:60px;"></td>
+    </tr>
+    <tr class="row-sep"><td colspan="6"></td></tr>
+    <tr>
+      <td class="bg-white text-left bold" style="vertical-align:top;">Corrective measure for Hindrance</td>
+      <td colspan="5" class="bg-white" style="height:60px;"></td>
+    </tr>
+    <tr class="row-sep"><td colspan="6"></td></tr>
+    <tr>
+      <td class="bg-dark-blue text-left bold" style="vertical-align:top;">HOD REMARKS</td>
+      <td colspan="5" class="bg-dark-blue" style="height:60px;"></td>
+    </tr>
+  </table>
+</div>
+
             </div>
 
             <!-- Trend Pane -->
@@ -2550,5 +2801,7 @@ if (currentTab === 'kanban') loadKanbanBoard(); // Handle direct loads if modifi
 <script src="tab-fix.js"></script>
 </body>
 </html>
+
+
 
 
