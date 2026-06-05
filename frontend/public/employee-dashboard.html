@@ -921,25 +921,12 @@
 
     showEmployeeDashboardShell();
 
-    let user = localUser;
-    try {
-      const res = await fetchWithTimeout('/api/auth/me', {
-        headers: { Authorization: 'Bearer ' + token }
-      });
-      if (res.status === 401) {
-        clearEmployeeSession();
-        window.location.href = 'login.html';
-        return;
-      }
-      const payload = await res.json().catch(() => ({}));
-      if (res.ok && payload && payload.data) {
-        user = payload.data;
-        sessionStorage.setItem('schiller_user', JSON.stringify(user));
-        sessionStorage.setItem('schiller_role', String(user.role || 'employee').toLowerCase());
-      }
-    } catch (err) {
-      console.warn('Dashboard user fetch failed, continuing with cached session:', err);
-    }
+    let user = Object.keys(localUser || {}).length ? localUser : {
+      name: 'Employee',
+      role: sessionStorage.getItem('schiller_role') || 'employee',
+      designation: 'Field Engineer',
+      division: 'General'
+    };
 
     const normalizedRole = String(user.role || sessionStorage.getItem('schiller_role') || '').toLowerCase();
     if (normalizedRole && normalizedRole !== 'employee') {
@@ -965,6 +952,29 @@
     // Fetch and populate dynamic stats
     fetchDashboardStats(user, token);
     initEmpMessages(user);
+
+    fetchWithTimeout('/api/auth/me', {
+      headers: { Authorization: 'Bearer ' + token }
+    }).then(async res => {
+      if (res.status === 401) {
+        clearEmployeeSession();
+        window.location.href = 'login.html';
+        return;
+      }
+      const payload = await res.json().catch(() => ({}));
+      const freshUser = payload?.data;
+      if (!res.ok || !freshUser) return;
+      const freshRole = String(freshUser.role || 'employee').toLowerCase();
+      if (freshRole !== 'employee') {
+        clearEmployeeSession();
+        window.location.href = 'login.html';
+        return;
+      }
+      sessionStorage.setItem('schiller_user', JSON.stringify(freshUser));
+      sessionStorage.setItem('schiller_role', freshRole);
+    }).catch(err => {
+      console.warn('Dashboard background session verification failed:', err);
+    });
   })();
 
   let empMsgThreads = [];
@@ -2355,7 +2365,109 @@
 
   function getMonthDates(year, monthIndex, dates) {
     const maxDate = new Date(year, monthIndex + 1, 0).getDate();
+    return dates
+      .filter(day => day >= 1 && day <= maxDate)
+      .map(day => new Date(year, monthIndex, day));
+  }
 
+  function renderTrackerPanel(containerId, dateObjs, submissions, type, monthStr) {
+    const container = document.getElementById(containerId);
+    if(!container) return;
+    if (!_trackerLocalChecked[type]) _trackerLocalChecked[type] = {};
+    const today = new Date(); today.setHours(23,59,59,999);
+    const submittedCount = dateObjs.filter(dateObj => {
+      const ds = fmtDateStr(dateObj);
+      return submissions.some(s => s.type === type && s.reportDate === ds);
+    }).length;
+    const total = dateObjs.length;
+    const pct = total ? Math.round((submittedCount / total) * 100) : 0;
+    const badgeClass = pct === 100 ? 'tcb-full' : (pct > 0 ? 'tcb-part' : 'tcb-none');
 
+    let html = `<div class="tracker-panel-header"><span class="tracker-completion-badge ${badgeClass}">${submittedCount}/${total} submitted (${pct}%)</span></div>`;
+    dateObjs.forEach(dateObj => {
+      const ds = fmtDateStr(dateObj);
+      const isFuture = dateObj > today;
+      const isSubmitted = submissions.some(s => s.type === type && s.reportDate === ds);
+      const isChecked = !!_trackerLocalChecked[type][ds];
+      const displayDate = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      let cbClass = 'tracker-cb';
+      let pillClass = '', pillText = '';
+      if (isSubmitted) { cbClass += ' done'; pillClass = 'pill-submitted'; pillText = 'Submitted'; }
+      else if (isFuture) { pillClass = 'pill-future'; pillText = 'Upcoming'; }
+      else if (isChecked) { cbClass += ' checked'; pillClass = 'pill-pending'; pillText = 'Selected'; }
+      else { pillClass = 'pill-pending'; pillText = 'Pending'; }
+      const onclick = isSubmitted || isFuture ? '' : `onclick="toggleTrackerCheck('${type}','${ds}')"`;
+      html += `<div class="tracker-date-row ${isFuture ? 'future' : ''}" ${onclick}>
+        <div class="${cbClass}" id="tcb-${type}-${ds}">${isSubmitted ? '&#10003;' : (isChecked ? '&#10003;' : '')}</div>
+        <div class="tracker-date-label">${displayDate}</div>
+        <span class="tracker-status-pill ${pillClass}">${pillText}</span>
+      </div>`;
+    });
+    const hasChecked = Object.values(_trackerLocalChecked[type] || {}).some(Boolean);
+    html += `<button class="tracker-submit-btn" id="tsub-${type}" ${hasChecked ? '' : 'disabled'} onclick="submitTrackerBatch('${type}','${monthStr}')">&#10004; Submit Selected</button>`;
+    container.innerHTML = html;
+  }
 
+  function fmtDateStr(d) {
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
 
+  function toggleTrackerCheck(type, ds) {
+    if (!_trackerLocalChecked[type]) _trackerLocalChecked[type] = {};
+    _trackerLocalChecked[type][ds] = !_trackerLocalChecked[type][ds];
+    const cb = document.getElementById('tcb-' + type + '-' + ds);
+    if (cb) {
+      cb.classList.toggle('checked', _trackerLocalChecked[type][ds]);
+      cb.innerHTML = _trackerLocalChecked[type][ds] ? '&#10003;' : '';
+    }
+    const hasChecked = Object.values(_trackerLocalChecked[type]).some(Boolean);
+    const btn = document.getElementById('tsub-' + type);
+    if (btn) btn.disabled = !hasChecked;
+  }
+
+  async function submitTrackerBatch(type, monthStr) {
+    const checked = _trackerLocalChecked[type] || {};
+    const dates = Object.keys(checked).filter(ds => checked[ds]);
+    if (!dates.length) return;
+    const btn = document.getElementById('tsub-' + type);
+    if (btn) { btn.disabled = true; btn.innerHTML = '&#9203; Submitting...'; }
+    try {
+      const res = await fetch('/api/tracker/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + sessionStorage.getItem('schiller_token') },
+        body: JSON.stringify({ type, reportDates: dates, month: monthStr, status: 'submitted' })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        showToast('err', data.message || 'Failed to submit tracker');
+      } else {
+        showToast('ok', type + ' tracker submitted successfully');
+      }
+    } catch (e) {
+      showToast('err', 'Network error submitting tracker');
+    }
+    _trackerLocalChecked[type] = {};
+    loadWeeklyTrackers();
+  }
+
+  function showToast(type, msg) {
+    const wrap = document.getElementById('toast-wrap');
+    if (!wrap) return;
+    const el = document.createElement('div');
+    el.className = 'toast ' + type;
+    el.innerHTML = '<span class="td"></span>' + escapeHtml(msg);
+    wrap.appendChild(el);
+    setTimeout(() => el.remove(), 3500);
+  }
+
+  // Hook into dashboard load
+  const originalInit = window.onload;
+  window.onload = function() {
+    if (typeof originalInit === 'function') originalInit();
+    setTimeout(loadWeeklyTrackers, 500);
+  };
+
+</script>
+<script src="tab-fix.js"></script>
+</body>
+</html>
