@@ -381,13 +381,12 @@ let mailAckVisible = localStorage.getItem(MAIL_ACK_KEY) === '1';
 
 const EXTERNAL_COLUMNS = [
   { key:'sn', label:'S/N' },
-  { key:'year', label:'Year' },
+  { key:'createdAt', label:'Initiated Date', type:'date' },
   { key:'vendorName', label:'Vendor Name' },
   { key:'model', label:'Model' },
   { key:'customerName', label:'Customer name' },
   { key:'unitSerialNo', label:'Unit Serial No' },
   { key:'unitStatus', label:'Unit Status' },
-  { key:'problemDetails', label:'Problem details', wide:true },
   { key:'partNo', label:'Part no.' },
   { key:'itemDescription', label:'Item Description', wide:true },
   { key:'defGirNumber', label:'Def GIR no.' },
