@@ -694,9 +694,9 @@ function calcPendingDays(d){
 }
 function updateStats(){
   (document.getElementById('stat-total')||{}).textContent = allRecords.length;
-  (document.getElementById('stat-high')||{}).textContent = allRecords.filter(s=>s.pdOb>7).length;
-  (document.getElementById('stat-mid')||{}).textContent = allRecords.filter(s=>s.pdOb>=3&&s.pdOb<=7).length;
-  (document.getElementById('stat-low')||{}).textContent = allRecords.filter(s=>s.pdOb<3).length;
+  (document.getElementById('stat-high')||{}).textContent = allRecords.filter(s=>s.pdOb>90).length;
+  (document.getElementById('stat-mid')||{}).textContent = allRecords.filter(s=>s.pdOb>=30&&s.pdOb<=90).length;
+  (document.getElementById('stat-low')||{}).textContent = allRecords.filter(s=>s.pdOb<30).length;
 }
 function clearDates(){ document.getElementById('fl-from').value=''; document.getElementById('fl-to').value=''; applyFilters(); }
 
@@ -1597,11 +1597,11 @@ function configureObStatCards(){
   if(cards.length<4) return;
   cards[0].setAttribute('onclick',"filterByCard('all')");cards[0].innerHTML='<div class="stat-icon si-blue">&#128202;</div><div class="stat-label">Total Estimation</div><div class="stat-value" id="stat-total">-</div><div class="stat-sub">Active records</div>';
   cards[1].className='stat-card sc-green';
-  cards[1].setAttribute('onclick',"filterByCard('normal')");cards[1].innerHTML='<div class="stat-icon si-green">&#9989;</div><div class="stat-label">Normal (&lt;3 days)</div><div class="stat-value" id="stat-low">-</div><div class="stat-sub">Fresh estimation entries</div>';
+  cards[1].setAttribute('onclick',"filterByCard('normal')");cards[1].innerHTML='<div class="stat-icon si-green">&#9989;</div><div class="stat-label">Normal (&lt;30 days)</div><div class="stat-value" id="stat-low">-</div><div class="stat-sub">Within acceptable range</div>';
   cards[2].className='stat-card sc-amber';
-  cards[2].setAttribute('onclick',"filterByCard('warning')");cards[2].innerHTML='<div class="stat-icon si-amber">&#9888;</div><div class="stat-label">Warning (3-7 days)</div><div class="stat-value" id="stat-mid">-</div><div class="stat-sub">Needs follow-up</div>';
+  cards[2].setAttribute('onclick',"filterByCard('warning')");cards[2].innerHTML='<div class="stat-icon si-amber">&#9888;</div><div class="stat-label">Warning (30-90 days)</div><div class="stat-value" id="stat-mid">-</div><div class="stat-sub">Monitor closely</div>';
   cards[3].className='stat-card sc-red';
-  cards[3].setAttribute('onclick',"filterByCard('critical')");cards[3].innerHTML='<div class="stat-icon si-red">&#128308;</div><div class="stat-label">Critical (&gt;7 days)</div><div class="stat-value" id="stat-high">-</div><div class="stat-sub">Needs immediate action</div>';
+  cards[3].setAttribute('onclick',"filterByCard('critical')");cards[3].innerHTML='<div class="stat-icon si-red">&#128308;</div><div class="stat-label">Critical (&gt;90 days)</div><div class="stat-value" id="stat-high">-</div><div class="stat-sub">Needs immediate action</div>';
 }
 configureObStatCards();
 

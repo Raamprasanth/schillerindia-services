@@ -1208,6 +1208,35 @@
       const diff = Math.floor((now - new Date(entryDate).getTime()) / 86400000);
       return isNaN(diff) ? 0 : Math.max(0, diff);
     };
+    const setCardCount = (baseId, rows, daysSelector, limits) => {
+      const list = Array.isArray(rows) ? rows : [];
+      let c = 0, w = 0, n = 0;
+      list.forEach(d => {
+        const pdays = daysSelector(d);
+        if (pdays > limits.critical) c++;
+        else if (pdays >= limits.warning) w++;
+        else n++;
+      });
+      (document.getElementById(`val-${baseId}`)||{}).textContent = list.length;
+      (document.getElementById(`${baseId}-n`)||{}).textContent = n;
+      (document.getElementById(`${baseId}-w`)||{}).textContent = w;
+      (document.getElementById(`${baseId}-c`)||{}).textContent = c;
+    };
+    const clearCardCount = (baseId) => {
+      (document.getElementById(`val-${baseId}`)||{}).textContent = '0';
+      (document.getElementById(`${baseId}-n`)||{}).textContent = '0';
+      (document.getElementById(`${baseId}-w`)||{}).textContent = '0';
+      (document.getElementById(`${baseId}-c`)||{}).textContent = '0';
+    };
+    const isActiveUnderRepairRecord = (d) => {
+      if (!d || d.repType !== 'TO/ADV SO') return false;
+      const status = String(d.status || '').trim().toLowerCase();
+      const type = String(d.type || '').trim().toLowerCase();
+      const typeWork = String(d.urTypeWork || d.typeWork || d.typeOfWork || '').trim().toLowerCase();
+      if (status === 'completed' || d.completedAt) return false;
+      const movedTypes = new Set(['completed','scrapped','external repair','supplier warranty','supplier warrenty','no fault','given to psp']);
+      return !movedTypes.has(type) && !movedTypes.has(typeWork);
+    };
 
     try {
       fetch('/api/dashboard/employee', { headers: authHeaders }).then(r=>r.json()).then(data=>{
@@ -1275,66 +1304,36 @@
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.json();
       }).then(data=>{
-        if(!Array.isArray(data)) return;
-        let c=0, w=0, n=0;
-        data.forEach(d => {
-          const pdays = d.pdays ?? getPdays(d.rcvdDate || d.entryDate || d.createdAt);
-          if (pdays > 150) c++; else if (pdays >= 80) w++; else n++;
-        });
-        (document.getElementById('val-frn')||{}).textContent = data.length;
-        (document.getElementById('frn-n')||{}).textContent = n;
-        (document.getElementById('frn-w')||{}).textContent = w;
-        (document.getElementById('frn-c')||{}).textContent = c;
+        setCardCount('frn', data, d => d.pdays ?? getPdays(d.rcvdDate || d.entryDate || d.createdAt), { warning: 80, critical: 150 });
       }).catch(e=>{
         console.warn('FRN err:', e);
-        (document.getElementById('val-frn')||{}).textContent = '0';
-        (document.getElementById('frn-n')||{}).textContent = '0';
-        (document.getElementById('frn-w')||{}).textContent = '0';
-        (document.getElementById('frn-c')||{}).textContent = '0';
+        clearCardCount('frn');
       });
 
       // 2. OB Pending
-      fetch('/api/emp/services/ob-pending', { headers: authHeaders }).then(r=>r.json()).then(data=>{
-        if(!Array.isArray(data)) return;
-        let c=0, w=0, n=0;
-        data.forEach(d => {
-          const pdays = d.pdOb ?? getPdays(d.rcvdDate || d.entryDate);
-          if (pdays > 90) c++; else if (pdays >= 30) w++; else n++;
-        });
-        (document.getElementById('val-ob')||{}).textContent = data.length;
-        (document.getElementById('ob-n')||{}).textContent = n;
-        (document.getElementById('ob-w')||{}).textContent = w;
-        (document.getElementById('ob-c')||{}).textContent = c;
-      }).catch(e=>console.warn('OB err:',e));
+      fetch('/api/emp/services/ob-pending', { headers: authHeaders }).then(async r=>{
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      }).then(data=>{
+        setCardCount('ob', data, d => d.pdOb ?? getPdays(d.rcvdDate || d.entryDate), { warning: 30, critical: 90 });
+      }).catch(e=>{ console.warn('OB err:',e); clearCardCount('ob'); });
 
       // 3. Estimation Pending
-      fetch('/api/emp/estimation', { headers: authHeaders }).then(r=>r.json()).then(data=>{
-        if(!Array.isArray(data)) return;
-        let c=0, w=0, n=0;
-        data.forEach(d => {
-          const pdays = getPdays(d.rcvdDate || d.entryDate);
-          if (pdays > 60) c++; else if (pdays >= 20) w++; else n++;
-        });
-        (document.getElementById('val-est')||{}).textContent = data.length;
-        (document.getElementById('est-n')||{}).textContent = n;
-        (document.getElementById('est-w')||{}).textContent = w;
-        (document.getElementById('est-c')||{}).textContent = c;
-      }).catch(e=>console.warn('EST err:',e));
+      fetch('/api/emp/estimation', { headers: authHeaders }).then(async r=>{
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      }).then(data=>{
+        setCardCount('est', data, d => getPdays(d.rcvdDate || d.entryDate), { warning: 20, critical: 60 });
+      }).catch(e=>{ console.warn('EST err:',e); clearCardCount('est'); });
 
       // 4. Under Repair
-      fetch('/api/emp/services', { headers: authHeaders }).then(r=>r.json()).then(data=>{
-        if(!Array.isArray(data)) return;
-        const urData = data.filter(d => d.repType === 'TO/ADV SO');
-        let c=0, w=0, n=0;
-        urData.forEach(d => {
-          const pdays = getPdays(d.rcvdDate || d.entryDate || d.createdAt);
-          if (pdays > 30) c++; else if (pdays > 15) w++; else n++;
-        });
-        (document.getElementById('val-ur')||{}).textContent = urData.length;
-        (document.getElementById('ur-n')||{}).textContent = n;
-        (document.getElementById('ur-w')||{}).textContent = w;
-        (document.getElementById('ur-c')||{}).textContent = c;
-      }).catch(e=>console.warn('UR err:',e));
+      fetch('/api/emp/services', { headers: authHeaders }).then(async r=>{
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      }).then(data=>{
+        const urData = Array.isArray(data) ? data.filter(isActiveUnderRepairRecord) : [];
+        setCardCount('ur', urData, d => getPdays(d.rcvdDate || d.entryDate || d.createdAt), { warning: 16, critical: 30 });
+      }).catch(e=>{ console.warn('UR err:',e); clearCardCount('ur'); });
 
     } catch (e) {
       console.error('Stats fetch error:', e);
