@@ -1534,6 +1534,20 @@ function renderDivisionPerfSummary(data,params) {
   const rows = data.activityRows || data.activities || [];
   const getRow = (label) => rows.find(r => (r.label||'').toLowerCase() === label.toLowerCase()) || {};
   const getVal = (r, key, fallback='') => r[key] !== undefined && r[key] !== null ? r[key] : fallback;
+  const pct = (r, key) => {
+    let v = r[key];
+    if(v===undefined || v===null) return '';
+    return Math.round(v * (key.includes('Rate') || key.includes('Percent') ? 100 : 1)) + '%';
+  };
+
+  const rFrn = getRow('Pending frn');
+  const rFrnCon = getRow('pending FRN con');
+  const rSo = getRow('SO Pending');
+  const rRepair = getRow('Under Repair');
+  const rTo = getRow('TO/SO');
+  const rNonSaleable = getRow('Non-Saleable');
+  const rBir = getRow('BIR list');
+  const rEst = getRow('Estimation');
 
   const rWeekly = getRow('Weekly CRM Reports');
   const cWeekly = getVal(rWeekly, 'completionPercent', 0);
@@ -1559,8 +1573,8 @@ function renderDivisionPerfSummary(data,params) {
   const rRR = getRow('Repair Report');
   const cRR = getVal(rRR, 'completionPercent', 0);
 
-  const monthLabel = data.monthLabel || '';
-  const divisionLabel = data.division || '';
+  const monthLabel = data.monthLabel || params.month || '';
+  const divisionLabel = data.division || params.division || '';
   
   var [yearStr, mStr] = (params.month || '').split('-');
   var yearNum = parseInt(yearStr, 10);
@@ -1621,6 +1635,95 @@ function renderDivisionPerfSummary(data,params) {
   var d02CP = checkSub('CriticalPendingReport', d02);
   var d05PI = checkSub('PIRequest', d05);
 
+  const topTableHtml = `
+    <table style="width:100%; border-collapse:collapse; text-align:center; border: 2px solid #000; font-family: sans-serif; font-size:13px; margin-bottom: 20px;">
+      <tr>
+        <th colspan="4" rowspan="2" style="background-color:#a5b0c0; color:#1e3a8a; font-size:16px; font-weight:900; letter-spacing:1px; text-transform:uppercase; border:1px solid #333; padding:8px;">PERFORMANCE REVIEW</th>
+        <th style="background-color:#fce4d6; text-align:right; border:1px solid #333; padding:8px;">For the month of</th>
+        <th style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${monthLabel}</th>
+      </tr>
+      <tr>
+        <th style="background-color:#fff2cc; text-align:right; border:1px solid #333; padding:8px;">Division</th>
+        <th style="background-color:#fff2cc; border:1px solid #333; padding:8px;">${divisionLabel}</th>
+      </tr>
+      <tr>
+        <th rowspan="2" style="background-color:#e2efda; border:1px solid #333; padding:8px;">Activity</th>
+        <th rowspan="2" style="background-color:#e2efda; border:1px solid #333; padding:8px;">Total Inward<br><span style="color:red; font-size:11px; font-weight:normal;">(If not applicable mark zero)</span></th>
+        <th rowspan="2" style="background-color:#e2efda; border:1px solid #333; padding:8px;">No of Executions within target date</th>
+        <th rowspan="2" style="background-color:#e2efda; border:1px solid #333; padding:8px;">Percentage of Executions out from target date</th>
+        <th colspan="2" style="background-color:#e2efda; border:1px solid #333; padding:8px;">Target Percentage</th>
+      </tr>
+      <tr>
+        <th style="background-color:#dae3f3; border:1px solid #333; padding:8px;">Prev Month</th>
+        <th style="background-color:#fff2cc; border:1px solid #333; padding:8px;">Next Month</th>
+      </tr>
+      <tr>
+        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">Pending frn</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rFrn, 'total')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rFrn, 'withinTarget')}</td>
+        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rFrn, 'withinPercent')}</td>
+        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rFrn, 'prevRate')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rFrn, 'nextRate')}</td>
+      </tr>
+      <tr>
+        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">pending FRN con</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rFrnCon, 'total')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rFrnCon, 'withinTarget')}</td>
+        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rFrnCon, 'withinPercent')}</td>
+        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rFrnCon, 'prevRate')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rFrnCon, 'nextRate')}</td>
+      </tr>
+      <tr>
+        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">SO Pending</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rSo, 'total')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rSo, 'withinTarget')}</td>
+        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rSo, 'withinPercent')}</td>
+        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rSo, 'prevRate')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rSo, 'nextRate')}</td>
+      </tr>
+      <tr>
+        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">Under Repair</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rRepair, 'total')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rRepair, 'withinTarget')}</td>
+        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rRepair, 'withinPercent')}</td>
+        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rRepair, 'prevRate')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rRepair, 'nextRate')}</td>
+      </tr>
+      <tr>
+        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">TO/SO</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rTo, 'total')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rTo, 'withinTarget')}</td>
+        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rTo, 'withinPercent')}</td>
+        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rTo, 'prevRate')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rTo, 'nextRate')}</td>
+      </tr>
+      <tr>
+        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">Non-Saleable</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rNonSaleable, 'total')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rNonSaleable, 'withinTarget')}</td>
+        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rNonSaleable, 'withinPercent')}</td>
+        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rNonSaleable, 'prevRate')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rNonSaleable, 'nextRate')}</td>
+      </tr>
+      <tr>
+        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">BIR list</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rBir, 'total')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rBir, 'withinTarget')}</td>
+        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rBir, 'withinPercent')}</td>
+        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rBir, 'prevRate')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rBir, 'nextRate')}</td>
+      </tr>
+      <tr>
+        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">Estimation</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rEst, 'total')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rEst, 'withinTarget')}</td>
+        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rEst, 'withinPercent')}</td>
+        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rEst, 'prevRate')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rEst, 'nextRate')}</td>
+      </tr>
+    </table>
+  `;
+
   const html = `
     <div style="font-family:'Syne',sans-serif;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.06);padding:24px;color:var(--text);width:100%;box-sizing:border-box;">
       
@@ -1634,6 +1737,8 @@ function renderDivisionPerfSummary(data,params) {
           <div style="font-size:12px;font-weight:600;color:#64748b;">Month: <span style="color:#0f172a;">${monthLabel}</span></div>
         </div>
       </div>
+
+      ${topTableHtml}
 
       <table style="width:100%; border-collapse:collapse; text-align:center; border: 2px solid #000; font-family: sans-serif; font-size:13px;">
         <tr>
@@ -1708,15 +1813,14 @@ function renderDivisionPerfSummary(data,params) {
 
       <!-- Export Buttons -->
       <div style="margin-top:20px;display:flex;justify-content:flex-end;gap:10px;">
-        <button class="btn btn-green btn-sm" onclick="exportPDF()">Export PDF</button>
-        <button class="btn btn-ghost btn-sm" onclick="exportPriorityDivisionPDF()">Division Pack PDF</button>
+        <button class="btn btn-green btn-sm" onclick="exportPDF('div')">Export Division PDF</button>
       </div>
 
     </div>
   `;
 
   document.getElementById('perf-pane-div-summary').innerHTML = html;
-  loadDivisionReportSubmissions(params);
+  if(typeof loadDivisionReportSubmissions === 'function') loadDivisionReportSubmissions(params);
 }
 
 function renderPerfSummary(data,params) {
@@ -1724,15 +1828,30 @@ function renderPerfSummary(data,params) {
     document.getElementById('perf-pane-summary').innerHTML='<div class="empty-state"><div class="empty-icon">&#128196;</div><div class="empty-title">No Data</div></div>';
     return;
   }
-  const rate=data.completionRate||0;
+  const rate=data.summary?.completionRate||data.completionRate||0;
+  
   let remark = 'Needs Improvement';
   if (rate >= 90) remark = 'Excellent';
   else if (rate >= 75) remark = 'Good';
   else if (rate >= 60) remark = 'Average';
-  
-  const rows = data.activities || [];
+
+  const rows = data.activityRows || data.activities || [];
   const getRow = (label) => rows.find(r => (r.label||'').toLowerCase() === label.toLowerCase()) || {};
   const getVal = (r, key, fallback='') => r[key] !== undefined && r[key] !== null ? r[key] : fallback;
+  const pct = (r, key) => {
+    let v = r[key];
+    if(v===undefined || v===null) return '';
+    return Math.round(v * (key.includes('Rate') || key.includes('Percent') ? 100 : 1)) + '%';
+  };
+
+  const rFrn = getRow('Pending frn');
+  const rFrnCon = getRow('pending FRN con');
+  const rSo = getRow('SO Pending');
+  const rRepair = getRow('Under Repair');
+  const rTo = getRow('TO/SO');
+  const rNonSaleable = getRow('Non-Saleable');
+  const rBir = getRow('BIR list');
+  const rEst = getRow('Estimation');
 
   const rWeekly = getRow('Weekly CRM Reports');
   const cWeekly = getVal(rWeekly, 'completionPercent', 0);
@@ -1760,6 +1879,7 @@ function renderPerfSummary(data,params) {
 
   const monthLabel = params.month || '';
   const employeeLabel = data.employee || params.employee || '';
+  const divisionLabel = data.division || params.division || '';
   
   var [yearStr, mStr] = (params.month || '').split('-');
   var yearNum = parseInt(yearStr, 10);
@@ -1820,6 +1940,95 @@ function renderPerfSummary(data,params) {
   var d02CP = checkSub('CriticalPendingReport', d02);
   var d05PI = checkSub('PIRequest', d05);
 
+  const topTableHtml = `
+    <table style="width:100%; border-collapse:collapse; text-align:center; border: 2px solid #000; font-family: sans-serif; font-size:13px; margin-bottom: 20px;">
+      <tr>
+        <th colspan="4" rowspan="2" style="background-color:#a5b0c0; color:#1e3a8a; font-size:16px; font-weight:900; letter-spacing:1px; text-transform:uppercase; border:1px solid #333; padding:8px;">PERFORMANCE REVIEW</th>
+        <th style="background-color:#fce4d6; text-align:right; border:1px solid #333; padding:8px;">For the month of</th>
+        <th style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${monthLabel}</th>
+      </tr>
+      <tr>
+        <th style="background-color:#fff2cc; text-align:right; border:1px solid #333; padding:8px;">Employee</th>
+        <th style="background-color:#fff2cc; border:1px solid #333; padding:8px;">${employeeLabel}</th>
+      </tr>
+      <tr>
+        <th rowspan="2" style="background-color:#e2efda; border:1px solid #333; padding:8px;">Activity</th>
+        <th rowspan="2" style="background-color:#e2efda; border:1px solid #333; padding:8px;">Total Inward<br><span style="color:red; font-size:11px; font-weight:normal;">(If not applicable mark zero)</span></th>
+        <th rowspan="2" style="background-color:#e2efda; border:1px solid #333; padding:8px;">No of Executions within target date</th>
+        <th rowspan="2" style="background-color:#e2efda; border:1px solid #333; padding:8px;">Percentage of Executions out from target date</th>
+        <th colspan="2" style="background-color:#e2efda; border:1px solid #333; padding:8px;">Target Percentage</th>
+      </tr>
+      <tr>
+        <th style="background-color:#dae3f3; border:1px solid #333; padding:8px;">Prev Month</th>
+        <th style="background-color:#fff2cc; border:1px solid #333; padding:8px;">Next Month</th>
+      </tr>
+      <tr>
+        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">Pending frn</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rFrn, 'total')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rFrn, 'withinTarget')}</td>
+        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rFrn, 'withinPercent')}</td>
+        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rFrn, 'prevRate')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rFrn, 'nextRate')}</td>
+      </tr>
+      <tr>
+        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">pending FRN con</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rFrnCon, 'total')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rFrnCon, 'withinTarget')}</td>
+        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rFrnCon, 'withinPercent')}</td>
+        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rFrnCon, 'prevRate')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rFrnCon, 'nextRate')}</td>
+      </tr>
+      <tr>
+        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">SO Pending</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rSo, 'total')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rSo, 'withinTarget')}</td>
+        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rSo, 'withinPercent')}</td>
+        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rSo, 'prevRate')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rSo, 'nextRate')}</td>
+      </tr>
+      <tr>
+        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">Under Repair</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rRepair, 'total')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rRepair, 'withinTarget')}</td>
+        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rRepair, 'withinPercent')}</td>
+        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rRepair, 'prevRate')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rRepair, 'nextRate')}</td>
+      </tr>
+      <tr>
+        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">TO/SO</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rTo, 'total')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rTo, 'withinTarget')}</td>
+        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rTo, 'withinPercent')}</td>
+        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rTo, 'prevRate')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rTo, 'nextRate')}</td>
+      </tr>
+      <tr>
+        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">Non-Saleable</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rNonSaleable, 'total')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rNonSaleable, 'withinTarget')}</td>
+        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rNonSaleable, 'withinPercent')}</td>
+        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rNonSaleable, 'prevRate')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rNonSaleable, 'nextRate')}</td>
+      </tr>
+      <tr>
+        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">BIR list</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rBir, 'total')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rBir, 'withinTarget')}</td>
+        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rBir, 'withinPercent')}</td>
+        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rBir, 'prevRate')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rBir, 'nextRate')}</td>
+      </tr>
+      <tr>
+        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">Estimation</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rEst, 'total')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rEst, 'withinTarget')}</td>
+        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rEst, 'withinPercent')}</td>
+        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rEst, 'prevRate')}</td>
+        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rEst, 'nextRate')}</td>
+      </tr>
+    </table>
+  `;
+
   const html = `
     <div style="font-family:'Syne',sans-serif;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.06);padding:24px;color:var(--text);width:100%;box-sizing:border-box;">
       
@@ -1833,6 +2042,8 @@ function renderPerfSummary(data,params) {
           <div style="font-size:12px;font-weight:600;color:#64748b;">Month: <span style="color:#0f172a;">${monthLabel}</span></div>
         </div>
       </div>
+
+      ${topTableHtml}
 
       <table style="width:100%; border-collapse:collapse; text-align:center; border: 2px solid #000; font-family: sans-serif; font-size:13px;">
         <tr>
