@@ -205,7 +205,7 @@ table.js-grid tbody td input::placeholder{color:var(--muted);font-size:11px;}
 .toast.ok{border-color:rgba(4,120,87,0.35);}.toast.ok .td{background:var(--green);}
 .toast.err{border-color:rgba(185,28,28,0.35);}.toast.err .td{background:var(--red);}
 .toast.info{border-color:rgba(0,104,181,0.35);}.toast.info .td{background:var(--accent);}
-.mail-ack-wrap{display:none;margin-bottom:14px;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}
+.mail-ack-wrap{display:grid;margin-bottom:14px;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}
 .mail-ack-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 12px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
 .mail-ack-card::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,var(--accent),#0ea5e9);}
 .mail-ack-label{font-size:9.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;}
@@ -370,7 +370,6 @@ table.js-grid tbody td input::placeholder{color:var(--muted);font-size:11px;}
     <div style="display:flex;align-items:center;gap:9px;">
       <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
       <button class="btn btn-outline btn-sm" onclick="loadData()">&#8635; Refresh</button>
-      <button class="btn btn-outline btn-sm" id="mail-ack-btn" onclick="toggleMailAck()">&#9993; Mail</button>
       <button class="btn btn-success btn-sm" onclick="exportCSV()">&#128228; Export</button>
     </div>
   </div>
@@ -456,11 +455,8 @@ table.js-grid tbody td input::placeholder{color:var(--muted);font-size:11px;}
 
 <script>
 const API = '';
-const MAIL_ACK_KEY = 'supplier-warranty-mail-ack-visible';
 const MAIL_STATUS_ENDPOINT = '/api/escalation/status/supplier-warranty';
 let SCRAP = [], filtered = [], sortKey = 'receivedDateAtEsskay', sortDir = -1, currentPage = 1;
-let mailAckVisible = localStorage.getItem(MAIL_ACK_KEY) === '1';
-
 const SUPPLIER_COLUMNS = [
   { key:'sn', label:'S/N' },
   { key:'supplier', label:'Supplier' },
@@ -525,16 +521,10 @@ const FIELD_ALIASES = {
 
 function applyMailAckState(){
   const wrap = document.getElementById('mail-ack-wrap');
-  const btn = document.getElementById('mail-ack-btn');
   if(!wrap) return;
   wrap.style.display = mailAckVisible ? 'grid' : 'none';
   if(btn) btn.classList.toggle('btn-primary', mailAckVisible);
   if(mailAckVisible) loadMailAckStatus();
-}
-function toggleMailAck(){
-  mailAckVisible = !mailAckVisible;
-  localStorage.setItem(MAIL_ACK_KEY, mailAckVisible ? '1' : '0');
-  applyMailAckState();
 }
 function renderMailAck(data={}){
   const q = data.queue || {};
