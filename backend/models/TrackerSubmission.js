@@ -13,7 +13,14 @@ const trackerSubmissionSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['CRM', 'PendingActivity'],
+    enum: [
+      'CRM',
+      'PendingActivity',
+      'NonSaleable',
+      'SupplierWarranty',
+      'CriticalPendingReport',
+      'PIRequest'
+    ],
     required: true
   },
   reportDate: {

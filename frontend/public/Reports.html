@@ -225,6 +225,20 @@ body{
 .pct-fill.green{background:linear-gradient(90deg,#059669,#34d399);}
 .pct-fill.amber{background:linear-gradient(90deg,#d97706,#fbbf24);}
 .pct-text{font-size:11.5px;font-weight:700;color:var(--text);min-width:30px;text-align:right;}
+.submission-panel{margin:0 20px 18px;padding:16px;border:1px solid var(--border);border-radius:10px;background:var(--bg);}
+.submission-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}
+.submission-title{font-size:12px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.05em;}
+.submission-meta{font-size:11.5px;color:var(--muted);margin-top:3px;}
+.submission-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.submission-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px;min-width:0;}
+.submission-card.done{border-color:rgba(5,150,105,0.35);background:rgba(5,150,105,0.05);}
+.submission-card-title{font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.submission-card-sub{font-size:11px;color:var(--muted);}
+.submission-check{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:var(--border);color:var(--muted);flex:0 0 auto;}
+.submission-card.done .submission-check{background:#059669;color:#fff;}
+.submission-count{font-size:12px;font-weight:700;color:var(--text);}
+@media(max-width:1100px){.submission-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:720px){.submission-grid{grid-template-columns:1fr;}.submission-panel-head{flex-direction:column;}}
 /* -- LEADERBOARD -- */
 .lb-table{width:100%;border-collapse:collapse;font-size:12.5px;}
 .lb-table th{background:var(--bg);font-weight:700;padding:9px 14px;border:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:var(--muted);}
@@ -783,8 +797,8 @@ body{
             <div>
               <label class="field-label">Scope</label>
               <div class="scope-tabs">
-                <button class="scope-tab active" id="scope-div-btn" onclick="setScope('division')">&#127986; By Division</button>
-                <button class="scope-tab" id="scope-emp-btn" onclick="setScope('employee')">&#128100; By Employee</button>
+                <button class="scope-tab active" id="scope-div-btn" onclick="setScope('division')">&#127986; Division Wise</button>
+                <button class="scope-tab" id="scope-emp-btn" onclick="setScope('employee')">&#128100; Individual</button>
               </div>
             </div>
 
@@ -819,7 +833,7 @@ body{
           </div>
           <div class="perf-footer">
             <button class="btn btn-primary" style="flex:1;justify-content:center;" id="perf-preview-btn" onclick="loadPerfSummary()">&#128065; Preview Summary</button>
-            <button class="btn btn-ghost" style="flex:1;justify-content:center;" id="perf-lb-btn" onclick="loadLeaderboard()">&#127942; Leaderboard</button>n>
+            <button class="btn btn-ghost" style="flex:1;justify-content:center;" id="perf-lb-btn" onclick="loadLeaderboard()">&#127942; Leaderboard</button>
           </div>
         </div>
 
@@ -1291,7 +1305,7 @@ async function loadPerfSummary(){
     renderPerfSummary(d.data,params);
     document.getElementById('perf-out-title').textContent=
       perfScope==='division'?`&#127986; Division: ${params.division}`:`&#128100; Employee: ${params.employee}`;
-    document.getElementById('perf-out-meta').textContent=`Month: ${params.month} · Scope: ${perfScope}`;
+    document.getElementById('perf-out-meta').textContent=`Month: ${params.month} · Scope: ${perfScopeLabel(perfScope)}`;
     // Show tabs and comment
     document.getElementById('perf-inner-tabs').style.display='flex';
     document.getElementById('perf-comment-section').style.display='block';
@@ -1334,6 +1348,94 @@ function pctFillClass(p){
   if(p>=75) return 'green';
   if(p>=50) return 'amber';
   return '';
+}
+
+function perfScopeLabel(scope){
+  return scope==='division'?'Division Wise':'Individual';
+}
+
+function renderSubmissionPlaceholder(params){
+  if(params.scope!=='division'){
+    return `
+      <div class="submission-panel">
+        <div class="submission-panel-head">
+          <div>
+            <div class="submission-title">Report Submission</div>
+            <div class="submission-meta">Switch to Division Wise to view dashboard submit-report completion.</div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  return `
+    <div class="submission-panel" id="perf-submission-panel">
+      <div class="submission-panel-head">
+        <div>
+          <div class="submission-title">Division Wise Report Submission</div>
+          <div class="submission-meta">${escapeHtml(params.division)} · ${escapeHtml(params.month)}</div>
+        </div>
+      </div>
+      <div class="loading-state" style="padding:18px 0;"><div class="spinner"></div><div class="loading-title">Loading Report Submission</div></div>
+    </div>`;
+}
+
+async function loadDivisionReportSubmissions(params){
+  const panel=document.getElementById('perf-submission-panel');
+  if(!panel || params.scope!=='division') return;
+  try{
+    const res=await fetch('/api/tracker/stats?month='+encodeURIComponent(params.month),{headers:hdrs()});
+    const d=await res.json();
+    if(!res.ok) throw new Error(d.message||'Failed');
+    const division=(d.stats||[]).find(item => (item.name||'')===params.division);
+    if(!division){
+      panel.innerHTML=`
+        <div class="submission-panel-head">
+          <div>
+            <div class="submission-title">Division Wise Report Submission</div>
+            <div class="submission-meta">${escapeHtml(params.division)} · ${escapeHtml(params.month)}</div>
+          </div>
+        </div>
+        <div style="font-size:12.5px;color:var(--muted);">No submission data found for this division.</div>`;
+      return;
+    }
+
+    const reports=division.reports||[];
+    const cards=reports.map(report=>{
+      const percent=Math.min(100,Math.max(0,report.percent||0));
+      const done=!!report.complete;
+      return `
+        <div class="submission-card ${done?'done':''}">
+          <div class="submission-card-title">
+            <span>${escapeHtml(report.label)}</span>
+            <span class="submission-check">${done?'&#10003;':'-'}</span>
+          </div>
+          <div class="submission-card-sub">Due: ${escapeHtml(report.schedule)}</div>
+          <div class="pct-bar-wrap">
+            <div class="pct-bar"><div class="pct-fill ${pctFillClass(percent)}" style="width:${percent}%"></div></div>
+            <div class="pct-text">${percent}%</div>
+          </div>
+          <div class="submission-count">${report.actual||0} / ${report.expected||0} submitted</div>
+        </div>`;
+    }).join('');
+
+    panel.innerHTML=`
+      <div class="submission-panel-head">
+        <div>
+          <div class="submission-title">Division Wise Report Submission</div>
+          <div class="submission-meta">${escapeHtml(division.name)} · ${escapeHtml(params.month)} · ${division.empCount||0} employees</div>
+        </div>
+      </div>
+      <div class="submission-grid">${cards}</div>`;
+  }catch(e){
+    panel.innerHTML=`
+      <div class="submission-panel-head">
+        <div>
+          <div class="submission-title">Division Wise Report Submission</div>
+          <div class="submission-meta">${escapeHtml(params.division)} · ${escapeHtml(params.month)}</div>
+        </div>
+      </div>
+      <div style="font-size:12.5px;color:#b91c1c;font-weight:600;">${escapeHtml(e.message)}</div>`;
+  }
 }
 
 function renderPerfSummary(data,params){
@@ -1408,6 +1510,8 @@ function renderPerfSummary(data,params){
     </div>`:
     '<div style="padding:20px;color:var(--muted);font-size:13px;">No activity data found.</div>';
 
+  const submissionHtml=renderSubmissionPlaceholder(params);
+
   const exportBtn=`
     <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;">
       <button class="btn btn-green btn-sm" onclick="exportPDF()">Export PDF</button>
@@ -1416,7 +1520,8 @@ function renderPerfSummary(data,params){
 
   document.getElementById('perf-pane-summary').innerHTML=
     (alertBanner?'<div style="padding:16px 20px 0;">'+alertBanner+'</div>':'')+
-    summaryHtml+tableHtml+narrativeHtml+exportBtn;
+    summaryHtml+submissionHtml+tableHtml+narrativeHtml+exportBtn;
+  loadDivisionReportSubmissions(params);
 }
 
 async function loadTrend(){

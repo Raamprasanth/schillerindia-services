@@ -66,6 +66,52 @@ function countDaysInMonth(year, month, dayOfWeek) {
   return count;
 }
 
+function countDatesInMonth(year, month, dates) {
+  const lastDay = new Date(year, month, 0).getDate();
+  return dates.filter(day => day >= 1 && day <= lastDay).length;
+}
+
+function buildReportDefinitions(year, month) {
+  return [
+    {
+      type: 'CRM',
+      label: 'CRM Reports',
+      schedule: 'Every Tuesday',
+      expectedPerEmployee: countDaysInMonth(year, month, 2)
+    },
+    {
+      type: 'PendingActivity',
+      label: 'Pending Activity',
+      schedule: 'Every Monday',
+      expectedPerEmployee: countDaysInMonth(year, month, 1)
+    },
+    {
+      type: 'NonSaleable',
+      label: 'Non Saleable',
+      schedule: '2 and 16',
+      expectedPerEmployee: countDatesInMonth(year, month, [2, 16])
+    },
+    {
+      type: 'SupplierWarranty',
+      label: 'Supplier Warranty',
+      schedule: '3 and 16',
+      expectedPerEmployee: countDatesInMonth(year, month, [3, 16])
+    },
+    {
+      type: 'CriticalPendingReport',
+      label: 'Critical Pending Report',
+      schedule: '2',
+      expectedPerEmployee: countDatesInMonth(year, month, [2])
+    },
+    {
+      type: 'PIRequest',
+      label: 'PI Request',
+      schedule: '5',
+      expectedPerEmployee: countDatesInMonth(year, month, [5])
+    }
+  ];
+}
+
 // Get admin stats grouped by division
 router.get('/stats', protect, async (req, res) => {
   try {
@@ -76,8 +122,7 @@ router.get('/stats', protect, async (req, res) => {
     const yearNum = parseInt(yearStr, 10);
     const monthNum = parseInt(monthStr, 10);
 
-    const totalMondays = countDaysInMonth(yearNum, monthNum, 1); // 1 = Monday
-    const totalTuesdays = countDaysInMonth(yearNum, monthNum, 2); // 2 = Tuesday
+    const reportDefinitions = buildReportDefinitions(yearNum, monthNum);
 
     // Get all employees and group them by division
     const employees = await User.find({ role: 'employee' }).populate('division').lean();
@@ -92,15 +137,22 @@ router.get('/stats', protect, async (req, res) => {
           id: divId,
           name: emp.division ? emp.division.name : 'Unassigned',
           empCount: 0,
-          expectedCRM: 0,
-          expectedPending: 0,
-          actualCRM: 0,
-          actualPending: 0
+          reports: reportDefinitions.reduce((acc, report) => {
+            acc[report.type] = {
+              type: report.type,
+              label: report.label,
+              schedule: report.schedule,
+              expected: 0,
+              actual: 0
+            };
+            return acc;
+          }, {})
         };
       }
       divisionsMap[divId].empCount++;
-      divisionsMap[divId].expectedCRM += totalTuesdays;
-      divisionsMap[divId].expectedPending += totalMondays;
+      reportDefinitions.forEach(report => {
+        divisionsMap[divId].reports[report.type].expected += report.expectedPerEmployee;
+      });
     });
 
     // Get all submissions for the month
@@ -108,22 +160,38 @@ router.get('/stats', protect, async (req, res) => {
 
     submissions.forEach(sub => {
       const divId = sub.division ? sub.division.toString() : 'unassigned';
-      if (divisionsMap[divId]) {
-        if (sub.type === 'CRM') divisionsMap[divId].actualCRM++;
-        if (sub.type === 'PendingActivity') divisionsMap[divId].actualPending++;
+      const division = divisionsMap[divId];
+      if (division && division.reports[sub.type]) {
+        division.reports[sub.type].actual++;
       }
     });
 
     const results = Object.values(divisionsMap).map(div => {
-      const crmPercent = div.expectedCRM > 0 ? Math.round((div.actualCRM / div.expectedCRM) * 100) : 0;
-      const pendingPercent = div.expectedPending > 0 ? Math.round((div.actualPending / div.expectedPending) * 100) : 0;
+      const reports = reportDefinitions.map(report => {
+        const item = div.reports[report.type];
+        const percent = item.expected > 0 ? Math.round((item.actual / item.expected) * 100) : 0;
+        return {
+          ...item,
+          percent: Math.min(100, percent),
+          complete: item.expected > 0 && item.actual >= item.expected
+        };
+      });
+      const reportByType = reports.reduce((acc, report) => {
+        acc[report.type] = report;
+        return acc;
+      }, {});
       
       return {
         id: div.id,
         name: div.name,
         empCount: div.empCount,
-        crmPercent: Math.min(100, crmPercent),
-        pendingPercent: Math.min(100, pendingPercent)
+        expectedCRM: reportByType.CRM.expected,
+        actualCRM: reportByType.CRM.actual,
+        expectedPending: reportByType.PendingActivity.expected,
+        actualPending: reportByType.PendingActivity.actual,
+        crmPercent: reportByType.CRM.percent,
+        pendingPercent: reportByType.PendingActivity.percent,
+        reports
       };
     });
 
