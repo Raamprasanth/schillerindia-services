@@ -232,86 +232,52 @@ function formatIstStamp(date) {
 async function getSlotWindow(slot, referenceDate = new Date()) {
   const nowIst = getIstParts(referenceDate);
   const times = await getEscalationTimeMap();
-  const morning = scheduledTime(times, 'morning', '11:30');
-  const evening = scheduledTime(times, 'evening', '18:15');
-  if (slot === 'morning') {
-    const prev = getPreviousIstDateParts(nowIst);
-    return {
-      slot,
-      slotLabel: 'Morning',
-      runTime: morning.value,
-      jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
-      windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, evening.hour, evening.minute + 1, 0, 0),
-      windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, morning.hour, morning.minute, 0, 0).getTime() - 1),
-    };
-  }
+  const slotTime = scheduledTime(times, slot, slot === 'evening' ? '18:15' : '11:30');
+  const order = slot === 'evening' ? 2 : 1;
+  const runAt = makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, slotTime.hour, slotTime.minute, 0, 0);
   return {
     slot,
-    slotLabel: 'Evening',
-    runTime: evening.value,
+    slotLabel: `Send Time ${order}`,
+    runTime: slotTime.value,
     jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
-    windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, morning.hour, morning.minute, 0, 0),
-    windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, evening.hour, evening.minute, 0, 0).getTime() - 1),
+    windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 0, 0, 0, 0),
+    windowEnd: new Date(runAt.getTime() - 1),
   };
 }
 
 async function getSrSlotWindow(slot, referenceDate = new Date()) {
   const nowIst = getIstParts(referenceDate);
   const times = await getEscalationTimeMap();
-  const morning = scheduledTime(times, 'sr_morning', '11:00');
-  const afternoon = scheduledTime(times, 'sr_afternoon', '15:00');
-  if (slot === 'sr_morning') {
-    const prev = getPreviousIstDateParts(nowIst);
-    return {
-      slot,
-      category: 'sr',
-      slotLabel: 'SR Morning',
-      runTime: morning.value,
-      jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
-      windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, afternoon.hour, afternoon.minute, 0, 0),
-      windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, morning.hour, morning.minute, 0, 0).getTime() - 1),
-      reportName: `sr-escalation-morning-${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}.xlsx`,
-    };
-  }
+  const slotTime = scheduledTime(times, slot, slot === 'sr_afternoon' ? '15:00' : '11:00');
+  const order = slot === 'sr_afternoon' ? 2 : 1;
+  const runAt = makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, slotTime.hour, slotTime.minute, 0, 0);
   return {
     slot,
     category: 'sr',
-    slotLabel: 'SR Afternoon',
-    runTime: afternoon.value,
+    slotLabel: `SR Send Time ${order}`,
+    runTime: slotTime.value,
     jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
-    windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, morning.hour, morning.minute, 0, 0),
-    windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, afternoon.hour, afternoon.minute, 0, 0).getTime() - 1),
-    reportName: `sr-escalation-afternoon-${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}.xlsx`,
+    windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 0, 0, 0, 0),
+    windowEnd: new Date(runAt.getTime() - 1),
+    reportName: `sr-escalation-send-${order}-${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}.xlsx`,
   };
 }
 
 async function getToSlotWindow(slot, referenceDate = new Date()) {
   const nowIst = getIstParts(referenceDate);
   const times = await getEscalationTimeMap();
-  const morning = scheduledTime(times, 'to_morning', '11:00');
-  const evening = scheduledTime(times, 'to_evening', '16:30');
-  if (slot === 'to_morning') {
-    const prev = getPreviousIstDateParts(nowIst);
-    return {
-      slot,
-      category: 'to',
-      slotLabel: 'TO Morning',
-      runTime: morning.value,
-      jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
-      windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, evening.hour, evening.minute, 0, 0),
-      windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, morning.hour, morning.minute, 0, 0).getTime() - 1),
-      reportName: `to-escalation-morning-${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}.xlsx`,
-    };
-  }
+  const slotTime = scheduledTime(times, slot, slot === 'to_evening' ? '16:30' : '11:00');
+  const order = slot === 'to_evening' ? 2 : 1;
+  const runAt = makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, slotTime.hour, slotTime.minute, 0, 0);
   return {
     slot,
     category: 'to',
-    slotLabel: 'TO Evening',
-    runTime: evening.value,
+    slotLabel: `TO Send Time ${order}`,
+    runTime: slotTime.value,
     jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
-    windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, morning.hour, morning.minute, 0, 0),
-    windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, evening.hour, evening.minute, 0, 0).getTime() - 1),
-    reportName: `to-escalation-evening-${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}.xlsx`,
+    windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 0, 0, 0, 0),
+    windowEnd: new Date(runAt.getTime() - 1),
+    reportName: `to-escalation-send-${order}-${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}.xlsx`,
   };
 }
 
