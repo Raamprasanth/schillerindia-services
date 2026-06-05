@@ -709,10 +709,10 @@ table.est-table tbody tr:last-child td{border-bottom:none;}
   </div>
   <div class="content">
     <div class="stats-row">
-      <div class="stat-card sc-blue"><div class="stat-icon si-blue">&#128202;</div><div class="stat-label">Total Estimation</div><div class="stat-value" id="stat-total">-</div><div class="stat-sub">Active records</div></div>
-      <div class="stat-card sc-red"><div class="stat-icon si-red">&#128308;</div><div class="stat-label">Critical (&gt;60 days)</div><div class="stat-value" id="stat-high">-</div><div class="stat-sub">Needs immediate follow-up</div></div>
-      <div class="stat-card sc-amber"><div class="stat-icon si-amber">&#9888;</div><div class="stat-label">Repair Orders</div><div class="stat-value" id="stat-repair">-</div><div class="stat-sub">Order Type: Repair</div></div>
-      <div class="stat-card sc-green"><div class="stat-icon si-green">&#9989;</div><div class="stat-label">New Orders</div><div class="stat-value" id="stat-new">-</div><div class="stat-sub">Order Type: New</div></div>
+      <div class="stat-card sc-blue" onclick="filterByCard('all')"><div class="stat-icon si-blue">&#128202;</div><div class="stat-label">Total Estimation</div><div class="stat-value" id="stat-total">-</div><div class="stat-sub">Active records</div></div>
+      <div class="stat-card sc-green" onclick="filterByCard('normal')"><div class="stat-icon si-green">&#9989;</div><div class="stat-label">Normal (&lt;3 days)</div><div class="stat-value" id="stat-new">-</div><div class="stat-sub">Fresh pending entries</div></div>
+      <div class="stat-card sc-amber" onclick="filterByCard('warning')"><div class="stat-icon si-amber">&#9888;</div><div class="stat-label">Warning (3-7 days)</div><div class="stat-value" id="stat-repair">-</div><div class="stat-sub">Needs follow-up</div></div>
+      <div class="stat-card sc-red" onclick="filterByCard('critical')"><div class="stat-icon si-red">&#128308;</div><div class="stat-label">Critical (&gt;7 days)</div><div class="stat-value" id="stat-high">-</div><div class="stat-sub">Needs immediate action</div></div><div class="stat-label">New Orders</div><div class="stat-value" id="stat-new">-</div><div class="stat-sub">Order Type: New</div></div>
     </div>
     <div class="filter-bar">
       <div class="fgroup"><label>From</label><input type="date" class="f-input" id="fl-from" style="width:135px;" onchange="applyFilters()"/></div>
