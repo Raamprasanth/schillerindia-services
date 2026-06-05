@@ -820,7 +820,7 @@ function isActiveUnderRepairRecord(d) {
 }
 
 // -- Load from /api/emp/services, filter active TO/ADV SO under-repair rows --
-let mailAckVisible = localStorage.getItem('mail_ack_visible') === '1';
+var mailAckVisible = localStorage.getItem('mail_ack_visible') === '1';
 function toggleMailAck() {
   mailAckVisible = !mailAckVisible;
   localStorage.setItem('mail_ack_visible', mailAckVisible ? '1' : '0');

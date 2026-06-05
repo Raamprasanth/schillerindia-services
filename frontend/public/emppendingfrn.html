@@ -1031,7 +1031,7 @@ function getDisplayTypeWork(record){
   return '';
 }
 
-let mailAckVisible = localStorage.getItem('mail_ack_visible') === '1';
+var mailAckVisible = localStorage.getItem('mail_ack_visible') === '1';
 function toggleMailAck() {
   mailAckVisible = !mailAckVisible;
   localStorage.setItem('mail_ack_visible', mailAckVisible ? '1' : '0');

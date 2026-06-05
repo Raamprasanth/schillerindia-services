@@ -1054,7 +1054,7 @@ async function submitToEscalationQueue(){
   }
 }
 
-let mailAckVisible = localStorage.getItem('mail_ack_visible') === '1';
+var mailAckVisible = localStorage.getItem('mail_ack_visible') === '1';
 function toggleMailAck() {
   mailAckVisible = !mailAckVisible;
   localStorage.setItem('mail_ack_visible', mailAckVisible ? '1' : '0');
@@ -1104,9 +1104,9 @@ function populateEngFilter(){
 
 function updateStats(){
   (document.getElementById('stat-total')||{}).textContent = allRecords.length;
-  (document.getElementById('stat-high')||{}).textContent = allRecords.filter(s=>s.pdEst>20).length;
-  (document.getElementById('stat-repair')||{}).textContent = allRecords.filter(s=>s.pdEst>=10&&s.pdEst<=20).length;
-  (document.getElementById('stat-new')||{}).textContent = allRecords.filter(s=>s.pdEst<10).length;
+  (document.getElementById('stat-new')||{}).textContent = allRecords.filter(s=>s.pdEst<3).length;
+  (document.getElementById('stat-repair')||{}).textContent = allRecords.filter(s=>s.pdEst>=3&&s.pdEst<=7).length;
+  (document.getElementById('stat-high')||{}).textContent = allRecords.filter(s=>s.pdEst>7).length;
 }
 
 function clearDates(){ document.getElementById('fl-from').value=''; document.getElementById('fl-to').value=''; applyFilters(); }
@@ -1203,17 +1203,17 @@ function applyFilters(){
   const eng=engEl?engEl.value:'';
   filtered=allRecords.filter(s=>{
     const pd=Number(s.pdEst||0);
-    if(_activeCardFilter==='normal' && !(pd<10)) return false;
-    if(_activeCardFilter==='warning' && !(pd>=10&&pd<=20)) return false;
-    if(_activeCardFilter==='critical' && !(pd>20)) return false;
+    if(_activeCardFilter==='normal' && !(pd<3)) return false;
+    if(_activeCardFilter==='warning' && !(pd>=3&&pd<=7)) return false;
+    if(_activeCardFilter==='critical' && !(pd>7)) return false;
     const entry=String(s.entryDate||'').slice(0,10);
     if(from && entry && entry<from) return false;
     if(to && entry && entry>to) return false;
     const order=String(s.orderType||s.estStatus||'');
     if(ot && order!==ot) return false;
-    if(pdays==='high' && !(pd>20)) return false;
-    if(pdays==='mid' && !(pd>=10&&pd<=20)) return false;
-    if(pdays==='low' && !(pd<10)) return false;
+    if(pdays==='high' && !(pd>7)) return false;
+    if(pdays==='mid' && !(pd>=3&&pd<=7)) return false;
+    if(pdays==='low' && !(pd<3)) return false;
     if(eng && ![s.eng,s.scEng,s.estRaEng,s.raEng,s.obRaEng].some(v=>String(v||'')===eng)) return false;
     const hay=[
       s.scReNo,s.scRefNo,s.scEng,s.frnNo,s.branch,s.reg,s.eng,s.custName,s.customer,

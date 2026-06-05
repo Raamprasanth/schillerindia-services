@@ -432,6 +432,7 @@ const FIELD_ALIASES = {
 
 function applyMailAckState(){
   const wrap = document.getElementById('mail-ack-wrap');
+  const btn = document.getElementById('mail-ack-btn');
   if(!wrap) return;
   wrap.style.display = mailAckVisible ? 'grid' : 'none';
   if(btn) btn.classList.toggle('primary', mailAckVisible);
@@ -473,7 +474,7 @@ function handleUnauth(res){
 }
 
 // -- LOAD DATA -------------------------------------------------------------
-let mailAckVisible = localStorage.getItem('mail_ack_visible') === '1';
+var mailAckVisible = localStorage.getItem('mail_ack_visible') === '1';
 function toggleMailAck() {
   mailAckVisible = !mailAckVisible;
   localStorage.setItem('mail_ack_visible', mailAckVisible ? '1' : '0');

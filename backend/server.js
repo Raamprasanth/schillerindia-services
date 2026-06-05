@@ -64,6 +64,8 @@ const scPrfObRoutes  = require('./routes/scPrfObRoutes');
 const ePrfObRoutes   = require('./routes/ePrfObRoutes');
 const fqcRoutes      = require('./routes/fqcRoutes');
 const sccrRoutes     = require('./routes/sccrRoutes');
+const scsrRoutes     = require('./routes/scsrRoutes');
+const sccsrRoutes    = require('./routes/sccsrRoutes');
 const loanItemRoutes = require('./routes/loanItemRoutes');
 const eltItemRoutes  = require('./routes/eltItemRoutes');
 const srRoutes       = require('./routes/srRoutes');
@@ -267,6 +269,8 @@ app.use('/api/fqc/non-saleable', fqcNonSaleableFsRoutes);  // fs.html ÃƒÂ¢Ã
 app.use('/api/fqc/nonsaleable',  fqcNonsaleableRoutes);    // fns.html ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â must be BEFORE /api/fqc
 app.use('/api/fqc',             fqcRoutes);
 app.use('/api/sccr',     sccrRoutes);
+app.use('/api/scsr',     scsrRoutes);
+app.use('/api/sccsr',    sccsrRoutes);
 app.use('/api/loan-items', loanItemRoutes);
 app.use('/api/elt-items',  eltItemRoutes);
 app.use('/api/sr',         srRoutes);
