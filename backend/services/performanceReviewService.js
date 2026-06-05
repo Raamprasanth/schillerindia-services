@@ -548,7 +548,6 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     return days !== null && days <= 3;
   }).length;
 
-  const underRepairRows = underRepairDocs;
   const underRepairWithin = underRepairRows.filter((record) => {
     const startDate = firstDate(record.entryDate, record.createdAt);
     const completedMatch = firstByServiceId(completedDocs, record.serviceId);
