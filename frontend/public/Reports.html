@@ -595,12 +595,9 @@ body{
     </div>
     <div class="topbar-right">
       <div class="tab-bar">
-        <button class="tab-btn active" onclick="switchTab('generator')">&#128161; AI Generator</button>
-        <button class="tab-btn" onclick="switchTab('performance')">&#128200; Performance Analysis</button>
+        <button class="tab-btn active" onclick="switchTab('performance')">&#128200; Performance Analysis</button>
         <button class="tab-btn" onclick="switchTab('analytics')">&#128202; Analytics</button>
-        <button class="tab-btn" onclick="switchTab('history')">&#128214; History</button>
-        <button class="tab-btn" onclick="switchTab('kanban')">&#128203; Workload Board</button>
-      </div>
+        </div>
     </div>
   </div>
 
@@ -1315,7 +1312,7 @@ const token=sessionStorage.getItem('schiller_token')||'';
 function hdrs(){return{'Content-Type':'application/json','Authorization':'Bearer '+token};}
 
 // -- TAB SWITCHING ---------------------------------------------
-let currentTab='generator';
+let currentTab='performance';
 let kanbanLoaded=false;
 function switchTab(tab){
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
@@ -1640,28 +1637,9 @@ function renderDivisionPerfSummary(data,params) {
 
   const monthLabel = data.monthLabel || '';
   const divisionLabel = data.division || '';
-  const [yearStr, mStr] = (params.month || '').split('-');
-  const yearNum = parseInt(yearStr, 10);
-  const monthNum = parseInt(mStr, 10) - 1;
 
-  const tuesdays = [];
-  const mondays = [];
-  let d02 = '-', d03 = '-', d05 = '-', d16 = '-';
-  if (!isNaN(yearNum) && !isNaN(monthNum)) {
-    let d = new Date(yearNum, monthNum, 1);
-    while (d.getMonth() === monthNum) {
-      const fDate = String(d.getDate()).padStart(2,'0') + '-' + mStr + '-' + yearStr;
-      if (d.getDay() === 2) tuesdays.push(fDate);
-      if (d.getDay() === 1) mondays.push(fDate);
-      d.setDate(d.getDate() + 1);
-    }
-    d02 = '02-' + mStr + '-' + yearStr;
-    d03 = '03-' + mStr + '-' + yearStr;
-    d05 = '05-' + mStr + '-' + yearStr;
-    d16 = '16-' + mStr + '-' + yearStr;
-  }
   
-  const checkSub = (type, ds) => {
+  var checkSub = (type, ds) => {
     if (ds === '-') return '';
     const parts = ds.split('-');
     if (parts.length !== 3) return '';
@@ -1679,33 +1657,33 @@ function renderDivisionPerfSummary(data,params) {
     }
   };
   
-  const t1 = tuesdays[0] || '-'; const t1H = t1 + checkSub('CRM', t1);
-  const t2 = tuesdays[1] || '-'; const t2H = t2 + checkSub('CRM', t2);
-  const t3 = tuesdays[2] || '-'; const t3H = t3 + checkSub('CRM', t3);
-  const t4 = tuesdays[3] || '-'; const t4H = t4 + checkSub('CRM', t4);
-  const t5 = tuesdays[4] || '-'; const t5H = t5 + checkSub('CRM', t5);
+  var t1 = tuesdays[0] || '-'; var t1H = t1 + checkSub('CRM', t1);
+  var t2 = tuesdays[1] || '-'; var t2H = t2 + checkSub('CRM', t2);
+  var t3 = tuesdays[2] || '-'; var t3H = t3 + checkSub('CRM', t3);
+  var t4 = tuesdays[3] || '-'; var t4H = t4 + checkSub('CRM', t4);
+  var t5 = tuesdays[4] || '-'; var t5H = t5 + checkSub('CRM', t5);
   
-  const m1 = mondays[0] || '-'; const m1H = m1 + checkSub('PendingActivity', m1);
-  const m2 = mondays[1] || '-'; const m2H = m2 + checkSub('PendingActivity', m2);
-  const m3 = mondays[2] || '-'; const m3H = m3 + checkSub('PendingActivity', m3);
-  const m4 = mondays[3] || '-'; const m4H = m4 + checkSub('PendingActivity', m4);
-  const m5 = mondays[4] || '-'; const m5H = m5 + checkSub('PendingActivity', m5);
+  var m1 = mondays[0] || '-'; var m1H = m1 + checkSub('PendingActivity', m1);
+  var m2 = mondays[1] || '-'; var m2H = m2 + checkSub('PendingActivity', m2);
+  var m3 = mondays[2] || '-'; var m3H = m3 + checkSub('PendingActivity', m3);
+  var m4 = mondays[3] || '-'; var m4H = m4 + checkSub('PendingActivity', m4);
+  var m5 = mondays[4] || '-'; var m5H = m5 + checkSub('PendingActivity', m5);
 
-  const d02NS = d02 + checkSub('NonSaleable', d02);
-  const d16NS = d16 + checkSub('NonSaleable', d16);
+  var d02NS = d02 + checkSub('NonSaleable', d02);
+  var d16NS = d16 + checkSub('NonSaleable', d16);
   
-  const d03SW = d03 + checkSub('SupplierWarranty', d03);
-  const d16SW = d16 + checkSub('SupplierWarranty', d16);
+  var d03SW = d03 + checkSub('SupplierWarranty', d03);
+  var d16SW = d16 + checkSub('SupplierWarranty', d16);
   
-  const d02CP = d02 + checkSub('CriticalPendingReport', d02);
-  const d05PI = d05 + checkSub('PIRequest', d05);
+  var d02CP = d02 + checkSub('CriticalPendingReport', d02);
+  var d05PI = d05 + checkSub('PIRequest', d05);
 
-  const [yearStr, mStr] = (params.month || '').split('-');
-  const yearNum = parseInt(yearStr, 10);
-  const monthNum = parseInt(mStr, 10) - 1;
+  var [yearStr, mStr] = (params.month || '').split('-');
+  var yearNum = parseInt(yearStr, 10);
+  var monthNum = parseInt(mStr, 10) - 1;
 
-  const tuesdays = [];
-  const mondays = [];
+  var tuesdays = [];
+  var mondays = [];
   let d02 = '-', d03 = '-', d05 = '-', d16 = '-';
   if (!isNaN(yearNum) && !isNaN(monthNum)) {
     let d = new Date(yearNum, monthNum, 1);
@@ -1721,17 +1699,17 @@ function renderDivisionPerfSummary(data,params) {
     d16 = '16-' + mStr + '-' + yearStr;
   }
   
-  const t1 = tuesdays[0] || '-';
-  const t2 = tuesdays[1] || '-';
-  const t3 = tuesdays[2] || '-';
-  const t4 = tuesdays[3] || '-';
-  const t5 = tuesdays[4] || '-';
+  var t1 = tuesdays[0] || '-';
+  var t2 = tuesdays[1] || '-';
+  var t3 = tuesdays[2] || '-';
+  var t4 = tuesdays[3] || '-';
+  var t5 = tuesdays[4] || '-';
   
-  const m1 = mondays[0] || '-';
-  const m2 = mondays[1] || '-';
-  const m3 = mondays[2] || '-';
-  const m4 = mondays[3] || '-';
-  const m5 = mondays[4] || '-';
+  var m1 = mondays[0] || '-';
+  var m2 = mondays[1] || '-';
+  var m3 = mondays[2] || '-';
+  var m4 = mondays[3] || '-';
+  var m5 = mondays[4] || '-';
 
   const tableHtml = `
 <div class="perf-review-table-container" style="overflow-x:auto; padding:20px;">
@@ -2717,7 +2695,7 @@ function histPage(dir){
 }
 
 async function viewReport(id){
-  switchTab('generator');
+  switchTab('performance');
   document.getElementById('output-body').innerHTML=`<div class="loading-state"><div class="spinner"></div><div class="loading-title">Loading Report</div></div>`;
   try{
     const res=await fetch(`/api/reports/${id}`,{headers:hdrs()});
