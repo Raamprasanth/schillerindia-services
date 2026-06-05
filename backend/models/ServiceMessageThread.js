@@ -28,7 +28,7 @@ const serviceMessageThreadSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-serviceMessageThreadSchema.index({ coordinatorId: 1, employeeId: 1, employeeModel: 1 }, { unique: true });
+serviceMessageThreadSchema.index({ coordinatorId: 1, employeeId: 1, employeeModel: 1, division: 1 }, { unique: true });
 serviceMessageThreadSchema.index({ employeeId: 1, employeeModel: 1, lastMessageAt: -1 });
 serviceMessageThreadSchema.index({ coordinatorId: 1, lastMessageAt: -1 });
 serviceMessageThreadSchema.index({ division: 1 });

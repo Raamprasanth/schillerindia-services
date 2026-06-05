@@ -365,7 +365,7 @@ table.mini-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
           </div>
           <div class="msg-field">
             <label>Division</label>
-            <select id="sc-msg-division" onchange="loadScMessageEmployees()" disabled>
+            <select id="sc-msg-division" onchange="onScMsgDivisionChange()" disabled>
               <option value="">All divisions</option>
             </select>
           </div>
@@ -706,7 +706,12 @@ function onScMsgTeamChange() {
       divSel.disabled = true;
     }
   }
+  onScMsgDivisionChange();
+}
+
+function onScMsgDivisionChange() {
   loadScMessageEmployees();
+  loadScMessageThreads();
 }
 
 async function loadScMessageEmployees(){
@@ -743,7 +748,10 @@ async function loadScMessageEmployees(){
 
 async function loadScMessageThreads(){
   try{
-    const res = await fetch('/api/service-messages/threads', { headers: authHeaders() });
+    const params = new URLSearchParams();
+    const division = document.getElementById('sc-msg-division')?.value || '';
+    if (division) params.append('division', division);
+    const res = await fetch('/api/service-messages/threads' + (params.toString() ? '?' + params.toString() : ''), { headers: authHeaders() });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
     scMsgThreads = json.data || [];
@@ -831,6 +839,11 @@ async function sendScNewMessage(){
   const msgEl = document.getElementById('sc-msg-new');
   const message = msgEl?.value.trim() || '';
   if (!empVal || !message) return showToast('Select recipient and type message.', 'err');
+  const selectedTeam = document.getElementById('sc-msg-team')?.value || '';
+  const selectedDivision = document.getElementById('sc-msg-division')?.value || '';
+  if (selectedTeam === 'service_team' && !selectedDivision) {
+    return showToast('Select the recipient division before sending.', 'err');
+  }
 
   if (empVal === 'ALL') {
     const options = Array.from(document.getElementById('sc-msg-employee').options)
@@ -846,7 +859,7 @@ async function sendScNewMessage(){
         const res = await fetch('/api/service-messages/threads', {
           method: 'POST',
           headers: authHeaders(),
-          body: JSON.stringify({ employeeId, employeeModel, division: document.getElementById('sc-msg-division')?.value || '', message })
+          body: JSON.stringify({ employeeId, employeeModel, division: selectedDivision, message })
         });
         if (res.ok) sentCount++;
       } catch (_) {}
@@ -862,7 +875,7 @@ async function sendScNewMessage(){
     const res = await fetch('/api/service-messages/threads', {
       method:'POST',
       headers: authHeaders(),
-      body: JSON.stringify({ employeeId, employeeModel, division: document.getElementById('sc-msg-division')?.value || '', message })
+      body: JSON.stringify({ employeeId, employeeModel, division: selectedDivision, message })
     });
     const json = await res.json().catch(()=>({}));
     if (!res.ok) throw new Error(json.message || 'HTTP ' + res.status);

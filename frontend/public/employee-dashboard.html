@@ -483,7 +483,7 @@
           </div>
           <div class="msg-field">
             <label>Division</label>
-            <select id="emp-msg-division" onchange="loadEmpMessageRecipients()" disabled>
+            <select id="emp-msg-division" onchange="onEmpMsgDivisionChange()" disabled>
               <option value="">All divisions</option>
             </select>
           </div>
@@ -949,7 +949,10 @@
 
   async function loadEmpMessageThreads(){
     try{
-      const res = await fetch('/api/service-messages/threads', { headers: empAuthHeaders() });
+      const params = new URLSearchParams();
+      const division = document.getElementById('emp-msg-division')?.value || '';
+      if (division) params.append('division', division);
+      const res = await fetch('/api/service-messages/threads' + (params.toString() ? '?' + params.toString() : ''), { headers: empAuthHeaders() });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const json = await res.json();
       empMsgThreads = json.data || [];
@@ -987,7 +990,12 @@
         divSel.disabled = true;
       }
     }
+    onEmpMsgDivisionChange();
+  }
+
+  function onEmpMsgDivisionChange() {
     loadEmpMessageRecipients();
+    loadEmpMessageThreads();
   }
 
   async function loadEmpMessageRecipients(){
@@ -1119,6 +1127,9 @@
     const msgEl = document.getElementById('emp-msg-new');
     const message = msgEl?.value.trim() || '';
     if (!recVal || !message) return showEmpMessageToast('Select recipient and type message.');
+    const selectedTeam = document.getElementById('emp-msg-team')?.value || '';
+    const selectedDivision = document.getElementById('emp-msg-division')?.value || '';
+    if (selectedTeam === 'service_team' && !selectedDivision) return showEmpMessageToast('Select the recipient division before sending.');
 
     if (recVal === 'ALL') {
       const options = Array.from(document.getElementById('emp-msg-recipient').options)
@@ -1134,7 +1145,7 @@
           const res = await fetch('/api/service-messages/threads', {
             method: 'POST',
             headers: empAuthHeaders(),
-            body: JSON.stringify({ recipientId, recipientModel, division: document.getElementById('emp-msg-division')?.value || '', message })
+            body: JSON.stringify({ recipientId, recipientModel, division: selectedDivision, message })
           });
           if (res.ok) sentCount++;
         } catch (_) {}
@@ -1150,7 +1161,7 @@
       const res = await fetch('/api/service-messages/threads', {
         method:'POST',
         headers: empAuthHeaders(),
-        body: JSON.stringify({ recipientId, recipientModel, division: document.getElementById('emp-msg-division')?.value || '', message })
+        body: JSON.stringify({ recipientId, recipientModel, division: selectedDivision, message })
       });
       const json = await res.json().catch(()=>({}));
       if (!res.ok) throw new Error(json.message || 'HTTP ' + res.status);

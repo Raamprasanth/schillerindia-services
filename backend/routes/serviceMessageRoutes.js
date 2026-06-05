@@ -8,6 +8,40 @@ const { protect } = require('../middleware/authMiddleware');
 
 router.use(protect);
 
+let serviceMessageIndexReady = null;
+
+function isOldThreadUniqueIndex(index = {}) {
+  const key = index.key || {};
+  const keyNames = Object.keys(key);
+  return index.unique === true &&
+    key.coordinatorId === 1 &&
+    key.employeeId === 1 &&
+    key.employeeModel === 1 &&
+    key.division === undefined &&
+    keyNames.length === 3;
+}
+
+async function ensureServiceMessageDivisionIndex() {
+  if (!serviceMessageIndexReady) {
+    serviceMessageIndexReady = (async () => {
+      const indexes = await ServiceMessageThread.collection.indexes();
+      for (const index of indexes) {
+        if (isOldThreadUniqueIndex(index)) {
+          await ServiceMessageThread.collection.dropIndex(index.name);
+        }
+      }
+      await ServiceMessageThread.collection.createIndex(
+        { coordinatorId: 1, employeeId: 1, employeeModel: 1, division: 1 },
+        { unique: true, name: 'coordinator_employee_model_division_unique' }
+      );
+    })().catch((err) => {
+      serviceMessageIndexReady = null;
+      throw err;
+    });
+  }
+  return serviceMessageIndexReady;
+}
+
 function userKey(user) {
   return String(user?._id || user?.id || '');
 }
@@ -51,6 +85,37 @@ function buildRecipient(emp, source) {
     role: emp.role || (source === 'Employee' ? 'employee' : ''),
     designation: emp.designation || '',
   };
+}
+
+function normalizeDivisionName(value) {
+  return String(value || '').trim();
+}
+
+function recipientDivisions(recipient = {}) {
+  const values = [];
+  if (recipient.division) values.push(recipient.division);
+  if (Array.isArray(recipient.divisions)) values.push(...recipient.divisions);
+  return Array.from(new Set(values.map(normalizeDivisionName).filter(Boolean)));
+}
+
+function resolveThreadDivision(requestedDivision, recipient = {}) {
+  const requested = normalizeDivisionName(requestedDivision);
+  const divisions = recipientDivisions(recipient);
+  if (requested) {
+    if (divisions.length && !divisions.includes(requested)) {
+      const err = new Error('Selected recipient does not belong to this division.');
+      err.status = 400;
+      throw err;
+    }
+    return requested;
+  }
+  if (divisions.length === 1) return divisions[0];
+  if (divisions.length > 1) {
+    const err = new Error('Please select a division for this multi-division recipient.');
+    err.status = 400;
+    throw err;
+  }
+  return '';
 }
 
 function threadSummary(thread, currentUser) {
@@ -201,11 +266,14 @@ router.get('/recipients', async (req, res) => {
 router.get('/threads', async (req, res) => {
   try {
     if (!canUseMessages(req.user)) return res.status(403).json({ success: false, message: 'Not allowed' });
+    await ensureServiceMessageDivisionIndex();
     const id = userKey(req.user);
     const model = userModel(req.user);
+    const division = normalizeDivisionName(req.query.division);
     const filter = isCoordinator(req.user)
       ? { $or: [{ coordinatorId: id }, { employeeId: id, employeeModel: model }] }
       : { $or: [{ employeeId: id, employeeModel: model }, { coordinatorId: id }] };
+    if (division) filter.division = division;
     const threads = await ServiceMessageThread.find(filter).sort({ lastMessageAt: -1 }).lean();
     res.json({ success: true, data: threads.map(t => threadSummary(t, req.user)) });
   } catch (err) {
@@ -216,6 +284,7 @@ router.get('/threads', async (req, res) => {
 router.post('/threads', async (req, res) => {
   try {
     if (!canUseMessages(req.user)) return res.status(403).json({ success: false, message: 'Not allowed' });
+    await ensureServiceMessageDivisionIndex();
     const employeeId = String(req.body.employeeId || req.body.recipientId || '').trim();
     const employeeModel = String(req.body.employeeModel || req.body.recipientModel || req.body.source || 'Employee').trim();
     const text = String(req.body.message || '').trim();
@@ -227,6 +296,7 @@ router.post('/threads', async (req, res) => {
     else EmployeeModel = Employee;
     const employee = await EmployeeModel.findById(employeeId).select('name email division divisions designation role').lean();
     if (!employee) return res.status(404).json({ success: false, message: 'Recipient not found' });
+    const threadDivision = resolveThreadDivision(req.body.division, employee);
 
     const senderId = userKey(req.user);
     const senderIsCoordinator = isCoordinator(req.user);
@@ -241,7 +311,7 @@ router.post('/threads', async (req, res) => {
       readBy: [senderId],
     };
     const thread = await ServiceMessageThread.findOneAndUpdate(
-      { coordinatorId, employeeId, employeeModel },
+      { coordinatorId, employeeId, employeeModel, division: threadDivision },
       {
         $setOnInsert: {
           coordinatorId,
@@ -250,7 +320,7 @@ router.post('/threads', async (req, res) => {
           employeeModel,
           employeeName: employee.name || employee.email || 'Recipient',
           employeeEmail: employee.email || '',
-          division: req.body.division || employee.division || (Array.isArray(employee.divisions) ? employee.divisions[0] : '') || '',
+          division: threadDivision,
         },
         $set: { lastMessage: text, lastMessageAt: new Date() },
         $push: { messages: message },
@@ -259,7 +329,7 @@ router.post('/threads', async (req, res) => {
     ).lean();
     res.status(201).json({ success: true, data: threadSummary(thread, req.user) });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Failed to send message', error: err.message });
+    res.status(err.status || 500).json({ success: false, message: err.status ? err.message : 'Failed to send message', error: err.message });
   }
 });
 

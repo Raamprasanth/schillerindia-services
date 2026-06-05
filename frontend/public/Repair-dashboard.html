@@ -379,7 +379,7 @@
           </div>
           <div class="msg-field">
             <label>Division</label>
-            <select id="rep-msg-division" onchange="loadRepMessageRecipients()" disabled>
+            <select id="rep-msg-division" onchange="onRepMsgDivisionChange()" disabled>
               <option value="">All divisions</option>
             </select>
           </div>
@@ -955,7 +955,12 @@ function onRepMsgTeamChange() {
       divSel.value = '';
     }
   }
+  onRepMsgDivisionChange();
+}
+
+function onRepMsgDivisionChange() {
   loadRepMessageRecipients();
+  loadRepMessageThreads();
 }
 
 async function loadRepMessageRecipients(){
@@ -996,7 +1001,10 @@ async function loadRepMessageRecipients(){
 
 async function loadRepMessageThreads(){
   try{
-    const res = await fetch('/api/service-messages/threads', { headers: authHeaders() });
+    const params = new URLSearchParams();
+    const division = document.getElementById('rep-msg-division')?.value || '';
+    if (division) params.append('division', division);
+    const res = await fetch('/api/service-messages/threads' + (params.toString() ? '?' + params.toString() : ''), { headers: authHeaders() });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
     repMsgThreads = json.data || [];
@@ -1085,6 +1093,9 @@ async function sendRepNewMessage(){
   const msgEl = document.getElementById('rep-msg-new');
   const message = msgEl?.value.trim() || '';
   if (!empVal || !message) return showToast('Select recipient and type message.', 'err');
+  const selectedTeam = document.getElementById('rep-msg-team')?.value || '';
+  const selectedDivision = document.getElementById('rep-msg-division')?.value || '';
+  if (selectedTeam === 'service_team' && !selectedDivision) return showToast('Select the recipient division before sending.', 'err');
 
   if (empVal === 'ALL') {
     const options = Array.from(document.getElementById('rep-msg-recipient').options)
@@ -1100,7 +1111,7 @@ async function sendRepNewMessage(){
         const res = await fetch('/api/service-messages/threads', {
           method: 'POST',
           headers: authHeaders(),
-          body: JSON.stringify({ recipientId, recipientModel, division: document.getElementById('rep-msg-division')?.value || '', message })
+          body: JSON.stringify({ recipientId, recipientModel, division: selectedDivision, message })
         });
         if (res.ok) sentCount++;
       } catch (_) {}
@@ -1116,7 +1127,7 @@ async function sendRepNewMessage(){
     const res = await fetch('/api/service-messages/threads', {
       method:'POST',
       headers: authHeaders(),
-      body: JSON.stringify({ recipientId, recipientModel, division: document.getElementById('rep-msg-division')?.value || '', message })
+      body: JSON.stringify({ recipientId, recipientModel, division: selectedDivision, message })
     });
     const json = await res.json().catch(()=>({}));
     if (!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
