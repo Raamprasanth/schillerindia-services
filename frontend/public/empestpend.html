@@ -869,7 +869,12 @@ function fillEngSelect(selId, division, selected) {
 
 function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; }
 function getToken(){ return sessionStorage.getItem('schiller_token')||''; }
-function authHeaders(){ return{'Content-Type':'application/json','Authorization':'Bearer '+getToken()}; }
+function authHeaders(){
+  const headers={'Content-Type':'application/json','Authorization':'Bearer '+getToken()};
+  const activeDivision=String(localStorage.getItem('schiller_active_division')||LOGGED_USER.division||LOGGED_USER.divisionName||'').trim();
+  if(activeDivision) headers['x-active-division']=activeDivision;
+  return headers;
+}
 function normalizeRtDivision(record){
   const raw=String(record?.division?.name||record?.divisionName||record?.division||record?.branch||record?.reg||'').trim().toUpperCase();
   const map={

@@ -195,7 +195,7 @@ router.get('/', async (req, res) => {
     let query = {};
     if (role !== 'admin' && role !== 'superadmin') {
       const { getServiceIdsFilter } = require('../utils/visibility');
-      query = await getServiceIdsFilter(req.user, estimationOwnerFallback(req.user));
+      query = await getServiceIdsFilter(req.user);
     }
     const records = await EstimationPending.find(query).populate('serviceId', 'dealer defPartSno').sort({ createdAt: -1 }).lean();
     res.json(records.map(record => ({
@@ -215,7 +215,7 @@ router.get('/', async (req, res) => {
 router.get('/employee', async (req, res) => {
   try {
     const { getServiceIdsFilter } = require('../utils/visibility');
-    const query = await getServiceIdsFilter(req.user, estimationOwnerFallback(req.user));
+    const query = await getServiceIdsFilter(req.user);
     const records = await EstimationPending.find(query).populate('serviceId', 'dealer defPartSno').sort({ createdAt: -1 }).lean();
     res.json(records.map(record => ({
       ...record,

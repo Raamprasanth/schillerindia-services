@@ -1000,7 +1000,12 @@ function removeLegacyAutoMailUi(){
 })();
 
 function getToken(){return sessionStorage.getItem('schiller_token')||'';}
-function authHeaders(){return{'Content-Type':'application/json',Authorization:'Bearer '+getToken()};}
+function authHeaders(){
+  const headers={'Content-Type':'application/json',Authorization:'Bearer '+getToken()};
+  const activeDivision=String(localStorage.getItem('schiller_active_division')||LOGGED_USER.division||LOGGED_USER.divisionName||'').trim();
+  if(activeDivision) headers['x-active-division']=activeDivision;
+  return headers;
+}
 function handleUnauth(res){if(res.status===401){showToast('Session expired - please log in again.','err');setTimeout(()=>window.location.href='login.html',1500);throw new Error('Unauthorized');}}
 const UNIT_STATUS_VALUES=new Set(['OW','LAMC','CAMC','EW','STOCK','IW','DEMO','REPEAT','BUY BACK','BUYBACK']);
 function isUnitStatusValue(value){
