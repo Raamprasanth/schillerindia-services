@@ -205,6 +205,26 @@
     .report-trackers-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;}
     .report-link-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;border:1.5px solid var(--accent);background:var(--accent3);color:var(--accent);font-size:12px;font-weight:700;text-decoration:none;transition:all 0.2s;}
     .report-link-btn:hover{background:var(--accent);color:#fff;}
+    /* Tracker submit styles */
+    .tracker-date-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #e8f0f7;cursor:pointer;user-select:none;}
+    .tracker-date-row:last-child{border-bottom:none;}
+    .tracker-date-row.future{opacity:0.45;cursor:default;}
+    .tracker-cb{width:18px;height:18px;border-radius:5px;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all 0.18s;}
+    .tracker-cb.done{background:var(--green);border-color:var(--green);color:#fff;pointer-events:none;}
+    .tracker-cb.checked{background:var(--accent);border-color:var(--accent);color:#fff;}
+    .tracker-date-label{font-size:12.5px;font-weight:600;color:var(--text);flex:1;}
+    .tracker-status-pill{font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;}
+    .pill-submitted{background:rgba(5,150,105,0.1);color:#047857;}
+    .pill-pending{background:rgba(217,119,6,0.1);color:#b45309;}
+    .pill-future{background:rgba(0,0,0,0.06);color:var(--muted);}
+    .tracker-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+    .tracker-completion-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;}
+    .tcb-full{background:rgba(5,150,105,0.12);color:#047857;}
+    .tcb-part{background:rgba(217,119,6,0.12);color:#b45309;}
+    .tcb-none{background:rgba(185,28,28,0.1);color:#b91c1c;}
+    .tracker-submit-btn{width:100%;margin-top:10px;padding:8px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px;}
+    .tracker-submit-btn:hover{background:#1d4ed8;}
+    .tracker-submit-btn:disabled{opacity:0.5;cursor:not-allowed;}
 
     /* ACTIVITY */
     .activity-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #e8f0f7;}
@@ -405,6 +425,8 @@
     <a class="nav-item" href="ecr.html"><span class="ico">&#128274;</span> Closed TO/SO Register</a>
     <a class="nav-item" href="elt.html"><span class="ico">&#128451;</span> Loan Items</a>
     <a class="nav-item" href="ecli.html"><span class="ico">&#128193;</span> Closed Loan Item</a>
+    <a class="nav-item" href="sr.html"><span class="ico">&#128221;</span> Service Request</a>
+    <a class="nav-item" href="csr.html"><span class="ico">&#9989;</span> Closed SR</a>
     <button class="nav-group-toggle" type="button" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');"><span class="ico">&#128736;&#65039;</span><span>Warr/Rep</span><span class="caret">&#9656;</span></button>
     <div class="nav-children nav-sub">
       <a class="nav-item" href="Emp-scrap-list.html"><span class="ico">&#9888;&#65039;</span> Supplier Warranty</a>
@@ -780,36 +802,30 @@
     <div class="report-trackers-grid" id="weekly-trackers">
       <div class="panel">
         <div class="panel-header">
-          <div class="panel-title">CRM Reports (Tuesdays)</div>
-          <a class="report-link-btn" href="https://synergycrm.net/schillerservice/" target="_blank">CRM</a>
+          <div class="panel-title">&#128202; CRM Reports <span style="font-size:10px;color:var(--muted);font-weight:400;">(Tuesdays)</span></div>
+          <a class="report-link-btn" href="https://synergycrm.net/schillerservice/" target="_blank">Open CRM</a>
         </div>
-        <div class="panel-body" id="crm-tracker-body">
-          <div style="color:var(--muted); font-size:13px;">Loading Tuesdays...</div>
-        </div>
+        <div class="panel-body" id="crm-tracker-body"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
       </div>
       <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title">Pending Activity (Mondays)</div>
-        </div>
-        <div class="panel-body" id="pa-tracker-body">
-          <div style="color:var(--muted); font-size:13px;">Loading Mondays...</div>
-        </div>
+        <div class="panel-header"><div class="panel-title">&#128221; Pending Activity <span style="font-size:10px;color:var(--muted);font-weight:400;">(Mondays)</span></div></div>
+        <div class="panel-body" id="pa-tracker-body"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
       </div>
       <div class="panel">
-        <div class="panel-header"><div class="panel-title">Non Saleable (2 & 16)</div></div>
-        <div class="panel-body" id="nonsaleable-tracker-body"><div style="color:var(--muted); font-size:13px;">Loading dates...</div></div>
+        <div class="panel-header"><div class="panel-title">&#128230; Non Saleable <span style="font-size:10px;color:var(--muted);font-weight:400;">(2 &amp; 16)</span></div></div>
+        <div class="panel-body" id="nonsaleable-tracker-body"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
       </div>
       <div class="panel">
-        <div class="panel-header"><div class="panel-title">Supplier Warranty (3 & 16)</div></div>
-        <div class="panel-body" id="supplierwarranty-tracker-body"><div style="color:var(--muted); font-size:13px;">Loading dates...</div></div>
+        <div class="panel-header"><div class="panel-title">&#9888;&#65039; Supplier Warranty <span style="font-size:10px;color:var(--muted);font-weight:400;">(3 &amp; 16)</span></div></div>
+        <div class="panel-body" id="supplierwarranty-tracker-body"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
       </div>
       <div class="panel">
-        <div class="panel-header"><div class="panel-title">Critical Pending Report (2)</div></div>
-        <div class="panel-body" id="criticalpending-tracker-body"><div style="color:var(--muted); font-size:13px;">Loading date...</div></div>
+        <div class="panel-header"><div class="panel-title">&#128680; Critical Pending <span style="font-size:10px;color:var(--muted);font-weight:400;">(2nd)</span></div></div>
+        <div class="panel-body" id="criticalpending-tracker-body"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
       </div>
       <div class="panel">
-        <div class="panel-header"><div class="panel-title">PI Request (5)</div></div>
-        <div class="panel-body" id="pirequest-tracker-body"><div style="color:var(--muted); font-size:13px;">Loading date...</div></div>
+        <div class="panel-header"><div class="panel-title">&#128196; PI Request <span style="font-size:10px;color:var(--muted);font-weight:400;">(5th)</span></div></div>
+        <div class="panel-body" id="pirequest-tracker-body"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
       </div>
     </div>
 
@@ -1421,9 +1437,9 @@
 
   function renderTourTable() {
     var list = loadTourSummaries();
-    var tbody = document.getElementById('tour-tbody');
     var badge = document.getElementById('tour-count-badge');
     if (badge) badge.textContent = list.length + (list.length===1?' entry':' entries');
+    var tbody = document.getElementById('tour-tbody');
     if (!tbody) return;
     if (!list.length) {
       tbody.innerHTML = '<tr><td colspan="13" class="tour-empty"><div style="font-size:28px;margin-bottom:8px;">&#128205;</div>No tour entries yet.<br><span style="font-size:12px;">Click <strong>+ Add New</strong> to add your first field visit record.</span></td></tr>';
@@ -1595,32 +1611,39 @@
     }
     setRrStatus('Reading RR report and building analysis...');
     try {
-      const rawRows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-      const normalizedRows = normalizeRrRows(rawRows);
-      const columns = normalizedRows.length ? Object.keys(normalizedRows[0]) : [];
-      const missingColumns = ['PRODUCT_MODEL', 'UNIT_SLNO'].filter((column) => !columns.includes(column));
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rawRows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+        const normalizedRows = normalizeRrRows(rawRows);
+        const columns = normalizedRows.length ? Object.keys(normalizedRows[0]) : [];
+        const missingColumns = ['PRODUCT_MODEL', 'UNIT_SLNO'].filter((column) => !columns.includes(column));
 
-      if (!normalizedRows.length) {
-        throw new Error('The uploaded sheet is empty.');
-      }
-      if (missingColumns.length) {
-        throw new Error(`Missing required columns: ${missingColumns.join(', ')}`);
-      }
+        if (!normalizedRows.length) {
+          throw new Error('The uploaded sheet is empty.');
+        }
+        if (missingColumns.length) {
+          throw new Error(`Missing required columns: ${missingColumns.join(', ')}`);
+        }
 
-      rrState.fileName = file.name;
-      rrState.rows = normalizedRows;
-      rrState.columns = columns;
-      rrState.reports = getAvailableRrReports(columns);
-      rrState.models = getUniqueValues(normalizedRows, 'PRODUCT_MODEL');
-      rrState.currentReport = rrState.reports[0] || 'overview';
-      rrState.currentModel = rrState.models[0] || '';
+        rrState.fileName = file.name;
+        rrState.rows = normalizedRows;
+        rrState.columns = columns;
+        rrState.reports = getAvailableRrReports(columns);
+        rrState.models = getUniqueValues(normalizedRows, 'PRODUCT_MODEL');
+        rrState.currentReport = rrState.reports[0] || 'overview';
+        rrState.currentModel = rrState.models[0] || '';
 
-      (document.getElementById('rr-file-pill')||{}).textContent = file.name;
-      populateRrReportOptions();
-      populateRrModelOptions();
-      syncRrModelVisibility();
-      setRrStatus(`Loaded ${normalizedRows.length} rows from ${file.name}.`);
-      renderRrAnalysis();
+        (document.getElementById('rr-file-pill')||{}).textContent = file.name;
+        populateRrReportOptions();
+        populateRrModelOptions();
+        syncRrModelVisibility();
+        setRrStatus(`Loaded ${normalizedRows.length} rows from ${file.name}.`);
+        renderRrAnalysis();
+      };
+      reader.readAsArrayBuffer(file);
     } catch (error) {
       rrState.fileName = '';
       rrState.rows = [];
@@ -2252,43 +2275,38 @@
 
   function escH(s){ const d=document.createElement('div');d.textContent=s;return d.innerHTML; }
 
-  // --- WEEKLY TRACKERS LOGIC ---
+  // --- WEEKLY TRACKERS LOGIC (Batch Tick + Submit) ---
+  // localChecked[type][dateStr] = true/false (pending local selection before submit)
+  const _trackerLocalChecked = {};
+
   async function loadWeeklyTrackers() {
     const today = new Date();
     const year = today.getFullYear();
-    const month = today.getMonth() + 1; // 1-12
+    const month = today.getMonth() + 1;
     const monthStr = `${year}-${month.toString().padStart(2, '0')}`;
-    
-    // Get all scheduled report dates for current month
     const mondays = getDaysInMonth(year, today.getMonth(), 1);
     const tuesdays = getDaysInMonth(year, today.getMonth(), 2);
-    
+
     let submissions = [];
     try {
       const res = await fetch(`/api/tracker/me?month=${monthStr}`, {
         headers: { Authorization: 'Bearer ' + sessionStorage.getItem('schiller_token') }
       });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success) submissions = data.submissions;
-      }
+      if (res.ok) { const d = await res.json(); if (d.success) submissions = d.submissions; }
     } catch(e) { console.error('Failed to load trackers', e); }
 
-    renderTrackerList('crm-tracker-body', tuesdays, submissions, 'CRM', monthStr);
-    renderTrackerList('pa-tracker-body', mondays, submissions, 'PendingActivity', monthStr);
-    renderTrackerList('nonsaleable-tracker-body', getMonthDates(year, today.getMonth(), [2, 16]), submissions, 'NonSaleable', monthStr);
-    renderTrackerList('supplierwarranty-tracker-body', getMonthDates(year, today.getMonth(), [3, 16]), submissions, 'SupplierWarranty', monthStr);
-    renderTrackerList('criticalpending-tracker-body', getMonthDates(year, today.getMonth(), [2]), submissions, 'CriticalPendingReport', monthStr);
-    renderTrackerList('pirequest-tracker-body', getMonthDates(year, today.getMonth(), [5]), submissions, 'PIRequest', monthStr);
+    renderTrackerPanel('crm-tracker-body', tuesdays, submissions, 'CRM', monthStr);
+    renderTrackerPanel('pa-tracker-body', mondays, submissions, 'PendingActivity', monthStr);
+    renderTrackerPanel('nonsaleable-tracker-body', getMonthDates(year, today.getMonth(), [2, 16]), submissions, 'NonSaleable', monthStr);
+    renderTrackerPanel('supplierwarranty-tracker-body', getMonthDates(year, today.getMonth(), [3, 16]), submissions, 'SupplierWarranty', monthStr);
+    renderTrackerPanel('criticalpending-tracker-body', getMonthDates(year, today.getMonth(), [2]), submissions, 'CriticalPendingReport', monthStr);
+    renderTrackerPanel('pirequest-tracker-body', getMonthDates(year, today.getMonth(), [5]), submissions, 'PIRequest', monthStr);
   }
 
   function getDaysInMonth(year, monthIndex, dayOfWeek) {
-    let d = new Date(year, monthIndex, 1);
-    let days = [];
+    let d = new Date(year, monthIndex, 1), days = [];
     while (d.getMonth() === monthIndex) {
-      if (d.getDay() === dayOfWeek) {
-        days.push(new Date(d));
-      }
+      if (d.getDay() === dayOfWeek) days.push(new Date(d));
       d.setDate(d.getDate() + 1);
     }
     return days;
@@ -2296,94 +2314,7 @@
 
   function getMonthDates(year, monthIndex, dates) {
     const maxDate = new Date(year, monthIndex + 1, 0).getDate();
-    return dates
-      .filter(day => day >= 1 && day <= maxDate)
-      .map(day => new Date(year, monthIndex, day));
-  }
 
-  function renderTrackerList(containerId, dateObjs, submissions, type, monthStr) {
-    const container = document.getElementById(containerId);
-    if(!container) return;
-    
-    let html = '<div style="display:flex; flex-direction:column; gap:10px;">';
-    
-    dateObjs.forEach(dateObj => {
-      const y = dateObj.getFullYear();
-      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-      const d = String(dateObj.getDate()).padStart(2, '0');
-      const dateStr = `${y}-${m}-${d}`;
-      const isSubmitted = submissions.some(s => s.type === type && s.reportDate === dateStr);
-      
-      const btnClass = isSubmitted ? 'task-check done' : 'task-check';
-      const checkMark = isSubmitted ? '&#10003;' : '';
-      const displayDate = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-      
-      html += `
-        <div class="task-item" style="cursor:pointer;" onclick="toggleTracker('${type}', '${dateStr}', '${monthStr}', ${isSubmitted})">
-          <div class="${btnClass}" id="check-${type}-${dateStr}">${checkMark}</div>
-          <div class="task-info">
-            <div class="task-title">${displayDate}</div>
-            <div class="task-sub">${isSubmitted ? 'Submitted' : 'Pending'}</div>
-          </div>
-        </div>
-      `;
-    });
-    
-    html += '</div>';
-    container.innerHTML = html;
-  }
-
-  async function toggleTracker(type, reportDate, monthStr, currentlySubmitted) {
-    const newStatus = currentlySubmitted ? 'pending' : 'submitted';
-    
-    // Optimistic UI update
-    const checkEl = document.getElementById(`check-${type}-${reportDate}`);
-    if(checkEl) {
-      if(newStatus === 'submitted') {
-        checkEl.className = 'task-check done';
-        checkEl.innerHTML = '&#10003;';
-        checkEl.nextElementSibling.querySelector('.task-sub').textContent = 'Submitted';
-      } else {
-        checkEl.className = 'task-check';
-        checkEl.innerHTML = '';
-        checkEl.nextElementSibling.querySelector('.task-sub').textContent = 'Pending';
-      }
-    }
-    
-    try {
-      const res = await fetch('/api/tracker/submit', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + sessionStorage.getItem('schiller_token') 
-        },
-        body: JSON.stringify({ type, reportDate, month: monthStr, status: newStatus })
-      });
-      const data = await res.json();
-      if(!data.success) {
-        showToast('err', data.message || 'Failed to update tracker');
-        loadWeeklyTrackers(); // revert
-      } else {
-        showToast('ok', `${type} marked as ${newStatus}`);
-        loadWeeklyTrackers(); // Refresh
-      }
-    } catch(e) {
-      console.error(e);
-      loadWeeklyTrackers(); // revert
-    }
-  }
-
-  // Hook into dashboard load
-  const originalInit = window.onload;
-  window.onload = function() {
-    if (typeof originalInit === 'function') originalInit();
-    setTimeout(loadWeeklyTrackers, 500); // load after UI settles
-  };
-
-</script>
-<script src="tab-fix.js"></script>
-</body>
-</html>
 
 
 

@@ -783,110 +783,164 @@ body{
     -------------------------------------------------- -->
     <div id="tab-performance" class="tab-pane">
 
-      <div class="perf-layout">
+      <!-- Sub-tab switcher -->
+      <div class="perf-subtabs">
+        <button class="perf-subtab active" id="pst-division" onclick="switchPerfSubTab('division')">&#127986; Division</button>
+        <button class="perf-subtab" id="pst-individual" onclick="switchPerfSubTab('individual')">&#128100; Individual</button>
+      </div>
 
-        <!-- Builder -->
-        <div class="perf-builder">
-          <div class="perf-head">
-            <div class="perf-head-title">&#128200; Performance Analysis</div>
-            <div class="perf-head-sub">Generate monthly performance reports for Individual or Division Wise views</div>
-          </div>
-          <div class="perf-body">
-
-            <!-- Scope -->
-            <div>
-              <label class="field-label">Analysis Type</label>
-              <div class="scope-tabs">
-                <button class="scope-tab active" id="scope-div-btn" onclick="setScope('division')">&#127986; Division Wise</button>
-                <button class="scope-tab" id="scope-emp-btn" onclick="setScope('employee')">&#128100; Individual</button>
+      <!-- DIVISION SUB-TAB -->
+      <div id="perf-div-pane" class="perf-subpane active">
+        <div class="perf-layout">
+          <!-- Builder -->
+          <div class="perf-builder">
+            <div class="perf-head">
+              <div class="perf-head-title">&#127986; Division Performance</div>
+              <div class="perf-head-sub">Select division and month to generate report</div>
+            </div>
+            <div class="perf-body">
+              <div>
+                <label class="field-label">Month</label>
+                <input type="month" class="field-input" id="perf-month-div"/>
               </div>
-            </div>
-
-            <!-- Month -->
-            <div>
-              <label class="field-label">Month</label>
-              <input type="month" class="field-input" id="perf-month"/>
-            </div>
-
-            <!-- Division Select -->
-            <div id="perf-div-field">
-              <label class="field-label">Division</label>
-              <select class="field-select" id="perf-division">
-                <option value=""> Select Division </option>
-              </select>
-            </div>
-
-            <!-- Employee Select -->
-            <div id="perf-emp-field" style="display:none;">
-              <label class="field-label">Employee</label>
-              <select class="field-select" id="perf-employee">
-                <option value=""> Select Employee </option>
-              </select>
-              <div style="margin-top:8px;">
-                <label class="field-label">Employee's Division</label>
-                <select class="field-select" id="perf-emp-division">
-                  <option value=""> Division (for report) </option>
+              <div>
+                <label class="field-label">Division</label>
+                <select class="field-select" id="perf-division">
+                  <option value=""> Select Division </option>
                 </select>
               </div>
             </div>
-
+            <div class="perf-footer">
+              <button class="btn btn-primary" style="flex:1;justify-content:center;" id="perf-preview-btn-div" onclick="loadDivisionPerf()">&#128065; Preview Division</button>
+              <button class="btn btn-ghost" style="flex:1;justify-content:center;" onclick="loadLeaderboard()">&#127942; Leaderboard</button>
+            </div>
           </div>
-          <div class="perf-footer">
-            <button class="btn btn-primary" style="flex:1;justify-content:center;" id="perf-preview-btn" onclick="loadPerfSummary()">&#128065; Preview Summary</button>
-            <button class="btn btn-ghost" style="flex:1;justify-content:center;" id="perf-lb-btn" onclick="loadLeaderboard()">&#127942; Leaderboard</button>
+
+          <!-- Output -->
+          <div class="perf-output">
+            <div class="perf-output-head">
+              <div>
+                <div class="perf-output-title" id="perf-div-out-title">Division Summary</div>
+                <div id="perf-div-out-meta" style="font-size:11px;color:var(--muted);">Select division and generate preview</div>
+              </div>
+              <div class="perf-inner-tabs" id="perf-div-inner-tabs" style="display:none;">
+                <button class="perf-inner-tab active" onclick="switchPerfDivTab('summary',this)">&#128202; Summary</button>
+                <button class="perf-inner-tab" onclick="switchPerfDivTab('trend',this)">&#128200; Trend</button>
+                <button class="perf-inner-tab" onclick="switchPerfDivTab('leaderboard',this)">&#127942; Leaderboard</button>
+              </div>
+            </div>
+
+            <!-- Division Summary Pane -->
+            <div id="perf-pane-div-summary">
+              <div class="empty-state" style="padding:50px 24px;">
+                <div class="empty-icon">&#128196;</div>
+                <div class="empty-title">No Preview Yet</div>
+                <div class="empty-sub">Select division and month then click Preview.</div>
+              </div>
+            </div>
+
+            <!-- Trend Pane -->
+            <div id="perf-pane-trend-div" style="display:none;">
+              <div class="empty-state" style="padding:50px 24px;">
+                <div class="empty-icon">&#128200;</div>
+                <div class="empty-title">No Trend Yet</div>
+                <div class="empty-sub">Generate a summary first to load the 6-month trend.</div>
+              </div>
+            </div>
+
+            <!-- Leaderboard Pane -->
+            <div id="perf-pane-leaderboard-div" style="display:none;">
+              <div class="empty-state" style="padding:50px 24px;">
+                <div class="empty-icon">&#127942;</div>
+                <div class="empty-title">No Leaderboard Yet</div>
+                <div class="empty-sub">Click the Leaderboard button to rank all divisions.</div>
+              </div>
+            </div>
+
+            <!-- Comment Box -->
+            <div class="comment-section" id="perf-div-comment-section" style="display:none;">
+              <div class="comment-label">&#128172; Manager Notes / Review Comments</div>
+              <textarea class="comment-textarea" id="perf-div-comment" placeholder="Add your review notes here (auto-saved)..." oninput="saveDivComment()"></textarea>
+              <div class="comment-saved" id="div-comment-saved">&#10003; Saved</div>
+            </div>
           </div>
         </div>
-
-        <!-- Output -->
-        <div class="perf-output">
-          <div class="perf-output-head">
-            <div>
-              <div class="perf-output-title" id="perf-out-title">Performance Summary</div>
-              <div id="perf-out-meta" style="font-size:11px;color:var(--muted);">Select scope and generate preview</div>
-            </div>
-            <div class="perf-inner-tabs" id="perf-inner-tabs" style="display:none;">
-              <button class="perf-inner-tab active" onclick="switchPerfTab('summary',this)">&#128202; Summary</button>
-              <button class="perf-inner-tab" onclick="switchPerfTab('trend',this)">&#128200; Trend</button>
-              <button class="perf-inner-tab" onclick="switchPerfTab('leaderboard',this)">&#127942; Leaderboard</button>
-            </div>
-          </div>
-
-          <!-- Summary Pane -->
-          <div id="perf-pane-summary">
-            <div class="empty-state" style="padding:50px 24px;">
-              <div class="empty-icon">&#128196;</div>
-              <div class="empty-title">No Preview Yet</div>
-              <div class="empty-sub">Select scope, month, and division/employee then click Preview Summary.</div>
-            </div>
-          </div>
-
-          <!-- Trend Pane -->
-          <div id="perf-pane-trend" style="display:none;">
-            <div class="empty-state" style="padding:50px 24px;">
-              <div class="empty-icon">&#128200;</div>
-              <div class="empty-title">No Trend Yet</div>
-              <div class="empty-sub">Generate a summary first to load the 6-month trend.</div>
-            </div>
-          </div>
-
-          <!-- Leaderboard Pane -->
-          <div id="perf-pane-leaderboard" style="display:none;">
-            <div class="empty-state" style="padding:50px 24px;">
-              <div class="empty-icon">&#127942;</div>
-              <div class="empty-title">No Leaderboard Yet</div>
-              <div class="empty-sub">Click the Leaderboard button to rank all divisions for the selected month.</div>
-            </div>
-          </div>
-
-          <!-- Comment Box (always visible after load) -->
-          <div class="comment-section" id="perf-comment-section" style="display:none;">
-            <div class="comment-label">&#128172; Manager Notes / Review Comments</div>
-            <textarea class="comment-textarea" id="perf-comment" placeholder="Add your review notes here (auto-saved)..." oninput="saveComment()"></textarea>
-            <div class="comment-saved" id="comment-saved">&#10003; Saved</div>
-          </div>
-        </div>
-
       </div>
+
+      <!-- INDIVIDUAL SUB-TAB -->
+      <div id="perf-ind-pane" class="perf-subpane" style="display:none;">
+        <div class="perf-layout">
+          <!-- Builder -->
+          <div class="perf-builder">
+            <div class="perf-head">
+              <div class="perf-head-title">&#128100; Individual Performance</div>
+              <div class="perf-head-sub">Select employee and month to generate report</div>
+            </div>
+            <div class="perf-body">
+              <div>
+                <label class="field-label">Month</label>
+                <input type="month" class="field-input" id="perf-month"/>
+              </div>
+              <div id="perf-emp-field">
+                <label class="field-label">Employee</label>
+                <select class="field-select" id="perf-employee">
+                  <option value=""> Select Employee </option>
+                </select>
+                <div style="margin-top:8px;">
+                  <label class="field-label">Employee's Division</label>
+                  <select class="field-select" id="perf-emp-division">
+                    <option value=""> Division (for report) </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="perf-footer">
+              <button class="btn btn-primary" style="flex:1;justify-content:center;" id="perf-preview-btn" onclick="loadPerfSummary()">&#128065; Preview Summary</button>
+            </div>
+          </div>
+
+          <!-- Output -->
+          <div class="perf-output">
+            <div class="perf-output-head">
+              <div>
+                <div class="perf-output-title" id="perf-out-title">Performance Summary</div>
+                <div id="perf-out-meta" style="font-size:11px;color:var(--muted);">Select employee and generate preview</div>
+              </div>
+              <div class="perf-inner-tabs" id="perf-inner-tabs" style="display:none;">
+                <button class="perf-inner-tab active" onclick="switchPerfTab('summary',this)">&#128202; Summary</button>
+                <button class="perf-inner-tab" onclick="switchPerfTab('trend',this)">&#128200; Trend</button>
+              </div>
+            </div>
+
+            <!-- Summary Pane -->
+            <div id="perf-pane-summary">
+              <div class="empty-state" style="padding:50px 24px;">
+                <div class="empty-icon">&#128196;</div>
+                <div class="empty-title">No Preview Yet</div>
+                <div class="empty-sub">Select employee and month then click Preview Summary.</div>
+              </div>
+            </div>
+
+            <!-- Trend Pane -->
+            <div id="perf-pane-trend" style="display:none;">
+              <div class="empty-state" style="padding:50px 24px;">
+                <div class="empty-icon">&#128200;</div>
+                <div class="empty-title">No Trend Yet</div>
+                <div class="empty-sub">Generate a summary first to load the 6-month trend.</div>
+              </div>
+            </div>
+
+            <!-- Comment Box -->
+            <div class="comment-section" id="perf-comment-section" style="display:none;">
+              <div class="comment-label">&#128172; Manager Notes / Review Comments</div>
+              <textarea class="comment-textarea" id="perf-comment" placeholder="Add your review notes here (auto-saved)..." oninput="saveComment()"></textarea>
+              <div class="comment-saved" id="comment-saved">&#10003; Saved</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div><!-- /tab-performance -->
 
     <!-- --------------------------------------------------

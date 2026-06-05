@@ -44,7 +44,7 @@ async function sendToScod(id, btn) {
   }
 }
 </script>
-<title>SchillerIndia - ELT</title>
+<title>SchillerIndia - Closed SR</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
@@ -258,10 +258,10 @@ async function sendToScod(id, btn) {
     <a class="nav-item" href="completed-frn.html"><span class="ico">&#9989;</span> Completed FRN</a>
     <a class="nav-item" href="eprfob.html"><span class="ico">&#128203;</span> TO/SO Register</a>
     <a class="nav-item" href="ecr.html"><span class="ico">&#128274;</span> Closed TO/SO Register</a>
-    <a class="nav-item active" href="elt.html"><span class="ico">&#128451;</span> Loan Items</a>
+    <a class="nav-item" href="elt.html"><span class="ico">&#128451;</span> Loan Items</a>
     <a class="nav-item" href="ecli.html"><span class="ico">&#128193;</span> Closed Loan Item</a>
     <a class="nav-item" href="sr.html"><span class="ico">&#128221;</span> Service Request</a>
-    <a class="nav-item" href="csr.html"><span class="ico">&#9989;</span> Closed SR</a>
+    <a class="nav-item active" href="csr.html"><span class="ico">&#9989;</span> Closed SR</a>
     <button class="nav-group-toggle" type="button" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');"><span class="ico">&#128736;&#65039;</span><span>Warr/Rep</span><span class="caret">&#9656;</span></button>
     <div class="nav-children nav-sub">
       <a class="nav-item" href="Emp-scrap-list.html"><span class="ico">&#9888;&#65039;</span> Supplier Warranty</a>
@@ -306,7 +306,7 @@ async function sendToScod(id, btn) {
         <span>Inventory</span><span class="sep">&#8250;</span>
         <span>Loan Items</span>
       </div>
-      <div class="page-title">Loan Items</div>
+      <div class="page-title">Closed SR</div>
     </div>
     <div class="topbar-actions">
       <button class="topbar-btn" onclick="loadData()">&#10227; Refresh</button>
@@ -324,7 +324,7 @@ async function sendToScod(id, btn) {
 
     <div class="table-card">
       <div class="table-top">
-        <div class="table-title">ELT Details <span class="count-chip" id="count-chip">0 entries</span></div>
+        <div class="table-title">Closed SR Details <span class="count-chip" id="count-chip">0 entries</span></div>
         <div class="toolbar-r">
           <div class="show-row">Show
             <select class="f-select" id="per-page" onchange="renderTable()">
@@ -350,18 +350,16 @@ async function sendToScod(id, btn) {
       <div class="table-wrap">
         <table class="frn-table">
           <thead><tr>
-            <th onclick="sortBy('date')">Date <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
             <th onclick="sortBy('partNo')">Part No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('description')">Description <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('qty')">Qty <span class="si">&#8693;</span></th>
             <th onclick="sortBy('girNo')">GIR No <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('revalue')">Revalue <span class="si">&#8693;</span></th>
-            <th>Status</th>
-            <th>Remarks</th>
-            <th>Action</th>
+            <th onclick="sortBy('fromLocation')">From Location <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('toLocation')">To Location <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('remarks')">Remarks <span class="si">&#8693;</span></th>
           </tr></thead>
           <tbody id="lt-tbody">
-            <tr class="loading-row"><td colspan="9"><span class="spin"></span>Loading from database</td></tr>
+            <tr class="loading-row"><td colspan="7"><span class="spin"></span>Loading from database</td></tr>
           </tbody>
         </table>
       </div>
@@ -374,71 +372,7 @@ async function sendToScod(id, btn) {
   </div>
 </div>
 
-<div class="overlay" id="item-overlay">
-  <div class="modal">
-    <div class="modal-header">
-      <div>
-        <div class="modal-title" id="modal-title">Add ELT</div>
-        <div class="modal-sub" id="modal-sub">Fill in all required fields below.</div>
-      </div>
-      <button class="modal-close" onclick="closeModal()">&#10005;</button>
-    </div>
-    <div class="modal-scroll">
-      <div class="modal-body">
-        <input type="hidden" id="m-id"/>
-        <div class="form-section">
-          <div class="form-section-title">ELT Entry Form</div>
-          <div class="fg-4">
-            <div class="ff">
-              <label>Date <span class="req">*</span></label>
-              <input type="date" id="m-date" required/>
-            </div>
-            <div class="ff">
-              <label>Division <span class="req">*</span></label>
-              <select id="m-division" required>
-                <option value="">Loading divisions...</option>
-              </select>
-            </div>
-            <div class="ff">
-              <label>Part No <span class="req">*</span></label>
-              <input type="text" id="m-partno" required/>
-            </div>
-            <div class="ff">
-              <label>Description <span class="req">*</span></label>
-              <input type="text" id="m-description" required/>
-            </div>
-            <div class="ff">
-              <label>Revalue</label>
-              <input type="number" id="m-revalue" min="0" step="0.01" placeholder="Amount"/>
-            </div>
-            <div class="ff">
-              <label>GIR No <span class="req">*</span></label>
-              <input type="text" id="m-girno" required/>
-            </div>
-            <div class="ff">
-              <label>Opt</label>
-              <select id="m-opt">
-                <option value="">-</option>
-                <option value="scrap">Scrap</option>
-                <option value="stock">Stock</option>
-                <option value="dispatch">Dispatch</option>
-              </select>
-            </div>
-            <div class="ff">
-              <label>Remarks</label>
-              <input type="text" id="m-remarks" placeholder="Remarks..."/>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <div class="form-msg" id="form-msg"></div>
-      <button class="btn btn-outline btn-sm" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-success" id="save-btn" onclick="saveItem()">&#128190; Save Entry</button>
-    </div>
-  </div>
-</div>
+<!-- No Modal needed in CSR -->
 
 <div class="toast-wrap" id="toast-wrap"></div>
 
@@ -514,7 +448,7 @@ function getVisibleDivisions(){
 async function loadData(){
   setLoading();
   try{
-    const res = await fetch(API + '/api/elt-items', { headers: authHeaders() });
+    const res = await fetch(API + '/api/csr', { headers: authHeaders() });
     handleUnauth(res);
     const json = await res.json().catch(()=>[]);
     if(!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
@@ -603,26 +537,13 @@ function renderTable(){
     tbody.innerHTML = slice.map((d,i)=>{
       const id = d._id || d.id;
       return `<tr>
-        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.date)}</td>
-        <td><span class="div-tag">${esc(d.division || '-')}</span></td>
         <td class="mono" style="font-weight:700;">${esc(d.partNo || '-')}</td>
-        <td class="wrap-cell" title="${esc(d.description || '')}">${esc(d.description || '-')}</td>
+        <td class="wrap-cell">${esc(d.description || '-')}</td>
+        <td>${esc(d.qty || 0)}</td>
         <td class="mono">${esc(d.girNo || '-')}</td>
-        <td><input type="number" id="rev-${id}" value="${d.revalue ?? ''}" placeholder="Amount" style="padding:5px; border-radius:5px; border:1px solid #ccc; width:80px;"></td>
-        <td>
-          <select id="opt-${id}" style="padding:5px; border-radius:5px; border:1px solid #ccc; background:${d.opt==='scrap'?'#fecaca':(d.opt==='stock'?'#bbf7d0':(d.opt==='dispatch'?'#bfdbfe':'#fff'))}" onchange="changeOptColor(this)">
-            <option value="" ${d.opt===''?'selected':''}>-</option>
-            <option value="scrap" ${d.opt==='scrap'?'selected':''}>Scrap</option>
-            <option value="stock" ${d.opt==='stock'?'selected':''}>Stock</option>
-            <option value="dispatch" ${d.opt==='dispatch'?'selected':''}>Dispatch</option>
-          </select>
-        </td>
-        <td>
-          <input type="text" id="rmk-${id}" value="${esc(d.remarks || '')}" style="padding:5px; border-radius:5px; border:1px solid #ccc; background:var(--surface); color:var(--text); width:100%; min-width:120px; outline:none;" title="${esc(d.remarks || '')}">
-        </td>
-        <td>
-          <button class="btn-xs btn-primary" onclick="sendToScod('${id}', this)">&#10148; to Scod</button>
-        </td>
+        <td>${esc(d.fromLocation || '-')}</td>
+        <td>${esc(d.toLocation || '-')}</td>
+        <td>${esc(d.remarks || '')}</td>
       </tr>`;
     }).join('');
   }
@@ -763,12 +684,12 @@ async function deleteItem(id){
 }
 
 function exportCSV(){
-  const headers = ['#','Date','Division','Part No','Description','Revalue','GIR No','Opt','Remarks'];
-  const rows = filtered.map((d,i) => [i+1,d.date,d.division,d.partNo,d.description,d.revalue,d.girNo,d.opt,d.remarks]);
+  const headers = ['#','Part No','Description','Qty','GIR No','From Location','To Location','Remarks'];
+  const rows = filtered.map((d,i) => [i+1,d.partNo,d.description,d.qty,d.girNo,d.fromLocation,d.toLocation,d.remarks]);
   const csv = [headers,...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-  a.download = 'elt-items-' + todayISO() + '.csv';
+  a.download = 'csr-items-' + todayISO() + '.csv';
   a.click();
   showToast('Exported ' + filtered.length + ' records.', 'ok');
 }
@@ -840,4 +761,3 @@ async function sendToScod(id, btn) {
 <script src="tab-fix.js"></script>
 </body>
 </html>
-
