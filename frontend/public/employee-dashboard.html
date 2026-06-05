@@ -871,12 +871,26 @@
   // -- AUTH GUARD: redirect to login if not employee --
   (async function() {
     const token = sessionStorage.getItem('schiller_token');
-    const localUser = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
+    
+    let localUser = {};
+    try {
+      const stored = sessionStorage.getItem('schiller_user');
+      if (stored && stored !== 'undefined') {
+        localUser = JSON.parse(stored);
+      }
+    } catch (e) {
+      console.warn('Could not parse local user data', e);
+    }
 
     if (!token) {
       window.location.href = 'login.html';
       return;
     }
+
+    // Optimistically hide auth guard to prevent buffering delay
+    document.getElementById('auth-guard').style.display   = 'none';
+    document.getElementById('sidebar').style.display      = 'flex';
+    document.getElementById('main-content').style.display = 'flex';
 
     let user = localUser;
     try {
@@ -902,11 +916,6 @@
       window.location.href = 'login.html';
       return;
     }
-
-    // Show dashboard
-    document.getElementById('auth-guard').style.display   = 'none';
-    document.getElementById('sidebar').style.display      = 'flex';
-    document.getElementById('main-content').style.display = 'flex';
 
     // Fill user info
     const name  = user.name        || 'Employee';
