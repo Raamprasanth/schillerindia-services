@@ -1753,7 +1753,8 @@ async function submitSelectedEstimation(){
       }
       const estimationPayload={
         serviceId:line.isManual ? null : (current.serviceId||null),
-        source:'service',
+        source:'frn',
+        sourceId:line.isManual ? '' : (current._id||current.id||''),
         entryDate:current.entryDate||'',
         scReNo:current.scRno||'',
         scEng:current.scEng||'',
@@ -1949,7 +1950,8 @@ async function submitEstimation(){
   const payload={estNo:estno,estDate:estdate,estAmount:parseFloat(estamount)||0,estStatus:eststatus,estRaEng:raeng,defUnitGir:document.getElementById('est-defunitgir').value.trim(),techRemarks:techRem,partNo:partNo,qty:qty,status:'estimation',estUpdatedAt:savedAt};
   const estimationPayload={
     serviceId:current.serviceId||null,
-    source:'service',
+    source:'frn',
+    sourceId:current._id||current.id||'',
     entryDate:current.entryDate||'',
     scReNo:current.scRno||'',
     scEng:current.scEng||'',

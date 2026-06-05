@@ -18,6 +18,7 @@ const estimationPendingSchema = new mongoose.Schema(
     // 'service' = auto-created from empServiceRoutes
     // 'ob'      = pushed from OB Pending after update
     source: { type: String, trim: true, default: 'service' },
+    sourceId: { type: String, trim: true, default: '' },
 
     // ── Service / Customer info (copied at creation) ──────
     entryDate: { type: String, default: '' },
@@ -118,6 +119,7 @@ const estimationPendingSchema = new mongoose.Schema(
 // Indexes for fast lookups
 estimationPendingSchema.index({ serviceId: 1 });
 estimationPendingSchema.index({ source: 1 });
+estimationPendingSchema.index({ sourceId: 1 });
 estimationPendingSchema.index({ estNo: 1 });
 estimationPendingSchema.index({ scEng: 1 });
 estimationPendingSchema.index({ eng: 1 });
