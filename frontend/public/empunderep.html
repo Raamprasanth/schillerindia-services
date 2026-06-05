@@ -473,7 +473,7 @@ body.panel-open .main{display:none;}
       <span style="font-size:12px;color:var(--muted);" id="topbar-date"></span>
       <button class="btn btn-outline btn-sm" onclick="transferSelectedRows('external')">External Rep</button>
       <button class="btn btn-outline btn-sm" onclick="transferSelectedRows('supplier')">Supplier Warr</button>
-      <button class="btn btn-outline btn-sm" id="mail-toggle-btn" onclick="toggleMailAcknowledgements()">&#128231; Mail</button>
+      
       <button class="btn btn-outline btn-sm" onclick="loadData()">&#8635; Refresh</button>
       <button class="btn btn-success btn-sm" onclick="exportCSV()">&#128228; Export</button>
     </div>
@@ -1303,7 +1303,7 @@ function toggleMailAcknowledgements(){
   mailAcknowledgementsVisible=!mailAcknowledgementsVisible;
   localStorage.setItem(MAIL_ACK_KEY,mailAcknowledgementsVisible?'1':'0');
   ensureUrEscalationBanners();
-  syncMailAcknowledgementsVisibility();
+  
   if(mailAcknowledgementsVisible){
     loadUrEscalationStatus();
     loadToEscalationStatus();
@@ -1344,7 +1344,7 @@ function ensureUrEscalationBanners(){
       <div class="esc-banner-left"><div class="esc-banner-dot" style="background:#7c3aed;box-shadow:0 0 0 4px rgba(124,58,237,0.14);"></div><div><div class="esc-banner-title">In House FRN Replacement</div><div class="esc-banner-text" id="ur-esc-text-to">Checking latest in house FRN replacement mail status...</div><div class="esc-banner-sub" id="ur-esc-sub-to">Receivers: -</div><div class="esc-banner-meta" id="ur-esc-meta-to">Morning: - | Evening: - | Total: -</div></div></div><div class="esc-banner-count" id="ur-esc-count-to" style="color:#7c3aed;">-</div>
     </div>`;
   stats.insertAdjacentElement('afterend',wrap);
-  syncMailAcknowledgementsVisibility();
+  
 }
 function fmtEscalationTs(d){
   if(!d) return 'Not sent yet';

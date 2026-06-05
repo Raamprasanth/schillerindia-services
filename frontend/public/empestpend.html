@@ -691,7 +691,7 @@ table.est-table tbody tr:last-child td{border-bottom:none;}
       <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
       <button class="btn btn-outline btn-sm" onclick="transferSelectedRows('external')">External Rep</button>
       <button class="btn btn-outline btn-sm" onclick="transferSelectedRows('supplier')">Supplier Warr</button>
-      <button class="btn btn-outline btn-sm" id="mail-toggle-btn" onclick="toggleMailAcknowledgements()">&#128231; Mail</button>
+      
       <button class="btn btn-outline btn-sm" onclick="loadData()">&#8635; Refresh</button>
       <button class="btn btn-primary btn-sm" onclick="exportCSV()">&#128228; Export</button>
     </div>
@@ -952,7 +952,7 @@ async function queueSrEscalation(id){
     filtered=filtered.map(x=>(x._id||x.id)===id?{...x,...patch}:x);
     renderTable();
     if(typeof bumpSrEscalationQueue === 'function') bumpSrEscalationQueue(1);
-    if(typeof loadSrEscalationStatus === 'function') loadSrEscalationStatus('est');
+    if(typeof loadSrEscalationStatus === 'function') 
     showToast(data.alreadyQueued?'Already queued for FRN Replacement Escalation.':'Queued for FRN Replacement Escalation.','ok');
   }catch(e){
     showToast('FRN Replacement Escalation failed: '+e.message,'err');
@@ -1031,7 +1031,7 @@ async function submitToEscalationQueue(){
     filtered=filtered.map(x=>(x._id||x.id)===id?{...x,...patch}:x);
     renderTable();
     bumpToEscalationQueue(1);
-    loadToEscalationStatus('est');
+    
     closeToEscalationModal();
     showToast(data.alreadyQueued?'Already queued for In House FRN Replacement.':'Queued for In House FRN Replacement.','ok');
   }catch(e){
@@ -1343,7 +1343,7 @@ async function submitUpdate(){
     if(idx!==-1) allRecords[idx]={...updated,...payload,pdEst:updated.pdEst,id:updated._id||updated.id};
     updateStats(); applyFilters();
     bumpEscalationQueue('est',1);
-    loadEscalationStatus('est');
+    
     okEl.textContent='Record updated successfully!'; okEl.classList.add('show');
     showToast('Estimation record updated.','ok');
     setTimeout(closeModal,1200);
@@ -1463,7 +1463,7 @@ async function submitUpdate(){
     if(idx!==-1) allRecords[idx]={...updated,...payload,pdEst:updated.pdEst,id:updated._id||updated.id};
     updateStats(); applyFilters();
     bumpEscalationQueue('est',1);
-    loadEscalationStatus('est');
+    
     okEl.textContent='Record updated successfully!';
     okEl.classList.add('show');
     showToast('Estimation record updated.','ok');
@@ -1664,14 +1664,14 @@ function syncMailAcknowledgementsVisibility(){
 function toggleMailAcknowledgements(){
   mailAcknowledgementsVisible=!mailAcknowledgementsVisible;
   localStorage.setItem(MAIL_ACK_KEY,mailAcknowledgementsVisible?'1':'0');
-  ensureEscalationBanner('est');
-  ensureSrEscalationBanner('est');
-  ensureToEscalationBanner('est');
-  syncMailAcknowledgementsVisibility();
+  
+  
+  
+  
   if(mailAcknowledgementsVisible){
-    loadEscalationStatus('est');
-    loadSrEscalationStatus('est');
-    loadToEscalationStatus('est');
+    
+    
+    
   }
 }
 function ensureEscalationBanner(moduleKey){
@@ -1705,7 +1705,7 @@ function ensureEscalationBanner(moduleKey){
   banner.className='esc-banner';
   banner.innerHTML=`<div class="esc-banner-left"><div class="esc-banner-dot"></div><div><div class="esc-banner-title">Dispatch Escalation</div><div class="esc-banner-text" id="esc-banner-text-${moduleKey}">Checking latest mail status...</div><div class="esc-banner-sub" id="esc-banner-sub-${moduleKey}">Receivers: -</div><div class="esc-banner-meta" id="esc-banner-meta-${moduleKey}">Pending FRN: - | SO Pending: - | Total: -</div></div></div><div class="esc-banner-count" id="esc-banner-count-${moduleKey}">-</div>`;
   row.appendChild(banner);
-  syncMailAcknowledgementsVisibility();
+  
 }
 function fmtEscalationTs(d){
   if(!d) return 'Not sent yet';
@@ -1792,7 +1792,7 @@ function ensureSrEscalationBanner(moduleKey){
   banner.style.background='linear-gradient(135deg,rgba(245,158,11,0.10),rgba(251,191,36,0.06))';
   banner.innerHTML=`<div class="esc-banner-left"><div class="esc-banner-dot" style="background:var(--amber);box-shadow:0 0 0 4px rgba(245,158,11,0.14);"></div><div><div class="esc-banner-title">FRN Replacement Escalation</div><div class="esc-banner-text" id="sr-banner-text-${moduleKey}">Checking latest FRN replacement mail status...</div><div class="esc-banner-sub" id="sr-banner-sub-${moduleKey}">Receivers: -</div><div class="esc-banner-meta" id="sr-banner-meta-${moduleKey}">Morning: - | Afternoon: - | Total: -</div></div></div><div class="esc-banner-count" id="sr-banner-count-${moduleKey}" style="color:var(--amber);">-</div>`;
   row.appendChild(banner);
-  syncMailAcknowledgementsVisibility();
+  
 }
 function ensureToEscalationBanner(moduleKey){
   if(document.getElementById('to-escalation-status-banner')) return;
@@ -1813,7 +1813,7 @@ function ensureToEscalationBanner(moduleKey){
   banner.style.background='linear-gradient(135deg,rgba(124,58,237,0.10),rgba(168,85,247,0.06))';
   banner.innerHTML=`<div class="esc-banner-left"><div class="esc-banner-dot" style="background:#7c3aed;box-shadow:0 0 0 4px rgba(124,58,237,0.14);"></div><div><div class="esc-banner-title">In House FRN Replacement</div><div class="esc-banner-text" id="to-banner-text-${moduleKey}">Checking latest in house FRN replacement mail status...</div><div class="esc-banner-sub" id="to-banner-sub-${moduleKey}">Receivers: -</div><div class="esc-banner-meta" id="to-banner-meta-${moduleKey}">Morning: - | Evening: - | Total: -</div></div></div><div class="esc-banner-count" id="to-banner-count-${moduleKey}" style="color:#7c3aed;">-</div>`;
   row.appendChild(banner);
-  syncMailAcknowledgementsVisibility();
+  
 }
 function getPreferredSrLatest(morning,afternoon){
   const now=new Date();
@@ -1961,9 +1961,9 @@ async function loadToEscalationStatus(moduleKey){
     if(countEl) countEl.textContent='-';
   }
 }
-loadEscalationStatus('est');
-loadSrEscalationStatus('est');
-loadToEscalationStatus('est');
+
+
+
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeRecheckModal();closeProblemModal();}});
 </script>
 <script src="tab-fix.js"></script>
