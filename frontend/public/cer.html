@@ -472,7 +472,6 @@ function handleUnauth(res){
 }
 
 // -- LOAD DATA -------------------------------------------------------------
-async 
 let mailAckVisible = localStorage.getItem('mail_ack_visible') === '1';
 function toggleMailAck() {
   mailAckVisible = !mailAckVisible;
@@ -485,7 +484,7 @@ function syncMailAck() {
 }
 document.addEventListener('DOMContentLoaded', () => { setTimeout(syncMailAck, 100); });
 
-function loadData(){
+async function loadData(){
   setLoading();
   try{
     const res = await fetch(API + '/api/cer', {headers: authHeaders()});
