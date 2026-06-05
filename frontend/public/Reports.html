@@ -975,84 +975,78 @@ body{
     <tr class="row-sep"><td colspan="6"></td></tr>
 
     <!-- Section 2: Weekly CRM Reports -->
-    <tr>
-      <td rowspan="5" class="bg-green text-left">Weekly CRM Reports</td>
-      <td class="bg-blue">1st week</td>
-      <td rowspan="5" class="bg-green text-left" style="vertical-align:top;">Pending activity on<br>Monday</td>
-      <td class="bg-blue">1st week</td>
-      <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Non-Saleable<br><span class="red-text">If not applicable mark<br>NA</span></td>
-      <td class="bg-blue"></td>
-    </tr>
-    <tr>
-      <td class="bg-blue">2nd week</td>
-      <td class="bg-blue">2nd week</td>
-      <td class="bg-blue"></td>
-    </tr>
-    <tr>
-      <td class="bg-blue">3rd week</td>
-      <td class="bg-blue">3rd week</td>
-      <td class="bg-blue"></td>
-    </tr>
-    <tr>
-      <td class="bg-blue">4th week</td>
-      <td class="bg-blue">4th week</td>
-      <td rowspan="2" class="bg-green"></td>
-      <td class="bg-peach bold">0</td>
-    </tr>
-    <tr>
-      <td class="bg-peach bold">0</td>
-      <td class="bg-peach bold">0</td>
-      <td class="bg-peach"></td>
-    </tr>
+      <tr>
+        <td rowspan="6" class="bg-green text-left">Weekly CRM Reports</td>
+        <td class="bg-blue">${t1H}</td>
+        <td rowspan="6" class="bg-green text-left" style="vertical-align:top;">Pending activity on<br>Monday</td>
+        <td class="bg-blue">${m1H}</td>
+        <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Non-Saleable<br><span class="red-text">If not applicable mark<br>NA</span></td>
+        <td class="bg-blue">${d02NS}</td>
+      </tr>
+      <tr>
+        <td class="bg-blue">${t2H}</td>
+        <td class="bg-blue">${m2H}</td>
+        <td class="bg-blue">${d16NS}</td>
+      </tr>
+      <tr>
+        <td class="bg-blue">${t3H}</td>
+        <td class="bg-blue">${m3H}</td>
+        <td class="bg-blue">-</td>
+      </tr>
+      <tr>
+        <td class="bg-blue">${t4H}</td>
+        <td class="bg-blue">${m4H}</td>
+        <td rowspan="3" class="bg-green"></td>
+        <td class="bg-blue">-</td>
+      </tr>
+      <tr>
+        <td class="bg-blue">${t5H}</td>
+        <td class="bg-blue">${m5H}</td>
+        <td class="bg-blue">-</td>
+      </tr>
+      <tr>
+        <td class="bg-peach bold">${cWeekly}%</td>
+        <td class="bg-peach bold">${cPending}%</td>
+        <td class="bg-peach bold">${cNonSaleable}%</td>
+      </tr>
 
-    <!-- Separator -->
-    <tr class="row-sep"><td colspan="6"></td></tr>
+      <!-- Separator -->
+      <tr class="row-sep"><td colspan="6"></td></tr>
 
-    <!-- Section 3: Supplier Warranty -->
-    <tr>
-      <td rowspan="4" class="bg-green text-left" style="vertical-align:top;">Supplier Warranty transaction<br><span class="red-text">If not applicable mark NA</span></td>
-      <td colspan="3" class="bg-blue"></td>
-      <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Critical Pending report<br><span class="red-text">If not applicable mark<br>NA</span></td>
-      <td class="bg-green"></td>
-    </tr>
-    <tr>
-      <td colspan="3" class="bg-blue"></td>
-      <td class="bg-green"></td>
-    </tr>
-    <tr>
-      <td colspan="3" class="bg-blue"></td>
-      <td class="bg-peach bold">100</td>
-    </tr>
-    <tr>
-      <td colspan="3" class="bg-peach bold">100</td>
-      <td class="bg-green"></td>
-      <td class="bg-peach"></td>
-    </tr>
+      <!-- Section 3: Supplier Warranty -->
+      <tr>
+        <td rowspan="4" class="bg-green text-left" style="vertical-align:top;">Supplier Warranty transaction<br><span class="red-text">If not applicable mark NA</span></td>
+        <td colspan="3" class="bg-blue">${d03SW}</td>
+        <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Critical Pending report<br><span class="red-text">If not applicable mark<br>NA</span></td>
+        <td class="bg-green">${d02CP}</td>
+      </tr>
+      <tr>
+        <td colspan="3" class="bg-blue">${d16SW}</td>
+        <td class="bg-green">-</td>
+      </tr>
+      <tr>
+        <td colspan="3" class="bg-blue">-</td>
+        <td class="bg-peach bold">${cCritical}%</td>
+      </tr>
+      <tr>
+        <td colspan="3" class="bg-peach bold">${cSupWarr}%</td>
+        <td class="bg-green"></td>
+        <td class="bg-peach"></td>
+      </tr>
 
-    <!-- Separator -->
-    <tr class="row-sep"><td colspan="6"></td></tr>
+      <!-- Separator -->
+      <tr class="row-sep"><td colspan="6"></td></tr>
 
-    <!-- Section 4: Purchase Indent -->
-    <tr>
-      <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Purchase indent request to commercial<br><span class="red-text">If not applicable mark NA</span></td>
-      <td colspan="3" class="bg-blue"></td>
-      <td class="bg-green bold">5s Rate</td>
-      <td class="bg-dark-blue bold">78</td>
-    </tr>
-    <tr>
-      <td colspan="3" class="bg-blue"></td>
-      <td colspan="2" class="bg-peach bold">Good</td>
-    </tr>
-    <tr>
-      <td colspan="3" class="bg-peach bold">100</td>
-      <td class="bg-green bold">Repair Report</td>
-      <td class="bg-dark-blue bold">100%</td>
-    </tr>
+      <!-- Section 4: Purchase Indent -->
+      <tr>
+        <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Purchase indent request to commercial<br><span class="red-text">If not applicable mark NA</span></td>
+        <td colspan="3" class="bg-blue">${d05PI}</td>
+      </tr>
 
-    <!-- Separator -->
-    <tr class="row-sep"><td colspan="6"></td></tr>
+      <!-- Separator -->
+      <tr class="row-sep"><td colspan="6"></td></tr>
 
-    <!-- Section 5: Overall -->
+      <!-- Section 5: Overall -->
     <tr>
       <td class="bg-dark-blue text-left bold">Overall performance percentage</td>
       <td class="bg-dark-blue bold">87</td>
@@ -1667,6 +1661,66 @@ function renderDivisionPerfSummary(data,params) {
     d16 = '16-' + mStr + '-' + yearStr;
   }
   
+  const checkSub = (type, ds) => {
+    if (ds === '-') return '';
+    const parts = ds.split('-');
+    if (parts.length !== 3) return '';
+    const backendDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+    const subs = (data.compliance && data.compliance.trackerSubmissions && data.compliance.trackerSubmissions[type]) || [];
+    
+    if (typeof scope !== 'undefined' && scope === 'division' || (typeof params.division !== 'undefined' && typeof params.employee === 'undefined')) {
+      // Unique employees who submitted this date
+      const uniqueEmps = new Set(subs.filter(s => s.date === backendDate).map(s => s.emp));
+      const count = uniqueEmps.size;
+      return `<div style="font-size:10px;font-weight:700;color:${count>0?'#059669':'#b91c1c'};margin-top:2px;">${count} Submitted</div>`;
+    } else {
+      const hasSub = subs.some(s => s.date === backendDate);
+      return `<div style="font-size:10px;font-weight:700;color:${hasSub?'#059669':'#b91c1c'};margin-top:2px;">${hasSub?'Submitted':'Not Submitted'}</div>`;
+    }
+  };
+  
+  const t1 = tuesdays[0] || '-'; const t1H = t1 + checkSub('CRM', t1);
+  const t2 = tuesdays[1] || '-'; const t2H = t2 + checkSub('CRM', t2);
+  const t3 = tuesdays[2] || '-'; const t3H = t3 + checkSub('CRM', t3);
+  const t4 = tuesdays[3] || '-'; const t4H = t4 + checkSub('CRM', t4);
+  const t5 = tuesdays[4] || '-'; const t5H = t5 + checkSub('CRM', t5);
+  
+  const m1 = mondays[0] || '-'; const m1H = m1 + checkSub('PendingActivity', m1);
+  const m2 = mondays[1] || '-'; const m2H = m2 + checkSub('PendingActivity', m2);
+  const m3 = mondays[2] || '-'; const m3H = m3 + checkSub('PendingActivity', m3);
+  const m4 = mondays[3] || '-'; const m4H = m4 + checkSub('PendingActivity', m4);
+  const m5 = mondays[4] || '-'; const m5H = m5 + checkSub('PendingActivity', m5);
+
+  const d02NS = d02 + checkSub('NonSaleable', d02);
+  const d16NS = d16 + checkSub('NonSaleable', d16);
+  
+  const d03SW = d03 + checkSub('SupplierWarranty', d03);
+  const d16SW = d16 + checkSub('SupplierWarranty', d16);
+  
+  const d02CP = d02 + checkSub('CriticalPendingReport', d02);
+  const d05PI = d05 + checkSub('PIRequest', d05);
+
+  const [yearStr, mStr] = (params.month || '').split('-');
+  const yearNum = parseInt(yearStr, 10);
+  const monthNum = parseInt(mStr, 10) - 1;
+
+  const tuesdays = [];
+  const mondays = [];
+  let d02 = '-', d03 = '-', d05 = '-', d16 = '-';
+  if (!isNaN(yearNum) && !isNaN(monthNum)) {
+    let d = new Date(yearNum, monthNum, 1);
+    while (d.getMonth() === monthNum) {
+      const fDate = String(d.getDate()).padStart(2,'0') + '-' + mStr + '-' + yearStr;
+      if (d.getDay() === 2) tuesdays.push(fDate);
+      if (d.getDay() === 1) mondays.push(fDate);
+      d.setDate(d.getDate() + 1);
+    }
+    d02 = '02-' + mStr + '-' + yearStr;
+    d03 = '03-' + mStr + '-' + yearStr;
+    d05 = '05-' + mStr + '-' + yearStr;
+    d16 = '16-' + mStr + '-' + yearStr;
+  }
+  
   const t1 = tuesdays[0] || '-';
   const t2 = tuesdays[1] || '-';
   const t3 = tuesdays[2] || '-';
@@ -1794,84 +1848,78 @@ function renderDivisionPerfSummary(data,params) {
     <tr class="row-sep"><td colspan="6"></td></tr>
 
     <!-- Section 2: Weekly CRM Reports -->
-    <tr>
-      <td rowspan="5" class="bg-green text-left">Weekly CRM Reports</td>
-      <td class="bg-blue">1st week</td>
-      <td rowspan="5" class="bg-green text-left" style="vertical-align:top;">Pending activity on<br>Monday</td>
-      <td class="bg-blue">1st week</td>
-      <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Non-Saleable<br><span class="red-text">If not applicable mark<br>NA</span></td>
-      <td class="bg-blue"></td>
-    </tr>
-    <tr>
-      <td class="bg-blue">2nd week</td>
-      <td class="bg-blue">2nd week</td>
-      <td class="bg-blue"></td>
-    </tr>
-    <tr>
-      <td class="bg-blue">3rd week</td>
-      <td class="bg-blue">3rd week</td>
-      <td class="bg-blue"></td>
-    </tr>
-    <tr>
-      <td class="bg-blue">4th week</td>
-      <td class="bg-blue">4th week</td>
-      <td rowspan="2" class="bg-green"></td>
-      <td class="bg-peach bold">0</td>
-    </tr>
-    <tr>
-      <td class="bg-peach bold">${cWeekly}%</td>
-      <td class="bg-peach bold">${cPending}%</td>
-      <td class="bg-peach">${cNonSaleable}%</td>
-    </tr>
+      <tr>
+        <td rowspan="6" class="bg-green text-left">Weekly CRM Reports</td>
+        <td class="bg-blue">${t1H}</td>
+        <td rowspan="6" class="bg-green text-left" style="vertical-align:top;">Pending activity on<br>Monday</td>
+        <td class="bg-blue">${m1H}</td>
+        <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Non-Saleable<br><span class="red-text">If not applicable mark<br>NA</span></td>
+        <td class="bg-blue">${d02NS}</td>
+      </tr>
+      <tr>
+        <td class="bg-blue">${t2H}</td>
+        <td class="bg-blue">${m2H}</td>
+        <td class="bg-blue">${d16NS}</td>
+      </tr>
+      <tr>
+        <td class="bg-blue">${t3H}</td>
+        <td class="bg-blue">${m3H}</td>
+        <td class="bg-blue">-</td>
+      </tr>
+      <tr>
+        <td class="bg-blue">${t4H}</td>
+        <td class="bg-blue">${m4H}</td>
+        <td rowspan="3" class="bg-green"></td>
+        <td class="bg-blue">-</td>
+      </tr>
+      <tr>
+        <td class="bg-blue">${t5H}</td>
+        <td class="bg-blue">${m5H}</td>
+        <td class="bg-blue">-</td>
+      </tr>
+      <tr>
+        <td class="bg-peach bold">${cWeekly}%</td>
+        <td class="bg-peach bold">${cPending}%</td>
+        <td class="bg-peach bold">${cNonSaleable}%</td>
+      </tr>
 
-    <!-- Separator -->
-    <tr class="row-sep"><td colspan="6"></td></tr>
+      <!-- Separator -->
+      <tr class="row-sep"><td colspan="6"></td></tr>
 
-    <!-- Section 3: Supplier Warranty -->
-    <tr>
-      <td rowspan="4" class="bg-green text-left" style="vertical-align:top;">Supplier Warranty transaction<br><span class="red-text">If not applicable mark NA</span></td>
-      <td colspan="3" class="bg-blue"></td>
-      <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Critical Pending report<br><span class="red-text">If not applicable mark<br>NA</span></td>
-      <td class="bg-green"></td>
-    </tr>
-    <tr>
-      <td colspan="3" class="bg-blue"></td>
-      <td class="bg-green"></td>
-    </tr>
-    <tr>
-      <td colspan="3" class="bg-blue"></td>
-      <td class="bg-peach bold">${cCritical}%</td>
-    </tr>
-    <tr>
-      <td colspan="3" class="bg-peach bold">${cSupWarr}%</td>
-      <td class="bg-green"></td>
-      <td class="bg-peach"></td>
-    </tr>
+      <!-- Section 3: Supplier Warranty -->
+      <tr>
+        <td rowspan="4" class="bg-green text-left" style="vertical-align:top;">Supplier Warranty transaction<br><span class="red-text">If not applicable mark NA</span></td>
+        <td colspan="3" class="bg-blue">${d03SW}</td>
+        <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Critical Pending report<br><span class="red-text">If not applicable mark<br>NA</span></td>
+        <td class="bg-green">${d02CP}</td>
+      </tr>
+      <tr>
+        <td colspan="3" class="bg-blue">${d16SW}</td>
+        <td class="bg-green">-</td>
+      </tr>
+      <tr>
+        <td colspan="3" class="bg-blue">-</td>
+        <td class="bg-peach bold">${cCritical}%</td>
+      </tr>
+      <tr>
+        <td colspan="3" class="bg-peach bold">${cSupWarr}%</td>
+        <td class="bg-green"></td>
+        <td class="bg-peach"></td>
+      </tr>
 
-    <!-- Separator -->
-    <tr class="row-sep"><td colspan="6"></td></tr>
+      <!-- Separator -->
+      <tr class="row-sep"><td colspan="6"></td></tr>
 
-    <!-- Section 4: Purchase Indent -->
-    <tr>
-      <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Purchase indent request to commercial<br><span class="red-text">If not applicable mark NA</span></td>
-      <td colspan="3" class="bg-blue"></td>
-      <td class="bg-green bold">5s Rate</td>
-      <td class="bg-dark-blue bold">${c5s}%</td>
-    </tr>
-    <tr>
-      <td colspan="3" class="bg-blue"></td>
-      <td colspan="2" class="bg-peach bold">${c5s >= 80 ? 'Good' : 'Needs Improvement'}</td>
-    </tr>
-    <tr>
-      <td colspan="3" class="bg-peach bold">${cPurch}%</td>
-      <td class="bg-green bold">Repair Report</td>
-      <td class="bg-dark-blue bold">${cRepair}%</td>
-    </tr>
+      <!-- Section 4: Purchase Indent -->
+      <tr>
+        <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Purchase indent request to commercial<br><span class="red-text">If not applicable mark NA</span></td>
+        <td colspan="3" class="bg-blue">${d05PI}</td>
+      </tr>
 
-    <!-- Separator -->
-    <tr class="row-sep"><td colspan="6"></td></tr>
+      <!-- Separator -->
+      <tr class="row-sep"><td colspan="6"></td></tr>
 
-    <!-- Section 5: Overall -->
+      <!-- Section 5: Overall -->
     <tr>
       <td class="bg-dark-blue text-left bold">Overall performance percentage</td>
       <td class="bg-dark-blue bold">${rate}%</td>
