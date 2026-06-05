@@ -351,6 +351,30 @@ const fetchGuardScript = `
       clearTimeout(timer);
     });
   };
+  function showLoadFailure(message){
+    var ids = ['frn-tbody','est-tbody','ur-tbody','ob-tbody','call-tbody','tbody','tb'];
+    var text = message || 'Page loading failed. Please refresh and try again.';
+    ids.some(function(id){
+      var el = document.getElementById(id);
+      if (!el) return false;
+      var current = (el.textContent || '').toLowerCase();
+      if (current.indexOf('loading') === -1 && current.indexOf('fetching') === -1) return true;
+      var colspan = 20;
+      var table = el.closest && el.closest('table');
+      if (table && table.tHead && table.tHead.rows[0]) {
+        colspan = table.tHead.rows[0].cells.length || colspan;
+      }
+      el.innerHTML = '<tr><td colspan="' + colspan + '" style="text-align:center;padding:40px;color:#b91c1c;font-weight:600;">&#9888; ' + text.replace(/[&<>"]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]); }) + '</td></tr>';
+      return true;
+    });
+  }
+  window.addEventListener('error', function(event){
+    showLoadFailure(event && event.message ? event.message : 'Page script error. Please refresh and try again.');
+  });
+  window.addEventListener('unhandledrejection', function(event){
+    var reason = event && event.reason;
+    showLoadFailure(reason && reason.message ? reason.message : 'Page request failed. Please refresh and try again.');
+  });
 })();
 </script>`;
 

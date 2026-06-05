@@ -1031,7 +1031,6 @@ function getDisplayTypeWork(record){
   return '';
 }
 
-async 
 let mailAckVisible = localStorage.getItem('mail_ack_visible') === '1';
 function toggleMailAck() {
   mailAckVisible = !mailAckVisible;
@@ -1048,7 +1047,7 @@ function syncMailAck() {
 }
 document.addEventListener('DOMContentLoaded', () => { setTimeout(syncMailAck, 100); });
 
-function loadData(){
+async function loadData(){
   setLoading();
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 20000);
