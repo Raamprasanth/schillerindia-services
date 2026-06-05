@@ -2453,14 +2453,14 @@
       let pillClass = '', pillText = '';
       
       if (isSubmitted) { cbClass += ' done'; pillClass = 'pill-submitted'; pillText = 'Submitted'; }
-      else if (isPast) { cbClass += ' locked'; pillClass = 'pill-locked'; pillText = 'Not Submitted'; }
+      else if (isPast) { cbClass += ' locked'; pillClass = 'pill-locked'; pillText = 'Deadline Passed'; }
       else if (isFuture) { pillClass = 'pill-future'; pillText = 'Upcoming'; }
       else if (isChecked) { cbClass += ' checked'; pillClass = 'pill-pending'; pillText = 'Selected'; }
       else { pillClass = 'pill-pending'; pillText = 'Pending'; }
       
       const onclick = isSubmitted || isFuture || isPast ? '' : `onclick="toggleTrackerCheck('${type}','${ds}')"`;
       html += `<div class="tracker-date-row ${isFuture ? 'future' : ''} ${isPast && !isSubmitted ? 'past-locked' : ''}" ${onclick}>
-        <div class="${cbClass}" id="tcb-${type}-${ds}">${isSubmitted ? '&#10003;' : (isChecked ? '&#10003;' : (isPast ? '&#10007;' : ''))}</div>
+        <div class="${cbClass}" id="tcb-${type}-${ds}">${isSubmitted ? '&#10003;' : (isChecked ? '&#10003;' : (isPast ? '&#128274;' : ''))}</div>
         <div class="tracker-date-label">${displayDate}</div>
         <span class="tracker-status-pill ${pillClass}">${pillText}</span>
       </div>`;
