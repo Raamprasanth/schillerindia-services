@@ -808,8 +808,8 @@ function renderTable(){
         <td><span class="region-tag">${esc(s.branch||s.reg||'-')}</span></td>
         <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;">${esc(s.eng||'-')}</td>
         <td style="max-width:170px;overflow:hidden;text-overflow:ellipsis;font-weight:500;">${esc(s.custName||s.customer||'-')}</td>
-        <td style="font-weight:600;color:var(--accent2);">${esc(s.model||'-')}</td>
         <td><span class="s-pill ${unitClass}">${esc(s.unitSts||'-')}</span></td>
+        <td style="font-weight:600;color:var(--accent2);">${esc(s.model||'-')}</td>
         <td>${esc(s.partNo||'-')}</td>
         <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;font-size:11px;">${esc(s.defMod||'-')}</td>
         <td><span class="gir-badge">${esc(s.defGir||'-')}</span></td>
@@ -1567,8 +1567,8 @@ function generatePDF(id){
 }
 
 function exportCSV(){
-  const h=['Entry Date','SC Ref No','SC Eng','FRN No','Branch','Engineer','Customer','Model','Unit Sts','Def Mod/Brd','Def GIR No','Type of Work','Pend Days','OB Status'];
-  const rows=filtered.map(s=>[s.entryDate,s.scReNo,s.scEng,s.frnNo,s.branch||s.reg,s.eng,s.custName||s.customer,s.model,s.unitSts,s.defMod,s.defGir,s.typeWork||s.type,s.pdOb,s.obStatus||'OB Pending']);
+  const h=['Entry Date','SC Ref No','SC Eng','FRN No','Branch','Engineer','Customer','Model','Unit Sts','Part No','Def Mod/Brd','Def GIR No','Type of Work','Pend Days','OB Status'];
+  const rows=filtered.map(s=>[s.entryDate,s.scReNo,s.scEng,s.frnNo,s.branch||s.reg,s.eng,s.custName||s.customer,s.model,s.unitSts,s.partNo,s.defMod,s.defGir,s.typeWork||s.type,s.pdOb,s.obStatus||'OB Pending']);
   const csv=[h,...rows].map(r=>r.map(v=>`"${v||''}"`).join(',')).join('\n');
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
   a.download='ob-pending-'+new Date().toISOString().split('T')[0]+'.csv';a.click();
@@ -1750,8 +1750,8 @@ function renderTable(){
         <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;">${esc(s.eng||'-')}</td>
         <td style="max-width:170px;overflow:hidden;text-overflow:ellipsis;font-weight:500;">${esc(s.custName||s.customer||'-')}</td>
         <td><span class="s-pill ${unitClass}">${esc(s.unitSts||'-')}</span></td>
-        <td>${esc(s.partNo||'-')}</td>
         <td style="font-weight:600;color:var(--accent2);">${esc(s.model||'-')}</td>
+        <td>${esc(s.partNo||'-')}</td>
         <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;font-size:11px;">${esc(s.defMod||'-')}</td>
         <td><span class="gir-badge">${esc(s.defGir||'-')}</span></td>
         <td style="font-weight:600;color:var(--accent2);">${s.pdOb} days</td>
