@@ -477,6 +477,12 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   let records = [];
   let filtered = [];
 
+  function extractArrayPayload(payload){
+    if(Array.isArray(payload)) return payload;
+    if(!payload || typeof payload !== 'object') return [];
+    return payload.data || payload.records || payload.items || payload.results || payload.docs || [];
+  }
+
   
   function populateDivisions() {
     const sel = document.getElementById('fl-division');
