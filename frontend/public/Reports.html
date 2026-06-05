@@ -2235,7 +2235,7 @@ function renderLeaderboard(rows,month,isDivisionPane=false){
   pane.innerHTML=tbl;
 }
 
-function exportPDF(type) {
+async function exportPDF(type) {
   const isDiv = type === 'div';
   const params = isDiv ? perfDivCurrentParams : perfCurrentParams;
   if(!params) return;
@@ -2268,6 +2268,7 @@ function exportPDF(type) {
   });
 
   const wrapper = document.createElement('div');
+  wrapper.className = 'pdf-export-wrapper';
   wrapper.style.width = '1080px';
   wrapper.style.background = '#fff';
   wrapper.style.color = '#000';
@@ -2275,6 +2276,10 @@ function exportPDF(type) {
   wrapper.style.border = '1px solid #000';
   wrapper.style.boxSizing = 'border-box';
   wrapper.style.fontFamily = "Calibri, Arial, sans-serif";
+  wrapper.style.position = 'fixed';
+  wrapper.style.left = '-12000px';
+  wrapper.style.top = '0';
+  wrapper.style.zIndex = '-1';
   wrapper.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #000;padding:0 0 8px;margin-bottom:8px;">
       <img src="logo.png" alt="SCHILLER" style="height:46px;max-width:230px;object-fit:contain;">
@@ -2286,14 +2291,31 @@ function exportPDF(type) {
     </div>
   `;
   wrapper.appendChild(tableClone);
-  
-  html2pdf().set({
-    margin: 0.18,
-    filename: `Performance_Analysis_${scope}_${month}.pdf`,
-    image: { type: 'jpeg', quality: 1.0 },
-    html2canvas: { scale: 2.5, useCORS: true, backgroundColor: '#ffffff', windowWidth: 1120 },
-    jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
-  }).from(wrapper).save();
+  document.body.appendChild(wrapper);
+
+  try{
+    const logo = wrapper.querySelector('img');
+    if(logo && !logo.complete) {
+      await new Promise(resolve => {
+        logo.onload = resolve;
+        logo.onerror = resolve;
+        setTimeout(resolve, 1200);
+      });
+    }
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+    await html2pdf().set({
+      margin: 0.18,
+      filename: `Performance_Analysis_${scope}_${month}.pdf`,
+      image: { type: 'jpeg', quality: 1.0 },
+      html2canvas: { scale: 2.5, useCORS: true, backgroundColor: '#ffffff', windowWidth: 1120, scrollX: 0, scrollY: 0 },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+    }).from(wrapper).save();
+  }catch(e){
+    toast('PDF export failed: ' + e.message, 'error');
+  }finally{
+    wrapper.remove();
+  }
 }
 
 function escapeHtml(value){
