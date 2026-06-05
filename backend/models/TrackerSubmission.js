@@ -7,9 +7,10 @@ const trackerSubmissionSchema = new mongoose.Schema({
     required: true
   },
   division: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Division',
-    required: false
+    type: String,
+    required: false,
+    trim: true,
+    default: ''
   },
   type: {
     type: String,

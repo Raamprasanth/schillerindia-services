@@ -28,13 +28,12 @@ router.post('/submit', protect, async (req, res) => {
     }
 
     if (status === 'submitted') {
-      // Find employee's division
-      const user = await User.findById(req.user._id).lean();
+      const division = req.user.division || '';
       
       const bulkOps = reportDates.map(date => ({
         updateOne: {
           filter: { employee: req.user._id, type, reportDate: date },
-          update: { $set: { month, division: user.division } },
+          update: { $set: { month, division: division } },
           upsert: true
         }
       }));
@@ -124,18 +123,19 @@ router.get('/stats', protect, async (req, res) => {
 
     const reportDefinitions = buildReportDefinitions(yearNum, monthNum);
 
-    // Get all employees and group them by division
-    const employees = await User.find({ role: 'employee' }).populate('division').lean();
+    // Employees are now primarily in the Employee collection. We should fetch from Employee.
+    const Employee = require('../models/Employee');
+    const employees = await Employee.find({ role: 'employee' }).lean();
     
-    const divisionsMap = {}; // divisionId -> { name, empCount }
-    const noDivEmps = []; // employees without division
+    const divisionsMap = {}; // division name -> { name, empCount }
 
     employees.forEach(emp => {
-      const divId = emp.division ? emp.division._id.toString() : 'unassigned';
-      if (!divisionsMap[divId]) {
-        divisionsMap[divId] = {
-          id: divId,
-          name: emp.division ? emp.division.name : 'Unassigned',
+      // division is a string now, e.g. "VENTILATOR"
+      const divName = (emp.division && emp.division.trim() !== '') ? emp.division : 'Unassigned';
+      if (!divisionsMap[divName]) {
+        divisionsMap[divName] = {
+          id: divName,
+          name: divName,
           empCount: 0,
           employees: [], // Keep track of employees to calculate missing
           reports: reportDefinitions.reduce((acc, report) => {
@@ -151,19 +151,21 @@ router.get('/stats', protect, async (req, res) => {
           }, {})
         };
       }
-      divisionsMap[divId].empCount++;
-      divisionsMap[divId].employees.push({ id: emp._id.toString(), name: emp.name });
+      divisionsMap[divName].empCount++;
+      divisionsMap[divName].employees.push({ id: emp._id.toString(), name: emp.name });
       reportDefinitions.forEach(report => {
-        divisionsMap[divId].reports[report.type].expected += report.expectedPerEmployee;
+        divisionsMap[divName].reports[report.type].expected += report.expectedPerEmployee;
       });
     });
 
     // Get all submissions for the month
+    const TrackerSubmission = require('../models/TrackerSubmission');
     const submissions = await TrackerSubmission.find({ month }).lean();
 
     submissions.forEach(sub => {
-      const divId = sub.division ? sub.division.toString() : 'unassigned';
-      const division = divisionsMap[divId];
+      // sub.division is a string
+      const divName = (sub.division && sub.division.trim() !== '') ? sub.division : 'Unassigned';
+      const division = divisionsMap[divName];
       if (division && division.reports[sub.type]) {
         division.reports[sub.type].actual++;
         const empIdStr = sub.employee ? sub.employee.toString() : null;
