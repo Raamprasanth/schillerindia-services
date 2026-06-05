@@ -473,6 +473,12 @@ function handleUnauth(res){
 }
 
 // -- LOAD DATA -------------------------------------------------------------
+function extractArrayPayload(payload){
+  if(Array.isArray(payload)) return payload;
+  if(!payload || typeof payload !== 'object') return [];
+  return payload.data || payload.records || payload.items || payload.results || payload.docs || [];
+}
+
 async function loadData(){
   setLoading();
   try{
@@ -494,7 +500,7 @@ async function loadData(){
       divSelect.value = curVal;
     }
 
-    DATA = await res.json();
+    DATA = extractArrayPayload(await res.json());
     DATA = DATA.map(d => ({...d, id: d._id || d.id}));
     applyFilters();
     updateStats();

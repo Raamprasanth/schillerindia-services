@@ -352,7 +352,7 @@ const fetchGuardScript = `
     });
   };
   function showLoadFailure(message){
-    var ids = ['frn-tbody','est-tbody','ur-tbody','ob-tbody','sc-tbody','call-tbody','tbody','tb'];
+    var ids = ['frn-tbody','est-tbody','ur-tbody','ob-tbody','sc-tbody','prf-tbody','cr-tbody','call-tbody','tbody','tb'];
     var text = message || 'Page loading failed. Please refresh and try again.';
     ids.some(function(id){
       var el = document.getElementById(id);

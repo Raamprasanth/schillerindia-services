@@ -14,6 +14,8 @@ const FqcNonsaleable = require('../models/FqcNonsaleable');
 const FqcNonSaleableFs = require('../models/FqcNonSaleableFs');
 const Bir = require('../models/Bir');
 const ClosedBir = require('../models/ClosedBir');
+const TrackerSubmission = require('../models/TrackerSubmission');
+const User = require('../models/User');
 const { getNextKey } = require('../utils/geminiKeys');
 
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
@@ -200,6 +202,85 @@ function makeActivityRow(label, total, withinTarget, prevRateValue = null, targe
 
 function percentFromRate(rateValue) {
   return percent((Number(rateValue) || 0) * 100);
+}
+
+// Helper to count days in a month
+function countDaysInMonth(year, month, dayOfWeek) {
+  let d = new Date(year, month - 1, 1);
+  let count = 0;
+  while (d.getMonth() === month - 1) {
+    if (d.getDay() === dayOfWeek) {
+      count++;
+    }
+    d.setDate(d.getDate() + 1);
+  }
+  return count;
+}
+
+function countDatesInMonth(year, month, dates) {
+  const lastDay = new Date(year, month, 0).getDate();
+  return dates.filter(day => day >= 1 && day <= lastDay).length;
+}
+
+function buildReportDefinitions(year, month) {
+  return [
+    { type: 'CRM', expectedPerEmployee: countDaysInMonth(year, month, 2) },
+    { type: 'PendingActivity', expectedPerEmployee: countDaysInMonth(year, month, 1) },
+    { type: 'NonSaleable', expectedPerEmployee: countDatesInMonth(year, month, [2, 16]) },
+    { type: 'SupplierWarranty', expectedPerEmployee: countDatesInMonth(year, month, [3, 16]) },
+    { type: 'CriticalPendingReport', expectedPerEmployee: countDatesInMonth(year, month, [2]) },
+    { type: 'PIRequest', expectedPerEmployee: countDatesInMonth(year, month, [5]) }
+  ];
+}
+
+async function getRealTrackerMetrics(scope, divisionName, employeeName, monthInfo) {
+  const reportDefs = buildReportDefinitions(monthInfo.year, monthInfo.month);
+  
+  let empCount = 0;
+  let matchQuery = { month: monthInfo.monthKey };
+
+  if (scope === 'division') {
+    const divDoc = await Division.findOne({ name: divisionName }).lean();
+    if (divDoc) {
+      empCount = await User.countDocuments({ role: 'employee', division: divDoc._id });
+      matchQuery.division = divDoc._id;
+    }
+  } else {
+    empCount = 1;
+    const empDoc = await User.findOne({ name: employeeName, role: 'employee' }).lean();
+    if (empDoc) {
+      matchQuery.employee = empDoc._id;
+    } else {
+      empCount = 0; // Employee not found
+    }
+  }
+
+  const actuals = {
+    CRM: 0, PendingActivity: 0, NonSaleable: 0,
+    SupplierWarranty: 0, CriticalPendingReport: 0, PIRequest: 0
+  };
+
+  if (empCount > 0) {
+    const submissions = await TrackerSubmission.aggregate([
+      { $match: matchQuery },
+      { $group: { _id: "$type", count: { $sum: 1 } } }
+    ]);
+    for (const sub of submissions) {
+      if (actuals[sub._id] !== undefined) {
+        actuals[sub._id] = sub.count;
+      }
+    }
+  }
+
+  const result = {};
+  for (const def of reportDefs) {
+    const expected = def.expectedPerEmployee * empCount;
+    const actual = actuals[def.type];
+    const pct = expected > 0 ? percent((actual / expected) * 100) : percent(0);
+    result[def.type] = pct;
+  }
+  
+  return result;
 }
 
 function makeAuxiliaryMetrics(base, activityRows = []) {
@@ -762,10 +843,19 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     scrapCount: filteredScrap.length,
   };
 
+  const realTrackers = await getRealTrackerMetrics(scope, selectedDivision, employee, monthInfo);
   const compliance = makeAuxiliaryMetrics(
     baseSummary,
     [...currentActivityRows, ...(row14 ? [row14] : []), ...(row15 ? [row15] : [])]
   );
+  // Override fake compliance with real tracker percentages
+  compliance.weeklyCrm = realTrackers.CRM;
+  compliance.pendingActivity = realTrackers.PendingActivity;
+  compliance.nonSaleable = realTrackers.NonSaleable;
+  compliance.supplierWarranty = realTrackers.SupplierWarranty;
+  compliance.criticalPending = realTrackers.CriticalPendingReport;
+  compliance.purchaseIndent = realTrackers.PIRequest;
+
   const narratives = {
     ...fallbackNarratives(
       scope === 'division'

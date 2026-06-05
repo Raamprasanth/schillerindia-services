@@ -959,12 +959,18 @@ function buildWeekStrip(){
 // -- LOAD PRF DATA -----------------------------------------
 let prfData=[], prfSort='entryDate', prfDir=-1;
 
+function extractArrayPayload(payload){
+  if (Array.isArray(payload)) return payload;
+  if (!payload || typeof payload !== 'object') return [];
+  return payload.data || payload.records || payload.items || payload.results || payload.docs || [];
+}
+
 async function loadPRF(){
   try{
     // Try PRF endpoint; fall back to demo data if unavailable
     const res = await fetch(API+'/api/emp/prfob?status=all', {headers:authHeaders()});
     if(res.ok){
-      prfData = await res.json();
+      prfData = extractArrayPayload(await res.json());
     }else{
       prfData = getDemoPRF();
     }

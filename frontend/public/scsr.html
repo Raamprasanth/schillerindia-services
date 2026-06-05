@@ -483,13 +483,25 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   const TODAY_ISO = localDateIso();
   let records = [];
 
+  function extractArrayPayload(payload){
+    if(Array.isArray(payload)) return payload;
+    if(!payload || typeof payload !== 'object') return [];
+    return payload.data || payload.records || payload.items || payload.results || payload.docs || [];
+  }
+
   async function loadData() {
+    const tb = document.getElementById('tb');
     try {
       const res = await fetch('/api/scsr', { headers: hdrs() });
       if(res.status===401||res.status===403) return logout();
       const data = await res.json();
-      if(res.ok) { records = data; renderTable(); }
-    } catch(e) { console.error(e); }
+      if(!res.ok) throw new Error(data.message || 'HTTP ' + res.status);
+      records = extractArrayPayload(data);
+      renderTable();
+    } catch(e) {
+      console.error(e);
+      if(tb) tb.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:30px;color:var(--red);font-weight:700;">&#9888; Could not load data: ${esc(e.message)}</td></tr>`;
+    }
   }
 
   function renderTable() {
