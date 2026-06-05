@@ -462,7 +462,8 @@ let mailAckVisible = localStorage.getItem(MAIL_ACK_KEY) === '1';
 const SUPPLIER_COLUMNS = [
   { key:'sn', label:'S/N' },
   { key:'supplier', label:'Supplier' },
-    { key:'division', label:'Division' },
+  { key:'division', label:'Division' },
+  { key:'frnEntryDate', label:'FRN entry date', type:'date' },
   { key:'srrRmaBltNo', label:'SRR/RMA/BLT No' },
   { key:'frnNo', label:'FRN No' },
   { key:'warrReportedDate', label:'Warr reported date', type:'date' },
@@ -474,13 +475,11 @@ const SUPPLIER_COLUMNS = [
   { key:'partNo', label:'Part No' },
   { key:'description', label:'Description', wide:true },
   { key:'defPartSerialNo', label:'Def part serial number' },
-  { key:'problemDetails', label:'Problem Details', wide:true },
   { key:'licenceVersion', label:'Licence version/Model configuration', wide:true },
   { key:'customerName', label:'Customer Name' },
   { key:'warrType', label:'Warr type-Schiller india' },
   { key:'supplierWarrStatus', label:'Warr type-Supplier' },
   { key:'defInvoiceNoSupplier', label:'Def Invoice number supplier' },
-  { key:'frnEntryDate', label:'FRN entry date', type:'date' },
   { key:'shipDateFromSc', label:'ship date from sc', type:'date' },
   { key:'dcInvoiceNo', label:'DC/Invoice No' },
   { key:'dcInvoiceDate', label:'DC/Invoice Date', type:'date' },
@@ -491,19 +490,20 @@ const SUPPLIER_COLUMNS = [
   { key:'replacementReceivedDate', label:'Replacement received date', type:'date' },
   { key:'typeWorkSupplier', label:'Type of work supplier' },
   { key:'rcdPartInvoiceNo', label:'Rcd part invoice number' },
-  { key:'rcdPartInvoiceDate', label:'Rcd part invoice date', type:'date' },
   { key:'repGirNo', label:'Rep GIR No' },
   { key:'rcdPartSerialNo', label:'Rcd part serial number' },
+  { key:'problemDetails', label:'Problem Details', wide:true },
   { key:'serviceCentreRemarks', label:'Service Centre Remarks', wide:true }
 ];
 const ENTRY_FIELDS = SUPPLIER_COLUMNS.filter(c => c.key !== 'sn');
 const ENTRY_TEXTAREAS = new Set(['description','problemDetails','licenceVersion','serviceCentreRemarks']);
 const FIELD_ALIASES = {
   customerName: ['customerName', 'customer'],
-  problemDetails: ['problemDetails', 'defMod', 'typeWork'],
   description: ['description', 'itemDescription', 'defMod'],
   frnEntryDate: ['frnEntryDate', 'entryDate', 'rcvdDate'],
   typeWorkSupplier: ['typeWorkSupplier', 'typeWork'],
+  licenceVersion: ['licenceVersion', 'softwareDetails'],
+  serviceCentreRemarks: ['serviceCentreRemarks', 'serviceCentreComments']
 };
 
 // -- INIT --------------------------------------------------
@@ -802,10 +802,13 @@ async function submitDynamicUpdate() {
   
   // Custom mapping for Scrap list backend format
   payload.customer = payload.customerName || payload.customer || '';
-  payload.entryDate = payload.receivedDateAtEsskay || payload.entryDate || '';
-  payload.rcvdDate = payload.receivedDateAtEsskay || payload.rcvdDate || '';
-  payload.defMod = payload.problemDetails || payload.itemDescription || payload.defMod || '';
+  payload.entryDate = payload.frnEntryDate || payload.receivedDateAtEsskay || payload.entryDate || '';
+  payload.rcvdDate = payload.frnEntryDate || payload.receivedDateAtEsskay || payload.rcvdDate || '';
+  payload.defMod = payload.description || payload.itemDescription || payload.defMod || '';
   payload.typeWork = payload.repairStatus || payload.typeWork || 'SCRAPPED';
+  
+  if (payload.licenceVersion !== undefined) payload.softwareDetails = payload.licenceVersion;
+  if (payload.serviceCentreRemarks !== undefined) payload.serviceCentreComments = payload.serviceCentreRemarks;
 
   const btn = document.getElementById('dyn-save-btn');
   if(btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
@@ -993,8 +996,9 @@ async function saveJobSheet() {
 
 // -- EXPORT CSV --------------------------------------------
 function exportCSV() {
-  const h = SUPPLIER_COLUMNS.map(col => col.label);
-  const rows = filtered.map((d, i) => SUPPLIER_COLUMNS.map(col => (
+  const exportCols = SUPPLIER_COLUMNS.filter(c => c.key !== 'division');
+  const h = exportCols.map(col => col.label);
+  const rows = filtered.map((d, i) => exportCols.map(col => (
     col.key === 'sn' ? i + 1 : fieldValue(d, col.key)
   )));
   const csv = [h,...rows].map(r => r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
