@@ -393,9 +393,9 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
             <th style="width:42px;" class="no-sort">#</th>
             <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
             <th onclick="sortBy('entryDate')">Entry Date <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('scEngg')">SC Engg <span class="si">&#8693;</span></th>
             <th onclick="sortBy('callDate')">Call Date <span class="si">&#8693;</span></th>
             <th onclick="sortBy('closeDate')" class="sorted">Close Date <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('scEngg')">SC Engg <span class="si">&#8693;</span></th>
             <th onclick="sortBy('engineer')">Engineer <span class="si">&#8693;</span></th>
             <th onclick="sortBy('customer')">Customer <span class="si">&#8693;</span></th>
             <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
@@ -568,9 +568,9 @@ function renderTable(){
         <td class="mono" style="color:var(--muted);">${(currentPage - 1) * perPage + i + 1}</td>
         <td><span class="div-tag">${esc(d.division || '-')}</span></td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(entryDateForClosedCall(d))}</td>
+        <td style="font-weight:600;color:var(--text);">${esc(d.scEngg || '-')}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.callDate)}</td>
         <td style="font-size:11px;font-weight:700;color:var(--green);">${fmtDate(d.closeDate)}</td>
-        <td>${esc(d.scEngg || '-')}</td>
         <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.engineer||'')}">${esc(d.engineer || '-')}</td>
         <td style="max-width:170px;overflow:hidden;text-overflow:ellipsis;font-weight:500;" title="${esc(d.customer||'')}">${esc(d.customer || '-')}</td>
         <td style="font-weight:600;color:var(--accent2);">${esc(d.model || '-')}</td>
@@ -629,10 +629,10 @@ function closeDetailModal(){
 
 // -- EXPORT CSV ------------------------------------------------------------
 function exportCSV(){
-  const headers = ['#','Division','Entry Date','Call Date','Close Date','SC Engg','Engineer','Customer','Model','Type of Call','Status','Remarks'];
+  const headers = ['#','Division','Entry Date','SC Engg','Call Date','Close Date','Engineer','Customer','Model','Type of Call','Status','Remarks'];
   const rows = filtered.map((d, i) => [
-    i + 1, d.division, fmtDate(entryDateForClosedCall(d)), fmtDate(d.callDate), fmtDate(d.closeDate),
-    d.scEngg, d.engineer, d.customer, d.model, d.typeCall, d.status, d.remarks
+    i + 1, d.division, fmtDate(entryDateForClosedCall(d)), d.scEngg, fmtDate(d.callDate), fmtDate(d.closeDate),
+    d.engineer, d.customer, d.model, d.typeCall, d.status, d.remarks
   ]);
   const csv = [headers, ...rows].map(r => r.map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(',')).join('\n');
   const a = document.createElement('a');

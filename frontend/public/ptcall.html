@@ -529,6 +529,7 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
       <div class="table-wrap">
         <table class="call-table">
           <thead><tr><th style="width:40px;"># <span class="si">&#8597;</span></th>
+            <th onclick="sortBy('scEng')">SC Engineer <span class="si">&#8597;</span></th>
             <th onclick="sortBy('callDate')">Call Date <span class="si">&#8597;</span></th>
             <th onclick="sortBy('call')">Call <span class="si">&#8597;</span></th>
             <th onclick="sortBy('commType')">Comm Type <span class="si">&#8597;</span></th>
@@ -544,7 +545,7 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
             
           </tr></thead>
           <tbody id="call-tbody">
-            <tr class="loading-row"><td colspan="13"><span class="spin"></span>Loading from database-</td></tr>
+            <tr class="loading-row"><td colspan="14"><span class="spin"></span>Loading from database-</td></tr>
           </tbody>
         </table>
       </div>
@@ -934,7 +935,7 @@ function renderTable(){
   (document.getElementById('count-chip')||{}).textContent = total + ' entr' + (total===1?'y':'ies');
   const tbody = document.getElementById('call-tbody');
   if(!total){
-    tbody.innerHTML=`<tr><td colspan="13"><div class="empty-st">
+    tbody.innerHTML=`<tr><td colspan="14"><div class="empty-st">
       <div class="ei">&#128269;</div>
       <div class="et">${CALL_DATA.length?'No records match the current filters':'No Call records yet'}</div>
       <div class="es">${CALL_DATA.length?'Try clearing the filters.':'Click + Add New Entry to register the first call.'}</div>
@@ -945,6 +946,7 @@ function renderTable(){
       const remark = (d.remarks||'').slice(0,45) + ((d.remarks||'').length>45?'-':'');
       return `<tr>
       <td class="mono" style="color:var(--muted);">${(currentPage-1)*perPage+i+1}</td>
+      <td style="font-weight:600;color:var(--text);">${esc(d.scEng||'-')}</td>
       <td style="font-size:11px;font-weight:600;color:var(--soft);">${fmtDate(d.callDate)}</td>
       <td>${esc(d.call||'-')}</td>
       <td style="font-size:11px;color:var(--soft);">${esc(d.commType||'-')}</td>
@@ -1157,8 +1159,8 @@ async function deleteEntry(id){
 
 /* -- EXPORT -- */
 function exportCSV(){
-  const headers = ['S.No.','Call Date','Call','Comm Type','Call Type','Region','Branch','Engineer','Supplier','Model','Duration','Remarks / Notes'];
-  const rows = filtered.map((d,i)=>[i+1,d.callDate,d.call,d.commType||'-',d.callType,d.region,d.branch,d.engineer,d.supplier,d.model,d.duration||'-',d.remarks]);
+  const headers = ['S.No.','SC Engineer','Call Date','Call','Comm Type','Call Type','Region','Branch','Engineer','Supplier','Model','Duration','Remarks / Notes'];
+  const rows = filtered.map((d,i)=>[i+1,d.scEng||'-',d.callDate,d.call,d.commType||'-',d.callType,d.region,d.branch,d.engineer,d.supplier,d.model,d.duration||'-',d.remarks]);
   const csv = [headers,...rows].map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
@@ -1183,8 +1185,8 @@ function getRange(c,t){if(t<=7)return Array.from({length:t},(_,i)=>i+1);if(c<=4)
 function gp(p){ currentPage=p; renderTable(); }
 
 /* -- HELPERS -- */
-function setLoading(){ document.getElementById('call-tbody').innerHTML='<tr class="loading-row"><td colspan="13"><span class="spin"></span>Loading from database-</td></tr>'; ['s-total','s-closed','s-pending','s-escalated'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='-';}); }
-function setError(msg){ document.getElementById('call-tbody').innerHTML=`<tr class="loading-row"><td colspan="13" style="color:var(--red);">&#9888;&#65039; ${esc(msg)}</td></tr>`; }
+function setLoading(){ document.getElementById('call-tbody').innerHTML='<tr class="loading-row"><td colspan="14"><span class="spin"></span>Loading from database-</td></tr>'; ['s-total','s-closed','s-pending','s-escalated'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='-';}); }
+function setError(msg){ document.getElementById('call-tbody').innerHTML=`<tr class="loading-row"><td colspan="14" style="color:var(--red);">&#9888;&#65039; ${esc(msg)}</td></tr>`; }
 function fmtDate(d){ if(!d)return'-'; const p=String(d).split('T')[0].split('-'); if(p.length<3)return String(d); return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0]; }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function showToast(msg,type='ok'){ const w=document.getElementById('toast-wrap'); const el=document.createElement('div'); el.className='toast '+type; el.innerHTML='<span class="td"></span>'+msg; w.appendChild(el); setTimeout(()=>el.remove(),3400); }
