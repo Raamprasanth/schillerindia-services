@@ -27,6 +27,7 @@ const PROJECT_PYTHON = path.join(__dirname, '..', '..', '.venv', process.platfor
 const BUNDLED_PYTHON = path.join(os.homedir(), '.cache', 'codex-runtimes', 'codex-primary-runtime', 'dependencies', 'python', process.platform === 'win32' ? 'python.exe' : 'bin/python');
 const MAIL_ATTEMPTS = Math.max(1, parseInt(process.env.ESCALATION_MAIL_ATTEMPTS || '2', 10) || 2);
 const MAIL_TIMEOUT_MS = Math.max(30000, parseInt(process.env.ESCALATION_MAIL_TIMEOUT_MS || '120000', 10) || 120000);
+const SCHEDULER_GRACE_MS = Math.max(60000, parseInt(process.env.ESCALATION_SCHEDULER_GRACE_MS || '300000', 10) || 300000);
 const UR_DAILY_TYPES = ['UR Stock', 'WS Stock', 'External Repair', 'Completed', 'Supplier Warrenty', 'No Fault', 'Given to PSP'];
 const CUSTOM_ESCALATIONS = {
   prf_ob: {
@@ -382,10 +383,12 @@ async function getSlotsForCurrentTime(date = new Date()) {
   const slots = [];
   const matches = (key, fallback) => {
     const time = scheduledTime(times, key, fallback);
+    const runAt = makeUtcFromIst(parts.year, parts.month, parts.day, time.hour, time.minute, 0, 0);
+    const dueAge = date.getTime() - runAt.getTime();
     return enabledSlots.has(key)
       && isEscalationSlotAllowedOnDay(key, weekday, scheduleConfig)
-      && parts.hour === time.hour
-      && parts.minute === time.minute;
+      && dueAge >= 0
+      && dueAge < SCHEDULER_GRACE_MS;
   };
   if (matches('sr_morning', '11:00')) {
     slots.push('sr_morning');
