@@ -1220,14 +1220,6 @@ async function runEscalationSlot(slot, options = {}) {
 
     const data = await collectEscalationData(slotWindow);
     const totalCount = data.frnRows.length + data.estimationRows.length;
-    if (!totalCount) {
-      log = await EscalationRunLog.findByIdAndUpdate(
-        log._id,
-        { $set: { status: 'no_records', frnCount: 0, estCount: 0, totalCount: 0, sentAt: new Date() } },
-        { new: true }
-      );
-      return { ok: true, skipped: true, message: 'No records found for this escalation window.', log };
-    }
 
     fs.mkdirSync(REPORT_DIR, { recursive: true });
     const reportPath = path.join(REPORT_DIR, `dispatch-escalation-${slotWindow.slot}-${slotWindow.jobDate}.xlsx`);
@@ -1303,14 +1295,6 @@ async function runUrEscalationSlot(slot, options = {}) {
     }
 
     const data = await collectUrEscalationData(slotWindow);
-    if (!data.rows.length) {
-      log = await EscalationRunLog.findByIdAndUpdate(
-        log._id,
-        { $set: { status: 'no_records', urCount: 0, totalCount: 0, sentAt: new Date() } },
-        { new: true }
-      );
-      return { ok: true, skipped: true, message: 'No records found for this escalation window.', log };
-    }
 
     fs.mkdirSync(REPORT_DIR, { recursive: true });
     const reportPath = path.join(REPORT_DIR, slotWindow.reportName);
@@ -1385,14 +1369,6 @@ async function runSrEscalationSlot(slot, options = {}) {
 
     const data = await collectSrEscalationData(slotWindow);
     const totalCount = data.frnRows.length + data.estimationRows.length;
-    if (!totalCount) {
-      log = await EscalationRunLog.findByIdAndUpdate(
-        log._id,
-        { $set: { status: 'no_records', frnCount: 0, estCount: 0, totalCount: 0, sentAt: new Date() } },
-        { new: true }
-      );
-      return { ok: true, skipped: true, message: 'No records found for this SR escalation window.', log };
-    }
 
     fs.mkdirSync(REPORT_DIR, { recursive: true });
     const reportPath = path.join(REPORT_DIR, slotWindow.reportName);
@@ -1470,14 +1446,6 @@ async function runToEscalationSlot(slot, options = {}) {
 
     const data = await collectToEscalationData(slotWindow);
     const totalCount = data.frnRows.length + data.estimationRows.length + (data.underRepairRows || []).length;
-    if (!totalCount) {
-      log = await EscalationRunLog.findByIdAndUpdate(
-        log._id,
-        { $set: { status: 'no_records', frnCount: 0, estCount: 0, urCount: 0, totalCount: 0, sentAt: new Date() } },
-        { new: true }
-      );
-      return { ok: true, skipped: true, message: 'No records found for this TO escalation window.', log };
-    }
 
     fs.mkdirSync(REPORT_DIR, { recursive: true });
     const reportPath = path.join(REPORT_DIR, slotWindow.reportName);
@@ -1556,14 +1524,6 @@ async function runCustomEscalationSlot(slot, options = {}) {
     }
 
     const data = await collectCustomEscalationData(slotWindow);
-    if (!data.rows.length) {
-      log = await EscalationRunLog.findByIdAndUpdate(
-        log._id,
-        { $set: { status: 'no_records', totalCount: 0, sentAt: new Date() } },
-        { new: true }
-      );
-      return { ok: true, skipped: true, message: 'No records found for this escalation window.', log };
-    }
 
     fs.mkdirSync(REPORT_DIR, { recursive: true });
     const reportPath = path.join(REPORT_DIR, slotWindow.reportName);
