@@ -202,6 +202,9 @@
     .prio-high{background:rgba(220,38,38,0.1);color:#b91c1c;}
     .prio-med{background:rgba(217,119,6,0.1);color:#b45309;}
     .prio-low{background:rgba(5,150,105,0.1);color:#047857;}
+    .report-trackers-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;}
+    .report-link-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;border:1.5px solid var(--accent);background:var(--accent3);color:var(--accent);font-size:12px;font-weight:700;text-decoration:none;transition:all 0.2s;}
+    .report-link-btn:hover{background:var(--accent);color:#fff;}
 
     /* ACTIVITY */
     .activity-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #e8f0f7;}
@@ -289,9 +292,11 @@
 
     @media (max-width: 1100px){
       .stats-grid,.perf-grid,.grid-2{grid-template-columns:1fr 1fr;}
+      .report-trackers-grid{grid-template-columns:1fr 1fr;}
     }
     @media (max-width: 760px){
       .stats-grid,.perf-grid,.grid-2{grid-template-columns:1fr;}
+      .report-trackers-grid{grid-template-columns:1fr;}
       .profile-card{flex-direction:column;align-items:flex-start;}
       .profile-card > div:last-child{margin-left:0 !important;text-align:left !important;width:100%;}
       .perf-metrics{grid-template-columns:1fr;}
@@ -456,7 +461,7 @@
           <div class="np-foot"><a href="#">View all announcements</a></div>
         </div>
       </div>
-      <button class="topbar-btn primary">+ Submit Report</button>
+      <button class="topbar-btn primary" onclick="document.getElementById('weekly-trackers')?.scrollIntoView({behavior:'smooth',block:'start'});">+ Submit Report</button>
     </div>
   </div>
 
@@ -681,7 +686,6 @@
         <div class="profile-dept" id="profile-dept">Field Engineer - South Division</div>
       </div>
       <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
-        <a href="https://synergycrm.net/schillerservice/" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:7px 18px;border-radius:8px;border:1.5px solid var(--accent);background:var(--accent3);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='var(--accent)';this.style.color='#fff';" onmouseout="this.style.background='var(--accent3)';this.style.color='var(--accent)';">&#128196; CRM</a>
         <a href="https://schillerind.sharepoint.com/sites/ThePulse?CT=1732090698772&OR=OWA-NT-Mail&CID=a273cbbf-296c-cff8-1ec7-bbcd2eda733e" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:7px 18px;border-radius:8px;border:1.5px solid #7c3aed;background:rgba(124,58,237,0.08);color:#7c3aed;font-size:12px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='#7c3aed';this.style.color='#fff';" onmouseout="this.style.background='rgba(124,58,237,0.08)';this.style.color='#7c3aed';">&#9889; Pulse</a>
         <a href="https://schillerindia.com/" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:7px 18px;border-radius:8px;border:1.5px solid #0e7490;background:rgba(14,116,144,0.08);color:#0e7490;font-size:12px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='#0e7490';this.style.color='#fff';" onmouseout="this.style.background='rgba(14,116,144,0.08)';this.style.color='#0e7490';">&#127760; SHIPL</a>
         <a href="https://login.microsoftonline.com/d00c8e15-3cb0-41be-8ebc-6409b4bb4071/oauth2/authorize?client_id=996def3d-b36c-4153-8607-a6fd3c01b89f&redirect_uri=https%3a%2f%2fbusinesscentral.dynamics.com%2fremote-sign-in&response_type=code&scope=openid+profile&response_mode=form_post&nonce=639139546970225078.ZWM5YmUyYTQtZjhlYS00YTE3LTlkM2QtODYyN2NhNTA0ZGQ4NDViYzc3N2EtNmQ3ZC00YTViLTg2YjUtNjc3NGRjY2RmYzc3&nux=1&msafed=0&state=CfDJ8F-vQQ3rsSJJohUfN6O5rJ-6hQ0r1teBSrWXOyTg0-IhdpFy2KFYUuGUArRNhpmYE7VW2t522rHvMdzjraEPjoEldXRXsraq7qJ1To-RYDhEqIzBIZ4eZUiUzUKzihfWTwhiqjDpW69vgISTvDwgYDInwV0Kkkg3IXRMtZ1IbVfznDnrO3IRR9WQfK-knqE_CO3_yi3l7oaJB4WMhm_3tfSOiDJXexnA0UDKVbt9ozL8wjWWhURUhSxdGLCY2hAV1T3CvE3mfWmVm1lR6ufvH8oI8mM5plU-PF2fVYmbcL6Cigak4AuDBkz5OYGh2z4xybfRnF8PueHEdBWikjUGhL__M4PFbniZ71Lb9pTNhKX7lwiRZoVForosQxMQs3P8Cb4HkIyJJdw8fv6bRbLQgrmsH9Wtroty3DF5OI1BIu-CAbcZZ0Wy-B6A2lu97BfxCHmRHmr8stW30lYWEhJSeAIPw3MkKwqqptZcwNqS549akRLXnaxdBkQGHI61ZqYqvev8pKMsPIcOWLAqpnUnlEnZeKwryYseQH2spvIdWiN1HxXjhqLzoJtB9cqj_8JTWg&x-client-SKU=ID_NET8_0&x-client-ver=8.14.0.0&sso_nonce=AwABEgEAAAADAOz_BQD0_0V2b1N0c0FydGlmYWN0cwUAAAAAAGmKpIqua_uwY9_4CtR4zX98qQrZlWY80nDwbHBr5BmzHniU-TeETTXGRRhBXeFFQffVFc5rPqbBSX-tiQ4kIb4gAA&client-request-id=01d80231-9da5-4b99-a8d4-ee6c12b8577e&mscrid=01d80231-9da5-4b99-a8d4-ee6c12b8577e" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:7px 18px;border-radius:8px;border:1.5px solid #b45309;background:rgba(180,83,9,0.08);color:#b45309;font-size:12px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='#b45309';this.style.color='#fff';" onmouseout="this.style.background='rgba(180,83,9,0.08)';this.style.color='#b45309';">&#128200; BC</a>
@@ -772,11 +776,12 @@
       </div>
     </div>
 
-    <!-- Weekly Trackers -->
-    <div class="grid-2" id="weekly-trackers">
+    <!-- Report Trackers -->
+    <div class="report-trackers-grid" id="weekly-trackers">
       <div class="panel">
         <div class="panel-header">
           <div class="panel-title">CRM Reports (Tuesdays)</div>
+          <a class="report-link-btn" href="https://synergycrm.net/schillerservice/" target="_blank">CRM</a>
         </div>
         <div class="panel-body" id="crm-tracker-body">
           <div style="color:var(--muted); font-size:13px;">Loading Tuesdays...</div>
@@ -789,6 +794,22 @@
         <div class="panel-body" id="pa-tracker-body">
           <div style="color:var(--muted); font-size:13px;">Loading Mondays...</div>
         </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Non Saleable (2 & 16)</div></div>
+        <div class="panel-body" id="nonsaleable-tracker-body"><div style="color:var(--muted); font-size:13px;">Loading dates...</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Supplier Warranty (3 & 16)</div></div>
+        <div class="panel-body" id="supplierwarranty-tracker-body"><div style="color:var(--muted); font-size:13px;">Loading dates...</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Critical Pending Report (2)</div></div>
+        <div class="panel-body" id="criticalpending-tracker-body"><div style="color:var(--muted); font-size:13px;">Loading date...</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">PI Request (5)</div></div>
+        <div class="panel-body" id="pirequest-tracker-body"><div style="color:var(--muted); font-size:13px;">Loading date...</div></div>
       </div>
     </div>
 
@@ -2238,7 +2259,7 @@
     const month = today.getMonth() + 1; // 1-12
     const monthStr = `${year}-${month.toString().padStart(2, '0')}`;
     
-    // Get all Mondays and Tuesdays for current month
+    // Get all scheduled report dates for current month
     const mondays = getDaysInMonth(year, today.getMonth(), 1);
     const tuesdays = getDaysInMonth(year, today.getMonth(), 2);
     
@@ -2255,6 +2276,10 @@
 
     renderTrackerList('crm-tracker-body', tuesdays, submissions, 'CRM', monthStr);
     renderTrackerList('pa-tracker-body', mondays, submissions, 'PendingActivity', monthStr);
+    renderTrackerList('nonsaleable-tracker-body', getMonthDates(year, today.getMonth(), [2, 16]), submissions, 'NonSaleable', monthStr);
+    renderTrackerList('supplierwarranty-tracker-body', getMonthDates(year, today.getMonth(), [3, 16]), submissions, 'SupplierWarranty', monthStr);
+    renderTrackerList('criticalpending-tracker-body', getMonthDates(year, today.getMonth(), [2]), submissions, 'CriticalPendingReport', monthStr);
+    renderTrackerList('pirequest-tracker-body', getMonthDates(year, today.getMonth(), [5]), submissions, 'PIRequest', monthStr);
   }
 
   function getDaysInMonth(year, monthIndex, dayOfWeek) {
@@ -2267,6 +2292,13 @@
       d.setDate(d.getDate() + 1);
     }
     return days;
+  }
+
+  function getMonthDates(year, monthIndex, dates) {
+    const maxDate = new Date(year, monthIndex + 1, 0).getDate();
+    return dates
+      .filter(day => day >= 1 && day <= maxDate)
+      .map(day => new Date(year, monthIndex, day));
   }
 
   function renderTrackerList(containerId, dateObjs, submissions, type, monthStr) {
