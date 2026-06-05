@@ -1620,32 +1620,264 @@ function renderDivisionPerfSummary(data,params) {
     return;
   }
   window._lastPerfDivData = data;
-  const rate=data.completionRate||0;
-  const isCritical=rate<60;
-  const isWarning=rate>=60&&rate<75;
-  const pct=n=>Math.min(100,Math.max(0,n||0));
+  const rate=data.summary?.completionRate||data.completionRate||0;
   
-  let tableRows='';
-  (data.activities||[]).forEach(act=>{
-    const p=pct(act.completionPercent);
-    const flagTxt=p<60?'<span class="flag-badge flag-critical">Critical</span>':p<75?'<span class="flag-badge flag-warning">At Risk</span>':'';
-    const rowAlert=p<60?'style="background:rgba(185,28,28,0.03);"':p<75?'style="background:rgba(217,119,6,0.03);"':'';
-    tableRows+=`<tr ${rowAlert}>
-      <td style="font-weight:600;">${act.label||''} ${flagTxt}</td>
-      <td style="text-align:center;font-weight:700;color:${p<60?'#b91c1c':p<75?'#d97706':'#059669'};">${p}%</td>
-    </tr>`;
-  });
+  const rows = data.activityRows || data.activities || [];
+  const getRow = (label) => rows.find(r => (r.label||'').toLowerCase() === label.toLowerCase()) || {};
+  const getVal = (r, key, fallback='') => r[key] !== undefined && r[key] !== null ? r[key] : fallback;
+  const pct = (r, key) => {
+    let v = r[key];
+    if(v===undefined || v===null) return '';
+    return Math.round(v * (key.includes('Rate') ? 100 : 1)) + '%';
+  };
+  
+  // Extract data for rows
+  const rFrn = getRow('Pending frn');
+  const rFrnCon = getRow('pending FRN con');
+  const rSo = getRow('SO Pending');
+  const rTo = getRow('TO/SO');
+  const rNonSaleable = getRow('Non-Saleable');
+  const rBir = getRow('BIR list');
+  const rEst = getRow('Estimation');
 
-  const tableHtml=tableRows?`
-    <div class="perf-table-wrap">
-      <table class="perf-table" id="perf-table-excel-div">
-        <thead><tr>
-          <th>Activity</th><th style="text-align:center;">Completion Percentage</th>
-        </tr></thead>
-        <tbody>${tableRows}</tbody>
-      </table>
-    </div>`:
-    '<div style="padding:20px;color:var(--muted);font-size:13px;">No activity data found.</div>';
+  const compliance = data.compliance || {};
+  const cWeekly = compliance.weeklyCrm || 0;
+  const cPending = compliance.pendingActivity || 0;
+  const cNonSaleable = compliance.nonSaleable || 0;
+  const cSupWarr = compliance.supplierWarranty || 0;
+  const cSupPending = compliance.supplierPendingReview || 0;
+  const cCritical = compliance.criticalPending || 0;
+  const cPurch = compliance.purchaseIndent || 0;
+  const cQuarterly = compliance.quarterlyBuyback || 0;
+  const c5s = compliance.fiveSRate || 0;
+  const cRepair = compliance.repairReport || 0;
+
+  const monthLabel = data.monthLabel || '';
+  const divisionLabel = data.division || '';
+
+  const tableHtml = `
+<div class="perf-review-table-container" style="overflow-x:auto; padding:20px;">
+  <style>
+    .excel-table { width: 100%; border-collapse: collapse; font-family: Calibri, 'Segoe UI', sans-serif; font-size: 13px; border: 2px solid #333; background: #fff; }
+    .excel-table th, .excel-table td { border: 1px solid #333; padding: 6px 10px; text-align: center; vertical-align: middle; color: #000; }
+    .excel-table .text-left { text-align: left; font-weight: bold; }
+    .excel-table .text-right { text-align: right; }
+    .excel-table .bg-gray { background-color: #a5b0c0; color: #1e3a8a; } 
+    .excel-table .bg-green { background-color: #e2efda; }
+    .excel-table .bg-peach { background-color: #fce4d6; }
+    .excel-table .bg-blue { background-color: #dae3f3; }
+    .excel-table .bg-yellow { background-color: #fff2cc; }
+    .excel-table .bg-white { background-color: #ffffff; }
+    .excel-table .bg-dark-blue { background-color: #b4c6e7; } 
+    .excel-table .title-cell { font-size: 20px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; }
+    .excel-table .red-text { color: red; font-size: 11px; font-weight: normal; display: block; }
+    .excel-table .bold { font-weight: bold; }
+    .excel-table .row-sep td { border-left: none; border-right: none; height: 10px; padding: 0; background: #fff; }
+  </style>
+
+  <table class="excel-table" id="perf-table-excel-div">
+    <!-- Header Rows -->
+    <tr>
+      <th colspan="4" rowspan="2" class="bg-gray title-cell">PERFORMANCE REVIEW</th>
+      <th class="bg-peach text-right bold">For the month of</th>
+      <th class="bg-peach">${monthLabel}</th>
+    </tr>
+    <tr>
+      <th class="bg-yellow text-right bold">Division</th>
+      <th class="bg-yellow">${divisionLabel}</th>
+    </tr>
+
+    <!-- Column Headers -->
+    <tr>
+      <th rowspan="2" class="bg-green">Activity</th>
+      <th rowspan="2" class="bg-green">Total Inward<br><span class="red-text">(If not applicable mark zero)</span></th>
+      <th rowspan="2" class="bg-green">No of Executions within target date</th>
+      <th rowspan="2" class="bg-green">Percentage of Executions out from target date</th>
+      <th colspan="2" class="bg-green">Target Percentage</th>
+    </tr>
+    <tr>
+      <th class="bg-blue">Prev Month</th>
+      <th class="bg-yellow">Next Month</th>
+    </tr>
+
+    <!-- Section 1: Standard Activities -->
+    <tr>
+      <td class="bg-green text-left">Pending frn</td>
+      <td class="bg-peach">${getVal(rFrn, 'total')}</td>
+      <td class="bg-peach">${getVal(rFrn, 'withinTarget')}</td>
+      <td class="bg-peach bold">${pct(rFrn, 'withinPercent')}</td>
+      <td class="bg-blue">${pct(rFrn, 'prevRate')}</td>
+      <td class="bg-peach">${pct(rFrn, 'nextRate')}</td>
+    </tr>
+    <tr>
+      <td class="bg-green text-left">pending FRN con</td>
+      <td class="bg-peach">${getVal(rFrnCon, 'total')}</td>
+      <td class="bg-peach">${getVal(rFrnCon, 'withinTarget')}</td>
+      <td class="bg-peach bold">${pct(rFrnCon, 'withinPercent')}</td>
+      <td class="bg-blue">${pct(rFrnCon, 'prevRate')}</td>
+      <td class="bg-peach">${pct(rFrnCon, 'nextRate')}</td>
+    </tr>
+    <tr>
+      <td class="bg-green text-left">SO Pending</td>
+      <td class="bg-peach">${getVal(rSo, 'total')}</td>
+      <td class="bg-peach">${getVal(rSo, 'withinTarget')}</td>
+      <td class="bg-peach bold">${pct(rSo, 'withinPercent')}</td>
+      <td class="bg-blue">${pct(rSo, 'prevRate')}</td>
+      <td class="bg-peach">${pct(rSo, 'nextRate')}</td>
+    </tr>
+    <tr>
+      <td class="bg-green text-left">TO/SO</td>
+      <td class="bg-peach">${getVal(rTo, 'total')}</td>
+      <td class="bg-peach">${getVal(rTo, 'withinTarget')}</td>
+      <td class="bg-peach bold">${pct(rTo, 'withinPercent')}</td>
+      <td class="bg-blue">${pct(rTo, 'prevRate')}</td>
+      <td class="bg-peach">${pct(rTo, 'nextRate')}</td>
+    </tr>
+    <tr>
+      <td class="bg-green text-left">Non-Saleable</td>
+      <td class="bg-peach">${getVal(rNonSaleable, 'total')}</td>
+      <td class="bg-peach">${getVal(rNonSaleable, 'withinTarget')}</td>
+      <td class="bg-peach bold">${pct(rNonSaleable, 'withinPercent')}</td>
+      <td class="bg-blue">${pct(rNonSaleable, 'prevRate')}</td>
+      <td class="bg-peach">${pct(rNonSaleable, 'nextRate')}</td>
+    </tr>
+    <tr>
+      <td class="bg-green text-left">BIR list</td>
+      <td class="bg-peach">${getVal(rBir, 'total')}</td>
+      <td class="bg-peach">${getVal(rBir, 'withinTarget')}</td>
+      <td class="bg-peach bold">${pct(rBir, 'withinPercent')}</td>
+      <td class="bg-blue">${pct(rBir, 'prevRate')}</td>
+      <td class="bg-peach">${pct(rBir, 'nextRate')}</td>
+    </tr>
+    <tr>
+      <td class="bg-green text-left">Estimation</td>
+      <td class="bg-peach">${getVal(rEst, 'total')}</td>
+      <td class="bg-peach">${getVal(rEst, 'withinTarget')}</td>
+      <td class="bg-peach bold">${pct(rEst, 'withinPercent')}</td>
+      <td class="bg-blue">${pct(rEst, 'prevRate')}</td>
+      <td class="bg-peach">${pct(rEst, 'nextRate')}</td>
+    </tr>
+
+    <!-- Separator -->
+    <tr class="row-sep"><td colspan="6"></td></tr>
+
+    <!-- Section 2: Weekly CRM Reports -->
+    <tr>
+      <td rowspan="5" class="bg-green text-left">Weekly CRM Reports</td>
+      <td class="bg-blue">1st week</td>
+      <td rowspan="5" class="bg-green text-left" style="vertical-align:top;">Pending activity on<br>Monday</td>
+      <td class="bg-blue">1st week</td>
+      <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Non-Saleable<br><span class="red-text">If not applicable mark<br>NA</span></td>
+      <td class="bg-blue"></td>
+    </tr>
+    <tr>
+      <td class="bg-blue">2nd week</td>
+      <td class="bg-blue">2nd week</td>
+      <td class="bg-blue"></td>
+    </tr>
+    <tr>
+      <td class="bg-blue">3rd week</td>
+      <td class="bg-blue">3rd week</td>
+      <td class="bg-blue"></td>
+    </tr>
+    <tr>
+      <td class="bg-blue">4th week</td>
+      <td class="bg-blue">4th week</td>
+      <td rowspan="2" class="bg-green"></td>
+      <td class="bg-peach bold">0</td>
+    </tr>
+    <tr>
+      <td class="bg-peach bold">${cWeekly}%</td>
+      <td class="bg-peach bold">${cPending}%</td>
+      <td class="bg-peach">${cNonSaleable}%</td>
+    </tr>
+
+    <!-- Separator -->
+    <tr class="row-sep"><td colspan="6"></td></tr>
+
+    <!-- Section 3: Supplier Warranty -->
+    <tr>
+      <td rowspan="4" class="bg-green text-left" style="vertical-align:top;">Supplier Warranty transaction<br><span class="red-text">If not applicable mark NA</span></td>
+      <td class="bg-blue"></td>
+      <td rowspan="4" class="bg-green text-left" style="vertical-align:top;">Supplier pending issue<br>review<br><span class="red-text">If not applicable mark<br>NA</span></td>
+      <td class="bg-blue"></td>
+      <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Critical Pending report<br><span class="red-text">If not applicable mark<br>NA</span></td>
+      <td class="bg-green"></td>
+    </tr>
+    <tr>
+      <td class="bg-blue"></td>
+      <td class="bg-blue"></td>
+      <td class="bg-green"></td>
+    </tr>
+    <tr>
+      <td class="bg-blue"></td>
+      <td class="bg-blue"></td>
+      <td class="bg-peach bold">${cCritical}%</td>
+    </tr>
+    <tr>
+      <td class="bg-peach bold">${cSupWarr}%</td>
+      <td class="bg-peach bold">${cSupPending}%</td>
+      <td class="bg-green"></td>
+      <td class="bg-peach"></td>
+    </tr>
+
+    <!-- Separator -->
+    <tr class="row-sep"><td colspan="6"></td></tr>
+
+    <!-- Section 4: Purchase Indent -->
+    <tr>
+      <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Purchase indent request to commercial<br><span class="red-text">If not applicable mark NA</span></td>
+      <td class="bg-blue"></td>
+      <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Quarterly Buy Back &amp;<br>Standby unit review<br><span class="red-text">If not applicable mark<br>NA</span></td>
+      <td class="bg-blue"></td>
+      <td class="bg-green bold">5s Rate</td>
+      <td class="bg-dark-blue bold">${c5s}%</td>
+    </tr>
+    <tr>
+      <td class="bg-blue"></td>
+      <td class="bg-blue"></td>
+      <td colspan="2" class="bg-peach bold">${c5s >= 80 ? 'Good' : 'Needs Improvement'}</td>
+    </tr>
+    <tr>
+      <td class="bg-peach bold">${cPurch}%</td>
+      <td class="bg-peach bold">${cQuarterly}%</td>
+      <td class="bg-green bold">Repair Report</td>
+      <td class="bg-dark-blue bold">${cRepair}%</td>
+    </tr>
+
+    <!-- Separator -->
+    <tr class="row-sep"><td colspan="6"></td></tr>
+
+    <!-- Section 5: Overall -->
+    <tr>
+      <td class="bg-dark-blue text-left bold">Overall performance percentage</td>
+      <td class="bg-dark-blue bold">${rate}%</td>
+      <td colspan="2" class="bg-white"></td>
+      <td class="bg-white bold text-right">Overall Grade</td>
+      <td class="bg-yellow bold">${rate >= 80 ? 'Satisfactory' : 'Needs Improvement'}</td>
+    </tr>
+
+    <!-- Separator -->
+    <tr class="row-sep"><td colspan="6"></td></tr>
+
+    <!-- Section 6: Comments -->
+    <tr>
+      <td class="bg-white text-left bold" style="vertical-align:top;">Justification for delay</td>
+      <td colspan="5" class="bg-white" style="height:60px;text-align:left;vertical-align:top;">${data.narratives?.justification || ''}</td>
+    </tr>
+    <tr class="row-sep"><td colspan="6"></td></tr>
+    <tr>
+      <td class="bg-white text-left bold" style="vertical-align:top;">Corrective measure for Hindrance</td>
+      <td colspan="5" class="bg-white" style="height:60px;text-align:left;vertical-align:top;">${data.narratives?.corrective || ''}</td>
+    </tr>
+    <tr class="row-sep"><td colspan="6"></td></tr>
+    <tr>
+      <td class="bg-dark-blue text-left bold" style="vertical-align:top;">HOD REMARKS</td>
+      <td colspan="5" class="bg-dark-blue" style="height:60px;text-align:left;vertical-align:top;color:#000;">${data.narratives?.hod || ''}</td>
+    </tr>
+  </table>
+</div>
+  `;
 
   const submissionHtml=renderSubmissionPlaceholder(params);
 
