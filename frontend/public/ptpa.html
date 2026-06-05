@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -434,16 +434,15 @@ table.call-table tbody tr:hover td.action-col{background:var(--surface2);}
       <div class="field"><label>Initiated Date <span class="req">*</span></label><input type="date" id="f-initiated"></div>
 
       <div class="field"><label>Model / Activity <span class="req">*</span></label><input type="text" id="f-activity" placeholder="Model or activity name..."></div>
-      <div class="field"><label>Activity Details</label><textarea id="f-description" rows="2"></textarea></div>
       <div class="fg2">
+        <div class="field"><label>Activity Details</label><input type="text" id="f-description"></div>
         <div class="field"><label>Resp Person</label><input type="text" id="f-responsible"></div>
-        <div class="field"><label>Target Date</label><input type="date" id="f-target-date"></div>
       </div>
-
       <div class="fg2">
+        <div class="field"><label>Target Date</label><input type="date" id="f-target-date"></div>
         <div class="field"><label>Completed Date</label><input type="date" id="f-pending-from"></div>
-        <div class="field"><label>Remarks</label><input type="text" id="f-remarks"></div>
       </div>
+      <div class="field"><label>Remarks</label><textarea id="f-remarks" rows="2"></textarea></div>
     </div>
     <div class="modal-foot">
       <div class="msg" id="modal-msg"></div>
@@ -517,7 +516,9 @@ function renderTable() {
       <td>${esc(t.responsible)}</td>
       <td>${formatDate(t.targetDate)}</td>
       <td>${formatDate(t.pendingFrom)}</td>
-      <td style="max-width:150px;white-space:normal;">${esc(t.remarks)}</td>
+      <td style="min-width:200px; padding:6px;">
+        <div style="border:1px solid #e2e8f0; border-radius:4px; padding:6px; background:#f8fafc; white-space:pre-wrap; word-break:break-word;">${esc(t.remarks||'-')}</div>
+      </td>
     </tr>`;
     }).join('');
   }

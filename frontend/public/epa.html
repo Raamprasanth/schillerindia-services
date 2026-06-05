@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -222,27 +222,27 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
           <input type="text" id="m-activity" required/>
         </div>
         
-        <div class="field span-4">
-          <label>Activity Details</label>
-          <textarea id="m-description" rows="2"></textarea>
-        </div>
-        
-        <div class="field span-1">
-          <label>Resp Person</label>
-          <input type="text" id="m-responsible"/>
-        </div>
-        <div class="field span-1">
-          <label>Target Date</label>
-          <input type="date" id="m-target-date"/>
-        </div>
-        <div class="field span-1">
-          <label>Completed Date</label>
-          <input type="date" id="m-pending-from"/>
-        </div>
-        <div class="field span-1">
-          <label>Remarks</label>
-          <input type="text" id="m-remarks"/>
-        </div>
+          <div class="field span-2">
+            <label>Activity Details</label>
+            <input type="text" id="m-description"/>
+          </div>
+          <div class="field span-1">
+            <label>Resp Person</label>
+            <input type="text" id="m-responsible"/>
+          </div>
+          <div class="field span-1">
+            <label>Target Date</label>
+            <input type="date" id="m-target-date"/>
+          </div>
+          
+          <div class="field span-1">
+            <label>Completed Date</label>
+            <input type="date" id="m-pending-from"/>
+          </div>
+          <div class="field span-3">
+            <label>Remarks</label>
+            <textarea id="m-remarks" rows="2"></textarea>
+          </div></div>
       </div>
     </div>
     <div class="modal-foot">
@@ -529,7 +529,9 @@ function renderTable(){
         <td>${esc(d.responsible||'-')}</td>
         <td style="font-size:11px;color:var(--soft);">${formatDate(d.targetDate)}</td>
         <td style="font-size:11px;color:var(--soft);">${formatDate(d.pendingFrom)}</td>
-        <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:normal;font-size:11px;color:var(--soft);" title="${esc(d.remarks||'')}">${esc(d.remarks||'-')}</td>
+        <td style="min-width:200px; padding:6px; font-size:11px; color:var(--soft);">
+          <div style="border:1px solid #e2e8f0; border-radius:4px; padding:6px; background:#f8fafc; white-space:pre-wrap; word-break:break-word;">${esc(d.remarks||'-')}</div>
+        </td>
         <td>
           <button class="btn-xs update" title="Update" onclick="openEditModal('${rid}')">Edit</button>
           <button class="btn-xs update" title="${canCloseActivity(d)?'Close':'Enter Completed Date and Remarks in Edit before closing'}" onclick="closeActivity('${rid}')" style="margin-left:4px;" ${canCloseActivity(d) ? '' : 'disabled'}>Close</button>
