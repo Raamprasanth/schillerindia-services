@@ -393,9 +393,9 @@ const EXTERNAL_COLUMNS = [
   { key:'vendorTicketNumber', label:'Vendor ticket number' },
   { key:'commercialToDetails', label:'Commercial TO Details', wide:true },
   { key:'docketDetails', label:'Docket details', wide:true },
+  { key:'repairStatus', label:'Repair Status', type:'select', options:['','Repairable','Not repairable'] },
   { key:'receivedDateAtEsskay', label:'Received date at Esskay', type:'date' },
   { key:'receivedBackAtSvc', label:'Received back at SVC', type:'date' },
-  { key:'repairStatus', label:'Repair Status' },
   { key:'amountChargedForRepair', label:'Amount charged for repair', type:'number' },
   { key:'softwareDetails', label:'Software details', wide:true },
   { key:'serviceCentreRemarks', label:'Service centre comments', wide:true },
@@ -546,9 +546,17 @@ function renderEntryFields(){
   grid.innerHTML = ENTRY_FIELDS.map(field => {
     const id = 'ext-' + field.key;
     const wide = field.wide ? ' wide' : '';
-    const control = ENTRY_TEXTAREAS.has(field.key)
-      ? `<textarea id="${id}"></textarea>`
-      : `<input id="${id}" type="${field.type || 'text'}"/>`;
+    const isTextarea = ENTRY_TEXTAREAS.has(field.key);
+    const isSelect = field.type === 'select';
+    let control = '';
+    if (isTextarea) {
+      control = `<textarea id="${id}"></textarea>`;
+    } else if (isSelect) {
+      const opts = (field.options || []).map(o => `<option value="${o}">${o}</option>`).join('');
+      control = `<select id="${id}">${opts}</select>`;
+    } else {
+      control = `<input id="${id}" type="${field.type || 'text'}"/>`;
+    }
     return `<div class="entry-field${wide}"><label for="${id}">${esc(field.label)}</label>${control}</div>`;
   }).join('');
 }
@@ -681,10 +689,14 @@ function openUpdateModal(id) {
     const val = fieldValue(record, field.key);
     const isTextarea = ENTRY_TEXTAREAS.has(field.key);
     const isDate = field.type === 'date';
+    const isSelect = field.type === 'select';
     
     let controlHtml = '';
     if (isTextarea) {
       controlHtml = `<textarea id="dyn-${field.key}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);resize:vertical;min-height:72px;" placeholder="Enter ${esc(field.label)}">${esc(val)}</textarea>`;
+    } else if (isSelect) {
+      const opts = (field.options || []).map(o => `<option value="${o}" ${val===o?'selected':''}>${o}</option>`).join('');
+      controlHtml = `<select id="dyn-${field.key}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);">${opts}</select>`;
     } else if (isDate) {
       const fmt = val ? new Date(val).toISOString().slice(0,10) : '';
       controlHtml = `<input id="dyn-${field.key}" type="date" value="${fmt}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);"/>`;
