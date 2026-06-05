@@ -3,6 +3,7 @@
 //   app.use('/api/emp/estimation', require('./routes/estimationPending'));
 
 const express           = require('express');
+const mongoose          = require('mongoose');
 const router            = express.Router();
 const EstimationPending = require('../models/EstimationPending');
 const CompletedFRN      = require('../models/CompletedFRN');
@@ -87,14 +88,62 @@ async function mirrorEstToTodr(doc, action, items = [], queuedBy = '') {
 
 async function markSourceServiceMovedToEstimation(serviceId, fields = {}) {
   if (!serviceId) return;
-  await Service.findByIdAndUpdate(
-    serviceId,
+  const sourceIds = [...new Set([serviceId, fields.sourceId].filter(Boolean).map(String))]
+    .filter(id => mongoose.Types.ObjectId.isValid(id));
+  if (!sourceIds.length) return;
+  const update = {
+    $set: {
+      movedToEstimation: true,
+      obPending: false,
+      obStatus: 'Estimation',
+      updatedAt: new Date().toISOString(),
+      ...fields,
+    },
+  };
+  delete update.$set.sourceId;
+
+  await Service.updateMany(
+    { _id: { $in: sourceIds } },
+    update,
+    { runValidators: false }
+  );
+}
+
+async function markObSourceFromEstimationPayload(payload = {}) {
+  if (String(payload.source || '').toLowerCase() !== 'ob') return;
+  const sourceId = payload.serviceId || payload.sourceId || '';
+  if (!sourceId) return;
+  const now = new Date();
+  await markSourceServiceMovedToEstimation(sourceId, {
+    sourceId: payload.sourceId || '',
+    estNo: payload.estNo || '',
+    estDate: payload.estDate || '',
+    estValidDate: payload.estValidDate || '',
+    estAmount: Number(payload.estGroupTotal || payload.estAmount || 0),
+    estStatus: payload.estStatus || '',
+    orderType: payload.orderType || payload.estStatus || '',
+    estRaEng: payload.estRaEng || '',
+    defUnitGir: payload.defUnitGir || '',
+    serviceCharge: Number(payload.serviceCharge || 0),
+    itemsTotal: Number(payload.itemsTotal || 0),
+    estGroupTotal: Number(payload.estGroupTotal || payload.estAmount || 0),
+    estUpdatedBy: payload.estUpdatedBy || payload.submittedBy || '',
+    estUpdatedAt: payload.estUpdatedAt ? new Date(payload.estUpdatedAt) : now,
+  });
+}
+
+async function markExistingObSourcesMoved(serviceIds = []) {
+  const ids = [...new Set(serviceIds.filter(Boolean).map(String))]
+    .filter(id => mongoose.Types.ObjectId.isValid(id));
+  if (!ids.length) return;
+  await Service.updateMany(
+    { _id: { $in: ids } },
     {
       $set: {
         movedToEstimation: true,
+        obPending: false,
         obStatus: 'Estimation',
         updatedAt: new Date().toISOString(),
-        ...fields,
       },
     },
     { runValidators: false }
@@ -234,23 +283,7 @@ router.post('/', async (req, res) => {
         { $set: docData },
         { new: true, upsert: true, runValidators: false }
       );
-      if (String(docData.source || '').toLowerCase() === 'ob') {
-        await markSourceServiceMovedToEstimation(body.serviceId, {
-          estNo: docData.estNo || '',
-          estDate: docData.estDate || '',
-          estValidDate: docData.estValidDate || '',
-          estAmount: Number(docData.estGroupTotal || docData.estAmount || 0),
-          estStatus: docData.estStatus || '',
-          orderType: docData.orderType || docData.estStatus || '',
-          estRaEng: docData.estRaEng || '',
-          defUnitGir: docData.defUnitGir || '',
-          serviceCharge: Number(docData.serviceCharge || 0),
-          itemsTotal: Number(docData.itemsTotal || 0),
-          estGroupTotal: Number(docData.estGroupTotal || docData.estAmount || 0),
-          estUpdatedBy: docData.estUpdatedBy || req.user.name || '',
-          estUpdatedAt: docData.estUpdatedAt ? new Date(docData.estUpdatedAt) : now,
-        });
-      }
+      await markObSourceFromEstimationPayload({ ...docData, estUpdatedBy: docData.estUpdatedBy || req.user.name || '' });
       console.log('[EstPending] upserted for serviceId:', body.serviceId);
     } else if (docData.sourceId) {
       record = await EstimationPending.findOneAndUpdate(
@@ -258,15 +291,34 @@ router.post('/', async (req, res) => {
         { $set: docData },
         { new: true, upsert: true, runValidators: false }
       );
+      await markObSourceFromEstimationPayload({ ...docData, estUpdatedBy: docData.estUpdatedBy || req.user.name || '' });
       console.log('[EstPending] upserted for sourceId:', docData.sourceId);
     } else {
       record = await EstimationPending.create(docData);
+      await markObSourceFromEstimationPayload({ ...docData, estUpdatedBy: docData.estUpdatedBy || req.user.name || '' });
       console.log('[EstPending] created (no serviceId)');
     }
 
     res.status(201).json(record);
   } catch (err) {
     console.error('[POST /api/emp/estimation]', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+// Repair old records that were created in Estimation Pending but still visible
+// in Employee OB Pending because the source Service was not marked.
+router.post('/repair-ob-sources', async (req, res) => {
+  try {
+    const records = await EstimationPending.find({
+      source: 'ob',
+      serviceId: { $exists: true, $ne: null },
+    }).select('serviceId').lean();
+    const ids = records.map(record => record.serviceId);
+    await markExistingObSourcesMoved(ids);
+    res.json({ success: true, updated: [...new Set(ids.map(String))].length });
+  } catch (err) {
+    console.error('[POST /api/emp/estimation/repair-ob-sources]', err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });

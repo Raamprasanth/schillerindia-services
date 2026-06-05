@@ -2,6 +2,7 @@
 const router              = require('express').Router();
 const mongoose            = require('mongoose');
 const Service             = require('../models/Service');
+const EstimationPending   = require('../models/EstimationPending');
 const Division            = require('../models/Division');
 const { protect }         = require('../middleware/authMiddleware');
 const { tryCreateFRNPending, tryCreateUnderRepair, cleanupLinkedRecords } = require('../services/queueSyncService');
@@ -136,12 +137,22 @@ router.get('/ob-pending', protect, async (req, res) => {
       { submittedBy: req.user.name }
     ]);
 
+    const movedServiceIds = await EstimationPending.distinct('serviceId', {
+      source: 'ob',
+      serviceId: { $exists: true, $ne: null },
+    });
+
     const filter = {
       unitSts:          { $in: EST_UNIT_STATUSES },
       repType:          'NA',
       movedToEstimation: { $ne: true },   // ✅ KEY FILTER — excludes saved estimations
       ...visibilityFilter
     };
+
+    const movedIds = movedServiceIds
+      .filter(id => id && mongoose.Types.ObjectId.isValid(String(id)))
+      .map(id => new mongoose.Types.ObjectId(String(id)));
+    if (movedIds.length) filter._id = { $nin: movedIds };
 
     const records = await Service.find(filter).sort({ createdAt: -1 });
 
