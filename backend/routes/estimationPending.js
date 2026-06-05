@@ -376,6 +376,7 @@ router.put('/:id', async (req, res) => {
         customer:     updated.custName || updated.customer || '',
         model:        updated.model || '',
         unitStatus:   updated.unitSts || '',
+        partNo:       updated.partNo || '',
         defMod:       updated.defMod || '',
         defGir:       updated.defGir || '',
         raEng:        updated.obRaEng || '',

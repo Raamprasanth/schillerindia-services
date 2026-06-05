@@ -681,6 +681,7 @@ function openDetail(id) {
     <div class="dm-item"><label>Region</label><div class="dm-val"><span class="region-tag">${esc(d.region||'-')}</span></div></div>
     <div class="dm-item"><label>Model</label><div class="dm-val" style="font-weight:700;">${esc(d.model||'-')}</div></div>
     <div class="dm-item"><label>Unit Status</label><div class="dm-val">${unitPill(d.unitStatus)}</div></div>
+    <div class="dm-item"><label>Part No</label><div class="dm-val mono-val">${esc(d.partNo||'-')}</div></div>
     <div class="dm-sep"></div>
     <div class="dm-item" style="grid-column:1/-1"><label>Defective Module / Board Name</label><div class="dm-val">${esc(d.defMod||'-')}</div></div>
     <div class="dm-item"><label>DEF GIR No</label><div class="dm-val mono-val">${esc(d.defGir||'-')}</div></div>
@@ -698,8 +699,8 @@ document.getElementById('detail-overlay').addEventListener('click', e => { if (e
 
 // -- EXPORT CSV --------------------------------------------
 function exportCSV() {
-  const headers = ['Entry Date','SC RNo','SC Eng','Frn No','Region','Engineer','Customer','Model','Unit Status','Def Mod','Def Gir No','Type of Work','Pend Days'];
-  const rows = filtered.map(d => [d.entryDate, d.scRno, d.scEng, d.frnNo, d.region, d.eng, d.customer, d.model, d.unitStatus, d.defMod, d.defGir, d.typeWork, d.pdays]);
+  const headers = ['Entry Date','SC RNo','SC Eng','Frn No','Region','Engineer','Customer','Model','Unit Status','Part No','Def Mod','Def Gir No','Type of Work','Pend Days'];
+  const rows = filtered.map(d => [d.entryDate, d.scRno, d.scEng, d.frnNo, d.region, d.eng, d.customer, d.model, d.unitStatus, d.partNo, d.defMod, d.defGir, d.typeWork, d.pdays]);
   const csv = [headers, ...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);

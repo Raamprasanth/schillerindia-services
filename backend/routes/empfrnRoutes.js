@@ -682,6 +682,7 @@ router.put('/:id/update', protect, async (req, res) => {
             customer:     doc.customer     || '',
             model:        doc.model        || '',
             unitStatus:   doc.unitStatus   || '',
+            partNo:       doc.partNo       || '',
             defMod:       doc.defMod       || '',
             defGir:       doc.defGir       || '',
             raEng:        doc.raEng        || '',

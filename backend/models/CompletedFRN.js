@@ -33,6 +33,7 @@ const CompletedFRNSchema = new mongoose.Schema(
     // ✅ Removed strict enum — kept common values but allow any string
     //    so branch-level unit status values don't break the save.
     unitStatus: { type: String, trim: true, default: '' },
+    partNo:     { type: String, trim: true, default: '' },
 
     defMod:     { type: String, trim: true, default: '' },
     defGir:     { type: String, trim: true, default: '' },
@@ -76,6 +77,7 @@ CompletedFRNSchema.index({ eng: 1 });
 CompletedFRNSchema.index({ scEng: 1 });
 CompletedFRNSchema.index({ region: 1 });
 CompletedFRNSchema.index({ unitStatus: 1 });
+CompletedFRNSchema.index({ partNo: 1 });
 CompletedFRNSchema.index({ typeWork: 1 });
 CompletedFRNSchema.index({ scRno: 1 });
 CompletedFRNSchema.index({ createdAt: -1 });

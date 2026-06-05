@@ -91,7 +91,7 @@ router.post('/', protect, async (req, res) => {
   try {
     const { serviceId, scRno, scEng, frnNo, region, engineer,
             custName, customer, model, unitStatus,
-            defMod, defModBrdName, defGir, defGirNo,
+            partNo, defMod, defModBrdName, defGir, defGirNo,
             defPartSno, finalRemarks, typeWork, typeOfWork,
             repGirNo, entryDate } = req.body;
 
@@ -113,6 +113,7 @@ router.post('/', protect, async (req, res) => {
       customer:     customer || custName || '',
       model,
       unitStatus,
+      partNo:       partNo || '',
       defMod:       defMod || defModBrdName || '',
       defModBrdName:defModBrdName || defMod || '',
       defGir:       defGir || defGirNo || '',
@@ -199,6 +200,7 @@ router.put('/:id/update', protect, async (req, res) => {
           customer:      svc.custName || svc.customer || '',
           model:         svc.model || '',
           unitStatus:    svc.unitSts || svc.unitStatus || '',
+          partNo:        svc.partNo || '',
           defMod:        svc.defMod || '',
           defModBrdName: svc.defMod || '',
           defGir:        svc.defGir || '',
@@ -399,6 +401,7 @@ router.put('/:id/update', protect, async (req, res) => {
       customer:     doc.customer || doc.custName || '',
       model:        doc.model || '',
       unitStatus:   doc.unitStatus || '',
+      partNo:       doc.partNo || '',
       defMod:       doc.defMod || doc.defModBrdName || '',
       defGir:       doc.defGir || doc.defGirNo || '',
       raEng:        doc.raEng || '',

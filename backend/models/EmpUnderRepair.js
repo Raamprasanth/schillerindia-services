@@ -22,6 +22,7 @@ const UnderRepairSchema = new mongoose.Schema(
     customer:     { type: String, trim: true, default: '' },
     model:        { type: String, trim: true, default: '' },
     unitStatus:   { type: String, trim: true, default: '' },   // OW, LAMC, CAMC, EW, IW, STOCK …
+    partNo:       { type: String, trim: true, default: '' },
 
     // ── Defective Part Details ─────────────────────────────
     defMod:       { type: String, trim: true, default: '' },   // Def Mod / Brd Name
