@@ -1054,7 +1054,6 @@ async function submitToEscalationQueue(){
   }
 }
 
-async 
 let mailAckVisible = localStorage.getItem('mail_ack_visible') === '1';
 function toggleMailAck() {
   mailAckVisible = !mailAckVisible;
@@ -1071,7 +1070,7 @@ function syncMailAck() {
 }
 document.addEventListener('DOMContentLoaded', () => { setTimeout(syncMailAck, 100); });
 
-function loadData(){
+async function loadData(){
   setLoading();
   try {
     const endpoint = IS_ADMIN ? API_BASE+'/api/emp/estimation' : API_BASE+'/api/emp/estimation';
@@ -1678,30 +1677,7 @@ async function transferSelectedRows(target){
     renderTable();
   }catch(e){showToast(`${label} transfer failed: ${e.message}`,'err');}
 }
-const MAIL_ACK_KEY='empestpend_mail_ack_visible';
-let mailAcknowledgementsVisible=localStorage.getItem(MAIL_ACK_KEY)==='1';
-function syncMailAcknowledgementsVisibility(){
-  const row=document.getElementById('escalation-banner-row');
-  const btn=document.getElementById('mail-toggle-btn');
-  if(row) row.style.display=mailAcknowledgementsVisible?'grid':'none';
-  if(btn){
-    btn.classList.toggle('btn-primary',mailAcknowledgementsVisible);
-    btn.classList.toggle('btn-outline',!mailAcknowledgementsVisible);
-  }
-}
-function toggleMailAcknowledgements(){
-  mailAcknowledgementsVisible=!mailAcknowledgementsVisible;
-  localStorage.setItem(MAIL_ACK_KEY,mailAcknowledgementsVisible?'1':'0');
-  
-  
-  
-  
-  if(mailAcknowledgementsVisible){
-    
-    
-    
-  }
-}
+
 
 function getMailAckWrapStr(idPrefix, title, themeColor) {
   return `

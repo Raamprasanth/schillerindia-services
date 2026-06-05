@@ -2348,30 +2348,7 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function showToast(msg,type='ok'){let w=document.getElementById('toast-wrap');if(!w){w=document.createElement('div');w.id='toast-wrap';w.className='toast-wrap';document.body.appendChild(w);}const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="td"></span>'+msg;w.appendChild(el);setTimeout(()=>el.remove(),3400);}
 function showUpdMsg(msg,type){const el=document.getElementById('upd-msg');el.textContent=msg;el.className='form-msg '+type;}
 function clearUpdMsg(){const el=document.getElementById('upd-msg');el.textContent='';el.className='form-msg';}
-const MAIL_ACK_KEY='emppendingfrn_mail_ack_visible';
-let mailAcknowledgementsVisible=localStorage.getItem(MAIL_ACK_KEY)==='1';
-function syncMailAcknowledgementsVisibility(){
-  const row=document.getElementById('escalation-banner-row');
-  const btn=document.getElementById('mail-toggle-btn');
-  if(row) row.style.display=mailAcknowledgementsVisible?'grid':'none';
-  if(btn){
-    btn.classList.toggle('btn-primary',mailAcknowledgementsVisible);
-    btn.classList.toggle('btn-outline',!mailAcknowledgementsVisible);
-  }
-}
-function toggleMailAcknowledgements(){
-  mailAcknowledgementsVisible=!mailAcknowledgementsVisible;
-  localStorage.setItem(MAIL_ACK_KEY,mailAcknowledgementsVisible?'1':'0');
-  
-  
-  
-  
-  if(mailAcknowledgementsVisible){
-    
-    
-    
-  }
-}
+
 
 function getMailAckWrapStr(idPrefix, title, themeColor) {
   return `
