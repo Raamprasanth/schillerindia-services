@@ -1646,6 +1646,38 @@ function renderDivisionPerfSummary(data,params) {
 
   const monthLabel = data.monthLabel || '';
   const divisionLabel = data.division || '';
+  const [yearStr, mStr] = (params.month || '').split('-');
+  const yearNum = parseInt(yearStr, 10);
+  const monthNum = parseInt(mStr, 10) - 1;
+
+  const tuesdays = [];
+  const mondays = [];
+  let d02 = '-', d03 = '-', d05 = '-', d16 = '-';
+  if (!isNaN(yearNum) && !isNaN(monthNum)) {
+    let d = new Date(yearNum, monthNum, 1);
+    while (d.getMonth() === monthNum) {
+      const fDate = String(d.getDate()).padStart(2,'0') + '-' + mStr + '-' + yearStr;
+      if (d.getDay() === 2) tuesdays.push(fDate);
+      if (d.getDay() === 1) mondays.push(fDate);
+      d.setDate(d.getDate() + 1);
+    }
+    d02 = '02-' + mStr + '-' + yearStr;
+    d03 = '03-' + mStr + '-' + yearStr;
+    d05 = '05-' + mStr + '-' + yearStr;
+    d16 = '16-' + mStr + '-' + yearStr;
+  }
+  
+  const t1 = tuesdays[0] || '-';
+  const t2 = tuesdays[1] || '-';
+  const t3 = tuesdays[2] || '-';
+  const t4 = tuesdays[3] || '-';
+  const t5 = tuesdays[4] || '-';
+  
+  const m1 = mondays[0] || '-';
+  const m2 = mondays[1] || '-';
+  const m3 = mondays[2] || '-';
+  const m4 = mondays[3] || '-';
+  const m5 = mondays[4] || '-';
 
   const tableHtml = `
 <div class="perf-review-table-container" style="overflow-x:auto; padding:20px;">
