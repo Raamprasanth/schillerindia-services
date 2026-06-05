@@ -319,7 +319,7 @@ router.put('/:id', protect, async (req, res) => {
     }
 
     const body = { ...req.body };
-    body.bscon = String(body.bscon || '').trim();
+    body.bscon = String(body.bscon ?? svc.bscon ?? '').trim();
     if (!body.bscon) return res.status(400).json({ message: 'BSCON is required.' });
     body.scEng       = req.user.name || body.scEng || svc.scEng;
     body.submittedBy = svc.submittedBy || req.user.name || '';

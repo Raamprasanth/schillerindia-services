@@ -24,6 +24,22 @@ const {
 
 router.use(protect);
 
+async function markSourceServiceMovedToEstimation(serviceId, fields = {}) {
+  if (!serviceId) return;
+  await Service.findByIdAndUpdate(
+    serviceId,
+    {
+      $set: {
+        movedToEstimation: true,
+        obStatus: 'Estimation',
+        updatedAt: new Date().toISOString(),
+        ...fields,
+      },
+    },
+    { runValidators: false }
+  );
+}
+
 async function hasQueueAccess(user, record) {
   if (!user) return false;
   if (user.role === 'admin' || user.role === 'superadmin') return true;
@@ -141,6 +157,23 @@ router.post('/', async (req, res) => {
         { $set: docData },
         { new: true, upsert: true, runValidators: false }
       );
+      if (String(docData.source || '').toLowerCase() === 'ob') {
+        await markSourceServiceMovedToEstimation(body.serviceId, {
+          estNo: docData.estNo || '',
+          estDate: docData.estDate || '',
+          estValidDate: docData.estValidDate || '',
+          estAmount: Number(docData.estGroupTotal || docData.estAmount || 0),
+          estStatus: docData.estStatus || '',
+          orderType: docData.orderType || docData.estStatus || '',
+          estRaEng: docData.estRaEng || '',
+          defUnitGir: docData.defUnitGir || '',
+          serviceCharge: Number(docData.serviceCharge || 0),
+          itemsTotal: Number(docData.itemsTotal || 0),
+          estGroupTotal: Number(docData.estGroupTotal || docData.estAmount || 0),
+          estUpdatedBy: docData.estUpdatedBy || req.user.name || '',
+          estUpdatedAt: docData.estUpdatedAt ? new Date(docData.estUpdatedAt) : now,
+        });
+      }
       console.log('[EstPending] upserted for serviceId:', body.serviceId);
     } else {
       record = await EstimationPending.create(docData);
@@ -244,6 +277,8 @@ router.post('/from-ob', async (req, res) => {
       { $set: docData },
       { new: true, upsert: true, runValidators: false }
     );
+
+    await markSourceServiceMovedToEstimation(body.serviceId);
 
     console.log('[EstPending/from-ob] upserted serviceId:', body.serviceId, '→', record._id);
     res.status(201).json(record);

@@ -1252,6 +1252,12 @@ async function submitEstimation(){
     errEl.classList.add('show');
     return;
   }
+  if(!((window.jspdf&&window.jspdf.jsPDF)||window.jsPDF)){
+    errEl.textContent='PDF library not loaded. Please refresh and try again.';
+    errEl.classList.add('show');
+    showToast('PDF library not loaded. Estimation was not saved.','err');
+    return;
+  }
 
   const btn=document.getElementById('est-save-btn');
   btn.disabled=true;
@@ -1325,23 +1331,7 @@ async function submitEstimation(){
         throw new Error('Estimation save failed: '+(e.message||estRes.status));
       }
 
-      if(line.serviceId){
-        const svcRes=await fetch(API_BASE+'/api/emp/services/'+line.serviceId,{
-          method:'PUT',
-          headers:authHeaders(),
-          body:JSON.stringify({
-            ...basePayload,
-            movedToEstimation: true,
-            obStatus: 'Estimation',
-          })
-        });
-        if(svcRes.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
-        if(!svcRes.ok){
-          const e=await svcRes.json().catch(()=>({}));
-          throw new Error('Service update failed: '+(e.message||svcRes.status));
-        }
-        affectedIds.add(String(line.serviceId));
-      }
+      if(line.serviceId) affectedIds.add(String(line.serviceId));
     }
 
     affectedIds.forEach(id => selectedIds.delete(String(id)));
@@ -1351,8 +1341,6 @@ async function submitEstimation(){
 
     okEl.textContent='Saved and moved to Estimation Pending';
     okEl.classList.add('show');
-    showToast('Saved grouped estimation and generated PDF.','ok');
-
     try {
       generatePDFData({
         ...existing,
@@ -1364,6 +1352,7 @@ async function submitEstimation(){
         estGroupTotal: estamount,
         lineItems: header.lineItems,
       });
+      showToast('Saved grouped estimation and generated PDF.','ok');
     } catch(pdfErr){
       console.warn('[PDF]',pdfErr);
       showToast('Estimation saved, but PDF generation failed: '+(pdfErr.message||pdfErr),'err');
