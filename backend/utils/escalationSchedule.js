@@ -109,6 +109,17 @@ function getEnabledEscalationSlots(config = {}) {
   }));
 }
 
+function getEscalationGroup(reportType) {
+  return DEFAULT_ESCALATION_GROUPS.find((group) => group.reportType === reportType) || null;
+}
+
+function getEnabledSlotsForReportType(reportType, config = {}) {
+  const group = getEscalationGroup(reportType);
+  if (!group) return [];
+  const enabledSlots = getEnabledEscalationSlots(config);
+  return group.slots.filter((slot) => enabledSlots.has(slot));
+}
+
 function applyEscalationTimes(times = DEFAULT_TIME_MAP, scheduleConfig = {}) {
   const normalized = normalizeTimeMap(times);
   const enabledSlots = getEnabledEscalationSlots(scheduleConfig);
@@ -135,5 +146,7 @@ module.exports = {
   getEscalationScheduleConfig,
   saveEscalationScheduleConfig,
   getEnabledEscalationSlots,
+  getEscalationGroup,
+  getEnabledSlotsForReportType,
   applyEscalationTimes,
 };

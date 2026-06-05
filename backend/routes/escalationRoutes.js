@@ -6,7 +6,7 @@ const EscalationRunLog = require('../models/EscalationRunLog');
 const EscalationQueue = require('../models/EscalationQueue');
 const { runEscalationSlot, runSrEscalationSlot, runToEscalationSlot, runUrEscalationSlot, runCustomEscalationSlot, getEscalationRecipients, getSrSlotWindow, getToSlotWindow } = require('../services/escalationService');
 const { getEscalationLabelMap, labelFor, composeSlotLabel } = require('../utils/escalationLabels');
-const { getEscalationTimeMap, parseTime, formatTimeLabel } = require('../utils/escalationSchedule');
+const { getEscalationTimeMap, getEscalationScheduleConfig, getEnabledSlotsForReportType, parseTime, formatTimeLabel } = require('../utils/escalationSchedule');
 
 const IST_OFFSET_MINUTES = 330;
 const IST_OFFSET_MS = IST_OFFSET_MINUTES * 60 * 1000;
@@ -76,6 +76,38 @@ function visibleLatestLog(log, activeTotal = 0) {
   const logTotal = Number(log.totalCount || 0);
   if (activeTotal === 0 && log.status === 'failed' && logTotal === 0 && !String(log.error || '').trim()) return null;
   return log;
+}
+
+async function getOrderedConfiguredSlots(reportType, fallbackSlots, fallbackTimes, times = null) {
+  const [timeMap, scheduleConfig] = await Promise.all([
+    times ? Promise.resolve(times) : getEscalationTimeMap(),
+    getEscalationScheduleConfig(),
+  ]);
+  const enabled = getEnabledSlotsForReportType(reportType, scheduleConfig);
+  const slots = (enabled.length ? enabled : fallbackSlots).map((slot, index) => {
+    const time = scheduledTime(timeMap, slot, fallbackTimes[slot] || '00:00');
+    return { slot, time, order: fallbackSlots.indexOf(slot) + 1 || index + 1 };
+  });
+  return slots.sort((a, b) => a.time.minutes - b.time.minutes || a.order - b.order);
+}
+
+async function getActiveConfiguredQueueWindow(reportType, fallbackSlots, fallbackTimes, labelPrefix, referenceDate = new Date()) {
+  const nowIst = getIstParts(referenceDate);
+  const minutes = nowIst.hour * 60 + nowIst.minute;
+  const slots = await getOrderedConfiguredSlots(reportType, fallbackSlots, fallbackTimes);
+  const activeIndex = slots.findIndex((item) => minutes < item.time.minutes);
+  const active = activeIndex >= 0 ? slots[activeIndex] : slots[0];
+  const base = activeIndex === 0 ? getPreviousIstDateParts(nowIst) : nowIst;
+
+  return {
+    slot: active.slot,
+    slotLabel: `${labelPrefix ? `${labelPrefix} ` : ''}Send Time ${active.order}`,
+    nextRunLabel: formatTimeLabel(active.time.value),
+    windowStart: makeUtcFromIst(base.year, base.month, base.day, 0, 0, 0, 0),
+    windowEnd: referenceDate,
+    queueKey: `send${active.order}`,
+    windowDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
+  };
 }
 
 async function markStaleRunningEscalations(req, res, next) {
@@ -154,26 +186,13 @@ function getPreviousSundayIstDateParts(parts) {
 }
 
 async function getActiveQueueWindow(referenceDate = new Date()) {
-  const nowIst = getIstParts(referenceDate);
-  const minutes = nowIst.hour * 60 + nowIst.minute;
-  const times = await getEscalationTimeMap();
-  const sendTime1 = scheduledTime(times, 'morning', '11:30');
-  const sendTime2 = scheduledTime(times, 'evening', '18:15');
-  const beforeFirst = minutes < sendTime1.minutes;
-  const beforeSecond = minutes < sendTime2.minutes;
-  const active = beforeFirst ? sendTime1 : beforeSecond ? sendTime2 : sendTime1;
-  const slot = beforeFirst ? 'morning' : beforeSecond ? 'evening' : 'morning';
-  const order = slot === 'evening' ? 2 : 1;
-  const base = beforeFirst ? getPreviousIstDateParts(nowIst) : nowIst;
-
-  return {
-    slot,
-    slotLabel: `Send Time ${order}`,
-    nextRunLabel: formatTimeLabel(active.value),
-    windowStart: makeUtcFromIst(base.year, base.month, base.day, 0, 0, 0, 0),
-    windowEnd: referenceDate,
-    windowDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
-  };
+  return getActiveConfiguredQueueWindow(
+    'main_combined',
+    ['morning', 'evening'],
+    { morning: '11:30', evening: '18:15' },
+    '',
+    referenceDate
+  );
 }
 
 async function getActiveUrFollowupQueueWindow(referenceDate = new Date()) {
@@ -237,51 +256,23 @@ async function getActiveUrScrapQueueWindow(referenceDate = new Date()) {
 }
 
 async function getActiveSrQueueWindow(referenceDate = new Date()) {
-  const nowIst = getIstParts(referenceDate);
-  const minutes = nowIst.hour * 60 + nowIst.minute;
-  const times = await getEscalationTimeMap();
-  const sendTime1 = scheduledTime(times, 'sr_morning', '11:00');
-  const sendTime2 = scheduledTime(times, 'sr_afternoon', '15:00');
-  const beforeFirst = minutes < sendTime1.minutes;
-  const beforeSecond = minutes < sendTime2.minutes;
-  const active = beforeFirst ? sendTime1 : beforeSecond ? sendTime2 : sendTime1;
-  const slot = beforeFirst ? 'sr_morning' : beforeSecond ? 'sr_afternoon' : 'sr_morning';
-  const order = slot === 'sr_afternoon' ? 2 : 1;
-  const base = beforeFirst ? getPreviousIstDateParts(nowIst) : nowIst;
-
-  return {
-    slot,
-    slotLabel: `SR Send Time ${order}`,
-    nextRunLabel: formatTimeLabel(active.value),
-    windowStart: makeUtcFromIst(base.year, base.month, base.day, 0, 0, 0, 0),
-    windowEnd: referenceDate,
-    queueKey: `send${order}`,
-    windowDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
-  };
+  return getActiveConfiguredQueueWindow(
+    'sr_escalation',
+    ['sr_morning', 'sr_afternoon'],
+    { sr_morning: '11:00', sr_afternoon: '15:00' },
+    'SR',
+    referenceDate
+  );
 }
 
 async function getActiveToQueueWindow(referenceDate = new Date()) {
-  const nowIst = getIstParts(referenceDate);
-  const minutes = nowIst.hour * 60 + nowIst.minute;
-  const times = await getEscalationTimeMap();
-  const sendTime1 = scheduledTime(times, 'to_morning', '11:00');
-  const sendTime2 = scheduledTime(times, 'to_evening', '16:30');
-  const beforeFirst = minutes < sendTime1.minutes;
-  const beforeSecond = minutes < sendTime2.minutes;
-  const active = beforeFirst ? sendTime1 : beforeSecond ? sendTime2 : sendTime1;
-  const slot = beforeFirst ? 'to_morning' : beforeSecond ? 'to_evening' : 'to_morning';
-  const order = slot === 'to_evening' ? 2 : 1;
-  const base = beforeFirst ? getPreviousIstDateParts(nowIst) : nowIst;
-
-  return {
-    slot,
-    slotLabel: `TO Send Time ${order}`,
-    nextRunLabel: formatTimeLabel(active.value),
-    windowStart: makeUtcFromIst(base.year, base.month, base.day, 0, 0, 0, 0),
-    windowEnd: referenceDate,
-    queueKey: `send${order}`,
-    windowDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
-  };
+  return getActiveConfiguredQueueWindow(
+    'to_escalation',
+    ['to_morning', 'to_evening'],
+    { to_morning: '11:00', to_evening: '16:30' },
+    'TO',
+    referenceDate
+  );
 }
 
 async function getActiveCustomQueueWindow(config, referenceDate = new Date()) {
