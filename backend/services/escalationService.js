@@ -9,7 +9,7 @@ const EstimationPending = require('../models/EstimationPending');
 const EscalationRunLog = require('../models/EscalationRunLog');
 const EscalationQueue = require('../models/EscalationQueue');
 const AppSetting = require('../models/AppSetting');
-const { getEscalationTimeMap, parseTime, formatTimeLabel } = require('../utils/escalationSchedule');
+const { getEscalationTimeMap, getEscalationScheduleConfig, getEnabledEscalationSlots, parseTime, formatTimeLabel } = require('../utils/escalationSchedule');
 const { runEscalationMailer } = require('../utils/escalationMailer');
 
 const IST_OFFSET_MINUTES = 330;
@@ -403,10 +403,12 @@ async function getCustomEscalationSlotWindow(slot, referenceDate = new Date()) {
 async function getSlotsForCurrentTime(date = new Date()) {
   const parts = getIstParts(date);
   const times = await getEscalationTimeMap();
+  const scheduleConfig = await getEscalationScheduleConfig();
+  const enabledSlots = getEnabledEscalationSlots(scheduleConfig);
   const slots = [];
   const matches = (key, fallback) => {
     const time = scheduledTime(times, key, fallback);
-    return parts.hour === time.hour && parts.minute === time.minute;
+    return enabledSlots.has(key) && parts.hour === time.hour && parts.minute === time.minute;
   };
   if (matches('sr_morning', '11:00')) {
     slots.push('sr_morning');

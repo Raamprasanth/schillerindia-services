@@ -13,6 +13,8 @@ const {
 const {
   getEscalationTimeMap,
   saveEscalationTimeMap,
+  getEscalationScheduleConfig,
+  saveEscalationScheduleConfig,
   applyEscalationTimes,
 } = require('../utils/escalationSchedule');
 const { sendEscalationSenderTest } = require('../services/escalationService');
@@ -143,12 +145,14 @@ router.get('/escalation-labels', async (req, res) => {
   try {
     const labels = await getEscalationLabelMap();
     const times = await getEscalationTimeMap();
+    const scheduleConfig = await getEscalationScheduleConfig();
     res.json({
       success: true,
       labels,
       times,
+      scheduleConfig,
       escalationTypes: await getEscalationTypesWithLabels(),
-      escalationTimes: applyEscalationTimes(times),
+      escalationTimes: applyEscalationTimes(times, scheduleConfig),
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -258,12 +262,16 @@ router.put('/escalation-labels', async (req, res) => {
     const times = req.body?.times
       ? await saveEscalationTimeMap(req.body.times, req.user?.name || '')
       : await getEscalationTimeMap();
+    const scheduleConfig = req.body?.scheduleConfig || req.body?.runCounts
+      ? await saveEscalationScheduleConfig(req.body.scheduleConfig || { runCounts: req.body.runCounts }, req.user?.name || '')
+      : await getEscalationScheduleConfig();
     res.json({
       success: true,
       labels,
       times,
+      scheduleConfig,
       escalationTypes: await getEscalationTypesWithLabels(),
-      escalationTimes: applyEscalationTimes(times),
+      escalationTimes: applyEscalationTimes(times, scheduleConfig),
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

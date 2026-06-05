@@ -1260,17 +1260,27 @@ const DEFAULT_ESCALATION_TYPES = [
   { value:'external_repair_escalation', label:'External Repair Escalation' }
 ];
 const DEFAULT_ESCALATION_TIMES = [
-  { key:'morning', label:'Dispatch Morning', defaultTime:'11:30' },
-  { key:'evening', label:'Dispatch Evening', defaultTime:'18:15' },
-  { key:'sr_morning', label:'FRN Replacement Morning', defaultTime:'11:00' },
-  { key:'sr_afternoon', label:'FRN Replacement Afternoon', defaultTime:'15:00' },
-  { key:'to_morning', label:'In House FRN Replacement Morning', defaultTime:'11:00' },
-  { key:'to_evening', label:'In House FRN Replacement Evening', defaultTime:'16:30' },
-  { key:'ur_scrap', label:'Under Repair Scrap Sunday', defaultTime:'11:00' },
-  { key:'ur_followup', label:'Stock Escalation Daily', defaultTime:'20:00' },
-  { key:'prf_ob', label:'PRF/OB Daily', defaultTime:'16:30' },
-  { key:'supplier_warranty', label:'Supplier Warranty Tue/Fri', defaultTime:'20:30' },
-  { key:'external_repair', label:'External Repair Daily', defaultTime:'15:30' }
+  { key:'morning', reportType:'main_combined', label:'Send Time 1', defaultTime:'11:30' },
+  { key:'evening', reportType:'main_combined', label:'Send Time 2', defaultTime:'18:15' },
+  { key:'sr_morning', reportType:'sr_escalation', label:'Send Time 1', defaultTime:'11:00' },
+  { key:'sr_afternoon', reportType:'sr_escalation', label:'Send Time 2', defaultTime:'15:00' },
+  { key:'to_morning', reportType:'to_escalation', label:'Send Time 1', defaultTime:'11:00' },
+  { key:'to_evening', reportType:'to_escalation', label:'Send Time 2', defaultTime:'16:30' },
+  { key:'ur_scrap', reportType:'ur_scrap', label:'Send Time', defaultTime:'11:00' },
+  { key:'ur_followup', reportType:'ur_followup', label:'Send Time', defaultTime:'20:00' },
+  { key:'prf_ob', reportType:'prf_ob_escalation', label:'Send Time', defaultTime:'16:30' },
+  { key:'supplier_warranty', reportType:'supplier_warranty_escalation', label:'Send Time', defaultTime:'20:30' },
+  { key:'external_repair', reportType:'external_repair_escalation', label:'Send Time', defaultTime:'15:30' }
+];
+const DEFAULT_ESCALATION_GROUPS = [
+  { reportType:'main_combined', label:'Dispatch Escalation', slots:['morning','evening'], defaultRunCount:2 },
+  { reportType:'sr_escalation', label:'FRN Replacement Escalation', slots:['sr_morning','sr_afternoon'], defaultRunCount:2 },
+  { reportType:'to_escalation', label:'In House FRN Replacement', slots:['to_morning','to_evening'], defaultRunCount:2 },
+  { reportType:'ur_scrap', label:'Under Repair Scrap Escalation', slots:['ur_scrap'], defaultRunCount:1 },
+  { reportType:'ur_followup', label:'Stock Escalation', slots:['ur_followup'], defaultRunCount:1 },
+  { reportType:'prf_ob_escalation', label:'PRF/OB Escalation', slots:['prf_ob'], defaultRunCount:1 },
+  { reportType:'supplier_warranty_escalation', label:'Supplier Warranty Escalation', slots:['supplier_warranty'], defaultRunCount:1 },
+  { reportType:'external_repair_escalation', label:'External Repair Escalation', slots:['external_repair'], defaultRunCount:1 }
 ];
 
 function populateEscalationTypeOptions(types){
@@ -1446,11 +1456,11 @@ function ensureEscalationNameCard(){
   card.innerHTML=`
     <div class="sec-card-title"><span class="sec-ico" style="background:rgba(124,58,237,0.10);color:#7c3aed;">N</span> Escalation Names & Timings</div>
     <div style="padding:18px 20px 20px;">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Change the escalation display names and run timings used by the backend scheduler and acknowledgement boxes.</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Change escalation display names, send count per day, and exact send times used by the backend scheduler and acknowledgement boxes.</div>
       <div id="esc-name-ok" class="form-ok-bar" style="margin-bottom:12px;"></div>
       <div id="esc-name-err" class="form-err-bar" style="margin-bottom:12px;"></div>
       <div class="form-grid" id="esc-name-grid"></div>
-      <div style="font-size:12px;color:var(--muted);font-weight:700;margin:18px 0 10px;text-transform:uppercase;letter-spacing:.06em;">Escalation Timings</div>
+      <div style="font-size:12px;color:var(--muted);font-weight:700;margin:18px 0 10px;text-transform:uppercase;letter-spacing:.06em;">Escalation Send Count & Timings</div>
       <div class="form-grid" id="esc-time-grid"></div>
       <div style="margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
         <div id="esc-name-summary" style="font-size:12px;color:var(--muted);">Loading escalation names and timings...</div>
@@ -1465,7 +1475,7 @@ function ensureEscalationNameCard(){
   }
 }
 
-function renderEscalationNameFields(types,times){
+function renderEscalationNameFields(types,times,scheduleConfig){
   const grid=document.getElementById('esc-name-grid');
   if(!grid) return;
   const list=Array.isArray(types)&&types.length ? types : DEFAULT_ESCALATION_TYPES;
@@ -1476,20 +1486,60 @@ function renderEscalationNameFields(types,times){
       <input class="esc-name-input" data-key="${esc(t.value)}" type="text" value="${esc(t.label||'')}" placeholder="${esc(t.defaultLabel||t.label||'')}"/>
     </div>
   `).join('');
-  renderEscalationTimeFields(times);
+  renderEscalationTimeFields(times,scheduleConfig);
 }
 
-function renderEscalationTimeFields(times){
+function renderEscalationTimeFields(times,scheduleConfig){
   const grid=document.getElementById('esc-time-grid');
   if(!grid) return;
   const map=times&&typeof times==='object'?times:{};
-  grid.innerHTML=DEFAULT_ESCALATION_TIMES.map(t=>`
-    <div class="ff">
-      <label>${esc(t.label)}</label>
-      <input class="esc-time-input" data-key="${esc(t.key)}" type="time" value="${esc(map[t.key]||t.defaultTime)}"/>
-    </div>
-  `).join('');
+  const runCounts=(scheduleConfig&&scheduleConfig.runCounts)||{};
+  grid.innerHTML=DEFAULT_ESCALATION_GROUPS.map(group=>{
+    const label=RT_LABEL[group.reportType]||group.label;
+    const selected=Math.min(group.slots.length,Math.max(1,parseInt(runCounts[group.reportType]||group.defaultRunCount,10)||group.defaultRunCount));
+    const countOptions=Array.from({length:group.slots.length},(_,idx)=>idx+1).map(count=>`<option value="${count}" ${count===selected?'selected':''}>${count} time${count>1?'s':''} per day</option>`).join('');
+    const timeFields=group.slots.map((slotKey,idx)=>{
+      const t=DEFAULT_ESCALATION_TIMES.find(item=>item.key===slotKey)||{key:slotKey,label:`Send Time ${idx+1}`,defaultTime:'11:00'};
+      return `
+        <div class="ff" style="margin:10px 0 0;">
+          <label>${esc(t.label)}</label>
+          <input class="esc-time-input" data-key="${esc(t.key)}" type="time" value="${esc(map[t.key]||t.defaultTime)}"/>
+        </div>`;
+    }).join('');
+    return `
+      <div class="ff" style="border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--surface);">
+        <label>${esc(label)}</label>
+        <select class="esc-count-input" data-report-type="${esc(group.reportType)}">${countOptions}</select>
+        ${timeFields}
+      </div>`;
+  }).join('');
 }
+
+function getSchedulePayloadFromForm(){
+  const runCounts={};
+  document.querySelectorAll('.esc-count-input').forEach(input=>{
+    runCounts[input.dataset.reportType]=parseInt(input.value,10)||1;
+  });
+  return { runCounts };
+}
+
+function updateEscalationTimeVisibility(){
+  document.querySelectorAll('.esc-count-input').forEach(select=>{
+    const group=DEFAULT_ESCALATION_GROUPS.find(item=>item.reportType===select.dataset.reportType);
+    if(!group) return;
+    const count=parseInt(select.value,10)||1;
+    group.slots.forEach((slotKey,idx)=>{
+      const input=document.querySelector(`.esc-time-input[data-key="${slotKey}"]`);
+      const wrap=input?.closest('.ff');
+      if(wrap) wrap.style.opacity=idx<count?'1':'0.45';
+      if(input) input.disabled=idx>=count;
+    });
+  });
+}
+
+document.addEventListener('change',e=>{
+  if(e.target?.classList?.contains('esc-count-input')) updateEscalationTimeVisibility();
+});
 
 function setEscNameSummary(text,tone){
   const el=document.getElementById('esc-name-summary');
@@ -1510,10 +1560,12 @@ async function loadEscalationNames(){
     if(res.status===401){logout();return;}
     const data=await res.json();
     if(!res.ok) throw new Error(data.message||'Failed to load escalation names');
-    renderEscalationNameFields(data.escalationTypes||DEFAULT_ESCALATION_TYPES,data.times||{});
+    renderEscalationNameFields(data.escalationTypes||DEFAULT_ESCALATION_TYPES,data.times||{},data.scheduleConfig||{});
+    updateEscalationTimeVisibility();
     setEscNameSummary('Escalation names and timings loaded.','ok');
   }catch(e){
-    renderEscalationNameFields(DEFAULT_ESCALATION_TYPES,{});
+    renderEscalationNameFields(DEFAULT_ESCALATION_TYPES,{},{});
+    updateEscalationTimeVisibility();
     setEscNameSummary(e.message||'Could not load escalation names and timings','err');
     if(errEl){
       errEl.textContent='Error: '+(e.message||'Could not load escalation names');
@@ -1536,6 +1588,7 @@ async function saveEscalationNames(){
   document.querySelectorAll('.esc-time-input').forEach(input=>{
     times[input.dataset.key]=input.value;
   });
+  const scheduleConfig=getSchedulePayloadFromForm();
   const missing=Object.entries(labels).find(([,value])=>!value);
   if(missing){
     if(errEl){
@@ -1552,18 +1605,19 @@ async function saveEscalationNames(){
     const res=await fetch(`${API}/api/settings/escalation-labels`,{
       method:'PUT',
       headers:authHeaders(),
-      body:JSON.stringify({labels,times})
+      body:JSON.stringify({labels,times,scheduleConfig})
     });
     if(res.status===401){logout();return;}
     const data=await res.json();
     if(!res.ok) throw new Error(data.message||'Save failed');
-    renderEscalationNameFields(data.escalationTypes||DEFAULT_ESCALATION_TYPES,data.times||times);
+    renderEscalationNameFields(data.escalationTypes||DEFAULT_ESCALATION_TYPES,data.times||times,data.scheduleConfig||scheduleConfig);
+    updateEscalationTimeVisibility();
     if(okEl){
-      okEl.textContent='Escalation names and timings saved successfully.';
+      okEl.textContent='Escalation names, send count, and timings saved successfully.';
       okEl.classList.add('show');
     }
-    setEscNameSummary('Saved. Open the respective pages or refresh them to see the new names and timings.','ok');
-    showToast('Escalation names and timings saved.','ok');
+    setEscNameSummary('Saved. The scheduler will use the configured send count and times.','ok');
+    showToast('Escalation schedule saved.','ok');
     await loadMails();
   }catch(e){
     if(errEl){
