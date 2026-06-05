@@ -240,14 +240,13 @@ async function getRealTrackerMetrics(scope, divisionName, employeeName, monthInf
   let matchQuery = { month: monthInfo.monthKey };
 
   if (scope === 'division') {
-    const divDoc = await Division.findOne({ name: divisionName }).lean();
-    if (divDoc) {
-      empCount = await User.countDocuments({ role: 'employee', division: divDoc._id });
-      matchQuery.division = divDoc._id;
-    }
+    const Employee = require('../models/Employee');
+    empCount = await Employee.countDocuments({ role: 'employee', division: divisionName });
+    matchQuery.division = divisionName;
   } else {
     empCount = 1;
-    const empDoc = await User.findOne({ name: employeeName, role: 'employee' }).lean();
+    const Employee = require('../models/Employee');
+    const empDoc = await Employee.findOne({ name: employeeName, role: 'employee' }).lean();
     if (empDoc) {
       matchQuery.employee = empDoc._id;
     } else {
