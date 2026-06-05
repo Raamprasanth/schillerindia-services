@@ -156,7 +156,17 @@ body{
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;text-align:center;height:100%;}
 .empty-icon{font-size:48px;margin-bottom:14px;opacity:0.4;}
 .empty-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;}
-.empty-sub{font-size:13px;color:var(--muted);max-width:300px;line-height:1.5;}
+.empty-sub{font-size:12px;color:var(--muted);max-width:300px;margin:0 auto;line-height:1.5;}
+
+/* --- Sub-tabs for Performance --- */
+.perf-subtabs { display:flex; gap:10px; margin-bottom:16px; border-bottom:1px solid var(--border); padding-bottom:8px; }
+.perf-subtab { padding:8px 16px; border:none; background:transparent; font-family:'Syne',sans-serif; font-size:14px; font-weight:700; color:var(--muted); cursor:pointer; border-radius:6px; transition:all 0.2s; }
+.perf-subtab:hover { color:var(--text); background:var(--bg-hover); }
+.perf-subtab.active { color:var(--accent); background:var(--accent3); }
+.perf-subpane { display:none; }
+.perf-subpane.active { display:block; }
+
+/* --- PERFORMANCE BUILDER LAYOUT --- */
 
 /* -- LOADING STATE -- */
 .loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;text-align:center;}
@@ -1276,18 +1286,151 @@ async function loadDivisions(){
 //  TAB 2  PERFORMANCE REVIEW (Enhanced)
 // --------------------------------------------------------------
 
-let perfScope='division';
+let perfScope='employee'; // Default to individual now, division has its own tab
 let perfOptionsLoaded=false;
 let perfOptions={divisions:[],employees:[]};
 let perfCurrentParams=null;
 let trendChartInst=null;
+let perfDivCurrentParams=null;
+let trendDivChartInst=null;
+
+function switchPerfSubTab(tab) {
+  document.querySelectorAll('.perf-subtab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('pst-'+tab).classList.add('active');
+  document.getElementById('perf-div-pane').style.display = tab === 'division' ? 'block' : 'none';
+  document.getElementById('perf-ind-pane').style.display = tab === 'individual' ? 'block' : 'none';
+  if (tab === 'division') { perfScope = 'division'; } else { perfScope = 'employee'; }
+}
+
+function switchPerfDivTab(tab, btn) {
+  document.querySelectorAll('#perf-div-inner-tabs .perf-inner-tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  ['summary','trend','leaderboard'].forEach(t=>{
+    const el=document.getElementById('perf-pane-'+t+(t==='summary'?'-div':'-div')); // adjust mapping
+    let paneId = t === 'summary' ? 'perf-pane-div-summary' : 'perf-pane-'+t+'-div';
+    const paneEl = document.getElementById(paneId);
+    if(paneEl) paneEl.style.display=t===tab?'block':'none';
+  });
+  if(tab==='trend' && perfDivCurrentParams) loadDivTrend();
+  if(tab==='leaderboard') loadLeaderboard();
+}
+
+async function loadDivisionPerf() {
+  const month=document.getElementById('perf-month-div').value;
+  if(!month){toast('Please select a month','error');return;}
+  const div=document.getElementById('perf-division').value;
+  if(!div){toast('Please select a division','error');return;}
+
+  const params={scope:'division',month,division:div};
+  perfDivCurrentParams=params;
+  const btn=document.getElementById('perf-preview-btn-div');
+  btn.disabled=true;btn.innerHTML='&#9203; Loading';
+  document.getElementById('perf-pane-div-summary').innerHTML=`
+    <div class="loading-state"><div class="spinner"></div><div class="loading-title">Loading Division Data</div></div>`;
+  
+  try{
+    const qs=new URLSearchParams(params).toString();
+    const res=await fetch('/api/reports/performance/summary?'+qs,{headers:hdrs()});
+    const d=await res.json();
+    if(!res.ok) throw new Error(d.message||'Failed');
+    
+    renderDivisionPerfSummary(d.data,params);
+    document.getElementById('perf-div-out-title').textContent=`&#127986; Division: ${params.division}`;
+    document.getElementById('perf-div-out-meta').textContent=`Month: ${params.month}`;
+    
+    document.getElementById('perf-div-inner-tabs').style.display='flex';
+    document.getElementById('perf-div-comment-section').style.display='block';
+    
+    const key='perf_comment_div_'+params.division+'_'+params.month;
+    document.getElementById('perf-div-comment').value=localStorage.getItem(key)||'';
+    document.getElementById('perf-div-comment').dataset.key=key;
+    switchPerfDivTab('summary',document.querySelector('#perf-div-inner-tabs .perf-inner-tab'));
+    toast('Division summary loaded','success');
+  }catch(e){
+    document.getElementById('perf-pane-div-summary').innerHTML=`
+      <div class="empty-state" style="padding:40px;">
+        <div class="empty-icon">&#128683;</div>
+        <div class="empty-title">Failed to Load</div>
+        <div class="empty-sub">${e.message}</div>
+      </div>`;
+    toast('Failed: '+e.message,'error');
+  } finally {
+    btn.disabled=false;btn.innerHTML='&#128065; Preview Division';
+  }
+}
+
+function saveDivComment(){
+  const ta=document.getElementById('perf-div-comment');
+  if(!ta) return;
+  localStorage.setItem(ta.dataset.key, ta.value);
+  const saved=document.getElementById('div-comment-saved');
+  saved.style.display='block';
+  clearTimeout(ta._saveTimer);
+  ta._saveTimer=setTimeout(()=>{saved.style.display='none';},1800);
+}
+
+function renderDivisionPerfSummary(data,params) {
+  if(!data){
+    document.getElementById('perf-pane-div-summary').innerHTML='<div class="empty-state"><div class="empty-icon">&#128196;</div><div class="empty-title">No Data</div></div>';
+    return;
+  }
+  window._lastPerfDivData = data;
+  const rate=data.completionRate||0;
+  const isCritical=rate<60;
+  const isWarning=rate>=60&&rate<75;
+  const pct=n=>Math.min(100,Math.max(0,n||0));
+  
+  let tableRows='';
+  (data.activities||[]).forEach(act=>{
+    const p=pct(act.completionPercent);
+    const flagTxt=p<60?'<span class="flag-badge flag-critical">Critical</span>':p<75?'<span class="flag-badge flag-warning">At Risk</span>':'';
+    const rowAlert=p<60?'style="background:rgba(185,28,28,0.03);"':p<75?'style="background:rgba(217,119,6,0.03);"':'';
+    tableRows+=`<tr ${rowAlert}>
+      <td style="font-weight:600;">${act.label||''} ${flagTxt}</td>
+      <td style="text-align:center;font-weight:700;color:${p<60?'#b91c1c':p<75?'#d97706':'#059669'};">${p}%</td>
+    </tr>`;
+  });
+
+  const tableHtml=tableRows?`
+    <div class="perf-table-wrap">
+      <table class="perf-table" id="perf-table-excel-div">
+        <thead><tr>
+          <th>Activity</th><th style="text-align:center;">Completion Percentage</th>
+        </tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>`:
+    '<div style="padding:20px;color:var(--muted);font-size:13px;">No activity data found.</div>';
+
+  const submissionHtml=renderSubmissionPlaceholder(params);
+
+  const exportBtn=`
+    <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn btn-green btn-sm" onclick="exportPDF('div')">Export Division PDF</button>
+    </div>`;
+
+  document.getElementById('perf-pane-div-summary').innerHTML=submissionHtml+tableHtml+exportBtn;
+  loadDivisionReportSubmissions(params);
+}
+
+async function loadDivTrend(){
+  if(!perfDivCurrentParams) return;
+  const pane=document.getElementById('perf-pane-trend-div');
+  pane.innerHTML=`<div class="loading-state"><div class="spinner"></div><div class="loading-title">Loading 6-Month Trend</div></div>`;
+  try{
+    const p=perfDivCurrentParams;
+    const qs=new URLSearchParams({scope:p.scope,division:p.division||'',employee:p.employee||'',months:6}).toString();
+    const res=await fetch('/api/reports/performance/trend?'+qs,{headers:hdrs()});
+    const d=await res.json();
+    if(!res.ok) throw new Error(d.message||'Failed');
+    renderTrendChart(d.trend||[], true);
+  }catch(e){
+    pane.innerHTML=`<div class="empty-state" style="padding:40px;"><div class="empty-icon">!</div><div class="empty-title">Trend Failed</div><div class="empty-sub">${e.message}</div></div>`;
+  }
+}
 
 function setScope(scope){
-  perfScope=scope;
-  document.getElementById('scope-div-btn').classList.toggle('active',scope==='division');
-  document.getElementById('scope-emp-btn').classList.toggle('active',scope==='employee');
-  document.getElementById('perf-div-field').style.display=scope==='division'?'block':'none';
-  document.getElementById('perf-emp-field').style.display=scope==='employee'?'block':'none';
+  // Legacy function for old ui if still hooked
 }
 
 function switchPerfTab(tab, btn){
@@ -1594,17 +1737,22 @@ async function loadTrend(){
   }
 }
 
-function renderTrendChart(points){
-  const pane=document.getElementById('perf-pane-trend');
+function renderTrendChart(points, isDiv = false){
+  const pane=document.getElementById(isDiv ? 'perf-pane-trend-div' : 'perf-pane-trend');
+  const canvasId = isDiv ? 'perfTrendChartDiv' : 'perfTrendChart';
   pane.innerHTML=`<div class="trend-wrap">
-    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">6-month completion rate trend for <strong style="color:var(--text);">${perfCurrentParams?.division||perfCurrentParams?.employee||''}</strong></div>
-    <div class="trend-chart-container"><canvas id="perfTrendChart"></canvas></div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">6-month completion rate trend for <strong style="color:var(--text);">${(isDiv ? perfDivCurrentParams?.division : perfCurrentParams?.employee)||''}</strong></div>
+    <div class="trend-chart-container"><canvas id="${canvasId}"></canvas></div>
   </div>`;
-  const ctx=document.getElementById('perfTrendChart').getContext('2d');
-  if(trendChartInst) trendChartInst.destroy();
+  const ctx=document.getElementById(canvasId).getContext('2d');
+  if(isDiv) {
+    if(trendDivChartInst) trendDivChartInst.destroy();
+  } else {
+    if(trendChartInst) trendChartInst.destroy();
+  }
   const rates=points.map(p=>p.completionRate);
   const avg=rates.length?Math.round(rates.reduce((a,b)=>a+b,0)/rates.length):0;
-  trendChartInst=new Chart(ctx,{
+  const chartInst=new Chart(ctx,{
     type:'line',
     data:{
       labels:points.map(p=>p.month),
@@ -1616,6 +1764,8 @@ function renderTrendChart(points){
     },
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'top',labels:{boxWidth:12,font:{size:11}}},tooltip:{callbacks:{label:(ctx)=>`${ctx.dataset.label}: ${ctx.raw}%`}}},scales:{y:{beginAtZero:true,max:100,grid:{color:'rgba(0,0,0,0.05)'},ticks:{callback:v=>v+'%'}},x:{grid:{color:'rgba(0,0,0,0.04)'}}}}
   });
+  if(isDiv) trendDivChartInst = chartInst;
+  else trendChartInst = chartInst;
 }
 
 async function loadLeaderboard(){
@@ -1666,11 +1816,13 @@ function renderLeaderboard(rows,month){
   pane.innerHTML=tbl;
 }
 
-function exportPDF() {
-  if(!perfCurrentParams) return;
-  const month = perfCurrentParams.month||'Report';
-  const scope = perfCurrentParams.division||perfCurrentParams.employee||'';
-  const data = window._lastPerfData;
+function exportPDF(type) {
+  const isDiv = type === 'div';
+  const params = isDiv ? perfDivCurrentParams : perfCurrentParams;
+  if(!params) return;
+  const month = params.month||'Report';
+  const scope = params.division||params.employee||'';
+  const data = isDiv ? window._lastPerfDivData : window._lastPerfData;
   if(!data){ toast('Generate a preview first','error'); return; }
   const rate = data.completionRate||0;
   const isCrit = rate<60;
@@ -1678,17 +1830,66 @@ function exportPDF() {
   const sColor = isCrit?'#b91c1c': isWarn?'#d97706':'#059669';
   const sTxt = isCrit?'CRITICAL': isWarn?'AT RISK':'ON TRACK';
 
-  const actRows=(data.activities||[]).map((act,i)=>{
-    const bg = i%2===0?'#ffffff':'#f9fbfd';
-    const oot=act.outOfTarget||0;
-    return `<tr style="background:${bg};">
-      <td style="border:1px solid #d0e0ec;padding:8px 10px;font-weight:600;font-size:11px;">${escapeHtml(act.label)}</td>
-      <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;">${act.total||0}</td>
-      <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;">${act.targetDays?act.targetDays+' days':'-'}</td>
-      <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;color:#059669;font-weight:700;">${act.withinTarget||0}</td>
-      <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;color:${oot>0?'#b91c1c':'#666'};font-weight:${oot>0?'700':'500'};">${oot}</td>
-    </tr>`;
-  }).join('');
+  let actRows = '';
+  let tableHeader = '';
+
+  if (isDiv) {
+    actRows=(data.activities||[]).map((act,i)=>{
+      const bg = i%2===0?'#ffffff':'#f9fbfd';
+      const p=Math.min(100,Math.max(0,act.completionPercent||0));
+      return `<tr style="background:${bg};">
+        <td style="border:1px solid #d0e0ec;padding:8px 10px;font-weight:600;font-size:11px;">${escapeHtml(act.label)}</td>
+        <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;font-weight:700;color:${p<60?'#b91c1c':p<75?'#d97706':'#059669'};">${p}%</td>
+      </tr>`;
+    }).join('');
+    tableHeader = `
+      <th style="border:1px solid #d0e0ec;padding:8px;text-align:left;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Activity</th>
+      <th style="border:1px solid #d0e0ec;padding:8px;text-align:center;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Completion %</th>`;
+  } else {
+    actRows=(data.activities||[]).map((act,i)=>{
+      const bg = i%2===0?'#ffffff':'#f9fbfd';
+      const oot=act.outOfTarget||0;
+      return `<tr style="background:${bg};">
+        <td style="border:1px solid #d0e0ec;padding:8px 10px;font-weight:600;font-size:11px;">${escapeHtml(act.label)}</td>
+        <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;">${act.total||0}</td>
+        <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;">${act.targetDays?act.targetDays+' days':'-'}</td>
+        <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;color:#059669;font-weight:700;">${act.withinTarget||0}</td>
+        <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;color:${oot>0?'#b91c1c':'#666'};font-weight:${oot>0?'700':'500'};">${oot}</td>
+      </tr>`;
+    }).join('');
+    tableHeader = `
+      <th style="border:1px solid #d0e0ec;padding:8px;text-align:left;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Activity</th>
+      <th style="border:1px solid #d0e0ec;padding:8px;text-align:center;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Total</th>
+      <th style="border:1px solid #d0e0ec;padding:8px;text-align:center;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Target Days</th>
+      <th style="border:1px solid #d0e0ec;padding:8px;text-align:center;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Within Target</th>
+      <th style="border:1px solid #d0e0ec;padding:8px;text-align:center;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Out of Target</th>`;
+  }
+
+  let submissionHtmlPdf = '';
+  if (isDiv) {
+    const submissionPanel = document.getElementById('perf-submission-panel');
+    if (submissionPanel) {
+      submissionHtmlPdf = `<div style="margin-bottom:20px;border:1px solid #d0e0ec;border-radius:8px;padding:16px;">
+        <div style="font-size:14px;font-weight:700;color:#1a2a3a;margin-bottom:10px;">Division Wise Report Submission</div>
+        <div style="font-size:11px;color:#666;margin-bottom:12px;">Data matched from employee dashboard</div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;">`;
+      const cards = submissionPanel.querySelectorAll('.submission-card');
+      cards.forEach(c => {
+        const title = c.querySelector('.submission-card-title span')?.textContent || '';
+        const pct = c.querySelector('.pct-text')?.textContent || '';
+        const count = c.querySelector('.submission-count')?.textContent || '';
+        const isDone = c.classList.contains('done');
+        submissionHtmlPdf += `
+          <div style="width:calc(33.3% - 10px);border:1px solid ${isDone?'#059669':'#d0e0ec'};border-radius:6px;padding:10px;background:${isDone?'#f0fdf4':'#fff'};">
+            <div style="font-size:11px;font-weight:700;color:#1a2a3a;margin-bottom:4px;">${title}</div>
+            <div style="font-size:14px;font-weight:700;color:${isDone?'#059669':'#d97706'};">${pct}</div>
+            <div style="font-size:9px;color:#666;margin-top:2px;">${count}</div>
+          </div>
+        `;
+      });
+      submissionHtmlPdf += `</div></div>`;
+    }
+  }
 
   const html=`
     <div style="font-family:Arial,sans-serif;padding:32px;color:#1a2a3a;">
@@ -1704,13 +1905,10 @@ function exportPDF() {
           <td style="border:1px solid #d0e0ec;padding:10px;width:25%;background:${isCrit?'#fff5f5':isWarn?'#fffbeb':'#f0fdf4'};"><div style="font-size:18px;font-weight:700;color:${sColor};">${rate}%</div><div style="font-size:10px;color:${sColor};font-weight:600;">${sTxt}</div></td>
         </tr>
       </table>
+      ${submissionHtmlPdf}
       <table style="width:100%;border-collapse:collapse;">
         <thead><tr style="background:#f4f7fa;">
-          <th style="border:1px solid #d0e0ec;padding:8px;text-align:left;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Activity</th>
-          <th style="border:1px solid #d0e0ec;padding:8px;text-align:center;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Total</th>
-          <th style="border:1px solid #d0e0ec;padding:8px;text-align:center;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Target Days</th>
-          <th style="border:1px solid #d0e0ec;padding:8px;text-align:center;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Within Target</th>
-          <th style="border:1px solid #d0e0ec;padding:8px;text-align:center;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Out of Target</th>
+          ${tableHeader}
         </tr></thead>
         <tbody>${actRows}</tbody>
       </table>
