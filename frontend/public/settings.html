@@ -1282,6 +1282,15 @@ const DEFAULT_ESCALATION_GROUPS = [
   { reportType:'supplier_warranty_escalation', label:'Supplier Warranty Escalation', slots:['supplier_warranty'], defaultRunCount:1 },
   { reportType:'external_repair_escalation', label:'External Repair Escalation', slots:['external_repair'], defaultRunCount:1 }
 ];
+const ESCALATION_WEEKDAYS = [
+  { value:1, label:'Mon' },
+  { value:2, label:'Tue' },
+  { value:3, label:'Wed' },
+  { value:4, label:'Thu' },
+  { value:5, label:'Fri' },
+  { value:6, label:'Sat' },
+  { value:0, label:'Sun' }
+];
 
 function populateEscalationTypeOptions(types){
   const list=Array.isArray(types)&&types.length ? types : DEFAULT_ESCALATION_TYPES;
@@ -1494,10 +1503,18 @@ function renderEscalationTimeFields(times,scheduleConfig){
   if(!grid) return;
   const map=times&&typeof times==='object'?times:{};
   const runCounts=(scheduleConfig&&scheduleConfig.runCounts)||{};
+  const weekdays=(scheduleConfig&&scheduleConfig.weekdays)||{};
   grid.innerHTML=DEFAULT_ESCALATION_GROUPS.map(group=>{
     const label=RT_LABEL[group.reportType]||group.label;
     const selected=Math.min(group.slots.length,Math.max(1,parseInt(runCounts[group.reportType]||group.defaultRunCount,10)||group.defaultRunCount));
     const countOptions=Array.from({length:group.slots.length},(_,idx)=>idx+1).map(count=>`<option value="${count}" ${count===selected?'selected':''}>${count} time${count>1?'s':''} per day</option>`).join('');
+    const selectedDays=Array.isArray(weekdays[group.reportType])&&weekdays[group.reportType].length?weekdays[group.reportType].map(Number):[0,1,2,3,4,5,6];
+    const allChecked=selectedDays.length===7;
+    const dayChecks=ESCALATION_WEEKDAYS.map(day=>`
+      <label style="display:inline-flex;align-items:center;gap:4px;font-size:11.5px;color:var(--muted);font-weight:700;margin:6px 8px 0 0;">
+        <input class="esc-day-input" data-report-type="${esc(group.reportType)}" type="checkbox" value="${day.value}" ${selectedDays.includes(day.value)?'checked':''}/>
+        ${esc(day.label)}
+      </label>`).join('');
     const timeFields=group.slots.map((slotKey,idx)=>{
       const t=DEFAULT_ESCALATION_TIMES.find(item=>item.key===slotKey)||{key:slotKey,label:`Send Time ${idx+1}`,defaultTime:'11:00'};
       return `
@@ -1510,17 +1527,31 @@ function renderEscalationTimeFields(times,scheduleConfig){
       <div class="ff" style="border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--surface);">
         <label>${esc(label)}</label>
         <select class="esc-count-input" data-report-type="${esc(group.reportType)}">${countOptions}</select>
+        <div style="margin-top:10px;">
+          <label style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:800;">Send Days</label>
+          <label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:800;margin:6px 10px 0 0;">
+            <input class="esc-all-days-input" data-report-type="${esc(group.reportType)}" type="checkbox" ${allChecked?'checked':''}/>
+            All days
+          </label>
+          <div>${dayChecks}</div>
+        </div>
         ${timeFields}
       </div>`;
   }).join('');
+  updateEscalationDayChecks();
 }
 
 function getSchedulePayloadFromForm(){
   const runCounts={};
+  const weekdays={};
   document.querySelectorAll('.esc-count-input').forEach(input=>{
     runCounts[input.dataset.reportType]=parseInt(input.value,10)||1;
   });
-  return { runCounts };
+  DEFAULT_ESCALATION_GROUPS.forEach(group=>{
+    const selected=[...document.querySelectorAll(`.esc-day-input[data-report-type="${group.reportType}"]:checked`)].map(input=>parseInt(input.value,10));
+    weekdays[group.reportType]=selected.length?selected:[0,1,2,3,4,5,6];
+  });
+  return { runCounts, weekdays };
 }
 
 function updateEscalationTimeVisibility(){
@@ -1539,7 +1570,26 @@ function updateEscalationTimeVisibility(){
 
 document.addEventListener('change',e=>{
   if(e.target?.classList?.contains('esc-count-input')) updateEscalationTimeVisibility();
+  if(e.target?.classList?.contains('esc-all-days-input')){
+    const reportType=e.target.dataset.reportType;
+    document.querySelectorAll(`.esc-day-input[data-report-type="${reportType}"]`).forEach(input=>{ input.checked=e.target.checked; });
+    updateEscalationDayChecks();
+  }
+  if(e.target?.classList?.contains('esc-day-input')) updateEscalationDayChecks();
 });
+
+function updateEscalationDayChecks(){
+  document.querySelectorAll('.esc-all-days-input').forEach(input=>{
+    const reportType=input.dataset.reportType;
+    const dayInputs=[...document.querySelectorAll(`.esc-day-input[data-report-type="${reportType}"]`)];
+    const checked=dayInputs.filter(day=>day.checked);
+    input.checked=checked.length===dayInputs.length;
+    if(!checked.length){
+      dayInputs.forEach(day=>{ day.checked=true; });
+      input.checked=true;
+    }
+  });
+}
 
 function setEscNameSummary(text,tone){
   const el=document.getElementById('esc-name-summary');

@@ -9,7 +9,14 @@ const EstimationPending = require('../models/EstimationPending');
 const EscalationRunLog = require('../models/EscalationRunLog');
 const EscalationQueue = require('../models/EscalationQueue');
 const AppSetting = require('../models/AppSetting');
-const { getEscalationTimeMap, getEscalationScheduleConfig, getEnabledEscalationSlots, parseTime, formatTimeLabel } = require('../utils/escalationSchedule');
+const {
+  getEscalationTimeMap,
+  getEscalationScheduleConfig,
+  getEnabledEscalationSlots,
+  isEscalationSlotAllowedOnDay,
+  parseTime,
+  formatTimeLabel,
+} = require('../utils/escalationSchedule');
 const { runEscalationMailer } = require('../utils/escalationMailer');
 
 const IST_OFFSET_MINUTES = 330;
@@ -371,10 +378,14 @@ async function getSlotsForCurrentTime(date = new Date()) {
   const times = await getEscalationTimeMap();
   const scheduleConfig = await getEscalationScheduleConfig();
   const enabledSlots = getEnabledEscalationSlots(scheduleConfig);
+  const weekday = toIstDate(date).getUTCDay();
   const slots = [];
   const matches = (key, fallback) => {
     const time = scheduledTime(times, key, fallback);
-    return enabledSlots.has(key) && parts.hour === time.hour && parts.minute === time.minute;
+    return enabledSlots.has(key)
+      && isEscalationSlotAllowedOnDay(key, weekday, scheduleConfig)
+      && parts.hour === time.hour
+      && parts.minute === time.minute;
   };
   if (matches('sr_morning', '11:00')) {
     slots.push('sr_morning');
@@ -382,13 +393,13 @@ async function getSlotsForCurrentTime(date = new Date()) {
   if (matches('to_morning', '11:00')) {
     slots.push('to_morning');
   }
-  if (matches('ur_scrap', '11:00') && toIstDate(date).getUTCDay() === 0) slots.push('ur_scrap');
+  if (matches('ur_scrap', '11:00')) slots.push('ur_scrap');
   if (matches('morning', '11:30')) slots.push('morning');
   if (matches('sr_afternoon', '15:00')) slots.push('sr_afternoon');
   if (matches('external_repair', '15:30')) {
     slots.push('external_repair');
   }
-  if (matches('supplier_warranty', '20:30') && [2, 5].includes(toIstDate(date).getUTCDay())) {
+  if (matches('supplier_warranty', '20:30')) {
     slots.push('supplier_warranty');
   }
   if (matches('to_evening', '16:30')) {

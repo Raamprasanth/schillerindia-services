@@ -32,6 +32,13 @@ const DEFAULT_TIME_MAP = DEFAULT_ESCALATION_TIMES.reduce((acc, item) => {
   acc[item.key] = item.defaultTime;
   return acc;
 }, {});
+const ALL_WEEKDAYS = [0, 1, 2, 3, 4, 5, 6];
+const SLOT_REPORT_TYPE_MAP = DEFAULT_ESCALATION_GROUPS.reduce((acc, group) => {
+  group.slots.forEach((slot) => {
+    acc[slot] = group.reportType;
+  });
+  return acc;
+}, {});
 
 function parseTime(value, fallback = '00:00') {
   const text = String(value || fallback || '').trim();
@@ -61,6 +68,7 @@ function normalizeTimeMap(value = {}) {
 function normalizeScheduleConfig(value = {}) {
   const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   const sourceRunCounts = source.runCounts && typeof source.runCounts === 'object' ? source.runCounts : source;
+  const sourceWeekdays = source.weekdays && typeof source.weekdays === 'object' ? source.weekdays : {};
   const runCounts = DEFAULT_ESCALATION_GROUPS.reduce((acc, group) => {
     const max = group.slots.length;
     const raw = Number.parseInt(sourceRunCounts[group.reportType], 10);
@@ -68,7 +76,18 @@ function normalizeScheduleConfig(value = {}) {
     acc[group.reportType] = Math.min(max, Math.max(1, count));
     return acc;
   }, {});
-  return { runCounts };
+  const weekdays = DEFAULT_ESCALATION_GROUPS.reduce((acc, group) => {
+    const selected = Array.isArray(sourceWeekdays[group.reportType])
+      ? sourceWeekdays[group.reportType]
+      : ALL_WEEKDAYS;
+    const clean = [...new Set(selected
+      .map((day) => Number.parseInt(day, 10))
+      .filter((day) => Number.isInteger(day) && day >= 0 && day <= 6))]
+      .sort((a, b) => a - b);
+    acc[group.reportType] = clean.length ? clean : ALL_WEEKDAYS;
+    return acc;
+  }, {});
+  return { runCounts, weekdays };
 }
 
 async function getEscalationTimeMap() {
@@ -120,6 +139,21 @@ function getEnabledSlotsForReportType(reportType, config = {}) {
   return group.slots.filter((slot) => enabledSlots.has(slot));
 }
 
+function getReportTypeForSlot(slot) {
+  return SLOT_REPORT_TYPE_MAP[slot] || '';
+}
+
+function isEscalationReportAllowedOnDay(reportType, day, config = {}) {
+  const normalized = normalizeScheduleConfig(config);
+  const days = normalized.weekdays[reportType] || ALL_WEEKDAYS;
+  return days.includes(day);
+}
+
+function isEscalationSlotAllowedOnDay(slot, day, config = {}) {
+  const reportType = getReportTypeForSlot(slot);
+  return reportType ? isEscalationReportAllowedOnDay(reportType, day, config) : true;
+}
+
 function applyEscalationTimes(times = DEFAULT_TIME_MAP, scheduleConfig = {}) {
   const normalized = normalizeTimeMap(times);
   const enabledSlots = getEnabledEscalationSlots(scheduleConfig);
@@ -137,6 +171,7 @@ module.exports = {
   DEFAULT_ESCALATION_TIMES,
   DEFAULT_ESCALATION_GROUPS,
   DEFAULT_TIME_MAP,
+  ALL_WEEKDAYS,
   parseTime,
   formatTimeLabel,
   normalizeTimeMap,
@@ -148,5 +183,8 @@ module.exports = {
   getEnabledEscalationSlots,
   getEscalationGroup,
   getEnabledSlotsForReportType,
+  getReportTypeForSlot,
+  isEscalationReportAllowedOnDay,
+  isEscalationSlotAllowedOnDay,
   applyEscalationTimes,
 };

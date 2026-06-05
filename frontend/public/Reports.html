@@ -2430,6 +2430,114 @@ async function updateEngineer(id, newEngineer) {
   }
 }
 
+// -- ALL-DIVISIONS REPORT TRACKER (Division tab) ---------------
+let _rptTrackerLoaded = false;
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, function(m) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+  });
+}
+
+async function loadAllDivisionTrackers() {
+  const grid = document.getElementById('rpt-tracker-grid');
+  const monthInput = document.getElementById('rpt-tracker-month');
+  if (!grid) return;
+
+  const today = new Date();
+  const currentMonth = today.getFullYear() + '-' + (today.getMonth() + 1).toString().padStart(2, '0');
+  if (monthInput && !monthInput.value) monthInput.value = currentMonth;
+  const monthStr = monthInput?.value || currentMonth;
+
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:28px;font-size:13px;"><div class="spinner" style="margin:0 auto 10px;"></div>Loading report submission data...</div>';
+
+  try {
+    const res = await fetch('/api/tracker/stats?month=' + monthStr, { headers: hdrs() });
+    if (!res.ok) throw new Error('Failed to fetch stats');
+    const data = await res.json();
+
+    if (data.success && data.stats && data.stats.length > 0) {
+      const fallbackReports = [
+        { type: 'CRM', label: 'CRM Reports', schedule: 'Every Tuesday' },
+        { type: 'PendingActivity', label: 'Pending Activity', schedule: 'Every Monday' },
+        { type: 'NonSaleable', label: 'Non Saleable', schedule: '2nd & 16th' },
+        { type: 'SupplierWarranty', label: 'Supplier Warranty', schedule: '3rd & 16th' },
+        { type: 'CriticalPendingReport', label: 'Critical Pending Report', schedule: '2nd' },
+        { type: 'PIRequest', label: 'PI Request', schedule: '5th' }
+      ];
+      const reportDefs = data.stats.find(div => Array.isArray(div.reports) && div.reports.length)?.reports || fallbackReports;
+
+      grid.innerHTML = reportDefs.map(reportDef => {
+        const rows = data.stats.map(div => {
+          const report = (div.reports || []).find(item => item.type === reportDef.type) || {
+            label: reportDef.label,
+            schedule: reportDef.schedule,
+            actual: reportDef.type === 'CRM' ? div.actualCRM : reportDef.type === 'PendingActivity' ? div.actualPending : 0,
+            expected: reportDef.type === 'CRM' ? div.expectedCRM : reportDef.type === 'PendingActivity' ? div.expectedPending : 0,
+            percent: reportDef.type === 'CRM' ? div.crmPercent : reportDef.type === 'PendingActivity' ? div.pendingPercent : 0,
+            complete: false
+          };
+          const percent = Math.min(100, Math.max(0, report.percent || 0));
+          const done = report.complete || (report.expected > 0 && report.actual >= report.expected);
+          const fillClass = done ? 'done' : percent >= 60 ? 'warn' : '';
+          return `
+            <tr>
+              <td style="font-weight:700;">${escapeHtml(div.name)}</td>
+              <td style="text-align:center;">${div.empCount || 0}</td>
+              <td style="text-align:center;">${report.actual || 0} / ${report.expected || 0}</td>
+              <td>
+                <div class="rpt-tracker-progress">
+                  <div class="rpt-tracker-bar"><div class="rpt-tracker-fill ${fillClass}" style="width:${percent}%;"></div></div>
+                  <span class="rpt-tracker-pct">${percent}%</span>
+                  <span class="rpt-tracker-check ${done ? 'done' : ''}">${done ? '&#10003;' : '-'}</span>
+                </div>
+              </td>
+            </tr>`;
+        }).join('');
+
+        return `
+          <div class="rpt-tracker-card">
+            <div class="rpt-tracker-card-head">
+              <div>
+                <div class="rpt-tracker-card-title">${escapeHtml(reportDef.label)}</div>
+                <div class="rpt-tracker-card-schedule">Due: ${escapeHtml(reportDef.schedule || '')}</div>
+              </div>
+            </div>
+            <div class="rpt-tracker-card-body">
+              <table class="rpt-tracker-table">
+                <thead>
+                  <tr>
+                    <th>Division</th>
+                    <th style="text-align:center;">Employees</th>
+                    <th style="text-align:center;">Submitted</th>
+                    <th>Completion</th>
+                  </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+          </div>`;
+      }).join('');
+    } else {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:28px;font-size:13px;">No report submission data found for this month.</div>';
+    }
+  } catch (err) {
+    console.error('Report tracker load error:', err);
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--red);padding:28px;font-size:13px;font-weight:600;">Failed to load report submission stats.</div>';
+  }
+}
+
+// Hook: load tracker when Division tab opens
+const _origSwitchPerfSubTab = switchPerfSubTab;
+switchPerfSubTab = function(tab) {
+  _origSwitchPerfSubTab(tab);
+  if (tab === 'division' && !_rptTrackerLoaded) {
+    _rptTrackerLoaded = true;
+    loadAllDivisionTrackers();
+  }
+};
+
 // -- INIT ------------------------------------------------------
 loadStats();
 loadDivisions();
