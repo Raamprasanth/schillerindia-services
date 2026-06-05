@@ -1626,6 +1626,7 @@ function renderDivisionPerfSummary(data,params) {
   const rFrn = getRow('Pending frn');
   const rFrnCon = getRow('pending FRN con');
   const rSo = getRow('SO Pending');
+  const rRepair = getRow('Under Repair');
   const rTo = getRow('TO/SO');
   const rNonSaleable = getRow('Non-Saleable');
   const rBir = getRow('BIR list');
@@ -1715,6 +1716,14 @@ function renderDivisionPerfSummary(data,params) {
       <td class="bg-peach bold">${pct(rSo, 'withinPercent')}</td>
       <td class="bg-blue">${pct(rSo, 'prevRate')}</td>
       <td class="bg-peach">${pct(rSo, 'nextRate')}</td>
+    </tr>
+    <tr>
+      <td class="bg-green text-left">Under Repair</td>
+      <td class="bg-peach">${getVal(rRepair, 'total')}</td>
+      <td class="bg-peach">${getVal(rRepair, 'withinTarget')}</td>
+      <td class="bg-peach bold">${pct(rRepair, 'withinPercent')}</td>
+      <td class="bg-blue">${pct(rRepair, 'prevRate')}</td>
+      <td class="bg-peach">${pct(rRepair, 'nextRate')}</td>
     </tr>
     <tr>
       <td class="bg-green text-left">TO/SO</td>

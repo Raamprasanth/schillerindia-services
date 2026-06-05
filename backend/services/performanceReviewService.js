@@ -548,6 +548,15 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     return days !== null && days <= 3;
   }).length;
 
+  const underRepairRows = underRepairDocs;
+  const underRepairWithin = underRepairRows.filter((record) => {
+    const startDate = firstDate(record.entryDate, record.createdAt);
+    const completedMatch = firstByServiceId(completedDocs, record.serviceId);
+    const endDate = firstDate(completedMatch?.closedAt, completedMatch?.createdAt);
+    const days = diffDays(startDate, endDate);
+    return days !== null && days <= 5;
+  }).length;
+
   const estimationWithin = obPendingRows.filter((record) => {
     const startDate = firstDate(record.entryDate, record.createdAt);
     const estimationMatch = firstByServiceId(estimationDocs, record.serviceId);
@@ -598,6 +607,7 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     makeActivityRow('Pending frn', pendingFrnNonConRows.length, pendingFrnWithin, null, 3),
     makeActivityRow('pending FRN con', pendingFrnConRows.length, pendingFrnConWithin, null, 3),
     makeActivityRow('SO Pending', soPendingRows.length, soPendingWithin, null, 3),
+    makeActivityRow('Under Repair', underRepairRows.length, underRepairWithin, null, 5),
     makeActivityRow('TO/SO', toSoRows.length, toSoWithin, null, 5),
     makeActivityRow('Non-Saleable', nonSaleableRows.length, nonSaleableWithin, null, 5),
     makeActivityRow('BIR list', birListRows.length, birWithin, null, 5),

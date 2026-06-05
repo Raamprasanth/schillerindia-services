@@ -235,7 +235,9 @@
     .activity-time{font-size:11px;color:var(--muted);margin-top:2px;}
 
     /* TOUR SUMMARY WORKSPACE */
-    .tour-workspace{display:none;flex-direction:column;min-height:calc(100vh - 140px);}
+        .tour-workspace{display:none;flex-direction:column;min-height:calc(100vh - 140px);}
+    .report-workspace{display:none;flex-direction:column;min-height:calc(100vh - 140px);}
+    .report-workspace.open{display:flex;animation:fadeUp 0.2s ease;}
     .tour-workspace.open{display:flex;animation:fadeUp 0.2s ease;}
     .tour-ws-panel{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;flex:1;display:flex;flex-direction:column;box-shadow:0 1px 6px rgba(0,60,120,0.06);}
     .tour-ws-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:#f8fafc;flex-wrap:wrap;gap:10px;}
@@ -483,7 +485,7 @@
           <div class="np-foot"><a href="#">View all announcements</a></div>
         </div>
       </div>
-      <button class="topbar-btn primary" onclick="document.getElementById('weekly-trackers')?.scrollIntoView({behavior:'smooth',block:'start'});">+ Submit Report</button>
+      <button class="topbar-btn primary" onclick="showEmpReports(event)">+ Submit Report</button>
     </div>
   </div>
 
@@ -586,6 +588,48 @@
             </tbody>
           </table>
         </div>
+      </div>
+    </div>
+
+    <!-- Report Workspace -->
+    <div class="report-workspace" id="emp-report-workspace">
+      <div class="tour-ws-panel" style="padding: 20px;">
+    <!-- Report Trackers -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);">Monthly Report Submission</div>
+      <input type="month" id="tracker-month-select" class="field-input" style="width:auto;padding:6px 12px;" onchange="loadWeeklyTrackers()" />
+    </div>
+    <div class="report-trackers-grid" id="weekly-trackers">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">&#128202; CRM Reports <span style="font-size:10px;color:var(--muted);font-weight:400;">(Tuesdays)</span></div>
+          <a class="report-link-btn" href="https://synergycrm.net/schillerservice/" target="_blank">Open CRM</a>
+        </div>
+        <div class="panel-body" id="crm-tracker-body"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">&#128221; Pending Activity <span style="font-size:10px;color:var(--muted);font-weight:400;">(Mondays)</span></div></div>
+        <div class="panel-body" id="pa-tracker-body"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">&#128230; Non Saleable <span style="font-size:10px;color:var(--muted);font-weight:400;">(2 &amp; 16)</span></div></div>
+        <div class="panel-body" id="nonsaleable-tracker-body"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">&#9888;&#65039; Supplier Warranty <span style="font-size:10px;color:var(--muted);font-weight:400;">(3 &amp; 16)</span></div></div>
+        <div class="panel-body" id="supplierwarranty-tracker-body"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">&#128680; Critical Pending <span style="font-size:10px;color:var(--muted);font-weight:400;">(2nd)</span></div></div>
+        <div class="panel-body" id="criticalpending-tracker-body"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">&#128196; PI Request <span style="font-size:10px;color:var(--muted);font-weight:400;">(5th)</span></div></div>
+        <div class="panel-body" id="pirequest-tracker-body"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
+      </div>
+    </div>
+
+
       </div>
     </div>
 
@@ -799,41 +843,6 @@
       </div>
     </div>
 
-    <!-- Report Trackers -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);">Monthly Report Submission</div>
-      <input type="month" id="tracker-month-select" class="field-input" style="width:auto;padding:6px 12px;" onchange="loadWeeklyTrackers()" />
-    </div>
-    <div class="report-trackers-grid" id="weekly-trackers">
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title">&#128202; CRM Reports <span style="font-size:10px;color:var(--muted);font-weight:400;">(Tuesdays)</span></div>
-          <a class="report-link-btn" href="https://synergycrm.net/schillerservice/" target="_blank">Open CRM</a>
-        </div>
-        <div class="panel-body" id="crm-tracker-body"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
-      </div>
-      <div class="panel">
-        <div class="panel-header"><div class="panel-title">&#128221; Pending Activity <span style="font-size:10px;color:var(--muted);font-weight:400;">(Mondays)</span></div></div>
-        <div class="panel-body" id="pa-tracker-body"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
-      </div>
-      <div class="panel">
-        <div class="panel-header"><div class="panel-title">&#128230; Non Saleable <span style="font-size:10px;color:var(--muted);font-weight:400;">(2 &amp; 16)</span></div></div>
-        <div class="panel-body" id="nonsaleable-tracker-body"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
-      </div>
-      <div class="panel">
-        <div class="panel-header"><div class="panel-title">&#9888;&#65039; Supplier Warranty <span style="font-size:10px;color:var(--muted);font-weight:400;">(3 &amp; 16)</span></div></div>
-        <div class="panel-body" id="supplierwarranty-tracker-body"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
-      </div>
-      <div class="panel">
-        <div class="panel-header"><div class="panel-title">&#128680; Critical Pending <span style="font-size:10px;color:var(--muted);font-weight:400;">(2nd)</span></div></div>
-        <div class="panel-body" id="criticalpending-tracker-body"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
-      </div>
-      <div class="panel">
-        <div class="panel-header"><div class="panel-title">&#128196; PI Request <span style="font-size:10px;color:var(--muted);font-weight:400;">(5th)</span></div></div>
-        <div class="panel-body" id="pirequest-tracker-body"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
-      </div>
-    </div>
-
     <div class="grid-1">
       <div class="panel">
           <div class="panel-header"><div class="panel-title">RR Report Analysis</div><button class="panel-action rr-download-btn" id="rr-download-btn" type="button" disabled>Download Table</button></div>
@@ -998,6 +1007,7 @@
     window.addEventListener('hashchange', () => {
       if (location.hash === '#messages') showEmpMessages();
       else if (location.hash === '#tour') window.location.href = 'tours.html';
+      else if (location.hash === '#reports') showEmpReports();
       else showEmpDashboard();
     });
   }
@@ -1025,6 +1035,15 @@
     document.querySelectorAll('.sidebar .nav-item').forEach(a => a.classList.remove('active'));
     (document.getElementById('emp-msg-nav')||{}).classList.add('active');
     loadEmpMessageThreads();
+  }
+
+  function showEmpReports(event) {
+    if (event) event.preventDefault();
+    location.hash = 'reports';
+    document.querySelectorAll('.content > *').forEach(el => { el.style.display = 'none'; });
+    const rw = document.getElementById('emp-report-workspace');
+    if (rw) { rw.style.display = 'flex'; rw.classList.add('open'); }
+    document.querySelectorAll('.sidebar .nav-item').forEach(a => a.classList.remove('active'));
   }
 
   function showEmpDashboard(){
