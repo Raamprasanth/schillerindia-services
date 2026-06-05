@@ -1526,6 +1526,11 @@ function renderDivisionPerfSummary(data,params) {
   window._lastPerfDivData = data;
   const rate=data.summary?.completionRate||data.completionRate||0;
   
+  let remark = 'Needs Improvement';
+  if (rate >= 90) remark = 'Excellent';
+  else if (rate >= 75) remark = 'Good';
+  else if (rate >= 60) remark = 'Average';
+
   const rows = data.activityRows || data.activities || [];
   const getRow = (label) => rows.find(r => (r.label||'').toLowerCase() === label.toLowerCase()) || {};
   const getVal = (r, key, fallback='') => r[key] !== undefined && r[key] !== null ? r[key] : fallback;
@@ -1579,42 +1584,42 @@ function renderDivisionPerfSummary(data,params) {
   }
   
   var checkSub = (type, ds) => {
-    if (ds === '-') return '';
+    if (!ds || ds === '-') return '-';
     const parts = ds.split('-');
-    if (parts.length !== 3) return '';
+    if (parts.length !== 3) return ds;
     const backendDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
     const subs = (data.compliance && data.compliance.trackerSubmissions && data.compliance.trackerSubmissions[type]) || [];
     
     if (typeof scope !== 'undefined' && scope === 'division' || (typeof params.division !== 'undefined' && typeof params.employee === 'undefined')) {
       const uniqueEmps = new Set(subs.filter(s => s.date === backendDate).map(s => s.emp));
       const count = uniqueEmps.size;
-      return `<div style="font-size:10px;font-weight:700;color:${count>0?'#059669':'#b91c1c'};margin-top:2px;">${count} Submitted</div>`;
+      return `<div style="font-weight:600;color:#1e293b;">${ds}</div><div style="font-size:11px;font-weight:700;color:${count>0?'#059669':'#b91c1c'};margin-top:4px;">${count} Submitted</div>`;
     } else {
       const hasSub = subs.some(s => s.date === backendDate);
-      return `<div style="font-size:10px;font-weight:700;color:${hasSub?'#059669':'#b91c1c'};margin-top:2px;">${hasSub?'Submitted':'Not Submitted'}</div>`;
+      return `<div style="font-weight:600;color:#1e293b;">${ds}</div><div style="font-size:11px;font-weight:700;color:${hasSub?'#059669':'#b91c1c'};margin-top:4px;">${hasSub?'Submitted':'Not Submitted'}</div>`;
     }
   };
   
-  var t1 = tuesdays[0] || '-'; var t1H = t1 + checkSub('CRM', t1);
-  var t2 = tuesdays[1] || '-'; var t2H = t2 + checkSub('CRM', t2);
-  var t3 = tuesdays[2] || '-'; var t3H = t3 + checkSub('CRM', t3);
-  var t4 = tuesdays[3] || '-'; var t4H = t4 + checkSub('CRM', t4);
-  var t5 = tuesdays[4] || '-'; var t5H = t5 + checkSub('CRM', t5);
+  var t1H = checkSub('CRM', tuesdays[0]);
+  var t2H = checkSub('CRM', tuesdays[1]);
+  var t3H = checkSub('CRM', tuesdays[2]);
+  var t4H = checkSub('CRM', tuesdays[3]);
+  var t5H = checkSub('CRM', tuesdays[4]);
   
-  var m1 = mondays[0] || '-'; var m1H = m1 + checkSub('PendingActivity', m1);
-  var m2 = mondays[1] || '-'; var m2H = m2 + checkSub('PendingActivity', m2);
-  var m3 = mondays[2] || '-'; var m3H = m3 + checkSub('PendingActivity', m3);
-  var m4 = mondays[3] || '-'; var m4H = m4 + checkSub('PendingActivity', m4);
-  var m5 = mondays[4] || '-'; var m5H = m5 + checkSub('PendingActivity', m5);
+  var m1H = checkSub('PendingActivity', mondays[0]);
+  var m2H = checkSub('PendingActivity', mondays[1]);
+  var m3H = checkSub('PendingActivity', mondays[2]);
+  var m4H = checkSub('PendingActivity', mondays[3]);
+  var m5H = checkSub('PendingActivity', mondays[4]);
 
-  var d02NS = d02 + checkSub('NonSaleable', d02);
-  var d16NS = d16 + checkSub('NonSaleable', d16);
+  var d02NS = checkSub('NonSaleable', d02);
+  var d16NS = checkSub('NonSaleable', d16);
   
-  var d03SW = d03 + checkSub('SupplierWarranty', d03);
-  var d16SW = d16 + checkSub('SupplierWarranty', d16);
+  var d03SW = checkSub('SupplierWarranty', d03);
+  var d16SW = checkSub('SupplierWarranty', d16);
   
-  var d02CP = d02 + checkSub('CriticalPendingReport', d02);
-  var d05PI = d05 + checkSub('PIRequest', d05);
+  var d02CP = checkSub('CriticalPendingReport', d02);
+  var d05PI = checkSub('PIRequest', d05);
 
   const html = `
     <div style="font-family:'Syne',sans-serif;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.06);padding:24px;color:var(--text);width:100%;box-sizing:border-box;">
@@ -1623,7 +1628,6 @@ function renderDivisionPerfSummary(data,params) {
       <div style="display:flex;align-items:center;margin-bottom:20px;border-bottom:2px solid #e2e8f0;padding-bottom:12px;">
         <div style="flex:1;">
           <h2 style="margin:0;font-size:20px;font-weight:700;color:#0f172a;">Performance Analysis</h2>
-          <div style="font-size:13px;color:#64748b;margin-top:4px;">Generated strictly on internal analytics rules &amp; logic</div>
         </div>
         <div style="text-align:right;">
           <div style="font-size:12px;font-weight:600;color:#64748b;margin-bottom:2px;">Division: <span style="color:#0f172a;">${divisionLabel}</span></div>
@@ -1631,93 +1635,75 @@ function renderDivisionPerfSummary(data,params) {
         </div>
       </div>
 
-      <!-- Completion Rate Header Row -->
-      <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
-        <div style="background:#059669;color:#fff;font-weight:700;padding:6px 16px;border-radius:6px;font-size:13px;">
-          Completion rate: ${rate}%
-        </div>
-      </div>
-
-      <!-- Main Table -->
-      <table style="width:100%;border-collapse:separate;border-spacing:2px;font-size:12.5px;" id="perf-table-excel">
+      <table style="width:100%; border-collapse:collapse; text-align:center; border: 2px solid #000; font-family: sans-serif; font-size:13px;">
+        <tr>
+          <td rowspan="5" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Weekly CRM Reports</td>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${t1H}</td>
+          <td rowspan="5" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Pending activity on<br>Monday</td>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${m1H}</td>
+          <td rowspan="4" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Non-Saleable<br><span style="color:#d32f2f; font-weight:normal; font-size:11px;">If not applicable mark NA</span></td>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${d02NS}</td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${t2H}</td>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${m2H}</td>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${d16NS}</td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${t3H}</td>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${m3H}</td>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">-</td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${t4H}</td>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${m4H}</td>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">-</td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${t5H}</td>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${m5H}</td>
+          <td style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cNonSaleable}%</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cWeekly}%</td>
+          <td colspan="2" style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cPending}%</td>
+          <td colspan="2" style="border:1px solid #000; padding:8px; background-color:#e2e8f0;"></td>
+        </tr>
         
-        <!-- Section 1: Top Headers -->
         <tr>
-          <td class="bg-gray bold text-center" style="width:25%;">Analysis parameter</td>
-          <td class="bg-gray bold text-center" style="width:25%;">Value Data</td>
-          <td class="bg-gray bold text-center" style="width:25%;">Analysis parameter</td>
-          <td class="bg-gray bold text-center" style="width:25%;">Value Data</td>
+          <td colspan="3" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Supplier Warranty transaction<br><span style="color:#d32f2f; font-weight:normal; font-size:11px;">If not applicable mark NA</span></td>
+          <td colspan="3" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Critical Pending report<br><span style="color:#d32f2f; font-weight:normal; font-size:11px;">If not applicable mark NA</span></td>
+        </tr>
+        <tr>
+          <td colspan="3" style="border:1px solid #000; padding:8px; vertical-align:top;">
+            <div style="display:flex; justify-content:space-around;">
+              <div>${d03SW}</div>
+              <div>${d16SW}</div>
+            </div>
+          </td>
+          <td colspan="3" style="border:1px solid #000; padding:8px; vertical-align:top;">${d02CP}</td>
+        </tr>
+        <tr>
+          <td colspan="3" style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cSupWarr}%</td>
+          <td colspan="3" style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cCritical}%</td>
         </tr>
 
-        <!-- Section 2: Weekly CRM Reports -->
         <tr>
-          <td rowspan="6" class="bg-green text-left">Weekly CRM Reports</td>
-          <td class="bg-blue">${t1H}</td>
-          <td rowspan="6" class="bg-green text-left" style="vertical-align:top;">Pending activity on<br>Monday</td>
-          <td class="bg-blue">${m1H}</td>
+          <td colspan="3" rowspan="2" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">
+            Purchase indent request to commercial<br><span style="color:#d32f2f; font-weight:normal; font-size:11px;">If not applicable mark NA</span>
+            <div style="margin-top:10px; font-weight:normal; text-align:center;">${d05PI}</div>
+          </td>
+          <td colspan="2" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">5s Rate</td>
+          <td style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${c5S}%</td>
         </tr>
         <tr>
-          <td class="bg-blue">${t2H}</td>
-          <td class="bg-blue">${m2H}</td>
+          <td colspan="2" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Repair Report</td>
+          <td style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cRR}%</td>
         </tr>
         <tr>
-          <td class="bg-blue">${t3H}</td>
-          <td class="bg-blue">${m3H}</td>
+          <td colspan="3" style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cPI}%</td>
+          <td colspan="3" style="border:1px solid #000; padding:8px; font-weight:bold; color:${rate>=75?'#059669':'#b91c1c'};">${remark}</td>
         </tr>
-        <tr>
-          <td class="bg-blue">${t4H}</td>
-          <td class="bg-blue">${m4H}</td>
-        </tr>
-        <tr>
-          <td class="bg-blue">${t5H}</td>
-          <td class="bg-blue">${m5H}</td>
-        </tr>
-        <tr>
-          <td class="bg-peach bold">${cWeekly}%</td>
-          <td class="bg-peach bold">${cPending}%</td>
-        </tr>
-
-        <!-- Separator -->
-        <tr class="row-sep"><td colspan="4"></td></tr>
-
-        <!-- Sections 3 & 4: Warranty & PI -->
-        <tr>
-          <td rowspan="4" class="bg-green text-left" style="vertical-align:top;">Supplier Warranty transaction<br><span class="red-text">If not applicable mark NA</span></td>
-          <td colspan="1" class="bg-blue">${d03SW}</td>
-          <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Non-Saleable<br><span class="red-text">If not applicable mark<br>NA</span></td>
-          <td class="bg-blue">${d02NS}</td>
-        </tr>
-        <tr>
-          <td colspan="1" class="bg-blue">${d16SW}</td>
-          <td class="bg-blue">${d16NS}</td>
-        </tr>
-        <tr>
-          <td colspan="1" class="bg-blue">-</td>
-          <td class="bg-blue">-</td>
-        </tr>
-        <tr>
-          <td colspan="1" class="bg-peach bold">${cSupWarr}%</td>
-          <td class="bg-green text-left">Critical Pending report<br><span class="red-text">If not applicable mark NA</span></td>
-          <td class="bg-blue" style="border-bottom:1px solid #fff;">${d02CP}<br><span class="bg-peach bold" style="display:inline-block;margin-top:4px;">${cCritical}%</span></td>
-        </tr>
-
-        <!-- Separator -->
-        <tr class="row-sep"><td colspan="4"></td></tr>
-
-        <!-- Section 5: Remaining items -->
-        <tr>
-          <td class="bg-green text-left">Purchase indent request to commercial<br><span class="red-text">If not applicable mark NA</span></td>
-          <td class="bg-blue">${d05PI}<br><span class="bg-peach bold" style="display:inline-block;margin-top:4px;">${cPI}%</span></td>
-          <td class="bg-green text-left">Repair Report</td>
-          <td class="bg-peach bold">${cRR}%</td>
-        </tr>
-        <tr>
-          <td class="bg-green text-left">5s Rate</td>
-          <td class="bg-peach bold">${c5S}%</td>
-          <td class="bg-green"></td>
-          <td class="bg-peach"></td>
-        </tr>
-
       </table>
 
       <!-- Export Buttons -->
@@ -1739,6 +1725,10 @@ function renderPerfSummary(data,params) {
     return;
   }
   const rate=data.completionRate||0;
+  let remark = 'Needs Improvement';
+  if (rate >= 90) remark = 'Excellent';
+  else if (rate >= 75) remark = 'Good';
+  else if (rate >= 60) remark = 'Average';
   
   const rows = data.activities || [];
   const getRow = (label) => rows.find(r => (r.label||'').toLowerCase() === label.toLowerCase()) || {};
@@ -1793,42 +1783,42 @@ function renderPerfSummary(data,params) {
   }
   
   var checkSub = (type, ds) => {
-    if (ds === '-') return '';
+    if (!ds || ds === '-') return '-';
     const parts = ds.split('-');
-    if (parts.length !== 3) return '';
+    if (parts.length !== 3) return ds;
     const backendDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
     const subs = (data.compliance && data.compliance.trackerSubmissions && data.compliance.trackerSubmissions[type]) || [];
     
     if (typeof scope !== 'undefined' && scope === 'division' || (typeof params.division !== 'undefined' && typeof params.employee === 'undefined')) {
       const uniqueEmps = new Set(subs.filter(s => s.date === backendDate).map(s => s.emp));
       const count = uniqueEmps.size;
-      return `<div style="font-size:10px;font-weight:700;color:${count>0?'#059669':'#b91c1c'};margin-top:2px;">${count} Submitted</div>`;
+      return `<div style="font-weight:600;color:#1e293b;">${ds}</div><div style="font-size:11px;font-weight:700;color:${count>0?'#059669':'#b91c1c'};margin-top:4px;">${count} Submitted</div>`;
     } else {
       const hasSub = subs.some(s => s.date === backendDate);
-      return `<div style="font-size:10px;font-weight:700;color:${hasSub?'#059669':'#b91c1c'};margin-top:2px;">${hasSub?'Submitted':'Not Submitted'}</div>`;
+      return `<div style="font-weight:600;color:#1e293b;">${ds}</div><div style="font-size:11px;font-weight:700;color:${hasSub?'#059669':'#b91c1c'};margin-top:4px;">${hasSub?'Submitted':'Not Submitted'}</div>`;
     }
   };
   
-  var t1 = tuesdays[0] || '-'; var t1H = t1 + checkSub('CRM', t1);
-  var t2 = tuesdays[1] || '-'; var t2H = t2 + checkSub('CRM', t2);
-  var t3 = tuesdays[2] || '-'; var t3H = t3 + checkSub('CRM', t3);
-  var t4 = tuesdays[3] || '-'; var t4H = t4 + checkSub('CRM', t4);
-  var t5 = tuesdays[4] || '-'; var t5H = t5 + checkSub('CRM', t5);
+  var t1H = checkSub('CRM', tuesdays[0]);
+  var t2H = checkSub('CRM', tuesdays[1]);
+  var t3H = checkSub('CRM', tuesdays[2]);
+  var t4H = checkSub('CRM', tuesdays[3]);
+  var t5H = checkSub('CRM', tuesdays[4]);
   
-  var m1 = mondays[0] || '-'; var m1H = m1 + checkSub('PendingActivity', m1);
-  var m2 = mondays[1] || '-'; var m2H = m2 + checkSub('PendingActivity', m2);
-  var m3 = mondays[2] || '-'; var m3H = m3 + checkSub('PendingActivity', m3);
-  var m4 = mondays[3] || '-'; var m4H = m4 + checkSub('PendingActivity', m4);
-  var m5 = mondays[4] || '-'; var m5H = m5 + checkSub('PendingActivity', m5);
+  var m1H = checkSub('PendingActivity', mondays[0]);
+  var m2H = checkSub('PendingActivity', mondays[1]);
+  var m3H = checkSub('PendingActivity', mondays[2]);
+  var m4H = checkSub('PendingActivity', mondays[3]);
+  var m5H = checkSub('PendingActivity', mondays[4]);
 
-  var d02NS = d02 + checkSub('NonSaleable', d02);
-  var d16NS = d16 + checkSub('NonSaleable', d16);
+  var d02NS = checkSub('NonSaleable', d02);
+  var d16NS = checkSub('NonSaleable', d16);
   
-  var d03SW = d03 + checkSub('SupplierWarranty', d03);
-  var d16SW = d16 + checkSub('SupplierWarranty', d16);
+  var d03SW = checkSub('SupplierWarranty', d03);
+  var d16SW = checkSub('SupplierWarranty', d16);
   
-  var d02CP = d02 + checkSub('CriticalPendingReport', d02);
-  var d05PI = d05 + checkSub('PIRequest', d05);
+  var d02CP = checkSub('CriticalPendingReport', d02);
+  var d05PI = checkSub('PIRequest', d05);
 
   const html = `
     <div style="font-family:'Syne',sans-serif;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.06);padding:24px;color:var(--text);width:100%;box-sizing:border-box;">
@@ -1844,93 +1834,75 @@ function renderPerfSummary(data,params) {
         </div>
       </div>
 
-      <!-- Completion Rate Header Row -->
-      <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
-        <div style="background:#059669;color:#fff;font-weight:700;padding:6px 16px;border-radius:6px;font-size:13px;">
-          Completion rate: ${rate}%
-        </div>
-      </div>
-
-      <!-- Main Table -->
-      <table style="width:100%;border-collapse:separate;border-spacing:2px;font-size:12.5px;" id="perf-table-excel">
+      <table style="width:100%; border-collapse:collapse; text-align:center; border: 2px solid #000; font-family: sans-serif; font-size:13px;">
+        <tr>
+          <td rowspan="5" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Weekly CRM Reports</td>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${t1H}</td>
+          <td rowspan="5" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Pending activity on<br>Monday</td>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${m1H}</td>
+          <td rowspan="4" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Non-Saleable<br><span style="color:#d32f2f; font-weight:normal; font-size:11px;">If not applicable mark NA</span></td>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${d02NS}</td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${t2H}</td>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${m2H}</td>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${d16NS}</td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${t3H}</td>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${m3H}</td>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">-</td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${t4H}</td>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${m4H}</td>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">-</td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${t5H}</td>
+          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${m5H}</td>
+          <td style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cNonSaleable}%</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cWeekly}%</td>
+          <td colspan="2" style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cPending}%</td>
+          <td colspan="2" style="border:1px solid #000; padding:8px; background-color:#e2e8f0;"></td>
+        </tr>
         
-        <!-- Section 1: Top Headers -->
         <tr>
-          <td class="bg-gray bold text-center" style="width:25%;">Analysis parameter</td>
-          <td class="bg-gray bold text-center" style="width:25%;">Value Data</td>
-          <td class="bg-gray bold text-center" style="width:25%;">Analysis parameter</td>
-          <td class="bg-gray bold text-center" style="width:25%;">Value Data</td>
+          <td colspan="3" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Supplier Warranty transaction<br><span style="color:#d32f2f; font-weight:normal; font-size:11px;">If not applicable mark NA</span></td>
+          <td colspan="3" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Critical Pending report<br><span style="color:#d32f2f; font-weight:normal; font-size:11px;">If not applicable mark NA</span></td>
+        </tr>
+        <tr>
+          <td colspan="3" style="border:1px solid #000; padding:8px; vertical-align:top;">
+            <div style="display:flex; justify-content:space-around;">
+              <div>${d03SW}</div>
+              <div>${d16SW}</div>
+            </div>
+          </td>
+          <td colspan="3" style="border:1px solid #000; padding:8px; vertical-align:top;">${d02CP}</td>
+        </tr>
+        <tr>
+          <td colspan="3" style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cSupWarr}%</td>
+          <td colspan="3" style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cCritical}%</td>
         </tr>
 
-        <!-- Section 2: Weekly CRM Reports -->
         <tr>
-          <td rowspan="6" class="bg-green text-left">Weekly CRM Reports</td>
-          <td class="bg-blue">${t1H}</td>
-          <td rowspan="6" class="bg-green text-left" style="vertical-align:top;">Pending activity on<br>Monday</td>
-          <td class="bg-blue">${m1H}</td>
+          <td colspan="3" rowspan="2" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">
+            Purchase indent request to commercial<br><span style="color:#d32f2f; font-weight:normal; font-size:11px;">If not applicable mark NA</span>
+            <div style="margin-top:10px; font-weight:normal; text-align:center;">${d05PI}</div>
+          </td>
+          <td colspan="2" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">5s Rate</td>
+          <td style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${c5S}%</td>
         </tr>
         <tr>
-          <td class="bg-blue">${t2H}</td>
-          <td class="bg-blue">${m2H}</td>
+          <td colspan="2" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Repair Report</td>
+          <td style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cRR}%</td>
         </tr>
         <tr>
-          <td class="bg-blue">${t3H}</td>
-          <td class="bg-blue">${m3H}</td>
+          <td colspan="3" style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cPI}%</td>
+          <td colspan="3" style="border:1px solid #000; padding:8px; font-weight:bold; color:${rate>=75?'#059669':'#b91c1c'};">${remark}</td>
         </tr>
-        <tr>
-          <td class="bg-blue">${t4H}</td>
-          <td class="bg-blue">${m4H}</td>
-        </tr>
-        <tr>
-          <td class="bg-blue">${t5H}</td>
-          <td class="bg-blue">${m5H}</td>
-        </tr>
-        <tr>
-          <td class="bg-peach bold">${cWeekly}%</td>
-          <td class="bg-peach bold">${cPending}%</td>
-        </tr>
-
-        <!-- Separator -->
-        <tr class="row-sep"><td colspan="4"></td></tr>
-
-        <!-- Sections 3 & 4: Warranty & PI -->
-        <tr>
-          <td rowspan="4" class="bg-green text-left" style="vertical-align:top;">Supplier Warranty transaction<br><span class="red-text">If not applicable mark NA</span></td>
-          <td colspan="1" class="bg-blue">${d03SW}</td>
-          <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Non-Saleable<br><span class="red-text">If not applicable mark<br>NA</span></td>
-          <td class="bg-blue">${d02NS}</td>
-        </tr>
-        <tr>
-          <td colspan="1" class="bg-blue">${d16SW}</td>
-          <td class="bg-blue">${d16NS}</td>
-        </tr>
-        <tr>
-          <td colspan="1" class="bg-blue">-</td>
-          <td class="bg-blue">-</td>
-        </tr>
-        <tr>
-          <td colspan="1" class="bg-peach bold">${cSupWarr}%</td>
-          <td class="bg-green text-left">Critical Pending report<br><span class="red-text">If not applicable mark NA</span></td>
-          <td class="bg-blue" style="border-bottom:1px solid #fff;">${d02CP}<br><span class="bg-peach bold" style="display:inline-block;margin-top:4px;">${cCritical}%</span></td>
-        </tr>
-
-        <!-- Separator -->
-        <tr class="row-sep"><td colspan="4"></td></tr>
-
-        <!-- Section 5: Remaining items -->
-        <tr>
-          <td class="bg-green text-left">Purchase indent request to commercial<br><span class="red-text">If not applicable mark NA</span></td>
-          <td class="bg-blue">${d05PI}<br><span class="bg-peach bold" style="display:inline-block;margin-top:4px;">${cPI}%</span></td>
-          <td class="bg-green text-left">Repair Report</td>
-          <td class="bg-peach bold">${cRR}%</td>
-        </tr>
-        <tr>
-          <td class="bg-green text-left">5s Rate</td>
-          <td class="bg-peach bold">${c5S}%</td>
-          <td class="bg-green"></td>
-          <td class="bg-peach"></td>
-        </tr>
-
       </table>
 
       <!-- Export Buttons -->
