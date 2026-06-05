@@ -811,11 +811,11 @@ body{
             <div class="perf-body">
               <div>
                 <label class="field-label">Month</label>
-                <input type="month" class="field-input" id="perf-month-div"/>
+                <input type="month" class="field-input" id="perf-month-div" onchange="refreshDivisionSubmissionBoxes()"/>
               </div>
               <div>
                 <label class="field-label">Division</label>
-                <select class="field-select" id="perf-division">
+                <select class="field-select" id="perf-division" onchange="refreshDivisionSubmissionBoxes()">
                   <option value=""> Select Division </option>
                 </select>
               </div>
@@ -842,6 +842,15 @@ body{
 
             <!-- Division Summary Pane -->
             <div id="perf-pane-div-summary">
+              <div class="submission-panel" id="perf-submission-panel">
+                <div class="submission-panel-head">
+                  <div>
+                    <div class="submission-title">Division Wise Report Submission</div>
+                    <div class="submission-meta">Select division and month</div>
+                  </div>
+                </div>
+                <div style="font-size:12.5px;color:var(--muted);">All dashboard submit-report boxes will appear here.</div>
+              </div>
               <div class="empty-state" style="padding:50px 24px;">
                 <div class="empty-icon">&#128196;</div>
                 <div class="empty-title">No Preview Yet</div>
@@ -1300,6 +1309,7 @@ function switchPerfSubTab(tab) {
   document.getElementById('perf-div-pane').style.display = tab === 'division' ? 'block' : 'none';
   document.getElementById('perf-ind-pane').style.display = tab === 'individual' ? 'block' : 'none';
   if (tab === 'division') { perfScope = 'division'; } else { perfScope = 'employee'; }
+  if (tab === 'division') refreshDivisionSubmissionBoxes();
 }
 
 function switchPerfDivTab(tab, btn) {
@@ -1447,7 +1457,10 @@ function switchPerfTab(tab, btn){
 async function loadPerfOptions(){
   perfOptionsLoaded=true;
   const now=new Date();
-  document.getElementById('perf-month').value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const currentMonth=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('perf-month').value=currentMonth;
+  const divMonth=document.getElementById('perf-month-div');
+  if(divMonth) divMonth.value=currentMonth;
   try{
     const res=await fetch('/api/reports/performance/options',{headers:hdrs()});
     if(!res.ok)return;
@@ -1471,6 +1484,7 @@ async function loadPerfOptions(){
       const name=emp.name||emp;
       const o=document.createElement('option');o.value=name;o.textContent=name;empSel.appendChild(o);
     });
+    refreshDivisionSubmissionBoxes();
   }catch(e){toast('Could not load performance options: '+e.message,'error');}
 }
 
@@ -1551,6 +1565,38 @@ function perfScopeLabel(scope){
   return scope==='division'?'Division Wise':'Individual';
 }
 
+const SUBMISSION_REPORT_DEFS = [
+  {type:'CRM', label:'CRM', schedule:'Every Tuesday'},
+  {type:'PendingActivity', label:'Pending Activity', schedule:'Every Monday'},
+  {type:'NonSaleable', label:'Non Saleable', schedule:'2 and 16'},
+  {type:'SupplierWarranty', label:'Supplier Warranty', schedule:'3 and 16'},
+  {type:'CriticalPendingReport', label:'Critical Pending Report', schedule:'2'},
+  {type:'PIRequest', label:'PI Request', schedule:'5'}
+];
+
+function normalizeSubmissionReports(division){
+  const byType={};
+  (division.reports||[]).forEach(report=>{
+    if(report && report.type) byType[report.type]=report;
+  });
+  return SUBMISSION_REPORT_DEFS.map(def=>{
+    const report=byType[def.type]||{};
+    const legacyExpected=def.type==='CRM'?division.expectedCRM:def.type==='PendingActivity'?division.expectedPending:0;
+    const legacyActual=def.type==='CRM'?division.actualCRM:def.type==='PendingActivity'?division.actualPending:0;
+    const expected=Number(report.expected ?? legacyExpected ?? 0);
+    const actual=Number(report.actual ?? legacyActual ?? 0);
+    const percent=expected>0?Math.min(100,Math.round((actual/expected)*100)):Math.min(100,Math.max(0,Number(report.percent||0)));
+    return {
+      ...def,
+      ...report,
+      expected,
+      actual,
+      percent,
+      complete: expected>0 && actual>=expected
+    };
+  });
+}
+
 function renderSubmissionPlaceholder(params){
   if(params.scope!=='division'){
     return `
@@ -1576,6 +1622,30 @@ function renderSubmissionPlaceholder(params){
     </div>`;
 }
 
+async function refreshDivisionSubmissionBoxes(){
+  const pane=document.getElementById('perf-pane-div-summary');
+  if(!pane) return;
+  const month=document.getElementById('perf-month-div')?.value||'';
+  const division=document.getElementById('perf-division')?.value||'';
+  let panel=document.getElementById('perf-submission-panel');
+  if(!panel){
+    pane.insertAdjacentHTML('afterbegin', renderSubmissionPlaceholder({scope:'division', month:month||'Select month', division:division||'Select division'}));
+    panel=document.getElementById('perf-submission-panel');
+  }
+  if(!month || !division){
+    panel.innerHTML=`
+      <div class="submission-panel-head">
+        <div>
+          <div class="submission-title">Division Wise Report Submission</div>
+          <div class="submission-meta">Select division and month</div>
+        </div>
+      </div>
+      <div style="font-size:12.5px;color:var(--muted);">CRM, Pending Activity, Non Saleable, Supplier Warranty, Critical Pending Report, and PI Request boxes will appear here.</div>`;
+    return;
+  }
+  await loadDivisionReportSubmissions({scope:'division',month,division});
+}
+
 async function loadDivisionReportSubmissions(params){
   const panel=document.getElementById('perf-submission-panel');
   if(!panel || params.scope!=='division') return;
@@ -1596,7 +1666,7 @@ async function loadDivisionReportSubmissions(params){
       return;
     }
 
-    const reports=division.reports||[];
+    const reports=normalizeSubmissionReports(division);
     const cards=reports.map(report=>{
       const percent=Math.min(100,Math.max(0,report.percent||0));
       const done=!!report.complete;
