@@ -29,8 +29,13 @@ function formatDateOnly(d) {
   return splitT || new Date().toISOString().split('T')[0];
 }
 
-function getRevertTechnicalRemarks(problemObserved) {
-  return String(problemObserved || '').trim();
+function getRevertTechnicalRemarks(oldRemarks, problemObserved) {
+  const oldR = String(oldRemarks || '').trim();
+  const prob = String(problemObserved || '').trim();
+  if (oldR && prob) {
+    return oldR + '\nProblem Observed: ' + prob;
+  }
+  return prob || oldR;
 }
 
 async function resolveDivisionName(service) {
@@ -238,7 +243,8 @@ router.post('/:id', async (req, res) => {
     service.rtobSent = true;
     service.repairStatus = 're repair product';
     service.finalRemarks = '';
-    service.techRemarks = getRevertTechnicalRemarks(problemObserved);
+    const oldTechRemarks1 = service.techRemarks;
+    service.techRemarks = getRevertTechnicalRemarks(oldTechRemarks1, problemObserved);
 
     await service.save({ validateBeforeSave: false });
 
@@ -246,7 +252,7 @@ router.post('/:id', async (req, res) => {
       empfrnDoc.rtfrnCompleted = false;
       empfrnDoc.rtfrnSent = true;
       empfrnDoc.finalRemarks = '';
-      empfrnDoc.techRemarks = getRevertTechnicalRemarks(problemObserved);
+      empfrnDoc.techRemarks = getRevertTechnicalRemarks(empfrnDoc.techRemarks, problemObserved);
       await empfrnDoc.save({ validateBeforeSave: false });
     }
 
@@ -274,7 +280,7 @@ router.post('/:id', async (req, res) => {
 
     // Build final remarks for the new doc
     const newDocRemarks = '';
-    const newDocTechRemarks = getRevertTechnicalRemarks(problemObserved);
+    const newDocTechRemarks = getRevertTechnicalRemarks(oldTechRemarks1, problemObserved);
 
     // Find matching EmpFRN if category is PFRN/rtfrn
     let sourceEmpFrnId = empfrnDoc ? empfrnDoc._id : null;
@@ -400,7 +406,8 @@ router.post('/crl/:id', async (req, res) => {
     service.rtobSent = true;
     service.repairStatus = 're repair product';
     service.finalRemarks = '';
-    service.techRemarks = getRevertTechnicalRemarks(problemObserved);
+    const oldTechRemarks2 = service.techRemarks;
+    service.techRemarks = getRevertTechnicalRemarks(oldTechRemarks2, problemObserved);
     await service.save({ validateBeforeSave: false });
 
     // Also clear rtfrnCompleted and ensure rtfrnSent is true on the associated EmpFRN if category is rtfrn/PFRN
@@ -411,7 +418,7 @@ router.post('/crl/:id', async (req, res) => {
         empfrnDoc.rtfrnCompleted = false;
         empfrnDoc.rtfrnSent = true;
         empfrnDoc.finalRemarks = '';
-        empfrnDoc.techRemarks = getRevertTechnicalRemarks(problemObserved);
+        empfrnDoc.techRemarks = getRevertTechnicalRemarks(empfrnDoc.techRemarks, problemObserved);
         await empfrnDoc.save({ validateBeforeSave: false });
       }
     }
@@ -439,7 +446,7 @@ router.post('/crl/:id', async (req, res) => {
 
     // Build final remarks for the new doc
     const newDocRemarks = '';
-    const newDocTechRemarks = getRevertTechnicalRemarks(problemObserved);
+    const newDocTechRemarks = getRevertTechnicalRemarks(oldTechRemarks2, problemObserved);
 
     // Find matching EmpFRN if category is PFRN/rtfrn
     let sourceEmpFrnId = null;
