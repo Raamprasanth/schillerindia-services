@@ -102,6 +102,23 @@
     .data-table td{padding:12px;font-size:13px;border-bottom:1px solid rgba(0,80,120,0.07);color:var(--text);}
     .data-table tr:last-child td{border-bottom:none;}
     .data-table tr:hover td{background:rgba(0,119,204,0.03);}
+    .tracker-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+    .tracker-month{padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;}
+    .tracker-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+    .tracker-card{border:1px solid var(--border);border-radius:12px;background:var(--surface);overflow:hidden;}
+    .tracker-card-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+    .tracker-card-title{font-size:13px;font-weight:800;color:var(--text);}
+    .tracker-card-sub{font-size:11px;color:var(--muted);margin-top:3px;}
+    .tracker-card-body{padding:14px 16px;overflow-x:auto;}
+    .tracker-check{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--muted);font-size:12px;font-weight:800;flex:0 0 auto;}
+    .tracker-check.done{background:var(--green);color:#fff;}
+    .tracker-progress{display:flex;align-items:center;gap:10px;min-width:160px;}
+    .tracker-bar{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+    .tracker-fill{height:100%;background:var(--accent);border-radius:3px;}
+    .tracker-fill.done{background:var(--green);}
+    .tracker-fill.warn{background:var(--amber);}
+    .tracker-percent{font-size:12px;font-weight:800;width:40px;text-align:right;color:var(--text);}
+    @media(max-width:1100px){.tracker-grid{grid-template-columns:1fr;}}
     .breakdown-table th,.breakdown-table td{text-align:center;}
     .breakdown-table th:first-child,.breakdown-table td:first-child{text-align:left;}
     .breakdown-total{font-weight:800;color:var(--accent);}
@@ -390,52 +407,21 @@
       </div>
     </div>
     
-    <!-- Division Weekly Trackers -->
-    <!-- Division Weekly Trackers -->
-    <div class="grid-2" style="margin-bottom:20px;">
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title">CRM Reports (Division Wise)</div>
-          <span class="panel-action" onclick="loadAdminTrackers()">Refresh</span>
+    <!-- Division Report Submissions -->
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Report Submission (Division Wise)</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px;">Employee Dashboard submit-report ticks reflected by division</div>
         </div>
-        <div class="panel-body">
-          <div style="overflow-x:auto;">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Division</th>
-                  <th>Employees</th>
-                  <th>Completion (Tuesdays)</th>
-                </tr>
-              </thead>
-              <tbody id="admin-tracker-crm-body">
-                <tr><td colspan="3" style="text-align:center;color:var(--muted);padding:22px;">Loading CRM tracker data...</td></tr>
-              </tbody>
-            </table>
-          </div>
+        <div class="tracker-toolbar">
+          <input type="month" class="tracker-month" id="admin-tracker-month" onchange="loadAdminTrackers()"/>
+          <span class="panel-action" onclick="loadAdminTrackers()">Refresh</span>
         </div>
       </div>
-
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title">Pending Activity (Division Wise)</div>
-          <span class="panel-action" onclick="loadAdminTrackers()">Refresh</span>
-        </div>
-        <div class="panel-body">
-          <div style="overflow-x:auto;">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Division</th>
-                  <th>Employees</th>
-                  <th>Completion (Mondays)</th>
-                </tr>
-              </thead>
-              <tbody id="admin-tracker-pa-body">
-                <tr><td colspan="3" style="text-align:center;color:var(--muted);padding:22px;">Loading Pending Activity data...</td></tr>
-              </tbody>
-            </table>
-          </div>
+      <div class="panel-body">
+        <div class="tracker-grid" id="admin-tracker-grid">
+          <div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:22px;">Loading report submission data...</div>
         </div>
       </div>
     </div>
@@ -1021,15 +1007,16 @@ function showToast(msg,type='ok'){const wrap=document.getElementById('toast-wrap
 function logout(){sessionStorage.removeItem('schiller_token');sessionStorage.removeItem('schiller_user');sessionStorage.removeItem('schiller_role');window.location.href='login.html';}
 
 async function loadAdminTrackers() {
-  const tbodyCrm = document.getElementById('admin-tracker-crm-body');
-  const tbodyPa = document.getElementById('admin-tracker-pa-body');
-  if (!tbodyCrm || !tbodyPa) return;
-
-  tbodyCrm.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:22px;">Loading CRM tracker data...</td></tr>';
-  tbodyPa.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:22px;">Loading Pending Activity data...</td></tr>';
+  const grid = document.getElementById('admin-tracker-grid');
+  const monthInput = document.getElementById('admin-tracker-month');
+  if (!grid) return;
   
   const today = new Date();
-  const monthStr = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}`;
+  const currentMonth = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}`;
+  if (monthInput && !monthInput.value) monthInput.value = currentMonth;
+  const monthStr = monthInput?.value || currentMonth;
+
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:22px;">Loading report submission data...</div>';
   
   try {
     const res = await fetch(`/api/tracker/stats?month=${monthStr}`, {
@@ -1040,49 +1027,68 @@ async function loadAdminTrackers() {
     const data = await res.json();
     
     if (data.success && data.stats && data.stats.length > 0) {
-      let htmlCrm = '';
-      let htmlPa = '';
-      data.stats.forEach(div => {
-        htmlCrm += `
-          <tr>
-            <td style="font-weight:600;">${esc(div.name)}</td>
-            <td>${div.empCount}</td>
-            <td>
-              <div style="display:flex; align-items:center; gap:10px;">
-                <div style="flex:1; height:6px; background:var(--surface2); border-radius:3px; overflow:hidden;">
-                  <div style="height:100%; width:${div.crmPercent}%; background:var(--green);"></div>
+      const fallbackReports = [
+        { type: 'CRM', label: 'CRM Reports', schedule: 'Every Tuesday' },
+        { type: 'PendingActivity', label: 'Pending Activity', schedule: 'Every Monday' }
+      ];
+      const reportDefs = data.stats.find(div => Array.isArray(div.reports) && div.reports.length)?.reports || fallbackReports;
+      grid.innerHTML = reportDefs.map(reportDef => {
+        const rows = data.stats.map(div => {
+          const report = (div.reports || []).find(item => item.type === reportDef.type) || {
+            label: reportDef.label,
+            schedule: reportDef.schedule,
+            actual: reportDef.type === 'CRM' ? div.actualCRM : div.actualPending,
+            expected: reportDef.type === 'CRM' ? div.expectedCRM : div.expectedPending,
+            percent: reportDef.type === 'CRM' ? div.crmPercent : div.pendingPercent,
+            complete: false
+          };
+          const percent = Math.min(100, Math.max(0, report.percent || 0));
+          const done = report.complete || (report.expected > 0 && report.actual >= report.expected);
+          const fillClass = done ? 'done' : percent >= 60 ? 'warn' : '';
+          return `
+            <tr>
+              <td style="font-weight:700;">${esc(div.name)}</td>
+              <td style="text-align:center;">${div.empCount || 0}</td>
+              <td style="text-align:center;">${report.actual || 0} / ${report.expected || 0}</td>
+              <td>
+                <div class="tracker-progress">
+                  <div class="tracker-bar"><div class="tracker-fill ${fillClass}" style="width:${percent}%;"></div></div>
+                  <span class="tracker-percent">${percent}%</span>
+                  <span class="tracker-check ${done ? 'done' : ''}">${done ? '&#10003;' : '-'}</span>
                 </div>
-                <span style="font-size:12px; font-weight:700; width:40px; text-align:right;">${div.crmPercent}%</span>
+              </td>
+            </tr>`;
+        }).join('');
+
+        return `
+          <div class="tracker-card">
+            <div class="tracker-card-head">
+              <div>
+                <div class="tracker-card-title">${esc(reportDef.label)}</div>
+                <div class="tracker-card-sub">Due: ${esc(reportDef.schedule || '')}</div>
               </div>
-            </td>
-          </tr>
-        `;
-        
-        htmlPa += `
-          <tr>
-            <td style="font-weight:600;">${esc(div.name)}</td>
-            <td>${div.empCount}</td>
-            <td>
-              <div style="display:flex; align-items:center; gap:10px;">
-                <div style="flex:1; height:6px; background:var(--surface2); border-radius:3px; overflow:hidden;">
-                  <div style="height:100%; width:${div.pendingPercent}%; background:var(--accent);"></div>
-                </div>
-                <span style="font-size:12px; font-weight:700; width:40px; text-align:right;">${div.pendingPercent}%</span>
-              </div>
-            </td>
-          </tr>
-        `;
-      });
-      tbodyCrm.innerHTML = htmlCrm;
-      tbodyPa.innerHTML = htmlPa;
+            </div>
+            <div class="tracker-card-body">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Division</th>
+                    <th style="text-align:center;">Employees</th>
+                    <th style="text-align:center;">Submitted</th>
+                    <th>Completion</th>
+                  </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+          </div>`;
+      }).join('');
     } else {
-      tbodyCrm.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:22px;">No tracker data found for this month.</td></tr>';
-      tbodyPa.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:22px;">No tracker data found for this month.</td></tr>';
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:22px;">No report submission data found for this month.</div>';
     }
   } catch (err) {
     console.error('Tracker load error:', err);
-    tbodyCrm.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--red);padding:22px;">Failed to load tracker stats.</td></tr>';
-    tbodyPa.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--red);padding:22px;">Failed to load tracker stats.</td></tr>';
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--red);padding:22px;">Failed to load report submission stats.</div>';
   }
 }
 
@@ -1092,6 +1098,10 @@ window.loadStats = function() {
   if (typeof _origLoadStats === 'function') _origLoadStats();
   loadAdminTrackers();
 };
+document.addEventListener('DOMContentLoaded', loadAdminTrackers);
+if(document.readyState === 'complete' || document.readyState === 'interactive') {
+  loadAdminTrackers();
+}
 </script>
 </body>
 
