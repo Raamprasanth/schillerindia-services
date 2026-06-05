@@ -264,7 +264,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   .msg-thread-last{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px;}
   .msg-unread{background:var(--red);color:#fff;border-radius:999px;padding:1px 6px;font-size:9px;font-weight:800;margin-left:6px;}
   .msg-chat{display:flex;flex-direction:column;min-height:calc(100vh - 130px);}
-  .msg-chat-body{flex:1;padding:18px;overflow:auto;background:linear-gradient(180deg,#f7fbff,#eef6fb);}
+  .msg-chat-body{flex:1;padding:18px;overflow-y:auto;overscroll-behavior-y:contain;background:linear-gradient(180deg,#f7fbff,#eef6fb);}
   .msg-empty{text-align:center;color:var(--muted);font-size:12.5px;padding:40px 16px;}
   .msg-bubble-row{display:flex;margin-bottom:10px;}
   .msg-bubble-row.mine{justify-content:flex-end;}
@@ -393,6 +393,60 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           </div>
           <button class="btn btn-primary btn-sm" onclick="sendScNewMessage()">Send Message</button>
         </div>
+        
+        <div class="notif-panel" id="notif-panel">
+          <div class="np-head"><span class="np-head-title">&#128276; Announcements</span><button class="np-mark" onclick="markAllRead()">Mark all read</button></div>
+          <div class="np-list" id="np-list"><div class="np-empty">Loading…</div></div>
+          <div class="np-foot"><a href="#">View all</a></div>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="const b=this; const o=b.innerHTML; b.innerHTML='&#8635; Refreshing...'; Promise.resolve(loadAllData()).then(()=>{b.innerHTML='&#10004; Refreshed!'; setTimeout(()=>b.innerHTML=o,2000);}).catch(()=>{b.innerHTML='&#10008; Error'; setTimeout(()=>b.innerHTML=o,2000);})">&#8635; Refresh</button>
+      <button class="btn btn-primary btn-sm" onclick="exportSummary()">&#128228; Export Summary</button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- MESSAGING WORKSPACE -->
+    <div class="msg-workspace" id="sc-msg-workspace">
+      <div class="msg-panel">
+        <div class="msg-head">
+          <div>
+            <div class="msg-title">Service Messages</div>
+            <div class="msg-sub">Select a division and employee</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="const b=this; const o=b.innerHTML; b.innerHTML='&#8635; Refreshing...'; Promise.resolve(loadScMessageThreads()).then(()=>{b.innerHTML='&#10004; Refreshed!'; setTimeout(()=>b.innerHTML=o,2000);}).catch(()=>{b.innerHTML='&#10008; Error'; setTimeout(()=>b.innerHTML=o,2000);})">Refresh</button>
+        </div>
+        <div class="msg-compose">
+          <div class="msg-field">
+            <label>Team</label>
+            <select id="sc-msg-team" onchange="onScMsgTeamChange()">
+              <option value="">Select team</option>
+              <option value="service_team">Service Team</option>
+              <option value="repair_team">Repair Team</option>
+              <option value="product_team">Product Team</option>
+              <option value="service_coordinator">Service Coordinator</option>
+            </select>
+          </div>
+          <div class="msg-field">
+            <label>Division</label>
+            <select id="sc-msg-division" onchange="loadScMessageEmployees()" disabled>
+              <option value="">All divisions</option>
+            </select>
+          </div>
+          <div class="msg-field">
+            <label>Recipient</label>
+            <select id="sc-msg-employee">
+              <option value="">Select recipient</option>
+            </select>
+          </div>
+          <div class="msg-field">
+            <label>Message</label>
+            <textarea id="sc-msg-new" placeholder="Type message..."></textarea>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="sendScNewMessage()">Send Message</button>
+        </div>
         <div class="msg-thread-list" id="sc-msg-thread-list">
           <div class="msg-empty">No conversations loaded.</div>
         </div>
@@ -401,8 +455,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         <div class="msg-head">
           <div>
             <div class="msg-title" id="sc-chat-title">Select a conversation</div>
-            <div class="msg-sub" id="sc-chat-sub">Messages with service team</div>
+            <div class="msg-sub" id="sc-chat-sub">Manage service team chat</div>
           </div>
+          <button class="btn-xs" id="sc-msg-clear-btn" onclick="clearScChat()" style="display:none; color: var(--red); border-color: rgba(185,28,28,0.3); background: var(--red-bg);">Clear Chat</button>
         </div>
         <div class="msg-chat-body" id="sc-chat-body">
           <div class="msg-empty">Choose an employee thread or send a new message.</div>
@@ -602,7 +657,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 const API = '';
 let STATS = { calls:0, closedCalls:0, pendingAct:0, closedAct:0, bir:0, closedBir:0 };
 
-/* ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ INIT ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ */
+/* ———— INIT ———— */
 (function init(){
   const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   const name = u.name || 'User';
@@ -627,7 +682,7 @@ function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
 function fmtDate(d){ if(!d)return '&#8212;'; const p=String(d).split('T')[0].split('-'); return p.length<3?String(d):p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0]; }
 function showToast(msg,type='ok'){ const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast '+type;el.innerHTML='<span class="td"></span>'+msg;w.appendChild(el);setTimeout(()=>el.remove(),3400); }
 
-/* ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ LOAD ALL DATA ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ */
+/* ———— LOAD ALL DATA ———— */
 async function loadAllData(){
   showToast('Refreshing dashboard...','info');
   window.LIVE_DATA = { calls:[], closedCalls:[], bir:[], closedBir:[] };
@@ -658,7 +713,7 @@ async function safeFetch(url, fallback=[]){
   }
 }
 
-/* ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ INDIVIDUAL LOADERS ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ */
+/* ———— INDIVIDUAL LOADERS ———— */
 async function loadCalls(){
   let data = await safeFetch('/api/pt/calls');
   if(data && data.data) data = data.data;
@@ -713,7 +768,7 @@ async function loadClosedBIR(){
   setBar('bar-closed-bir', Math.min(100, Math.round((STATS.closedBir/(STATS.closedBir+STATS.bir||1))*100)));
 }
 
-/* ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ HERO UPDATE ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ */
+/* ———— HERO UPDATE ———— */
 function updateHero(){
   const total = STATS.calls + STATS.closedCalls + STATS.pendingAct + STATS.closedAct + STATS.bir + STATS.closedBir;
   const closed = STATS.closedCalls + STATS.closedAct + STATS.closedBir;
@@ -725,7 +780,7 @@ function updateHero(){
   (document.getElementById('hero-rate')||{}).textContent = rate+'%';
 }
 
-/* ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ PERFORMANCE ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ */
+/* ———— PERFORMANCE ———— */
 function updatePerformance(){
   const total = STATS.calls + STATS.closedCalls + STATS.bir + STATS.closedBir;
   const closed = STATS.closedCalls + STATS.closedBir;
@@ -759,7 +814,7 @@ function updateChartBars(){
     </div>`).join('');
 }
 
-/* ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ RINGS ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ */
+/* ———— RINGS ———— */
 function renderRings(){
   const rings = [
     {label:'Calls',open:STATS.calls,closed:STATS.closedCalls,color:'#0068b5'},
@@ -786,7 +841,7 @@ function renderRings(){
   }).join('');
 }
 
-/* ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ TABLE RENDERERS ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ */
+/* ———— TABLE RENDERERS ———— */
 function statusPill(s){
   const map={'Open':'sp-open','Active':'sp-active','Closed':'sp-closed','Pending':'sp-pending','Completed':'sp-closed'};
   const cls = map[s] || 'sp-open';
@@ -821,7 +876,7 @@ function renderBIRTable(data){
   </tr>`).join('') : '<tr><td colspan="5" style="text-align:center;padding:28px;color:var(--muted);">No records found</td></tr>';
 }
 
-/* ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ FEED ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ */
+/* ———— FEED ———— */
 function renderFeed(){
   const events = [
     {dot:'var(--accent)',text:`<strong>Call Register</strong> - ${STATS.calls} active call${STATS.calls!==1?'s':''} assigned`,time:'Current'},
@@ -843,7 +898,7 @@ function renderFeed(){
     </div>`).join('');
 }
 
-/* ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ DEMO DATA ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ */
+/* ———— DEMO DATA ———— */
 function generateDemoData(type, count){
   return [];
   const arr = [];
@@ -883,11 +938,11 @@ function generateDemoData(type, count){
   return arr;
 }
 
-/* ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ HELPERS ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ */
+/* ———— HELPERS ———— */
 function setVal(id, val){ const el=document.getElementById(id); if(el) el.textContent = val; }
 function setBar(id, pct){ const el=document.getElementById(id); if(el) setTimeout(()=>{el.style.width=Math.min(100,pct)+'%';}, 200); }
 
-/* ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ EXPORT ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ */
+/* ———— EXPORT ———— */
 function exportSummary(){
   const lines = [
     'SchillerIndia Services - Dashboard Summary',
@@ -910,7 +965,7 @@ function exportSummary(){
 
 function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; }
 
-/* ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ NOTIFICATION PANEL ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ */
+/* ———— NOTIFICATION PANEL ———— */
 const NOTIF_READ_KEY='si_notif_read_pt';
 let notifData=[];
 function getReadIds(){try{return JSON.parse(localStorage.getItem(NOTIF_READ_KEY)||'[]');}catch(e){return[];}}
@@ -955,7 +1010,7 @@ function toggleNotifPanel(){
 }
 document.addEventListener('click',e=>{if(!e.target.closest('.notif-wrap'))document.getElementById('notif-panel').classList.remove('open');});
 
-/* ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ WEEKLY CHART ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ */
+/* ———— WEEKLY CHART ———— */
 function updateWeeklyChart(){
   const ctx = document.getElementById('weeklyChart');
   if(!ctx) return;
@@ -1165,63 +1220,6 @@ function updateScMessageNotification(){
   scMsgUnreadLast = count;
   scMsgNotificationReady = true;
 }
-
-function renderScMessageThreads(){
-  const list = document.getElementById('sc-msg-thread-list');
-  if (!list) return;
-  if (!scMsgThreads.length) {
-    list.innerHTML = '<div class="msg-empty">No conversations yet.</div>';
-    return;
-  }
-  list.innerHTML = scMsgThreads.map(t => `
-    <div class="msg-thread ${t._id === scMsgActiveId ? 'active' : ''}" onclick="openScThread('${t._id}')">
-      <div class="msg-thread-top">
-        <div class="msg-thread-name">${esc(t.peerName || t.employeeName || 'Employee')}${t.unreadCount ? `<span class="msg-unread">${t.unreadCount}</span>` : ''}</div>
-        <div class="msg-thread-time">${fmtMsgTime(t.lastMessageAt)}</div>
-      </div>
-      <div class="msg-thread-last">${esc(t.lastMessage || '')}</div>
-    </div>
-  `).join('');
-}
-
-async function openScThread(id){
-  scMsgActiveId = id;
-  renderScMessageThreads();
-  try{
-    const res = await fetch('/api/service-messages/threads/' + id, { headers: authHeaders() });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
-    renderScChat(json.data);
-    loadScMessageThreads();
-  }catch(e){ showToast('Conversation load failed: ' + e.message, 'err'); }
-}
-
-function renderScChat(thread){
-  const userStr = sessionStorage.getItem('schiller_user');
-  const u = userStr ? JSON.parse(userStr) : {};
-  const currentId = String(u._id || u.id || '');
-  
-  (document.getElementById('sc-chat-title')||{}).textContent = String(thread.coordinatorId) === currentId ? (thread.employeeName || 'Employee') : (thread.coordinatorName || 'Service Team');
-  (document.getElementById('sc-chat-sub')||{}).textContent = thread.division || thread.employeeEmail || 'Service team';
-  const body = document.getElementById('sc-chat-body');
-  body.innerHTML = (thread.messages || []).map(m => {
-    const mine = String(m.senderId) === currentId;
-    return `<div class="msg-bubble-row ${mine ? 'mine' : ''}">
-      <div class="msg-bubble">
-        <div class="msg-meta">${esc(m.senderName || '')} - ${fmtMsgTime(m.createdAt || m.timestamp)}</div>
-        <div class="msg-text">${esc(m.text || '')}</div>
-      </div>
-    </div>`;
-  }).join('') || '<div class="msg-empty">No messages yet.</div>';
-  body.scrollTop = body.scrollHeight;
-  document.getElementById('sc-msg-reply').disabled = false;
-  document.getElementById('sc-msg-reply-btn').disabled = false;
-}
-
-async function sendScNewMessage(){
-  const empVal = document.getElementById('sc-msg-employee')?.value || '';
-  const msgEl = document.getElementById('sc-msg-new');
-  const message = msgEl?.value.trim() || '';
   if (!empVal || !message) return showToast('Select recipient and type message.', 'err');
   const selectedTeam = document.getElementById('sc-msg-team')?.value || '';
   const selectedDivision = document.getElementById('sc-msg-division')?.value || '';

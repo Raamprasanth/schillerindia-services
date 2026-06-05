@@ -378,4 +378,20 @@ router.post('/threads/:id/messages', async (req, res) => {
   }
 });
 
+router.delete('/threads/:id/messages', async (req, res) => {
+  try {
+    const thread = await ServiceMessageThread.findById(req.params.id);
+    if (!thread) return res.status(404).json({ success: false, message: 'Thread not found' });
+    if (!isParticipant(thread, req.user)) return res.status(403).json({ success: false, message: 'Not allowed' });
+    
+    thread.messages = [];
+    thread.lastMessage = 'Messages cleared';
+    await thread.save();
+    
+    res.json({ success: true, message: 'Messages cleared successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to clear messages', error: err.message });
+  }
+});
+
 module.exports = router;

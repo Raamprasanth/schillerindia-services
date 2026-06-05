@@ -218,7 +218,7 @@
     .msg-thread-last{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px;}
     .msg-unread{background:var(--red);color:#fff;border-radius:999px;padding:1px 6px;font-size:10px;font-weight:800;margin-left:6px;}
     .msg-chat{display:flex;flex-direction:column;min-height:calc(100vh - 130px);}
-    .msg-chat-body{flex:1;padding:18px;overflow:auto;background:linear-gradient(180deg,#f7fbff,#eef6fb);}
+    .msg-chat-body{flex:1;padding:18px;overflow-y:auto;overscroll-behavior-y:contain;background:linear-gradient(180deg,#f7fbff,#eef6fb);}
     .msg-empty{text-align:center;color:var(--muted);font-size:14px;padding:40px 16px;}
     .msg-bubble-row{display:flex;margin-bottom:10px;}
     .msg-bubble-row.mine{justify-content:flex-end;}
@@ -405,6 +405,7 @@
             <div class="msg-title" id="rep-chat-title">Select a conversation</div>
             <div class="msg-sub" id="rep-chat-sub">Messages with service team</div>
           </div>
+          <button class="btn-xs" id="rep-msg-clear-btn" onclick="clearRepChat()" style="display:none; color: var(--red); border-color: rgba(204,0,0,0.3); background: rgba(204,0,0,0.08);">Clear Chat</button>
         </div>
         <div class="msg-chat-body" id="rep-chat-body">
           <div class="msg-empty">Choose a recipient thread or send a new message.</div>
@@ -1086,6 +1087,23 @@ function renderRepChat(thread){
   body.scrollTop = body.scrollHeight;
   document.getElementById('rep-msg-reply').disabled = false;
   document.getElementById('rep-msg-reply-btn').disabled = false;
+  document.getElementById('rep-msg-clear-btn').style.display = 'block';
+}
+
+async function clearRepChat(){
+  if (!repMsgActiveId) return;
+  if (!confirm('Are you sure you want to clear all messages in this chat?')) return;
+  try {
+    const res = await fetch('/api/service-messages/threads/' + repMsgActiveId + '/messages', {
+      method: 'DELETE',
+      headers: authHeaders()
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    showToast('Messages cleared.', 'ok');
+    openRepThread(repMsgActiveId);
+  } catch(e) {
+    showToast('Clear failed: ' + e.message, 'err');
+  }
 }
 
 async function sendRepNewMessage(){

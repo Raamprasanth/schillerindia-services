@@ -345,7 +345,7 @@
     .msg-thread-last{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px;}
     .msg-unread{background:#b91c1c;color:#fff;border-radius:999px;padding:1px 6px;font-size:9px;font-weight:800;margin-left:6px;}
     .msg-chat{display:flex;flex-direction:column;min-height:calc(100vh - 140px);}
-    .msg-chat-body{flex:1;padding:18px;overflow:auto;background:linear-gradient(180deg,#f7fbff,#eef6fb);}
+    .msg-chat-body{flex:1;padding:18px;overflow-y:auto;overscroll-behavior-y:contain;background:linear-gradient(180deg,#f7fbff,#eef6fb);}
     .msg-empty{text-align:center;color:var(--muted);font-size:12.5px;padding:40px 16px;}
     .msg-bubble-row{display:flex;margin-bottom:10px;}
     .msg-bubble-row.mine{justify-content:flex-end;}
@@ -536,6 +536,7 @@
             <div class="msg-title" id="emp-chat-title">Select a conversation</div>
             <div class="msg-sub" id="emp-chat-sub">Reply to service coordinator</div>
           </div>
+          <button class="topbar-btn" id="emp-msg-clear-btn" onclick="clearEmpChat()" style="display:none; color: var(--red); border-color: rgba(185,28,28,0.3); background: var(--red-bg);">Clear Chat</button>
         </div>
         <div class="msg-chat-body" id="emp-chat-body">
           <div class="msg-empty">Choose a message thread to reply.</div>
@@ -1192,6 +1193,23 @@
     body.scrollTop = body.scrollHeight;
     document.getElementById('emp-msg-reply').disabled = false;
     document.getElementById('emp-msg-reply-btn').disabled = false;
+    document.getElementById('emp-msg-clear-btn').style.display = 'block';
+  }
+
+  async function clearEmpChat(){
+    if (!empMsgActiveId) return;
+    if (!confirm('Are you sure you want to clear all messages in this chat?')) return;
+    try {
+      const res = await fetch('/api/service-messages/threads/' + empMsgActiveId + '/messages', {
+        method: 'DELETE',
+        headers: empAuthHeaders()
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      showEmpMessageToast('Messages cleared.', true);
+      openEmpThread(empMsgActiveId);
+    } catch(e) {
+      showEmpMessageToast('Clear failed: ' + e.message);
+    }
   }
 
   async function sendEmpReply(){
