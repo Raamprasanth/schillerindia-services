@@ -593,7 +593,7 @@
 
     <!-- Report Workspace -->
     <div class="report-workspace" id="emp-report-workspace">
-      <div class="tour-ws-panel" style="padding: 20px;">
+      <div style="padding: 20px;">
     <!-- Report Trackers -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
       <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);">Monthly Report Submission</div>
@@ -1051,8 +1051,10 @@
     if (workspace) { workspace.classList.remove('open'); workspace.style.display = ''; }
     const tw = document.getElementById('emp-tour-workspace');
     if (tw) { tw.classList.remove('open'); tw.style.display = 'none'; }
+    const rw = document.getElementById('emp-report-workspace');
+    if (rw) { rw.classList.remove('open'); rw.style.display = 'none'; }
     document.querySelectorAll('.content > *').forEach(el => {
-      if (el !== workspace && el !== tw) el.style.display = '';
+      if (el !== workspace && el !== tw && el !== rw) el.style.display = '';
     });
     document.querySelectorAll('.sidebar .nav-item').forEach(a => a.classList.remove('active'));
     const dash = document.querySelector('.sidebar .nav-item[href="employee-dashboard.html"]');

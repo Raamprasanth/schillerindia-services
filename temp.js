@@ -1,4 +1,4 @@
 (function(){
-  const t=sessionStorage.getItem('schiller_token');
-  if(!t) window.location.href='login.html';
+  const token = sessionStorage.getItem('schiller_token');
+  if (!token) window.location.href = 'login.html';
 })();
