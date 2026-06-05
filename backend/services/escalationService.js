@@ -1153,7 +1153,7 @@ async function sendEscalationWorkbook(payload, outputPath, senderConfig = null) 
     const sender = senderConfig || await getReadyEscalationSenderConfig();
     await runEscalationMailer(payload, outputPath, sender);
   } catch (error) {
-    throw new Error(`NodeJS Escalation Mailer failed: ${error.message}`);
+    throw new Error(error.message || 'Escalation mail send failed. The report file was generated; please retry from escalation status.');
   }
 }
 

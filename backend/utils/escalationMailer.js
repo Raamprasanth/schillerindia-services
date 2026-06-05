@@ -4,6 +4,9 @@ const ExcelJS = require('exceljs');
 const nodemailer = require('nodemailer');
 
 const TEMPLATE_PATH = path.join(__dirname, '..', 'templates', 'escalation_formats.xlsx');
+const MAIL_ATTEMPTS = Math.max(1, parseInt(process.env.ESCALATION_MAIL_ATTEMPTS || '3', 10) || 3);
+const MAIL_TIMEOUT_MS = Math.max(30000, parseInt(process.env.ESCALATION_MAIL_TIMEOUT_MS || '120000', 10) || 120000);
+const MAIL_RETRY_BASE_MS = Math.max(1000, parseInt(process.env.ESCALATION_MAIL_RETRY_BASE_MS || '5000', 10) || 5000);
 
 const HEADERS = [
   "SC_ENGINEER", "FRN_NO", "BRANCH", "ENGINEER_ID", "CUST_NAME",
@@ -15,6 +18,47 @@ const HEADERS = [
 function truncate(value, limit = 42) {
   const text = String(value || '');
   return text.length <= limit ? text : text.substring(0, limit - 3) + '...';
+}
+
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function cleanMailerError(error) {
+  const code = error?.code ? ` (${error.code})` : '';
+  const command = error?.command ? ` during ${error.command}` : '';
+  const message = String(error?.message || error || 'Unknown mail error')
+    .replace(/^NodeJS Escalation Mailer failed:\s*/i, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (/timeout|timed out|etimedout|esocket|econnreset|econnrefused|enotfound|eai_again/i.test(`${message} ${code}`)) {
+    return `Escalation mail server did not respond${command}${code}. The report was generated and the system retried automatically. Please check SMTP host/port/firewall or use an API mail provider.`;
+  }
+  if (/auth|login|credential|password|535|534|5\.7/i.test(`${message} ${code}`)) {
+    return `Escalation mail authentication failed${code}. Please check sender email, SMTP user, and app password in Settings.`;
+  }
+  return `Escalation mail send failed${command}${code}: ${message}`;
+}
+
+function createTransporter(config) {
+  const secure = config.useSsl || config.smtpPort === 465;
+  return nodemailer.createTransport({
+    host: config.smtpHost,
+    port: config.smtpPort,
+    secure,
+    requireTLS: !secure && config.startTls !== false,
+    auth: config.smtpUser ? {
+      user: config.smtpUser,
+      pass: config.smtpPass
+    } : undefined,
+    connectionTimeout: MAIL_TIMEOUT_MS,
+    greetingTimeout: MAIL_TIMEOUT_MS,
+    socketTimeout: MAIL_TIMEOUT_MS,
+    tls: {
+      servername: config.smtpHost,
+      rejectUnauthorized: String(process.env.ESCALATION_SMTP_REJECT_UNAUTHORIZED || 'true').trim().toLowerCase() !== 'false'
+    }
+  });
 }
 
 function getHeaders(rows, preferred = null) {
@@ -211,24 +255,13 @@ async function sendEmail(payload, attachmentPath, senderConfig) {
   
   const ccAddrs = (process.env.ESCALATION_EMAIL_CC || "").split(",").map(x => x.trim()).filter(Boolean);
   const useSsl = senderConfig && typeof senderConfig.ssl !== 'undefined' ? Boolean(senderConfig.ssl) : (process.env.ESCALATION_SMTP_SSL || "false").trim().toLowerCase() === "true";
+  const startTls = senderConfig && typeof senderConfig.startTls !== 'undefined'
+    ? Boolean(senderConfig.startTls)
+    : (process.env.ESCALATION_SMTP_STARTTLS || "true").trim().toLowerCase() !== "false";
 
   if (!smtpHost || !fromAddr || toAddrs.length === 0) {
     throw new Error("Email settings are incomplete. Set ESCALATION_SMTP_HOST, ESCALATION_EMAIL_FROM and ESCALATION_EMAIL_TO.");
   }
-
-  const transporter = nodemailer.createTransport({
-    host: smtpHost,
-    port: smtpPort,
-    secure: useSsl || smtpPort === 465, 
-    requireTLS: senderConfig ? !senderConfig.ssl : undefined,
-    auth: smtpUser ? {
-      user: smtpUser,
-      pass: smtpPass
-    } : undefined,
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 15000,
-  });
 
   const attachmentName = path.basename(attachmentPath);
   
@@ -247,7 +280,32 @@ async function sendEmail(payload, attachmentPath, senderConfig) {
     ]
   };
 
-  await transporter.sendMail(mailOptions);
+  let lastError = null;
+  for (let attempt = 1; attempt <= MAIL_ATTEMPTS; attempt++) {
+    const transporter = createTransporter({
+      smtpHost,
+      smtpPort,
+      smtpUser,
+      smtpPass,
+      useSsl,
+      startTls
+    });
+    try {
+      await transporter.verify();
+      await transporter.sendMail(mailOptions);
+      return;
+    } catch (error) {
+      lastError = error;
+      const cleanError = cleanMailerError(error);
+      console.warn(`[EscalationMailer] Attempt ${attempt}/${MAIL_ATTEMPTS} failed: ${cleanError}`);
+      if (attempt >= MAIL_ATTEMPTS) break;
+      await wait(MAIL_RETRY_BASE_MS * attempt);
+    } finally {
+      try { transporter.close(); } catch (_) {}
+    }
+  }
+
+  throw new Error(`${cleanMailerError(lastError)} Attempts: ${MAIL_ATTEMPTS}. Attachment kept at ${attachmentPath}`);
 }
 
 async function runEscalationMailer(payload, outputPath, senderConfig) {
