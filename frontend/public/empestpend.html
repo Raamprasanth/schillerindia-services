@@ -534,8 +534,6 @@ table.est-table tbody tr:last-child td{border-bottom:none;}
                 <option value="Replacement given">Replacement given</option>
                 <option value="No Fault">No Fault</option>
                 <option value="Returned as it is">Returned as it is</option>
-                <option value="External Repair">External Repair</option>
-                <option value="Supplier Warranty">Supplier Warranty</option>
                 <option value="Upgrade">Upgrade</option>
               </select>
             </div>
@@ -893,6 +891,7 @@ function handleEstimateSameGir(val){
   const defGir=String(current.defGir||'').trim();
   const input=document.getElementById('u-defunitgir');
   const revalue=document.getElementById('u-revalue');
+  const typeWork=document.getElementById('u-typework');
   const safeDefGir=defGir;
   if(!input) return;
   if(val==='yes'){
@@ -900,15 +899,19 @@ function handleEstimateSameGir(val){
     input.readOnly=true;
     input.classList.add('gir-autofill');
     if(revalue){revalue.readOnly=false;revalue.classList.remove('gir-autofill');}
+    if(typeWork){typeWork.value='Replacement given';typeWork.disabled=true;typeWork.classList.add('locked-field');}
   }else if(val==='no'){
     input.value='';
     input.readOnly=false;
     input.classList.remove('gir-autofill');
     if(revalue){revalue.readOnly=false;revalue.classList.remove('gir-autofill');}
+    if(typeWork){typeWork.disabled=false;typeWork.classList.remove('locked-field');}
   }else{
     input.value='';
     input.readOnly=false;
     input.classList.remove('gir-autofill');
+    if(revalue){revalue.readOnly=false;revalue.classList.remove('gir-autofill');}
+    if(typeWork){typeWork.disabled=false;typeWork.classList.remove('locked-field');}
   }
 }
 

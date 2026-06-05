@@ -68,7 +68,7 @@ router.get('/', protect, async (req, res) => {
           if (mName) r.model = mName;
           if (bName) r.description = bName;
           r.unitStatus = doc.unitSts || doc.unitStatus || '';
-          r.quantity = doc.qty || doc.quantity || '';
+          r.quantity = r.quantity || doc.qty || doc.quantity || '';
           r.division = (doc.division && doc.division.name) ? doc.division.name : (doc.divisionName || '');
         }
       }

@@ -19,6 +19,67 @@ const {
 } = require('../services/escalationService');
 
 // ── Compute pdays from createdAt ──────────────────────────
+function toDateValue(value) {
+  if (!value) return new Date();
+  const date = value ? new Date(value) : new Date();
+  return Number.isNaN(date.getTime()) ? new Date() : date;
+}
+
+function buildTodrModel(doc) {
+  return String(doc.model || '').trim();
+}
+
+function buildTodrDescription(doc, item = {}) {
+  return String(item.description || doc.defMod || doc.defBrdModName || '').trim() || 'TO/DR entry';
+}
+
+async function mirrorUrToTodr(doc, action, items = [], queuedBy = '') {
+  try {
+    const rows = action === 'TO'
+      ? items.map(item => ({
+          partNo: String(item.partNo || '').trim(),
+          model: buildTodrModel(doc),
+          description: buildTodrDescription(doc, item),
+          quantity: item.qty || 1,
+        })).filter(item => item.partNo)
+      : [{
+          partNo: String(doc.partNo || doc.defMod || doc.defGir || 'DR').trim(),
+          model: buildTodrModel(doc),
+          description: buildTodrDescription(doc),
+          quantity: doc.qty || doc.quantity || 1,
+        }];
+
+    const TargetModel = action === 'DR' ? Dr : Todr;
+
+    await Promise.all(rows.map(row => TargetModel.findOneAndUpdate(
+      {
+        sourceModule: 'under_repair',
+        sourceId: String(doc._id),
+        action,
+        partNo: row.partNo,
+      },
+      {
+        entryDate: action === 'TO'
+          ? toDateValue(doc.toEscalationQueuedAt || new Date())
+          : toDateValue(doc.entryDate || doc.rcvdDate || doc.createdAt),
+        frnNo: doc.frnNo || doc.scReNo || doc.scRno || String(doc._id),
+        partNo: row.partNo,
+        model: row.model,
+        description: row.description,
+        quantity: row.quantity,
+        action,
+        sourceModule: 'under_repair',
+        sourceId: String(doc._id),
+        queuedBy,
+        updatedAt: new Date(),
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    )));
+  } catch (err) {
+    console.error(`[TODR/DR mirror] Failed to mirror pending Under Repair (action=${action}):`, err);
+  }
+}
+
 function withPdays(doc) {
   const d = doc.toObject ? doc.toObject() : doc;
   d.pdays = Math.floor((Date.now() - new Date(d.rcvdDate || d.entryDate || d.createdAt).getTime()) / 86400000);
