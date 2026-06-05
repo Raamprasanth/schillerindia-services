@@ -2382,100 +2382,46 @@ function exportPDF(type) {
   if(!params) return;
   const month = params.month||'Report';
   const scope = params.division||params.employee||'';
-  const data = isDiv ? window._lastPerfDivData : window._lastPerfData;
-  if(!data){ toast('Generate a preview first','error'); return; }
-  const rate = data.completionRate||0;
-  const isCrit = rate<60;
-  const isWarn = rate>=60 && rate<75;
-  const sColor = isCrit?'#b91c1c': isWarn?'#d97706':'#059669';
-  const sTxt = isCrit?'CRITICAL': isWarn?'AT RISK':'ON TRACK';
 
-  let actRows = '';
-  let tableHeader = '';
+  const containerId = isDiv ? 'perf-pane-div-summary' : 'perf-pane-summary';
+  const originalNode = document.getElementById(containerId);
+  if (!originalNode) return;
 
-  if (isDiv) {
-    actRows=(data.activities||[]).map((act,i)=>{
-      const bg = i%2===0?'#ffffff':'#f9fbfd';
-      const p=Math.min(100,Math.max(0,act.completionPercent||0));
-      return `<tr style="background:${bg};">
-        <td style="border:1px solid #d0e0ec;padding:8px 10px;font-weight:600;font-size:11px;">${escapeHtml(act.label)}</td>
-        <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;font-weight:700;color:${p<60?'#b91c1c':p<75?'#d97706':'#059669'};">${p}%</td>
-      </tr>`;
-    }).join('');
-    tableHeader = `
-      <th style="border:1px solid #d0e0ec;padding:8px;text-align:left;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Activity</th>
-      <th style="border:1px solid #d0e0ec;padding:8px;text-align:center;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Completion %</th>`;
-  } else {
-    actRows=(data.activities||[]).map((act,i)=>{
-      const bg = i%2===0?'#ffffff':'#f9fbfd';
-      const oot=act.outOfTarget||0;
-      return `<tr style="background:${bg};">
-        <td style="border:1px solid #d0e0ec;padding:8px 10px;font-weight:600;font-size:11px;">${escapeHtml(act.label)}</td>
-        <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;">${act.total||0}</td>
-        <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;">${act.targetDays?act.targetDays+' days':'-'}</td>
-        <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;color:#059669;font-weight:700;">${act.withinTarget||0}</td>
-        <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;color:${oot>0?'#b91c1c':'#666'};font-weight:${oot>0?'700':'500'};">${oot}</td>
-      </tr>`;
-    }).join('');
-    tableHeader = `
-      <th style="border:1px solid #d0e0ec;padding:8px;text-align:left;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Activity</th>
-      <th style="border:1px solid #d0e0ec;padding:8px;text-align:center;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Total</th>
-      <th style="border:1px solid #d0e0ec;padding:8px;text-align:center;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Target Days</th>
-      <th style="border:1px solid #d0e0ec;padding:8px;text-align:center;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Within Target</th>
-      <th style="border:1px solid #d0e0ec;padding:8px;text-align:center;font-size:10px;text-transform:uppercase;color:#7a9ab0;">Out of Target</th>`;
-  }
-
-  let submissionHtmlPdf = '';
-  if (isDiv) {
-    const submissionPanel = document.getElementById('perf-submission-panel');
-    if (submissionPanel) {
-      submissionHtmlPdf = `<div style="margin-bottom:20px;border:1px solid #d0e0ec;border-radius:8px;padding:16px;">
-        <div style="font-size:14px;font-weight:700;color:#1a2a3a;margin-bottom:10px;">Division Wise Report Submission</div>
-        <div style="font-size:11px;color:#666;margin-bottom:12px;">Data matched from employee dashboard</div>
-        <div style="display:flex;flex-wrap:wrap;gap:10px;">`;
-      const cards = submissionPanel.querySelectorAll('.submission-card');
-      cards.forEach(c => {
-        const title = c.querySelector('.submission-card-title span')?.textContent || '';
-        const pct = c.querySelector('.pct-text')?.textContent || '';
-        const count = c.querySelector('.submission-count')?.textContent || '';
-        const isDone = c.classList.contains('done');
-        submissionHtmlPdf += `
-          <div style="width:calc(33.3% - 10px);border:1px solid ${isDone?'#059669':'#d0e0ec'};border-radius:6px;padding:10px;background:${isDone?'#f0fdf4':'#fff'};">
-            <div style="font-size:11px;font-weight:700;color:#1a2a3a;margin-bottom:4px;">${title}</div>
-            <div style="font-size:14px;font-weight:700;color:${isDone?'#059669':'#d97706'};">${pct}</div>
-            <div style="font-size:9px;color:#666;margin-top:2px;">${count}</div>
-          </div>
-        `;
-      });
-      submissionHtmlPdf += `</div></div>`;
+  const clone = originalNode.cloneNode(true);
+  
+  // Remove buttons
+  const buttons = clone.querySelectorAll('.btn');
+  buttons.forEach(btn => {
+    const parent = btn.parentElement;
+    if (parent && parent.style.justifyContent === 'flex-end') {
+      parent.remove();
+    } else {
+      btn.remove();
     }
-  }
+  });
 
-  const html=`
-    <div style="font-family:Arial,sans-serif;padding:32px;color:#1a2a3a;">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #b91c1c;">
-        <div><div style="font-size:20px;font-weight:700;color:#b91c1c;font-family:Georgia,serif;">SchillerIndia</div><div style="font-size:12px;color:#666;">Performance Report</div></div>
-        <div style="text-align:right;"><div style="font-size:14px;font-weight:700;">${scope}</div><div style="font-size:11px;color:#666;">Month: ${month}</div></div>
-      </div>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
-        <tr>
-          <td style="border:1px solid #d0e0ec;padding:10px;width:25%;"><div style="font-size:18px;font-weight:700;">${data.totalTracked||0}</div><div style="font-size:10px;color:#666;">Total</div></td>
-          <td style="border:1px solid #d0e0ec;padding:10px;width:25%;"><div style="font-size:18px;font-weight:700;color:#059669;">${data.completedCount||0}</div><div style="font-size:10px;color:#666;">Within Target</div></td>
-          <td style="border:1px solid #d0e0ec;padding:10px;width:25%;"><div style="font-size:18px;font-weight:700;color:#b91c1c;">${data.pendingCount||0}</div><div style="font-size:10px;color:#666;">Out of Target</div></td>
-          <td style="border:1px solid #d0e0ec;padding:10px;width:25%;background:${isCrit?'#fff5f5':isWarn?'#fffbeb':'#f0fdf4'};"><div style="font-size:18px;font-weight:700;color:${sColor};">${rate}%</div><div style="font-size:10px;color:${sColor};font-weight:600;">${sTxt}</div></td>
-        </tr>
-      </table>
-      ${submissionHtmlPdf}
-      <table style="width:100%;border-collapse:collapse;">
-        <thead><tr style="background:#f4f7fa;">
-          ${tableHeader}
-        </tr></thead>
-        <tbody>${actRows}</tbody>
-      </table>
-    </div>`;
-  const wrapper=document.createElement('div');
-  wrapper.innerHTML=html;
-  html2pdf().set({margin:0.3,filename:`Performance_${scope}_${month}.pdf`,image:{type:'jpeg',quality:0.99},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'in',format:'a4',orientation:'portrait'}}).from(wrapper).save();
+  // Add Logo and Title
+  const header = document.createElement('div');
+  header.innerHTML = `
+    <div style="text-align:center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #005a9c;">
+      <img src="logo.png" alt="Schiller Logo" style="height: 60px; object-fit: contain; margin-bottom: 10px;" />
+      <h2 style="font-family:Arial,sans-serif; color:#005a9c; margin: 0; text-transform: uppercase;">Performance Analysis</h2>
+      <h4 style="font-family:Arial,sans-serif; color:#666; margin-top: 5px;">${scope} | ${month}</h4>
+    </div>
+  `;
+  clone.insertBefore(header, clone.firstChild);
+
+  clone.style.padding = '20px';
+  clone.style.background = '#fff';
+  clone.style.fontFamily = 'Arial, sans-serif';
+
+  html2pdf().set({
+    margin: 0.3,
+    filename: `Performance_Analysis_${scope}_${month}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+  }).from(clone).save();
 }
 
 function escapeHtml(value){
