@@ -2262,20 +2262,41 @@ function exportPDF(type) {
   // Add Logo and Title
   const header = document.createElement('div');
   header.innerHTML = `
-    <div style="text-align:center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #005a9c;">
-      <img src="logo.png" alt="Schiller Logo" style="height: 60px; object-fit: contain; margin-bottom: 10px;" />
-      <h2 style="font-family:Arial,sans-serif; color:#005a9c; margin: 0; text-transform: uppercase;">Performance Analysis</h2>
-      <h4 style="font-family:Arial,sans-serif; color:#666; margin-top: 5px;">${scope} | ${month}</h4>
+    <div class="pdf-header" style="text-align:center; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #005a9c;">
+      <img src="logo.png" alt="Schiller Logo" style="height: 45px; object-fit: contain; margin-bottom: 5px;" />
+      <h2 style="font-family:Arial,sans-serif; color:#005a9c; margin: 0; font-size: 18px; text-transform: uppercase;">Performance Analysis</h2>
+      <h4 style="font-family:Arial,sans-serif; color:#666; margin-top: 5px; font-size: 14px;">${scope} | ${month}</h4>
     </div>
   `;
   clone.insertBefore(header, clone.firstChild);
 
-  clone.style.padding = '20px';
+  // Apply single-page fitting styles and thin black border
+  clone.style.padding = '15px';
   clone.style.background = '#fff';
   clone.style.fontFamily = 'Arial, sans-serif';
+  clone.style.border = '1px solid #000';
+  clone.style.borderRadius = '0';
+  clone.style.boxShadow = 'none';
+  clone.style.boxSizing = 'border-box';
+  clone.style.width = '100%';
+
+  // Compact tables to ensure they fit on one page
+  const tables = clone.querySelectorAll('table');
+  tables.forEach(t => {
+    t.style.fontSize = '11.5px'; 
+    t.style.marginBottom = '15px';
+    const cells = t.querySelectorAll('th, td');
+    cells.forEach(cell => {
+      cell.style.padding = '4px 6px'; // reduce padding
+    });
+  });
+
+  // Also remove original header to save space if it exists
+  const origHeader = clone.querySelector('div[style*="border-bottom:2px solid #e2e8f0"]');
+  if (origHeader) origHeader.remove();
 
   html2pdf().set({
-    margin: 0.3,
+    margin: 0.15, // tight margin so the border is close to the page edge
     filename: `Performance_Analysis_${scope}_${month}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true },
