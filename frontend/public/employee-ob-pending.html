@@ -1319,6 +1319,7 @@ async function submitEstimation(){
           ...basePayload,
           serviceId: line.serviceId,
           source: 'ob',
+          sourceId: line.serviceId || '',
           rtobSent: !!(source.rtobSent || existing.rtobSent),
           rtobSentAt: source.rtobSentAt || existing.rtobSentAt || '',
           rtobCompleted: !!(source.rtobCompleted || existing.rtobCompleted),

@@ -69,6 +69,9 @@ function estimationOwnerFallback(user) {
     { estRaEng: name },
     { submittedBy: name },
     { obRaEng: name },
+    { estUpdatedBy: name },
+    { obUpdatedBy: name },
+    { createdBy: name },
   ];
 }
 
@@ -150,6 +153,7 @@ router.post('/', async (req, res) => {
     const docData = {
       ...body,
       source:      body.source      || 'service',
+      sourceId:    body.sourceId    || body.serviceId || '',
       submittedBy: body.submittedBy || req.user.name,
       submittedAt: body.submittedAt ? new Date(body.submittedAt) : now,
       entryDate:   body.entryDate   || now.toISOString().split('T')[0],
@@ -187,6 +191,13 @@ router.post('/', async (req, res) => {
         });
       }
       console.log('[EstPending] upserted for serviceId:', body.serviceId);
+    } else if (docData.sourceId) {
+      record = await EstimationPending.findOneAndUpdate(
+        { source: docData.source, sourceId: docData.sourceId, estLineNo: docData.estLineNo || 1 },
+        { $set: docData },
+        { new: true, upsert: true, runValidators: false }
+      );
+      console.log('[EstPending] upserted for sourceId:', docData.sourceId);
     } else {
       record = await EstimationPending.create(docData);
       console.log('[EstPending] created (no serviceId)');
@@ -231,6 +242,7 @@ router.post('/from-ob', async (req, res) => {
     const docData = {
       // ── source tag ──────────────────────────────────────
       source: 'ob',
+      sourceId: body.sourceId || body.serviceId || '',
 
       // ── core service info ────────────────────────────────
       serviceId:   body.serviceId,
