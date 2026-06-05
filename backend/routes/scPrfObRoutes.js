@@ -78,7 +78,7 @@ router.post('/', protect, async (req, res) => {
       createdBy: req.user._id,
     });
     const saved = await doc.save();
-    if (String(saved.status).toLowerCase() === 'pending') {
+    if (['open', 'pending'].includes(String(saved.status).toLowerCase())) {
       const employeePayload = buildEmployeePrfObPayload(saved.toObject(), req.user._id, saved._id);
       await EPrfOb.findOneAndUpdate(
         { sourceScPrfObId: saved._id },
@@ -122,7 +122,7 @@ router.put('/:id', protect, async (req, res) => {
       { new: true, runValidators: true }
     );
     if (!doc) return res.status(404).json({ message: 'Record not found' });
-    if (String(doc.status).toLowerCase() === 'pending') {
+    if (['open', 'pending'].includes(String(doc.status).toLowerCase())) {
       const employeePayload = buildEmployeePrfObPayload(doc.toObject(), req.user._id, doc._id);
       await EPrfOb.findOneAndUpdate(
         { sourceScPrfObId: doc._id },

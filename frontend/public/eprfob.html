@@ -2194,7 +2194,7 @@
         <td><span class="chip">${esc(e.prfobRef)}</span></td>
         <td><span class="${statusClass(e.status)}">${esc(e.status)}</span></td>
         <td>${esc(e.sparesReceivedAtSvc || '')}</td>
-        <td><button class="btn-xs" onclick="openEmployeeUpdateModal('${e._id}')" title="Update">&#9999;&#65039;</button></td>
+        <td>${e.sparesReceivedAtSvc ? `<button class="btn-xs" onclick="openEmployeeUpdateModal('${e._id}')" title="Update">&#9999;&#65039;</button>` : `<button class="btn-xs" disabled style="opacity:0.5;cursor:not-allowed;" title="Waiting for Spares Received Date">&#9999;&#65039;</button>`}</td>
       </tr>`).join('');
       }
       const info = document.getElementById('main-info');
