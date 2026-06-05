@@ -323,6 +323,16 @@ body.panel-open .main{display:none;}
 .nav-children{max-height:0;overflow:hidden;transition:max-height .28s ease;margin-bottom:3px;}
 .nav-children.open{max-height:650px;}
 .nav-sub .nav-item{padding-left:28px;font-size:11.5px;}
+
+.mail-ack-wrap { display: none; margin-bottom: 14px; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.mail-ack-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 11px 12px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+.mail-ack-card::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: linear-gradient(90deg, var(--accent), #0ea5e9); }
+.mail-ack-label { font-size: 9.5px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; }
+.mail-ack-value { font-size: 16px; font-weight: 800; color: var(--text); }
+.mail-ack-sub { font-size: 11px; color: var(--muted); margin-top: 3px; word-break: break-word; }
+@media(max-width:900px){.mail-ack-wrap{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:560px){.mail-ack-wrap{grid-template-columns:1fr;}}
+
 </style>
   <link rel="stylesheet" href="global-typography.css">
   <link rel="stylesheet" href="employee-theme.css">
@@ -476,6 +486,7 @@ body.panel-open .main{display:none;}
       
       <button class="btn btn-outline btn-sm" onclick="loadData()">&#8635; Refresh</button>
       <button class="btn btn-success btn-sm" onclick="exportCSV()">&#128228; Export</button>
+      <button class="btn btn-outline btn-sm" id="mail-ack-btn" onclick="toggleMailAck()">&#9993; Mail</button>
     </div>
   </div>
 
@@ -809,7 +820,24 @@ function isActiveUnderRepairRecord(d) {
 }
 
 // -- Load from /api/emp/services, filter active TO/ADV SO under-repair rows --
-async function loadData() {
+async 
+let mailAckVisible = localStorage.getItem('mail_ack_visible') === '1';
+function toggleMailAck() {
+  mailAckVisible = !mailAckVisible;
+  localStorage.setItem('mail_ack_visible', mailAckVisible ? '1' : '0');
+  syncMailAck();
+}
+function syncMailAck() {
+  const w1 = document.getElementById('escalation-status-banner');
+  const w2 = document.getElementById('sr-escalation-status-banner');
+  const w3 = document.getElementById('to-escalation-status-banner');
+  if(w1) w1.style.display = mailAckVisible ? 'grid' : 'none';
+  if(w2) w2.style.display = mailAckVisible ? 'grid' : 'none';
+  if(w3) w3.style.display = mailAckVisible ? 'grid' : 'none';
+}
+document.addEventListener('DOMContentLoaded', () => { setTimeout(syncMailAck, 100); });
+
+function loadData() {
   setTableLoading(); setLoading(true);
   try {
     const res = await fetch(`${API}/api/emp/services`, { headers: authHeaders() });

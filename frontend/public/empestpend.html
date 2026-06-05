@@ -229,6 +229,16 @@ table.est-table tbody tr:last-child td{border-bottom:none;}
 .nav-children{max-height:0;overflow:hidden;transition:max-height .28s ease;margin-bottom:3px;}
 .nav-children.open{max-height:650px;}
 .nav-sub .nav-item{padding-left:28px;font-size:11.5px;}
+
+.mail-ack-wrap { display: none; margin-bottom: 14px; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.mail-ack-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 11px 12px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+.mail-ack-card::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: linear-gradient(90deg, var(--accent), #0ea5e9); }
+.mail-ack-label { font-size: 9.5px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; }
+.mail-ack-value { font-size: 16px; font-weight: 800; color: var(--text); }
+.mail-ack-sub { font-size: 11px; color: var(--muted); margin-top: 3px; word-break: break-word; }
+@media(max-width:900px){.mail-ack-wrap{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:560px){.mail-ack-wrap{grid-template-columns:1fr;}}
+
 </style>
   <link rel="stylesheet" href="global-typography.css">
   <link rel="stylesheet" href="employee-theme.css">
@@ -694,6 +704,7 @@ table.est-table tbody tr:last-child td{border-bottom:none;}
       
       <button class="btn btn-outline btn-sm" onclick="loadData()">&#8635; Refresh</button>
       <button class="btn btn-primary btn-sm" onclick="exportCSV()">&#128228; Export</button>
+      <button class="btn btn-outline btn-sm" id="mail-ack-btn" onclick="toggleMailAck()">&#9993; Mail</button>
     </div>
   </div>
   <div class="content">
@@ -1043,7 +1054,24 @@ async function submitToEscalationQueue(){
   }
 }
 
-async function loadData(){
+async 
+let mailAckVisible = localStorage.getItem('mail_ack_visible') === '1';
+function toggleMailAck() {
+  mailAckVisible = !mailAckVisible;
+  localStorage.setItem('mail_ack_visible', mailAckVisible ? '1' : '0');
+  syncMailAck();
+}
+function syncMailAck() {
+  const w1 = document.getElementById('escalation-status-banner');
+  const w2 = document.getElementById('sr-escalation-status-banner');
+  const w3 = document.getElementById('to-escalation-status-banner');
+  if(w1) w1.style.display = mailAckVisible ? 'grid' : 'none';
+  if(w2) w2.style.display = mailAckVisible ? 'grid' : 'none';
+  if(w3) w3.style.display = mailAckVisible ? 'grid' : 'none';
+}
+document.addEventListener('DOMContentLoaded', () => { setTimeout(syncMailAck, 100); });
+
+function loadData(){
   setLoading();
   try {
     const endpoint = IS_ADMIN ? API_BASE+'/api/emp/estimation' : API_BASE+'/api/emp/estimation';
@@ -1674,105 +1702,34 @@ function toggleMailAcknowledgements(){
     
   }
 }
+
+function getMailAckWrapStr(idPrefix, title, themeColor) {
+  return `
+  <div class="mail-ack-card" style="--accent: ${themeColor}"><div class="mail-ack-label">Escalation Name</div><div class="mail-ack-value">${title}</div></div>
+  <div class="mail-ack-card" style="--accent: ${themeColor}"><div class="mail-ack-label">Receivers</div><div class="mail-ack-value" id="${idPrefix}-receivers-count">-</div><div class="mail-ack-sub" id="${idPrefix}-receivers-names">-</div></div>
+  <div class="mail-ack-card" style="--accent: ${themeColor}"><div class="mail-ack-label">Next Mail</div><div class="mail-ack-value" id="${idPrefix}-next-time">-</div><div class="mail-ack-sub" id="${idPrefix}-next-date">-</div></div>
+  <div class="mail-ack-card" style="--accent: ${themeColor}"><div class="mail-ack-label">Queued Count</div><div class="mail-ack-value" id="${idPrefix}-queued-count">-</div></div>
+  `;
+}
+
 function ensureEscalationBanner(moduleKey){
   if(document.getElementById('escalation-status-banner')) return;
-  const style=document.createElement('style');
-  style.textContent=`
-    .esc-banner-row{display:grid;grid-template-columns:repeat(3,minmax(240px,1fr));gap:10px;margin:0 0 14px;}
-    .esc-banner{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;padding:10px 12px;border:1px solid rgba(0,104,181,0.18);border-radius:10px;background:linear-gradient(135deg,rgba(0,104,181,0.08),rgba(14,165,233,0.05));box-shadow:var(--shadow);}
-    .esc-banner-left{display:flex;align-items:flex-start;gap:9px;min-width:0;flex:1;}
-    .esc-banner-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:5px;box-shadow:0 0 0 3px rgba(0,104,181,0.12);flex:0 0 auto;}
-    .esc-banner-title{font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
-    .esc-banner-text{font-size:11.5px;font-weight:700;color:var(--text);margin-top:1px;line-height:1.3;}
-    .esc-banner-sub{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.3;}
-    .esc-banner-meta{font-size:10px;color:var(--text);margin-top:3px;font-weight:700;line-height:1.3;}
-    .esc-banner-count{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--accent);white-space:nowrap;text-align:right;flex:0 0 auto;}
-    @media (max-width:900px){.esc-banner-row{grid-template-columns:1fr;}}
-  `;
-  document.head.appendChild(style);
   const stats=document.querySelector('.stats-row');
   if(!stats) return;
   let row=document.getElementById('escalation-banner-row');
   if(!row){
     row=document.createElement('div');
     row.id='escalation-banner-row';
-    row.className='esc-banner-row';
     stats.insertAdjacentElement('afterend',row);
-    row.style.display=mailAcknowledgementsVisible?'grid':'none';
   }
-  const banner=document.createElement('div');
-  banner.id='escalation-status-banner';
-  banner.className='esc-banner';
-  banner.innerHTML=`<div class="esc-banner-left"><div class="esc-banner-dot"></div><div><div class="esc-banner-title">Dispatch Escalation</div><div class="esc-banner-text" id="esc-banner-text-${moduleKey}">Checking latest mail status...</div><div class="esc-banner-sub" id="esc-banner-sub-${moduleKey}">Receivers: -</div><div class="esc-banner-meta" id="esc-banner-meta-${moduleKey}">Total Queued: - | Next Run: -</div></div></div><div class="esc-banner-count" id="esc-banner-count-${moduleKey}">-</div>`;
-  row.appendChild(banner);
-  
+  const wrap=document.createElement('div');
+  wrap.id='escalation-status-banner';
+  wrap.className='mail-ack-wrap';
+  wrap.style.display=mailAckVisible?'grid':'none';
+  wrap.innerHTML=getMailAckWrapStr('main', 'Dispatch Escalation', 'var(--accent)');
+  row.appendChild(wrap);
 }
-function fmtEscalationTs(d){
-  if(!d) return 'Not sent yet';
-  const dt=new Date(d);
-  if(Number.isNaN(dt.getTime())) return 'Not sent yet';
-  return dt.toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'});
-}
-function bumpEscalationQueue(moduleKey,delta=1){
-  const banner=document.getElementById('escalation-status-banner');
-  if(banner){
-    const frnCount=(parseInt(banner.dataset.frnCount||'0',10)||0)+(moduleKey==='frn'?delta:0);
-    const estCount=(parseInt(banner.dataset.estCount||'0',10)||0)+(moduleKey==='est'?delta:0);
-    banner.dataset.frnCount=String(frnCount);
-    banner.dataset.estCount=String(estCount);
-    const metaEl=document.getElementById(`esc-banner-meta-${moduleKey}`);
-    if(metaEl) metaEl.textContent=`Pending FRN: ${frnCount} | SO Pending: ${estCount} | Total: ${frnCount+estCount}`;
-  }
-  const countEl=document.getElementById(`esc-banner-count-${moduleKey}`);
-  if(countEl){
-    const banner=document.getElementById('escalation-status-banner');
-    const frnCount=parseInt(banner?.dataset.frnCount||'0',10)||0;
-    const estCount=parseInt(banner?.dataset.estCount||'0',10)||0;
-    countEl.textContent=String(frnCount+estCount);
-  }
-}
-async function loadEscalationStatus(moduleKey){
-  ensureEscalationBanner(moduleKey);
-  const textEl=document.getElementById(`esc-banner-text-${moduleKey}`);
-  const subEl=document.getElementById(`esc-banner-sub-${moduleKey}`);
-  const metaEl=document.getElementById(`esc-banner-meta-${moduleKey}`);
-  const countEl=document.getElementById(`esc-banner-count-${moduleKey}`);
-  try{
-    const res=await fetch(API_BASE+'/api/escalation/status',{headers:authHeaders()});
-    if(res.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
-    if(!res.ok) throw new Error('Unable to fetch escalation status');
-    const data=await res.json();
-    const log=data&&data.latest?data.latest:null;
-    const recipients=Array.isArray(data&&data.recipients)?data.recipients:[];
-    const queue=data&&data.queue?data.queue:null;
-    const frnCount=queue?(queue.frnCount||0):0;
-    const estCount=queue?(queue.estCount||0):0;
-    const totalCount=queue?(queue.totalCount||0):(frnCount+estCount);
-    const banner=document.getElementById('escalation-status-banner');
-    if(banner){
-      banner.dataset.frnCount=String(frnCount);
-      banner.dataset.estCount=String(estCount);
-    }
-    if(textEl){
-      if(log){
-        const slot=(log.slot||'').charAt(0).toUpperCase()+(log.slot||'').slice(1);
-        const statusLabel=(log.status||'pending').replace(/_/g,' ');
-        const errorText=String(log.error||'').trim();
-        textEl.textContent=`${slot||'Latest'} escalation ${statusLabel} on ${fmtEscalationTs(log.sentAt||log.createdAt)}.${errorText?' Error: '+errorText:''}`;
-      }else{
-        textEl.textContent='No escalation mail has been sent yet.';
-      }
-    }
-    if(subEl) subEl.textContent=`Receivers: ${recipients.length?recipients.join(', '):'-'}`;
-    if(metaEl) metaEl.textContent=`Total Queued: ${totalCount} | Next Run: ${queue?queue.nextRunLabel:'-'}`;
-    if(countEl) countEl.textContent=String(totalCount);
-  }catch(e){
-    if(textEl) textEl.textContent='Escalation status unavailable right now.';
-    if(subEl) subEl.textContent='Receivers: -';
-    if(metaEl) metaEl.textContent='Total Queued: - | Next Run: -';
-    if(countEl) countEl.textContent='-';
-  }
-}
+
 function ensureSrEscalationBanner(moduleKey){
   if(document.getElementById('sr-escalation-status-banner')) return;
   const stats=document.querySelector('.stats-row');
@@ -1781,19 +1738,16 @@ function ensureSrEscalationBanner(moduleKey){
   if(!row){
     row=document.createElement('div');
     row.id='escalation-banner-row';
-    row.className='esc-banner-row';
     stats.insertAdjacentElement('afterend',row);
-    row.style.display=mailAcknowledgementsVisible?'grid':'none';
   }
-  const banner=document.createElement('div');
-  banner.id='sr-escalation-status-banner';
-  banner.className='esc-banner';
-  banner.style.borderColor='rgba(180,83,9,0.18)';
-  banner.style.background='linear-gradient(135deg,rgba(245,158,11,0.10),rgba(251,191,36,0.06))';
-  banner.innerHTML=`<div class="esc-banner-left"><div class="esc-banner-dot" style="background:var(--amber);box-shadow:0 0 0 4px rgba(245,158,11,0.14);"></div><div><div class="esc-banner-title">FRN Replacement Escalation</div><div class="esc-banner-text" id="sr-banner-text-${moduleKey}">Checking latest FRN replacement mail status...</div><div class="esc-banner-sub" id="sr-banner-sub-${moduleKey}">Receivers: -</div><div class="esc-banner-meta" id="sr-banner-meta-${moduleKey}">Total Queued: - | Next Run: -</div></div></div><div class="esc-banner-count" id="sr-banner-count-${moduleKey}" style="color:var(--amber);">-</div>`;
-  row.appendChild(banner);
-  
+  const wrap=document.createElement('div');
+  wrap.id='sr-escalation-status-banner';
+  wrap.className='mail-ack-wrap';
+  wrap.style.display=mailAckVisible?'grid':'none';
+  wrap.innerHTML=getMailAckWrapStr('sr', 'FRN Replacement Escalation', 'var(--amber)');
+  row.appendChild(wrap);
 }
+
 function ensureToEscalationBanner(moduleKey){
   if(document.getElementById('to-escalation-status-banner')) return;
   const stats=document.querySelector('.stats-row');
@@ -1802,143 +1756,86 @@ function ensureToEscalationBanner(moduleKey){
   if(!row){
     row=document.createElement('div');
     row.id='escalation-banner-row';
-    row.className='esc-banner-row';
     stats.insertAdjacentElement('afterend',row);
-    row.style.display=mailAcknowledgementsVisible?'grid':'none';
   }
-  const banner=document.createElement('div');
-  banner.id='to-escalation-status-banner';
-  banner.className='esc-banner';
-  banner.style.borderColor='rgba(124,58,237,0.18)';
-  banner.style.background='linear-gradient(135deg,rgba(124,58,237,0.10),rgba(168,85,247,0.06))';
-  banner.innerHTML=`<div class="esc-banner-left"><div class="esc-banner-dot" style="background:#7c3aed;box-shadow:0 0 0 4px rgba(124,58,237,0.14);"></div><div><div class="esc-banner-title">In House FRN Replacement</div><div class="esc-banner-text" id="to-banner-text-${moduleKey}">Checking latest in house FRN replacement mail status...</div><div class="esc-banner-sub" id="to-banner-sub-${moduleKey}">Receivers: -</div><div class="esc-banner-meta" id="to-banner-meta-${moduleKey}">Total Queued: - | Next Run: -</div></div></div><div class="esc-banner-count" id="to-banner-count-${moduleKey}" style="color:#7c3aed;">-</div>`;
-  row.appendChild(banner);
-  
+  const wrap=document.createElement('div');
+  wrap.id='to-escalation-status-banner';
+  wrap.className='mail-ack-wrap';
+  wrap.style.display=mailAckVisible?'grid':'none';
+  wrap.innerHTML=getMailAckWrapStr('to', 'In House FRN Replacement', '#7c3aed');
+  row.appendChild(wrap);
 }
-function getPreferredSrLatest(morning,afternoon){
-  const now=new Date();
-  const minutes=now.getHours()*60+now.getMinutes();
-  if(minutes<900) return (morning&&morning.latest)||(afternoon&&afternoon.latest)||null;
-  return (afternoon&&afternoon.latest)||(morning&&morning.latest)||null;
-}
-function getNextSrRunLabel(){
-  return 'configured FRN Replacement slot';
-}
-function getPreferredToLatest(morning,evening){
-  const now=new Date();
-  const minutes=now.getHours()*60+now.getMinutes();
-  if(minutes<990) return (morning&&morning.latest)||(evening&&evening.latest)||null;
-  return (evening&&evening.latest)||(morning&&morning.latest)||null;
-}
-function getNextToRunLabel(){
-  return 'configured In House FRN Replacement slot';
+
+function bumpEscalationQueue(moduleKey,delta=1){
+  const el = document.getElementById('main-queued-count');
+  if(el) {
+    const v = parseInt(el.textContent, 10) || 0;
+    el.textContent = Math.max(0, v + delta);
+  }
 }
 function bumpSrEscalationQueue(delta=1){
-  const countEl=document.getElementById('sr-banner-count-est');
-  const metaEl=document.getElementById('sr-banner-meta-est');
-  const textEl=document.getElementById('sr-banner-text-est');
-  const current=parseInt(countEl?.textContent||'0',10)||0;
-  const next=Math.max(0,current+delta);
-  if(countEl) countEl.textContent=String(next);
-  if(textEl && next>0) textEl.textContent=`${next} FRN Replacement entr${next===1?'y is':'ies are'} queued for ${getNextSrRunLabel()}.`;
-  if(metaEl){const currentTotal=parseInt((metaEl.textContent.match(/\d+/)||['0'])[0],10)||0; metaEl.textContent=`Total Queued: ${Math.max(0,currentTotal+delta)} | Next Run: ${getNextSrRunLabel()}`;}
+  const el = document.getElementById('sr-queued-count');
+  if(el) {
+    const v = parseInt(el.textContent, 10) || 0;
+    el.textContent = Math.max(0, v + delta);
+  }
 }
 function bumpToEscalationQueue(delta=1){
-  const countEl=document.getElementById('to-banner-count-est');
-  const metaEl=document.getElementById('to-banner-meta-est');
-  const textEl=document.getElementById('to-banner-text-est');
-  const current=parseInt(countEl?.textContent||'0',10)||0;
-  const next=Math.max(0,current+delta);
-  if(countEl) countEl.textContent=String(next);
-  if(textEl && next>0) textEl.textContent=`${next} In House FRN Replacement entr${next===1?'y is':'ies are'} queued for ${getNextToRunLabel()}.`;
-  if(metaEl){const currentTotal=parseInt((metaEl.textContent.match(/\d+/)||['0'])[0],10)||0; metaEl.textContent=`Total Queued: ${Math.max(0,currentTotal+delta)} | Next Run: ${getNextToRunLabel()}`;}
+  const el = document.getElementById('to-queued-count');
+  if(el) {
+    const v = parseInt(el.textContent, 10) || 0;
+    el.textContent = Math.max(0, v + delta);
+  }
 }
+
+async function loadEscalationStatus(moduleKey){
+  ensureEscalationBanner(moduleKey);
+  try{
+    const res=await fetch(API_BASE+'/api/escalation/status',{headers:authHeaders()});
+    if(!res.ok) return;
+    const data=await res.json();
+    const recipients=Array.isArray(data&&data.recipients)?data.recipients:[];
+    const totalCount=data?.queue?.totalCount||0;
+    document.getElementById('main-receivers-count').textContent = recipients.length;
+    document.getElementById('main-receivers-names').textContent = recipients.join(', ') || '-';
+    document.getElementById('main-next-time').textContent = data?.queue?.nextRunLabel || '-';
+    document.getElementById('main-next-date').textContent = "Window date " + (data?.queue?.windowDate || '-');
+    document.getElementById('main-queued-count').textContent = totalCount;
+  }catch(e){}
+}
+
 async function loadSrEscalationStatus(moduleKey){
   ensureSrEscalationBanner(moduleKey);
-  const textEl=document.getElementById(`sr-banner-text-${moduleKey}`);
-  const subEl=document.getElementById(`sr-banner-sub-${moduleKey}`);
-  const metaEl=document.getElementById(`sr-banner-meta-${moduleKey}`);
-  const countEl=document.getElementById(`sr-banner-count-${moduleKey}`);
   try{
     const res=await fetch(API_BASE+'/api/escalation/status/sr',{headers:authHeaders()});
-    if(res.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
-    if(!res.ok) throw new Error('Unable to fetch FRN Replacement Escalation status');
+    if(!res.ok) return;
     const data=await res.json();
     const recipients=Array.isArray(data&&data.recipients)?data.recipients:[];
     const totalCount=data?.queue?.totalCount||0;
-    
-    if(totalCount===0){
-      if(typeof allRecords !== 'undefined') allRecords=allRecords.map(item=>item&&item.srEscalationQueuedAt?{...item,srEscalationQueuedAt:null,srEscalationQueuedBy:''}:item);
-      if(typeof filtered !== 'undefined') filtered=filtered.map(item=>item&&item.srEscalationQueuedAt?{...item,srEscalationQueuedAt:null,srEscalationQueuedBy:''}:item);
-      if(typeof renderTable === 'function') renderTable();
-    }
-    
-    const latest=data.latest;
-    if(textEl){
-      if(totalCount>0){
-        textEl.textContent=`${totalCount} FRN Replacement entr${totalCount===1?'y is':'ies are'} queued for ${data?.queue?.nextRunLabel||getNextSrRunLabel()}.`;
-      }else if(latest){
-        const slotLabel=String(latest.slot||'SR').replace(/_/g,' ').replace(/\b\w/g,m=>m.toUpperCase());
-        const statusLabel=(latest.status||'pending').replace(/_/g,' ');
-        const errorText=String(latest.error||'').trim();
-        textEl.textContent=`${slotLabel} escalation ${statusLabel} on ${fmtEscalationTs(latest.sentAt||latest.createdAt)}.${errorText?' Error: '+errorText:''}`;
-      }else{
-        textEl.textContent='No FRN Replacement Escalation mail has been sent yet.';
-      }
-    }
-    if(subEl) subEl.textContent=`Receivers: ${recipients.length?recipients.join(', '):'-'}`;
-    if(metaEl) metaEl.textContent=`Total Queued: ${totalCount} | Next Run: ${data?.queue?.nextRunLabel||'-'}`;
-    if(countEl) countEl.textContent=String(totalCount);
-  }catch(e){
-    if(textEl) textEl.textContent='FRN Replacement Escalation status unavailable right now.';
-    if(subEl) subEl.textContent='Receivers: -';
-    if(metaEl) metaEl.textContent='Total Queued: - | Next Run: -';
-    if(countEl) countEl.textContent='-';
-  }
+    document.getElementById('sr-receivers-count').textContent = recipients.length;
+    document.getElementById('sr-receivers-names').textContent = recipients.join(', ') || '-';
+    document.getElementById('sr-next-time').textContent = data?.queue?.nextRunLabel || '-';
+    document.getElementById('sr-next-date').textContent = "Window date " + (data?.queue?.windowDate || '-');
+    document.getElementById('sr-queued-count').textContent = totalCount;
+  }catch(e){}
 }
+
 async function loadToEscalationStatus(moduleKey){
   ensureToEscalationBanner(moduleKey);
-  const textEl=document.getElementById(`to-banner-text-${moduleKey}`);
-  const subEl=document.getElementById(`to-banner-sub-${moduleKey}`);
-  const metaEl=document.getElementById(`to-banner-meta-${moduleKey}`);
-  const countEl=document.getElementById(`to-banner-count-${moduleKey}`);
   try{
     const res=await fetch(API_BASE+'/api/escalation/status/to',{headers:authHeaders()});
-    if(res.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
-    if(!res.ok) throw new Error('Unable to fetch In House FRN Replacement status');
+    if(!res.ok) return;
     const data=await res.json();
     const recipients=Array.isArray(data&&data.recipients)?data.recipients:[];
     const totalCount=data?.queue?.totalCount||0;
-
-    if(totalCount===0){
-      if(typeof allRecords !== 'undefined') allRecords=allRecords.map(item=>item&&item.toEscalationQueuedAt?{...item,toEscalationQueuedAt:null,toEscalationQueuedBy:''}:item);
-      if(typeof filtered !== 'undefined') filtered=filtered.map(item=>item&&item.toEscalationQueuedAt?{...item,toEscalationQueuedAt:null,toEscalationQueuedBy:''}:item);
-      if(typeof renderTable === 'function') renderTable();
-    }
-    
-    const latest=data.latest;
-    if(textEl){
-      if(totalCount>0){
-        textEl.textContent=`${totalCount} In House FRN Replacement entr${totalCount===1?'y is':'ies are'} queued for ${data?.queue?.nextRunLabel||getNextToRunLabel()}.`;
-      }else if(latest){
-        const slotLabel=String(latest.slot||'TO').replace(/_/g,' ').replace(/\b\w/g,m=>m.toUpperCase());
-        const statusLabel=(latest.status||'pending').replace(/_/g,' ');
-        const errorText=String(latest.error||'').trim();
-        textEl.textContent=`${slotLabel} escalation ${statusLabel} on ${fmtEscalationTs(latest.sentAt||latest.createdAt)}.${errorText?' Error: '+errorText:''}`;
-      }else{
-        textEl.textContent='No In House FRN Replacement mail has been sent yet.';
-      }
-    }
-    if(subEl) subEl.textContent=`Receivers: ${recipients.length?recipients.join(', '):'-'}`;
-    if(metaEl) metaEl.textContent=`Total Queued: ${totalCount} | Next Run: ${data?.queue?.nextRunLabel||'-'}`;
-    if(countEl) countEl.textContent=String(totalCount);
-  }catch(e){
-    if(textEl) textEl.textContent='In House FRN Replacement status unavailable right now.';
-    if(subEl) subEl.textContent='Receivers: -';
-    if(metaEl) metaEl.textContent='Total Queued: - | Next Run: -';
-    if(countEl) countEl.textContent='-';
-  }
+    document.getElementById('to-receivers-count').textContent = recipients.length;
+    document.getElementById('to-receivers-names').textContent = recipients.join(', ') || '-';
+    document.getElementById('to-next-time').textContent = data?.queue?.nextRunLabel || '-';
+    document.getElementById('to-next-date').textContent = "Window date " + (data?.queue?.windowDate || '-');
+    document.getElementById('to-queued-count').textContent = totalCount;
+  }catch(e){}
 }
+
 
 
 
