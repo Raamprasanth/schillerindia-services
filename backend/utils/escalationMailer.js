@@ -116,6 +116,12 @@ function resolveApiProvider() {
   return Object.values(providers).find(provider => provider.key) || null;
 }
 
+function shouldPreferApiProvider() {
+  const requested = String(process.env.ESCALATION_MAIL_PROVIDER || '').trim().toLowerCase();
+  if (!requested || requested === 'auto') return Boolean(resolveApiProvider());
+  return requested !== 'smtp';
+}
+
 function postJson(provider, body) {
   const json = JSON.stringify(body);
   const headers = {
@@ -422,7 +428,7 @@ async function sendEmail(payload, attachmentPath, senderConfig) {
     ]
   };
 
-  if (String(process.env.ESCALATION_MAIL_PROVIDER || '').trim().toLowerCase() !== 'smtp') {
+  if (shouldPreferApiProvider()) {
     try {
       const sentViaApi = await sendEmailViaApiProvider(mailOptions, attachmentPath);
       if (sentViaApi) return;
