@@ -2352,11 +2352,37 @@ function clearUpdMsg(){const el=document.getElementById('upd-msg');el.textConten
 
 function getMailAckWrapStr(idPrefix, title, themeColor) {
   return `
-  <div class="mail-ack-card" style="--accent: ${themeColor}"><div class="mail-ack-label">Escalation Name</div><div class="mail-ack-value">${title}</div></div>
+  <div class="mail-ack-card" style="--accent: ${themeColor}"><div class="mail-ack-label">Mail Assigned</div><div class="mail-ack-value">${title}</div><div class="mail-ack-sub">Assigned for this page</div></div>
+  <div class="mail-ack-card" style="--accent: ${themeColor}"><div class="mail-ack-label">Assigned Time</div><div class="mail-ack-value" id="${idPrefix}-assigned-time">-</div><div class="mail-ack-sub" id="${idPrefix}-assigned-slot">-</div></div>
   <div class="mail-ack-card" style="--accent: ${themeColor}"><div class="mail-ack-label">Receivers</div><div class="mail-ack-value" id="${idPrefix}-receivers-count">-</div><div class="mail-ack-sub" id="${idPrefix}-receivers-names">-</div></div>
-  <div class="mail-ack-card" style="--accent: ${themeColor}"><div class="mail-ack-label">Next Mail</div><div class="mail-ack-value" id="${idPrefix}-next-time">-</div><div class="mail-ack-sub" id="${idPrefix}-next-date">-</div></div>
-  <div class="mail-ack-card" style="--accent: ${themeColor}"><div class="mail-ack-label">Queued Count</div><div class="mail-ack-value" id="${idPrefix}-queued-count">-</div></div>
+  <div class="mail-ack-card" style="--accent: ${themeColor}"><div class="mail-ack-label">Last Mail</div><div class="mail-ack-value" id="${idPrefix}-last-status">-</div><div class="mail-ack-sub" id="${idPrefix}-last-detail">-</div></div>
+  <div class="mail-ack-card" style="--accent: ${themeColor}"><div class="mail-ack-label">Last Sent At</div><div class="mail-ack-value" id="${idPrefix}-last-time">-</div><div class="mail-ack-sub" id="${idPrefix}-last-count">-</div></div>
+  <div class="mail-ack-card" style="--accent: ${themeColor}"><div class="mail-ack-label">Queued Count</div><div class="mail-ack-value" id="${idPrefix}-queued-count">-</div><div class="mail-ack-sub">Entries waiting</div></div>
   `;
+}
+function setMailAckText(id, value){ const el=document.getElementById(id); if(el) el.textContent = (value === 0 || value) ? value : '-'; }
+function fmtMailAckDate(value){ if(!value) return '-'; const d=new Date(value); return isNaN(d.getTime()) ? '-' : d.toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); }
+function describeMailAckStatus(latest){
+  if(!latest) return {status:'Not sent yet', detail:'No mail run recorded'};
+  const raw=String(latest.status||'unknown').replace(/_/g,' ');
+  const status=raw.charAt(0).toUpperCase()+raw.slice(1);
+  const err=String(latest.error||latest.message||'').trim();
+  return {status, detail: err || (status.toLowerCase()==='success' || status.toLowerCase()==='sent' ? 'Mail sent successfully' : 'Latest run recorded')};
+}
+function applyMailAckStatus(idPrefix, payload){
+  const queue=payload?.queue||{};
+  const latest=payload?.latest||null;
+  const recipients=Array.isArray(payload?.recipients)?payload.recipients:[];
+  const last=describeMailAckStatus(latest);
+  setMailAckText(idPrefix+'-assigned-time', queue.nextRunLabel || '-');
+  setMailAckText(idPrefix+'-assigned-slot', [queue.slotLabel, queue.windowDate ? 'Window date '+queue.windowDate : ''].filter(Boolean).join(' | ') || '-');
+  setMailAckText(idPrefix+'-receivers-count', recipients.length);
+  setMailAckText(idPrefix+'-receivers-names', recipients.join(', ') || '-');
+  setMailAckText(idPrefix+'-last-status', last.status);
+  setMailAckText(idPrefix+'-last-detail', last.detail);
+  setMailAckText(idPrefix+'-last-time', fmtMailAckDate(latest?.sentAt || latest?.updatedAt || latest?.createdAt));
+  setMailAckText(idPrefix+'-last-count', latest?.totalCount != null ? 'Entries mailed: '+latest.totalCount : '-');
+  setMailAckText(idPrefix+'-queued-count', queue.totalCount != null ? queue.totalCount : 0);
 }
 
 function ensureEscalationBanner(moduleKey){
@@ -2448,6 +2474,7 @@ async function loadEscalationStatus(moduleKey){
     document.getElementById('main-next-time').textContent = data?.queue?.nextRunLabel || '-';
     document.getElementById('main-next-date').textContent = "Window date " + (data?.queue?.windowDate || '-');
     document.getElementById('main-queued-count').textContent = totalCount;
+    applyMailAckStatus('main', data);
   }catch(e){}
 }
 
@@ -2464,6 +2491,7 @@ async function loadSrEscalationStatus(moduleKey){
     document.getElementById('sr-next-time').textContent = data?.queue?.nextRunLabel || '-';
     document.getElementById('sr-next-date').textContent = "Window date " + (data?.queue?.windowDate || '-');
     document.getElementById('sr-queued-count').textContent = totalCount;
+    applyMailAckStatus('sr', data);
   }catch(e){}
 }
 
@@ -2480,6 +2508,7 @@ async function loadToEscalationStatus(moduleKey){
     document.getElementById('to-next-time').textContent = data?.queue?.nextRunLabel || '-';
     document.getElementById('to-next-date').textContent = "Window date " + (data?.queue?.windowDate || '-');
     document.getElementById('to-queued-count').textContent = totalCount;
+    applyMailAckStatus('to', data);
   }catch(e){}
 }
 
