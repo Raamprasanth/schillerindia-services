@@ -459,9 +459,12 @@ function summarizePerformanceRows(data) {
       targetDays: row.targetDays || null,
       completionPercent: row.withinPercent ?? (row.total ? Math.round((row.withinTarget / row.total) * 100) : 0),
       outOfTargetPercent: row.outOfTargetPercent ?? (row.total ? Math.round((((row.outOfTarget || 0) || Math.max(0, (row.total || 0) - (row.withinTarget || 0))) / row.total) * 100) : 0),
+      prevRate: row.prevRate,
+      nextRate: row.nextRate,
     })),
     row14: data?.row14 || null,
     row15: data?.row15 || null,
+    aux: data?.compliance || {},
   };
 }
 

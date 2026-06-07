@@ -2276,10 +2276,10 @@ async function exportPDF(type) {
   wrapper.style.border = '1px solid #000';
   wrapper.style.boxSizing = 'border-box';
   wrapper.style.fontFamily = "Calibri, Arial, sans-serif";
-  wrapper.style.position = 'fixed';
-  wrapper.style.left = '-12000px';
-  wrapper.style.top = '0';
-  wrapper.style.zIndex = '-1';
+  wrapper.style.position = 'absolute';
+  wrapper.style.left = '0px';
+  wrapper.style.top = '0px';
+  wrapper.style.zIndex = '-9999';
   wrapper.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #000;padding:0 0 8px;margin-bottom:8px;">
       <img src="logo.png" alt="SCHILLER" style="height:46px;max-width:230px;object-fit:contain;">
@@ -2410,15 +2410,21 @@ async function exportPriorityDivisionPDF(){
       pages.push(buildPerfPdfPage(payload.data,division,month));
     }
     const wrapper=document.createElement('div');
+    wrapper.style.position = 'absolute';
+    wrapper.style.left = '0px';
+    wrapper.style.top = '0px';
+    wrapper.style.zIndex = '-9999';
     wrapper.innerHTML=pages.join('');
-    html2pdf().set({
+    document.body.appendChild(wrapper);
+    await html2pdf().set({
       margin:0.2,
       filename:`Performance_Division_Pack_${month}.pdf`,
       image:{type:'jpeg',quality:0.98},
       html2canvas:{scale:2,useCORS:true},
       jsPDF:{unit:'in',format:'a4',orientation:'landscape'}
     }).from(wrapper).save();
-    toast('Division pack PDF export started...','info');
+    wrapper.remove();
+    toast('Division pack PDF export completed!','success');
   }catch(e){
     toast('Division pack PDF failed: '+e.message,'error');
   }
