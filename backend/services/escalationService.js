@@ -27,7 +27,9 @@ const PROJECT_PYTHON = path.join(__dirname, '..', '..', '.venv', process.platfor
 const BUNDLED_PYTHON = path.join(os.homedir(), '.cache', 'codex-runtimes', 'codex-primary-runtime', 'dependencies', 'python', process.platform === 'win32' ? 'python.exe' : 'bin/python');
 const MAIL_ATTEMPTS = Math.max(1, parseInt(process.env.ESCALATION_MAIL_ATTEMPTS || '2', 10) || 2);
 const MAIL_TIMEOUT_MS = Math.max(30000, parseInt(process.env.ESCALATION_MAIL_TIMEOUT_MS || '120000', 10) || 120000);
-const SCHEDULER_GRACE_MS = Math.max(60000, parseInt(process.env.ESCALATION_SCHEDULER_GRACE_MS || '300000', 10) || 300000);
+const SCHEDULER_GRACE_MS = Math.max(60000, parseInt(process.env.ESCALATION_SCHEDULER_GRACE_MS || '60000', 10) || 60000);
+const SCHEDULER_TICK_MS = Math.max(5000, parseInt(process.env.ESCALATION_SCHEDULER_TICK_MS || '10000', 10) || 10000);
+const STALE_RUNNING_MS = Math.max(60000, parseInt(process.env.ESCALATION_STALE_RUNNING_MS || '180000', 10) || 180000);
 const UR_DAILY_TYPES = ['UR Stock', 'WS Stock', 'External Repair', 'Completed', 'Supplier Warrenty', 'No Fault', 'Given to PSP'];
 const CUSTOM_ESCALATIONS = {
   prf_ob: {
@@ -403,6 +405,35 @@ async function getSlotsForCurrentTime(date = new Date()) {
 function buildJobKey(slotWindow) {
   const runTime = String(slotWindow.runTime || '').trim().replace(':', '');
   return `${slotWindow.jobDate}-${slotWindow.slot}${runTime ? `-${runTime}` : ''}`;
+}
+
+function isStaleRunningLog(log) {
+  if (!log || log.status !== 'running') return false;
+  const touched = new Date(log.updatedAt || log.createdAt || 0).getTime();
+  return !touched || Date.now() - touched > STALE_RUNNING_MS;
+}
+
+async function prepareEscalationRunLog(jobKey, createData, options = {}) {
+  const existing = await EscalationRunLog.findOne({ jobKey }).lean();
+  if (existing && !options.force) {
+    if (existing.status === 'success' || existing.status === 'skipped') {
+      return { skip: true, log: existing, message: `Job already processed for ${jobKey}.` };
+    }
+    if (existing.status === 'running' && !isStaleRunningLog(existing)) {
+      return { skip: true, log: existing, message: `Job is already running for ${jobKey}.` };
+    }
+  }
+
+  const reset = {
+    ...createData,
+    status: 'running',
+    error: '',
+    sentAt: null,
+  };
+  const log = existing
+    ? await EscalationRunLog.findOneAndUpdate({ jobKey }, { $set: reset }, { new: true })
+    : await EscalationRunLog.create({ jobKey, ...reset });
+  return { skip: false, log };
 }
 
 function buildFrnEscalationRow(doc) {
@@ -1193,22 +1224,15 @@ async function runEscalationSlot(slot, options = {}) {
 
   const slotWindow = await getSlotWindow(slot, options.referenceDate || new Date());
   const jobKey = buildJobKey(slotWindow);
-  const existing = await EscalationRunLog.findOne({ jobKey }).lean();
-  if (existing && !options.force) {
-    return { ok: true, skipped: true, message: `Job already processed for ${jobKey}.`, log: existing };
-  }
-
-  let log = existing
-    ? await EscalationRunLog.findOneAndUpdate({ jobKey }, { $set: { status: 'running', error: '' } }, { new: true })
-    : await EscalationRunLog.create({
-        jobKey,
-        slot,
-        category: 'main',
-        trigger: options.trigger || 'scheduler',
-        windowStart: slotWindow.windowStart,
-        windowEnd: slotWindow.windowEnd,
-        status: 'running',
-      });
+  const prepared = await prepareEscalationRunLog(jobKey, {
+    slot,
+    category: 'main',
+    trigger: options.trigger || 'scheduler',
+    windowStart: slotWindow.windowStart,
+    windowEnd: slotWindow.windowEnd,
+  }, options);
+  if (prepared.skip) return { ok: true, skipped: true, message: prepared.message, log: prepared.log };
+  let log = prepared.log;
 
   try {
     const recipients = await getEscalationRecipients('main_combined');
@@ -1270,22 +1294,15 @@ async function runUrEscalationSlot(slot, options = {}) {
 
   const slotWindow = await getUrSlotWindow(slot, options.referenceDate || new Date());
   const jobKey = buildJobKey(slotWindow);
-  const existing = await EscalationRunLog.findOne({ jobKey }).lean();
-  if (existing && !options.force) {
-    return { ok: true, skipped: true, message: `Job already processed for ${jobKey}.`, log: existing };
-  }
-
-  let log = existing
-    ? await EscalationRunLog.findOneAndUpdate({ jobKey }, { $set: { status: 'running', error: '' } }, { new: true })
-    : await EscalationRunLog.create({
-        jobKey,
-        slot,
-        category: slotWindow.category,
-        trigger: options.trigger || 'scheduler',
-        windowStart: slotWindow.windowStart,
-        windowEnd: slotWindow.windowEnd,
-        status: 'running',
-      });
+  const prepared = await prepareEscalationRunLog(jobKey, {
+    slot,
+    category: slotWindow.category,
+    trigger: options.trigger || 'scheduler',
+    windowStart: slotWindow.windowStart,
+    windowEnd: slotWindow.windowEnd,
+  }, options);
+  if (prepared.skip) return { ok: true, skipped: true, message: prepared.message, log: prepared.log };
+  let log = prepared.log;
 
   try {
     const recipients = await getEscalationRecipients(slotWindow.category);
@@ -1344,22 +1361,15 @@ async function runSrEscalationSlot(slot, options = {}) {
 
   const slotWindow = await getSrSlotWindow(slot, options.referenceDate || new Date());
   const jobKey = buildJobKey(slotWindow);
-  const existing = await EscalationRunLog.findOne({ jobKey }).lean();
-  if (existing && !options.force) {
-    return { ok: true, skipped: true, message: `Job already processed for ${jobKey}.`, log: existing };
-  }
-
-  let log = existing
-    ? await EscalationRunLog.findOneAndUpdate({ jobKey }, { $set: { status: 'running', error: '' } }, { new: true })
-    : await EscalationRunLog.create({
-        jobKey,
-        slot,
-        category: 'sr',
-        trigger: options.trigger || 'scheduler',
-        windowStart: slotWindow.windowStart,
-        windowEnd: slotWindow.windowEnd,
-        status: 'running',
-      });
+  const prepared = await prepareEscalationRunLog(jobKey, {
+    slot,
+    category: 'sr',
+    trigger: options.trigger || 'scheduler',
+    windowStart: slotWindow.windowStart,
+    windowEnd: slotWindow.windowEnd,
+  }, options);
+  if (prepared.skip) return { ok: true, skipped: true, message: prepared.message, log: prepared.log };
+  let log = prepared.log;
 
   try {
     const recipients = await getEscalationRecipients('sr_escalation');
@@ -1421,22 +1431,15 @@ async function runToEscalationSlot(slot, options = {}) {
 
   const slotWindow = await getToSlotWindow(slot, options.referenceDate || new Date());
   const jobKey = buildJobKey(slotWindow);
-  const existing = await EscalationRunLog.findOne({ jobKey }).lean();
-  if (existing && !options.force) {
-    return { ok: true, skipped: true, message: `Job already processed for ${jobKey}.`, log: existing };
-  }
-
-  let log = existing
-    ? await EscalationRunLog.findOneAndUpdate({ jobKey }, { $set: { status: 'running', error: '' } }, { new: true })
-    : await EscalationRunLog.create({
-        jobKey,
-        slot,
-        category: 'to',
-        trigger: options.trigger || 'scheduler',
-        windowStart: slotWindow.windowStart,
-        windowEnd: slotWindow.windowEnd,
-        status: 'running',
-      });
+  const prepared = await prepareEscalationRunLog(jobKey, {
+    slot,
+    category: 'to',
+    trigger: options.trigger || 'scheduler',
+    windowStart: slotWindow.windowStart,
+    windowEnd: slotWindow.windowEnd,
+  }, options);
+  if (prepared.skip) return { ok: true, skipped: true, message: prepared.message, log: prepared.log };
+  let log = prepared.log;
 
   try {
     const recipients = await getEscalationRecipients('to_escalation');
@@ -1500,22 +1503,15 @@ async function runCustomEscalationSlot(slot, options = {}) {
 
   const slotWindow = await getCustomEscalationSlotWindow(slot, options.referenceDate || new Date());
   const jobKey = buildJobKey(slotWindow);
-  const existing = await EscalationRunLog.findOne({ jobKey }).lean();
-  if (existing && !options.force) {
-    return { ok: true, skipped: true, message: `Job already processed for ${jobKey}.`, log: existing };
-  }
-
-  let log = existing
-    ? await EscalationRunLog.findOneAndUpdate({ jobKey }, { $set: { status: 'running', error: '' } }, { new: true })
-    : await EscalationRunLog.create({
-        jobKey,
-        slot,
-        category: slotWindow.category,
-        trigger: options.trigger || 'scheduler',
-        windowStart: slotWindow.windowStart,
-        windowEnd: slotWindow.windowEnd,
-        status: 'running',
-      });
+  const prepared = await prepareEscalationRunLog(jobKey, {
+    slot,
+    category: slotWindow.category,
+    trigger: options.trigger || 'scheduler',
+    windowStart: slotWindow.windowStart,
+    windowEnd: slotWindow.windowEnd,
+  }, options);
+  if (prepared.skip) return { ok: true, skipped: true, message: prepared.message, log: prepared.log };
+  let log = prepared.log;
 
   try {
     const recipients = await getEscalationRecipients(slotWindow.reportType);
@@ -1573,30 +1569,36 @@ function initEscalationScheduler() {
 
   console.log('[Escalation] Scheduler armed with configurable escalation timings from Settings.');
   const { getReportTypeForSlot } = require('../utils/escalationSchedule');
+  let schedulerBusy = false;
   const timer = setInterval(async () => {
+    if (schedulerBusy) return;
+    schedulerBusy = true;
     try {
-      const slots = await getSlotsForCurrentTime(new Date());
+      const referenceDate = new Date();
+      const slots = await getSlotsForCurrentTime(referenceDate);
       if (!slots.length) return;
       for (const slot of slots) {
         const reportType = getReportTypeForSlot(slot);
         let result;
         if (reportType === 'main_combined') {
-          result = await runEscalationSlot(slot, { trigger: 'scheduler' });
+          result = await runEscalationSlot(slot, { trigger: 'scheduler', referenceDate });
         } else if (reportType === 'sr_escalation') {
-          result = await runSrEscalationSlot(slot, { trigger: 'scheduler' });
+          result = await runSrEscalationSlot(slot, { trigger: 'scheduler', referenceDate });
         } else if (reportType === 'to_escalation') {
-          result = await runToEscalationSlot(slot, { trigger: 'scheduler' });
+          result = await runToEscalationSlot(slot, { trigger: 'scheduler', referenceDate });
         } else if (reportType === 'ur_scrap' || reportType === 'ur_followup') {
-          result = await runUrEscalationSlot(slot, { trigger: 'scheduler' });
+          result = await runUrEscalationSlot(slot, { trigger: 'scheduler', referenceDate });
         } else {
-          result = await runCustomEscalationSlot(slot, { trigger: 'scheduler' });
+          result = await runCustomEscalationSlot(slot, { trigger: 'scheduler', referenceDate });
         }
         if (result && !result.skipped) console.log(`[Escalation] ${slot} slot: ${result.message}`);
       }
     } catch (error) {
       console.error('[Escalation] Scheduler error:', error.message);
+    } finally {
+      schedulerBusy = false;
     }
-  }, 30000);
+  }, SCHEDULER_TICK_MS);
 
   if (typeof timer.unref === 'function') timer.unref();
 }

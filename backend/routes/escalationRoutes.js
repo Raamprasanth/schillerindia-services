@@ -42,7 +42,7 @@ const CUSTOM_ESCALATION_STATUS = {
     runMinute: 30,
   },
 };
-const STALE_RUNNING_MS = Math.max(2 * 60 * 1000, parseInt(process.env.ESCALATION_STALE_RUNNING_MS || '150000', 10) || 150000);
+const STALE_RUNNING_MS = Math.max(60 * 1000, parseInt(process.env.ESCALATION_STALE_RUNNING_MS || '180000', 10) || 180000);
 
 function toIstDate(date = new Date()) {
   return new Date(date.getTime() + IST_OFFSET_MS);
