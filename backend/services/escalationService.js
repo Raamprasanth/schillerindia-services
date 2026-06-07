@@ -1195,10 +1195,28 @@ async function sendEscalationWorkbookWithNode(payload, outputPath, sender) {
 async function sendEscalationWorkbook(payload, outputPath, senderConfig = null) {
   try {
     const sender = senderConfig || await getReadyEscalationSenderConfig();
-    await runEscalationMailer(payload, outputPath, sender);
+    return await runEscalationMailer(payload, outputPath, sender);
   } catch (error) {
     throw new Error(error.message || 'Escalation mail send failed. The report file was generated; please retry from escalation status.');
   }
+}
+
+function buildMailAcceptedFields(mailResult = {}) {
+  const result = mailResult.mailResult || mailResult || {};
+  const provider = String(result.provider || '').trim();
+  const messageId = String(result.messageId || '').trim();
+  const acceptedTo = String(result.to || '').trim();
+  const parts = [
+    provider ? `Accepted by ${provider} API` : 'Mail accepted by provider',
+    messageId ? `Message ID: ${messageId}` : '',
+    acceptedTo ? `To: ${acceptedTo}` : '',
+  ].filter(Boolean);
+  return {
+    message: parts.join(' | '),
+    mailProvider: provider,
+    mailMessageId: messageId,
+    mailAcceptedTo: acceptedTo,
+  };
 }
 
 async function sendEscalationSenderTest(toEmail = '') {
@@ -1277,7 +1295,7 @@ async function runEscalationSlot(slot, options = {}) {
     const sender = await getReadyEscalationSenderConfig();
     const payload = buildMailPayload(slotWindow, data);
     payload.to = recipients;
-    await sendEscalationWorkbook(payload, reportPath, sender);
+    const mailResult = await sendEscalationWorkbook(payload, reportPath, sender);
     await clearGenericEscalationQueue(data.queueDocs || []);
 
     log = await EscalationRunLog.findByIdAndUpdate(
@@ -1289,6 +1307,7 @@ async function runEscalationSlot(slot, options = {}) {
           estCount: data.estimationRows.length,
           totalCount,
           reportPath,
+          ...buildMailAcceptedFields(mailResult),
           sentAt: new Date(),
         },
       },
@@ -1345,7 +1364,7 @@ async function runUrEscalationSlot(slot, options = {}) {
     const sender = await getReadyEscalationSenderConfig();
     const payload = buildUrMailPayload(slotWindow, data);
     payload.to = recipients;
-    await sendEscalationWorkbook(payload, reportPath, sender);
+    const mailResult = await sendEscalationWorkbook(payload, reportPath, sender);
     await clearUrCustomEscalationQueue(data.queueDocs || []);
 
     log = await EscalationRunLog.findByIdAndUpdate(
@@ -1356,6 +1375,7 @@ async function runUrEscalationSlot(slot, options = {}) {
           urCount: data.rows.length,
           totalCount: data.rows.length,
           reportPath,
+          ...buildMailAcceptedFields(mailResult),
           sentAt: new Date(),
         },
       },
@@ -1414,7 +1434,7 @@ async function runSrEscalationSlot(slot, options = {}) {
     const sender = await getReadyEscalationSenderConfig();
     const payload = buildSrMailPayload(slotWindow, data);
     payload.to = recipients;
-    await sendEscalationWorkbook(payload, reportPath, sender);
+    const mailResult = await sendEscalationWorkbook(payload, reportPath, sender);
     await clearSrEscalationQueue(data.queueDocs || []);
 
     log = await EscalationRunLog.findByIdAndUpdate(
@@ -1426,6 +1446,7 @@ async function runSrEscalationSlot(slot, options = {}) {
           estCount: data.estimationRows.length,
           totalCount,
           reportPath,
+          ...buildMailAcceptedFields(mailResult),
           sentAt: new Date(),
         },
       },
@@ -1485,7 +1506,7 @@ async function runToEscalationSlot(slot, options = {}) {
     const sender = await getReadyEscalationSenderConfig();
     const payload = buildToMailPayload(slotWindow, data);
     payload.to = recipients;
-    await sendEscalationWorkbook(payload, reportPath, sender);
+    const mailResult = await sendEscalationWorkbook(payload, reportPath, sender);
     await clearToEscalationQueue(data.queueDocs || []);
 
     log = await EscalationRunLog.findByIdAndUpdate(
@@ -1498,6 +1519,7 @@ async function runToEscalationSlot(slot, options = {}) {
           urCount: (data.underRepairRows || []).length,
           totalCount,
           reportPath,
+          ...buildMailAcceptedFields(mailResult),
           sentAt: new Date(),
         },
       },
@@ -1553,7 +1575,7 @@ async function runCustomEscalationSlot(slot, options = {}) {
     const sender = await getReadyEscalationSenderConfig();
     const payload = buildCustomMailPayload(slotWindow, data);
     payload.to = recipients;
-    await sendEscalationWorkbook(payload, reportPath, sender);
+    const mailResult = await sendEscalationWorkbook(payload, reportPath, sender);
     await clearUrCustomEscalationQueue(data.queueDocs || []);
 
     log = await EscalationRunLog.findByIdAndUpdate(
@@ -1563,6 +1585,7 @@ async function runCustomEscalationSlot(slot, options = {}) {
           status: 'success',
           totalCount: data.rows.length,
           reportPath,
+          ...buildMailAcceptedFields(mailResult),
           sentAt: new Date(),
         },
       },

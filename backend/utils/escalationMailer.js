@@ -210,9 +210,20 @@ async function sendEmailViaApiProvider(mailOptions, attachmentPath) {
   const provider = resolveApiProvider();
   if (!provider) return false;
   const body = buildApiBody(provider.name, mailOptions, attachmentPath);
-  await postJson(provider, body);
-  console.log(`[EscalationMailer] Mail sent via ${provider.name} API.`);
-  return true;
+  const response = await postJson(provider, body);
+  let parsed = {};
+  try { parsed = response.body ? JSON.parse(response.body) : {}; } catch (_) {}
+  const messageId = parsed.messageId || parsed.id || parsed.message_id || '';
+  console.log(`[EscalationMailer] Mail accepted via ${provider.name} API${messageId ? ` (${messageId})` : ''}. To: ${mailOptions.to}`);
+  return {
+    provider: provider.name,
+    statusCode: response.statusCode,
+    messageId,
+    responseBody: response.body || '',
+    to: mailOptions.to,
+    from: mailOptions.from,
+    subject: mailOptions.subject,
+  };
 }
 
 function getHeaders(rows, preferred = null) {
@@ -440,7 +451,7 @@ async function sendEmail(payload, attachmentPath, senderConfig) {
   if (shouldPreferApiProvider()) {
     try {
       const sentViaApi = await sendEmailViaApiProvider(mailOptions, attachmentPath);
-      if (sentViaApi) return;
+      if (sentViaApi) return sentViaApi;
     } catch (error) {
       console.warn(`[EscalationMailer] API provider failed before SMTP fallback: ${error.message}`);
       if (apiOnly) {
@@ -462,7 +473,12 @@ async function sendEmail(payload, attachmentPath, senderConfig) {
     try {
       await transporter.verify();
       await transporter.sendMail(mailOptions);
-      return;
+      return {
+        provider: 'smtp',
+        to: mailOptions.to,
+        from: mailOptions.from,
+        subject: mailOptions.subject,
+      };
     } catch (error) {
       lastError = error;
       const cleanError = cleanMailerError(error);
@@ -477,7 +493,7 @@ async function sendEmail(payload, attachmentPath, senderConfig) {
   if (!apiOnly) {
     try {
       const sentViaApi = await sendEmailViaApiProvider(mailOptions, attachmentPath);
-      if (sentViaApi) return;
+      if (sentViaApi) return sentViaApi;
     } catch (error) {
       console.warn(`[EscalationMailer] API fallback failed after SMTP retries: ${error.message}`);
     }
@@ -503,8 +519,8 @@ async function runEscalationMailer(payload, outputPath, senderConfig) {
       await buildXlsx(payload, outputPath);
     }
     
-    await sendEmail(payload, outputPath, senderConfig);
-    return { success: true, outputPath };
+    const mailResult = await sendEmail(payload, outputPath, senderConfig);
+    return { success: true, outputPath, mailResult };
   } catch (error) {
     console.error("Error running escalation mailer:", error);
     throw error;

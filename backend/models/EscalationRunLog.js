@@ -15,6 +15,10 @@ const escalationRunLogSchema = new mongoose.Schema(
     reportPath:  { type: String, default: '' },
     status:      { type: String, default: 'running' },
     error:       { type: String, default: '' },
+    message:     { type: String, default: '' },
+    mailProvider:{ type: String, default: '' },
+    mailMessageId: { type: String, default: '' },
+    mailAcceptedTo: { type: String, default: '' },
     sentAt:      { type: Date, default: null },
   },
   {
