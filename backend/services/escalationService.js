@@ -1097,7 +1097,6 @@ async function buildWorkbookWithNode(payload, outputPath) {
     worksheet.addRow([String(payload.body || '').split(/\r?\n/).filter(Boolean).join(' | ')]);
     worksheet.addRow([]);
     if (!keys.length) {
-      worksheet.addRow(['No records']);
       return;
     }
     worksheet.addRow(keys);

@@ -10,11 +10,9 @@ async function test() {
     sheets: [
       {
         name: 'Test Sheet',
+        template: 'Dispatch Escalation',
         headers: ['ID', 'Name', 'Status'],
-        rows: [
-          { ID: '1', Name: 'Alice', Status: 'Pending' },
-          { ID: '2', Name: 'Bob', Status: 'Completed' }
-        ]
+        rows: []
       }
     ]
   };

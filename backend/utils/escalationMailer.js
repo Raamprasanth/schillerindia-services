@@ -234,8 +234,7 @@ async function buildXlsx(payload, outputPath) {
     let headers = getHeaders(rows, sheet.headers);
 
     if (headers.length === 0) {
-      headers = ["Message"];
-      rows = [{ Message: "No records" }];
+      return;
     }
 
     // Add headers
@@ -364,8 +363,6 @@ async function buildTemplateXlsx(payload, outputPath) {
         });
         addedRow.commit();
       });
-    } else {
-      ws.getRow(2).getCell(1).value = "No records";
     }
 
     ws.views = [{ state: 'frozen', ySplit: 1 }];
