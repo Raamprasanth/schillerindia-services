@@ -876,6 +876,7 @@ function fillEngSelect(selId, division, selected) {
   (document.getElementById('topbar-date')||{}).textContent =new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   fetchAllEngineers();
   loadData();
+  refreshMailAckStatus();
   const oldSections=document.querySelectorAll('#modal-update .modal-body > .form-section');
   oldSections.forEach((section, index) => {
     if(index < 3) section.style.display='none';
@@ -1062,6 +1063,7 @@ var mailAckVisible = localStorage.getItem('mail_ack_visible') === '1';
 function toggleMailAck() {
   mailAckVisible = !mailAckVisible;
   localStorage.setItem('mail_ack_visible', mailAckVisible ? '1' : '0');
+  if(mailAckVisible) refreshMailAckStatus();
   syncMailAck();
 }
 function syncMailAck() {
@@ -1073,6 +1075,12 @@ function syncMailAck() {
   if(w3) w3.style.display = mailAckVisible ? 'grid' : 'none';
 }
 document.addEventListener('DOMContentLoaded', () => { setTimeout(syncMailAck, 100); });
+
+function refreshMailAckStatus(){
+  if(typeof loadEscalationStatus === 'function') loadEscalationStatus('estimation');
+  if(typeof loadSrEscalationStatus === 'function') loadSrEscalationStatus('estimation');
+  if(typeof loadToEscalationStatus === 'function') loadToEscalationStatus('estimation');
+}
 
 async function loadData(){
   setLoading();
