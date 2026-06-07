@@ -42,7 +42,9 @@ const CUSTOM_ESCALATION_STATUS = {
     runMinute: 30,
   },
 };
-const STALE_RUNNING_MS = Math.max(60 * 1000, parseInt(process.env.ESCALATION_STALE_RUNNING_MS || '180000', 10) || 180000);
+const MAIL_TIMEOUT_MS = Math.max(30000, parseInt(process.env.ESCALATION_MAIL_TIMEOUT_MS || '120000', 10) || 120000);
+const DEFAULT_STALE_RUNNING_MS = Math.max(10 * 60 * 1000, MAIL_TIMEOUT_MS * 4 + 60 * 1000);
+const STALE_RUNNING_MS = Math.max(60 * 1000, parseInt(process.env.ESCALATION_STALE_RUNNING_MS || String(DEFAULT_STALE_RUNNING_MS), 10) || DEFAULT_STALE_RUNNING_MS);
 
 function toIstDate(date = new Date()) {
   return new Date(date.getTime() + IST_OFFSET_MS);
@@ -118,7 +120,7 @@ async function markStaleRunningEscalations(req, res, next) {
       {
         $set: {
           status: 'failed',
-          error: 'Escalation timed out before mail completion. Check SMTP sender settings and retry.',
+          error: 'Escalation mail did not finish within the expected time. Check the configured mail provider/API key and retry.',
         },
       }
     );

@@ -64,6 +64,20 @@ function normalizeSmtpPassword(password, config = {}) {
   return value;
 }
 
+function hasApiMailProviderConfigured() {
+  const provider = String(process.env.ESCALATION_MAIL_PROVIDER || '').trim().toLowerCase();
+  if (provider === 'smtp') return false;
+  return Boolean(
+    process.env.BREVO_API_KEY ||
+    process.env.SENDINBLUE_API_KEY ||
+    process.env.ESCALATION_BREVO_API_KEY ||
+    process.env.SENDGRID_API_KEY ||
+    process.env.ESCALATION_SENDGRID_API_KEY ||
+    process.env.RESEND_API_KEY ||
+    process.env.ESCALATION_RESEND_API_KEY
+  );
+}
+
 function normalizeSenderConfig(config = {}, existing = {}) {
   const smtpHost = String(config.smtpHost || existing.smtpHost || process.env.ESCALATION_SMTP_HOST || '').trim();
   const smtpUser = normalizeEmail(config.smtpUser || existing.smtpUser || process.env.ESCALATION_SMTP_USER || '');
@@ -287,17 +301,19 @@ router.put('/escalation-sender', async (req, res) => {
     if (!isValidEmail(sender.fromEmail)) {
       return res.status(400).json({ success: false, message: 'Valid sender email is required.' });
     }
-    if (!sender.smtpHost) {
-      return res.status(400).json({ success: false, message: 'SMTP host is required.' });
-    }
-    if (!sender.smtpPort || Number.isNaN(Number(sender.smtpPort))) {
-      return res.status(400).json({ success: false, message: 'Valid SMTP port is required.' });
-    }
-    if (!isValidEmail(sender.smtpUser)) {
-      return res.status(400).json({ success: false, message: 'Valid SMTP user is required.' });
-    }
-    if (!String(sender.smtpPass || '').trim()) {
-      return res.status(400).json({ success: false, message: 'SMTP password is required.' });
+    if (!hasApiMailProviderConfigured()) {
+      if (!sender.smtpHost) {
+        return res.status(400).json({ success: false, message: 'SMTP host is required.' });
+      }
+      if (!sender.smtpPort || Number.isNaN(Number(sender.smtpPort))) {
+        return res.status(400).json({ success: false, message: 'Valid SMTP port is required.' });
+      }
+      if (!isValidEmail(sender.smtpUser)) {
+        return res.status(400).json({ success: false, message: 'Valid SMTP user is required.' });
+      }
+      if (!String(sender.smtpPass || '').trim()) {
+        return res.status(400).json({ success: false, message: 'SMTP password is required.' });
+      }
     }
 
     const saved = await AppSetting.findOneAndUpdate(

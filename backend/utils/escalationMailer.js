@@ -122,6 +122,11 @@ function shouldPreferApiProvider() {
   return requested !== 'smtp';
 }
 
+function shouldUseApiOnly() {
+  const requested = String(process.env.ESCALATION_MAIL_PROVIDER || '').trim().toLowerCase();
+  return requested !== 'smtp' && Boolean(resolveApiProvider());
+}
+
 function postJson(provider, body) {
   const json = JSON.stringify(body);
   const headers = {
@@ -407,8 +412,12 @@ async function sendEmail(payload, attachmentPath, senderConfig) {
     ? Boolean(senderConfig.startTls)
     : (process.env.ESCALATION_SMTP_STARTTLS || "true").trim().toLowerCase() !== "false";
 
-  if (!smtpHost || !fromAddr || toAddrs.length === 0) {
-    throw new Error("Email settings are incomplete. Set ESCALATION_SMTP_HOST, ESCALATION_EMAIL_FROM and ESCALATION_EMAIL_TO.");
+  const apiOnly = shouldUseApiOnly();
+  if (!fromAddr || toAddrs.length === 0) {
+    throw new Error("Email settings are incomplete. Set ESCALATION_EMAIL_FROM and escalation receiver email.");
+  }
+  if (!apiOnly && !smtpHost) {
+    throw new Error("SMTP settings are incomplete. Set ESCALATION_SMTP_HOST or configure an API mail provider.");
   }
 
   const attachmentName = path.basename(attachmentPath);
@@ -434,6 +443,9 @@ async function sendEmail(payload, attachmentPath, senderConfig) {
       if (sentViaApi) return;
     } catch (error) {
       console.warn(`[EscalationMailer] API provider failed before SMTP fallback: ${error.message}`);
+      if (apiOnly) {
+        throw new Error(`Escalation API mail send failed: ${error.message}`);
+      }
     }
   }
 
@@ -462,11 +474,13 @@ async function sendEmail(payload, attachmentPath, senderConfig) {
     }
   }
 
-  try {
-    const sentViaApi = await sendEmailViaApiProvider(mailOptions, attachmentPath);
-    if (sentViaApi) return;
-  } catch (error) {
-    console.warn(`[EscalationMailer] API fallback failed after SMTP retries: ${error.message}`);
+  if (!apiOnly) {
+    try {
+      const sentViaApi = await sendEmailViaApiProvider(mailOptions, attachmentPath);
+      if (sentViaApi) return;
+    } catch (error) {
+      console.warn(`[EscalationMailer] API fallback failed after SMTP retries: ${error.message}`);
+    }
   }
 
   throw new Error(`${cleanMailerError(lastError)} Attempts: ${MAIL_ATTEMPTS}. Attachment kept at ${attachmentPath}`);

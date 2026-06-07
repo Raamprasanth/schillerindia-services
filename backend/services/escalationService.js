@@ -28,8 +28,9 @@ const BUNDLED_PYTHON = path.join(os.homedir(), '.cache', 'codex-runtimes', 'code
 const MAIL_ATTEMPTS = Math.max(1, parseInt(process.env.ESCALATION_MAIL_ATTEMPTS || '2', 10) || 2);
 const MAIL_TIMEOUT_MS = Math.max(30000, parseInt(process.env.ESCALATION_MAIL_TIMEOUT_MS || '120000', 10) || 120000);
 const SCHEDULER_GRACE_MS = Math.max(60000, parseInt(process.env.ESCALATION_SCHEDULER_GRACE_MS || '60000', 10) || 60000);
-const SCHEDULER_TICK_MS = Math.max(5000, parseInt(process.env.ESCALATION_SCHEDULER_TICK_MS || '10000', 10) || 10000);
-const STALE_RUNNING_MS = Math.max(60000, parseInt(process.env.ESCALATION_STALE_RUNNING_MS || '180000', 10) || 180000);
+const SCHEDULER_TICK_MS = Math.max(1000, parseInt(process.env.ESCALATION_SCHEDULER_TICK_MS || '1000', 10) || 1000);
+const DEFAULT_STALE_RUNNING_MS = Math.max(10 * 60 * 1000, MAIL_TIMEOUT_MS * 4 + 60 * 1000);
+const STALE_RUNNING_MS = Math.max(60000, parseInt(process.env.ESCALATION_STALE_RUNNING_MS || String(DEFAULT_STALE_RUNNING_MS), 10) || DEFAULT_STALE_RUNNING_MS);
 const UR_DAILY_TYPES = ['UR Stock', 'WS Stock', 'External Repair', 'Completed', 'Supplier Warrenty', 'No Fault', 'Given to PSP'];
 const CUSTOM_ESCALATIONS = {
   prf_ob: {
@@ -94,6 +95,20 @@ function normalizeSmtpPassword(password, sender = {}) {
   return value;
 }
 
+function hasApiMailProviderConfigured() {
+  const provider = String(process.env.ESCALATION_MAIL_PROVIDER || '').trim().toLowerCase();
+  if (provider === 'smtp') return false;
+  return Boolean(
+    process.env.BREVO_API_KEY ||
+    process.env.SENDINBLUE_API_KEY ||
+    process.env.ESCALATION_BREVO_API_KEY ||
+    process.env.SENDGRID_API_KEY ||
+    process.env.ESCALATION_SENDGRID_API_KEY ||
+    process.env.RESEND_API_KEY ||
+    process.env.ESCALATION_RESEND_API_KEY
+  );
+}
+
 async function getEscalationRecipients(reportType = '') {
   try {
     const doc = await AppSetting.findOne({ key: 'escalation_emails' }).lean();
@@ -146,8 +161,9 @@ async function getEscalationSenderConfig() {
 }
 
 function getEscalationSenderConfigError(sender = {}) {
-  if (!String(sender.smtpHost || '').trim()) return 'Escalation sender SMTP host is not configured.';
   if (!String(sender.fromEmail || '').trim()) return 'Escalation sender from email is not configured.';
+  if (hasApiMailProviderConfigured()) return '';
+  if (!String(sender.smtpHost || '').trim()) return 'Escalation sender SMTP host is not configured.';
   if (!String(sender.smtpUser || '').trim()) return 'Escalation sender SMTP user is not configured.';
   if (!String(sender.smtpPass || '').trim()) return 'Escalation sender SMTP password is not configured.';
   return '';
