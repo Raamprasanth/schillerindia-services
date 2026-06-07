@@ -2473,7 +2473,7 @@ function bumpToEscalationQueue(delta=1){
 async function loadEscalationStatus(moduleKey){
   ensureEscalationBanner(moduleKey);
   try{
-    const res=await fetch(API_BASE+'/api/escalation/status',{headers:authHeaders()});
+    const res=await fetch(API+'/api/escalation/status',{headers:authHeaders()});
     if(!res.ok) return;
     const data=await res.json();
     const recipients=Array.isArray(data&&data.recipients)?data.recipients:[];
@@ -2488,7 +2488,7 @@ async function loadEscalationStatus(moduleKey){
 async function loadSrEscalationStatus(moduleKey){
   ensureSrEscalationBanner(moduleKey);
   try{
-    const res=await fetch(API_BASE+'/api/escalation/status/sr',{headers:authHeaders()});
+    const res=await fetch(API+'/api/escalation/status/sr',{headers:authHeaders()});
     if(!res.ok) return;
     const data=await res.json();
     const recipients=Array.isArray(data&&data.recipients)?data.recipients:[];
@@ -2503,7 +2503,7 @@ async function loadSrEscalationStatus(moduleKey){
 async function loadToEscalationStatus(moduleKey){
   ensureToEscalationBanner(moduleKey);
   try{
-    const res=await fetch(API_BASE+'/api/escalation/status/to',{headers:authHeaders()});
+    const res=await fetch(API+'/api/escalation/status/to',{headers:authHeaders()});
     if(!res.ok) return;
     const data=await res.json();
     const recipients=Array.isArray(data&&data.recipients)?data.recipients:[];
