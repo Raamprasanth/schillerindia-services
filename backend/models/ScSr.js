@@ -8,6 +8,7 @@ const scSrSchema = new mongoose.Schema(
     description: { type: String, trim: true, required: true },
     qty: { type: Number, default: 0 },
     girNo: { type: String, trim: true, required: true },
+    srRef: { type: mongoose.Schema.Types.ObjectId, ref: 'Sr' },
     fromLocation: { type: String, trim: true, default: '' },
     toLocation: { type: String, trim: true, default: '' },
     toNo: { type: String, trim: true, default: '' },

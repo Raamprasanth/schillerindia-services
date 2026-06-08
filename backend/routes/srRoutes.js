@@ -79,6 +79,22 @@ router.post('/', async (req, res) => {
       remarks,
       createdBy: req.user?.name || req.user?.email || '',
     });
+
+    // Also create ScSr immediately as requested
+    await ScSr.create({
+      srRef: doc._id,
+      date,
+      division,
+      partNo,
+      description,
+      qty: Number(qty) || 0,
+      girNo,
+      fromLocation,
+      toLocation,
+      remarks,
+      createdBy: req.user?.name || req.user?.email || '',
+    });
+
     res.status(201).json(doc);
   } catch (err) {
     console.error('[POST /api/sr]', err);
@@ -100,6 +116,10 @@ router.put('/:id', async (req, res) => {
       runValidators: true,
     }).lean();
     if (!doc) return res.status(404).json({ message: 'SR item not found.' });
+
+    // Sync updates to ScSr
+    await ScSr.findOneAndUpdate({ srRef: req.params.id }, updates);
+
     res.json(doc);
   } catch (err) {
     console.error('[PUT /api/sr/:id]', err);
@@ -112,6 +132,10 @@ router.delete('/:id', async (req, res) => {
   try {
     const doc = await Sr.findByIdAndDelete(req.params.id);
     if (!doc) return res.status(404).json({ message: 'SR item not found.' });
+
+    // Remove from ScSr as well
+    await ScSr.findOneAndDelete({ srRef: req.params.id });
+
     res.json({ success: true, id: req.params.id });
   } catch (err) {
     console.error('[DELETE /api/sr/:id]', err);
@@ -139,21 +163,6 @@ router.post('/:id/close', async (req, res) => {
       createdBy: doc.createdBy,
       updatedBy: doc.updatedBy,
       closedBy: req.user?.name || req.user?.email || '',
-    });
-    
-    // Create ScSr
-    const scsrDoc = await ScSr.create({
-      date: doc.date,
-      division: doc.division,
-      partNo: doc.partNo,
-      description: doc.description,
-      qty: doc.qty,
-      girNo: doc.girNo,
-      fromLocation: doc.fromLocation,
-      toLocation: doc.toLocation,
-      remarks: doc.remarks,
-      createdBy: doc.createdBy,
-      updatedBy: doc.updatedBy,
     });
     
     // Delete from Sr
