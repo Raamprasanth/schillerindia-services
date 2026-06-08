@@ -413,7 +413,7 @@
             </div>
             <div class="ff">
               <label>Type of Report <span class="req">*</span></label>
-              <select id="f-reporttype">
+              <select id="f-reporttype" multiple size="6">
                 <option value="">Select type...</option>
                 <option value="all">ALL</option>
                 <option value="dispatchlist">Dispatch List</option>
@@ -601,7 +601,7 @@ function sortBy(k){if(sortKey===k) sortDir*=-1; else{sortKey=k;sortDir=1;} sortA
 function sortArr(){filtered.sort((a,b)=>{const av=String(a[sortKey]||'').toLowerCase(),bv=String(b[sortKey]||'').toLowerCase();return av<bv?-sortDir:av>bv?sortDir:0;});}
 
 const RT_CLASS={all:'rt-all',dispatchlist:'rt-dispatch',scraplist:'rt-scrap',stocklist:'rt-stock','prf/ob_completed':'rt-prf'};
-const RT_LABEL={all:'ALL',dispatchlist:'Dispatch List',scraplist:'Scrap List',stocklist:'Stock List','prf/ob_completed':'TO/SO Completed',all_escalation:'All Escalation',pending_frn:'Pending FRN',under_repair:'Under Repair',ob_pending:'OB Pending',estimation_pending:'Estimation Pending',main_combined:'Dispatch Escalation',sr_escalation:'FRN Replacement Escalation',to_escalation:'In House FRN Replacement',ur_followup:'Stock Escalation'};
+const RT_LABEL={all:'ALL',dispatchlist:'Dispatch List',scraplist:'Scrap List',stocklist:'Stock List','prf/ob_completed':'TO/SO Completed',all_escalation:'All Escalation',pending_frn:'Pending FRN',under_repair:'Under Repair',ob_pending:'OB Pending',estimation_pending:'Estimation Pending',main_combined:'Dispatch Escalation',sr_escalation:'DR Replacement',to_escalation:'TO Escalation',ur_followup:'Stock Escalation'};
 
 function renderTable(){
   const perPage=parseInt(document.getElementById('per-page').value)||10;
@@ -654,7 +654,7 @@ function openAddPanel(){
   (document.getElementById('panel-save-btn')||{}).textContent ='&#128190; Save Mail ID';
   document.getElementById('editing-id').value='';
   document.getElementById('f-email').value='';
-  document.getElementById('f-reporttype').value='';
+  [...document.getElementById('f-reporttype').options].forEach(o=>o.selected=false);
   document.getElementById('f-division').value='all';
   document.getElementById('f-region').value='all';
   document.getElementById('panel-err').classList.remove('show');
@@ -674,7 +674,7 @@ function openEditPanel(id){
   (document.getElementById('panel-save-btn')||{}).textContent ='&#128190; Update Mail ID';
   document.getElementById('editing-id').value=id;
   document.getElementById('f-email').value=m.email||'';
-  document.getElementById('f-reporttype').value=m.reportType||'all';
+  [...document.getElementById('f-reporttype').options].forEach(o=>o.selected=o.value===(m.reportType||'all'));
   document.getElementById('f-division').value=m.division||'all';
   document.getElementById('f-region').value=m.region||'all';
   document.getElementById('panel-err').classList.remove('show');
@@ -693,7 +693,7 @@ async function saveMailId(){
   const okEl=document.getElementById('panel-ok');
   errEl.classList.remove('show'); okEl.classList.remove('show');
   const email=document.getElementById('f-email').value.trim().toLowerCase();
-  const reportType=document.getElementById('f-reporttype').value;
+  const reportTypes=[...document.getElementById('f-reporttype').selectedOptions].map(o=>o.value).filter(Boolean);
   const division=document.getElementById('f-division').value;
   const region=document.getElementById('f-region').value;
   if(!email){errEl.textContent='&#9888; Email address is required.';errEl.classList.add('show');document.getElementById('f-email').focus();return;}
@@ -1007,7 +1007,7 @@ openAddPanel = function(){
   (document.getElementById('panel-save-btn')||{}).textContent ='Save Email';
   document.getElementById('editing-id').value='';
   document.getElementById('f-email').value='';
-  document.getElementById('f-reporttype').value='';
+  [...document.getElementById('f-reporttype').options].forEach(o=>o.selected=false);
   document.getElementById('f-division').value='all';
   document.getElementById('f-region').value='all';
   document.getElementById('panel-err').classList.remove('show');
@@ -1027,7 +1027,7 @@ openEditPanel = function(encodedId){
   (document.getElementById('panel-save-btn')||{}).textContent ='Update Email';
   document.getElementById('editing-id').value=id;
   document.getElementById('f-email').value=record.email||'';
-  document.getElementById('f-reporttype').value=record.reportType||'all';
+  [...document.getElementById('f-reporttype').options].forEach(o=>o.selected=o.value===(record.reportType||'all'));
   document.getElementById('f-division').value=record.division||'all';
   document.getElementById('f-region').value=record.region||'all';
   document.getElementById('panel-err').classList.remove('show');
@@ -1051,7 +1051,7 @@ saveMailId = async function(){
     document.getElementById('f-email').focus();
     return;
   }
-  if(!reportType){
+  if(!reportTypes.length){
     errEl.textContent='Type of Report is required.';
     errEl.classList.add('show');
     return;
@@ -1059,16 +1059,29 @@ saveMailId = async function(){
   const btn=document.getElementById('panel-save-btn');
   btn.disabled=true;
   btn.innerHTML='<span class="spin"></span> Saving...';
-  const payload={email,reportType,division,region};
+  const payloads=reportTypes.map(reportType=>({email,reportType,division,region}));
   try{
-    const res=await fetch(`${API}/api/settings/escalation-emails${editingId?`/${encodeURIComponent(editingId)}`:''}`,{
-      method:editingId?'PUT':'POST',
-      headers:authHeaders(),
-      body:JSON.stringify(payload)
-    });
-    if(res.status===401){logout();return;}
-    const data=await res.json();
-    if(!res.ok) throw new Error(data.message||'Save failed');
+    if(editingId){
+      const res=await fetch(`${API}/api/settings/escalation-emails/${encodeURIComponent(editingId)}`,{
+        method:'PUT',
+        headers:authHeaders(),
+        body:JSON.stringify(payloads[0])
+      });
+      if(res.status===401){logout();return;}
+      const data=await res.json();
+      if(!res.ok) throw new Error(data.message||'Save failed');
+    }else{
+      for(const payload of payloads){
+        const res=await fetch(`${API}/api/settings/escalation-emails`,{
+          method:'POST',
+          headers:authHeaders(),
+          body:JSON.stringify(payload)
+        });
+        if(res.status===401){logout();return;}
+        const data=await res.json();
+        if(!res.ok && res.status!==409) throw new Error(data.message||'Save failed');
+      }
+    }
     okEl.textContent=editingId?'Escalation email updated successfully!':'Escalation email added successfully!';
     okEl.classList.add('show');
     showToast(editingId?'Escalation email updated.':'Escalation email added.','ok');
@@ -1126,6 +1139,61 @@ loadMails();
 
 setTableLoading = function(){
   document.getElementById('mail-tbody').innerHTML='<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted);"><span class="spin"></span>Loading escalation emails...</td></tr>';
+};
+
+saveMailId = async function(){
+  const errEl=document.getElementById('panel-err');
+  const okEl=document.getElementById('panel-ok');
+  errEl.classList.remove('show');
+  okEl.classList.remove('show');
+  const email=document.getElementById('f-email').value.trim().toLowerCase();
+  const reportTypes=[...document.getElementById('f-reporttype').selectedOptions].map(o=>o.value).filter(Boolean);
+  const division=document.getElementById('f-division').value;
+  const region=document.getElementById('f-region').value;
+  if(!email){
+    errEl.textContent='Email address is required.';
+    errEl.classList.add('show');
+    document.getElementById('f-email').focus();
+    return;
+  }
+  if(!reportTypes.length){
+    errEl.textContent='Select at least one Type of Escalation.';
+    errEl.classList.add('show');
+    document.getElementById('f-reporttype').focus();
+    return;
+  }
+  const btn=document.getElementById('panel-save-btn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin"></span> Saving...';
+  try{
+    if(editingId){
+      const payload={email,reportType:reportTypes[0],division,region};
+      const res=await fetch(`${API}/api/settings/escalation-emails/${encodeURIComponent(editingId)}`,{method:'PUT',headers:authHeaders(),body:JSON.stringify(payload)});
+      if(res.status===401){logout();return;}
+      const data=await res.json();
+      if(!res.ok) throw new Error(data.message||'Save failed');
+    }else{
+      for(const reportType of reportTypes){
+        const payload={email,reportType,division,region};
+        const res=await fetch(`${API}/api/settings/escalation-emails`,{method:'POST',headers:authHeaders(),body:JSON.stringify(payload)});
+        if(res.status===401){logout();return;}
+        const data=await res.json();
+        if(!res.ok && res.status!==409) throw new Error(data.message||'Save failed');
+      }
+    }
+    okEl.textContent=editingId?'Escalation email updated successfully!':'Escalation email added successfully!';
+    okEl.classList.add('show');
+    showToast(editingId?'Escalation email updated.':'Escalation email added.','ok');
+    await loadMails();
+    setTimeout(closePanel,900);
+  }catch(e){
+    errEl.textContent='Error: '+e.message;
+    errEl.classList.add('show');
+    showToast('Save failed: '+e.message,'err');
+  }finally{
+    btn.disabled=false;
+    btn.textContent=editingId?'Update Email':'Save Email';
+  }
 };
 
 configureEscalationMailUi();
@@ -1251,19 +1319,19 @@ const DEFAULT_ESCALATION_TYPES = [
   { value:'main_combined', label:'Dispatch Escalation' },
   { value:'pending_frn', label:'Pending FRN Escalation' },
   { value:'estimation_pending', label:'Estimation Pending Escalation' },
-  { value:'sr_escalation', label:'FRN Replacement Escalation' },
-  { value:'to_escalation', label:'In House FRN Replacement' },
+  { value:'sr_escalation', label:'DR Replacement' },
+  { value:'to_escalation', label:'TO Escalation' },
   { value:'ur_followup', label:'Stock Escalation' },
-  { value:'ur_scrap', label:'Under Repair Scrap Escalation' },
+  { value:'ur_scrap', label:'Scrap Escalation' },
   { value:'prf_ob_escalation', label:'PRF/OB Escalation' },
   { value:'supplier_warranty_escalation', label:'Supplier Warranty Escalation' },
   { value:'external_repair_escalation', label:'External Repair Escalation' }
 ];
 const DEFAULT_ESCALATION_GROUPS = [
   { reportType: 'main_combined', label: 'Dispatch Escalation', defaultRunCount: 2, defaultTimes: ['11:30', '18:15', '20:00', '22:00'] },
-  { reportType: 'sr_escalation', label: 'FRN Replacement Escalation', defaultRunCount: 2, defaultTimes: ['11:00', '15:00', '18:00', '20:00'] },
-  { reportType: 'to_escalation', label: 'In House FRN Replacement', defaultRunCount: 2, defaultTimes: ['11:00', '16:30', '18:30', '20:30'] },
-  { reportType: 'ur_scrap', label: 'Under Repair Scrap Escalation', defaultRunCount: 1, defaultTimes: ['11:00', '15:00', '18:00', '20:00'] },
+  { reportType: 'sr_escalation', label: 'DR Replacement', defaultRunCount: 2, defaultTimes: ['11:00', '15:00', '18:00', '20:00'] },
+  { reportType: 'to_escalation', label: 'TO Escalation', defaultRunCount: 2, defaultTimes: ['11:00', '16:30', '18:30', '20:30'] },
+  { reportType: 'ur_scrap', label: 'Scrap Escalation', defaultRunCount: 1, defaultTimes: ['11:00', '15:00', '18:00', '20:00'] },
   { reportType: 'ur_followup', label: 'Stock Escalation', defaultRunCount: 1, defaultTimes: ['20:00', '22:00', '23:00', '23:59'] },
   { reportType: 'prf_ob_escalation', label: 'PRF/OB Escalation', defaultRunCount: 1, defaultTimes: ['16:30', '18:30', '20:30', '22:30'] },
   { reportType: 'supplier_warranty_escalation', label: 'Supplier Warranty Escalation', defaultRunCount: 1, defaultTimes: ['20:30', '22:30', '23:30', '23:59'] },
@@ -1302,7 +1370,9 @@ function populateEscalationTypeOptions(types){
   const formSel=document.getElementById('f-reporttype');
   const filterSel=document.getElementById('fl-rtype');
   if(formSel){
-    formSel.innerHTML='<option value="">Select escalation...</option>'+list.map(t=>`<option value="${esc(t.value)}">${esc(t.label)}</option>`).join('');
+    formSel.multiple=true;
+    formSel.size=Math.min(8,Math.max(4,list.length));
+    formSel.innerHTML=list.map(t=>`<option value="${esc(t.value)}">${esc(t.label)}</option>`).join('');
   }
   if(filterSel){
     filterSel.innerHTML='<option value="">All Escalation Types</option>'+list.map(t=>`<option value="${esc(t.value)}">${esc(t.label)}</option>`).join('');
@@ -1314,6 +1384,11 @@ configureEscalationMailUi = function(){
   if(search) search.placeholder='Search email or escalation type...';
   const reportLabel=document.getElementById('f-reporttype')?.closest('.ff')?.querySelector('label');
   if(reportLabel) reportLabel.innerHTML='Type of Escalation <span class="req">*</span>';
+  const reportSelect=document.getElementById('f-reporttype');
+  if(reportSelect){
+    reportSelect.multiple=true;
+    reportSelect.size=Math.max(4,reportSelect.options.length||6);
+  }
   const headers=document.querySelectorAll('.mail-table thead th');
   if(headers[0]) headers[0].textContent='ID';
   if(headers[1]) headers[1].textContent='Email';

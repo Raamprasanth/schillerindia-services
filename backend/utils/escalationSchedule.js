@@ -5,9 +5,9 @@ const ESCALATION_SCHEDULE_KEY = 'escalation_schedule';
 
 const DEFAULT_ESCALATION_GROUPS = [
   { reportType: 'main_combined', label: 'Dispatch Escalation', defaultRunCount: 2, defaultTimes: ['11:30', '18:15', '20:00', '22:00'] },
-  { reportType: 'sr_escalation', label: 'FRN Replacement Escalation', defaultRunCount: 2, defaultTimes: ['11:00', '15:00', '18:00', '20:00'] },
-  { reportType: 'to_escalation', label: 'In House FRN Replacement', defaultRunCount: 2, defaultTimes: ['11:00', '16:30', '18:30', '20:30'] },
-  { reportType: 'ur_scrap', label: 'Under Repair Scrap Escalation', defaultRunCount: 1, defaultTimes: ['11:00', '15:00', '18:00', '20:00'] },
+  { reportType: 'sr_escalation', label: 'DR Replacement', defaultRunCount: 2, defaultTimes: ['11:00', '15:00', '18:00', '20:00'] },
+  { reportType: 'to_escalation', label: 'TO Escalation', defaultRunCount: 2, defaultTimes: ['11:00', '16:30', '18:30', '20:30'] },
+  { reportType: 'ur_scrap', label: 'Scrap Escalation', defaultRunCount: 1, defaultTimes: ['11:00', '15:00', '18:00', '20:00'] },
   { reportType: 'ur_followup', label: 'Stock Escalation', defaultRunCount: 1, defaultTimes: ['20:00', '22:00', '23:00', '23:59'] },
   { reportType: 'prf_ob_escalation', label: 'PRF/OB Escalation', defaultRunCount: 1, defaultTimes: ['16:30', '18:30', '20:30', '22:30'] },
   { reportType: 'supplier_warranty_escalation', label: 'Supplier Warranty Escalation', defaultRunCount: 1, defaultTimes: ['20:30', '22:30', '23:30', '23:59'] },

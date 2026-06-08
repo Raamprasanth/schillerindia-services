@@ -193,8 +193,8 @@ router.post('/escalation-emails', async (req, res) => {
     }
 
     const current = await getEffectiveEntries();
-    if (current.some((item) => item.email === nextEntry.email)) {
-      return res.status(409).json({ success: false, message: 'Email already exists.' });
+    if (current.some((item) => item.email === nextEntry.email && item.reportType === nextEntry.reportType && item.division === nextEntry.division && item.region === nextEntry.region)) {
+      return res.status(409).json({ success: false, message: 'Email already exists for this escalation type.' });
     }
 
     const next = [...current, nextEntry];
@@ -227,8 +227,8 @@ router.put('/escalation-emails/:id', async (req, res) => {
     if (!isValidEmail(updatedEntry.email)) {
       return res.status(400).json({ success: false, message: 'Valid email is required.' });
     }
-    if (current.some((item, index) => index !== idx && item.email === updatedEntry.email)) {
-      return res.status(409).json({ success: false, message: 'Email already exists.' });
+    if (current.some((item, index) => index !== idx && item.email === updatedEntry.email && item.reportType === updatedEntry.reportType && item.division === updatedEntry.division && item.region === updatedEntry.region)) {
+      return res.status(409).json({ success: false, message: 'Email already exists for this escalation type.' });
     }
 
     const next = current.slice();

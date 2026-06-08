@@ -575,15 +575,15 @@ table.est-table tbody tr:last-child td{border-bottom:none;}
   <div class="modal">
     <div class="modal-header">
       <div>
-        <div class="modal-title">In House FRN Replacement <span class="modal-title-badge" id="to-modal-badge">-</span></div>
-        <div style="font-size:11.5px;color:var(--muted);margin-top:3px;">Add one or more rows, then queue this entry to In House FRN Replacement.</div>
+        <div class="modal-title">TO Escalation <span class="modal-title-badge" id="to-modal-badge">-</span></div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:3px;">Add one or more rows, then queue this entry to TO Escalation.</div>
       </div>
       <button class="modal-close" onclick="closeToEscalationModal()" title="Close (Esc)">&#10005;</button>
     </div>
     <div class="modal-scroll">
       <div class="modal-body">
         <div class="form-err" id="to-modal-err"></div>
-        <div class="form-section-title" style="color:var(--amber);border-bottom-color:rgba(180,83,9,0.2);margin-bottom:12px;">In House FRN Replacement Line Items</div>
+        <div class="form-section-title" style="color:var(--amber);border-bottom-color:rgba(180,83,9,0.2);margin-bottom:12px;">TO Escalation Line Items</div>
         <div class="line-items-wrap to-line-items-wrap">
           <div style="overflow-x:auto;">
             <table class="line-items-table to-line-items-table">
@@ -613,7 +613,7 @@ table.est-table tbody tr:last-child td{border-bottom:none;}
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline btn-sm" onclick="closeToEscalationModal()">Cancel</button>
-      <button class="btn btn-success" id="to-queue-btn" onclick="submitToEscalationQueue()">Queue to In House FRN Replacement</button>
+      <button class="btn btn-success" id="to-queue-btn" onclick="submitToEscalationQueue()">Queue to TO Escalation</button>
     </div>
   </div>
 </div>
@@ -954,7 +954,7 @@ function handleEstimateSameGir(val){
 async function queueSrEscalation(id){
   const current=allRecords.find(x=>(x._id||x.id)===id);
   if(!current){showToast('Record not found.','err');return;}
-  if(current.srEscalationQueuedAt){showToast('Already queued for FRN Replacement Escalation.','info');return;}
+  if(current.srEscalationQueuedAt){showToast('Already queued for DR Replacement.','info');return;}
   const enteredPartNo=prompt('Part No for DR escalation (optional). Leave blank to use existing Part No.', current.partNo || '');
   if(enteredPartNo===null)return;
   try{
@@ -969,16 +969,16 @@ async function queueSrEscalation(id){
     renderTable();
     if(typeof bumpSrEscalationQueue === 'function') bumpSrEscalationQueue(1);
     if(typeof loadSrEscalationStatus === 'function') 
-    showToast(data.alreadyQueued?'Already queued for FRN Replacement Escalation.':'Queued for FRN Replacement Escalation.','ok');
+    showToast(data.alreadyQueued?'Already queued for DR Replacement.':'Queued for DR Replacement.','ok');
   }catch(e){
-    showToast('FRN Replacement Escalation failed: '+e.message,'err');
+    showToast('DR Replacement failed: '+e.message,'err');
   }
 }
 
 function openToEscalationModal(id){
   const current=allRecords.find(x=>(x._id||x.id)===id);
   if(!current){showToast('Record not found.','err');return;}
-  if(current.toEscalationQueuedAt){showToast('Already queued for In House FRN Replacement.','info');return;}
+  if(current.toEscalationQueuedAt){showToast('Already queued for TO Escalation.','info');return;}
   currentToRecord=current;
   currentToRows=[{partNo:'',qty:1}];
   (document.getElementById('to-modal-badge')||{}).textContent =current.scReNo||current.frnNo||'-';
@@ -1049,13 +1049,13 @@ async function submitToEscalationQueue(){
     bumpToEscalationQueue(1);
     
     closeToEscalationModal();
-    showToast(data.alreadyQueued?'Already queued for In House FRN Replacement.':'Queued for In House FRN Replacement.','ok');
+    showToast(data.alreadyQueued?'Already queued for TO Escalation.':'Queued for TO Escalation.','ok');
   }catch(e){
-    if(err){err.textContent='In House FRN Replacement failed: '+e.message;err.classList.add('show');}
-    showToast('In House FRN Replacement failed: '+e.message,'err');
+    if(err){err.textContent='TO Escalation failed: '+e.message;err.classList.add('show');}
+    showToast('TO Escalation failed: '+e.message,'err');
   }finally{
     btn.disabled=false;
-    btn.textContent='Queue to In House FRN Replacement';
+    btn.textContent='Queue to TO Escalation';
   }
 }
 
@@ -1605,7 +1605,7 @@ function renderTable(){
         <td style="font-weight:600;color:var(--accent2);">${s.pdEst} days</td>
         <td>${repairBadge}</td>
         <td><button class="btn-xs ${s.srEscalationQueuedAt?'dr-queued':'dr-action'}" onclick="queueSrEscalation('${rowId}')" title="${s.srEscalationQueuedAt?'Already queued for DR escalation':'Queue to DR escalation'}">DR</button></td>
-        <td><button class="btn-xs ${s.toEscalationQueuedAt?'to-queued':'to-action'}" onclick="openToEscalationModal('${rowId}')" title="${s.toEscalationQueuedAt?'Already queued for In House FRN Replacement':'Queue to In House FRN Replacement'}">TO</button></td>
+        <td><button class="btn-xs ${s.toEscalationQueuedAt?'to-queued':'to-action'}" onclick="openToEscalationModal('${rowId}')" title="${s.toEscalationQueuedAt?'Already queued for TO Escalation':'Queue to TO Escalation'}">TO</button></td>
       </tr>`;
     }).join('');
   }
@@ -1759,7 +1759,7 @@ function ensureSrEscalationBanner(moduleKey){
   wrap.id='sr-escalation-status-banner';
   wrap.className='mail-ack-wrap';
   wrap.style.display=mailAckVisible?'grid':'none';
-  wrap.innerHTML=getMailAckWrapStr('sr', 'FRN Replacement Escalation', 'var(--amber)');
+  wrap.innerHTML=getMailAckWrapStr('sr', 'DR Replacement', 'var(--amber)');
   row.appendChild(wrap);
 }
 
@@ -1777,7 +1777,7 @@ function ensureToEscalationBanner(moduleKey){
   wrap.id='to-escalation-status-banner';
   wrap.className='mail-ack-wrap';
   wrap.style.display=mailAckVisible?'grid':'none';
-  wrap.innerHTML=getMailAckWrapStr('to', 'In House FRN Replacement', '#7c3aed');
+  wrap.innerHTML=getMailAckWrapStr('to', 'TO Escalation', '#7c3aed');
   row.appendChild(wrap);
 }
 

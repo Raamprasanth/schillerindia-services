@@ -7,10 +7,10 @@ const DEFAULT_ESCALATION_TYPES = [
   { value: 'main_combined', label: 'Dispatch Escalation' },
   { value: 'pending_frn', label: 'Pending FRN Escalation' },
   { value: 'estimation_pending', label: 'Estimation Pending Escalation' },
-  { value: 'sr_escalation', label: 'FRN Replacement Escalation' },
-  { value: 'to_escalation', label: 'In House FRN Replacement' },
+  { value: 'sr_escalation', label: 'DR Replacement' },
+  { value: 'to_escalation', label: 'TO Escalation' },
   { value: 'ur_followup', label: 'Stock Escalation' },
-  { value: 'ur_scrap', label: 'Under Repair Scrap Escalation' },
+  { value: 'ur_scrap', label: 'Scrap Escalation' },
   { value: 'prf_ob_escalation', label: 'PRF/OB Escalation' },
   { value: 'supplier_warranty_escalation', label: 'Supplier Warranty Escalation' },
   { value: 'external_repair_escalation', label: 'External Repair Escalation' },
@@ -25,10 +25,20 @@ function cleanLabel(value) {
   return String(value || '').replace(/\s+/g, ' ').trim();
 }
 
+function normalizeLegacyLabel(key, value) {
+  const label = cleanLabel(value);
+  const legacy = {
+    sr_escalation: new Set(['FRN Replacement', 'FRN Replacement Escalation']),
+    to_escalation: new Set(['In House FRN Replacement', 'In House DR Replacement']),
+    ur_scrap: new Set(['Under Repair Scrap Escalation', 'Under Repair Scrap']),
+  };
+  return legacy[key]?.has(label) ? '' : label;
+}
+
 function normalizeLabelMap(value = {}) {
   const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   return DEFAULT_ESCALATION_TYPES.reduce((acc, item) => {
-    acc[item.value] = cleanLabel(source[item.value]) || item.label;
+    acc[item.value] = normalizeLegacyLabel(item.value, source[item.value]) || item.label;
     return acc;
   }, {});
 }
