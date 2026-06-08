@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 
 const Empfrn = require('../models/EmpFRN');
 const EstimationPending = require('../models/EstimationPending');
+const Service = require('../models/empservice');
 const EscalationRunLog = require('../models/EscalationRunLog');
 const EscalationQueue = require('../models/EscalationQueue');
 const AppSetting = require('../models/AppSetting');
@@ -452,17 +453,25 @@ async function prepareEscalationRunLog(jobKey, createData, options = {}) {
   return { skip: false, log };
 }
 
+function pick(doc, keys = []) {
+  for (const key of keys) {
+    const value = String(key).split('.').reduce((acc, part) => (acc && acc[part] !== undefined ? acc[part] : undefined), doc);
+    if (isFilledCell(value)) return value;
+  }
+  return '';
+}
+
 function buildFrnEscalationRow(doc) {
   return {
-    'DIVISION NAME': doc.divisionName || doc.division || '',
-    'SCH REF': doc.scRno || doc.scReNo || '',
-    RA_ENGINEER: doc.raEng || doc.estRaEng || '',
+    'DIVISION NAME': pick(doc, ['divisionName', 'division.name', 'division']),
+    'SCH REF': pick(doc, ['scRno', 'scReNo', 'scRefNo']),
+    RA_ENGINEER: pick(doc, ['raEng', 'estRaEng', 'obRaEng']),
     SC_ENGINEER: doc.scEng || '',
     FRN_NO: doc.frnNo || '',
-    BRANCH: doc.branch || doc.region || '',
-    ENGINEER_ID: doc.eng || '',
-    ENGINEER_NAME: doc.eng || doc.engineer || '',
-    CUST_NAME: doc.customer || doc.custName || '',
+    BRANCH: pick(doc, ['branch', 'reg', 'region']),
+    ENGINEER_ID: pick(doc, ['eng', 'engineer.name', 'engineer']),
+    ENGINEER_NAME: pick(doc, ['eng', 'engineer.name', 'engineer']),
+    CUST_NAME: pick(doc, ['customer', 'custName']),
     PRODUCT_MODEL: doc.model || '',
     UNIT_STATUS: doc.unitStatus || doc.unitSts || '',
     DEF_MOD_BRD_NAME: doc.defMod || '',
@@ -470,11 +479,11 @@ function buildFrnEscalationRow(doc) {
     DEF_GIR_NO: doc.defGir || '',
     'PART NUMBER': doc.partNo || '',
     PART_NO: doc.partNo || '',
-    'ITEM DESCRIPTION': doc.partsDescription || doc.itemDescription || '',
-    REP_GIR_NO: doc.repGirNo || '',
-    'RE VALUE': doc.revalue || '',
-    DEF_UNIT_GIR_NO: doc.defUnitGir || '',
-    FINAL_REMARKS: doc.finalRemarks || '',
+    'ITEM DESCRIPTION': pick(doc, ['partsDescription', 'itemDescription', 'description', 'components', 'defMod']),
+    REP_GIR_NO: pick(doc, ['repGirNo', 'repGir']),
+    'RE VALUE': pick(doc, ['revalue', 'reValue', 'cost']),
+    DEF_UNIT_GIR_NO: pick(doc, ['defUnitGir', 'obDefUnitGir']),
+    FINAL_REMARKS: pick(doc, ['finalRemarks', 'remarks', 'techRemarks']),
     DESTINATION: doc.destination || '',
     'SHIPMENT REF NUMBER': doc.shipComm || doc.dcNo || doc.repGirNo || '',
     'REF DATE': (doc.toEscalationQueuedAt || doc.srEscalationQueuedAt || doc.escalationQueuedAt) ? new Date(doc.toEscalationQueuedAt || doc.srEscalationQueuedAt || doc.escalationQueuedAt).toISOString().replace('T', ' ').replace('Z', '') : '',
@@ -483,30 +492,30 @@ function buildFrnEscalationRow(doc) {
 
 function buildEstimationEscalationRow(doc) {
   return {
-    'DIVISION NAME': doc.divisionName || doc.division || '',
-    'Division Name': doc.divisionName || doc.division || '',
-    'SCH REF': doc.scReNo || doc.scRno || '',
-    RA_ENGINEER: doc.obRaEng || doc.estRaEng || '',
+    'DIVISION NAME': pick(doc, ['divisionName', 'division.name', 'division']),
+    'Division Name': pick(doc, ['divisionName', 'division.name', 'division']),
+    'SCH REF': pick(doc, ['scReNo', 'scRno', 'scRefNo']),
+    RA_ENGINEER: pick(doc, ['obRaEng', 'estRaEng', 'raEng']),
     SC_ENGINEER: doc.scEng || '',
     FRN_NO: doc.frnNo || '',
-    BRANCH: doc.branch || doc.reg || '',
-    ENGINEER_ID: doc.eng || doc.estRaEng || '',
-    ENGINEER_NAME: doc.eng || doc.engineer || '',
+    BRANCH: pick(doc, ['branch', 'reg', 'region']),
+    ENGINEER_ID: pick(doc, ['eng', 'engineer.name', 'engineer', 'estRaEng']),
+    ENGINEER_NAME: pick(doc, ['eng', 'engineer.name', 'engineer', 'estRaEng']),
     STK_CUST: doc.stkCust || '',
     CUST_NAME: doc.custName || doc.customer || '',
     PRODUCT_MODEL: doc.model || '',
-    UNIT_STATUS: doc.unitSts || '',
+    UNIT_STATUS: pick(doc, ['unitSts', 'unitStatus']),
     DEF_MOD_BRD_NAME: doc.defMod || '',
     MOD_BRD_NAME: doc.defMod || '',
     DEF_TYPE: doc.defType || '',
     DEF_GIR_NO: doc.defGir || '',
     'PART NUMBER': doc.partNo || '',
     PART_NO: doc.partNo || '',
-    'ITEM DESCRIPTION': doc.partsDescription || doc.itemDescription || '',
+    'ITEM DESCRIPTION': pick(doc, ['partsDescription', 'itemDescription', 'description', 'components', 'defMod']),
     REP_GIR_NO: doc.obRepGirNo || doc.repGirNo || '',
     'RE VALUE': doc.revalue || '',
     DEF_UNIT_GIR_NO: doc.obDefUnitGir || doc.defUnitGir || '',
-    FINAL_REMARKS: doc.finalRemarks || doc.obFinalRemarks || '',
+    FINAL_REMARKS: pick(doc, ['finalRemarks', 'obFinalRemarks', 'remarks', 'techRemarks']),
     DESTINATION: doc.obDestination || doc.destination || '',
     'SHIPMENT REF NUMBER': doc.obShipComm || doc.obDcNo || doc.obRepGirNo || doc.estNo || '',
     'REF DATE': (doc.toEscalationQueuedAt || doc.srEscalationQueuedAt || doc.escalationQueuedAt) ? new Date(doc.toEscalationQueuedAt || doc.srEscalationQueuedAt || doc.escalationQueuedAt).toISOString().replace('T', ' ').replace('Z', '') : '',
@@ -516,21 +525,22 @@ function buildEstimationEscalationRow(doc) {
 function normalizeToItems(items = []) {
   return (Array.isArray(items) ? items : []).map((item) => ({
     partNo: String(item?.partNo || '').trim(),
+    description: String(item?.description || item?.itemDescription || item?.partsDescription || '').trim(),
     qty: Math.max(1, parseInt(item?.qty, 10) || 1),
   })).filter((item) => item.partNo);
 }
 
 function buildToEscalationRow(doc, items = []) {
   return {
-    'Division Name': doc.divisionName || doc.division || '',
-    'SCH REF': doc.scRno || doc.scReNo || '',
-    SC_REF_NO: doc.scRno || doc.scReNo || '',
+    'Division Name': pick(doc, ['divisionName', 'division.name', 'division']),
+    'SCH REF': pick(doc, ['scRno', 'scReNo', 'scRefNo']),
+    SC_REF_NO: pick(doc, ['scRno', 'scReNo', 'scRefNo']),
     FRN_NO: doc.frnNo || '',
     STK_CUST: doc.stkCust || '',
-    BRANCH: doc.branch || doc.reg || doc.region || '',
-    CUST_NAME: doc.custName || doc.customer || '',
+    BRANCH: pick(doc, ['branch', 'reg', 'region']),
+    CUST_NAME: pick(doc, ['custName', 'customer']),
     PRODUCT_MODEL: doc.model || '',
-    UNIT_STATUS: doc.unitSts || doc.unitStatus || '',
+    UNIT_STATUS: pick(doc, ['unitSts', 'unitStatus']),
     DEF_GIR_NO: doc.defGir || '',
     MOD_BRD_NAME: doc.defMod || '',
     MODEL: doc.model || '',
@@ -542,32 +552,32 @@ function buildToEscalationRow(doc, items = []) {
 
 function buildUrEscalationRow(doc) {
   return {
-    'DIVISION NAME': doc.divisionName || doc.division || '',
-    'SCH REF': doc.scReNo || doc.scRno || '',
-    SC_REF_NO: doc.scReNo || doc.scRno || '',
+    'DIVISION NAME': pick(doc, ['divisionName', 'division.name', 'division']),
+    'SCH REF': pick(doc, ['scReNo', 'scRno', 'scRefNo']),
+    SC_REF_NO: pick(doc, ['scReNo', 'scRno', 'scRefNo']),
     FRN_NO: doc.frnNo || '',
-    DIVISION: doc.divisionName || doc.division || '',
-    BRANCH: doc.branch || doc.reg || '',
+    DIVISION: pick(doc, ['divisionName', 'division.name', 'division']),
+    BRANCH: pick(doc, ['branch', 'reg', 'region']),
     SC_ENGINEER: doc.scEng || '',
     RA_ENGINEER: doc.raEng || '',
     SUPPLIER_NAME: doc.supplier || '',
     ENGINEER_ID: doc.eng || '',
-    CUSTOMER_NAME: doc.custName || doc.customer || '',
+    CUSTOMER_NAME: pick(doc, ['custName', 'customer']),
     MODEL: doc.model || '',
     PRODUCT_MODEL: doc.model || '',
-    UNIT_STATUS: doc.unitSts || doc.unitStatus || '',
+    UNIT_STATUS: pick(doc, ['unitSts', 'unitStatus']),
     DEF_MOD_BRD_NAME: doc.defMod || '',
     MOD_BRD_NAME: doc.defMod || '',
     DEF_TYPE: doc.defType || '',
     DEF_GIR_NO: doc.defGir || '',
     'PART NUMBER': doc.partNo || '',
-    'ITEM DESCRIPTION': doc.partsDescription || doc.itemDescription || '',
+    'ITEM DESCRIPTION': pick(doc, ['partsDescription', 'itemDescription', 'description', 'components', 'defMod']),
     REP_GIR_NO: doc.repGirNo || '',
     TYPE_OF_WORK: doc.urTypeWork || doc.typeWork || '',
-    TYPE_OF_ACC: doc.typeOfAcc || doc.unitStatus || '',
-    FINAL_REMARKS: doc.finalRemarks || '',
-    TECHNICAL_REMARKS: doc.techRemarks || '',
-    TECH_REMARKS: doc.techRemarks || '',
+    TYPE_OF_ACC: pick(doc, ['typeOfAcc', 'typeAcc', 'unitStatus', 'unitSts']),
+    FINAL_REMARKS: pick(doc, ['finalRemarks', 'remarks', 'fieldRemarks']),
+    TECHNICAL_REMARKS: pick(doc, ['techRemarks', 'fieldRemarks']),
+    TECH_REMARKS: pick(doc, ['techRemarks', 'fieldRemarks']),
     COMPONENTS_USED: doc.components || '',
     DESTINATION: doc.destination || '',
     'RE VALUE': doc.revalue || '',
@@ -624,7 +634,8 @@ function buildSupplierWarrantyEscalationRow(doc) {
     Model: doc.model || '',
     'Unit Serial No': doc.serialNo || '',
     'Part No': doc.partNo || '',
-    'Description ': doc.partsDescription || doc.description || '',
+    Description: pick(doc, ['partsDescription', 'description', 'itemDescription', 'components', 'defMod']),
+    'Description ': pick(doc, ['partsDescription', 'description', 'itemDescription', 'components', 'defMod']),
     'Def part serial number': doc.defPartSerialNo || '',
     'Problem Details': doc.finalRemarks || doc.techRemarks || '',
     'Licence version/Model configuration': doc.licenceVersion || '',
@@ -655,7 +666,7 @@ function buildSupplierWarrantyEscalationRow(doc) {
     ENGINEER: doc.engineer || doc.eng || '',
     CUSTOMER: doc.customer || doc.custName || '',
     MODEL: doc.model || '',
-    UNIT_STATUS: doc.unitStatus || '',
+    UNIT_STATUS: pick(doc, ['unitStatus', 'unitSts']),
     DEF_MOD_BRD_NAME: doc.defMod || '',
     DEF_GIR_NO: doc.defGir || '',
     TYPE_OF_WORK: doc.typeWork || 'Supplier Warranty',
@@ -670,14 +681,14 @@ function buildExternalRepairEscalationRow(doc) {
   return {
     'S/N': '',
     Year: doc.entryDate ? String(doc.entryDate).slice(0, 4) : '',
-    'Vendor Name': doc.supplier || doc.vendorName || '',
+    'Vendor Name': pick(doc, ['supplier', 'vendorName']),
     Model: doc.model || '',
     'Customer name': doc.customer || doc.custName || '',
     'Unit Serial no.': doc.serialNo || '',
-    'Unit Status': doc.unitStatus || '',
-    'Problem details': doc.techRemarks || doc.finalRemarks || '',
-    'Part no.': doc.partNo || '',
-    'Item Description': doc.partsDescription || doc.components || '',
+    'Unit Status': pick(doc, ['unitStatus', 'unitSts']),
+    'Problem details': pick(doc, ['techRemarks', 'finalRemarks', 'fieldRemarks', 'remarks']),
+    'Part no.': pick(doc, ['partNo', 'partNumber']),
+    'Item Description': pick(doc, ['partsDescription', 'description', 'components', 'defMod']),
     'Def GIR no.': doc.defGir || '',
     'DEF PART SN': doc.repGirSno || '',
     'Vendor ticket number': doc.vendorTicketNo || '',
@@ -698,7 +709,7 @@ function buildExternalRepairEscalationRow(doc) {
     ENGINEER: doc.eng || doc.engineer || '',
     CUSTOMER: doc.customer || doc.custName || '',
     MODEL: doc.model || '',
-    UNIT_STATUS: doc.unitStatus || '',
+    UNIT_STATUS: pick(doc, ['unitStatus', 'unitSts']),
     DEF_MOD_BRD_NAME: doc.defMod || '',
     DEF_GIR_NO: doc.defGir || '',
     REPAIR_ENGINEER: doc.raEng || '',
@@ -717,17 +728,59 @@ function buildExternalRepairEscalationRow(doc) {
   };
 }
 
+function isFilledCell(value) {
+  return value !== undefined && value !== null && String(value).trim() !== '';
+}
+
+function mergeEscalationRow(base = {}, queued = {}) {
+  const merged = { ...(base || {}) };
+  Object.entries(queued || {}).forEach(([key, value]) => {
+    if (isFilledCell(value) || !isFilledCell(merged[key])) {
+      merged[key] = value;
+    }
+  });
+  Object.entries(base || {}).forEach(([key, value]) => {
+    if (!isFilledCell(merged[key]) && isFilledCell(value)) {
+      merged[key] = value;
+    }
+  });
+  return merged;
+}
+
+function validObjectIds(queueDocs = [], moduleName = '') {
+  return [...new Set(queueDocs
+    .filter((doc) => (!moduleName || doc.module === moduleName) && doc.sourceId && mongoose.Types.ObjectId.isValid(doc.sourceId))
+    .map((doc) => String(doc.sourceId)))];
+}
+
+async function loadSourceMap(Model, ids = []) {
+  if (!ids.length) return new Map();
+  const docs = await Model.find({ _id: { $in: ids } }).lean();
+  return new Map(docs.map((doc) => [String(doc._id), doc]));
+}
+
+function hydratedQueueRow(queueDoc, sourceMap, builder) {
+  const queued = queueDoc?.row || {};
+  const source = sourceMap.get(String(queueDoc?.sourceId || ''));
+  if (!source) return queued;
+  return mergeEscalationRow(builder(source), queued);
+}
+
 async function collectEscalationData(slotWindow) {
   const queueDocs = await EscalationQueue.find({
     module: { $in: ['frn', 'est'] },
     queuedAt: { $lte: slotWindow.windowEnd }
   }).sort({ queuedAt: 1 }).lean();
 
+  const [frnMap, estMap] = await Promise.all([
+    loadSourceMap(Empfrn, validObjectIds(queueDocs, 'frn')),
+    loadSourceMap(EstimationPending, validObjectIds(queueDocs, 'est')),
+  ]);
   const frnRows = [];
   const estimationRows = [];
   queueDocs.forEach((doc) => {
-    if (doc.module === 'frn') frnRows.push(doc.row || {});
-    if (doc.module === 'est') estimationRows.push(doc.row || {});
+    if (doc.module === 'frn') frnRows.push(hydratedQueueRow(doc, frnMap, buildFrnEscalationRow));
+    if (doc.module === 'est') estimationRows.push(hydratedQueueRow(doc, estMap, buildEstimationEscalationRow));
   });
 
   return {
@@ -743,9 +796,10 @@ async function collectUrEscalationData(slotWindow) {
     module: moduleName,
     queuedAt: { $lte: slotWindow.windowEnd }
   }).sort({ queuedAt: 1 }).lean();
+  const serviceMap = await loadSourceMap(Service, validObjectIds(queueDocs, moduleName));
 
   return {
-    rows: queueDocs.map((doc) => doc.row || {}),
+    rows: queueDocs.map((doc) => hydratedQueueRow(doc, serviceMap, buildUrEscalationRow)),
     queueDocs,
   };
 }
@@ -768,11 +822,15 @@ async function collectSrEscalationData(slotWindow) {
     queuedAt: { $lte: slotWindow.windowEnd }
   }).sort({ queuedAt: 1 }).lean();
 
+  const [frnMap, estMap] = await Promise.all([
+    loadSourceMap(Empfrn, validObjectIds(queueDocs, 'sr_frn')),
+    loadSourceMap(EstimationPending, validObjectIds(queueDocs, 'sr_est')),
+  ]);
   const frnRows = [];
   const estimationRows = [];
   queueDocs.forEach((doc) => {
-    if (doc.module === 'sr_frn') frnRows.push(doc.row || {});
-    if (doc.module === 'sr_est') estimationRows.push(doc.row || {});
+    if (doc.module === 'sr_frn') frnRows.push(hydratedQueueRow(doc, frnMap, buildFrnEscalationRow));
+    if (doc.module === 'sr_est') estimationRows.push(hydratedQueueRow(doc, estMap, buildEstimationEscalationRow));
   });
 
   return { frnRows, estimationRows, queueDocs };
@@ -950,10 +1008,21 @@ async function collectToEscalationData(slotWindow) {
     module: { $in: ['to_frn', 'to_est', 'to_ur'] },
     queuedAt: { $lte: slotWindow.windowEnd },
   }).sort({ queuedAt: 1 }).lean();
+  const [frnMap, estMap, serviceMap] = await Promise.all([
+    loadSourceMap(Empfrn, validObjectIds(rows, 'to_frn')),
+    loadSourceMap(EstimationPending, validObjectIds(rows, 'to_est')),
+    loadSourceMap(Service, validObjectIds(rows, 'to_ur')),
+  ]);
 
-  const frnRows = rows.filter((item) => item.module === 'to_frn').map((item) => item.row || {});
-  const estimationRows = rows.filter((item) => item.module === 'to_est').map((item) => item.row || {});
-  const underRepairRows = rows.filter((item) => item.module === 'to_ur').map((item) => item.row || {});
+  const frnRows = rows
+    .filter((item) => item.module === 'to_frn')
+    .map((item) => hydratedQueueRow(item, frnMap, (source) => buildToEscalationRow(source, item.row?.TO_ITEMS || [])));
+  const estimationRows = rows
+    .filter((item) => item.module === 'to_est')
+    .map((item) => hydratedQueueRow(item, estMap, (source) => buildToEscalationRow(source, item.row?.TO_ITEMS || [])));
+  const underRepairRows = rows
+    .filter((item) => item.module === 'to_ur')
+    .map((item) => hydratedQueueRow(item, serviceMap, (source) => buildToEscalationRow(source, item.row?.TO_ITEMS || [])));
 
   return {
     frnRows,
@@ -1046,7 +1115,7 @@ function buildToMailPayload(slotWindow, data) {
         UNIT_STATUS: row.UNIT_STATUS || '',
         DEF_GIR_NO: row.DEF_GIR_NO || '',
         PART_NO: item.partNo || '',
-        'ITEM DESCRIPTION': row['ITEM DESCRIPTION'] || '',
+        'ITEM DESCRIPTION': item.description || row['ITEM DESCRIPTION'] || '',
         QTY: String(item.qty || 1),
         FINAL_REMARKS: row.FINAL_REMARKS || '',
       });
