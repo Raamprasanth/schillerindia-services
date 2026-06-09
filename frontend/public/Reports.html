@@ -2278,9 +2278,8 @@ async function exportPDF(type) {
   wrapper.style.boxSizing = 'border-box';
   wrapper.style.fontFamily = "Calibri, Arial, sans-serif";
   wrapper.style.position = 'absolute';
-  wrapper.style.left = '0px';
+  wrapper.style.left = '-9999px';
   wrapper.style.top = '0px';
-  wrapper.style.zIndex = '-9999';
   wrapper.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #000;padding:0 0 8px;margin-bottom:8px;">
       <img src="logo.png" alt="SCHILLER" style="height:46px;max-width:230px;object-fit:contain;">
@@ -2309,7 +2308,7 @@ async function exportPDF(type) {
       margin: 0.18,
       filename: `Performance_Analysis_${scope}_${month}.pdf`,
       image: { type: 'jpeg', quality: 1.0 },
-      html2canvas: { scale: 2.5, useCORS: true, backgroundColor: '#ffffff', windowWidth: 1120, scrollX: 0, scrollY: 0 },
+      html2canvas: { scale: 2.5, useCORS: true, backgroundColor: '#ffffff', windowWidth: 1120 },
       jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
     }).from(wrapper).save();
   }catch(e){
@@ -2412,9 +2411,8 @@ async function exportPriorityDivisionPDF(){
     }
     const wrapper=document.createElement('div');
     wrapper.style.position = 'absolute';
-    wrapper.style.left = '0px';
+    wrapper.style.left = '-9999px';
     wrapper.style.top = '0px';
-    wrapper.style.zIndex = '-9999';
     wrapper.innerHTML=pages.join('');
     document.body.appendChild(wrapper);
     await html2pdf().set({
