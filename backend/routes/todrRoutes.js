@@ -97,41 +97,7 @@ router.post('/', protect, async (req, res) => {
   }
 });
 
-// PUT update a TODR entry
-router.post('/:id/fulfill', protect, async (req, res) => {
-  try {
-    const record = await Todr.findById(req.params.id).lean();
-    if (!record) return res.status(404).json({ message: 'Record not found' });
-
-    const fulfilledDate = todayIso();
-    const closedRecord = await Ctodr.create({
-      entryDate: record.entryDate,
-      frnNo: record.frnNo,
-      partNo: record.partNo,
-      model: record.model || '',
-      description: record.description,
-      action: record.action,
-      toNo: record.toNo || '',
-      toRaisedDate: record.toRaisedDate || null,
-      sparesReceivedDate: record.sparesReceivedDate || null,
-      fulfilledDate,
-      fulfilledBy: req.user?.name || '',
-      sourceId: record.sourceId || '',
-      sourceModule: record.sourceModule || '',
-      queuedBy: record.queuedBy || '',
-      createdAt: record.createdAt || new Date(),
-      updatedAt: new Date()
-    });
-
-    await Todr.findByIdAndDelete(req.params.id);
-    res.json(closedRecord);
-  } catch (error) {
-    console.error('Error fulfilling TODR record:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// POST bulk fulfill TODR entries
+// POST bulk fulfill TODR entries (must be before /:id/fulfill)
 router.post('/bulk-fulfill', protect, async (req, res) => {
   try {
     const { ids } = req.body;
@@ -172,7 +138,7 @@ router.post('/bulk-fulfill', protect, async (req, res) => {
   }
 });
 
-// PUT bulk update TODR entries
+// PUT bulk update TODR entries (must be before /:id)
 router.put('/bulk-update', protect, async (req, res) => {
   try {
     const { ids, toNo, toRaisedDate } = req.body;
@@ -194,6 +160,40 @@ router.put('/bulk-update', protect, async (req, res) => {
     res.json(results);
   } catch (error) {
     console.error('Error bulk updating TODR records:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// POST fulfill single TODR entry
+router.post('/:id/fulfill', protect, async (req, res) => {
+  try {
+    const record = await Todr.findById(req.params.id).lean();
+    if (!record) return res.status(404).json({ message: 'Record not found' });
+
+    const fulfilledDate = todayIso();
+    const closedRecord = await Ctodr.create({
+      entryDate: record.entryDate,
+      frnNo: record.frnNo,
+      partNo: record.partNo,
+      model: record.model || '',
+      description: record.description,
+      action: record.action,
+      toNo: record.toNo || '',
+      toRaisedDate: record.toRaisedDate || null,
+      sparesReceivedDate: record.sparesReceivedDate || null,
+      fulfilledDate,
+      fulfilledBy: req.user?.name || '',
+      sourceId: record.sourceId || '',
+      sourceModule: record.sourceModule || '',
+      queuedBy: record.queuedBy || '',
+      createdAt: record.createdAt || new Date(),
+      updatedAt: new Date()
+    });
+
+    await Todr.findByIdAndDelete(req.params.id);
+    res.json(closedRecord);
+  } catch (error) {
+    console.error('Error fulfilling TODR record:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
