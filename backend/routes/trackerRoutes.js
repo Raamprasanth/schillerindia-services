@@ -146,12 +146,13 @@ router.get('/stats', protect, async (req, res) => {
 
     // Employees are now primarily in the Employee collection. We should fetch from Employee.
     const Employee = require('../models/Employee');
+    const Division = require('../models/Division');
     const employees = await Employee.find({ role: 'employee' }).lean();
+    const divisions = await Division.find({}).lean();
     
     const divisionsMap = {}; // division name -> { name, empCount }
 
-    employees.forEach(emp => {
-      const divName = (emp.division && emp.division.trim() !== '') ? emp.division : 'Unassigned';
+    const initDivision = (divName) => {
       if (!divisionsMap[divName]) {
         divisionsMap[divName] = {
           id: divName,
@@ -170,6 +171,15 @@ router.get('/stats', protect, async (req, res) => {
           }, {})
         };
       }
+    };
+
+    divisions.forEach(d => {
+      if (d.name && d.name.trim() !== '') initDivision(d.name);
+    });
+
+    employees.forEach(emp => {
+      const divName = (emp.division && emp.division.trim() !== '') ? emp.division : 'Unassigned';
+      initDivision(divName);
       divisionsMap[divName].empCount++;
     });
 
