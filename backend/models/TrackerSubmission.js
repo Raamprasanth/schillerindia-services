@@ -38,7 +38,8 @@ const trackerSubmissionSchema = new mongoose.Schema({
   }
 });
 
-// Ensure an employee can only submit once per reportDate and type
-trackerSubmissionSchema.index({ employee: 1, type: 1, reportDate: 1 }, { unique: true });
+// Ensure a division can only submit once per reportDate and type
+// Note: Changed from employee to division based on new requirement
+trackerSubmissionSchema.index({ division: 1, type: 1, reportDate: 1 }, { unique: true });
 
 module.exports = mongoose.model('TrackerSubmission', trackerSubmissionSchema);

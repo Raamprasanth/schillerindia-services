@@ -5,14 +5,27 @@ const User = require('../models/User');
 const Division = require('../models/Division');
 const { protect } = require('../middleware/authMiddleware');
 
-// Get current month's submissions for the logged in employee
+// Get current month's submissions for the logged in employee's division
 router.get('/me', protect, async (req, res) => {
   try {
     const { month } = req.query; // format: 'YYYY-MM'
     if (!month) return res.status(400).json({ success: false, message: 'Month is required' });
 
-    const submissions = await TrackerSubmission.find({ employee: req.user._id, month }).lean();
-    res.json({ success: true, submissions });
+    const division = req.user.division || '';
+    if (!division) {
+      return res.json({ success: true, submissions: [] });
+    }
+
+    const submissions = await TrackerSubmission.find({ division, month })
+      .populate('employee', 'name')
+      .lean();
+
+    const formattedSubmissions = submissions.map(sub => ({
+      ...sub,
+      submittedByName: sub.employee ? sub.employee.name : 'Unknown'
+    }));
+
+    res.json({ success: true, submissions: formattedSubmissions });
   } catch (error) {
     console.error('Error fetching tracker submissions:', error);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -27,13 +40,16 @@ router.post('/submit', protect, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Missing required fields' });
     }
 
+    const division = req.user.division || '';
+    if (!division) {
+      return res.status(400).json({ success: false, message: 'You must be assigned to a division to submit reports.' });
+    }
+
     if (status === 'submitted') {
-      const division = req.user.division || '';
-      
       const bulkOps = reportDates.map(date => ({
         updateOne: {
-          filter: { employee: req.user._id, type, reportDate: date },
-          update: { $set: { month, division: division } },
+          filter: { division, type, reportDate: date },
+          update: { $setOnInsert: { employee: req.user._id, month } },
           upsert: true
         }
       }));
@@ -42,7 +58,7 @@ router.post('/submit', protect, async (req, res) => {
       }
     } else {
       // Un-submit
-      await TrackerSubmission.deleteMany({ employee: req.user._id, type, reportDate: { $in: reportDates } });
+      await TrackerSubmission.deleteMany({ division, type, reportDate: { $in: reportDates } });
     }
 
     res.json({ success: true });
@@ -130,32 +146,25 @@ router.get('/stats', protect, async (req, res) => {
     const divisionsMap = {}; // division name -> { name, empCount }
 
     employees.forEach(emp => {
-      // division is a string now, e.g. "VENTILATOR"
       const divName = (emp.division && emp.division.trim() !== '') ? emp.division : 'Unassigned';
       if (!divisionsMap[divName]) {
         divisionsMap[divName] = {
           id: divName,
           name: divName,
           empCount: 0,
-          employees: [], // Keep track of employees to calculate missing
           reports: reportDefinitions.reduce((acc, report) => {
             acc[report.type] = {
               type: report.type,
               label: report.label,
               schedule: report.schedule,
-              expected: 0,
-              actual: 0,
-              employeeActuals: {} // Map employeeId -> actual submissions
+              expected: report.expectedPerEmployee, // Set once per division
+              actual: 0
             };
             return acc;
           }, {})
         };
       }
       divisionsMap[divName].empCount++;
-      divisionsMap[divName].employees.push({ id: emp._id.toString(), name: emp.name });
-      reportDefinitions.forEach(report => {
-        divisionsMap[divName].reports[report.type].expected += report.expectedPerEmployee;
-      });
     });
 
     // Get all submissions for the month
@@ -163,15 +172,10 @@ router.get('/stats', protect, async (req, res) => {
     const submissions = await TrackerSubmission.find({ month }).lean();
 
     submissions.forEach(sub => {
-      // sub.division is a string
       const divName = (sub.division && sub.division.trim() !== '') ? sub.division : 'Unassigned';
       const division = divisionsMap[divName];
       if (division && division.reports[sub.type]) {
         division.reports[sub.type].actual++;
-        const empIdStr = sub.employee ? sub.employee.toString() : null;
-        if (empIdStr) {
-          division.reports[sub.type].employeeActuals[empIdStr] = (division.reports[sub.type].employeeActuals[empIdStr] || 0) + 1;
-        }
       }
     });
 
@@ -179,18 +183,6 @@ router.get('/stats', protect, async (req, res) => {
       const reports = reportDefinitions.map(report => {
         const item = div.reports[report.type];
         const percent = item.expected > 0 ? Math.round((item.actual / item.expected) * 100) : 0;
-        
-        // Calculate missing employees for this report
-        const missingNames = [];
-        const requiredCount = report.expectedPerEmployee;
-        if (requiredCount > 0) {
-          div.employees.forEach(emp => {
-            const actualForEmp = item.employeeActuals[emp.id] || 0;
-            if (actualForEmp < requiredCount) {
-              missingNames.push(emp.name);
-            }
-          });
-        }
         
         return {
           type: item.type,
@@ -200,7 +192,7 @@ router.get('/stats', protect, async (req, res) => {
           actual: item.actual,
           percent: Math.min(100, percent),
           complete: item.expected > 0 && item.actual >= item.expected,
-          missingNames
+          missingNames: [] // Not applicable at division level anymore
         };
       });
       const reportByType = reports.reduce((acc, report) => {

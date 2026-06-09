@@ -2446,13 +2446,14 @@
       const ds = fmtDateStr(dateObj);
       const isFuture = dateObj > today;
       const isPast = dateObj < todayStart;
-      const isSubmitted = submissions.some(s => s.type === type && s.reportDate === ds);
+      const submissionInfo = submissions.find(s => s.type === type && s.reportDate === ds);
+      const isSubmitted = !!submissionInfo;
       const isChecked = !!_trackerLocalChecked[type][ds];
       const displayDate = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
       let cbClass = 'tracker-cb';
       let pillClass = '', pillText = '';
       
-      if (isSubmitted) { cbClass += ' done'; pillClass = 'pill-submitted'; pillText = 'Submitted'; }
+      if (isSubmitted) { cbClass += ' done'; pillClass = 'pill-submitted'; pillText = `Submitted by ${submissionInfo.submittedByName ? submissionInfo.submittedByName.split(' ')[0] : 'Team'}`; }
       else if (isPast) { cbClass += ' locked'; pillClass = 'pill-locked'; pillText = 'Deadline Passed'; }
       else if (isFuture) { pillClass = 'pill-future'; pillText = 'Upcoming'; }
       else if (isChecked) { cbClass += ' checked'; pillClass = 'pill-pending'; pillText = 'Selected'; }
