@@ -464,7 +464,7 @@ function summarizePerformanceRows(data) {
     })),
     row14: data?.row14 || null,
     row15: data?.row15 || null,
-    aux: data?.compliance || {},
+    compliance: data?.compliance || {},
   };
 }
 

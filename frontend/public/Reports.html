@@ -1607,7 +1607,7 @@ function renderDivisionPerfSummary(data,params) {
     if (typeof scope !== 'undefined' && scope === 'division' || (typeof params.division !== 'undefined' && typeof params.employee === 'undefined')) {
       const uniqueEmps = new Set(subs.filter(s => s.date === backendDate).map(s => s.emp));
       const count = uniqueEmps.size;
-      return `<div style="font-weight:600;color:#1e293b;">${ds}</div><div style="font-size:11px;font-weight:700;color:${count>0?'#059669':'#b91c1c'};margin-top:4px;">${count} Submitted</div>`;
+      return `<div style="font-weight:600;color:#1e293b;">${ds}</div><div style="font-size:11px;font-weight:700;color:${count>0?'#059669':'#b91c1c'};margin-top:4px;">${count>0?count+' Submitted':'Not Submitted'}</div>`;
     } else {
       const hasSub = subs.some(s => s.date === backendDate);
       return `<div style="font-weight:600;color:#1e293b;">${ds}</div><div style="font-size:11px;font-weight:700;color:${hasSub?'#059669':'#b91c1c'};margin-top:4px;">${hasSub?'Submitted':'Not Submitted'}</div>`;
@@ -1912,7 +1912,7 @@ function renderPerfSummary(data,params) {
     if (typeof scope !== 'undefined' && scope === 'division' || (typeof params.division !== 'undefined' && typeof params.employee === 'undefined')) {
       const uniqueEmps = new Set(subs.filter(s => s.date === backendDate).map(s => s.emp));
       const count = uniqueEmps.size;
-      return `<div style="font-weight:600;color:#1e293b;">${ds}</div><div style="font-size:11px;font-weight:700;color:${count>0?'#059669':'#b91c1c'};margin-top:4px;">${count} Submitted</div>`;
+      return `<div style="font-weight:600;color:#1e293b;">${ds}</div><div style="font-size:11px;font-weight:700;color:${count>0?'#059669':'#b91c1c'};margin-top:4px;">${count>0?count+' Submitted':'Not Submitted'}</div>`;
     } else {
       const hasSub = subs.some(s => s.date === backendDate);
       return `<div style="font-weight:600;color:#1e293b;">${ds}</div><div style="font-size:11px;font-weight:700;color:${hasSub?'#059669':'#b91c1c'};margin-top:4px;">${hasSub?'Submitted':'Not Submitted'}</div>`;
