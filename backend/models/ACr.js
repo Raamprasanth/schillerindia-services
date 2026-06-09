@@ -21,7 +21,7 @@ const aCrSchema = new mongoose.Schema(
     },
     warrantyStatus: {
       type: String,
-      enum: ['OW', 'LAMC', 'CAMC', 'EW', 'STOCK', 'IW', ''],
+      enum: ['OW', 'LAMC', 'CAMC', 'EW', 'STOCK', 'IW', 'Demo', 'NA', ''],
       default: '',
     },
     scEng: { type: String, trim: true, default: '' },

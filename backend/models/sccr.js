@@ -55,7 +55,7 @@ const PrfObSchema = new mongoose.Schema(
     serialNo:       { type: String, trim: true },
     warrantyStatus: {
       type: String,
-      enum: ['OW', 'LAMC', 'CAMC', 'EW', 'STOCK', 'IW', ''],
+      enum: ['OW', 'LAMC', 'CAMC', 'EW', 'STOCK', 'IW', 'Demo', 'NA', ''],
       default: '',
     },
     partNo:         { type: String, trim: true },
