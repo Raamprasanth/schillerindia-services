@@ -283,7 +283,7 @@ async function getRealTrackerMetrics(scope, divisionName, employeeName, monthInf
 
   const result = { submissionsObj };
   for (const def of reportDefs) {
-    const expected = def.expectedPerEmployee * empCount;
+    const expected = def.expectedPerEmployee; // Tracker submissions are unique per division
     const actual = actuals[def.type];
     const pct = expected > 0 ? percent((actual / expected) * 100) : percent(0);
     result[def.type] = pct;
@@ -852,7 +852,8 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     scrapCount: filteredScrap.length,
   };
 
-  const realTrackers = await getRealTrackerMetrics(scope, selectedDivision, employee, monthInfo);
+  const actualEmployeeName = selectedEmployee ? selectedEmployee.name : employee;
+  const realTrackers = await getRealTrackerMetrics(scope, selectedDivision, actualEmployeeName, monthInfo);
   const compliance = makeAuxiliaryMetrics(
     baseSummary,
     [...currentActivityRows, ...(row14 ? [row14] : []), ...(row15 ? [row15] : [])]

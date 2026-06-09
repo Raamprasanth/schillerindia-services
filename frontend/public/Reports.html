@@ -824,7 +824,7 @@ body{
       <tr>
         <td class="bg-peach bold">${cWeekly}%</td>
         <td class="bg-peach bold">${cPending}%</td>
-        <td class="bg-peach bold">${cNonSaleable}%</td>
+        <td class="bg-peach bold">${cNonSaleableTracker}%</td>
       </tr>
 
       <!-- Separator -->
@@ -1549,29 +1549,14 @@ function renderDivisionPerfSummary(data,params) {
   const rBir = getRow('BIR list');
   const rEst = getRow('Estimation');
 
-  const rWeekly = getRow('Weekly CRM Reports');
-  const cWeekly = getVal(rWeekly, 'completionPercent', 0);
-
-  const rPending = getRow('Pending Activity');
-  const cPending = getVal(rPending, 'completionPercent', 0);
-
-  const rNS = getRow('Non-Saleable');
-  const cNonSaleable = getVal(rNS, 'completionPercent', 0);
-
-  const rSW = getRow('Supplier Warranty');
-  const cSupWarr = getVal(rSW, 'completionPercent', 0);
-
-  const rCP = getRow('Critical Pending');
-  const cCritical = getVal(rCP, 'completionPercent', 0);
-
-  const rPI = getRow('Purchase Indent');
-  const cPI = getVal(rPI, 'completionPercent', 0);
-
-  const r5S = getRow('5S');
-  const c5S = getVal(r5S, 'completionPercent', 0);
-
-  const rRR = getRow('Repair Report');
-  const cRR = getVal(rRR, 'completionPercent', 0);
+  const cWeekly = data.compliance?.weeklyCrm ?? 0;
+  const cPending = data.compliance?.pendingActivity ?? 0;
+  const cNonSaleableTracker = data.compliance?.nonSaleable ?? 0;
+  const cSupWarr = data.compliance?.supplierWarranty ?? 0;
+  const cCritical = data.compliance?.criticalPending ?? 0;
+  const cPI = data.compliance?.purchaseIndent ?? 0;
+  const c5S = data.compliance?.fiveSRate ?? 0;
+  const cRR = data.compliance?.repairReport ?? 0;
 
   const monthLabel = data.monthLabel || params.month || '';
   const divisionLabel = data.division || params.division || '';
@@ -1767,7 +1752,7 @@ function renderDivisionPerfSummary(data,params) {
         <tr>
           <td style="border:1px solid #000; padding:8px; vertical-align:top;">${t5H}</td>
           <td style="border:1px solid #000; padding:8px; vertical-align:top;">${m5H}</td>
-          <td style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cNonSaleable}%</td>
+          <td style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cNonSaleableTracker}%</td>
         </tr>
         <tr>
           <td colspan="2" style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cWeekly}%</td>
@@ -1853,29 +1838,14 @@ function renderPerfSummary(data,params) {
   const rBir = getRow('BIR list');
   const rEst = getRow('Estimation');
 
-  const rWeekly = getRow('Weekly CRM Reports');
-  const cWeekly = getVal(rWeekly, 'completionPercent', 0);
-
-  const rPending = getRow('Pending Activity');
-  const cPending = getVal(rPending, 'completionPercent', 0);
-
-  const rNS = getRow('Non-Saleable');
-  const cNonSaleable = getVal(rNS, 'completionPercent', 0);
-
-  const rSW = getRow('Supplier Warranty');
-  const cSupWarr = getVal(rSW, 'completionPercent', 0);
-
-  const rCP = getRow('Critical Pending');
-  const cCritical = getVal(rCP, 'completionPercent', 0);
-
-  const rPI = getRow('Purchase Indent');
-  const cPI = getVal(rPI, 'completionPercent', 0);
-
-  const r5S = getRow('5S');
-  const c5S = getVal(r5S, 'completionPercent', 0);
-
-  const rRR = getRow('Repair Report');
-  const cRR = getVal(rRR, 'completionPercent', 0);
+  const cWeekly = data.compliance?.weeklyCrm ?? 0;
+  const cPending = data.compliance?.pendingActivity ?? 0;
+  const cNonSaleableTracker = data.compliance?.nonSaleable ?? 0;
+  const cSupWarr = data.compliance?.supplierWarranty ?? 0;
+  const cCritical = data.compliance?.criticalPending ?? 0;
+  const cPI = data.compliance?.purchaseIndent ?? 0;
+  const c5S = data.compliance?.fiveSRate ?? 0;
+  const cRR = data.compliance?.repairReport ?? 0;
 
   const monthLabel = params.month || '';
   const employeeLabel = data.employee || params.employee || '';
@@ -2073,7 +2043,7 @@ function renderPerfSummary(data,params) {
         <tr>
           <td style="border:1px solid #000; padding:8px; vertical-align:top;">${t5H}</td>
           <td style="border:1px solid #000; padding:8px; vertical-align:top;">${m5H}</td>
-          <td style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cNonSaleable}%</td>
+          <td style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cNonSaleableTracker}%</td>
         </tr>
         <tr>
           <td colspan="2" style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cWeekly}%</td>
