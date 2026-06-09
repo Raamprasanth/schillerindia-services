@@ -127,6 +127,11 @@ function buildReportDefinitions(year, month) {
   ];
 }
 
+function normalizeReportDate(value) {
+  const text = String(value || '').trim();
+  return text.length >= 10 ? text.slice(0, 10) : text;
+}
+
 // Get admin stats grouped by division
 router.get('/stats', protect, async (req, res) => {
   try {
@@ -158,7 +163,8 @@ router.get('/stats', protect, async (req, res) => {
               label: report.label,
               schedule: report.schedule,
               expected: report.expectedPerEmployee, // Set once per division
-              actual: 0
+              actual: 0,
+              submittedDates: new Set()
             };
             return acc;
           }, {})
@@ -175,13 +181,17 @@ router.get('/stats', protect, async (req, res) => {
       const divName = (sub.division && sub.division.trim() !== '') ? sub.division : 'Unassigned';
       const division = divisionsMap[divName];
       if (division && division.reports[sub.type]) {
-        division.reports[sub.type].actual++;
+        const reportDate = normalizeReportDate(sub.reportDate);
+        if (reportDate) {
+          division.reports[sub.type].submittedDates.add(reportDate);
+        }
       }
     });
 
     const results = Object.values(divisionsMap).map(div => {
       const reports = reportDefinitions.map(report => {
         const item = div.reports[report.type];
+        item.actual = item.submittedDates.size;
         const percent = item.expected > 0 ? Math.round((item.actual / item.expected) * 100) : 0;
         
         return {
