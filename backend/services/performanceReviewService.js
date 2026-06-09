@@ -248,7 +248,7 @@ async function getRealTrackerMetrics(scope, divisionName, employeeName, monthInf
     const Employee = require('../models/Employee');
     const empDoc = await Employee.findOne({ name: employeeName, role: 'employee' }).lean();
     if (empDoc) {
-      matchQuery.employee = empDoc._id;
+      matchQuery.division = empDoc.division;
     } else {
       empCount = 0; // Employee not found
     }
