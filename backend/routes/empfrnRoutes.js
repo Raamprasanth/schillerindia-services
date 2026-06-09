@@ -449,7 +449,8 @@ router.put('/:id/update', protect, async (req, res) => {
     doc.updatedAt = new Date();
     const bodyStatus = String(req.body.status || '').toLowerCase();
     const typeWorkValue = String(doc.typeWork || '').trim().toLowerCase();
-    if (bodyStatus !== 'estimation') {
+    const shouldQueueDispatchEscalation = req.body.dispatchQueue === true && bodyStatus !== 'estimation';
+    if (shouldQueueDispatchEscalation) {
       doc.escalationQueuedAt = new Date();
       doc.escalationQueuedBy = req.user?.name || '';
     }
@@ -478,7 +479,7 @@ router.put('/:id/update', protect, async (req, res) => {
 
     await doc.save();
 
-    if (bodyStatus !== 'estimation') {
+    if (shouldQueueDispatchEscalation) {
       await enqueueEscalationSnapshot(
         'frn',
         doc._id,

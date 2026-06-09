@@ -438,8 +438,9 @@ router.put('/:id', async (req, res) => {
       return res.status(403).json({ message: 'Access denied' });
     }
 
-    const { _id, id, createdAt, ...updateData } = req.body;
+    const { _id, id, createdAt, dispatchQueue, ...updateData } = req.body;
     const sameGir = String(updateData.sameGir || '').toLowerCase();
+    const shouldQueueDispatchEscalation = dispatchQueue === true;
     const updated = await EstimationPending.findByIdAndUpdate(
       req.params.id,
       {
@@ -447,19 +448,23 @@ router.put('/:id', async (req, res) => {
           ...updateData,
           estUpdatedBy: name,
           estUpdatedAt: new Date(),
-          escalationQueuedAt: new Date(),
-          escalationQueuedBy: name || '',
+          ...(shouldQueueDispatchEscalation ? {
+            escalationQueuedAt: new Date(),
+            escalationQueuedBy: name || '',
+          } : {}),
         }
       },
       { new: true, runValidators: false }
     );
 
-    await enqueueEscalationSnapshot(
-      'est',
-      updated._id,
-      name || '',
-      buildEstimationEscalationRow(updated.toObject ? updated.toObject() : updated)
-    );
+    if (shouldQueueDispatchEscalation) {
+      await enqueueEscalationSnapshot(
+        'est',
+        updated._id,
+        name || '',
+        buildEstimationEscalationRow(updated.toObject ? updated.toObject() : updated)
+      );
+    }
 
     const normalizedTypeWork = String(updated.typeWork || '').trim().toLowerCase();
 

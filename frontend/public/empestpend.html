@@ -1451,6 +1451,7 @@ async function submitUpdate(){
       sameGir:isUpgrade ? 'yes' : sameGir,
       estUpdatedBy:EMP_NAME,
       estUpdatedAt:new Date().toISOString(),
+      dispatchQueue:true,
     };
     delete payload._id; delete payload.id; delete payload.pdEst;
     const res=await fetch(API_BASE+'/api/emp/estimation/'+editingId,{method:'PUT',headers:authHeaders(),body:JSON.stringify(payload)});
