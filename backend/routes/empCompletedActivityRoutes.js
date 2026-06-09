@@ -21,9 +21,11 @@ function normalizeDivision(value) {
 }
 
 function getUserDivisions(user) {
-  const values = user?.activeDivision
-    ? [user.activeDivision]
-    : (Array.isArray(user?.divisions) && user.divisions.length ? [...user.divisions] : [user?.division]);
+  const values = [
+    user?.activeDivision,
+    user?.division,
+    ...(Array.isArray(user?.divisions) ? user.divisions : []),
+  ];
   return [...new Set(values.map(normalizeDivision).filter(Boolean))];
 }
 

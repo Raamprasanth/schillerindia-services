@@ -1,6 +1,7 @@
 const express = require('express');
 const PtClosedActivity = require('../models/PtClosedActivity');
 const PtPendingActivity = require('../models/PtPendingActivity');
+const User = require('../models/User');
 const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -18,15 +19,76 @@ router.use((req, res, next) => {
   next();
 });
 
-function ownerFilter(user) {
+function normalizeDivision(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function getUserDivisions(user) {
+  const values = [
+    user?.activeDivision,
+    user?.division,
+    ...(Array.isArray(user?.divisions) ? user.divisions : []),
+  ];
+  return [...new Set(values.map(normalizeDivision).filter(Boolean))];
+}
+
+function getWriteDivision(user, body = {}) {
+  return String(body.division || user?.activeDivision || user?.division || '').trim();
+}
+
+function isAdminUser(user) {
   const role = String(user?.role || '').toLowerCase();
-  if (['admin', 'superadmin', 'administrator'].includes(role)) return {};
-  return { createdBy: user?._id };
+  return ['admin', 'superadmin', 'administrator'].includes(role);
+}
+
+async function getAllowedCreatorIds(user) {
+  const divisions = getUserDivisions(user);
+  if (!divisions.length) return [];
+  const docs = await User.find({
+    $or: [
+      { division: { $in: divisions.map(value => new RegExp(`^${value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i')) } },
+      { activeDivision: { $in: divisions.map(value => new RegExp(`^${value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i')) } },
+      { divisions: { $elemMatch: { $in: divisions.map(value => new RegExp(`^${value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i')) } } },
+    ],
+  }).select('_id').lean();
+  return docs.map((doc) => doc._id);
+}
+
+async function buildDivisionAccessFilter(user) {
+  if (isAdminUser(user)) return {};
+  const divisions = getUserDivisions(user);
+  const creatorIds = await getAllowedCreatorIds(user);
+  const orFilters = [];
+  if (divisions.length) {
+    orFilters.push({ division: { $in: divisions.map(value => new RegExp(`^${value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i')) } });
+  }
+  if (creatorIds.length) {
+    orFilters.push({ createdBy: { $in: creatorIds } });
+  }
+  if (user?._id) {
+    orFilters.push({ createdBy: user._id });
+  }
+  return orFilters.length ? { $or: orFilters } : { createdBy: user?._id };
+}
+
+async function canAccessDoc(user, doc) {
+  if (!doc) return false;
+  if (isAdminUser(user)) return true;
+  const divisions = getUserDivisions(user);
+  const docDivision = normalizeDivision(doc.division);
+  if (docDivision && divisions.includes(docDivision)) return true;
+  if (doc.createdBy && String(doc.createdBy) === String(user?._id || '')) return true;
+  if (!doc.createdBy) return false;
+  const creator = await User.findById(doc.createdBy).select('division activeDivision divisions').lean();
+  if (!creator) return false;
+  const creatorDivisions = getUserDivisions(creator);
+  return creatorDivisions.some((value) => divisions.includes(value));
 }
 
 router.get('/', async (req, res) => {
   try {
-    const docs = await PtClosedActivity.find(ownerFilter(req.user)).sort({ createdAt: -1 }).lean();
+    const filter = await buildDivisionAccessFilter(req.user);
+    const docs = await PtClosedActivity.find(filter).sort({ createdAt: -1 }).lean();
     res.json(docs);
   } catch (err) {
     console.error('[GET /api/ptca]', err);
@@ -42,6 +104,7 @@ router.post('/', async (req, res) => {
     }
 
     const doc = await PtClosedActivity.create({
+      division: getWriteDivision(req.user, body),
       scEngineer: body.scEngineer,
       initiatedDate: body.initiatedDate,
       activity: body.activity,
@@ -63,9 +126,12 @@ router.post('/', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
-    const filter = { _id: req.params.id, ...ownerFilter(req.user) };
-    const doc = await PtClosedActivity.findOneAndDelete(filter);
-    if (!doc) return res.status(404).json({ message: 'Record not found.' });
+    const existing = await PtClosedActivity.findById(req.params.id).lean();
+    if (!existing) return res.status(404).json({ message: 'Record not found.' });
+    if (!(await canAccessDoc(req.user, existing))) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+    const doc = await PtClosedActivity.findByIdAndDelete(req.params.id);
     res.json({ success: true, id: req.params.id });
   } catch (err) {
     console.error('[DELETE /api/ptca/:id]', err);
@@ -75,14 +141,16 @@ router.delete('/:id', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   try {
-    const filter = { _id: req.params.id, ...ownerFilter(req.user) };
     const status = String(req.body.status || '').toLowerCase();
+    const existing = await PtClosedActivity.findById(req.params.id).lean();
+    if (!existing) return res.status(404).json({ message: 'Record not found.' });
+    if (!(await canAccessDoc(req.user, existing))) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
     
     if (status === 'pending') {
-      const existing = await PtClosedActivity.findOne(filter).lean();
-      if (!existing) return res.status(404).json({ message: 'Record not found.' });
-
       const pendingDoc = await PtPendingActivity.create({
+        division: existing.division || getWriteDivision(req.user, req.body),
         scEngineer: req.body.scEngineer || existing.scEngineer,
         initiatedDate: req.body.initiatedDate || existing.initiatedDate,
         activity: req.body.activity || existing.activity,
@@ -95,11 +163,15 @@ router.put('/:id', async (req, res) => {
         status: req.body.status || existing.status,
         createdBy: existing.createdBy
       });
-      await PtClosedActivity.findOneAndDelete(filter);
+      await PtClosedActivity.findByIdAndDelete(req.params.id);
       return res.json(pendingDoc);
     }
     
-    const doc = await PtClosedActivity.findOneAndUpdate(filter, req.body, { new: true });
+    const doc = await PtClosedActivity.findByIdAndUpdate(
+      req.params.id,
+      { ...req.body, division: req.body.division || existing.division || getWriteDivision(req.user, req.body) },
+      { new: true }
+    );
     if (!doc) return res.status(404).json({ message: 'Record not found.' });
     res.json(doc);
   } catch (err) {

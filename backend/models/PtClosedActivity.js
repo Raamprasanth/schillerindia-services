@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const ptClosedActivitySchema = new mongoose.Schema({
+  division: { type: String, default: '' },
   scEngineer: { type: String, required: true },
   initiatedDate: { type: String, required: true },
   activity: { type: String, required: true },

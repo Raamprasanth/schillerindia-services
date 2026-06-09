@@ -22,6 +22,10 @@ function ownerFilter(user) {
   return {};
 }
 
+function getWriteDivision(user, body = {}) {
+  return String(body.division || user?.activeDivision || user?.division || '').trim();
+}
+
 function normalizePendingStatus(value) {
   return String(value || '').toLowerCase() === 'completed' ? 'Completed' : 'Pending';
 }
@@ -44,6 +48,7 @@ router.post('/', async (req, res) => {
     }
 
     const doc = await PtPendingActivity.create({
+      division: getWriteDivision(req.user, body),
       scEngineer: body.scEngineer,
       initiatedDate: body.initiatedDate,
       activity: body.activity,
@@ -72,6 +77,7 @@ router.post('/:id/close', async (req, res) => {
     }
 
     const closedDoc = await PtClosedActivity.create({
+      division: existing.division || getWriteDivision(req.user, req.body),
       scEngineer: existing.scEngineer,
       initiatedDate: existing.initiatedDate,
       activity: existing.activity,
