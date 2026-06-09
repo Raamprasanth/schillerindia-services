@@ -433,7 +433,7 @@ tr:hover td{background:var(--surface3);}
       <datalist id="team-options">
         <option value="Production"></option>
         <option value="FQC"></option>
-        <option value="Field Support"></option>
+        <option value="Field Support"></option>`n        <option value="Service"></option>
       </datalist>
       <div id="dw-rows-container"></div>
       <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:5px;" id="add-row-btn" onclick="addDwRow()">+ Add Row</button>
@@ -616,7 +616,18 @@ function viewDw(id){
 }
 function closeDwView(){ document.getElementById("dw-view-overlay").classList.remove("open"); }
 
-function openDwModal(){ 
+function openDwModal(){
+  const t = new Date();
+  const offset = t.getTimezoneOffset() * 60000;
+  const todayStr = new Date(t.getTime() - offset).toISOString().split('T')[0];
+  const y = new Date(t.getTime() - 86400000);
+  const yesterdayStr = new Date(y.getTime() - offset).toISOString().split('T')[0];
+
+  if (selectedDateStr !== todayStr && selectedDateStr !== yesterdayStr) {
+    alert('You can only add new entries for today or yesterday.');
+    return;
+  }
+
   editId = null;
   clearForm(); 
   document.getElementById("dw-date").value = selectedDateStr; 
