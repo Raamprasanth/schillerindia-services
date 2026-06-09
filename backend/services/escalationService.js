@@ -461,6 +461,14 @@ function pick(doc, keys = []) {
   return '';
 }
 
+function pickStockCustomer(doc) {
+  return pick(doc, ['stkCust', 'stockCust', 'customer', 'custName']);
+}
+
+function pickItemDescription(doc) {
+  return pick(doc, ['itemDescription', 'description', 'partsDescription', 'defMod']);
+}
+
 function buildFrnEscalationRow(doc) {
   return {
     'DIVISION NAME': pick(doc, ['divisionName', 'division.name', 'division']),
@@ -471,6 +479,8 @@ function buildFrnEscalationRow(doc) {
     BRANCH: pick(doc, ['branch', 'reg', 'region']),
     ENGINEER_ID: pick(doc, ['eng', 'engineer.name', 'engineer']),
     ENGINEER_NAME: pick(doc, ['eng', 'engineer.name', 'engineer']),
+    STK_CUST: pickStockCustomer(doc),
+    'STK/CUST': pickStockCustomer(doc),
     CUST_NAME: pick(doc, ['customer', 'custName']),
     PRODUCT_MODEL: doc.model || '',
     UNIT_STATUS: doc.unitStatus || doc.unitSts || '',
@@ -479,7 +489,7 @@ function buildFrnEscalationRow(doc) {
     DEF_GIR_NO: doc.defGir || '',
     'PART NUMBER': doc.partNo || '',
     PART_NO: doc.partNo || '',
-    'ITEM DESCRIPTION': pick(doc, ['partsDescription', 'itemDescription', 'description', 'components', 'defMod']),
+    'ITEM DESCRIPTION': pickItemDescription(doc),
     REP_GIR_NO: pick(doc, ['repGirNo', 'repGir']),
     'RE VALUE': pick(doc, ['revalue', 'reValue', 'cost']),
     DEF_UNIT_GIR_NO: pick(doc, ['defUnitGir', 'obDefUnitGir']),
@@ -501,7 +511,8 @@ function buildEstimationEscalationRow(doc) {
     BRANCH: pick(doc, ['branch', 'reg', 'region']),
     ENGINEER_ID: pick(doc, ['eng', 'engineer.name', 'engineer', 'estRaEng']),
     ENGINEER_NAME: pick(doc, ['eng', 'engineer.name', 'engineer', 'estRaEng']),
-    STK_CUST: doc.stkCust || '',
+    STK_CUST: pickStockCustomer(doc),
+    'STK/CUST': pickStockCustomer(doc),
     CUST_NAME: doc.custName || doc.customer || '',
     PRODUCT_MODEL: doc.model || '',
     UNIT_STATUS: pick(doc, ['unitSts', 'unitStatus']),
@@ -511,7 +522,7 @@ function buildEstimationEscalationRow(doc) {
     DEF_GIR_NO: doc.defGir || '',
     'PART NUMBER': doc.partNo || '',
     PART_NO: doc.partNo || '',
-    'ITEM DESCRIPTION': pick(doc, ['partsDescription', 'itemDescription', 'description', 'components', 'defMod']),
+    'ITEM DESCRIPTION': pickItemDescription(doc),
     REP_GIR_NO: doc.obRepGirNo || doc.repGirNo || '',
     'RE VALUE': doc.revalue || '',
     DEF_UNIT_GIR_NO: doc.obDefUnitGir || doc.defUnitGir || '',
@@ -536,7 +547,8 @@ function buildToEscalationRow(doc, items = []) {
     'SCH REF': pick(doc, ['scRno', 'scReNo', 'scRefNo']),
     SC_REF_NO: pick(doc, ['scRno', 'scReNo', 'scRefNo']),
     FRN_NO: doc.frnNo || '',
-    STK_CUST: doc.stkCust || '',
+    STK_CUST: pickStockCustomer(doc),
+    'STK/CUST': pickStockCustomer(doc),
     BRANCH: pick(doc, ['branch', 'reg', 'region']),
     CUST_NAME: pick(doc, ['custName', 'customer']),
     PRODUCT_MODEL: doc.model || '',
@@ -571,7 +583,7 @@ function buildUrEscalationRow(doc) {
     DEF_TYPE: doc.defType || '',
     DEF_GIR_NO: doc.defGir || '',
     'PART NUMBER': doc.partNo || '',
-    'ITEM DESCRIPTION': pick(doc, ['partsDescription', 'itemDescription', 'description', 'components', 'defMod']),
+    'ITEM DESCRIPTION': pickItemDescription(doc),
     REP_GIR_NO: doc.repGirNo || '',
     TYPE_OF_WORK: doc.urTypeWork || doc.typeWork || '',
     TYPE_OF_ACC: pick(doc, ['typeOfAcc', 'typeAcc', 'unitStatus', 'unitSts']),
@@ -737,6 +749,11 @@ function mergeEscalationRow(base = {}, queued = {}) {
   Object.entries(queued || {}).forEach(([key, value]) => {
     if (isFilledCell(value) || !isFilledCell(merged[key])) {
       merged[key] = value;
+    }
+  });
+  ['STK_CUST', 'STK/CUST', 'CUST_NAME', 'CUSTOMER_NAME', 'ITEM DESCRIPTION'].forEach((key) => {
+    if (isFilledCell(base[key])) {
+      merged[key] = base[key];
     }
   });
   Object.entries(base || {}).forEach(([key, value]) => {
@@ -951,15 +968,15 @@ async function removeEscalationSnapshot(module, sourceId) {
 
 function buildUrMailPayload(slotWindow, data) {
   const isScrap = slotWindow.slot === 'ur_scrap';
-  const title = isScrap ? 'Weekly Scrap Escalation Report' : 'Daily Under Repair Escalation Report';
+  const title = isScrap ? 'Weekly Scrap Escalation Report' : 'Daily Stock Escalation Report';
   const bodyLines = [
-    'SchillerIndia under-repair escalation report',
+    isScrap ? 'SchillerIndia scrap escalation report' : 'SchillerIndia stock escalation report',
     '',
     `Slot: ${slotWindow.slotLabel}`,
     `Window (IST): ${formatIstStamp(slotWindow.windowStart)} to ${formatIstStamp(slotWindow.windowEnd)}`,
     `Records: ${data.rows.length}`,
     '',
-    `Attached Excel contains the ${isScrap ? 'scrap' : 'under-repair follow-up'} escalation details.`,
+    `Attached Excel contains the ${isScrap ? 'scrap' : 'stock'} escalation details.`,
   ];
 
   return {
@@ -1062,20 +1079,20 @@ function buildSrMailPayload(slotWindow, data) {
   return {
     format: 'xlsx',
     to: [],
-    subject: `SR Escalation Report - ${slotWindow.slotLabel} - ${slotWindow.jobDate}`,
+    subject: `DR Replacement Escalation Report - ${slotWindow.slotLabel} - ${slotWindow.jobDate}`,
     body: [
-      'SchillerIndia spares requirement escalation report',
+      'SchillerIndia DR replacement escalation report',
       '',
       `Slot: ${slotWindow.slotLabel}`,
       `Window (IST): ${formatIstStamp(slotWindow.windowStart)} to ${formatIstStamp(slotWindow.windowEnd)}`,
-      `Pending FRN SR records: ${data.frnRows.length}`,
-      `SO Pending SR records: ${data.estimationRows.length}`,
+      `Pending FRN DR records: ${data.frnRows.length}`,
+      `SO Pending DR records: ${data.estimationRows.length}`,
       `Total records: ${total}`,
       '',
-      'Attached Excel contains the combined SR escalation details from Pending FRN and SO Pending.',
+      'Attached Excel contains the combined DR replacement escalation details from Pending FRN and SO Pending.',
     ].join('\n'),
     sheets: [
-      { name: 'SR', template: 'SR', rows: combinedRows },
+      { name: 'DR Replacement', template: 'SR', rows: combinedRows },
     ],
   };
 }
