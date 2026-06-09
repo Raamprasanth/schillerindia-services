@@ -347,9 +347,8 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
         </div>
         <div class="ff">
           <label>Engineer <span class="req">*</span></label>
-          <select id="m-engineer" required>
-            <option value="">Select Engineer-</option>
-          </select>
+          <input list="engineer-list" id="m-engineer" placeholder="Select or type Engineer-" autocomplete="off" required>
+          <datalist id="engineer-list"></datalist>
         </div>
         <div class="ff">
           <label>Supplier <span class="req">*</span></label>
@@ -797,20 +796,19 @@ function onRegionChange(selectedBranch = ''){
 async function onBranchChange(selectedEngineer = '') {
   const branch = document.getElementById('m-branch').value;
   const engSel = document.getElementById('m-engineer');
+  const engList = document.getElementById('engineer-list');
   if(!branch) {
-    engSel.innerHTML = '<option value="">Select Engineer-</option>';
+    if(engList) engList.innerHTML = '';
     return;
   }
   
   if (!DB_ENGINEERS || DB_ENGINEERS.length === 0) {
-    engSel.innerHTML = '<option value="">Loading...</option>';
     await loadEngineers();
   }
 
   // Filter client-side using robust branchMatch logic
   const engineers = DB_ENGINEERS.filter(e => branchMatch(e.branch || e.branchName, branch));
-  engSel.innerHTML = '<option value="">Select Engineer-</option>' + 
-    engineers.map(e => `<option value="${esc(e.name)}">${esc(e.name)}</option>`).join('');
+  if(engList) engList.innerHTML = engineers.map(e => `<option value="${esc(e.name)}">${esc(e.name)}</option>`).join('');
   if(selectedEngineer) engSel.value = selectedEngineer;
 }
 
@@ -960,7 +958,9 @@ async function openAddModal(){
   document.getElementById('m-division').value = div;
   document.getElementById('top-division').textContent = div || '-';
   document.getElementById('m-calldate').value = new Date().toISOString().split('T')[0];
-  document.getElementById('m-engineer').innerHTML = '<option value="">Select Engineer-</option>';
+  document.getElementById('m-engineer').value = '';
+  const engList = document.getElementById('engineer-list');
+  if(engList) engList.innerHTML = '';
   renderRegionOptions();
   renderBranchOptions();
   await loadDivisionModels(div);

@@ -471,12 +471,208 @@ table.ob-table tbody tr:last-child td{border-bottom:none;}
             <span class="srch-ico">&#128269;</span>
             <input type="text" id="tbl-search" placeholder="Search SC Ref, GIR, model" oninput="applyFilters()"/>
           </div>
+                <option>Pradap</option>
+                <option>Thilipan</option>
+              </select>
+            </div>
+            <div class="ff"><label>Repaired Date <span class="req">*</span></label><input type="date" id="u-repaireddate"/></div>
+            <div class="ff"><label>Status <span class="req">*</span></label>
+              <select id="u-status">
+                <option value="">Select...</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <div class="form-ok" id="modal-ok"></div>
+      <button class="btn btn-outline btn-sm" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-ob" id="update-btn" onclick="submitUpdate()">&#128190; Save Update</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- AI DIAGNOSTICS MODAL -->
+<div class="overlay" id="modal-ai-diagnostics">
+  <div class="modal" style="max-width:820px;">
+    <div class="modal-head">
+      <div>
+        <div class="modal-htitle">&#129504; Free AI Diagnostics <span class="modal-badge" id="qa-modal-ref">-</span></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">Upload a defect photo to get English and Tamil visual analysis.</div>
+      </div>
+      <button class="modal-close" onclick="closeAIModal()">&#10005;</button>
+    </div>
+    <div class="modal-scroll">
+      <div class="modal-body">
+        <div class="form-sec" style="background: rgba(16, 185, 129, 0.03); border: 1.5px dashed rgba(16, 185, 129, 0.25); border-radius: 12px; padding: 14px; margin-bottom: 16px; transition: all 0.3s ease;">
+          <div class="form-sec-title" style="color: #059669; font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+            <span>&#128247;</span> Multimodal Visual QA &amp; Defect Analysis <span class="count-pill" style="background: #059669; color: #fff; font-size: 9px; padding: 1px 6px;">Free AI</span>
+          </div>
+          <div id="gemini-alert-banner" style="display: none; margin-bottom: 12px; padding: 10px 12px; border-radius: 8px; font-size: 11.5px; line-height: 1.4; transition: all 0.3s ease;"></div>
+          <div style="display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 220px;">
+              <div style="position: relative; border: 2.5px dashed var(--border); border-radius: 8px; padding: 16px; text-align: center; background: var(--surface2); cursor: pointer; transition: all 0.2s;" id="drag-drop-zone">
+                <input type="file" id="qa-image-input" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer;" onchange="handleQAImageSelect(event)">
+                <div style="font-size: 20px; margin-bottom: 6px;">&#128247;</div>
+                <div style="font-size: 12.5px; font-weight: 600; color: var(--text);">Click or Drag Photo Here</div>
+                <div style="font-size: 10.5px; color: var(--muted); margin-top: 4px;">Supports PNG, JPG, JPEG</div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center; min-width: 170px; flex: 1;">
+              <div id="qa-preview-wrap" style="display: none; position: relative; width: 110px; height: 110px; border-radius: 8px; border: 1px solid var(--border); overflow: hidden; background: var(--surface3);">
+                <img id="qa-preview-img" style="width: 100%; height: 100%; object-fit: cover;">
+                <button type="button" onclick="clearQAImage()" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6); color: #fff; border: none; width: 18px; height: 18px; border-radius: 50%; font-size: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center;">x</button>
+              </div>
+              <button type="button" class="btn btn-ob btn-sm" id="run-qa-btn" onclick="runAIDiagnostics()" disabled style="width: 100%; justify-content: center; opacity: 0.5;">
+                <span id="qa-btn-spinner" class="qa-spinner" style="display: none; margin-right: 5px;"></span>
+                <span>Run Free AI Analysis</span>
+              </button>
+            </div>
+          </div>
+          <div id="qa-result-box" style="display:none;margin-top:14px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);font-size:12px;line-height:1.45;color:var(--text);white-space:pre-wrap;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-wrap">
+      <img class="brand-logo-img" src="logo.png" alt="SCHILLER">
+    </div>
+  </div>
+  <div style="padding:7px 12px 0;"><span class="ob-badge">&#128295; Repair Team</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-sec">Main</div>
+    <a class="nav-item" href="Repair-dashboard.html"><span class="ico">&#128202;</span> Dashboard</a>
+    <div class="nav-sec">Repair Work</div>
+    <a class="nav-item" href="Rtfrn.html"><span class="ico">&#128221;</span> PFRN</a>
+    <a class="nav-item active" href="Rtob.html"><span class="ico">&#128230;</span> OB</a>
+    <a class="nav-item" href="Rtur.html"><span class="ico">&#128736;&#65039;</span> UR</a>
+    <a class="nav-item" href="Rtcrl.html"><span class="ico">&#9989;</span> Closed Repair List</a>
+    <a class="nav-item" href="Rtrr.html"><span class="ico">&#128260;</span> Re-repair List</a>
+    <a class="nav-item" href="Rtcrr.html"><span class="ico">&#9989;</span> Closed Re-repair List</a>
+    <div class="nav-sec">Other Activities</div>
+    <a class="nav-item" href="Rtoa.html"><span class="ico">&#128203;</span> Other Activity</a>
+    <a class="nav-item" href="Rtcoa.html"><span class="ico">&#9989;</span> Closed Activity</a>
+    <a class="nav-item" href="Rtcomr.html"><span class="ico">&#128296;</span> Components Request</a>
+    <a class="nav-item" href="Rtccr.html"><span class="ico">&#128194;</span> Closed Request</a>
+    </nav>
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="user-av" id="emp-avatar">R</div>
+      <div><div class="user-nm" id="emp-name">Repair User</div><div class="user-rl" id="emp-role">Repair Team</div></div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="breadcrumb">
+        <a href="Repair-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
+        <span>Repair Work</span><span class="sep">&#8250;</span><span>RT OB</span>
+      </div>
+      <div class="topbar-title">Repair Activity List - OB Pending</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px;">
+      <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
+      <button class="btn btn-outline btn-sm" onclick="loadData()">&#128260; Refresh</button>
+      <button class="btn btn-success btn-sm" onclick="exportCSV()">&#128228; Export</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- AUTH WARNING BANNER - shown when API returns 403 for role mismatch -->
+    <div class="auth-warn" id="auth-warn">
+      &#9888;&#65039; <strong>Access Warning:</strong> The server returned a permission error.
+      Your role (<span id="warn-role">-</span>) may not have access to this endpoint.
+      Check that the <code>/api/rtob</code> route allows your role in <code>authMiddleware</code>.
+      <button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="document.getElementById('auth-warn').classList.remove('show')">Dismiss</button>
+    </div>
+
+
+
+    <div class="stats-row">
+      <div class="stat-card sc-teal" onclick="setSummaryFilter('all')"><div class="stat-ico si-teal">&#128230;</div><div class="stat-lbl">Total OB</div><div class="stat-val" id="st-total">-</div><div class="stat-sub">Active OB records</div></div>
+      <div class="stat-card sc-green" onclick="setSummaryFilter('below-3')"><div class="stat-ico si-green">&#9203;</div><div class="stat-lbl">Below 3 Days</div><div class="stat-val" id="st-below-3">-</div><div class="stat-sub">0 to 2 days</div></div>
+      <div class="stat-card sc-amber" onclick="setSummaryFilter('3-to-5')"><div class="stat-ico si-amber">&#128337;</div><div class="stat-lbl">3 to 5 Days</div><div class="stat-val" id="st-3-to-5">-</div><div class="stat-sub">Needs follow-up</div></div>
+      <div class="stat-card sc-red" onclick="setSummaryFilter('above-5')"><div class="stat-ico si-red">&#9888;&#65039;</div><div class="stat-lbl">Above 5 Days</div><div class="stat-val" id="st-above-5">-</div><div class="stat-sub">Needs priority action</div></div>
+    </div>
+
+    <!-- ADD PANEL -->
+    <div class="add-panel" id="add-panel">
+      <div class="add-panel-hdr">
+        <div class="add-panel-title">&#10133; Add New RT OB Record <span class="add-panel-tag">OB Pending</span></div>
+        <button class="close-panel" onclick="toggleAddPanel()">&#10005;</button>
+      </div>
+      <div class="fg-4" style="margin-bottom:14px;">
+        <div class="ff"><label>Entry Date <span class="req">*</span></label><input type="date" id="a-entrydate"/></div>
+        <div class="ff"><label>Division <span class="req">*</span></label>
+          <select id="a-division">
+            <option value="">Select Division-</option>
+            <option>PATIENT MONITORS</option><option>MONITORS CON</option><option>SAG</option><option>VENTILATOR</option><option>VENT CON</option>
+            <option>DEFIBRILLATOR</option><option>ECG</option><option>SYRINGE PUMP</option>
+            <option>INFUSION PUMP</option><option>ULTRASOUND</option><option>ANAESTHESIA</option>
+            <option>SHIPL</option><option>OTHER</option>
+          </select>
+        </div>
+        <div class="ff"><label>SC Ref No <span class="req">*</span></label><input type="text" id="a-screfno" placeholder=""/></div>
+        <div class="ff"><label>DEF GIR No <span class="req">*</span></label><input type="text" id="a-defgirno" placeholder=""/></div>
+        <div class="ff"><label>OB Type</label>
+          <select id="a-obtype"><option value="OW">OW</option><option value="LAMC">LAMC</option><option value="Other">Other</option></select>
+        </div>
+        <div class="ff"><label>Model <span class="req">*</span></label>
+          <select id="a-model">
+            <option value="">Select Model-</option>
+            <option>TS II</option><option>TS III</option><option>TS ULTRA Q5</option><option>COLT</option>
+            <option>BR-102 Plus</option><option>AT-10 Plus</option><option>CS-200</option>
+            <option>DEFIGARD 5000</option><option>Hamilton-C1</option><option>Hamilton-G5</option>
+            <option>SV300</option><option>GRAPHNET TS</option><option>GRAPHNET NEO</option>
+            <option>DKDS50</option><option>uMEC 10</option><option>BIOVISION CMS</option><option>ARZEO_2G</option>
+          </select>
+        </div>
+        <div class="ff"><label>Def Brd/Mod Name <span class="req">*</span></label><input type="text" id="a-defbrdmod" placeholder=""/></div>
+        <div class="ff"><label>Status</label>
+          <select id="a-status"><option value="inprogress">In Progress</option><option value="completed">Completed</option></select>
+        </div>
+      </div>
+      <div id="add-err" style="font-size:12px;color:var(--red);padding:7px 12px;border-radius:7px;background:var(--red-bg);border:1px solid rgba(185,28,28,0.2);display:none;margin-bottom:10px;"></div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-ob" id="add-btn" onclick="submitAdd()">&#128190; Save OB Record</button>
+        <button class="btn btn-outline btn-sm" onclick="toggleAddPanel()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <!-- TABLE -->
+    <div class="table-card">
+      <div class="table-top">
+        <div class="table-title">Repair Activity OB <span class="count-pill" id="count-pill">- entries</span></div>
+        <div class="toolbar-r">
+          <div class="show-row">Show
+            <select class="fb-sel" id="per-page" style="padding:5px 8px;min-width:60px;" onchange="renderTable()">
+              <option>10</option><option>25</option><option>50</option><option>100</option>
+            </select> entries
+          </div>
+          <div class="srch-wrap">
+            <span class="srch-ico">&#128269;</span>
+            <input type="text" id="tbl-search" placeholder="Search SC Ref, GIR, model" oninput="applyFilters()"/>
+          </div>
         </div>
       </div>
       <div class="table-wrap">
         <table class="ob-table">
           <thead><tr>
             <th onclick="sortBy('entryDate')" class="sorted">Entry Date <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('rpDate')">Rp Date <span class="si">&#8693;</span></th>
             <th>Update</th>
             <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
             <th onclick="sortBy('scRefNo')">SC Ref No <span class="si">&#8693;</span></th>
@@ -487,7 +683,7 @@ table.ob-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('submittedBy')">Submitted By <span class="si">&#8693;</span></th>
           </tr></thead>
           <tbody id="ob-tbody">
-            <tr><td colspan="9" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
+            <tr><td colspan="10" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -588,7 +784,7 @@ async function loadData() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
 
     const data = await res.json();
-    allData = data.map(d => ({ ...d, category: d.category || d.obType || 'OB', id: d._id || d.id, noOfDays: calcDays(d.entryDate) }));
+    allData = data.map(d => ({ ...d, category: d.category || d.obType || 'OB', id: d._id || d.id, noOfDays: calcDays(d.rpDate || d.entryDate) }));
     applyFilters(); updateStats();
     showToast('Loaded ' + allData.length + ' record' + (allData.length !== 1 ? 's' : ''), 'info');
   } catch (e) {
@@ -601,7 +797,7 @@ async function loadData() {
 
 function showError(msg) {
   document.getElementById('ob-tbody').innerHTML =
-    `<tr><td colspan="9"><div class="empty-st">
+    `<tr><td colspan="10"><div class="empty-st">
       <div class="ei">&#128196;</div>
       <div class="et">Cannot load data</div>
       <div class="es">${msg}</div>
@@ -655,7 +851,7 @@ function renderTable(){
   (document.getElementById('count-pill')||{}).textContent =total+' entr'+(total===1?'y':'ies');
   const tbody=document.getElementById('ob-tbody');
   if(!slice.length){
-    tbody.innerHTML=`<tr><td colspan="9"><div class="empty-st">
+    tbody.innerHTML=`<tr><td colspan="10"><div class="empty-st">
       <div class="ei">&#128196;</div>
       <div class="et">${allData.length?'No records match filters':'No RT OB Records'}</div>
       <div class="es">${allData.length?'Try clearing the filters.':'No RT OB records available.'}</div>
@@ -668,6 +864,7 @@ function renderTable(){
       const stLbl={pending:'Pending',inprogress:'In Progress',completed:'Completed',on_hold:'On Hold',scrapped:'Scrapped'}[d.status]||(d.status||'Pending');
       return`<tr>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
+        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.rpDate || d.entryDate)}</td>
         <td><button class="btn-xs upd" onclick="openUpdate('${id}')" title="Update">&#9999;&#65039;</button></td>
         <td><span class="div-tag">${esc(d.division||'-')}</span></td>
         <td style="font-size:13.5px;font-weight:800;color:var(--text);">${esc(d.scRefNo||'-')}</td>
@@ -806,18 +1003,14 @@ async function submitUpdate(){
 }
 function exportCSV() {
     const headers = [
-      'Entry Date', 'Division', 'SC Ref No', 'DEF GIR No', 'Model', 'Def Brd/Mod Name', 'DOI (Date of Installation)',
+      'Entry Date', 'Rp Date', 'Division', 'SC Ref No', 'DEF GIR No', 'Model', 'Def Brd/Mod Name', 'DOI (Date of Installation)',
       'Technical Remarks', 'Repair Team Remarks', 'Components Used to Repaired', 'Cost in INR', 'Time Taken to Repair', 'Repair Status',
       'Repaired By', 'Repaired Date', 'Submitted By', 'No of Days', 'Status'
     ];
     const rows = filtered.map(d => [
-      `\t${fmtDate(d.entryDate)}`, d.division || '-', d.scRefNo || '-', d.defGirNo || '-', d.model || '-', d.defBrdModName || '-', d.doi || '-',
+      `\t${fmtDate(d.entryDate)}`, `\t${fmtDate(d.rpDate || d.entryDate)}`, d.division || '-', d.scRefNo || '-', d.defGirNo || '-', d.model || '-', d.defBrdModName || '-', d.doi || '-',
       d.techRemarks || '-', d.repairRemarks || '-', d.components || d.compUsedToRepair || '-', d.cost || '-', d.timeTaken || '-', d.repairStatus || '-',
       d.repairedBy || '-', d.repairedDate ? fmtDate(d.repairedDate) : '-', d.submittedBy || '-', d.noOfDays || 0, d.status || '-'
-    ]);
-    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
-    const a = document.createElement('a');
-    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
     a.download = 'rtob-' + new Date().toISOString().split('T')[0] + '.csv';
     a.click();
     showToast('Exported ' + filtered.length + ' records.', 'ok');
