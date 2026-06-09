@@ -237,18 +237,21 @@ async function getRealTrackerMetrics(scope, divisionName, employeeName, monthInf
   const reportDefs = buildReportDefinitions(monthInfo.year, monthInfo.month);
   
   let empCount = 0;
+  const escapeRegex = (s) => (s || '').replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
   let matchQuery = { month: monthInfo.monthKey };
 
   if (scope === 'division') {
     const Employee = require('../models/Employee');
-    empCount = await Employee.countDocuments({ role: 'employee', division: divisionName });
-    matchQuery.division = divisionName;
+    const divRegex = new RegExp('^' + escapeRegex(divisionName) + '$', 'i');
+    empCount = await Employee.countDocuments({ role: 'employee', division: divRegex });
+    matchQuery.division = divRegex;
   } else {
     empCount = 1;
     const Employee = require('../models/Employee');
     const empDoc = await Employee.findOne({ name: employeeName, role: 'employee' }).lean();
     if (empDoc) {
-      matchQuery.division = empDoc.division;
+      const divRegex = new RegExp('^' + escapeRegex(empDoc.division) + '$', 'i');
+      matchQuery.division = divRegex;
     } else {
       empCount = 0; // Employee not found
     }
