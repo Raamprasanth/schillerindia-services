@@ -1935,14 +1935,15 @@ async function submitUpdate(){
   const revalueEl=document.getElementById('upd-revalue');
   const revalueVal=String(revalueEl?.value||'').trim();
   if(!selectedTypeWork){document.getElementById('upd-typework').classList.add('err');err=true;}else document.getElementById('upd-typework').classList.remove('err');
-  if(!revalueVal){revalueEl?.classList.add('err');err=true;}else revalueEl?.classList.remove('err');
   const isUpgrade=selectedTypeWork==='Upgrade';
   const sameGir=document.getElementById('same-gir').value;
   const repGirNo=document.getElementById('upd-defunitgir').value.trim();
+  if(sameGir !== 'no' && !revalueVal){revalueEl?.classList.add('err');err=true;}else revalueEl?.classList.remove('err');
   if(!isUpgrade && !sameGir){showUpdMsg('Please select Same GIR No.','err');return;}
   if(!isUpgrade && sameGir==='no' && !repGirNo){document.getElementById('upd-defunitgir').classList.add('err');showUpdMsg('Please enter REP GIR No when Same GIR No is set to No.','err');return;}
   document.getElementById('upd-defunitgir').classList.remove('err');
-  if(err){showUpdMsg('Please fill all required fields: RA Engineer, Ship Date, Destination, Technical Remarks, Final Remarks, Type of Work, Revalue.','err');return;}
+  const errMsg = sameGir !== 'no' ? 'Please fill all required fields: RA Engineer, Ship Date, Destination, Technical Remarks, Final Remarks, Type of Work, Revalue.' : 'Please fill all required fields: RA Engineer, Ship Date, Destination, Technical Remarks, Final Remarks, Type of Work.';
+  if(err){showUpdMsg(errMsg,'err');return;}
   // Yes ? Completed FRN | No ? Under Repair
   const statusVal=(selectedTypeWork==='Upgrade' || sameGir==='yes')?'completed':'under_repair';
   const payload={raEng:document.getElementById('upd-raeng').value,defUnitGir:repGirNo,repGirNo:repGirNo,finalRemarks:document.getElementById('upd-finalremarks').value.trim(),techRemarks:document.getElementById('upd-techremarks').value,components:document.getElementById('upd-components').value,revalue:document.getElementById('upd-revalue').value?Number(document.getElementById('upd-revalue').value):0,shipSc:document.getElementById('upd-shipsc').value,destination:document.getElementById('upd-destination').value,typeWork:selectedTypeWork,status:statusVal,defPartSno:document.getElementById('upd-defpartsno').value.trim(),updatedAt:new Date().toISOString(),dispatchQueue:true};
