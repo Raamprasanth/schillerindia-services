@@ -98,22 +98,42 @@ function recipientDivisions(recipient = {}) {
   return Array.from(new Set(values.map(normalizeDivisionName).filter(Boolean)));
 }
 
-function resolveThreadDivision(requestedDivision, recipient = {}) {
+function canonicalDivisionMap(values = []) {
+  const map = new Map();
+  values.map(normalizeDivisionName).filter(Boolean).forEach((value) => {
+    const key = value.toLowerCase();
+    if (!map.has(key)) map.set(key, value);
+  });
+  return map;
+}
+
+function userDivisions(user = {}) {
+  return [
+    user.activeDivision,
+    user.division,
+    ...(Array.isArray(user.divisions) ? user.divisions : []),
+  ].map(normalizeDivisionName).filter(Boolean);
+}
+
+function resolveThreadDivision(requestedDivision, recipient = {}, user = {}) {
   const requested = normalizeDivisionName(requestedDivision);
   const divisions = recipientDivisions(recipient);
+  const divisionMap = canonicalDivisionMap(divisions);
   if (requested) {
-    if (divisions.length && !divisions.includes(requested)) {
+    const matched = divisionMap.get(requested.toLowerCase());
+    if (divisions.length && !matched) {
       const err = new Error('Selected recipient does not belong to this division.');
       err.status = 400;
       throw err;
     }
-    return requested;
+    return matched || requested;
   }
   if (divisions.length === 1) return divisions[0];
   if (divisions.length > 1) {
-    const err = new Error('Please select a division for this multi-division recipient.');
-    err.status = 400;
-    throw err;
+    const senderDivision = userDivisions(user)
+      .map(value => divisionMap.get(value.toLowerCase()))
+      .find(Boolean);
+    return senderDivision || divisions[0];
   }
   return '';
 }
@@ -296,7 +316,7 @@ router.post('/threads', async (req, res) => {
     else EmployeeModel = Employee;
     const employee = await EmployeeModel.findById(employeeId).select('name email division divisions designation role').lean();
     if (!employee) return res.status(404).json({ success: false, message: 'Recipient not found' });
-    const threadDivision = resolveThreadDivision(req.body.division, employee);
+    const threadDivision = resolveThreadDivision(req.body.division, employee, req.user);
 
     const senderId = userKey(req.user);
     const senderIsCoordinator = isCoordinator(req.user);
