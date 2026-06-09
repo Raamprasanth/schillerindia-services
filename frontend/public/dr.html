@@ -387,7 +387,18 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       <div class="table-top">
         <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;">Direct dispatch</div>
       </div>
-      
+      <div class="filter-strip">
+        <label>From</label>
+        <input type="date" class="f-inp" id="fl-from" onchange="applyFilters()">
+        <label>To</label>
+        <input type="date" class="f-inp" id="fl-to" onchange="applyFilters()">
+        <div class="f-divider"></div>
+        <label>Division</label>
+        <select class="f-select" id="fl-division" onchange="applyFilters()">
+          <option value="">All Divisions</option>
+        </select>
+        <button class="btn btn-outline btn-sm" onclick="clearFilters()" style="margin-left:auto;">&#10005; Clear</button>
+      </div>
       <div class="table-wrap">
         <table class="frn-table">
           <thead>
@@ -462,21 +473,55 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href="login.html"; }
 
   let records = [];
+  let filtered = [];
+
+  async function loadDivisions() {
+    const sel = document.getElementById('fl-division');
+    if (!sel) return;
+    try {
+      const res = await fetch('/api/divisions', { headers: hdrs() });
+      const data = await res.json().catch(() => []);
+      const list = Array.isArray(data) ? data : (data.data || []);
+      const names = [...new Set(list.map(d => d.name || d.division || d.divisionName || d).filter(Boolean).map(String))].sort();
+      sel.innerHTML = '<option value="">All Divisions</option>' + names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
+    } catch(_) {}
+  }
+
+  function clearFilters() {
+    ['fl-from','fl-to'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+    const divEl = document.getElementById('fl-division'); if(divEl) divEl.value = '';
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const from = document.getElementById('fl-from')?.value || '';
+    const to = document.getElementById('fl-to')?.value || '';
+    const division = document.getElementById('fl-division')?.value || '';
+    
+    filtered = records.filter(d => {
+      const entryDateStr = d.entryDate ? new Date(d.entryDate).toISOString().split('T')[0] : '';
+      if (from && entryDateStr < from) return false;
+      if (to && entryDateStr > to) return false;
+      if (division && (d.division || '').toLowerCase() !== division.toLowerCase()) return false;
+      return true;
+    });
+    renderTable();
+  }
 
   async function loadData() {
     try {
       const res = await fetch('/api/dr', { headers: hdrs() });
       if(res.status===401||res.status===403) return logout();
       const data = await res.json();
-      if(res.ok) { records = data; renderTable(); }
+      if(res.ok) { records = data; applyFilters(); }
     } catch(e) { console.error(e); }
   }
 
   function renderTable() {
     const tb = document.getElementById('tb');
-    if(!records.length) { tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;">No DR entries found.</td></tr>'; return; }
+    if(!filtered.length) { tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;">No DR entries found.</td></tr>'; return; }
     
-    tb.innerHTML = records.map(r => `
+    tb.innerHTML = filtered.map(r => `
       <tr>
         <td>${r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-'}</td>
         <td>${esc(r.division || '-')}</td>
@@ -618,12 +663,32 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     } catch(e) { alert(e.message); }
   }
 
+  function exportCSV() {
+    const headers = ['DR Req Date','Division','FRN No','Part No','Model','Description','Unit Status','Spares Rcd Date'];
+    const rows = filtered.map(r => [
+      r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-',
+      r.division || '-',
+      r.frnNo || '-',
+      r.partNo || '-',
+      r.model || '-',
+      r.description || '-',
+      r.unitStatus || '-',
+      r.sparesReceivedDate ? new Date(r.sparesReceivedDate).toLocaleDateString('en-IN') : '-'
+    ]);
+    const csv = [headers, ...rows].map(row => row.map(v => `"${String(v || '').replace(/"/g,'""')}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'dr-register-' + TODAY_ISO + '.csv';
+    a.click();
+  }
+
   function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
   
   // Close modal when clicking outside
   document.getElementById('dr-modal').addEventListener('click', e => { if(e.target.id==='dr-modal') closeModal(); });
   document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
 
+  loadDivisions();
   loadData();
 </script>
 <script src="tab-fix.js"></script>
