@@ -262,6 +262,8 @@ router.get('/', protect, adminOnly, async (req, res) => {
       unitSl: d.unitSl || (d.serviceId ? d.serviceId.unitSl : '') || '',
       division: d.division || (d.serviceId && d.serviceId.division ? d.serviceId.division._id : null),
       divisionName: d.divisionName || (d.serviceId && d.serviceId.division ? d.serviceId.division.name : ''),
+      srEscalationQueuedAt: d.srEscalationQueuedAt || null,
+      toEscalationQueuedAt: d.toEscalationQueuedAt || null,
       pdays: Math.floor((now - new Date(d.rcvdDate || d.entryDate || d.createdAt).getTime()) / 86400000),
     }));
     res.json(result);
@@ -365,6 +367,8 @@ router.get('/employee', protect, async (req, res) => {
       doi: d.doi || (d.serviceId ? d.serviceId.doi : '') || '',
       division: d.division || (d.serviceId && d.serviceId.division ? d.serviceId.division._id : null),
       divisionName: d.divisionName || (d.serviceId && d.serviceId.division ? d.serviceId.division.name : ''),
+      srEscalationQueuedAt: d.srEscalationQueuedAt || null,
+      toEscalationQueuedAt: d.toEscalationQueuedAt || null,
       pdays: Math.floor((now - new Date(d.rcvdDate || d.entryDate || d.createdAt).getTime()) / 86400000),
     }));
     res.json(result);

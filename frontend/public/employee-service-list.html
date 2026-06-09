@@ -392,7 +392,7 @@ table.svc-table tbody tr:last-child td{border-bottom:none;}
               <th onclick="sortBy('partNo')">Part No <span class="si">&#8693;</span></th>
               <th onclick="sortBy('defMod')">Def Mod/brd <span class="si">&#8693;</span></th>
               <th onclick="sortBy('defGir')">Def Gir <span class="si">&#8693;</span></th>
-              <th>PD PFRN</th><th>PD ESTP</th><th>PD URP</th><th>PD SCC</th>
+              <th>PD PFRN</th><th>PD ESTP</th><th>PD URP</th>
               <th>Auto-sent to</th>
             </tr></thead>
             <tbody id="svc-tbody">
@@ -1126,6 +1126,17 @@ function renderTable() {
       const sc=s.status==='completed'?'sp-completed':s.status==='pending'?'sp-pending':s.status==='escalated'?'sp-escalated':'sp-inprogress';
       const lbl=s.status?s.status.replace('_',' ').replace(/\b\w/g,c=>c.toUpperCase()):'';
       const tags=getRoutingTags(s);
+      let dynPdPfrn = 0, dynPdEstp = 0, dynPdUrp = 0;
+      const baseDateStr = s.rcvdDate || s.entryDate || s.createdAt;
+      if(baseDateStr) {
+        const d = new Date(baseDateStr);
+        if(!isNaN(d.getTime())) {
+          const days = Math.max(0, Math.floor((Date.now() - d.getTime()) / 86400000));
+          if(tags.includes('Pending FRN')) dynPdPfrn = days;
+          if(tags.includes('Estimation Pending') || tags.includes('SO Pending')) dynPdEstp = days;
+          if(tags.includes('Under Repair')) dynPdUrp = days;
+        }
+      }
       const editBtn=owner?`<button class="btn-xs edit" onclick="editService('${rowId}')">Edit</button>`:`<button class="btn-xs locked" disabled title="Only your records">Edit</button>`;
       const delBtn=owner?`<button class="btn-xs del" onclick="deleteService('${rowId}')">Delete</button>`:`<button class="btn-xs locked" disabled title="Only your records">Delete</button>`;
       return`<tr class="${owner?'my-row':''}">
@@ -1142,10 +1153,9 @@ function renderTable() {
         <td style="font-family:monospace;font-size:11px;">${esc(s.partNo||'-')}</td>
         <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;">${s.defMod||''}</td>
         <td><span class="gir-badge">${esc(s.defGir||'-')}</span></td>
-        <td style="font-size:11px;">${s.pdPfrn||0}</td>
-        <td style="font-size:11px;">${s.pdEstp||s.pdObp||0}</td>
-        <td style="font-size:11px;">${s.pdUrp||0}</td>
-        <td style="font-size:11px;">${s.pdScc||0}</td>
+        <td style="font-size:11px;">${dynPdPfrn}</td>
+        <td style="font-size:11px;">${dynPdEstp}</td>
+        <td style="font-size:11px;">${dynPdUrp}</td>
         <td style="font-size:11px;">${tags||'<span style="color:var(--muted);font-size:10px;"></span>'}</td>
       </tr>`;
     }).join('');
@@ -1432,7 +1442,7 @@ function exportCSV() {
     'STOCK / CUST','Region','Branch','Engineer','Dealer Name','Customer Name','Supplier','Model','Model Configuration',
     'Unit SL No','Unit Status','Part Number','Mod / Brd Name','DEF Type','Type of Acc','DOI','DEF Part SNO','DEF GIR No',
     'REP Type','REP GIR SNO','Field Remarks','OB Details','Comm Warr Details','BSCON','Type of Work','Auto-sent to',
-    'PD PFRN','PD ESTP','PD URP','PD SCC'
+    'PD PFRN','PD ESTP','PD URP'
   ];
   const rows=[headers];
   filtered.forEach(s=>{
@@ -1441,6 +1451,17 @@ function exportCSV() {
     if(EST_UNIT_STATUSES.includes(s.unitSts)&&s.repType!=='BS/SO'&&(s.repType==='NA'||s.estPending))tags.push('Estimation Pending');
     if(EST_UNIT_STATUSES.includes(s.unitSts)&&(s.repType==='BS/SO'||s.soPending))tags.push('SO Pending');
     if(s.repType==='TO/ADV SO')tags.push('Under Repair');
+    let dynPdPfrn = 0, dynPdEstp = 0, dynPdUrp = 0;
+    const baseDateStr = s.rcvdDate || s.entryDate || s.createdAt;
+    if(baseDateStr) {
+      const d = new Date(baseDateStr);
+      if(!isNaN(d.getTime())) {
+        const days = Math.max(0, Math.floor((Date.now() - d.getTime()) / 86400000));
+        if(tags.includes('Pending FRN')) dynPdPfrn = days;
+        if(tags.includes('Estimation Pending') || tags.includes('SO Pending')) dynPdEstp = days;
+        if(tags.includes('Under Repair')) dynPdUrp = days;
+      }
+    }
     rows.push([
       s.status,
       s.scEng,
@@ -1477,10 +1498,9 @@ function exportCSV() {
       s.bscon,
       s.typeWork || s.type,
       tags.join(' + ') || '',
-      s.pdPfrn,
-      s.pdEstp || s.pdObp,
-      s.pdUrp,
-      s.pdScc
+      dynPdPfrn,
+      dynPdEstp,
+      dynPdUrp
     ]);
   });
   const csv=rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');

@@ -1939,6 +1939,14 @@ async function submitUpdate(){
   document.getElementById('upd-revalue')?.classList.remove('err');
   if(!isUpgrade && !sameGir){showUpdMsg('Please select Same GIR No.','err');return;}
   if(!isUpgrade && sameGir==='no' && !repGirNo){document.getElementById('upd-defunitgir').classList.add('err');showUpdMsg('Please enter REP GIR No when Same GIR No is set to No.','err');return;}
+  if(!isUpgrade && sameGir==='no'){
+    const revVal = document.getElementById('upd-revalue').value;
+    if(!revVal || Number(revVal) <= 0){
+      document.getElementById('upd-revalue').classList.add('err');
+      showUpdMsg('Please enter Revalue when Same GIR No is set to No.','err');
+      return;
+    }
+  }
   document.getElementById('upd-defunitgir').classList.remove('err');
   const errMsg = 'Please fill all required fields: RA Engineer, Ship Date, Destination, Technical Remarks, Final Remarks, Type of Work.';
   if(err){showUpdMsg(errMsg,'err');return;}

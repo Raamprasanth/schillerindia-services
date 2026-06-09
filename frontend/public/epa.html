@@ -248,6 +248,18 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
   </div>
 </div>
 
+<div class="modal-overlay" id="remarks-modal" style="z-index: 3000;">
+  <div class="modal-box" style="max-width: 500px; height: auto; max-height: 80vh;">
+    <div class="modal-head">
+      <div class="modal-title">&#128269; View Remarks</div>
+      <button class="modal-close" type="button" onclick="document.getElementById('remarks-modal').classList.remove('open')">&#10005;</button>
+    </div>
+    <div class="modal-body" style="white-space: pre-wrap; font-size: 14px; line-height: 1.5; color: var(--text);">
+      <div id="remarks-modal-content"></div>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toast-wrap"></div>
 
 <!-- --- SIDEBAR --- -->
@@ -527,8 +539,8 @@ function renderTable(){
         <td>${esc(d.responsible||'-')}</td>
         <td style="font-size:13px;color:var(--soft);">${formatDate(d.targetDate)}</td>
         <td style="font-size:13px;color:var(--soft);">${formatDate(d.pendingFrom)}</td>
-        <td style="min-width:300px; padding:4px; font-size:13px; color:var(--soft);">
-          <div style="border:1px solid #e2e8f0; border-radius:4px; padding:4px 6px; background:#f8fafc; white-space:pre-wrap; word-break:break-word; max-height:45px; overflow-y:auto;">${esc(d.remarks||'-')}</div>
+        <td style="min-width:300px; padding:4px; font-size:13px; color:var(--soft);" onclick="showRemarksPopup('${rid}')" title="Click to view full remarks">
+          <div style="cursor:pointer; border:1px solid #e2e8f0; border-radius:4px; padding:4px 6px; background:#f8fafc; white-space:pre-wrap; word-break:break-word; max-height:45px; overflow-y:auto;">${esc(d.remarks||'-')}</div>
         </td>
         <td>
           <button class="btn-xs update" title="Update" onclick="openEditModal('${rid}')">Edit</button>
@@ -715,6 +727,13 @@ function renderPagination(pages){
 }
 function getRange(c,t){if(t<=7)return Array.from({length:t},(_,i)=>i+1);if(c<=4)return[1,2,3,4,5,'...',t];if(c>=t-3)return[1,'...',t-4,t-3,t-2,t-1,t];return[1,'...',c-1,c,c+1,'...',t];}
 function gp(p) { currentPage = p; renderTable(); }
+
+function showRemarksPopup(id) {
+  const doc = ACTIVITY_DATA.find(x => (x._id || x.id) === id);
+  if (!doc) return;
+  document.getElementById('remarks-modal-content').textContent = doc.remarks || '-';
+  document.getElementById('remarks-modal').classList.add('open');
+}
 
 /* -- UTILS -- */
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
