@@ -419,208 +419,12 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
             <span class="srch-ico">&#128269;</span>
             <input type="text" id="tbl-search" placeholder="Search SC Ref, GIR, model..." oninput="applyFilters()"/>
           </div>
-      <div class="info-cell"><div class="info-lbl">Closed By</div><div class="info-val dark" id="ri-by">-</div></div>
-    </div>
-    <div class="modal-scroll">
-      <div class="modal-body">
-        <div class="detail-sec">
-          <div class="detail-sec-title">&#128172; Remarks &amp; Findings</div>
-          <div class="dg-3">
-            <div class="df"><label>Technical Remarks</label><div class="dval long" id="d-techremarks">-</div></div>
-            <div class="df"><label>Repair Team Remarks</label><div class="dval long" id="d-repairremarks">-</div></div>
-            <div class="df"><label>Components Used to Repaired</label><div class="dval long" id="d-compused">-</div></div>
-            <div class="df"><label>Cost in INR</label><div class="dval" id="d-cost">-</div></div>
-            <div class="df"><label>Time Taken to Repair</label><div class="dval" id="d-timetaken">-</div></div>
-            <div class="df"><label>Repair Status</label><div class="dval" id="d-repairstatus">-</div></div>
-          </div>
-        </div>
-        <div class="detail-sec">
-          <div class="detail-sec-title">&#128196; Details</div>
-          <div class="dg-4">
-            <div class="df"><label>DOI (Date of Installation)</label><div class="dval" id="d-doi">-</div></div>
-            <div class="df"><label>Repaired By</label><div class="dval hl" id="d-repairedby">-</div></div>
-            <div class="df"><label>Repaired Date</label><div class="dval" id="d-repaireddate">-</div></div>
-            <div class="df"><label>Status</label><div class="dval" id="d-status">-</div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-outline btn-sm" onclick="closeModal()">&#10005; Close</button>
-      <button class="btn btn-crl btn-sm" onclick="printRecord()">Print</button>
-    </div>
-  </div>
-</div>
-
-<!-- RECHECK STATUS MODAL -->
-<div class="overlay" id="modal-recheck" style="justify-content: center; align-items: center;">
-  <div style="background: var(--surface); padding: 30px; border-radius: 16px; width: 400px; box-shadow: var(--shadow-lg); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 20px; position: relative;">
-    <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--crl), var(--red)); border-radius: 16px 16px 0 0;"></div>
-    
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(5, 150, 105, 0.1); display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--crl);">
-        &#128269;
-      </div>
-      <div>
-        <h3 style="font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 4px;">Recheck Repair Status</h3>
-        <p style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0;" id="recheck-scref-display">SC Ref: -</p>
-      </div>
-    </div>
-
-    <div style="font-size: 13px; color: var(--soft); line-height: 1.5; background: var(--surface3); padding: 12px; border-radius: 8px; border: 1px solid var(--border2);">
-      Do you want to confirm this item is **Working Fine (WF)**, or mark it as **Not Working (NW)** and send it back to the repair team?
-    </div>
-
-    <div style="display: flex; gap: 12px; margin-top: 5px;">
-      <button class="btn btn-outline" style="flex: 1; justify-content: center; border-color: var(--crl); color: var(--crl); background: var(--crl-bg);" onclick="handleWF()">
-        WF (Working Fine)
-      </button>
-      <button class="btn" id="nw-btn" style="flex: 1; justify-content: center; background: var(--red); color: #fff; box-shadow: 0 2px 8px rgba(185, 28, 28, 0.3);" onclick="handleNW()">
-        NW (Not Working)
-      </button>
-    </div>
-    
-    <button onclick="closeRecheckModal()" style="position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 16px; color: var(--muted); cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--muted)'">&#10005;</button>
-  </div>
-</div>
-
-<!-- PROBLEM OBSERVED MODAL -->
-<div class="overlay" id="modal-problem" style="justify-content: center; align-items: center;">
-  <div style="background: var(--surface); padding: 30px; border-radius: 16px; width: 480px; box-shadow: var(--shadow-lg); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 18px; position: relative;">
-    <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--red), #f97316); border-radius: 16px 16px 0 0;"></div>
-
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <div style="width: 42px; height: 42px; border-radius: 50%; background: rgba(185,28,28,0.1); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink:0;">&#9888;&#65039;</div>
-      <div>
-        <h3 style="font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 3px;">Problem Observed — NW Report</h3>
-        <p style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0;" id="problem-scref-display">SC Ref: -</p>
-      </div>
-    </div>
-
-    <div style="background: rgba(185,28,28,0.06); border: 1px solid rgba(185,28,28,0.18); border-radius: 9px; padding: 11px 14px; font-size: 12.5px; color: var(--soft); line-height: 1.55;">
-      &#128308; You are about to send this item <strong>back to the repair team</strong>. Please describe the problem so the team knows what to fix.
-    </div>
-
-    <div style="display: flex; flex-direction: column; gap: 6px;">
-      <label style="font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em;">Problem Observed <span style="color:var(--red);">*</span></label>
-      <textarea id="problem-text" rows="4" style="border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 13px; font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); background: var(--surface); outline: none; width: 100%; resize: vertical; transition: border-color 0.2s;" placeholder="Describe the issue in detail (e.g. Device powers on but display is blank, error code E4 shown)..."
-        oninput="this.style.borderColor='var(--border)'; document.getElementById('problem-err').style.display='none';"></textarea>
-      <span id="problem-err" style="display:none; font-size: 11px; color: var(--red); font-weight: 600;">&#9888; Please describe the problem before confirming.</span>
-    </div>
-
-    <div style="display: flex; gap: 10px;">
-      <button class="btn btn-outline" style="flex:1; justify-content:center;" onclick="closeProblemModal()">
-        &#8617; Cancel
-      </button>
-      <button class="btn" id="confirm-revert-btn" style="flex:1; justify-content:center; background: var(--red); color: #fff; box-shadow: 0 2px 8px rgba(185,28,28,0.3);" onclick="confirmNWRevert()">
-        &#128228; Confirm &amp; Revert
-      </button>
-    </div>
-
-    <button onclick="closeProblemModal()" style="position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 16px; color: var(--muted); cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--muted)'">&#10005;</button>
-  </div>
-</div>
-
-<div class="toast-wrap" id="toast-wrap"></div>
-
-<!-- SIDEBAR -->
-<aside class="sidebar">
-  <div class="sidebar-header">
-    <div class="logo-wrap">
-      <img class="brand-logo-img" src="logo.png" alt="SCHILLER">
-    </div>
-  </div>
-  <div style="padding:7px 12px 0;"><span class="crl-badge">&#9989; Repair Team</span></div>
-  <nav class="sidebar-nav">
-    <div class="nav-sec">Main</div>
-    <a class="nav-item" href="Repair-dashboard.html"><span class="ico">&#128202;</span> Dashboard</a>
-    <div class="nav-sec">Repair Work</div>
-    <a class="nav-item" href="Rtfrn.html"><span class="ico">&#128221;</span> PFRN</a>
-    <a class="nav-item" href="Rtob.html"><span class="ico">&#128230;</span> OB</a>
-    <a class="nav-item" href="Rtur.html"><span class="ico">&#128736;&#65039;</span> UR</a>
-    <a class="nav-item active" href="Rtcrl.html"><span class="ico">&#9989;</span> Closed Repair List</a>
-    <a class="nav-item" href="Rtrr.html"><span class="ico">&#128260;</span> Re-repair List</a>
-    <a class="nav-item" href="Rtcrr.html"><span class="ico">&#9989;</span> Closed Re-repair List</a>
-    <div class="nav-sec">Other Activities</div>
-    <a class="nav-item" href="Rtoa.html"><span class="ico">&#128203;</span> Other Activity</a>
-    <a class="nav-item" href="Rtcoa.html"><span class="ico">&#9989;</span> Closed Activity</a>
-    <a class="nav-item" href="Rtcomr.html"><span class="ico">&#128296;</span> Components Request</a>
-    <a class="nav-item" href="Rtccr.html"><span class="ico">&#128194;</span> Closed Request</a>
-  </nav>
-  <div class="sidebar-footer">
-    <div class="user-row">
-      <div class="user-av" id="emp-avatar">R</div>
-      <div><div class="user-nm" id="emp-name">Repair User</div><div class="user-rl" id="emp-role">Repair Team</div></div>
-      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
-    </div>
-  </div>
-</aside>
-
-<!-- MAIN -->
-<div class="main">
-  <div class="topbar">
-    <div>
-      <div class="breadcrumb">
-        <a href="Repair-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
-        <span>Repair Work</span><span class="sep">&#8250;</span><span>Closed Repair List</span>
-      </div>
-      <div class="topbar-title">Closed Repair List</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:9px;">
-      <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
-      <button class="btn btn-outline btn-sm" onclick="loadData()">&#10227; Refresh</button>
-      <button class="btn btn-crl btn-sm" onclick="exportCSV()">&#128228; Export</button>
-    </div>
-  </div>
-
-  <div class="content">
-    <!-- AUTH WARN -->
-    <div class="auth-warn" id="auth-warn">
-      &#9888;&#65039; <strong>Access Warning:</strong> The server returned a permission error.
-      Your role (<span id="warn-role">-</span>) may not have access to <code>/api/rtcrl</code>.
-      <button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="document.getElementById('auth-warn').classList.remove('show')">Dismiss</button>
-    </div>
-
-
-
-    <!-- STATS ROW -->
-    <div class="stats-row">
-      <div class="stat-card sc-green" onclick="setSummaryFilter('')"><div class="stat-ico si-green">&#9989;</div><div class="stat-lbl">Total Closed</div><div class="stat-val" id="st-total">-</div><div class="stat-sub">All categories</div></div>
-      <div class="stat-card sc-purple" onclick="setSummaryFilter('PFRN')"><div class="stat-ico si-purple">&#128221;</div><div class="stat-lbl">PFRN Closed</div><div class="stat-val" id="st-pfrn">-</div><div class="stat-sub">Pending FRN closed</div></div>
-      <div class="stat-card sc-blue" onclick="setSummaryFilter('UR')"><div class="stat-ico si-blue">&#128736;&#65039;</div><div class="stat-lbl">UR Closed</div><div class="stat-val" id="st-ur">-</div><div class="stat-sub">Under repair closed</div></div>
-      <div class="stat-card sc-teal" onclick="setSummaryFilter('OB')"><div class="stat-ico si-teal">&#128230;</div><div class="stat-lbl">OB Closed</div><div class="stat-val" id="st-ob">-</div><div class="stat-sub">OB pending closed</div></div>
-    </div>
-
-    <!-- CATEGORY TABS -->
-    <div class="cat-tabs">
-      <button class="cat-tab active" data-cat="" onclick="setCatTab(this,'')">All Records</button>
-      <button class="cat-tab pfrn" data-cat="PFRN" onclick="setCatTab(this,'PFRN')">PFRN</button>
-      <button class="cat-tab ur"   data-cat="UR"   onclick="setCatTab(this,'UR')">&#128736;&#65039; UR</button>
-      <button class="cat-tab ob"   data-cat="OB"   onclick="setCatTab(this,'OB')">&#128230; OB</button>
-    </div>
-
-    <!-- FILTER BAR -->
-    <!-- TABLE -->
-    <div class="table-card">
-      <div class="table-top">
-        <div class="table-title">Closed Repair Activity <span class="count-pill" id="count-pill">- entries</span></div>
-        <div class="toolbar-r">
-          <div class="show-row">Show
-            <select class="fb-sel" id="per-page" style="padding:5px 8px;min-width:60px;" onchange="renderTable()">
-              <option>10</option><option>25</option><option>50</option><option>100</option>
-            </select> entries
-          </div>
-          <div class="srch-wrap">
-            <span class="srch-ico">&#128269;</span>
-            <input type="text" id="tbl-search" placeholder="Search SC Ref, GIR, model..." oninput="applyFilters()"/>
-          </div>
         </div>
       </div>
       <div class="table-wrap">
         <table class="crl-table">
           <thead><tr>
             <th onclick="sortBy('entryDate')">Entry Date &#8597;</th>
-            <th onclick="sortBy('rpDate')">Rp Date &#8597;</th>
             <th onclick="sortBy('closedDate')">Closed Date &#8597;</th>
             <th onclick="sortBy('division')">Division &#8597;</th>
             <th onclick="sortBy('scRefNo')">SC Ref No &#8597;</th>
@@ -633,7 +437,7 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
             <th>Details</th>
           </tr></thead>
           <tbody id="crl-tbody">
-            <tr><td colspan="12" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
+            <tr><td colspan="11" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -689,7 +493,7 @@ async function loadData() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     const list = data.data || data;
-    allData = list.map(d => ({ ...d, id: d._id || d.id, noOfDays: calcDays(d.rpDate || d.entryDate, d.closedDate) }));
+    allData = list.map(d => ({ ...d, id: d._id || d.id, noOfDays: calcDays(d.entryDate, d.closedDate) }));
     applyFilters(); updateStats();
     showToast('Loaded ' + allData.length + ' closed record' + (allData.length !== 1 ? 's' : ''), 'info');
   } catch (e) {
@@ -702,7 +506,7 @@ async function loadData() {
 
 function showError(msg) {
   document.getElementById('crl-tbody').innerHTML =
-    `<tr><td colspan="12"><div class="empty-st">
+    `<tr><td colspan="11"><div class="empty-st">
       <div class="ei">&#9888;&#65039;</div><div class="et">Cannot load data</div>
       <div class="es">${msg}</div>
       <div style="margin-top:14px;"><button class="btn btn-crl btn-sm" onclick="loadData()">&#10227; Try Again</button></div>
@@ -782,7 +586,7 @@ function renderTable() {
   const tbody = document.getElementById('crl-tbody');
 
   if (!slice.length) {
-    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-st">
+    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-st">
       <div class="ei">&#9989;</div>
       <div class="et">${allData.length ? 'No records match filters' : 'No Closed Repair Records'}</div>
       <div class="es">${allData.length ? 'Try clearing the filters or changing the category tab.' : 'Records appear here once a repair is marked as completed.'}</div>
@@ -795,7 +599,6 @@ function renderTable() {
       const catCls = d.category === 'PFRN' ? 'sp-pfrn' : d.category === 'OB' ? 'sp-ob' : 'sp-ur';
       return `<tr>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
-        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.rpDate || d.entryDate)}</td>
         <td style="font-size:11px;color:var(--green);font-weight:600;">${fmtDate(d.closedDate)}</td>
         <td><span class="div-tag">${esc(d.division || '-')}</span></td>
         <td style="font-size:13.5px;font-weight:800;color:var(--text);">${esc(d.scRefNo || '-')}</td>
@@ -870,14 +673,18 @@ function printRecord() { window.print(); }
 // -- EXPORT -------------------------------------------------------------------
 function exportCSV() {
   const headers = [
-    'Entry Date', 'Rp Date', 'Closed Date', 'Division', 'SC Ref No', 'DEF GIR No', 'Category/OB Type', 'Model', 'Def Brd/Mod Name', 'DOI (Date of Installation)',
+    'Entry Date', 'Closed Date', 'Division', 'SC Ref No', 'DEF GIR No', 'Category/OB Type', 'Model', 'Def Brd/Mod Name', 'DOI (Date of Installation)',
     'Technical Remarks', 'Repair Team Remarks', 'Components Used to Repaired', 'Cost in INR', 'Time Taken to Repair', 'Repair Status',
     'Repaired By', 'Repaired Date', 'Closed By', 'No of Days', 'Status'
   ];
   const rows = filtered.map(d => [
-    fmtDate(d.entryDate), fmtDate(d.rpDate || d.entryDate), fmtDate(d.closedDate), d.division || '-', d.scRefNo || '-', d.defGirNo || '-', d.category || d.obType || '-', d.model || '-', d.defBrdModName || '-', d.doi || '-',
+    fmtDate(d.entryDate), fmtDate(d.closedDate), d.division || '-', d.scRefNo || '-', d.defGirNo || '-', d.category || d.obType || '-', d.model || '-', d.defBrdModName || '-', d.doi || '-',
     d.techRemarks || '-', d.repairRemarks || '-', d.components || d.compUsedToRepair || '-', d.cost || '-', d.timeTaken || '-', d.repairStatus || '-',
     d.repairedBy || '-', getDisplayRepairedDate(d) ? fmtDate(getDisplayRepairedDate(d)) : '-', d.closedBy || '-', d.noOfDays || 0, d.status || '-'
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
   a.download = 'rtcrl-' + new Date().toISOString().split('T')[0] + '.csv';
   a.click();
   showToast('Exported ' + filtered.length + ' records.', 'ok');
