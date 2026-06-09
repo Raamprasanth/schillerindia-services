@@ -76,6 +76,12 @@
     localStorage.setItem(KEY, next);
   }
 
+  window.toggleEmpTheme = function() {
+    const current = document.documentElement.getAttribute('data-emp-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+  };
+
   function init() {
     const stored = localStorage.getItem(KEY) || localStorage.getItem('si_theme') || 'light';
     applyTheme(stored);
