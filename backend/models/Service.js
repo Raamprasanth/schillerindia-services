@@ -55,6 +55,7 @@ const serviceSchema = new mongoose.Schema(
     },
 
     typeWork:    { type: String, default: '' },
+    bscon:       { type: String, default: '' },
     shipSc:      { type: String, default: '' },
     repBrd:      { type: String, default: '' },
     shipComm:    { type: String, default: '' },

@@ -61,11 +61,13 @@ async function mirrorFrnToTodr(doc, action, items = [], queuedBy = '') {
       ? items.map(item => ({
           partNo: String(item.partNo || '').trim(),
           model: buildTodrModel(doc),
+          quantity: item.qty || 1,
           description: buildTodrDescription(doc, item),
         })).filter(item => item.partNo)
       : [{
           partNo: String(doc.partNo || doc.defMod || doc.defGir || 'DR').trim(),
           model: buildTodrModel(doc),
+          quantity: item.qty || 1,
           description: buildTodrDescription(doc),
         }];
 
@@ -242,6 +244,7 @@ router.put('/:id/escalate', protect, adminOnly, async (req, res) => {
 // GET  /api/emp/frn/employee
 // Employee: only their own pending records
 // ─────────────────────────────────────────────────────────
+router.get('/test-to', async (req, res) => { const docs = await Empfrn.find({ toEscalationQueuedAt: { $ne: null } }).lean(); res.json(docs); });
 router.get('/employee', protect, async (req, res) => {
   try {
     const { resolveDivisions } = require('../utils/visibility');

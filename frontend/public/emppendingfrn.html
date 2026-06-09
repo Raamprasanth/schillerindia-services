@@ -1062,7 +1062,7 @@ async function loadData(){
   try{
     const u=JSON.parse(sessionStorage.getItem('schiller_user')||'{}');
     const url=u.role==='admin'?`${API}/api/emp/frn`:`${API}/api/emp/frn/employee`;
-    const res=await fetch(url,{headers:authHeaders(), signal: controller.signal});
+    const res=await fetch(url,{headers:authHeaders(), cache: 'no-store', signal: controller.signal});
     handleUnauth(res);
     if(!res.ok)throw new Error('HTTP '+res.status);
     const data=await res.json();
