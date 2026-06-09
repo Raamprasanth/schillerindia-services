@@ -165,6 +165,63 @@ async function hasQueueAccess(user, doc) {
   return recordNames.some(value => userNames.includes(value));
 }
 
+function normalizeLookupValue(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+async function attachBsconFallback(docs) {
+  if (!Array.isArray(docs) || !docs.length) return docs;
+
+  const missingBsconDocs = docs.filter(doc => {
+    const current = String(doc?.bscon || doc?.serviceId?.bscon || '').trim();
+    return !current;
+  });
+  if (!missingBsconDocs.length) return docs;
+
+  const scRnos = [...new Set(
+    missingBsconDocs
+      .map(doc => String(doc?.scRno || '').trim())
+      .filter(Boolean)
+  )];
+  const frnNos = [...new Set(
+    missingBsconDocs
+      .map(doc => String(doc?.frnNo || '').trim())
+      .filter(Boolean)
+  )];
+
+  const orFilters = [];
+  if (scRnos.length) orFilters.push({ scReNo: { $in: scRnos } });
+  if (frnNos.length) orFilters.push({ frnNo: { $in: frnNos } });
+  if (!orFilters.length) return docs;
+
+  const services = await Service.find({ $or: orFilters })
+    .select('scReNo frnNo bscon')
+    .lean();
+
+  const bsconByScRno = new Map();
+  const bsconByFrnNo = new Map();
+  services.forEach(service => {
+    const bscon = String(service?.bscon || '').trim();
+    if (!bscon) return;
+    const scKey = normalizeLookupValue(service.scReNo);
+    const frnKey = normalizeLookupValue(service.frnNo);
+    if (scKey && !bsconByScRno.has(scKey)) bsconByScRno.set(scKey, bscon);
+    if (frnKey && !bsconByFrnNo.has(frnKey)) bsconByFrnNo.set(frnKey, bscon);
+  });
+
+  return docs.map(doc => {
+    const current = String(doc?.bscon || doc?.serviceId?.bscon || '').trim();
+    if (current) return doc;
+
+    const fallback =
+      bsconByScRno.get(normalizeLookupValue(doc?.scRno)) ||
+      bsconByFrnNo.get(normalizeLookupValue(doc?.frnNo)) ||
+      '';
+
+    return fallback ? { ...doc, bscon: fallback } : doc;
+  });
+}
+
 // ─────────────────────────────────────────────────────────
 // GET  /api/emp/frn
 // Admin: all pending EmpFRN records with filters
@@ -190,9 +247,10 @@ router.get('/', protect, adminOnly, async (req, res) => {
       })
       .sort({ createdAt: -1 })
       .lean();
+    const docsWithBscon = await attachBsconFallback(docs);
 
     const now = Date.now();
-    const result = docs.map(d => ({
+    const result = docsWithBscon.map(d => ({
       ...d,
       branch: d.branch || (d.serviceId ? d.serviceId.branch : ''),
       dealer: d.dealer || (d.serviceId ? d.serviceId.dealer : '') || '',
@@ -293,9 +351,10 @@ router.get('/employee', protect, async (req, res) => {
       })
       .sort({ createdAt: -1 })
       .lean();
+    const docsWithBscon = await attachBsconFallback(docs);
 
     const now = Date.now();
-    const result = docs.map(d => ({
+    const result = docsWithBscon.map(d => ({
       ...d,
       branch: d.branch || (d.serviceId ? d.serviceId.branch : ''),
       dealer: d.dealer || (d.serviceId ? d.serviceId.dealer : '') || '',
