@@ -30,6 +30,11 @@ const rtcrlSchema = new mongoose.Schema(
       index: true,
     },
 
+    rpDate: {
+      type: String,
+      default: '',
+    },
+
     closedDate: {
       type: Date,
       default: Date.now,

@@ -213,6 +213,7 @@ router.post('/', protect, async (req, res) => {
 
     // Ensure category is always "OB"
     body.category = 'OB';
+    body.rpDate = body.rpDate || body.submittedAt || new Date().toISOString();
 
     // Calculate noOfDays at creation time
     body.noOfDays = RTOB.calcDays(body.entryDate);
@@ -318,6 +319,7 @@ router.put('/:id', protect, async (req, res) => {
       try {
         await RTCRL.create({
           entryDate:        updated.entryDate ? new Date(updated.entryDate) : new Date(),
+          rpDate:           updated.rpDate || '',
           closedDate:       new Date(),
           division:         cleanDivision(updated.division, existing.division),
           scRefNo:          updated.scRefNo,

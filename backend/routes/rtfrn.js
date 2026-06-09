@@ -197,6 +197,7 @@ router.post('/', protect, async (req, res) => {
       model,
       defBrdModName,
       status:         status      || 'pending',
+      rpDate:         req.body.rpDate || req.body.submittedAt || new Date().toISOString(),
       submittedBy:    submittedBy || req.user?.name || '',
       submittedAt:    submittedAt || new Date(),
       sourceEmpFrnId: sourceEmpFrnId && mongoose.Types.ObjectId.isValid(sourceEmpFrnId)
@@ -330,6 +331,7 @@ router.put('/:id', protect, async (req, res) => {
       try {
         await RTCRL.create({
           entryDate:        updated.entryDate ? new Date(updated.entryDate) : new Date(),
+          rpDate:           updated.rpDate || '',
           closedDate:       new Date(),
           division:         cleanDivision(updated.division, existing.division),
           scRefNo:          updated.scRefNo,

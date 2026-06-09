@@ -271,6 +271,7 @@ router.post('/', async (req, res) => {
 
     const doc = await RTUR.create({
       entryDate:    new Date(entryDate),
+      rpDate:       req.body.rpDate || req.body.submittedAt || new Date().toISOString(),
       division: cleanDivisionName(division) || serviceDivision || 'OTHER',
       scRefNo,
       defGirNo,
@@ -380,6 +381,7 @@ router.put('/:id', async (req, res) => {
       try {
         await RTCRL.create({
           entryDate:        saved.entryDate ? new Date(saved.entryDate) : new Date(),
+          rpDate:           saved.rpDate || '',
           closedDate:       new Date(),
           division:         saved.division,
           scRefNo:          saved.scRefNo,

@@ -531,7 +531,7 @@ router.put('/:id/update', protect, async (req, res) => {
     } else if (tw === 'supplier warranty' || tw === 'supplier warrenty') {
       doc.status = 'supplier_warranty';
     } else if (
-      ['completed', 'unit returned', 'no fault', 'upgrade'].includes(tw) ||
+      ['completed', 'unit returned', 'no fault', 'upgrade', 'rep not required'].includes(tw) ||
       bodyStatus === 'completed'
     ) {
       doc.status = 'completed';

@@ -14,6 +14,10 @@ const RTFRNSchema = new mongoose.Schema(
       required: [true, 'Entry date is required'],
       trim:     true,
     },
+    rpDate: {
+      type:     String,
+      default:  '',
+    },
     division: {
       type:     String,
       required: [true, 'Division is required'],

@@ -20,6 +20,11 @@ const rturSchema = new mongoose.Schema(
       index: true,
     },
 
+    rpDate: {
+      type: String,
+      default: '',
+    },
+
     division: {
       type: String,
       required: [true, 'Division is required'],

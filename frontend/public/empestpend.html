@@ -1398,9 +1398,13 @@ async function submitUpdate(){
   errEl.classList.remove('show');
   okEl.classList.remove('show');
   const sameGir=document.getElementById('u-same-gir').value;
-  const repGirNo=document.getElementById('u-defunitgir').value.trim();
   const selectedTypeWork=document.getElementById('u-typework').value;
   const isUpgrade=selectedTypeWork==='Upgrade';
+  const isRepNotRequired=selectedTypeWork==='REP not required';
+  let repGirNo=document.getElementById('u-defunitgir').value.trim();
+  if(isRepNotRequired && !repGirNo) {
+    repGirNo = 'NA';
+  }
   const missing=[];
   const reqList=[
     ['u-upd-raeng','RA Engineer'],
@@ -1409,9 +1413,9 @@ async function submitUpdate(){
     ['u-upd-techremarks','Technical Remarks'],
     ['u-finalremarks','Final Remarks'],
     ['u-typework','Type of Work'],
-    ['u-revalue','Revalue'],
   ];
-  if(!isUpgrade) reqList.push(['u-same-gir','Same GIR No']);
+  if(!isUpgrade && !isRepNotRequired) reqList.push(['u-revalue','Revalue']);
+  if(!isUpgrade && !isRepNotRequired) reqList.push(['u-same-gir','Same GIR No']);
   reqList.forEach(([fid,label])=>{
     const el=document.getElementById(fid);
     if(!el) return;
@@ -1419,7 +1423,7 @@ async function submitUpdate(){
     el.classList.toggle('err',!hasValue);
     if(!hasValue) missing.push(label);
   });
-  if(!isUpgrade && sameGir==='no' && !repGirNo){
+  if(!isUpgrade && !isRepNotRequired && sameGir==='no' && !repGirNo){
     document.getElementById('u-defunitgir').classList.add('err');
     missing.push('REP GIR No');
   }else{
@@ -1448,7 +1452,7 @@ async function submitUpdate(){
       components:document.getElementById('u-components').value,
       techRemarks:document.getElementById('u-upd-techremarks').value.trim(),
       finalRemarks:document.getElementById('u-finalremarks').value.trim(),
-      sameGir:isUpgrade ? 'yes' : sameGir,
+      sameGir:(isUpgrade || isRepNotRequired) ? 'yes' : sameGir,
       estUpdatedBy:EMP_NAME,
       estUpdatedAt:new Date().toISOString(),
       dispatchQueue:true,

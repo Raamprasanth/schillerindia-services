@@ -611,7 +611,7 @@ router.put('/:id', async (req, res) => {
       });
     }
 
-    if (normalizedTypeWork === 'upgrade' || sameGir === 'yes') {
+    if (normalizedTypeWork === 'upgrade' || normalizedTypeWork === 'rep not required' || sameGir === 'yes') {
       const pdays = (record.rcvdDate || record.entryDate)
         ? Math.max(0, Math.floor((Date.now() - new Date(record.rcvdDate || record.entryDate).getTime()) / 86400000))
         : 0;

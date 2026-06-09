@@ -410,6 +410,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
                 <option value="">Select Type of Work...</option>
                 <option value="Repaired">Repaired</option>
                 <option value="Replacement given">Replacement given</option>
+                <option value="REP not required">REP not required</option>
                 <option value="No Fault">No Fault</option>
                 <option value="Returned as it is">Returned as it is</option>
                 <option value="Upgrade">Upgrade</option>
@@ -1895,13 +1896,16 @@ function handleSameGir(val){
 
   if(typeWork) {
     const replOpt = Array.from(typeWork.options).find(o => o.value === 'Replacement given');
+    const repNotReqOpt = Array.from(typeWork.options).find(o => o.value === 'REP not required');
     if(val === 'yes') {
       if(replOpt) replOpt.style.display = 'none';
-      if(typeWork.value === 'Replacement given') typeWork.value = '';
+      if(repNotReqOpt) repNotReqOpt.style.display = 'none';
+      if(typeWork.value === 'Replacement given' || typeWork.value === 'REP not required') typeWork.value = '';
       typeWork.disabled = false;
       typeWork.classList.remove('locked-field');
     } else {
       if(replOpt) replOpt.style.display = '';
+      if(repNotReqOpt) repNotReqOpt.style.display = '';
       typeWork.disabled = false;
       typeWork.classList.remove('locked-field');
     }
@@ -1934,12 +1938,16 @@ async function submitUpdate(){
   const selectedTypeWork=document.getElementById('upd-typework').value;
   if(!selectedTypeWork){document.getElementById('upd-typework').classList.add('err');err=true;}else document.getElementById('upd-typework').classList.remove('err');
   const isUpgrade=selectedTypeWork==='Upgrade';
+  const isRepNotRequired=selectedTypeWork==='REP not required';
   const sameGir=document.getElementById('same-gir').value;
-  const repGirNo=document.getElementById('upd-defunitgir').value.trim();
+  let repGirNo=document.getElementById('upd-defunitgir').value.trim();
+  if(isRepNotRequired && !repGirNo) {
+    repGirNo = 'NA';
+  }
   document.getElementById('upd-revalue')?.classList.remove('err');
-  if(!isUpgrade && !sameGir){showUpdMsg('Please select Same GIR No.','err');return;}
-  if(!isUpgrade && sameGir==='no' && !repGirNo){document.getElementById('upd-defunitgir').classList.add('err');showUpdMsg('Please enter REP GIR No when Same GIR No is set to No.','err');return;}
-  if(!isUpgrade && sameGir==='no'){
+  if(!isUpgrade && !isRepNotRequired && !sameGir){showUpdMsg('Please select Same GIR No.','err');return;}
+  if(!isUpgrade && !isRepNotRequired && sameGir==='no' && !repGirNo){document.getElementById('upd-defunitgir').classList.add('err');showUpdMsg('Please enter REP GIR No when Same GIR No is set to No.','err');return;}
+  if(!isUpgrade && !isRepNotRequired && sameGir==='no'){
     const revVal = document.getElementById('upd-revalue').value;
     if(!revVal || Number(revVal) <= 0){
       document.getElementById('upd-revalue').classList.add('err');
@@ -1950,8 +1958,8 @@ async function submitUpdate(){
   document.getElementById('upd-defunitgir').classList.remove('err');
   const errMsg = 'Please fill all required fields: RA Engineer, Ship Date, Destination, Technical Remarks, Final Remarks, Type of Work.';
   if(err){showUpdMsg(errMsg,'err');return;}
-  // Yes ? Completed FRN | No ? Under Repair
-  const statusVal=(selectedTypeWork==='Upgrade' || sameGir==='yes')?'completed':'under_repair';
+  // Yes / REP not required / Upgrade ? Completed FRN | No ? Under Repair
+  const statusVal=(selectedTypeWork==='Upgrade' || selectedTypeWork==='REP not required' || sameGir==='yes')?'completed':'under_repair';
   const payload={raEng:document.getElementById('upd-raeng').value,defUnitGir:repGirNo,repGirNo:repGirNo,finalRemarks:document.getElementById('upd-finalremarks').value.trim(),techRemarks:document.getElementById('upd-techremarks').value,components:document.getElementById('upd-components').value,revalue:document.getElementById('upd-revalue').value?Number(document.getElementById('upd-revalue').value):0,shipSc:document.getElementById('upd-shipsc').value,destination:document.getElementById('upd-destination').value,typeWork:selectedTypeWork,status:statusVal,defPartSno:document.getElementById('upd-defpartsno').value.trim(),updatedAt:new Date().toISOString(),dispatchQueue:true};
   const btn=document.getElementById('upd-save-btn');btn.disabled=true;btn.textContent='\uD83D\uDCBE Saving...';
   try{

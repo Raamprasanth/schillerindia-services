@@ -18,6 +18,7 @@ const rtobSchema = new mongoose.Schema(
   {
     // ── Entry Metadata ────────────────────────────────────────────────────────
     entryDate:    { type: String, default: '' },       // ISO date string e.g. "2025-04-22"
+    rpDate:       { type: String, default: '' },
     submittedBy:  { type: String, default: '' },       // Employee name who created the record
     submittedAt:  { type: String, default: '' },       // ISO timestamp of creation
     updatedBy:    { type: String, default: '' },       // Last updated by (employee name)
