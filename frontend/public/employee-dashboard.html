@@ -2378,8 +2378,34 @@
   // --- WEEKLY TRACKERS LOGIC (Batch Tick + Submit) ---
   // localChecked[type][dateStr] = true/false (pending local selection before submit)
   const _trackerLocalChecked = {};
+  const SUBMIT_REPORT_BOXES = [
+    { panelId:'crm-tracker-body', icon:'&#128202;', title:'CRM Reports', schedule:'Tuesdays', link:'https://synergycrm.net/schillerservice/', linkText:'Open CRM' },
+    { panelId:'pa-tracker-body', icon:'&#128221;', title:'Pending Activity', schedule:'Mondays' },
+    { panelId:'nonsaleable-tracker-body', icon:'&#128230;', title:'Non Saleable', schedule:'2 & 16' },
+    { panelId:'supplierwarranty-tracker-body', icon:'&#9888;&#65039;', title:'Supplier Warranty', schedule:'3 & 16' },
+    { panelId:'criticalpending-tracker-body', icon:'&#128680;', title:'Critical Pending', schedule:'2nd' },
+    { panelId:'pirequest-tracker-body', icon:'&#128196;', title:'PI Request', schedule:'5th' }
+  ];
+
+  function ensureSubmitReportBoxes(){
+    const grid = document.getElementById('weekly-trackers');
+    if(!grid) return;
+    SUBMIT_REPORT_BOXES.forEach(box => {
+      if(document.getElementById(box.panelId)) return;
+      const panel = document.createElement('div');
+      panel.className = 'panel';
+      panel.innerHTML = `
+        <div class="panel-header">
+          <div class="panel-title">${box.icon} ${box.title} <span style="font-size:10px;color:var(--muted);font-weight:400;">(${box.schedule})</span></div>
+          ${box.link ? `<a class="report-link-btn" href="${box.link}" target="_blank">${box.linkText || 'Open'}</a>` : ''}
+        </div>
+        <div class="panel-body" id="${box.panelId}"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>`;
+      grid.appendChild(panel);
+    });
+  }
 
   async function loadWeeklyTrackers() {
+    ensureSubmitReportBoxes();
     const today = new Date();
     const monthInput = document.getElementById('tracker-month-select');
     const currentMonthStr = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}`;
