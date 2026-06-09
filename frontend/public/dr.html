@@ -378,6 +378,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     </div>
     <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
       <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
+      <button class="btn btn-success btn-sm" onclick="markFulfilledSelected()">&#10004; Fulfill Selected</button>
       <button class="btn btn-primary btn-sm" onclick="exportCSV()">&#128228; Export</button>
     </div>
   </div>
@@ -403,6 +404,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <table class="frn-table">
           <thead>
             <tr>
+              <th style="width:30px;text-align:center;"><input type="checkbox" id="selectAll" onchange="toggleAll(this)"></th>
               <th>DR req date</th>
               <th>Division</th>
               <th>FRN No</th>
@@ -415,7 +417,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             </tr>
           </thead>
           <tbody id="tb">
-            <tr><td colspan="9" style="text-align:center;padding:30px;">Loading...</td></tr>
+            <tr><td colspan="10" style="text-align:center;padding:30px;">Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -519,10 +521,11 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   function renderTable() {
     const tb = document.getElementById('tb');
-    if(!filtered.length) { tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;">No DR entries found.</td></tr>'; return; }
+    if(!filtered.length) { tb.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:30px;">No DR entries found.</td></tr>'; return; }
     
     tb.innerHTML = filtered.map(r => `
       <tr>
+        <td style="text-align:center;"><input type="checkbox" class="dr-row-chk" value="${r._id}"></td>
         <td>${r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-'}</td>
         <td>${esc(r.division || '-')}</td>
         <td><span style="font-weight:700;color:var(--accent);">${esc(r.frnNo)}</span></td>
@@ -641,10 +644,13 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   }
 
   async function markFulfilled(id) {
-    if(!confirm('Mark this DR as fulfilled and move to closed?')) return;
     try {
       const r = records.find(x => x._id === id);
       if(!r) return;
+      if(!r.sparesReceivedDate) {
+        return alert('Spares Received Date is mandatory before moving to Closed DR for FRN No: ' + (r.frnNo || '-'));
+      }
+      if(!confirm('Mark this DR as fulfilled and move to closed?')) return;
       
       const payload = { ...r };
       delete payload._id;
@@ -661,6 +667,63 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       await fetch(`/api/dr/${id}`, { method: 'DELETE', headers: hdrs() });
       loadData();
     } catch(e) { alert(e.message); }
+  }
+
+  function toggleAll(el) {
+    const chks = document.querySelectorAll('.dr-row-chk');
+    chks.forEach(c => c.checked = el.checked);
+  }
+
+  async function markFulfilledSelected() {
+    const chks = document.querySelectorAll('.dr-row-chk:checked');
+    if(!chks.length) return alert('Please select at least one DR entry to fulfill.');
+    
+    const selectedRecords = [];
+    for(const chk of chks) {
+      const r = records.find(x => x._id === chk.value);
+      if(r) {
+        if(!r.sparesReceivedDate) {
+          return alert('Spares Received Date is mandatory before moving to Closed DR for FRN No: ' + (r.frnNo || '-'));
+        }
+        selectedRecords.push(r);
+      }
+    }
+
+    if(!confirm(`Mark ${selectedRecords.length} selected DR(s) as fulfilled and move to closed?`)) return;
+
+    let successCount = 0;
+    const btn = document.querySelector('button[onclick="markFulfilledSelected()"]');
+    if(btn) { btn.disabled = true; btn.textContent = 'Processing...'; }
+
+    for(const r of selectedRecords) {
+      try {
+        const payload = { ...r };
+        delete payload._id;
+        delete payload.__v;
+        payload.closedDate = new Date();
+
+        const res = await fetch('/api/cdr', { 
+          method: 'POST', 
+          headers: hdrs(), 
+          body: JSON.stringify(payload) 
+        });
+        if(!res.ok) throw new Error('Failed to move to closed DR');
+        
+        await fetch(`/api/dr/${r._id}`, { method: 'DELETE', headers: hdrs() });
+        successCount++;
+      } catch(e) { console.error('Fulfill error:', e); }
+    }
+    
+    if(btn) { btn.disabled = false; btn.innerHTML = '&#10004; Fulfill Selected'; }
+    const selAll = document.getElementById('selectAll');
+    if(selAll) selAll.checked = false;
+    
+    if (successCount < selectedRecords.length) {
+      alert(`Fulfilled ${successCount} out of ${selectedRecords.length} entries. Some failed.`);
+    } else {
+      msg(`Successfully fulfilled ${successCount} entries!`);
+    }
+    loadData();
   }
 
   function exportCSV() {
