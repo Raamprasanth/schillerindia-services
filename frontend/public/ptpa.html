@@ -516,8 +516,8 @@ function renderTable() {
       <td>${esc(t.responsible)}</td>
       <td>${formatDate(t.targetDate)}</td>
       <td>${formatDate(t.pendingFrom)}</td>
-      <td style="min-width:200px; padding:6px;">
-        <div style="border:1px solid #e2e8f0; border-radius:4px; padding:6px; background:#f8fafc; white-space:pre-wrap; word-break:break-word;">${esc(t.remarks||'-')}</div>
+      <td style="min-width:300px; padding:4px;">
+        <div style="border:1px solid #e2e8f0; border-radius:4px; padding:4px 6px; background:#f8fafc; white-space:pre-wrap; word-break:break-word; max-height:45px; overflow-y:auto; font-size:11px; color:var(--soft);">${esc(t.remarks||'-')}</div>
       </td>
     </tr>`;
     }).join('');
