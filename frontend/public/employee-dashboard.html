@@ -857,19 +857,31 @@
           <div class="rr-upload">
             <div class="rr-upload-top">
               <div>
-                <h4>Upload RR report Excel file</h4>
-                <p>Analyses `PRODUCT_MODEL`, `UNIT_SLNO`, and the other RR columns used in your Streamlit source. The analysis updates instantly inside the dashboard.</p>
+                <h4>Generate RR Report</h4>
+                <p>Upload an Excel file or fetch automatically from the services list for a specific month.</p>
               </div>
-              <span class="rr-pill" id="rr-file-pill">No file loaded</span>
+              <span class="rr-pill" id="rr-file-pill">No data loaded</span>
             </div>
-            <div class="rr-file">
-              <input id="rr-file-input" type="file" accept=".xlsx,.xls" />
+            <div class="rr-controls" style="grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+              <div class="rr-control">
+                <label>Upload Excel File</label>
+                <div class="rr-file">
+                  <input id="rr-file-input" type="file" accept=".xlsx,.xls" />
+                </div>
+              </div>
+              <div class="rr-control">
+                <label>Auto-Fetch by Month</label>
+                <div style="display:flex;gap:8px;">
+                  <input type="month" id="rr-month-select" style="padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:#fff; color:var(--text); font-family:'Plus Jakarta Sans',sans-serif; font-size:13px; width:100%;" />
+                  <button class="topbar-btn primary" id="rr-auto-fetch-btn" type="button">Fetch</button>
+                </div>
+              </div>
             </div>
             <div class="rr-controls">
               <div class="rr-control">
                 <label for="rr-report-select">Report</label>
                 <select id="rr-report-select" disabled>
-                  <option value="">Upload a file first</option>
+                  <option value="">Load data first</option>
                 </select>
               </div>
               <div class="rr-control" id="rr-model-control" style="display:none;">
@@ -1702,6 +1714,72 @@
   document.getElementById('rr-report-select').addEventListener('change', function(event) { rrState.currentReport=event.target.value; syncRrModelVisibility(); renderRrAnalysis(); });
   document.getElementById('rr-model-select').addEventListener('change', function(event) { rrState.currentModel=event.target.value; renderRrAnalysis(); });
   document.getElementById('rr-download-btn').addEventListener('click', downloadCurrentRrTable);
+
+  document.getElementById('rr-auto-fetch-btn')?.addEventListener('click', async () => {
+    const monthVal = document.getElementById('rr-month-select').value;
+    if (!monthVal) {
+      setRrStatus('Please select a month to fetch data.', true);
+      return;
+    }
+    
+    setRrStatus(`Fetching service records for ${monthVal}...`);
+    try {
+      const token = sessionStorage.getItem('schiller_token');
+      const res = await fetch('/api/emp/services', {
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const allServices = await res.json();
+      
+      const [year, month] = monthVal.split('-');
+      
+      const filtered = allServices.filter(svc => {
+        const d = new Date(svc.entryDate || svc.createdAt);
+        if (isNaN(d.getTime())) return false;
+        return d.getFullYear() === Number(year) && (d.getMonth() + 1) === Number(month);
+      });
+      
+      if (!filtered.length) {
+        throw new Error(`No records found for ${monthVal}.`);
+      }
+      
+      const normalizedRows = filtered.map(svc => ({
+        REGION: svc.reg || '',
+        PRODUCT_MODEL: svc.model || '',
+        UNIT_SLNO: svc.unitSl || '',
+        DEF_TYPE: svc.defType || '',
+        UNIT_STATUS: svc.unitSts || '',
+        TYPE_OF_WORK: svc.typeWork || '',
+        MOD_BRD_NAME: svc.repBrd || svc.defMod || '',
+        DEF_MOD_BRD_NAME: svc.defMod || svc.repBrd || '',
+        REPORT_TYPE: svc.repType || svc.typeReport || ''
+      }));
+      
+      const columns = Object.keys(normalizedRows[0]);
+      rrState.fileName = `Auto-fetched: ${monthVal}`;
+      rrState.rows = normalizedRows;
+      rrState.columns = columns;
+      rrState.reports = getAvailableRrReports(columns);
+      rrState.models = getUniqueValues(normalizedRows, 'PRODUCT_MODEL');
+      rrState.currentReport = rrState.reports[0] || 'overview';
+      rrState.currentModel = rrState.models[0] || '';
+
+      (document.getElementById('rr-file-pill')||{}).textContent = rrState.fileName;
+      populateRrReportOptions();
+      populateRrModelOptions();
+      syncRrModelVisibility();
+      setRrStatus(`Loaded ${normalizedRows.length} rows from service list for ${monthVal}.`);
+      renderRrAnalysis();
+      
+    } catch(e) {
+      rrState.rows = [];
+      document.getElementById('rr-analysis-content').innerHTML = '<div class="rr-empty">Failed to fetch data or no records found.</div>';
+      document.getElementById('rr-report-select').disabled = true;
+      document.getElementById('rr-download-btn').disabled = true;
+      setRrStatus(e.message, true);
+    }
+  });
+
 
   async function handleRrFileUpload(event) {
     const file = event.target.files && event.target.files[0];
