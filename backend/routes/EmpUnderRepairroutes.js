@@ -575,7 +575,7 @@ router.post('/:id/send-rtur', protect, async (req, res) => {
     const sentAt = new Date();
     const existing = await RTUR.findOne({ sourceServiceId: String(service._id) }).lean();
     const rtur = existing || await RTUR.create({
-      entryDate: service.entryDate || service.createdAt || sentAt,
+      entryDate: sentAt,
       rpDate: sentAt.toISOString(),
       division: req.body.division || service.divisionName || service.branch || service.reg || 'OTHER',
       scRefNo: String(service.scReNo || service.scRno || req.body.scRefNo || '').trim() || 'NA',

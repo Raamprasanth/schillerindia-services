@@ -206,10 +206,12 @@ router.get('/:id', protect, async (req, res) => {
 router.post('/', protect, async (req, res) => {
   try {
     const body = { ...req.body };
+    const repairTeamEntryDate = new Date().toISOString().split('T')[0];
 
     // Enforce server-side ownership stamp — client cannot spoof submittedBy
     body.submittedBy = req.user.name || body.submittedBy || '';
     body.submittedAt = body.submittedAt || new Date().toISOString();
+    body.entryDate = repairTeamEntryDate;
 
     // Ensure category is always "OB"
     body.category = 'OB';

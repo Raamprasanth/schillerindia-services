@@ -188,8 +188,10 @@ router.post('/', protect, async (req, res) => {
       } catch (_) {}
     }
 
+    const repairTeamEntryDate = new Date().toISOString().split('T')[0];
+
     const record = await RTFRN.create({
-      entryDate,
+      entryDate:        repairTeamEntryDate,
       division,
       scRefNo:        scRefNo.toUpperCase().trim(),
       defGirNo:       defGirNo.toUpperCase().trim(),

@@ -269,8 +269,10 @@ router.post('/', async (req, res) => {
       } catch (_) {}
     }
 
+    const repairTeamEntryDate = new Date();
+
     const doc = await RTUR.create({
-      entryDate:    new Date(entryDate),
+      entryDate:    repairTeamEntryDate,
       rpDate:       req.body.rpDate || req.body.submittedAt || new Date().toISOString(),
       division: cleanDivisionName(division) || serviceDivision || 'OTHER',
       scRefNo,
