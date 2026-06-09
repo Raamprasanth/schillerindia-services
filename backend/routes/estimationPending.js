@@ -25,6 +25,23 @@ const {
 
 router.use(protect);
 
+function normalizeObjectIdLike(value) {
+  if (!value) return null;
+  const candidate = typeof value === 'object'
+    ? (value._id || value.id || value.serviceId || '')
+    : value;
+  const text = String(candidate || '').trim();
+  return mongoose.Types.ObjectId.isValid(text) ? text : null;
+}
+
+function normalizeSourceIdLike(value) {
+  if (!value) return '';
+  const candidate = typeof value === 'object'
+    ? (value._id || value.id || value.serviceId || '')
+    : value;
+  return String(candidate || '').trim();
+}
+
 function toDateValue(value) {
   if (!value) return new Date();
   const date = value ? new Date(value) : new Date();
@@ -259,11 +276,14 @@ router.post('/', async (req, res) => {
   try {
     const body = req.body;
     const now  = new Date();
+    const normalizedServiceId = normalizeObjectIdLike(body.serviceId);
+    const normalizedSourceId = normalizeSourceIdLike(body.sourceId || normalizedServiceId || '');
 
     const docData = {
       ...body,
       source:      body.source      || 'service',
-      sourceId:    body.sourceId    || body.serviceId || '',
+      sourceId:    normalizedSourceId,
+      serviceId:   normalizedServiceId,
       submittedBy: body.submittedBy || req.user.name,
       submittedAt: body.submittedAt ? new Date(body.submittedAt) : now,
       entryDate:   body.entryDate   || now.toISOString().split('T')[0],
@@ -277,14 +297,14 @@ router.post('/', async (req, res) => {
     delete docData.updatedAt;
 
     let record;
-    if (body.serviceId) {
+    if (normalizedServiceId) {
       record = await EstimationPending.findOneAndUpdate(
-        { serviceId: body.serviceId },
+        { serviceId: normalizedServiceId, estLineNo: docData.estLineNo || 1 },
         { $set: docData },
         { new: true, upsert: true, runValidators: false }
       );
       await markObSourceFromEstimationPayload({ ...docData, estUpdatedBy: docData.estUpdatedBy || req.user.name || '' });
-      console.log('[EstPending] upserted for serviceId:', body.serviceId);
+      console.log('[EstPending] upserted for serviceId:', normalizedServiceId);
     } else if (docData.sourceId) {
       record = await EstimationPending.findOneAndUpdate(
         { source: docData.source, sourceId: docData.sourceId, estLineNo: docData.estLineNo || 1 },
@@ -347,18 +367,20 @@ router.post('/from-ob', async (req, res) => {
   try {
     const body = req.body;
     const now  = new Date();
+    const normalizedServiceId = normalizeObjectIdLike(body.serviceId);
+    const normalizedSourceId = normalizeSourceIdLike(body.sourceId || normalizedServiceId || '');
 
-    if (!body.serviceId) {
+    if (!normalizedServiceId) {
       return res.status(400).json({ message: 'serviceId is required for from-ob push' });
     }
 
     const docData = {
       // ── source tag ──────────────────────────────────────
       source: 'ob',
-      sourceId: body.sourceId || body.serviceId || '',
+      sourceId: normalizedSourceId,
 
       // ── core service info ────────────────────────────────
-      serviceId:   body.serviceId,
+      serviceId:   normalizedServiceId,
       entryDate:   body.entryDate   || now.toISOString().split('T')[0],
       rcvdDate:    body.rcvdDate    || '',
       scReNo:      body.scReNo      || body.scRno  || '',
@@ -410,14 +432,14 @@ router.post('/from-ob', async (req, res) => {
     };
 
     const record = await EstimationPending.findOneAndUpdate(
-      { serviceId: body.serviceId },
+      { serviceId: normalizedServiceId },
       { $set: docData },
       { new: true, upsert: true, runValidators: false }
     );
 
-    await markSourceServiceMovedToEstimation(body.serviceId);
+    await markSourceServiceMovedToEstimation(normalizedServiceId);
 
-    console.log('[EstPending/from-ob] upserted serviceId:', body.serviceId, '→', record._id);
+    console.log('[EstPending/from-ob] upserted serviceId:', normalizedServiceId, '→', record._id);
     res.status(201).json(record);
   } catch (err) {
     console.error('[POST /api/emp/estimation/from-ob]', err);
