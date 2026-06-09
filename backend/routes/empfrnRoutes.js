@@ -185,7 +185,7 @@ router.get('/', protect, adminOnly, async (req, res) => {
     const docs = await Empfrn.find(filter)
       .populate({
         path: 'serviceId',
-        select: 'branch dealer division partNo doi unitSl defPartSno',
+        select: 'branch dealer division partNo doi unitSl defPartSno bscon',
         populate: { path: 'division', select: 'name' }
       })
       .sort({ createdAt: -1 })
@@ -198,6 +198,7 @@ router.get('/', protect, adminOnly, async (req, res) => {
       dealer: d.dealer || (d.serviceId ? d.serviceId.dealer : '') || '',
       partNo: d.partNo || (d.serviceId ? d.serviceId.partNo : '') || '',
       defPartSno: d.defPartSno || (d.serviceId ? d.serviceId.defPartSno : '') || '',
+      bscon: d.bscon || (d.serviceId ? d.serviceId.bscon : '') || '',
       frnDate: d.frnDate || d.entryDate || d.rcvdDate || '',
       doi: d.doi || (d.serviceId ? d.serviceId.doi : '') || '',
       unitSl: d.unitSl || (d.serviceId ? d.serviceId.unitSl : '') || '',
@@ -287,7 +288,7 @@ router.get('/employee', protect, async (req, res) => {
     const docs = await Empfrn.find(filter)
       .populate({
         path: 'serviceId',
-        select: 'branch dealer division partNo defPartSno',
+        select: 'branch dealer division partNo defPartSno bscon',
         populate: { path: 'division', select: 'name' }
       })
       .sort({ createdAt: -1 })
@@ -300,6 +301,7 @@ router.get('/employee', protect, async (req, res) => {
       dealer: d.dealer || (d.serviceId ? d.serviceId.dealer : '') || '',
       partNo: d.partNo || (d.serviceId ? d.serviceId.partNo : '') || '',
       defPartSno: d.defPartSno || (d.serviceId ? d.serviceId.defPartSno : '') || '',
+      bscon: d.bscon || (d.serviceId ? d.serviceId.bscon : '') || '',
       frnDate: d.frnDate || d.entryDate || d.rcvdDate || '',
       doi: d.doi || (d.serviceId ? d.serviceId.doi : '') || '',
       division: d.division || (d.serviceId && d.serviceId.division ? d.serviceId.division._id : null),

@@ -1070,6 +1070,7 @@ async function loadData(){
       ...d,
       frnDate: d.frnDate || d.frn_date || d.frnDt || d.entryDate || d.rcvdDate || '',
       partNo: d.partNo || (d.serviceId && d.serviceId.partNo) || '',
+      bscon: d.bscon || d.bcon || d.BSCON || d.BCON || (d.serviceId && d.serviceId.bscon) || '',
       id:d._id||d.id,
       pdays:d.pdays??Math.floor((Date.now()-new Date(d.createdAt).getTime())/86400000)
     }));
