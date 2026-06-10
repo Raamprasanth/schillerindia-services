@@ -2200,8 +2200,6 @@ function renderLeaderboard(rows,month,isDivisionPane=false){
       <td style="text-align:center;color:${r.pendingCount>0?'#d97706':'var(--muted)'}">${r.pendingCount}</td>
       <td style="text-align:center;color:${r.criticalPendingCount>0?'#b91c1c':'var(--muted)'}">${r.criticalPendingCount}</td>
       <td>${flagBadge(p)}</td>
-    </tr>`;
-  });
   tbl+='</tbody></table></div>';
   pane.innerHTML=tbl;
 }
@@ -2216,38 +2214,29 @@ async function exportPDF(type) {
   const containerId = isDiv ? 'perf-pane-div-summary' : 'perf-pane-summary';
   const originalNode = document.getElementById(containerId);
   if (!originalNode) return;
-  const contentClone = originalNode.cloneNode(true);
-  contentClone.style.display = 'block';
-  contentClone.style.height = 'auto';
-  contentClone.style.overflow = 'visible';
-  contentClone.removeAttribute('id');
-  contentClone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
-  contentClone.querySelectorAll('.perf-review-table-container').forEach(el => {
-    el.style.overflow = 'visible';
-    el.style.height = 'auto';
+
+  await new Promise(resolve => {
+    const img = new Image();
+    img.onload = resolve;
+    img.onerror = resolve;
+    img.src = 'logo.png';
+    setTimeout(resolve, 800);
   });
 
   const wrapper = document.createElement('div');
-  wrapper.className = 'pdf-export-wrapper';
   wrapper.style.width = '1120px';
   wrapper.style.minHeight = '600px';
-  wrapper.style.background = '#fff';
-  wrapper.style.color = '#000';
+  wrapper.style.background = '#ffffff';
+  wrapper.style.color = '#000000';
   wrapper.style.padding = '20px';
-  wrapper.style.border = '1px solid #000';
+  wrapper.style.border = '1px solid #000000';
   wrapper.style.boxSizing = 'border-box';
   wrapper.style.fontFamily = "Calibri, Arial, sans-serif";
-  wrapper.style.position = 'absolute';
-  wrapper.style.left = '0px';
-  wrapper.style.top = '0px';
-  wrapper.style.zIndex = '99999';
 
   wrapper.style.setProperty('--bg', '#f4f7fa');
   wrapper.style.setProperty('--surface', '#ffffff');
   wrapper.style.setProperty('--surface2', '#eaf1f6');
   wrapper.style.setProperty('--border', '#d0e0ec');
-  wrapper.style.setProperty('--text', '#1a2a3a');
-  wrapper.style.setProperty('--muted', '#7a9ab0');
 
   wrapper.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #000;padding:0 0 12px;margin-bottom:16px;">
@@ -2260,37 +2249,38 @@ async function exportPDF(type) {
     </div>
     <div class="pdf-content-area" style="width:100%;height:auto;overflow:visible;"></div>
   `;
-  wrapper.querySelector('.pdf-content-area').appendChild(contentClone);
-  document.body.appendChild(wrapper);
 
-  const originalScrollY = window.scrollY;
-  const originalScrollX = window.scrollX;
-  window.scrollTo(0,0);
-
-  try{
-    const logo = wrapper.querySelector('img');
-    if(logo && !logo.complete) {
-      await new Promise(resolve => {
-        logo.onload = resolve;
-        logo.onerror = resolve;
-        setTimeout(resolve, 1200);
-      });
+  const contentClone = originalNode.cloneNode(true);
+  contentClone.style.display = 'block';
+  contentClone.style.height = 'auto';
+  contentClone.style.overflow = 'visible';
+  contentClone.removeAttribute('id');
+  contentClone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+  
+  contentClone.querySelectorAll('.perf-review-table-container').forEach(el => {
+    el.style.overflow = 'visible';
+    el.style.height = 'auto';
+  });
+  
+  contentClone.querySelectorAll('*').forEach(el => {
+    if(el.style) {
+      el.style.backdropFilter = 'none';
+      el.style.filter = 'none';
     }
-    
-    await new Promise(resolve => setTimeout(resolve, 300));
+  });
 
+  wrapper.querySelector('.pdf-content-area').appendChild(contentClone);
+
+  try {
     await html2pdf().set({
       margin: 0.2,
       filename: `Performance_Analysis_${scope}_${month}.pdf`,
       image: { type: 'jpeg', quality: 1.0 },
-      html2canvas: { scale: 2, useCORS: true, scrollY: 0, scrollX: 0, backgroundColor: '#ffffff', windowWidth: 1120 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 1120 },
       jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
     }).from(wrapper).save();
-  }catch(e){
+  } catch(e) {
     toast('PDF export failed: ' + e.message, 'error');
-  }finally{
-    wrapper.remove();
-    window.scrollTo(originalScrollX, originalScrollY);
   }
 }
 
