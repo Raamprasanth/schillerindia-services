@@ -2200,6 +2200,8 @@ function renderLeaderboard(rows,month,isDivisionPane=false){
       <td style="text-align:center;color:${r.pendingCount>0?'#d97706':'var(--muted)'}">${r.pendingCount}</td>
       <td style="text-align:center;color:${r.criticalPendingCount>0?'#b91c1c':'var(--muted)'}">${r.criticalPendingCount}</td>
       <td>${flagBadge(p)}</td>
+    </tr>`;
+  });
   tbl+='</tbody></table></div>';
   pane.innerHTML=tbl;
 }
