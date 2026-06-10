@@ -1518,14 +1518,9 @@ function saveComment(){
   ta._saveTimer=setTimeout(()=>{saved.style.display='none';},1800);
 }
 
-function renderDivisionPerfSummary(data,params) {
-  if(!data){
-    document.getElementById('perf-pane-div-summary').innerHTML='<div class="empty-state"><div class="empty-icon">&#128196;</div><div class="empty-title">No Data</div></div>';
-    return;
-  }
-  window._lastPerfDivData = data;
-  const rate=data.summary?.completionRate||data.completionRate||0;
-  
+
+function generatePerfAnalysisHtml(data, params, scopeType) {
+  const rate = data.summary?.completionRate || data.completionRate || 0;
   let remark = 'Needs Improvement';
   if (rate >= 90) remark = 'Excellent';
   else if (rate >= 75) remark = 'Good';
@@ -1533,299 +1528,10 @@ function renderDivisionPerfSummary(data,params) {
 
   const rows = data.activityRows || data.activities || [];
   const getRow = (label) => rows.find(r => (r.label||'').toLowerCase() === label.toLowerCase()) || {};
-  const getVal = (r, key, fallback='') => r[key] !== undefined && r[key] !== null ? r[key] : fallback;
+  const getVal = (r, key, fallback='-') => r[key] !== undefined && r[key] !== null ? r[key] : fallback;
   const pct = (r, key) => {
     let v = r[key];
-    if(v===undefined || v===null) return '';
-    return Math.round(v * (key.includes('Rate') ? 100 : 1)) + '%';
-  };
-
-  const rFrn = getRow('Pending frn');
-  const rFrnCon = getRow('pending FRN con');
-  const rSo = getRow('SO Pending');
-  const rRepair = getRow('Under Repair');
-  const rTo = getRow('TO/SO');
-  const rNonSaleable = getRow('Non-Saleable');
-  const rBir = getRow('BIR list');
-  const rEst = getRow('Estimation');
-
-  const cWeekly = data.compliance?.weeklyCrm ?? 0;
-  const cPending = data.compliance?.pendingActivity ?? 0;
-  const cNonSaleableTracker = data.compliance?.nonSaleable ?? 0;
-  const cSupWarr = data.compliance?.supplierWarranty ?? 0;
-  const cCritical = data.compliance?.criticalPending ?? 0;
-  const cPI = data.compliance?.purchaseIndent ?? 0;
-  const c5S = data.compliance?.fiveSRate ?? 0;
-  const cRR = data.compliance?.repairReport ?? 0;
-
-  const monthLabel = data.monthLabel || params.month || '';
-  const divisionLabel = data.division || params.division || '';
-  
-  var [yearStr, mStr] = (params.month || '').split('-');
-  var yearNum = parseInt(yearStr, 10);
-  var monthNum = parseInt(mStr, 10) - 1;
-
-  var tuesdays = [];
-  var mondays = [];
-  var d02 = '-', d03 = '-', d05 = '-', d16 = '-';
-  if (!isNaN(yearNum) && !isNaN(monthNum)) {
-    let d = new Date(yearNum, monthNum, 1);
-    while (d.getMonth() === monthNum) {
-      const fDate = String(d.getDate()).padStart(2,'0') + '-' + mStr + '-' + yearStr;
-      if (d.getDay() === 2) tuesdays.push(fDate);
-      if (d.getDay() === 1) mondays.push(fDate);
-      d.setDate(d.getDate() + 1);
-    }
-    d02 = '02-' + mStr + '-' + yearStr;
-    d03 = '03-' + mStr + '-' + yearStr;
-    d05 = '05-' + mStr + '-' + yearStr;
-    d16 = '16-' + mStr + '-' + yearStr;
-  }
-  
-  var checkSub = (type, ds) => {
-    if (!ds || ds === '-') return '-';
-    const parts = ds.split('-');
-    if (parts.length !== 3) return ds;
-    const backendDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
-    const subs = (data.compliance && data.compliance.trackerSubmissions && data.compliance.trackerSubmissions[type]) || [];
-    
-    if (typeof scope !== 'undefined' && scope === 'division' || (typeof params.division !== 'undefined' && typeof params.employee === 'undefined')) {
-      const uniqueEmps = new Set(subs.filter(s => s.date === backendDate).map(s => s.emp));
-      const count = uniqueEmps.size;
-      return `<div style="font-weight:600;color:#1e293b;">${ds}</div><div style="font-size:11px;font-weight:700;color:${count>0?'#059669':'#b91c1c'};margin-top:4px;">${count>0?count+' Submitted':'Not Submitted'}</div>`;
-    } else {
-      const hasSub = subs.some(s => s.date === backendDate);
-      return `<div style="font-weight:600;color:#1e293b;">${ds}</div><div style="font-size:11px;font-weight:700;color:${hasSub?'#059669':'#b91c1c'};margin-top:4px;">${hasSub?'Submitted':'Not Submitted'}</div>`;
-    }
-  };
-  
-  var t1H = checkSub('CRM', tuesdays[0]);
-  var t2H = checkSub('CRM', tuesdays[1]);
-  var t3H = checkSub('CRM', tuesdays[2]);
-  var t4H = checkSub('CRM', tuesdays[3]);
-  var t5H = checkSub('CRM', tuesdays[4]);
-  
-  var m1H = checkSub('PendingActivity', mondays[0]);
-  var m2H = checkSub('PendingActivity', mondays[1]);
-  var m3H = checkSub('PendingActivity', mondays[2]);
-  var m4H = checkSub('PendingActivity', mondays[3]);
-  var m5H = checkSub('PendingActivity', mondays[4]);
-
-  var d02NS = checkSub('NonSaleable', d02);
-  var d16NS = checkSub('NonSaleable', d16);
-  
-  var d03SW = checkSub('SupplierWarranty', d03);
-  var d16SW = checkSub('SupplierWarranty', d16);
-  
-  var d02CP = checkSub('CriticalPendingReport', d02);
-  var d05PI = checkSub('PIRequest', d05);
-
-  const topTableHtml = `
-    <table style="width:100%; border-collapse:collapse; text-align:center; border: 2px solid #000; font-family: sans-serif; font-size:13px; margin-bottom: 20px;">
-      <tr>
-        <th colspan="4" rowspan="2" style="background-color:#a5b0c0; color:#1e3a8a; font-size:16px; font-weight:900; letter-spacing:1px; text-transform:uppercase; border:1px solid #333; padding:8px;">PERFORMANCE REVIEW</th>
-        <th style="background-color:#fce4d6; text-align:right; border:1px solid #333; padding:8px;">For the month of</th>
-        <th style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${monthLabel}</th>
-      </tr>
-      <tr>
-        <th style="background-color:#fff2cc; text-align:right; border:1px solid #333; padding:8px;">Division</th>
-        <th style="background-color:#fff2cc; border:1px solid #333; padding:8px;">${divisionLabel}</th>
-      </tr>
-      <tr>
-        <th rowspan="2" style="background-color:#e2efda; border:1px solid #333; padding:8px;">Activity</th>
-        <th rowspan="2" style="background-color:#e2efda; border:1px solid #333; padding:8px;">Total Inward<br><span style="color:red; font-size:11px; font-weight:normal;">(If not applicable mark zero)</span></th>
-        <th rowspan="2" style="background-color:#e2efda; border:1px solid #333; padding:8px;">No of Executions within target date</th>
-        <th rowspan="2" style="background-color:#e2efda; border:1px solid #333; padding:8px;">Percentage of Executions out from target date</th>
-        <th colspan="2" style="background-color:#e2efda; border:1px solid #333; padding:8px;">Target Percentage</th>
-      </tr>
-      <tr>
-        <th style="background-color:#dae3f3; border:1px solid #333; padding:8px;">Prev Month</th>
-        <th style="background-color:#fff2cc; border:1px solid #333; padding:8px;">Next Month</th>
-      </tr>
-      <tr>
-        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">Pending frn</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rFrn, 'total')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rFrn, 'withinTarget')}</td>
-        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rFrn, 'completionPercent')}</td>
-        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rFrn, 'prevRate')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rFrn, 'nextRate')}</td>
-      </tr>
-      <tr>
-        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">pending FRN con</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rFrnCon, 'total')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rFrnCon, 'withinTarget')}</td>
-        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rFrnCon, 'completionPercent')}</td>
-        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rFrnCon, 'prevRate')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rFrnCon, 'nextRate')}</td>
-      </tr>
-      <tr>
-        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">SO Pending</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rSo, 'total')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rSo, 'withinTarget')}</td>
-        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rSo, 'completionPercent')}</td>
-        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rSo, 'prevRate')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rSo, 'nextRate')}</td>
-      </tr>
-      <tr>
-        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">Under Repair</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rRepair, 'total')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rRepair, 'withinTarget')}</td>
-        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rRepair, 'completionPercent')}</td>
-        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rRepair, 'prevRate')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rRepair, 'nextRate')}</td>
-      </tr>
-      <tr>
-        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">TO/SO</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rTo, 'total')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rTo, 'withinTarget')}</td>
-        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rTo, 'completionPercent')}</td>
-        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rTo, 'prevRate')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rTo, 'nextRate')}</td>
-      </tr>
-      <tr>
-        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">Non-Saleable</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rNonSaleable, 'total')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rNonSaleable, 'withinTarget')}</td>
-        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rNonSaleable, 'completionPercent')}</td>
-        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rNonSaleable, 'prevRate')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rNonSaleable, 'nextRate')}</td>
-      </tr>
-      <tr>
-        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">BIR list</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rBir, 'total')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rBir, 'withinTarget')}</td>
-        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rBir, 'completionPercent')}</td>
-        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rBir, 'prevRate')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rBir, 'nextRate')}</td>
-      </tr>
-      <tr>
-        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">Estimation</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rEst, 'total')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rEst, 'withinTarget')}</td>
-        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rEst, 'completionPercent')}</td>
-        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rEst, 'prevRate')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rEst, 'nextRate')}</td>
-      </tr>
-    </table>
-  `;
-
-  const html = `
-    <div style="font-family:'Syne',sans-serif;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.06);padding:24px;color:var(--text);width:100%;box-sizing:border-box;">
-      
-      <!-- Header -->
-      <div style="display:flex;align-items:center;margin-bottom:20px;border-bottom:2px solid #e2e8f0;padding-bottom:12px;">
-        <div style="flex:1;">
-          <h2 style="margin:0;font-size:20px;font-weight:700;color:#0f172a;">Performance Analysis</h2>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:12px;font-weight:600;color:#64748b;margin-bottom:2px;">Division: <span style="color:#0f172a;">${divisionLabel}</span></div>
-          <div style="font-size:12px;font-weight:600;color:#64748b;">Month: <span style="color:#0f172a;">${monthLabel}</span></div>
-        </div>
-      </div>
-
-      ${topTableHtml}
-
-      <table style="width:100%; border-collapse:collapse; text-align:center; border: 2px solid #000; font-family: sans-serif; font-size:13px;">
-        <tr>
-          <td rowspan="5" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Weekly CRM Reports</td>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${t1H}</td>
-          <td rowspan="5" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Pending activity on<br>Monday</td>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${m1H}</td>
-          <td rowspan="4" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Non-Saleable<br><span style="color:#d32f2f; font-weight:normal; font-size:11px;">If not applicable mark NA</span></td>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${d02NS}</td>
-        </tr>
-        <tr>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${t2H}</td>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${m2H}</td>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${d16NS}</td>
-        </tr>
-        <tr>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${t3H}</td>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${m3H}</td>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">-</td>
-        </tr>
-        <tr>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${t4H}</td>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${m4H}</td>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">-</td>
-        </tr>
-        <tr>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${t5H}</td>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${m5H}</td>
-          <td style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cNonSaleableTracker}%</td>
-        </tr>
-        <tr>
-          <td colspan="2" style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cWeekly}%</td>
-          <td colspan="2" style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cPending}%</td>
-          <td colspan="2" style="border:1px solid #000; padding:8px; background-color:#e2e8f0;"></td>
-        </tr>
-        
-        <tr>
-          <td colspan="3" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Supplier Warranty transaction<br><span style="color:#d32f2f; font-weight:normal; font-size:11px;">If not applicable mark NA</span></td>
-          <td colspan="3" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Critical Pending report<br><span style="color:#d32f2f; font-weight:normal; font-size:11px;">If not applicable mark NA</span></td>
-        </tr>
-        <tr>
-          <td colspan="3" style="border:1px solid #000; padding:8px; vertical-align:top;">
-            <div style="display:flex; justify-content:space-around;">
-              <div>${d03SW}</div>
-              <div>${d16SW}</div>
-            </div>
-          </td>
-          <td colspan="3" style="border:1px solid #000; padding:8px; vertical-align:top;">${d02CP}</td>
-        </tr>
-        <tr>
-          <td colspan="3" style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cSupWarr}%</td>
-          <td colspan="3" style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cCritical}%</td>
-        </tr>
-
-        <tr>
-          <td colspan="3" rowspan="2" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">
-            Purchase indent request to commercial<br><span style="color:#d32f2f; font-weight:normal; font-size:11px;">If not applicable mark NA</span>
-            <div style="margin-top:10px; font-weight:normal; text-align:center;">${d05PI}</div>
-          </td>
-          <td colspan="2" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">5s Rate</td>
-          <td style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${c5S}%</td>
-        </tr>
-        <tr>
-          <td colspan="2" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Repair Report</td>
-          <td style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cRR}%</td>
-        </tr>
-        <tr>
-          <td colspan="3" style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cPI}%</td>
-          <td colspan="3" style="border:1px solid #000; padding:8px; font-weight:bold; color:${rate>=75?'#059669':'#b91c1c'};">${remark}</td>
-        </tr>
-      </table>
-
-      <!-- Export Buttons -->
-      <div style="margin-top:20px;display:flex;justify-content:flex-end;gap:10px;">
-        <button class="btn btn-green btn-sm" onclick="exportPDF('div')">Export Division PDF</button>
-      </div>
-
-    </div>
-  `;
-
-  document.getElementById('perf-pane-div-summary').innerHTML = html;
-  if(typeof loadDivisionReportSubmissions === 'function') loadDivisionReportSubmissions(params);
-}
-
-function renderPerfSummary(data,params) {
-  if(!data){
-    document.getElementById('perf-pane-summary').innerHTML='<div class="empty-state"><div class="empty-icon">&#128196;</div><div class="empty-title">No Data</div></div>';
-    return;
-  }
-  const rate=data.summary?.completionRate||data.completionRate||0;
-  
-  let remark = 'Needs Improvement';
-  if (rate >= 90) remark = 'Excellent';
-  else if (rate >= 75) remark = 'Good';
-  else if (rate >= 60) remark = 'Average';
-
-  const rows = data.activityRows || data.activities || [];
-  const getRow = (label) => rows.find(r => (r.label||'').toLowerCase() === label.toLowerCase()) || {};
-  const getVal = (r, key, fallback='') => r[key] !== undefined && r[key] !== null ? r[key] : fallback;
-  const pct = (r, key) => {
-    let v = r[key];
-    if(v===undefined || v===null) return '';
+    if(v===undefined || v===null) return '-';
     return Math.round(v * (key.includes('Rate') ? 100 : 1)) + '%';
   };
 
@@ -1850,13 +1556,12 @@ function renderPerfSummary(data,params) {
   const monthLabel = params.month || '';
   const employeeLabel = data.employee || params.employee || '';
   const divisionLabel = data.division || params.division || '';
-  
+
   var [yearStr, mStr] = (params.month || '').split('-');
   var yearNum = parseInt(yearStr, 10);
   var monthNum = parseInt(mStr, 10) - 1;
 
-  var tuesdays = [];
-  var mondays = [];
+  var tuesdays = [], mondays = [];
   var d02 = '-', d03 = '-', d05 = '-', d16 = '-';
   if (!isNaN(yearNum) && !isNaN(monthNum)) {
     let d = new Date(yearNum, monthNum, 1);
@@ -1873,230 +1578,209 @@ function renderPerfSummary(data,params) {
   }
   
   var checkSub = (type, ds) => {
-    if (!ds || ds === '-') return '-';
+    if (!ds || ds === '-') return \`<div style="text-align:center;color:#94a3b8;font-size:12px;">-</div>\`;
     const parts = ds.split('-');
     if (parts.length !== 3) return ds;
-    const backendDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+    const backendDate = \`\${parts[2]}-\${parts[1]}-\${parts[0]}\`;
     const subs = (data.compliance && data.compliance.trackerSubmissions && data.compliance.trackerSubmissions[type]) || [];
     
-    if (typeof scope !== 'undefined' && scope === 'division' || (typeof params.division !== 'undefined' && typeof params.employee === 'undefined')) {
+    let countOrHasSub = false;
+    let label = '';
+    
+    if (scopeType === 'division') {
       const uniqueEmps = new Set(subs.filter(s => s.date === backendDate).map(s => s.emp));
-      const count = uniqueEmps.size;
-      return `<div style="font-weight:600;color:#1e293b;">${ds}</div><div style="font-size:11px;font-weight:700;color:${count>0?'#059669':'#b91c1c'};margin-top:4px;">${count>0?count+' Submitted':'Not Submitted'}</div>`;
+      countOrHasSub = uniqueEmps.size > 0;
+      label = countOrHasSub ? uniqueEmps.size + ' Submitted' : 'Not Submitted';
     } else {
-      const hasSub = subs.some(s => s.date === backendDate);
-      return `<div style="font-weight:600;color:#1e293b;">${ds}</div><div style="font-size:11px;font-weight:700;color:${hasSub?'#059669':'#b91c1c'};margin-top:4px;">${hasSub?'Submitted':'Not Submitted'}</div>`;
+      countOrHasSub = subs.some(s => s.date === backendDate);
+      label = countOrHasSub ? 'Submitted' : 'Not Submitted';
     }
-  };
-  
-  var t1H = checkSub('CRM', tuesdays[0]);
-  var t2H = checkSub('CRM', tuesdays[1]);
-  var t3H = checkSub('CRM', tuesdays[2]);
-  var t4H = checkSub('CRM', tuesdays[3]);
-  var t5H = checkSub('CRM', tuesdays[4]);
-  
-  var m1H = checkSub('PendingActivity', mondays[0]);
-  var m2H = checkSub('PendingActivity', mondays[1]);
-  var m3H = checkSub('PendingActivity', mondays[2]);
-  var m4H = checkSub('PendingActivity', mondays[3]);
-  var m5H = checkSub('PendingActivity', mondays[4]);
 
-  var d02NS = checkSub('NonSaleable', d02);
-  var d16NS = checkSub('NonSaleable', d16);
-  
-  var d03SW = checkSub('SupplierWarranty', d03);
-  var d16SW = checkSub('SupplierWarranty', d16);
-  
-  var d02CP = checkSub('CriticalPendingReport', d02);
-  var d05PI = checkSub('PIRequest', d05);
-
-  const topTableHtml = `
-    <table style="width:100%; border-collapse:collapse; text-align:center; border: 2px solid #000; font-family: sans-serif; font-size:13px; margin-bottom: 20px;">
-      <tr>
-        <th colspan="4" rowspan="2" style="background-color:#a5b0c0; color:#1e3a8a; font-size:16px; font-weight:900; letter-spacing:1px; text-transform:uppercase; border:1px solid #333; padding:8px;">PERFORMANCE REVIEW</th>
-        <th style="background-color:#fce4d6; text-align:right; border:1px solid #333; padding:8px;">For the month of</th>
-        <th style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${monthLabel}</th>
-      </tr>
-      <tr>
-        <th style="background-color:#fff2cc; text-align:right; border:1px solid #333; padding:8px;">Employee</th>
-        <th style="background-color:#fff2cc; border:1px solid #333; padding:8px;">${employeeLabel}</th>
-      </tr>
-      <tr>
-        <th rowspan="2" style="background-color:#e2efda; border:1px solid #333; padding:8px;">Activity</th>
-        <th rowspan="2" style="background-color:#e2efda; border:1px solid #333; padding:8px;">Total Inward<br><span style="color:red; font-size:11px; font-weight:normal;">(If not applicable mark zero)</span></th>
-        <th rowspan="2" style="background-color:#e2efda; border:1px solid #333; padding:8px;">No of Executions within target date</th>
-        <th rowspan="2" style="background-color:#e2efda; border:1px solid #333; padding:8px;">Percentage of Executions out from target date</th>
-        <th colspan="2" style="background-color:#e2efda; border:1px solid #333; padding:8px;">Target Percentage</th>
-      </tr>
-      <tr>
-        <th style="background-color:#dae3f3; border:1px solid #333; padding:8px;">Prev Month</th>
-        <th style="background-color:#fff2cc; border:1px solid #333; padding:8px;">Next Month</th>
-      </tr>
-      <tr>
-        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">Pending frn</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rFrn, 'total')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rFrn, 'withinTarget')}</td>
-        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rFrn, 'completionPercent')}</td>
-        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rFrn, 'prevRate')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rFrn, 'nextRate')}</td>
-      </tr>
-      <tr>
-        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">pending FRN con</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rFrnCon, 'total')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rFrnCon, 'withinTarget')}</td>
-        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rFrnCon, 'completionPercent')}</td>
-        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rFrnCon, 'prevRate')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rFrnCon, 'nextRate')}</td>
-      </tr>
-      <tr>
-        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">SO Pending</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rSo, 'total')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rSo, 'withinTarget')}</td>
-        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rSo, 'completionPercent')}</td>
-        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rSo, 'prevRate')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rSo, 'nextRate')}</td>
-      </tr>
-      <tr>
-        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">Under Repair</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rRepair, 'total')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rRepair, 'withinTarget')}</td>
-        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rRepair, 'completionPercent')}</td>
-        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rRepair, 'prevRate')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rRepair, 'nextRate')}</td>
-      </tr>
-      <tr>
-        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">TO/SO</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rTo, 'total')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rTo, 'withinTarget')}</td>
-        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rTo, 'completionPercent')}</td>
-        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rTo, 'prevRate')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rTo, 'nextRate')}</td>
-      </tr>
-      <tr>
-        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">Non-Saleable</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rNonSaleable, 'total')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rNonSaleable, 'withinTarget')}</td>
-        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rNonSaleable, 'completionPercent')}</td>
-        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rNonSaleable, 'prevRate')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rNonSaleable, 'nextRate')}</td>
-      </tr>
-      <tr>
-        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">BIR list</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rBir, 'total')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rBir, 'withinTarget')}</td>
-        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rBir, 'completionPercent')}</td>
-        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rBir, 'prevRate')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rBir, 'nextRate')}</td>
-      </tr>
-      <tr>
-        <td style="background-color:#e2efda; text-align:left; font-weight:bold; border:1px solid #333; padding:8px;">Estimation</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rEst, 'total')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${getVal(rEst, 'withinTarget')}</td>
-        <td style="background-color:#fce4d6; font-weight:bold; border:1px solid #333; padding:8px;">${pct(rEst, 'completionPercent')}</td>
-        <td style="background-color:#dae3f3; border:1px solid #333; padding:8px;">${pct(rEst, 'prevRate')}</td>
-        <td style="background-color:#fce4d6; border:1px solid #333; padding:8px;">${pct(rEst, 'nextRate')}</td>
-      </tr>
-    </table>
-  `;
-
-  const html = `
-    <div class="submission-panel" id="perf-submission-panel"></div>
-    <div style="font-family:'Syne',sans-serif;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.06);padding:24px;color:var(--text);width:100%;box-sizing:border-box;">
-      
-      <!-- Header -->
-      <div style="display:flex;align-items:center;margin-bottom:20px;border-bottom:2px solid #e2e8f0;padding-bottom:12px;">
-        <div style="flex:1;">
-          <h2 style="margin:0;font-size:20px;font-weight:700;color:#0f172a;">Employee Performance Analysis</h2>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:12px;font-weight:600;color:#64748b;margin-bottom:2px;">Employee: <span style="color:#0f172a;">${employeeLabel}</span></div>
-          <div style="font-size:12px;font-weight:600;color:#64748b;">Month: <span style="color:#0f172a;">${monthLabel}</span></div>
-        </div>
+    return \`<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:8px 6px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; width:100%; box-sizing:border-box;">
+      <div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:6px; letter-spacing:0.5px;">\${ds}</div>
+      <div style="font-size:11px; font-weight:700; padding:4px 8px; border-radius:6px; width:100%; text-align:center; box-sizing:border-box; \${countOrHasSub ? 'background:#dcfce7; color:#166534; border:1px solid #bbf7d0;' : 'background:#fee2e2; color:#991b1b; border:1px solid #fecaca;'}">
+        \${label}
       </div>
+    </div>\`;
+  };
 
-      ${topTableHtml}
+  const makeRow = (title, r, isAlt) => \`
+    <tr style="background-color:\${isAlt ? '#f8fafc' : '#ffffff'};">
+      <td style="border:1px solid #cbd5e1; padding:12px 16px; text-align:left; font-weight:600; color:#334155; font-size:13px;">\${title}</td>
+      <td style="border:1px solid #cbd5e1; padding:12px 16px; text-align:center; color:#475569; font-size:13px;">\${getVal(r, 'total')}</td>
+      <td style="border:1px solid #cbd5e1; padding:12px 16px; text-align:center; color:#059669; font-weight:700; font-size:13px;">\${getVal(r, 'withinTarget')}</td>
+      <td style="border:1px solid #cbd5e1; padding:12px 16px; text-align:center; color:#0f172a; font-weight:700; font-size:13px;">\${pct(r, 'completionPercent')}</td>
+      <td style="border:1px solid #cbd5e1; padding:12px 16px; text-align:center; color:#64748b; font-size:13px;">\${pct(r, 'prevRate')}</td>
+      <td style="border:1px solid #cbd5e1; padding:12px 16px; text-align:center; color:#3730a3; font-weight:700; background-color:\${isAlt ? '#eef2ff' : '#f5f7ff'}; font-size:13px;">\${pct(r, 'nextRate')}</td>
+    </tr>
+  \`;
 
-      <table style="width:100%; border-collapse:collapse; text-align:center; border: 2px solid #000; font-family: sans-serif; font-size:13px;">
+  const topTable = \`
+    <table style="width:100%; border-collapse:collapse; border:1px solid #cbd5e1; font-family:'Inter',system-ui,sans-serif; margin-bottom:28px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); overflow:hidden;">
+      <thead>
         <tr>
-          <td rowspan="5" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Weekly CRM Reports</td>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${t1H}</td>
-          <td rowspan="5" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Pending activity on<br>Monday</td>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${m1H}</td>
-          <td rowspan="4" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Non-Saleable<br><span style="color:#d32f2f; font-weight:normal; font-size:11px;">If not applicable mark NA</span></td>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${d02NS}</td>
+          <th colspan="4" rowspan="2" style="background-color:#0f172a; color:#ffffff; font-size:16px; font-weight:700; letter-spacing:1px; text-transform:uppercase; border:1px solid #334155; padding:16px 20px; text-align:left; width:65%;">PERFORMANCE REVIEW</th>
+          <th style="background-color:#f1f5f9; color:#475569; text-align:right; border:1px solid #cbd5e1; padding:12px 16px; font-weight:600; font-size:13px;">For the month of</th>
+          <th style="background-color:#ffffff; color:#0f172a; border:1px solid #cbd5e1; padding:12px 16px; font-weight:700; font-size:14px; min-width:120px; text-align:center;">\${monthLabel}</th>
         </tr>
         <tr>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${t2H}</td>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${m2H}</td>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${d16NS}</td>
+          <th style="background-color:#f1f5f9; color:#475569; text-align:right; border:1px solid #cbd5e1; padding:12px 16px; font-weight:600; font-size:13px;">\${scopeType === 'division' ? 'Division' : 'Employee'}</th>
+          <th style="background-color:#ffffff; color:#0f172a; border:1px solid #cbd5e1; padding:12px 16px; font-weight:700; font-size:14px; text-align:center;">\${scopeType === 'division' ? divisionLabel : employeeLabel}</th>
         </tr>
         <tr>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${t3H}</td>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${m3H}</td>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">-</td>
+          <th rowspan="2" style="background-color:#f8fafc; color:#334155; border:1px solid #cbd5e1; padding:14px 16px; text-align:left; font-weight:700; font-size:13px;">Activity</th>
+          <th rowspan="2" style="background-color:#f8fafc; color:#334155; border:1px solid #cbd5e1; padding:14px 16px; text-align:center; font-weight:700; font-size:13px; line-height:1.4;">Total Inward<br><span style="color:#ef4444; font-size:11px; font-weight:600;">(If NA mark zero)</span></th>
+          <th rowspan="2" style="background-color:#f8fafc; color:#334155; border:1px solid #cbd5e1; padding:14px 16px; text-align:center; font-weight:700; font-size:13px; line-height:1.4;">Executions within<br>target date</th>
+          <th rowspan="2" style="background-color:#f8fafc; color:#334155; border:1px solid #cbd5e1; padding:14px 16px; text-align:center; font-weight:700; font-size:13px; line-height:1.4;">% of Executions<br>out of target date</th>
+          <th colspan="2" style="background-color:#f8fafc; color:#334155; border:1px solid #cbd5e1; padding:14px 16px; text-align:center; font-weight:700; font-size:13px;">Target Percentage</th>
         </tr>
         <tr>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${t4H}</td>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${m4H}</td>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">-</td>
+          <th style="background-color:#f8fafc; color:#475569; border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:700; font-size:12px;">Prev Month</th>
+          <th style="background-color:#eef2ff; color:#3730a3; border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:800; font-size:12px;">Next Month</th>
+        </tr>
+      </thead>
+      <tbody>
+        \${makeRow('Pending frn', rFrn, false)}
+        \${makeRow('pending FRN con', rFrnCon, true)}
+        \${makeRow('SO Pending', rSo, false)}
+        \${makeRow('Under Repair', rRepair, true)}
+        \${makeRow('TO/SO', rTo, false)}
+        \${makeRow('Non-Saleable', rNonSaleable, true)}
+        \${makeRow('BIR list', rBir, false)}
+        \${makeRow('Estimation', rEst, true)}
+      </tbody>
+    </table>
+  \`;
+
+  const bottomTable = \`
+    <table style="width:100%; border-collapse:collapse; border:1px solid #cbd5e1; font-family:'Inter',system-ui,sans-serif; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); overflow:hidden;">
+      <tbody>
+        <tr>
+          <td rowspan="5" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; width:20%;">Weekly CRM Reports</td>
+          <td style="border:1px solid #cbd5e1; padding:10px; vertical-align:middle; width:15%;">\${checkSub('CRM', tuesdays[0])}</td>
+          <td rowspan="5" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; width:20%;">Pending activity on<br>Monday</td>
+          <td style="border:1px solid #cbd5e1; padding:10px; vertical-align:middle; width:15%;">\${checkSub('PendingActivity', mondays[0])}</td>
+          <td rowspan="4" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4; width:15%;">Non-Saleable<br><span style="color:#ef4444; font-size:11px; font-weight:600;">If NA mark NA</span></td>
+          <td style="border:1px solid #cbd5e1; padding:10px; vertical-align:middle; width:15%;">\${checkSub('NonSaleable', d02)}</td>
         </tr>
         <tr>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${t5H}</td>
-          <td style="border:1px solid #000; padding:8px; vertical-align:top;">${m5H}</td>
-          <td style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cNonSaleableTracker}%</td>
+          <td style="border:1px solid #cbd5e1; padding:10px; vertical-align:middle;">\${checkSub('CRM', tuesdays[1])}</td>
+          <td style="border:1px solid #cbd5e1; padding:10px; vertical-align:middle;">\${checkSub('PendingActivity', mondays[1])}</td>
+          <td style="border:1px solid #cbd5e1; padding:10px; vertical-align:middle;">\${checkSub('NonSaleable', d16)}</td>
         </tr>
         <tr>
-          <td colspan="2" style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cWeekly}%</td>
-          <td colspan="2" style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cPending}%</td>
-          <td colspan="2" style="border:1px solid #000; padding:8px; background-color:#e2e8f0;"></td>
-        </tr>
-        
-        <tr>
-          <td colspan="3" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Supplier Warranty transaction<br><span style="color:#d32f2f; font-weight:normal; font-size:11px;">If not applicable mark NA</span></td>
-          <td colspan="3" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Critical Pending report<br><span style="color:#d32f2f; font-weight:normal; font-size:11px;">If not applicable mark NA</span></td>
+          <td style="border:1px solid #cbd5e1; padding:10px; vertical-align:middle;">\${checkSub('CRM', tuesdays[2])}</td>
+          <td style="border:1px solid #cbd5e1; padding:10px; vertical-align:middle;">\${checkSub('PendingActivity', mondays[2])}</td>
+          <td style="border:1px solid #cbd5e1; padding:10px; vertical-align:middle; background-color:#f8fafc;"></td>
         </tr>
         <tr>
-          <td colspan="3" style="border:1px solid #000; padding:8px; vertical-align:top;">
-            <div style="display:flex; justify-content:space-around;">
-              <div>${d03SW}</div>
-              <div>${d16SW}</div>
+          <td style="border:1px solid #cbd5e1; padding:10px; vertical-align:middle;">\${checkSub('CRM', tuesdays[3])}</td>
+          <td style="border:1px solid #cbd5e1; padding:10px; vertical-align:middle;">\${checkSub('PendingActivity', mondays[3])}</td>
+          <td style="border:1px solid #cbd5e1; padding:10px; vertical-align:middle; background-color:#f8fafc;"></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #cbd5e1; padding:10px; vertical-align:middle;">\${checkSub('CRM', tuesdays[4])}</td>
+          <td style="border:1px solid #cbd5e1; padding:10px; vertical-align:middle;">\${checkSub('PendingActivity', mondays[4])}</td>
+          <td style="border:1px solid #cbd5e1; padding:12px; font-weight:800; background-color:#e0e7ff; color:#3730a3; font-size:15px; text-align:center;">\${cNonSaleableTracker}%</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="border:1px solid #cbd5e1; padding:14px; font-weight:800; background-color:#e0e7ff; color:#3730a3; font-size:15px; text-align:center;">\${cWeekly}%</td>
+          <td colspan="2" style="border:1px solid #cbd5e1; padding:14px; font-weight:800; background-color:#e0e7ff; color:#3730a3; font-size:15px; text-align:center;">\${cPending}%</td>
+          <td colspan="2" style="border:1px solid #cbd5e1; padding:14px; background-color:#f1f5f9;"></td>
+        </tr>
+
+        <tr>
+          <td colspan="3" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4;">Supplier Warranty transaction<br><span style="color:#ef4444; font-size:11px; font-weight:600;">If NA mark NA</span></td>
+          <td colspan="3" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4;">Critical Pending report<br><span style="color:#ef4444; font-size:11px; font-weight:600;">If NA mark NA</span></td>
+        </tr>
+        <tr>
+          <td colspan="3" style="border:1px solid #cbd5e1; padding:12px; vertical-align:middle;">
+            <div style="display:flex; justify-content:space-evenly; align-items:center; gap:16px;">
+              <div style="flex:1;">\${checkSub('SupplierWarranty', d03)}</div>
+              <div style="flex:1;">\${checkSub('SupplierWarranty', d16)}</div>
             </div>
           </td>
-          <td colspan="3" style="border:1px solid #000; padding:8px; vertical-align:top;">${d02CP}</td>
-        </tr>
-        <tr>
-          <td colspan="3" style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cSupWarr}%</td>
-          <td colspan="3" style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cCritical}%</td>
-        </tr>
-
-        <tr>
-          <td colspan="3" rowspan="2" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">
-            Purchase indent request to commercial<br><span style="color:#d32f2f; font-weight:normal; font-size:11px;">If not applicable mark NA</span>
-            <div style="margin-top:10px; font-weight:normal; text-align:center;">${d05PI}</div>
+          <td colspan="3" style="border:1px solid #cbd5e1; padding:12px; vertical-align:middle;">
+            <div style="display:flex; justify-content:center; align-items:center; width:50%; margin:0 auto;">
+              \${checkSub('CriticalPendingReport', d02)}
+            </div>
           </td>
-          <td colspan="2" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">5s Rate</td>
-          <td style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${c5S}%</td>
         </tr>
         <tr>
-          <td colspan="2" style="border:1px solid #000; padding:8px; text-align:left; font-weight:bold;">Repair Report</td>
-          <td style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cRR}%</td>
+          <td colspan="3" style="border:1px solid #cbd5e1; padding:14px; font-weight:800; background-color:#e0e7ff; color:#3730a3; font-size:15px; text-align:center;">\${cSupWarr}%</td>
+          <td colspan="3" style="border:1px solid #cbd5e1; padding:14px; font-weight:800; background-color:#e0e7ff; color:#3730a3; font-size:15px; text-align:center;">\${cCritical}%</td>
         </tr>
-        <tr>
-          <td colspan="3" style="border:1px solid #000; padding:8px; font-weight:bold; background-color:#fef08a;">${cPI}%</td>
-          <td colspan="3" style="border:1px solid #000; padding:8px; font-weight:bold; color:${rate>=75?'#059669':'#b91c1c'};">${remark}</td>
-        </tr>
-      </table>
 
-      <!-- Export Buttons -->
-      <div style="margin-top:20px;display:flex;justify-content:flex-end;gap:10px;">
-        <button class="btn btn-green btn-sm" onclick="exportPDF()">Export PDF</button>
+        <tr>
+          <td colspan="3" rowspan="2" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4; vertical-align:middle;">
+            Purchase indent request to commercial<br><span style="color:#ef4444; font-size:11px; font-weight:600;">If NA mark NA</span>
+            <div style="margin-top:16px; display:flex; justify-content:center; width:60%; margin-left:auto; margin-right:auto;">
+              \${checkSub('PIRequest', d05)}
+            </div>
+          </td>
+          <td colspan="2" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; vertical-align:middle;">5s Rate</td>
+          <td style="border:1px solid #cbd5e1; padding:16px; font-weight:800; background-color:#e0e7ff; color:#3730a3; font-size:15px; text-align:center; vertical-align:middle;">\${c5S}%</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; vertical-align:middle;">Repair Report</td>
+          <td style="border:1px solid #cbd5e1; padding:16px; font-weight:800; background-color:#e0e7ff; color:#3730a3; font-size:15px; text-align:center; vertical-align:middle;">\${cRR}%</td>
+        </tr>
+        <tr>
+          <td colspan="3" style="border:1px solid #cbd5e1; padding:18px; font-weight:900; background-color:#e0e7ff; color:#3730a3; font-size:18px; text-align:center;">\${cPI}%</td>
+          <td colspan="3" style="border:1px solid #cbd5e1; padding:18px; font-weight:900; font-size:18px; text-align:center; color:\${rate>=75?'#059669':'#ef4444'}; background-color:\${rate>=75?'#ecfdf5':'#fef2f2'}; text-transform:uppercase; letter-spacing:1px;">
+            \${remark}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  \`;
+
+  return \`
+    <div style="font-family:'Inter',system-ui,sans-serif; background:#ffffff; border-radius:16px; border:1px solid #e2e8f0; padding:32px; color:#1e293b; width:100%; box-sizing:border-box;">
+      <div style="display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:28px; border-bottom:2px solid #e2e8f0; padding-bottom:16px;">
+        <div>
+          <h2 style="margin:0 0 4px 0; font-size:24px; font-weight:800; color:#0f172a; letter-spacing:-0.5px;">\${scopeType === 'division' ? 'Division' : 'Employee'} Performance Analysis</h2>
+          <div style="font-size:13px; color:#64748b; font-weight:500;">Comprehensive monthly execution review</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:12px; font-weight:600; color:#64748b; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">\${scopeType === 'division' ? 'Division' : 'Employee'}: <span style="color:#0f172a; font-size:14px;">\${scopeType === 'division' ? divisionLabel : employeeLabel}</span></div>
+          <div style="font-size:12px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Month: <span style="color:#0f172a; font-size:14px;">\${monthLabel}</span></div>
+        </div>
       </div>
-
+      \${scopeType === 'employee' ? '<div class="submission-panel" id="perf-submission-panel"></div>' : ''}
+      <div class="perf-review-table-container">
+        \${topTable}
+        \${bottomTable}
+      </div>
+      <div style="margin-top:24px; display:flex; justify-content:flex-end; gap:12px;">
+        <button class="btn btn-green" style="padding:10px 18px; font-weight:600; border-radius:8px; font-size:13px;" onclick="exportPDF('\${scopeType === 'division' ? 'div' : 'emp'}')">
+          <i class="fas fa-file-pdf" style="margin-right:6px;"></i> Export \${scopeType === 'division' ? 'Division ' : ''}PDF
+        </button>
+      </div>
     </div>
-  `;
+  \`;
+}
 
+function renderDivisionPerfSummary(data,params) {
+  if(!data){
+    document.getElementById('perf-pane-div-summary').innerHTML='<div class="empty-state"><div class="empty-icon">&#128196;</div><div class="empty-title">No Data</div></div>';
+    return;
+  }
+  window._lastPerfDivData = data;
+  const html = generatePerfAnalysisHtml(data, params, 'division');
+  document.getElementById('perf-pane-div-summary').innerHTML = html;
+  if(typeof loadDivisionReportSubmissions === 'function') loadDivisionReportSubmissions(params);
+}
+
+function renderPerfSummary(data,params) {
+  if(!data){
+    document.getElementById('perf-pane-summary').innerHTML='<div class="empty-state"><div class="empty-icon">&#128196;</div><div class="empty-title">No Data</div></div>';
+    return;
+  }
+  const html = generatePerfAnalysisHtml(data, params, 'employee');
   document.getElementById('perf-pane-summary').innerHTML = html;
 }
+
 
 
 async function loadTrend(){
