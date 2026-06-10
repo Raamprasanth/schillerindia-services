@@ -1355,6 +1355,7 @@ async function runEscalationSlot(slot, options = {}) {
   }
 
   const slotWindow = await getSlotWindow(slot, options.referenceDate || new Date());
+  if (options.trigger === 'manual') slotWindow.windowEnd = options.referenceDate || new Date();
   const jobKey = buildJobKey(slotWindow);
   const prepared = await prepareEscalationRunLog(jobKey, {
     slot,
@@ -1426,6 +1427,7 @@ async function runUrEscalationSlot(slot, options = {}) {
   }
 
   const slotWindow = await getUrSlotWindow(slot, options.referenceDate || new Date());
+  if (options.trigger === 'manual') slotWindow.windowEnd = options.referenceDate || new Date();
   const jobKey = buildJobKey(slotWindow);
   const prepared = await prepareEscalationRunLog(jobKey, {
     slot,
@@ -1494,6 +1496,7 @@ async function runSrEscalationSlot(slot, options = {}) {
   }
 
   const slotWindow = await getSrSlotWindow(slot, options.referenceDate || new Date());
+  if (options.trigger === 'manual') slotWindow.windowEnd = options.referenceDate || new Date();
   const jobKey = buildJobKey(slotWindow);
   const prepared = await prepareEscalationRunLog(jobKey, {
     slot,
@@ -1565,6 +1568,7 @@ async function runToEscalationSlot(slot, options = {}) {
   }
 
   const slotWindow = await getToSlotWindow(slot, options.referenceDate || new Date());
+  if (options.trigger === 'manual') slotWindow.windowEnd = options.referenceDate || new Date();
   const jobKey = buildJobKey(slotWindow);
   const prepared = await prepareEscalationRunLog(jobKey, {
     slot,
@@ -1638,6 +1642,7 @@ async function runCustomEscalationSlot(slot, options = {}) {
   }
 
   const slotWindow = await getCustomEscalationSlotWindow(slot, options.referenceDate || new Date());
+  if (options.trigger === 'manual') slotWindow.windowEnd = options.referenceDate || new Date();
   const jobKey = buildJobKey(slotWindow);
   const prepared = await prepareEscalationRunLog(jobKey, {
     slot,
