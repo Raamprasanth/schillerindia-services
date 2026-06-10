@@ -2252,7 +2252,8 @@ async function exportPDF(type) {
     <div class="pdf-content-area" style="width:100%;height:auto;overflow:visible;"></div>
   `;
 
-  const contentClone = originalNode.cloneNode(true);
+  const tableContainer = originalNode.querySelector('.perf-review-table-container');
+  const contentClone = tableContainer ? tableContainer.cloneNode(true) : originalNode.cloneNode(true);
   contentClone.style.display = 'block';
   contentClone.style.height = 'auto';
   contentClone.style.overflow = 'visible';
