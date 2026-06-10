@@ -2216,7 +2216,6 @@ async function exportPDF(type) {
   const containerId = isDiv ? 'perf-pane-div-summary' : 'perf-pane-summary';
   const originalNode = document.getElementById(containerId);
   if (!originalNode) return;
-
   const contentClone = originalNode.cloneNode(true);
   contentClone.style.display = 'block';
   contentClone.style.height = 'auto';
@@ -2231,6 +2230,7 @@ async function exportPDF(type) {
   const wrapper = document.createElement('div');
   wrapper.className = 'pdf-export-wrapper';
   wrapper.style.width = '1120px';
+  wrapper.style.minHeight = '600px';
   wrapper.style.background = '#fff';
   wrapper.style.color = '#000';
   wrapper.style.padding = '20px';
@@ -2240,7 +2240,7 @@ async function exportPDF(type) {
   wrapper.style.position = 'absolute';
   wrapper.style.left = '0px';
   wrapper.style.top = '0px';
-  wrapper.style.zIndex = '-9999';
+  wrapper.style.zIndex = '99999';
 
   wrapper.style.setProperty('--bg', '#f4f7fa');
   wrapper.style.setProperty('--surface', '#ffffff');
@@ -2258,10 +2258,14 @@ async function exportPDF(type) {
         <div style="font-size:14px;font-weight:700;margin-top:2px;">Month: ${escapeHtml(month)}</div>
       </div>
     </div>
-    <div class="pdf-content-area"></div>
+    <div class="pdf-content-area" style="width:100%;height:auto;overflow:visible;"></div>
   `;
   wrapper.querySelector('.pdf-content-area').appendChild(contentClone);
   document.body.appendChild(wrapper);
+
+  const originalScrollY = window.scrollY;
+  const originalScrollX = window.scrollX;
+  window.scrollTo(0,0);
 
   try{
     const logo = wrapper.querySelector('img');
@@ -2272,7 +2276,8 @@ async function exportPDF(type) {
         setTimeout(resolve, 1200);
       });
     }
-    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    
+    await new Promise(resolve => setTimeout(resolve, 300));
 
     await html2pdf().set({
       margin: 0.2,
@@ -2285,6 +2290,7 @@ async function exportPDF(type) {
     toast('PDF export failed: ' + e.message, 'error');
   }finally{
     wrapper.remove();
+    window.scrollTo(originalScrollX, originalScrollY);
   }
 }
 
