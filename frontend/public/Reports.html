@@ -2217,33 +2217,14 @@ async function exportPDF(type) {
   const originalNode = document.getElementById(containerId);
   if (!originalNode) return;
 
-  const sourceTable = originalNode.querySelector('#perf-table-excel') || originalNode.querySelector('.excel-table') || originalNode.querySelector('table');
-  if(!sourceTable){ toast('No performance table found to export.', 'error'); return; }
-
-  const tableClone = sourceTable.cloneNode(true);
-  tableClone.removeAttribute('id');
-  tableClone.style.width = '100%';
-  tableClone.style.borderCollapse = 'collapse';
-  tableClone.style.border = '1px solid #000';
-  tableClone.style.fontFamily = "Calibri, Arial, sans-serif";
-  tableClone.style.fontSize = '10.5px';
-  tableClone.style.color = '#000';
-  tableClone.style.background = '#fff';
-
-  tableClone.querySelectorAll('th,td').forEach(cell => {
-    cell.style.border = '1px solid #000';
-    cell.style.padding = '4px 6px';
-    cell.style.color = '#000';
-    cell.style.verticalAlign = 'middle';
-    cell.style.lineHeight = '1.18';
-  });
+  const contentClone = originalNode.cloneNode(true);
 
   const wrapper = document.createElement('div');
   wrapper.className = 'pdf-export-wrapper';
-  wrapper.style.width = '1080px';
+  wrapper.style.width = '1120px';
   wrapper.style.background = '#fff';
   wrapper.style.color = '#000';
-  wrapper.style.padding = '14px';
+  wrapper.style.padding = '20px';
   wrapper.style.border = '1px solid #000';
   wrapper.style.boxSizing = 'border-box';
   wrapper.style.fontFamily = "Calibri, Arial, sans-serif";
@@ -2251,16 +2232,17 @@ async function exportPDF(type) {
   wrapper.style.left = '-9999px';
   wrapper.style.top = '0px';
   wrapper.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #000;padding:0 0 8px;margin-bottom:8px;">
-      <img src="logo.png" alt="SCHILLER" style="height:46px;max-width:230px;object-fit:contain;">
+    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #000;padding:0 0 12px;margin-bottom:16px;">
+      <img src="logo.png" alt="SCHILLER" style="height:50px;max-width:250px;object-fit:contain;">
       <div style="text-align:right;color:#000;">
-        <div style="font-size:16px;font-weight:700;letter-spacing:.4px;">PERFORMANCE ANALYSIS</div>
-        <div style="font-size:12px;font-weight:700;margin-top:3px;">${isDiv ? 'Division' : 'Employee'}: ${escapeHtml(scope)}</div>
-        <div style="font-size:12px;font-weight:700;margin-top:2px;">Month: ${escapeHtml(month)}</div>
+        <div style="font-size:18px;font-weight:700;letter-spacing:.5px;">PERFORMANCE ANALYSIS</div>
+        <div style="font-size:14px;font-weight:700;margin-top:4px;">${isDiv ? 'Division' : 'Employee'}: ${escapeHtml(scope)}</div>
+        <div style="font-size:14px;font-weight:700;margin-top:2px;">Month: ${escapeHtml(month)}</div>
       </div>
     </div>
+    <div id="pdf-content-area"></div>
   `;
-  wrapper.appendChild(tableClone);
+  wrapper.querySelector('#pdf-content-area').appendChild(contentClone);
   document.body.appendChild(wrapper);
 
   try{
@@ -2275,10 +2257,10 @@ async function exportPDF(type) {
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
     await html2pdf().set({
-      margin: 0.18,
+      margin: 0.2,
       filename: `Performance_Analysis_${scope}_${month}.pdf`,
       image: { type: 'jpeg', quality: 1.0 },
-      html2canvas: { scale: 2.5, useCORS: true, backgroundColor: '#ffffff', windowWidth: 1120 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 1120 },
       jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
     }).from(wrapper).save();
   }catch(e){
