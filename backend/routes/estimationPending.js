@@ -804,7 +804,7 @@ router.post('/:id/to', async (req, res) => {
     const cleanItems = rawItems
       .map((item) => ({
         partNo: String(item?.partNo || '').trim(),
-        description: String(item?.description || '').trim(),
+        description: String(item?.description || item?.itemDescription || '').trim(),
         qty: Math.max(1, parseInt(item?.qty, 10) || 1),
       }))
       .filter((item) => item.partNo);

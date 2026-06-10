@@ -644,7 +644,7 @@ router.post('/:id/to', protect, async (req, res) => {
     const cleanItems = (Array.isArray(req.body?.items) ? req.body.items : [])
       .map((item) => ({
         partNo: String(item?.partNo || '').trim(),
-        description: String(item?.description || '').trim(),
+        description: String(item?.description || item?.itemDescription || '').trim(),
         qty: Math.max(1, parseInt(item?.qty, 10) || 1),
       }))
       .filter((item) => item.partNo);

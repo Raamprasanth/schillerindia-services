@@ -268,7 +268,7 @@ async function getSlotWindow(slot, referenceDate = new Date()) {
     runTime: slotTime.value,
     jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
     windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 0, 0, 0, 0),
-    windowEnd: new Date(runAt.getTime() - 1),
+    windowEnd: slot === 'Manual' ? referenceDate : new Date(runAt.getTime() - 1),
   };
 }
 
@@ -285,7 +285,7 @@ async function getSrSlotWindow(slot, referenceDate = new Date()) {
     runTime: slotTime.value,
     jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
     windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 0, 0, 0, 0),
-    windowEnd: new Date(runAt.getTime() - 1),
+    windowEnd: slot === 'Manual' ? referenceDate : new Date(runAt.getTime() - 1),
     reportName: `sr-escalation-send-${order}-${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}.xlsx`,
   };
 }
@@ -303,7 +303,7 @@ async function getToSlotWindow(slot, referenceDate = new Date()) {
     runTime: slotTime.value,
     jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
     windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, 0, 0, 0, 0),
-    windowEnd: new Date(runAt.getTime() - 1),
+    windowEnd: slot === 'Manual' ? referenceDate : new Date(runAt.getTime() - 1),
     reportName: `to-escalation-send-${order}-${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}.xlsx`,
   };
 }
@@ -342,7 +342,7 @@ async function getUrSlotWindow(slot, referenceDate = new Date()) {
       runTime: scrapTime.value,
       jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
       windowStart: makeUtcFromIst(previousSunday.year, previousSunday.month, previousSunday.day, scrapTime.hour, scrapTime.minute, 0, 0),
-      windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, scrapTime.hour, scrapTime.minute, 0, 0).getTime() - 1),
+      windowEnd: slot === 'Manual' ? referenceDate : new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, scrapTime.hour, scrapTime.minute, 0, 0).getTime() - 1),
       reportName: `ur-scrap-escalation-${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}.xlsx`,
     };
   }
@@ -354,7 +354,7 @@ async function getUrSlotWindow(slot, referenceDate = new Date()) {
     runTime: followupTime.value,
     jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
     windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, followupTime.hour, followupTime.minute, 0, 0),
-    windowEnd: new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, followupTime.hour, followupTime.minute, 0, 0).getTime() - 1),
+    windowEnd: slot === 'Manual' ? referenceDate : new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, followupTime.hour, followupTime.minute, 0, 0).getTime() - 1),
     reportName: `ur-followup-escalation-${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}.xlsx`,
   };
 }
@@ -388,7 +388,7 @@ async function getCustomEscalationSlotWindow(slot, referenceDate = new Date()) {
     jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
     runTime: slotTime.value,
     windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, config.runHour, config.runMinute, 0, 0),
-    windowEnd: new Date(runAt.getTime() - 1),
+    windowEnd: slot === 'Manual' ? referenceDate : new Date(runAt.getTime() - 1),
     reportName: `${config.reportPrefix}-${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}.xlsx`,
   };
 }
