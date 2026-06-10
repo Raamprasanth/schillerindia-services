@@ -615,7 +615,7 @@ router.post('/:id/send-rtur', protect, async (req, res) => {
 
 router.post('/:id/to', protect, async (req, res) => {
   try {
-    const service = await Service.findById(req.params.id);
+    const service = await Service.findById(req.params.id).populate('division');
     if (!service) return res.status(404).json({ message: 'Service record not found.' });
     if (service.repType !== 'TO/ADV SO') {
       return res.status(400).json({ message: 'Only TO/ADV SO under-repair records can be queued to TO escalation.' });
@@ -660,7 +660,7 @@ router.post('/:id/to', protect, async (req, res) => {
       'to_ur',
       service._id,
       req.user?.name || '',
-      buildToEscalationRow(service.toObject(), cleanItems)
+      buildToEscalationRow({ ...service.toObject(), divisionName: service.divisionName || (service.division ? service.division.name : '') }, cleanItems)
     );
     await mirrorUrToTodr(service, 'TO', cleanItems, req.user?.name || '');
 

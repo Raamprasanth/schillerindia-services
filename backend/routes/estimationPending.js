@@ -452,7 +452,7 @@ router.post('/from-ob', async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.put('/:id', async (req, res) => {
   try {
-    const record = await EstimationPending.findById(req.params.id);
+    const record = await EstimationPending.findById(req.params.id).populate({ path: 'serviceId', populate: { path: 'division' } });
     if (!record) return res.status(404).json({ message: 'Record not found' });
 
     const { role, name } = req.user;
@@ -725,7 +725,7 @@ router.put('/:id', async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.post('/:id/sr', async (req, res) => {
   try {
-    const record = await EstimationPending.findById(req.params.id);
+    const record = await EstimationPending.findById(req.params.id).populate({ path: 'serviceId', populate: { path: 'division' } });
     if (!record) return res.status(404).json({ message: 'Record not found' });
 
     const { role, name } = req.user;
@@ -743,7 +743,7 @@ router.post('/:id/sr', async (req, res) => {
     }
 
     const escalationPartNo = String(req.body?.partNo || '').trim() || record.partNo || '';
-    const escalationRecord = { ...record.toObject(), partNo: escalationPartNo };
+    const escalationRecord = { ...record.toObject(), partNo: escalationPartNo, divisionName: record.divisionName || (record.serviceId && record.serviceId.division ? record.serviceId.division.name : '') };
 
     record.srEscalationQueuedAt = new Date();
     record.srEscalationQueuedBy = name || '';
@@ -771,7 +771,7 @@ router.post('/:id/sr', async (req, res) => {
 
 router.post('/:id/to', async (req, res) => {
   try {
-    const record = await EstimationPending.findById(req.params.id);
+    const record = await EstimationPending.findById(req.params.id).populate({ path: 'serviceId', populate: { path: 'division' } });
     if (!record) return res.status(404).json({ message: 'Record not found' });
     const rawItems = Array.isArray(req.body?.items) ? req.body.items : [];
 
@@ -820,7 +820,7 @@ router.post('/:id/to', async (req, res) => {
       'to_est',
       record._id,
       name || '',
-      buildToEscalationRow(record.toObject(), cleanItems)
+      buildToEscalationRow({ ...record.toObject(), divisionName: record.divisionName || (record.serviceId && record.serviceId.division ? record.serviceId.division.name : '') }, cleanItems)
     );
     await mirrorEstToTodr(record, 'TO', cleanItems, name || '');
 
@@ -838,7 +838,7 @@ router.post('/:id/to', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
-    const record = await EstimationPending.findById(req.params.id);
+    const record = await EstimationPending.findById(req.params.id).populate({ path: 'serviceId', populate: { path: 'division' } });
     if (!record) return res.status(404).json({ message: 'Record not found' });
 
     const { role } = req.user;

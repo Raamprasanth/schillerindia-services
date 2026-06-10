@@ -813,7 +813,7 @@ router.put('/:id/update', protect, async (req, res) => {
 // ─────────────────────────────────────────────────────────
 router.post('/:id/sr', protect, async (req, res) => {
   try {
-    const doc = await Empfrn.findById(req.params.id);
+    const doc = await Empfrn.findById(req.params.id).populate({ path: 'serviceId', populate: { path: 'division' } });
     if (!doc) return res.status(404).json({ message: 'Record not found' });
 
     if (!(await hasQueueAccess(req.user, doc))) {
@@ -831,7 +831,11 @@ router.post('/:id/sr', protect, async (req, res) => {
     }
 
     const escalationPartNo = String(req.body?.partNo || '').trim() || doc.partNo || '';
-    const escalationDoc = { ...doc.toObject(), partNo: escalationPartNo };
+    const escalationDoc = { 
+      ...doc.toObject(), 
+      partNo: escalationPartNo,
+      divisionName: doc.divisionName || (doc.serviceId && doc.serviceId.division ? doc.serviceId.division.name : '')
+    };
 
     doc.srEscalationQueuedAt = new Date();
     doc.srEscalationQueuedBy = req.user?.name || '';
@@ -859,7 +863,7 @@ router.post('/:id/sr', protect, async (req, res) => {
 
 router.post('/:id/to', protect, async (req, res) => {
   try {
-    const doc = await Empfrn.findById(req.params.id);
+    const doc = await Empfrn.findById(req.params.id).populate({ path: 'serviceId', populate: { path: 'division' } });
     if (!doc) return res.status(404).json({ message: 'Record not found' });
     const rawItems = Array.isArray(req.body?.items) ? req.body.items : [];
 
@@ -891,11 +895,15 @@ router.post('/:id/to', protect, async (req, res) => {
     doc.toEscalationQueuedBy = req.user?.name || '';
     await doc.save();
 
+    const escalationDoc = { 
+      ...doc.toObject(),
+      divisionName: doc.divisionName || (doc.serviceId && doc.serviceId.division ? doc.serviceId.division.name : '')
+    };
     await enqueueEscalationSnapshot(
       'to_frn',
       doc._id,
       req.user?.name || '',
-      buildToEscalationRow(doc.toObject(), cleanItems)
+      buildToEscalationRow(escalationDoc, cleanItems)
     );
     await mirrorFrnToTodr(doc, 'TO', cleanItems, req.user?.name || '');
 

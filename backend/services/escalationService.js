@@ -471,6 +471,7 @@ function pickItemDescription(doc) {
 
 function buildFrnEscalationRow(doc) {
   return {
+    'Division Name': pick(doc, ['divisionName', 'division.name', 'division']),
     'DIVISION NAME': pick(doc, ['divisionName', 'division.name', 'division']),
     'SCH REF': pick(doc, ['scRno', 'scReNo', 'scRefNo']),
     RA_ENGINEER: pick(doc, ['raEng', 'estRaEng', 'obRaEng']),
@@ -484,6 +485,7 @@ function buildFrnEscalationRow(doc) {
     CUST_NAME: pick(doc, ['customer', 'custName']),
     PRODUCT_MODEL: doc.model || '',
     UNIT_STATUS: doc.unitStatus || doc.unitSts || '',
+    DEF_TYPE: doc.defMod || '',
     DEF_MOD_BRD_NAME: doc.defMod || '',
     MOD_BRD_NAME: doc.defMod || '',
     DEF_GIR_NO: doc.defGir || '',
@@ -502,8 +504,10 @@ function buildFrnEscalationRow(doc) {
 
 function buildEstimationEscalationRow(doc) {
   return {
+    'Division Name': pick(doc, ['divisionName', 'division.name', 'division']),
     'DIVISION NAME': pick(doc, ['divisionName', 'division.name', 'division']),
     'Division Name': pick(doc, ['divisionName', 'division.name', 'division']),
+    'DIVISION NAME': pick(doc, ['divisionName', 'division.name', 'division']),
     'SCH REF': pick(doc, ['scReNo', 'scRno', 'scRefNo']),
     RA_ENGINEER: pick(doc, ['obRaEng', 'estRaEng', 'raEng']),
     SC_ENGINEER: doc.scEng || '',
@@ -516,6 +520,7 @@ function buildEstimationEscalationRow(doc) {
     CUST_NAME: doc.custName || doc.customer || '',
     PRODUCT_MODEL: doc.model || '',
     UNIT_STATUS: pick(doc, ['unitSts', 'unitStatus']),
+    DEF_TYPE: doc.defMod || '',
     DEF_MOD_BRD_NAME: doc.defMod || '',
     MOD_BRD_NAME: doc.defMod || '',
     DEF_TYPE: doc.defType || '',
@@ -544,6 +549,7 @@ function normalizeToItems(items = []) {
 function buildToEscalationRow(doc, items = []) {
   return {
     'Division Name': pick(doc, ['divisionName', 'division.name', 'division']),
+    'DIVISION NAME': pick(doc, ['divisionName', 'division.name', 'division']),
     'SCH REF': pick(doc, ['scRno', 'scReNo', 'scRefNo']),
     SC_REF_NO: pick(doc, ['scRno', 'scReNo', 'scRefNo']),
     FRN_NO: doc.frnNo || '',
@@ -564,6 +570,7 @@ function buildToEscalationRow(doc, items = []) {
 
 function buildUrEscalationRow(doc) {
   return {
+    'Division Name': pick(doc, ['divisionName', 'division.name', 'division']),
     'DIVISION NAME': pick(doc, ['divisionName', 'division.name', 'division']),
     'SCH REF': pick(doc, ['scReNo', 'scRno', 'scRefNo']),
     SC_REF_NO: pick(doc, ['scReNo', 'scRno', 'scRefNo']),
@@ -578,6 +585,7 @@ function buildUrEscalationRow(doc) {
     MODEL: doc.model || '',
     PRODUCT_MODEL: doc.model || '',
     UNIT_STATUS: pick(doc, ['unitSts', 'unitStatus']),
+    DEF_TYPE: doc.defMod || '',
     DEF_MOD_BRD_NAME: doc.defMod || '',
     MOD_BRD_NAME: doc.defMod || '',
     DEF_TYPE: doc.defType || '',
@@ -679,6 +687,7 @@ function buildSupplierWarrantyEscalationRow(doc) {
     CUSTOMER: doc.customer || doc.custName || '',
     MODEL: doc.model || '',
     UNIT_STATUS: pick(doc, ['unitStatus', 'unitSts']),
+    DEF_TYPE: doc.defMod || '',
     DEF_MOD_BRD_NAME: doc.defMod || '',
     DEF_GIR_NO: doc.defGir || '',
     TYPE_OF_WORK: doc.typeWork || 'Supplier Warranty',
@@ -722,6 +731,7 @@ function buildExternalRepairEscalationRow(doc) {
     CUSTOMER: doc.customer || doc.custName || '',
     MODEL: doc.model || '',
     UNIT_STATUS: pick(doc, ['unitStatus', 'unitSts']),
+    DEF_TYPE: doc.defMod || '',
     DEF_MOD_BRD_NAME: doc.defMod || '',
     DEF_GIR_NO: doc.defGir || '',
     REPAIR_ENGINEER: doc.raEng || '',
@@ -1104,7 +1114,8 @@ function buildToMailPayload(slotWindow, data) {
     const items = normalizeToItems(row?.TO_ITEMS);
     if (!items.length) {
       rows.push({
-        'Division Name': row['Division Name'] || row['DIVISION NAME'] || '',
+        'Division Name': pick(doc, ['divisionName', 'division.name', 'division']),
+    'DIVISION NAME': row['Division Name'] || row['DIVISION NAME'] || '',
         'SCH REF': row['SCH REF'] || row.SC_REF_NO || '',
         FRN_NO: row.FRN_NO || '',
         STK_CUST: row.STK_CUST || '',
@@ -1122,7 +1133,8 @@ function buildToMailPayload(slotWindow, data) {
     }
     items.forEach((item) => {
       rows.push({
-        'Division Name': row['Division Name'] || row['DIVISION NAME'] || '',
+        'Division Name': pick(doc, ['divisionName', 'division.name', 'division']),
+    'DIVISION NAME': row['Division Name'] || row['DIVISION NAME'] || '',
         'SCH REF': row['SCH REF'] || row.SC_REF_NO || '',
         FRN_NO: row.FRN_NO || '',
         STK_CUST: row.STK_CUST || '',
