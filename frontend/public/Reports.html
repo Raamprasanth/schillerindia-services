@@ -2221,6 +2221,8 @@ async function exportPDF(type) {
   contentClone.style.display = 'block';
   contentClone.style.height = 'auto';
   contentClone.style.overflow = 'visible';
+  contentClone.removeAttribute('id');
+  contentClone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
   contentClone.querySelectorAll('.perf-review-table-container').forEach(el => {
     el.style.overflow = 'visible';
     el.style.height = 'auto';
@@ -2236,8 +2238,9 @@ async function exportPDF(type) {
   wrapper.style.boxSizing = 'border-box';
   wrapper.style.fontFamily = "Calibri, Arial, sans-serif";
   wrapper.style.position = 'absolute';
-  wrapper.style.left = '-9999px';
+  wrapper.style.left = '0px';
   wrapper.style.top = '0px';
+  wrapper.style.zIndex = '-9999';
 
   wrapper.style.setProperty('--bg', '#f4f7fa');
   wrapper.style.setProperty('--surface', '#ffffff');
@@ -2255,9 +2258,9 @@ async function exportPDF(type) {
         <div style="font-size:14px;font-weight:700;margin-top:2px;">Month: ${escapeHtml(month)}</div>
       </div>
     </div>
-    <div id="pdf-content-area"></div>
+    <div class="pdf-content-area"></div>
   `;
-  wrapper.querySelector('#pdf-content-area').appendChild(contentClone);
+  wrapper.querySelector('.pdf-content-area').appendChild(contentClone);
   document.body.appendChild(wrapper);
 
   try{
