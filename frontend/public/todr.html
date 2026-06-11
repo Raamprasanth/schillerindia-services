@@ -400,6 +400,23 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;">TO Register</div>
       </div>
       
+      <div class="filter-strip">
+        <label>From</label>
+        <input type="date" class="f-inp" id="fl-from" onchange="applyFilters()">
+        <label>To</label>
+        <input type="date" class="f-inp" id="fl-to" onchange="applyFilters()">
+        <div class="f-divider"></div>
+        <label>Division</label>
+        <select class="f-select" id="fl-division" onchange="applyFilters()">
+          <option value="">All Divisions</option>
+        </select>
+        <div class="srch-wrap" style="margin-left:auto;">
+          <span class="srch-ico">&#128269;</span>
+          <input type="text" id="tbl-search" placeholder="Search entries..." onkeyup="applyFilters()">
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="clearFilters()">&#10005; Clear</button>
+      </div>
+
       <div class="table-wrap">
         <table class="frn-table">
           <thead>
@@ -483,21 +500,55 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   const TODAY_ISO = localDateIso();
   let records = [];
+  let filtered = [];
 
   async function loadData() {
     try {
       const res = await fetch('/api/todr', { headers: hdrs() });
       if(res.status===401||res.status===403) return logout();
       const data = await res.json();
-      if(res.ok) { records = data; renderTable(); }
+      if(res.ok) { records = data; populateDivisions(); applyFilters(); }
     } catch(e) { console.error(e); }
+  }
+
+  function populateDivisions() {
+    const sel = document.getElementById('fl-division');
+    if (!sel) return;
+    const divs = [...new Set(records.map(r => r.division).filter(Boolean))].sort();
+    const current = sel.value;
+    sel.innerHTML = '<option value="">All Divisions</option>' + divs.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
+    if (divs.includes(current)) sel.value = current;
+  }
+
+  function clearFilters() {
+    ['fl-from','fl-to','fl-division','tbl-search'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const q = (document.getElementById('tbl-search')?.value || '').toLowerCase();
+    const from = document.getElementById('fl-from')?.value || '';
+    const to = document.getElementById('fl-to')?.value || '';
+    const division = document.getElementById('fl-division')?.value || '';
+    
+    filtered = records.filter(d => {
+      const entryDateStr = d.entryDate ? new Date(d.entryDate).toISOString().split('T')[0] : '';
+      const textMatch = !q || ((d.frnNo||'')+' '+(d.partNo||'')+' '+(d.model||'')+' '+(d.description||'')+' '+(d.division||'')).toLowerCase().includes(q);
+      return textMatch &&
+             (!from || entryDateStr >= from) &&
+             (!to || entryDateStr <= to) &&
+             (!division || d.division === division);
+    });
+    
+    document.getElementById('select-all').checked = false;
+    renderTable();
   }
 
   function renderTable() {
     const tb = document.getElementById('tb');
-    if(!records.length) { tb.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:30px;">No TO entries found.</td></tr>'; return; }
+    if(!filtered.length) { tb.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:30px;">No TO entries found.</td></tr>'; return; }
     
-    tb.innerHTML = records.map(r => `
+    tb.innerHTML = filtered.map(r => `
       <tr>
         <td><input type="checkbox" class="row-select" value="${r._id}" onclick="updateSelectAllHeader()" style="cursor:pointer;width:15px;height:15px;vertical-align:middle;"></td>
         <td>${r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-'}</td>
