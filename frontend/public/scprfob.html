@@ -98,6 +98,13 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .srch-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,104,181,0.07);}
 .srch-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);}
 
+/* -- FILTER STRIP -- */
+.filter-strip{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fafcfe;}
+.filter-strip label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;}
+.f-inp{padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s;}
+.f-inp:focus{border-color:var(--accent);}
+.f-divider{width:1px;height:24px;background:var(--border);flex-shrink:0;}
+
 /* -- TABLE -- */
 .table-wrap{overflow-x:auto;}
 table.frn-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:1500px;}
@@ -597,6 +604,21 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         </div>
       </div>
 
+      <!-- Filter strip -->
+      <div class="filter-strip">
+        <label>From</label>
+        <input type="date" class="f-inp" id="fl-from" onchange="applyFilters()"/>
+        <label>To</label>
+        <input type="date" class="f-inp" id="fl-to" onchange="applyFilters()"/>
+        <div class="f-divider"></div>
+        <label>Division</label>
+        <select class="f-select" id="fl-division" onchange="applyFilters()">
+          <option value="">All Divisions</option>
+        </select>
+
+        <button class="btn btn-outline btn-sm" onclick="clearFilters()" style="margin-left:auto;">&#10060; Clear</button>
+      </div>
+
       <div class="table-wrap">
         <table class="frn-table">
           <thead><tr>
@@ -772,6 +794,18 @@ function hydrateDivisionDropdown(selectedValue){
     el.appendChild(opt);
   });
   if(current) el.value = current;
+
+  const flEl = document.getElementById('fl-division');
+  if(flEl) {
+    const flCur = flEl.value;
+    flEl.innerHTML = '<option value="">All Divisions</option>';
+    DIVISION_OPTIONS.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d.name; opt.textContent = d.name;
+      flEl.appendChild(opt);
+    });
+    flEl.value = flCur;
+  }
 }
 
 // -- LOAD REGIONS (no longer needed separately - loaded from branches) ----
@@ -1060,10 +1094,24 @@ function updateStats(){
 }
 
 // -- FILTERS ---------------------------------------------------------------
+function clearFilters(){
+  ['fl-from','fl-to','fl-division','tbl-search'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  applyFilters();
+}
+
 function applyFilters(){
-  const q = document.getElementById('tbl-search').value.toLowerCase();
+  const q    = document.getElementById('tbl-search').value.toLowerCase();
+  const from = document.getElementById('fl-from').value;
+  const to   = document.getElementById('fl-to').value;
+  const div  = document.getElementById('fl-division').value;
+
   filtered = DATA.filter(d =>
-    !q || ((d.refNo||'')+' '+(d.scEng||'')+' '+(d.eng||'')+' '+(d.model||'')+' '+(d.crmRefNo||'')+' '+(d.branch||'')).toLowerCase().includes(q)
+    (!q || ((d.refNo||'')+' '+(d.scEng||'')+' '+(d.eng||'')+' '+(d.model||'')+' '+(d.crmRefNo||'')+' '+(d.branch||'')).toLowerCase().includes(q)) &&
+    (!from || (d.entryDate||'') >= from) &&
+    (!to   || (d.entryDate||'') <= to) &&
+    (!div  || d.division === div)
   );
   sortArr(); currentPage = 1; renderTable();
 }

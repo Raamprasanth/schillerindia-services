@@ -107,6 +107,8 @@ router.put('/:id', protect, async (req, res) => {
           scEng: doc.scEng || '',
           crmRefNo: doc.crmRefNo || '',
           remarks: doc.remarks || '',
+          status: 'Closed',
+          executedDate: doc.executedDate || '',
           updatedAt: new Date(),
         },
         { runValidators: false }
