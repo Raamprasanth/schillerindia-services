@@ -106,8 +106,10 @@ async function mirrorEstToTodr(doc, action, items = [], queuedBy = '') {
 async function markSourceServiceMovedToEstimation(serviceId, fields = {}) {
   if (!serviceId) return;
   const sourceIds = [...new Set([serviceId, fields.sourceId].filter(Boolean).map(String))]
-    .filter(id => mongoose.Types.ObjectId.isValid(id));
+    .filter(id => mongoose.Types.ObjectId.isValid(id))
+    .map(id => new mongoose.Types.ObjectId(id));
   if (!sourceIds.length) return;
+
   const update = {
     $set: {
       movedToEstimation: true,
@@ -119,11 +121,15 @@ async function markSourceServiceMovedToEstimation(serviceId, fields = {}) {
   };
   delete update.$set.sourceId;
 
-  await Service.updateMany(
-    { _id: { $in: sourceIds } },
-    update,
-    { runValidators: false }
-  );
+  try {
+    await Service.updateMany(
+      { _id: { $in: sourceIds } },
+      update,
+      { runValidators: false }
+    );
+  } catch(err) {
+    console.error('Error updating Service movedToEstimation:', err);
+  }
 }
 
 async function markObSourceFromEstimationPayload(payload = {}) {
