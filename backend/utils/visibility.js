@@ -15,10 +15,13 @@ async function resolveDivisions(user) {
   if (!user) return [];
   const resolved = [];
 
-  const rawDivisionId = user.divisionId || user.division_id || '';
-  if (rawDivisionId && mongoose.Types.ObjectId.isValid(rawDivisionId)) {
-    const byId = await Division.findById(rawDivisionId).lean();
-    if (byId) resolved.push(byId);
+  // Only use primary division ID if activeDivision is not overriding it
+  if (!user.activeDivision) {
+    const rawDivisionId = user.divisionId || user.division_id || '';
+    if (rawDivisionId && mongoose.Types.ObjectId.isValid(rawDivisionId)) {
+      const byId = await Division.findById(rawDivisionId).lean();
+      if (byId) resolved.push(byId);
+    }
   }
 
   const names = user.activeDivision
@@ -44,7 +47,20 @@ async function getDivisionFilter(user, fallbackOr) {
   const divisions = await resolveDivisions(user);
   if (divisions.length) {
     const divisionFilter = { division: { $in: divisions.map(d => d._id) } };
-    return fallback.length ? { $or: [divisionFilter, ...fallback] } : divisionFilter;
+    if (fallback.length) {
+      return {
+        $or: [
+          divisionFilter,
+          {
+            $and: [
+              { $or: [{ division: null }, { division: { $exists: false } }] },
+              { $or: fallback }
+            ]
+          }
+        ]
+      };
+    }
+    return divisionFilter;
   }
 
   return fallback.length ? { $or: fallback } : { _id: null };
@@ -58,7 +74,23 @@ async function getServiceIdsFilter(user, fallbackOr) {
   if (divisions.length) {
     const services = await Service.find({ division: { $in: divisions.map(d => d._id) } }, '_id').lean();
     const serviceFilter = { serviceId: { $in: services.map(s => s._id) } };
-    return fallback.length ? { $or: [serviceFilter, ...fallback] } : serviceFilter;
+    if (fallback.length) {
+      const legacyServices = await Service.find({
+        $or: [{ division: null }, { division: { $exists: false } }]
+      }, '_id').lean();
+      return {
+        $or: [
+          serviceFilter,
+          {
+            $and: [
+              { $or: [{ serviceId: { $in: legacyServices.map(s => s._id) } }, { serviceId: null }, { serviceId: { $exists: false } }] },
+              { $or: fallback }
+            ]
+          }
+        ]
+      };
+    }
+    return serviceFilter;
   }
 
   return fallback.length ? { $or: fallback } : { _id: null };
