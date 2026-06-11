@@ -378,7 +378,11 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     </div>
     <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
       <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
-      <button class="btn btn-success btn-sm" onclick="markFulfilledSelected()">&#10004; Fulfill Selected</button>
+      <div style="width:1px;height:24px;background:var(--border);margin:0 5px;"></div>
+      <label style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;">Spares Rcd Date</label>
+      <input type="date" class="f-inp" id="bulk-spares-date" onchange="updateBulkFulfillBtn()" style="padding:5px 8px;font-size:11.5px;" max="">
+      <button class="btn btn-success btn-sm" id="bulk-fulfill-btn" onclick="markFulfilledSelected()" disabled>&#10004; Fulfill Selected</button>
+      <div style="width:1px;height:24px;background:var(--border);margin:0 5px;"></div>
       <button class="btn btn-primary btn-sm" onclick="exportCSV()">&#128228; Export</button>
     </div>
   </div>
@@ -467,6 +471,13 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   const dstr = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   const tbd = document.getElementById('topbar-date'); if(tbd) tbd.textContent = dstr;
+  
+  const TODAY_ISO = new Date().toISOString().split('T')[0];
+  const bulkDate = document.getElementById('bulk-spares-date');
+  if(bulkDate) {
+    bulkDate.max = TODAY_ISO;
+  }
+
   const nms = document.querySelectorAll('#admin-name, #user-nm'); nms.forEach(e => { if(e) e.textContent = u.name || 'User'; });
   const avs = document.querySelectorAll('#admin-avatar, #user-av'); avs.forEach(e => { if(e) e.textContent = (u.name||'U').charAt(0).toUpperCase(); });
   const rls = document.querySelectorAll('#admin-role, #user-rl'); rls.forEach(e => { if(e) e.textContent = u.designation || 'Coordinator'; });
@@ -525,7 +536,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     
     tb.innerHTML = filtered.map(r => `
       <tr>
-        <td style="text-align:center;"><input type="checkbox" class="dr-row-chk" value="${r._id}"></td>
+        <td style="text-align:center;"><input type="checkbox" class="dr-row-chk" value="${r._id}" onchange="updateBulkFulfillBtn()"></td>
         <td>${r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-'}</td>
         <td>${esc(r.division || '-')}</td>
         <td><span style="font-weight:700;color:var(--accent);">${esc(r.frnNo)}</span></td>
@@ -537,9 +548,10 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <td style="text-align:center;"><button class="btn btn-primary btn-sm" onclick="markFulfilled('${r._id}')">Fulfilled</button></td>
       </tr>
     `).join('');
+    
+    updateBulkFulfillBtn();
   }
 
-  const TODAY_ISO = new Date().toISOString().split('T')[0];
   function dateInputValue(val) {
     if (!val) return '';
     const d = new Date(val);
@@ -672,17 +684,37 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   function toggleAll(el) {
     const chks = document.querySelectorAll('.dr-row-chk');
     chks.forEach(c => c.checked = el.checked);
+    updateBulkFulfillBtn();
+  }
+  
+  function updateBulkFulfillBtn() {
+    const btn = document.getElementById('bulk-fulfill-btn');
+    const dateInput = document.getElementById('bulk-spares-date');
+    const chks = document.querySelectorAll('.dr-row-chk:checked');
+    if(!btn || !dateInput) return;
+    if(chks.length > 0 && dateInput.value) {
+      btn.disabled = false;
+    } else if (chks.length > 0 && Array.from(chks).every(c => {
+      const r = records.find(x => x._id === c.value);
+      return r && r.sparesReceivedDate;
+    })) {
+      btn.disabled = false;
+    } else {
+      btn.disabled = true;
+    }
   }
 
   async function markFulfilledSelected() {
     const chks = document.querySelectorAll('.dr-row-chk:checked');
     if(!chks.length) return alert('Please select at least one DR entry to fulfill.');
     
+    const bulkDate = document.getElementById('bulk-spares-date')?.value;
+    
     const selectedRecords = [];
     for(const chk of chks) {
       const r = records.find(x => x._id === chk.value);
       if(r) {
-        if(!r.sparesReceivedDate) {
+        if(!bulkDate && !r.sparesReceivedDate) {
           return alert('Spares Received Date is mandatory before moving to Closed DR for FRN No: ' + (r.frnNo || '-'));
         }
         selectedRecords.push(r);
@@ -692,7 +724,8 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     if(!confirm(`Mark ${selectedRecords.length} selected DR(s) as fulfilled and move to closed?`)) return;
 
     let successCount = 0;
-    const btn = document.querySelector('button[onclick="markFulfilledSelected()"]');
+    const btn = document.getElementById('bulk-fulfill-btn');
+    const originalText = btn ? btn.innerHTML : '';
     if(btn) { btn.disabled = true; btn.textContent = 'Processing...'; }
 
     for(const r of selectedRecords) {
@@ -701,6 +734,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         delete payload._id;
         delete payload.__v;
         payload.closedDate = new Date();
+        if(bulkDate) payload.sparesReceivedDate = bulkDate;
 
         const res = await fetch('/api/cdr', { 
           method: 'POST', 
@@ -717,12 +751,15 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     if(btn) { btn.disabled = false; btn.innerHTML = '&#10004; Fulfill Selected'; }
     const selAll = document.getElementById('selectAll');
     if(selAll) selAll.checked = false;
+    const bd = document.getElementById('bulk-spares-date');
+    if(bd) bd.value = '';
     
     if (successCount < selectedRecords.length) {
       alert(`Fulfilled ${successCount} out of ${selectedRecords.length} entries. Some failed.`);
     } else {
       msg(`Successfully fulfilled ${successCount} entries!`);
     }
+    updateBulkFulfillBtn();
     loadData();
   }
 
