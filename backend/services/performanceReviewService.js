@@ -17,6 +17,7 @@ const ClosedBir = require('../models/ClosedBir');
 const TrackerSubmission = require('../models/TrackerSubmission');
 const User = require('../models/User');
 const Ecall = require('../models/Ecall');
+const Eclose = require('../models/Eclose');
 const EmpDailyWork = require('../models/EmpDailyWork');
 const { getNextKey } = require('../utils/geminiKeys');
 
@@ -256,6 +257,32 @@ function employeeRegex(employee) {
   return new RegExp(`^${safeRegex(employee)}$`, 'i');
 }
 
+function normalizePerson(value) {
+  return normalizeUpper(value).replace(/[^A-Z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function personMatches(value, employee) {
+  const haystack = normalizePerson(value);
+  const needle = normalizePerson(employee);
+  if (!haystack || !needle) return false;
+  return haystack === needle || haystack.includes(needle) || needle.includes(haystack);
+}
+
+function recordMatchesEmployeeEntry(record, employee, userIds = []) {
+  const idSet = new Set(userIds.map(String).filter(Boolean));
+  const createdBy = String(record?.createdBy || record?.userId || '');
+  if (createdBy && idSet.has(createdBy)) return true;
+  return [
+    record?.submittedBy,
+    record?.engineer,
+    record?.scEng,
+    record?.scEngg,
+    record?.addedBy,
+    record?.updatedBy,
+    record?.closedBy,
+  ].some((value) => personMatches(value, employee));
+}
+
 function makeSimpleEmployeeNarratives(employee, monthInfo, callDays, dailyWorkDays, workingDays) {
   const missingCallDays = Math.max(0, workingDays - callDays);
   const missingDailyWorkDays = Math.max(0, workingDays - dailyWorkDays);
@@ -276,29 +303,58 @@ async function getSimpleEmployeePerformanceData({ monthInfo, employee, selectedD
   const workingDaySet = new Set(workingDayKeys);
   const workingDays = workingDayKeys.length;
   const empRegex = employeeRegex(employee);
+  const employeeToken = normalizeText(employee).split(/\s+/).filter(Boolean)[0] || employee;
+  const empTokenRegex = new RegExp(safeRegex(employeeToken), 'i');
   const monthStartKey = monthInfo.monthKey + '-01';
   const monthEndDate = new Date(monthInfo.year, monthInfo.month, 0);
   const monthEndKey = localDateKey(monthEndDate);
 
-  const [callDocs, dailyWorkDocs] = await Promise.all([
+  const matchedUsers = await User.find({
+    $or: [
+      { name: empRegex },
+      { name: empTokenRegex },
+      { email: empRegex },
+      { email: empTokenRegex },
+      { userId: empRegex },
+      { userId: empTokenRegex },
+    ],
+  }).select('_id name email userId').lean();
+  const userIds = matchedUsers.map((user) => String(user._id));
+
+  const monthDateFilter = {
+    $or: [
+      { callDate: { $gte: monthStartKey, $lte: monthEndKey } },
+      { entryDate: { $gte: monthStartKey, $lte: monthEndKey } },
+      { closeDate: { $gte: monthStartKey, $lte: monthEndKey } },
+      { createdAt: { $gte: monthInfo.start, $lt: monthInfo.end } },
+    ],
+  };
+
+  const [openCallDocs, closedCallDocs, dailyWorkDocs] = await Promise.all([
     Ecall.find({
-      $or: [{ submittedBy: empRegex }, { engineer: empRegex }, { scEng: empRegex }],
-      callDate: { $gte: monthStartKey, $lte: monthEndKey },
+      ...monthDateFilter,
+    }).lean(),
+    Eclose.find({
+      ...monthDateFilter,
     }).lean(),
     EmpDailyWork.find({
-      $or: [{ addedBy: empRegex }],
-      date: { $gte: monthStartKey, $lte: monthEndKey },
+      $or: [
+        { date: { $gte: monthStartKey, $lte: monthEndKey } },
+        { createdAt: { $gte: monthInfo.start, $lt: monthInfo.end } },
+      ],
     }).lean(),
   ]);
 
   const callEntryDays = new Set();
-  for (const doc of callDocs) {
-    const key = dayKeyInMonth(doc.callDate || doc.entryDate || doc.createdAt, monthInfo);
+  for (const doc of [...openCallDocs, ...closedCallDocs]) {
+    if (!recordMatchesEmployeeEntry(doc, employee, userIds)) continue;
+    const key = dayKeyInMonth(doc.callDate || doc.entryDate || doc.closeDate || doc.createdAt, monthInfo);
     if (workingDaySet.has(key)) callEntryDays.add(key);
   }
 
   const dailyWorkDays = new Set();
   for (const doc of dailyWorkDocs) {
+    if (!recordMatchesEmployeeEntry(doc, employee, userIds)) continue;
     const key = dayKeyInMonth(doc.date || doc.createdAt, monthInfo);
     if (workingDaySet.has(key)) dailyWorkDays.add(key);
   }
@@ -316,25 +372,40 @@ async function getSimpleEmployeePerformanceData({ monthInfo, employee, selectedD
   const previousStartKey = previousMonthInfo.monthKey + '-01';
   const previousEndKey = localDateKey(new Date(previousMonthInfo.year, previousMonthInfo.month, 0));
 
-  const [previousCallDocs, previousDailyWorkDocs] = await Promise.all([
+  const previousMonthDateFilter = {
+    $or: [
+      { callDate: { $gte: previousStartKey, $lte: previousEndKey } },
+      { entryDate: { $gte: previousStartKey, $lte: previousEndKey } },
+      { closeDate: { $gte: previousStartKey, $lte: previousEndKey } },
+      { createdAt: { $gte: previousMonthInfo.start, $lt: previousMonthInfo.end } },
+    ],
+  };
+
+  const [previousOpenCallDocs, previousClosedCallDocs, previousDailyWorkDocs] = await Promise.all([
     Ecall.find({
-      $or: [{ submittedBy: empRegex }, { engineer: empRegex }, { scEng: empRegex }],
-      callDate: { $gte: previousStartKey, $lte: previousEndKey },
+      ...previousMonthDateFilter,
+    }).lean(),
+    Eclose.find({
+      ...previousMonthDateFilter,
     }).lean(),
     EmpDailyWork.find({
-      $or: [{ addedBy: empRegex }],
-      date: { $gte: previousStartKey, $lte: previousEndKey },
+      $or: [
+        { date: { $gte: previousStartKey, $lte: previousEndKey } },
+        { createdAt: { $gte: previousMonthInfo.start, $lt: previousMonthInfo.end } },
+      ],
     }).lean(),
   ]);
 
   const previousCallDays = new Set();
-  for (const doc of previousCallDocs) {
-    const key = dayKeyInMonth(doc.callDate || doc.entryDate || doc.createdAt, previousMonthInfo);
+  for (const doc of [...previousOpenCallDocs, ...previousClosedCallDocs]) {
+    if (!recordMatchesEmployeeEntry(doc, employee, userIds)) continue;
+    const key = dayKeyInMonth(doc.callDate || doc.entryDate || doc.closeDate || doc.createdAt, previousMonthInfo);
     if (previousWorkingDaySet.has(key)) previousCallDays.add(key);
   }
 
   const previousDailyWorkDays = new Set();
   for (const doc of previousDailyWorkDocs) {
+    if (!recordMatchesEmployeeEntry(doc, employee, userIds)) continue;
     const key = dayKeyInMonth(doc.date || doc.createdAt, previousMonthInfo);
     if (previousWorkingDaySet.has(key)) previousDailyWorkDays.add(key);
   }
@@ -360,7 +431,7 @@ async function getSimpleEmployeePerformanceData({ monthInfo, employee, selectedD
     criticalPendingCount: pendingCount,
     supplierPendingCount: 0,
     scrapDelayedCount: 0,
-    serviceCount: callDocs.length,
+    serviceCount: [...openCallDocs, ...closedCallDocs].filter((doc) => recordMatchesEmployeeEntry(doc, employee, userIds)).length,
     underRepairCount: 0,
     estimationCount: 0,
     scrapCount: 0,
