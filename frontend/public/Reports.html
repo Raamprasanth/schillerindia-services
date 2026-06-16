@@ -1584,7 +1584,7 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
     }).join('');
 
     return `
-      <div style="font-family:'Inter',system-ui,sans-serif; background:#ffffff; border-radius:16px; border:1px solid #e2e8f0; padding:28px; color:#1e293b; width:100%; box-sizing:border-box;">
+      <div data-perf-mode="simple-employee" style="font-family:'Inter',system-ui,sans-serif; background:#ffffff; border-radius:16px; border:1px solid #e2e8f0; padding:28px; color:#1e293b; width:100%; box-sizing:border-box;">
         <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:22px; border-bottom:2px solid #e2e8f0; padding-bottom:16px;">
           <div>
             <h2 style="margin:0 0 4px 0; font-size:22px; font-weight:800; color:#0f172a;">Individual Performance Analysis</h2>
@@ -1994,6 +1994,7 @@ async function exportPDF(type) {
   const containerId = isDiv ? 'perf-pane-div-summary' : 'perf-pane-summary';
   const originalNode = document.getElementById(containerId);
   if (!originalNode) return;
+  const isSimpleEmployee = !isDiv && !!originalNode.querySelector('[data-perf-mode="simple-employee"]');
 
   await new Promise(resolve => {
     const img = new Image();
@@ -2004,11 +2005,11 @@ async function exportPDF(type) {
   });
 
   const wrapper = document.createElement('div');
-  wrapper.style.width = '1120px';
+  wrapper.style.width = isSimpleEmployee ? '760px' : '1120px';
   wrapper.style.minHeight = '600px';
   wrapper.style.background = '#ffffff';
   wrapper.style.color = '#000000';
-  wrapper.style.padding = '20px';
+  wrapper.style.padding = isSimpleEmployee ? '18px' : '20px';
   wrapper.style.border = '1px solid #000000';
   wrapper.style.boxSizing = 'border-box';
   wrapper.style.fontFamily = "Calibri, Arial, sans-serif";
@@ -2035,8 +2036,13 @@ async function exportPDF(type) {
   contentClone.style.display = 'block';
   contentClone.style.height = 'auto';
   contentClone.style.overflow = 'visible';
+  contentClone.style.width = '100%';
+  contentClone.style.maxWidth = '100%';
+  contentClone.style.margin = '0';
+  contentClone.style.boxSizing = 'border-box';
   contentClone.removeAttribute('id');
   contentClone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+  contentClone.querySelectorAll('button').forEach(el => el.remove());
   
   contentClone.querySelectorAll('.perf-review-table-container').forEach(el => {
     el.style.overflow = 'visible';
@@ -2047,18 +2053,40 @@ async function exportPDF(type) {
     if(el.style) {
       el.style.backdropFilter = 'none';
       el.style.filter = 'none';
+      el.style.maxWidth = '100%';
+      el.style.boxSizing = 'border-box';
+      if (isSimpleEmployee) {
+        el.style.transform = 'none';
+        if (el.style.display === 'grid') {
+          el.style.gridTemplateColumns = 'repeat(2, minmax(0, 1fr))';
+        }
+      }
     }
   });
+
+  if (isSimpleEmployee) {
+    const simpleRoot = contentClone.querySelector('[data-perf-mode="simple-employee"]') || contentClone;
+    simpleRoot.style.border = 'none';
+    simpleRoot.style.borderRadius = '0';
+    simpleRoot.style.padding = '0';
+    simpleRoot.style.width = '100%';
+    simpleRoot.style.maxWidth = '100%';
+    simpleRoot.querySelectorAll('h2').forEach(el => { el.style.fontSize = '20px'; });
+    simpleRoot.querySelectorAll('table').forEach(el => {
+      el.style.tableLayout = 'fixed';
+      el.style.width = '100%';
+    });
+  }
 
   wrapper.querySelector('.pdf-content-area').appendChild(contentClone);
 
   try {
     await html2pdf().set({
-      margin: 0.2,
+      margin: isSimpleEmployee ? 0.25 : 0.2,
       filename: `Performance_Analysis_${scope}_${month}.pdf`,
       image: { type: 'jpeg', quality: 1.0 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 1120 },
-      jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: isSimpleEmployee ? 760 : 1120, scrollX: 0, scrollY: 0 },
+      jsPDF: { unit: 'in', format: 'a4', orientation: isSimpleEmployee ? 'portrait' : 'landscape' }
     }).from(wrapper).save();
   } catch(e) {
     toast('PDF export failed: ' + e.message, 'error');
