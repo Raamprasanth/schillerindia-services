@@ -16,6 +16,8 @@ const Bir = require('../models/Bir');
 const ClosedBir = require('../models/ClosedBir');
 const TrackerSubmission = require('../models/TrackerSubmission');
 const User = require('../models/User');
+const Ecall = require('../models/Ecall');
+const EmpDailyWork = require('../models/EmpDailyWork');
 const { getNextKey } = require('../utils/geminiKeys');
 
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
@@ -220,6 +222,178 @@ function countDaysInMonth(year, month, dayOfWeek) {
 function countDatesInMonth(year, month, dates) {
   const lastDay = new Date(year, month, 0).getDate();
   return dates.filter(day => day >= 1 && day <= lastDay).length;
+}
+
+function localDateKey(date) {
+  if (!date || Number.isNaN(date.getTime())) return '';
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0'),
+  ].join('-');
+}
+
+function getNonSundayDates(monthInfo) {
+  const days = [];
+  const date = new Date(monthInfo.year, monthInfo.month - 1, 1);
+  while (date.getMonth() === monthInfo.month - 1) {
+    if (date.getDay() !== 0) days.push(localDateKey(date));
+    date.setDate(date.getDate() + 1);
+  }
+  return days;
+}
+
+function dayKeyInMonth(value, monthInfo) {
+  const date = parseAnyDate(value);
+  if (!date) return '';
+  const local = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  if (local.getFullYear() !== monthInfo.year || local.getMonth() !== monthInfo.month - 1) return '';
+  if (local.getDay() === 0) return '';
+  return localDateKey(local);
+}
+
+function employeeRegex(employee) {
+  return new RegExp(`^${safeRegex(employee)}$`, 'i');
+}
+
+function makeSimpleEmployeeNarratives(employee, monthInfo, callDays, dailyWorkDays, workingDays) {
+  const missingCallDays = Math.max(0, workingDays - callDays);
+  const missingDailyWorkDays = Math.max(0, workingDays - dailyWorkDays);
+  return {
+    justification: `${employee} updated call entries on ${callDays} working days and daily work on ${dailyWorkDays} working days in ${monthInfo.label}.`,
+    corrective: missingCallDays || missingDailyWorkDays
+      ? `Complete call entry and daily work updates on every non-Sunday working day; currently ${missingCallDays} call-entry days and ${missingDailyWorkDays} daily-work days are missing.`
+      : 'Maintain the same daily update discipline for every non-Sunday working day.',
+    hod: callDays === workingDays && dailyWorkDays === workingDays
+      ? 'Daily reporting discipline is complete for the selected month.'
+      : 'Daily reporting requires follow-up for the missing non-Sunday working days.',
+    source: 'manual',
+  };
+}
+
+async function getSimpleEmployeePerformanceData({ monthInfo, employee, selectedDivision }) {
+  const workingDayKeys = getNonSundayDates(monthInfo);
+  const workingDaySet = new Set(workingDayKeys);
+  const workingDays = workingDayKeys.length;
+  const empRegex = employeeRegex(employee);
+  const monthStartKey = monthInfo.monthKey + '-01';
+  const monthEndDate = new Date(monthInfo.year, monthInfo.month, 0);
+  const monthEndKey = localDateKey(monthEndDate);
+
+  const [callDocs, dailyWorkDocs] = await Promise.all([
+    Ecall.find({
+      $or: [{ submittedBy: empRegex }, { engineer: empRegex }, { scEng: empRegex }],
+      callDate: { $gte: monthStartKey, $lte: monthEndKey },
+    }).lean(),
+    EmpDailyWork.find({
+      $or: [{ addedBy: empRegex }],
+      date: { $gte: monthStartKey, $lte: monthEndKey },
+    }).lean(),
+  ]);
+
+  const callEntryDays = new Set();
+  for (const doc of callDocs) {
+    const key = dayKeyInMonth(doc.callDate || doc.entryDate || doc.createdAt, monthInfo);
+    if (workingDaySet.has(key)) callEntryDays.add(key);
+  }
+
+  const dailyWorkDays = new Set();
+  for (const doc of dailyWorkDocs) {
+    const key = dayKeyInMonth(doc.date || doc.createdAt, monthInfo);
+    if (workingDaySet.has(key)) dailyWorkDays.add(key);
+  }
+
+  const currentActivityRows = [
+    makeActivityRow('Call entries updated', workingDays, callEntryDays.size, null, null),
+    makeActivityRow('Daily work updated', workingDays, dailyWorkDays.size, null, null),
+  ];
+
+  const previousMonthDate = new Date(Date.UTC(monthInfo.year, monthInfo.month - 2, 1));
+  const previousMonth = `${previousMonthDate.getUTCFullYear()}-${String(previousMonthDate.getUTCMonth() + 1).padStart(2, '0')}`;
+  const previousMonthInfo = monthParts(previousMonth);
+  const previousWorkingDayKeys = getNonSundayDates(previousMonthInfo);
+  const previousWorkingDaySet = new Set(previousWorkingDayKeys);
+  const previousStartKey = previousMonthInfo.monthKey + '-01';
+  const previousEndKey = localDateKey(new Date(previousMonthInfo.year, previousMonthInfo.month, 0));
+
+  const [previousCallDocs, previousDailyWorkDocs] = await Promise.all([
+    Ecall.find({
+      $or: [{ submittedBy: empRegex }, { engineer: empRegex }, { scEng: empRegex }],
+      callDate: { $gte: previousStartKey, $lte: previousEndKey },
+    }).lean(),
+    EmpDailyWork.find({
+      $or: [{ addedBy: empRegex }],
+      date: { $gte: previousStartKey, $lte: previousEndKey },
+    }).lean(),
+  ]);
+
+  const previousCallDays = new Set();
+  for (const doc of previousCallDocs) {
+    const key = dayKeyInMonth(doc.callDate || doc.entryDate || doc.createdAt, previousMonthInfo);
+    if (previousWorkingDaySet.has(key)) previousCallDays.add(key);
+  }
+
+  const previousDailyWorkDays = new Set();
+  for (const doc of previousDailyWorkDocs) {
+    const key = dayKeyInMonth(doc.date || doc.createdAt, previousMonthInfo);
+    if (previousWorkingDaySet.has(key)) previousDailyWorkDays.add(key);
+  }
+
+  currentActivityRows[0].prevRate = rate(previousCallDays.size, previousWorkingDayKeys.length);
+  currentActivityRows[0].nextRate = targetNext(currentActivityRows[0].prevRate);
+  currentActivityRows[1].prevRate = rate(previousDailyWorkDays.size, previousWorkingDayKeys.length);
+  currentActivityRows[1].nextRate = targetNext(currentActivityRows[1].prevRate);
+
+  const totalTracked = workingDays * currentActivityRows.length;
+  const completedCount = callEntryDays.size + dailyWorkDays.size;
+  const pendingCount = Math.max(0, totalTracked - completedCount);
+  const baseSummary = {
+    month: monthInfo.monthKey,
+    monthLabel: monthInfo.label,
+    scope: 'employee',
+    division: selectedDivision,
+    employee: normalizeText(employee),
+    totalTracked,
+    completedCount,
+    pendingCount,
+    completionRate: completionPercent(completedCount, totalTracked),
+    criticalPendingCount: pendingCount,
+    supplierPendingCount: 0,
+    scrapDelayedCount: 0,
+    serviceCount: callDocs.length,
+    underRepairCount: 0,
+    estimationCount: 0,
+    scrapCount: 0,
+    workingDays,
+    sundayExcluded: new Date(monthInfo.year, monthInfo.month, 0).getDate() - workingDays,
+    callEntryDays: callEntryDays.size,
+    dailyWorkDays: dailyWorkDays.size,
+  };
+
+  const compliance = makeAuxiliaryMetrics(baseSummary, currentActivityRows);
+  compliance.weeklyCrm = currentActivityRows[0].withinPercent;
+  compliance.pendingActivity = currentActivityRows[1].withinPercent;
+  compliance.callReportToHod = baseSummary.completionRate;
+  compliance.fiveSRate = baseSummary.completionRate;
+  compliance.repairReport = baseSummary.completionRate;
+  compliance.trackerSubmissions = {};
+
+  return {
+    scope: 'employee',
+    month: monthInfo.monthKey,
+    monthLabel: monthInfo.label,
+    sheetName: monthInfo.shortMonth,
+    division: selectedDivision,
+    employee: normalizeText(employee),
+    employeeDivision: selectedDivision,
+    activityRows: currentActivityRows,
+    row14: null,
+    row15: null,
+    compliance,
+    narratives: makeSimpleEmployeeNarratives(normalizeText(employee), monthInfo, callEntryDays.size, dailyWorkDays.size, workingDays),
+    summary: baseSummary,
+    calculationMode: 'call_daily_work_non_sunday',
+  };
 }
 
 function buildReportDefinitions(year, month) {
@@ -457,6 +631,14 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
   const selectedDivision = scope === 'division'
     ? normalizeText(division)
     : normalizeText(selectedEmployee?.division || division);
+
+  if (scope === 'employee') {
+    return getSimpleEmployeePerformanceData({
+      monthInfo,
+      employee: selectedEmployee?.name || employee,
+      selectedDivision,
+    });
+  }
 
   const services = await Service.find().populate('division', 'name').lean();
   const baseServices = services.filter((record) => {

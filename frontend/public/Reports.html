@@ -1562,6 +1562,90 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
   const employeeLabel = data.employee || params.employee || '';
   const divisionLabel = data.division || params.division || '';
 
+  if (scopeType === 'employee' && data.calculationMode === 'call_daily_work_non_sunday') {
+    const workingDays = Number(data.workingDays || 0);
+    const sundayExcluded = Number(data.sundayExcluded || 0);
+    const completedCount = Number(data.completedCount || data.summary?.completedCount || 0);
+    const totalTracked = Number(data.totalTracked || data.summary?.totalTracked || 0);
+    const simpleRows = rows.map((row, index) => {
+      const done = Number(row.withinTarget || 0);
+      const total = Number(row.total || workingDays || 0);
+      const missed = Math.max(0, total - done);
+      const completion = row.completionPercent ?? row.withinPercent ?? (total ? Math.round((done / total) * 100) : 0);
+      return `
+        <tr style="background:${index % 2 ? '#f8fafc' : '#ffffff'};">
+          <td style="border:1px solid #cbd5e1; padding:14px 16px; text-align:left; font-weight:700; color:#334155;">${escapeHtml(row.label || '-')}</td>
+          <td style="border:1px solid #cbd5e1; padding:14px 16px; text-align:center; color:#475569;">${total}</td>
+          <td style="border:1px solid #cbd5e1; padding:14px 16px; text-align:center; color:#059669; font-weight:800;">${done}</td>
+          <td style="border:1px solid #cbd5e1; padding:14px 16px; text-align:center; color:${missed ? '#b91c1c' : '#64748b'}; font-weight:800;">${missed}</td>
+          <td style="border:1px solid #cbd5e1; padding:14px 16px; text-align:center; color:#3730a3; font-weight:900; background:#eef2ff;">${completion}%</td>
+        </tr>
+      `;
+    }).join('');
+
+    return `
+      <div style="font-family:'Inter',system-ui,sans-serif; background:#ffffff; border-radius:16px; border:1px solid #e2e8f0; padding:28px; color:#1e293b; width:100%; box-sizing:border-box;">
+        <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:22px; border-bottom:2px solid #e2e8f0; padding-bottom:16px;">
+          <div>
+            <h2 style="margin:0 0 4px 0; font-size:22px; font-weight:800; color:#0f172a;">Individual Performance Analysis</h2>
+            <div style="font-size:13px; color:#64748b; font-weight:500;">Call entry and daily work updates only</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:12px; font-weight:700; color:#64748b; margin-bottom:4px; text-transform:uppercase;">Employee: <span style="color:#0f172a; font-size:14px;">${escapeHtml(employeeLabel)}</span></div>
+            <div style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase;">Month: <span style="color:#0f172a; font-size:14px;">${escapeHtml(monthLabel)}</span></div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:18px;">
+          <div style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:8px; padding:14px;">
+            <div style="font-size:11px; color:#64748b; font-weight:800; text-transform:uppercase;">Working Days</div>
+            <div style="font-size:24px; font-weight:900; color:#0f172a; margin-top:4px;">${workingDays}</div>
+          </div>
+          <div style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:8px; padding:14px;">
+            <div style="font-size:11px; color:#64748b; font-weight:800; text-transform:uppercase;">Sundays Excluded</div>
+            <div style="font-size:24px; font-weight:900; color:#0f172a; margin-top:4px;">${sundayExcluded}</div>
+          </div>
+          <div style="border:1px solid #dcfce7; background:#f0fdf4; border-radius:8px; padding:14px;">
+            <div style="font-size:11px; color:#166534; font-weight:800; text-transform:uppercase;">Updates Done</div>
+            <div style="font-size:24px; font-weight:900; color:#059669; margin-top:4px;">${completedCount}</div>
+          </div>
+          <div style="border:1px solid #e0e7ff; background:#eef2ff; border-radius:8px; padding:14px;">
+            <div style="font-size:11px; color:#3730a3; font-weight:800; text-transform:uppercase;">Overall</div>
+            <div style="font-size:24px; font-weight:900; color:#3730a3; margin-top:4px;">${rate}%</div>
+          </div>
+        </div>
+
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; border:1px solid #cbd5e1; font-family:'Inter',system-ui,sans-serif; border-radius:8px; overflow:hidden;">
+            <thead>
+              <tr>
+                <th style="background:#0f172a; color:#ffffff; border:1px solid #334155; padding:14px 16px; text-align:left; font-size:12px; text-transform:uppercase;">Calculation</th>
+                <th style="background:#0f172a; color:#ffffff; border:1px solid #334155; padding:14px 16px; text-align:center; font-size:12px; text-transform:uppercase;">Expected Days</th>
+                <th style="background:#0f172a; color:#ffffff; border:1px solid #334155; padding:14px 16px; text-align:center; font-size:12px; text-transform:uppercase;">Updated Days</th>
+                <th style="background:#0f172a; color:#ffffff; border:1px solid #334155; padding:14px 16px; text-align:center; font-size:12px; text-transform:uppercase;">Missing Days</th>
+                <th style="background:#0f172a; color:#ffffff; border:1px solid #334155; padding:14px 16px; text-align:center; font-size:12px; text-transform:uppercase;">Score</th>
+              </tr>
+            </thead>
+            <tbody>${simpleRows}</tbody>
+            <tfoot>
+              <tr>
+                <td style="border:1px solid #cbd5e1; padding:14px 16px; font-weight:900; background:#f8fafc;">Total</td>
+                <td style="border:1px solid #cbd5e1; padding:14px 16px; text-align:center; font-weight:900; background:#f8fafc;">${totalTracked}</td>
+                <td style="border:1px solid #cbd5e1; padding:14px 16px; text-align:center; font-weight:900; color:#059669; background:#f8fafc;">${completedCount}</td>
+                <td style="border:1px solid #cbd5e1; padding:14px 16px; text-align:center; font-weight:900; color:${totalTracked - completedCount ? '#b91c1c' : '#64748b'}; background:#f8fafc;">${Math.max(0, totalTracked - completedCount)}</td>
+                <td style="border:1px solid #cbd5e1; padding:14px 16px; text-align:center; font-weight:900; color:#3730a3; background:#e0e7ff;">${rate}%</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div style="margin-top:16px; font-size:12px; color:#64748b; line-height:1.5;">
+          Sundays are excluded from the selected month. Each remaining day expects one call entry update and one daily work update.
+        </div>
+      </div>
+    `;
+  }
+
   var [yearStr, mStr] = (params.month || '').split('-');
   var yearNum = parseInt(yearStr, 10);
   var monthNum = parseInt(mStr, 10) - 1;

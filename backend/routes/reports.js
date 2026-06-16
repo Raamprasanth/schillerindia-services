@@ -450,6 +450,11 @@ function summarizePerformanceRows(data) {
     underRepairCount: data?.summary?.underRepairCount || 0,
     estimationCount: data?.summary?.estimationCount || 0,
     scrapCount: data?.summary?.scrapCount || 0,
+    workingDays: data?.summary?.workingDays || 0,
+    sundayExcluded: data?.summary?.sundayExcluded || 0,
+    callEntryDays: data?.summary?.callEntryDays || 0,
+    dailyWorkDays: data?.summary?.dailyWorkDays || 0,
+    calculationMode: data?.calculationMode || '',
     narratives: data?.narratives || {},
     activities: rows.map((row) => ({
       label: row.label,
