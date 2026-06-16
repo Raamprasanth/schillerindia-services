@@ -668,7 +668,12 @@ body{
                 </div>
                 <div style="font-size:12.5px;color:var(--muted);">All dashboard submit-report boxes will appear here.</div>
               </div>
-              <div class="perf-review-table-container" style="overflow-x:auto; padding:20px;">
+              <div class="empty-state" style="padding:50px 24px;">
+                <div class="empty-icon">&#128196;</div>
+                <div class="empty-title">No Preview Yet</div>
+                <div class="empty-sub">Select division and month then click Preview Division.</div>
+              </div>
+              <template id="old-division-performance-table">
   <style>
     .excel-table {
       width: 100%;
@@ -891,7 +896,7 @@ body{
       <td colspan="5" class="bg-dark-blue" style="height:60px;"></td>
     </tr>
   </table>
-</div>
+</template>
 
             </div>
 
