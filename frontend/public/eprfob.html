@@ -1958,9 +1958,9 @@
     (function () {
       const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
       const n = u.name || 'Admin';
-      (document.getElementById('user-nm')||{}).textContent = n;
-      (document.getElementById('user-av')||{}).textContent = n.charAt(0).toUpperCase();
-      const rl = document.getElementById('user-rl');
+      (document.getElementById('emp-name')||{}).textContent = n;
+      (document.getElementById('emp-avatar')||{}).textContent = n.charAt(0).toUpperCase();
+      const rl = document.getElementById('emp-desig');
       if (rl) rl.textContent = u.role === 'admin' ? 'Administrator' : 'Field Engineer';
     })();
 
