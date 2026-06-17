@@ -2,6 +2,7 @@ const Service = require('../models/Service');
 const EmpFRNPending = require('../models/EmpFRN');
 const UnderRepair = require('../models/UnderRepair');
 const EstimationPending = require('../models/EstimationPending');
+const EmpOBPending = require('../models/EmpOBPending');
 const Division = require('../models/Division');
 
 const FRN_UNIT_STATUSES = ['IW', 'EW', 'CAMC', 'STOCK', 'Demo', 'Repeat', 'Buy Back'];
@@ -74,6 +75,8 @@ async function tryCreateFRNPending(svc, user) {
           scRno:      svc.scReNo || '',
           scEng:      svc.scEng  || '',
           frnNo:      svc.frnNo  || '',
+          entryDate:   svc.entryDate || '',
+          rcvdDate:    svc.rcvdDate || '',
           region:     svc.reg    || '',
           branch:     svc.branch || '',
           division:   serviceDivision.division,
@@ -143,11 +146,14 @@ async function tryCreateUnderRepair(svc, user) {
           scRno:         svc.scReNo || svc.scRno || '',
           scEng:         svc.scEng  || '',
           frnNo:         svc.frnNo  || '',
+          entryDate:     svc.entryDate || new Date().toISOString().split('T')[0],
+          rcvdDate:      svc.rcvdDate || '',
           region:        svc.reg    || '',
           engineer:      svc.eng    || '',
           custName:      svc.custName || svc.customer || '',
           model:         svc.model  || '',
           unitStatus:    svc.unitSts || '',
+          partNo:        svc.partNo || '',
           defMod:        svc.defMod || '',
           defModBrdName: svc.defMod || '',
           defGir:        svc.defGir || '',
@@ -207,6 +213,122 @@ async function tryCreateUnderRepair(svc, user) {
   }
 }
 
+function isFrnEligible(svc) {
+  return FRN_UNIT_STATUSES.includes(normalizeUnitStatus(svc.unitSts || svc.unitStatus)) && normalizeRepType(svc.repType) === 'NA';
+}
+
+function isObEligible(svc) {
+  return EST_UNIT_STATUSES.includes(normalizeUnitStatus(svc.unitSts || svc.unitStatus)) && normalizeRepType(svc.repType) === 'NA';
+}
+
+function isEstimationEligible(svc) {
+  const repType = normalizeRepType(svc.repType);
+  return EST_UNIT_STATUSES.includes(normalizeUnitStatus(svc.unitSts || svc.unitStatus)) && (repType === 'NA' || repType === 'BS/SO');
+}
+
+function isUnderRepairEligible(svc) {
+  return normalizeRepType(svc.repType) === 'TO/ADV SO';
+}
+
+function serviceToEstimationDoc(svc, user) {
+  const repType = normalizeRepType(svc.repType);
+  const estStatus = repType === 'BS/SO' ? 'SO Pending' : 'Estimation Pending';
+  return {
+    serviceId: svc._id,
+    source: repType === 'BS/SO' ? 'service-bs-so' : 'service',
+    sourceId: String(svc._id || ''),
+    entryDate: svc.entryDate || '',
+    rcvdDate: svc.rcvdDate || '',
+    scReNo: svc.scReNo || '',
+    scEng: svc.scEng || '',
+    frnNo: svc.frnNo || '',
+    frnDate: svc.frnDate || '',
+    reg: svc.reg || '',
+    branch: svc.branch || '',
+    eng: svc.eng || '',
+    dealer: svc.dealer || '',
+    custName: svc.custName || svc.customer || '',
+    customer: svc.customer || svc.custName || '',
+    model: svc.model || '',
+    unitSts: normalizeUnitStatus(svc.unitSts || svc.unitStatus),
+    defMod: svc.defMod || '',
+    defGir: svc.defGir || '',
+    defPartSno: svc.defPartSno || '',
+    typeWork: svc.typeWork || svc.type || '',
+    repType: svc.repType || 'NA',
+    partNo: svc.partNo || '',
+    estStatus,
+    submittedBy: svc.submittedBy || user?.name || '',
+    submittedAt: svc.submittedAt || new Date(),
+  };
+}
+
+function serviceToObDoc(svc, user) {
+  return {
+    serviceId: svc._id,
+    employeeId: svc.engineer || user?._id,
+    employeeName: svc.submittedBy || user?.name || svc.scEng || '',
+    role: user?.role === 'admin' ? 'admin' : 'staff',
+    entryDate: svc.entryDate || '',
+    scReNo: svc.scReNo || '',
+    scEng: svc.scEng || '',
+    frnNo: svc.frnNo || '',
+    reg: svc.reg || '',
+    eng: svc.eng || '',
+    custName: svc.custName || svc.customer || '',
+    model: svc.model || '',
+    unitSl: svc.unitSl || '',
+    unitSts: normalizeUnitStatus(svc.unitSts || svc.unitStatus),
+    defMod: svc.defMod || '',
+    defGir: svc.defGir || '',
+    typeWork: svc.typeWork || svc.type || '',
+    repType: svc.repType || 'NA',
+    finalRemarks: svc.finalRemarks || '',
+    submittedBy: svc.submittedBy || user?.name || '',
+    pdOb: calcPendingDays(svc.entryDate),
+  };
+}
+
+async function syncEstimationPending(svc, user) {
+  if (!isEstimationEligible(svc)) {
+    await EstimationPending.deleteMany({ serviceId: svc._id, source: { $in: ['service', 'service-bs-so'] } });
+    return;
+  }
+
+  const doc = serviceToEstimationDoc(svc, user);
+  const existing = await EstimationPending.findOne({ serviceId: svc._id, source: { $in: ['service', 'service-bs-so'] } });
+  if (existing) {
+    await EstimationPending.findByIdAndUpdate(existing._id, doc, { new: true, runValidators: false });
+  } else {
+    await EstimationPending.create(doc);
+  }
+}
+
+async function syncObPending(svc, user) {
+  if (!isObEligible(svc)) {
+    await EmpOBPending.deleteMany({ serviceId: svc._id });
+    return;
+  }
+
+  const doc = serviceToObDoc(svc, user);
+  if (!doc.employeeId) return;
+  await EmpOBPending.findOneAndUpdate(
+    { serviceId: svc._id },
+    doc,
+    { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: false }
+  );
+}
+
+async function syncLinkedRecords(svc, user) {
+  const serviceId = svc._id;
+  await Promise.allSettled([
+    isFrnEligible(svc) ? tryCreateFRNPending(svc, user) : EmpFRNPending.deleteMany({ serviceId }),
+    isUnderRepairEligible(svc) ? tryCreateUnderRepair(svc, user) : UnderRepair.deleteMany({ serviceId }),
+    syncObPending(svc, user),
+    syncEstimationPending(svc, user),
+  ]);
+}
+
 async function cleanupLinkedRecords(serviceId) {
   await Promise.allSettled([
     EmpFRNPending.deleteMany({ serviceId }),
@@ -218,5 +340,6 @@ async function cleanupLinkedRecords(serviceId) {
 module.exports = {
   tryCreateFRNPending,
   tryCreateUnderRepair,
+  syncLinkedRecords,
   cleanupLinkedRecords
 };
