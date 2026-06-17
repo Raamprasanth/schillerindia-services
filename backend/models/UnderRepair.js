@@ -27,6 +27,7 @@ const underRepairSchema = new mongoose.Schema(
     // ── Device Info ───────────────────────────────────────
     model:         { type: String,  default: '' },   // "SOPHIE"
     unitStatus:    { type: String,  default: '' },   // "CAMC" | "EW" | "STOCK" | "AMC" | "OW" | "IW" | "LAMC"
+    partNo:        { type: String,  default: '' },
     defModBrdName: { type: String,  default: '' },   // "PSU Sophie Bebro"
     defGirNo:      { type: String,  default: '' },   // "X-99061"
     defPartSno:    { type: String,  default: '' },

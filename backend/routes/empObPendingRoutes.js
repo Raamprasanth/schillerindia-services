@@ -38,7 +38,9 @@ function buildOBDoc(svc, user) {
     model:        svc.model       || '',
     unitSl:       svc.unitSl      || '',
     unitSts:      svc.unitSts     || '',
+    partNo:       svc.partNo      || '',
     defMod:       svc.defMod      || '',
+    defPartSno:   svc.defPartSno  || '',
     defGir:       svc.defGir      || '',
     typeWork:     svc.typeWork    || svc.type || '',
     repType:      svc.repType     || 'NA',
@@ -93,7 +95,13 @@ router.get('/', protect, async (req, res) => {
     const records = await EmpOBPending.find(query).sort({ entryDate: -1 }).lean();
     res.json(records.map(r => {
       const svc = serviceMap.get(String(r.serviceId)) || {};
-      return { ...r, unitSl: r.unitSl || svc.unitSl || '', pdOb: calcPendingDays(r.entryDate) };
+      return {
+        ...r,
+        unitSl: r.unitSl || svc.unitSl || '',
+        partNo: r.partNo || svc.partNo || '',
+        defPartSno: r.defPartSno || svc.defPartSno || '',
+        pdOb: calcPendingDays(r.entryDate),
+      };
     }));
   } catch (err) {
     console.error('GET /api/ob-pending:', err.message);

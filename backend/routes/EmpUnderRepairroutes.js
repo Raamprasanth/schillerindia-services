@@ -113,9 +113,10 @@ router.get('/', protect, async (req, res) => {
       ]);
     }
 
-    const docs = await UnderRepair.find(filter).populate('serviceId', 'defPartSno').sort({ createdAt: -1 }).lean();
+    const docs = await UnderRepair.find(filter).populate('serviceId', 'defPartSno partNo').sort({ createdAt: -1 }).lean();
     res.json(docs.map(d => ({
       ...d,
+      partNo: d.partNo || (d.serviceId ? d.serviceId.partNo : '') || '',
       defPartSno: d.defPartSno || (d.serviceId ? d.serviceId.defPartSno : '') || '',
       pdays: Math.floor((Date.now() - new Date(d.rcvdDate || d.entryDate || d.createdAt).getTime()) / 86400000),
     })));
@@ -129,7 +130,7 @@ router.get('/', protect, async (req, res) => {
 // ══════════════════════════════════════════════════════════
 router.get('/:id', protect, async (req, res) => {
   try {
-    const doc = await UnderRepair.findById(req.params.id).populate('serviceId', 'defPartSno').lean();
+    const doc = await UnderRepair.findById(req.params.id).populate('serviceId', 'defPartSno partNo').lean();
     if (!doc) return res.status(404).json({ message: 'Record not found.' });
     if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
       const { hasDivisionAccessToService } = require('../utils/visibility');
@@ -137,6 +138,7 @@ router.get('/:id', protect, async (req, res) => {
       if (!allowed) return res.status(403).json({ message: 'Access denied.' });
     }
     const d = withPdays(doc);
+    d.partNo = doc.partNo || (doc.serviceId ? doc.serviceId.partNo : '') || '';
     d.defPartSno = doc.defPartSno || (doc.serviceId ? doc.serviceId.defPartSno : '') || '';
     res.json(d);
   } catch (e) {

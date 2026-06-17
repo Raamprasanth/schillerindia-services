@@ -1233,6 +1233,13 @@ function resetForm() {
   populateModelSelect();
 }
 
+function serviceDivisionLabel(s) {
+  const div = s && s.division;
+  if (s && s.divisionName) return s.divisionName;
+  if (div && typeof div === 'object') return div.name || div.divisionName || div.displayName || '';
+  return div || '';
+}
+
 function editService(id) {
   const s=services.find(x=>(x._id||x.id)===id);
   if(!s){showToast('Record not found','err');return;}
@@ -1248,7 +1255,7 @@ function editService(id) {
   resetForm();
   (document.getElementById('strip-sceng')||{}).textContent = s.scEng || s.eng || '';
   document.getElementById('f-sceng').value = s.scEng || s.eng || '';
-  const divName = (s.division && s.division.name) || s.division || '';
+  const divName = serviceDivisionLabel(s);
   (document.getElementById('strip-division')||{}).textContent = divName;
   document.getElementById('f-division').value = divName !== '' ? divName : '';
   populateSupplierSelect(s.supplier);
@@ -1465,7 +1472,7 @@ function exportCSV() {
     rows.push([
       s.status,
       s.scEng,
-      s.divisionName || s.division || '',
+      serviceDivisionLabel(s),
       s.entryDate,
       s.scReNo,
       s.frnNo,
