@@ -470,11 +470,31 @@ async function loadDivisions(){
 }
 
 function populateDivisionSelects(){
-  const options = divisions.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
+  const visibleDivisions = getVisibleDivisions();
+  const options = visibleDivisions.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
   const fl = document.getElementById('fl-division');
   const modal = document.getElementById('m-division');
   if(fl) fl.innerHTML = '<option value="">All Divisions</option>' + options;
   if(modal) modal.innerHTML = '<option value="">Select division...</option>' + options;
+}
+
+function isPrivilegedUser(){
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
+  const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
+  return ['admin','superadmin','administrator'].includes(role) && String(u._collection || '') !== 'Employee';
+}
+
+function getVisibleDivisions(){
+  if(isPrivilegedUser()) return divisions;
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
+  const activeDivision = localStorage.getItem('schiller_active_division') || sessionStorage.getItem('schiller_active_division') || u.activeDivision;
+  const values = activeDivision
+    ? [activeDivision]
+    : (Array.isArray(u.divisions) && u.divisions.length ? u.divisions : [u.division]);
+  const allowed = [...new Set(values.map(v => String(v || '').trim()).filter(Boolean))];
+  if(!allowed.length) return [];
+  const matched = divisions.filter(d => allowed.some(a => a.toLowerCase() === String(d).toLowerCase()));
+  return matched.length ? matched : allowed;
 }
 
 async function loadData(){
