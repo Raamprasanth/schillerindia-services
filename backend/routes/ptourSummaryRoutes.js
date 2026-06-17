@@ -1,7 +1,12 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const PTourSummary = require('../models/PTourSummary');
 const ATourSummary = require('../models/ATourSummary');
+const Admin = require('../models/Admin');
+const Employee = require('../models/Employee');
+const RepairTeam = require('../models/Repairteam');
 const { protect } = require('../middleware/authMiddleware');
+const { buildTourWorkbookBuffer, sendWorkbook } = require('../utils/tourWorkbook');
 
 const router = express.Router();
 
@@ -25,9 +30,80 @@ function ownerFilter(user) {
   return { createdById: user?._id };
 }
 
+function normalizeDivision(value) {
+  return String(value || '').trim().replace(/\s+/g, ' ').toUpperCase();
+}
+
+function getDivisionLabel(user) {
+  return String(user?.activeDivision || user?.division || (Array.isArray(user?.divisions) ? user.divisions[0] : '') || '').trim();
+}
+
+function visibilityFilter(user) {
+  const role = String(user?.role || '').toLowerCase();
+  if (['admin', 'superadmin', 'administrator'].includes(role)) return {};
+  const divisionKey = normalizeDivision(getDivisionLabel(user));
+  if (!divisionKey) return { createdById: user?._id };
+  return { createdByDivisionKey: divisionKey };
+}
+
+async function loadCreatorsMap(ids = []) {
+  const uniqueIds = [...new Set(ids.map((id) => String(id || '')).filter(Boolean))];
+  if (!uniqueIds.length) return new Map();
+
+  const [admins, employees, repairs] = await Promise.all([
+    Admin.find({ _id: { $in: uniqueIds } }).select('division divisions').lean(),
+    Employee.find({ _id: { $in: uniqueIds } }).select('division divisions').lean(),
+    RepairTeam.find({ _id: { $in: uniqueIds } }).select('division divisions').lean(),
+  ]);
+
+  let users = [];
+  try {
+    const User = require('../models/User');
+    users = await User.find({ _id: { $in: uniqueIds } }).select('division divisions').lean();
+  } catch (_) {}
+
+  const map = new Map();
+  [...admins, ...employees, ...repairs, ...users].forEach((doc) => {
+    if (!doc?._id) return;
+    const division = String(doc.division || (Array.isArray(doc.divisions) ? doc.divisions[0] : '') || '').trim();
+    if (!division) return;
+    map.set(String(doc._id), {
+      createdByDivision: division,
+      createdByDivisionKey: normalizeDivision(division),
+    });
+  });
+  return map;
+}
+
+async function backfillMissingTourDivisions() {
+  const missing = await PTourSummary.find({
+    $or: [
+      { createdByDivisionKey: { $exists: false } },
+      { createdByDivisionKey: '' },
+    ],
+    createdById: { $ne: null },
+  }).select('_id createdById').lean();
+
+  if (!missing.length) return;
+  const creators = await loadCreatorsMap(missing.map((doc) => doc.createdById));
+  const ops = missing.map((doc) => {
+    const resolved = creators.get(String(doc.createdById || ''));
+    if (!resolved) return null;
+    return {
+      updateOne: {
+        filter: { _id: doc._id },
+        update: { $set: resolved },
+      },
+    };
+  }).filter(Boolean);
+
+  if (ops.length) await PTourSummary.bulkWrite(ops, { ordered: false });
+}
+
 router.get('/', async (req, res) => {
   try {
-    const docs = await PTourSummary.find({}).sort({ startDate: -1, createdAt: -1 }).lean();
+    await backfillMissingTourDivisions();
+    const docs = await PTourSummary.find(visibilityFilter(req.user)).sort({ startDate: -1, createdAt: -1 }).lean();
     res.json(docs);
   } catch (err) {
     console.error('[GET /api/ptours]', err);
@@ -60,6 +136,8 @@ router.post('/', async (req, res) => {
       images,
       createdBy: req.user?.name || req.user?.email || '',
       createdById: req.user?._id,
+      createdByDivision: getDivisionLabel(req.user),
+      createdByDivisionKey: normalizeDivision(getDivisionLabel(req.user)),
     });
 
     try {
@@ -78,6 +156,29 @@ router.post('/', async (req, res) => {
     console.error('[POST /api/ptours]', err);
     if (err.name === 'ValidationError') return res.status(400).json({ message: err.message });
     res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+router.post('/export', async (req, res) => {
+  try {
+    await backfillMissingTourDivisions();
+    const ids = Array.isArray(req.body?.ids)
+      ? req.body.ids.filter((id) => mongoose.Types.ObjectId.isValid(String(id))).map(String)
+      : [];
+    const filter = { ...visibilityFilter(req.user) };
+    if (ids.length) filter._id = { $in: ids.map((id) => new mongoose.Types.ObjectId(id)) };
+
+    const docs = await PTourSummary.find(filter).sort({ startDate: 1, createdAt: 1 }).lean();
+    const order = new Map(ids.map((id, index) => [id, index]));
+    const ordered = ids.length
+      ? docs.sort((a, b) => (order.get(String(a._id)) ?? 0) - (order.get(String(b._id)) ?? 0))
+      : docs;
+
+    const buffer = await buildTourWorkbookBuffer(ordered, { sheetName: 'Tour Summary' });
+    sendWorkbook(res, buffer, req.body?.fileName || 'PT_Tour_Summary_Export');
+  } catch (err) {
+    console.error('[POST /api/ptours/export]', err);
+    res.status(500).json({ message: 'Export failed', error: err.message });
   }
 });
 

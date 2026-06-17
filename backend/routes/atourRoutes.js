@@ -1,6 +1,8 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const ATourSummary = require('../models/ATourSummary');
 const { protect } = require('../middleware/authMiddleware');
+const { buildTourWorkbookBuffer, sendWorkbook } = require('../utils/tourWorkbook');
 
 const router = express.Router();
 
@@ -38,6 +40,29 @@ router.delete('/:id', async (req, res) => {
   } catch (err) {
     console.error('[DELETE /api/atours/:id]', err);
     res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+// POST /api/atours/export
+router.post('/export', async (req, res) => {
+  try {
+    const ids = Array.isArray(req.body?.ids)
+      ? req.body.ids.filter((id) => mongoose.Types.ObjectId.isValid(String(id))).map(String)
+      : [];
+    const filter = {};
+    if (ids.length) filter._id = { $in: ids.map((id) => new mongoose.Types.ObjectId(id)) };
+
+    const docs = await ATourSummary.find(filter).sort({ startDate: 1, createdAt: 1 }).lean();
+    const order = new Map(ids.map((id, index) => [id, index]));
+    const ordered = ids.length
+      ? docs.sort((a, b) => (order.get(String(a._id)) ?? 0) - (order.get(String(b._id)) ?? 0))
+      : docs;
+
+    const buffer = await buildTourWorkbookBuffer(ordered, { sheetName: 'Tour Summary', includeSource: true });
+    sendWorkbook(res, buffer, req.body?.fileName || 'Admin_Tour_Summary_Export');
+  } catch (err) {
+    console.error('[POST /api/atours/export]', err);
+    res.status(500).json({ message: 'Export failed', error: err.message });
   }
 });
 

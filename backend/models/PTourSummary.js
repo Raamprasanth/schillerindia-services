@@ -15,9 +15,12 @@ const ptourSummarySchema = new mongoose.Schema({
   images: [{ type: String }],
   createdBy: { type: String, default: '' },
   createdById: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  createdByDivision: { type: String, default: '', trim: true },
+  createdByDivisionKey: { type: String, default: '', trim: true },
   updatedBy: { type: String, default: '' },
 }, { timestamps: true });
 
 ptourSummarySchema.index({ createdById: 1, tourName: 1, dayNo: 1, startDate: -1, createdAt: -1 });
+ptourSummarySchema.index({ createdByDivisionKey: 1, startDate: -1, createdAt: -1 });
 
 module.exports = mongoose.model('PTourSummary', ptourSummarySchema);

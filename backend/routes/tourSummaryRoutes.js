@@ -1,10 +1,12 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const TourSummary = require('../models/TourSummary');
 const ATourSummary = require('../models/ATourSummary');
 const Admin = require('../models/Admin');
 const Employee = require('../models/Employee');
 const RepairTeam = require('../models/Repairteam');
 const { protect } = require('../middleware/authMiddleware');
+const { buildTourWorkbookBuffer, sendWorkbook } = require('../utils/tourWorkbook');
 
 const router = express.Router();
 
@@ -156,6 +158,29 @@ router.post('/', async (req, res) => {
     console.error('[POST /api/tours]', err);
     if (err.name === 'ValidationError') return res.status(400).json({ message: err.message });
     res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+router.post('/export', async (req, res) => {
+  try {
+    await backfillMissingTourDivisions();
+    const ids = Array.isArray(req.body?.ids)
+      ? req.body.ids.filter((id) => mongoose.Types.ObjectId.isValid(String(id))).map(String)
+      : [];
+    const filter = { ...visibilityFilter(req.user) };
+    if (ids.length) filter._id = { $in: ids.map((id) => new mongoose.Types.ObjectId(id)) };
+
+    const docs = await TourSummary.find(filter).sort({ startDate: 1, createdAt: 1 }).lean();
+    const order = new Map(ids.map((id, index) => [id, index]));
+    const ordered = ids.length
+      ? docs.sort((a, b) => (order.get(String(a._id)) ?? 0) - (order.get(String(b._id)) ?? 0))
+      : docs;
+
+    const buffer = await buildTourWorkbookBuffer(ordered, { sheetName: 'Tour Summary' });
+    sendWorkbook(res, buffer, req.body?.fileName || 'Employee_Tour_Summary_Export');
+  } catch (err) {
+    console.error('[POST /api/tours/export]', err);
+    res.status(500).json({ message: 'Export failed', error: err.message });
   }
 });
 
