@@ -1958,11 +1958,11 @@
     document.getElementById('admin-date') && ((document.getElementById('admin-date')||{}).textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }));
     (function () {
       const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
-      const n = u.name || 'Admin';
+      const n = u.name || 'Employee';
       (document.getElementById('emp-name')||{}).textContent = n;
       (document.getElementById('emp-avatar')||{}).textContent = n.charAt(0).toUpperCase();
       const rl = document.getElementById('emp-desig');
-      if (rl) rl.textContent = u.role === 'admin' ? 'Administrator' : 'Field Engineer';
+      if (rl) rl.textContent = u.designation || u.desig || u.position || u.role || 'Field Engineer';
     })();
 
     /* ----------- NAV ----------- */
