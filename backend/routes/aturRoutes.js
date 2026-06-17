@@ -15,6 +15,7 @@ const ATUR = require('../models/aturModel');
 const RTCRL = require('../models/rtcrlModel');
 const Service = require('../models/Service');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
+const { deleteMirroredRepairRows } = require('../utils/repairDeleteCleanup');
 
 const fail = (res, code, message, err = null) => {
   if (err) console.error('[ATUR]', message, err.message);
@@ -284,9 +285,23 @@ router.put('/:id', protect, adminOnly, async (req, res) => {
 
 router.delete('/:id', protect, adminOnly, async (req, res) => {
   try {
-    const deleted = await ATUR.findByIdAndDelete(req.params.id);
-    if (!deleted) return fail(res, 404, 'Record not found');
-    return res.json({ success: true, message: 'ATUR record deleted', data: { id: req.params.id } });
+    const existing = await ATUR.findById(req.params.id).lean();
+    if (!existing) return fail(res, 404, 'Record not found');
+
+    const result = await deleteMirroredRepairRows(ATUR, req.params.id, existing);
+    if (existing.sourceServiceId) {
+      try {
+        await Service.findByIdAndUpdate(existing.sourceServiceId, {
+          rturSent: false,
+          rturSentAt: null,
+          rturCompleted: false,
+          rturCompletedAt: null,
+        });
+      } catch (svcErr) {
+        console.error('ATUR DELETE source reset failed:', svcErr.message);
+      }
+    }
+    return res.json({ success: true, message: 'ATUR record deleted', data: { id: req.params.id }, deletedCount: result.deletedCount });
   } catch (err) {
     return fail(res, 500, 'Failed to delete record', err);
   }

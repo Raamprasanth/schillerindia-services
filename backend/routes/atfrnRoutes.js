@@ -15,6 +15,7 @@ const RTCRL = require('../models/rtcrlModel');
 const EmpFRN = require('../models/EmpFRN');
 const Service = require('../models/Service');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
+const { deleteMirroredRepairRows } = require('../utils/repairDeleteCleanup');
 
 async function attachActualDivisions(records) {
   if (!records || !records.length) return records;
@@ -294,8 +295,20 @@ router.delete('/:id', protect, adminOnly, async (req, res) => {
     const existing = await ATFRN.findById(req.params.id).lean();
     if (!existing) return res.status(404).json({ success: false, message: 'Record not found.' });
 
-    const deleted = await ATFRN.findByIdAndDelete(req.params.id);
-    return res.json({ success: true, message: `Record "${deleted.scRefNo}" deleted.` });
+    const result = await deleteMirroredRepairRows(ATFRN, req.params.id, existing);
+    if (existing.sourceEmpFrnId) {
+      try {
+        await EmpFRN.findByIdAndUpdate(existing.sourceEmpFrnId, {
+          rtfrnSent: false,
+          rtfrnSentAt: null,
+          rtfrnCompleted: false,
+          rtfrnCompletedAt: null,
+        });
+      } catch (empErr) {
+        console.error('ATFRN DELETE source reset failed:', empErr.message);
+      }
+    }
+    return res.json({ success: true, message: `Record "${existing.scRefNo}" deleted.`, deletedCount: result.deletedCount });
   } catch (err) {
     console.error('ATFRN DELETE error:', err.message);
     return res.status(500).json({ success: false, message: err.message });

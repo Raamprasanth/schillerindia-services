@@ -21,6 +21,7 @@ const router  = express.Router();
 const Atcrr   = require('../models/Atcrr');
 const EmpFRN  = require('../models/EmpFRN');
 const Service = require('../models/Service');
+const { deleteMirroredRepairRows } = require('../utils/repairDeleteCleanup');
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // HELPER
@@ -308,9 +309,11 @@ router.post('/', async (req, res) => {
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 router.delete('/:id', async (req, res) => {
   try {
-    const deleted = await Atcrr.findByIdAndDelete(req.params.id);
-    if (!deleted) return fail(res, 404, 'Record not found');
-    return res.json({ success: true, message: 'Closed repair record deleted', data: { id: req.params.id } });
+    const existing = await Atcrr.findById(req.params.id).lean();
+    if (!existing) return fail(res, 404, 'Record not found');
+
+    const result = await deleteMirroredRepairRows(Atcrr, req.params.id, existing);
+    return res.json({ success: true, message: 'Closed repair record deleted', data: { id: req.params.id }, deletedCount: result.deletedCount });
   } catch (err) {
     return fail(res, 500, 'Failed to delete record', err);
   }

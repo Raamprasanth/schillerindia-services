@@ -16,6 +16,7 @@ const Service = require('../models/Service');
 const EstimationPending = require('../models/EstimationPending');
 const EmpFRN = require('../models/EmpFRN');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
+const { deleteMirroredRepairRows } = require('../utils/repairDeleteCleanup');
 
 async function attachActualDivisions(records) {
   if (!records || !records.length) return records;
@@ -308,8 +309,21 @@ router.delete('/:id', protect, adminOnly, async (req, res) => {
     const existing = await ATOB.findById(req.params.id);
     if (!existing) return res.status(404).json({ message: 'AT OB record not found.' });
 
-    await ATOB.findByIdAndDelete(req.params.id);
-    res.json({ message: 'AT OB record deleted successfully.', id: req.params.id });
+    const result = await deleteMirroredRepairRows(ATOB, req.params.id, existing);
+    if (existing.sourceId && mongoose.Types.ObjectId.isValid(String(existing.sourceId))) {
+      const SourceModel = existing.sourceCollection === 'estimation' ? EstimationPending : Service;
+      try {
+        await SourceModel.findByIdAndUpdate(existing.sourceId, {
+          rtobSent: false,
+          rtobSentAt: null,
+          rtobCompleted: false,
+          rtobCompletedAt: null,
+        });
+      } catch (srcErr) {
+        console.error('ATOB DELETE source reset failed:', srcErr.message);
+      }
+    }
+    res.json({ success: true, message: 'AT OB record deleted successfully.', id: req.params.id, deletedCount: result.deletedCount });
   } catch (err) {
     console.error('ATOB delete error:', err);
     res.status(500).json({ message: err.message });

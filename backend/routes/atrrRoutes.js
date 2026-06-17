@@ -17,6 +17,7 @@ const Rtcrr    = require('../models/Rtcrr');
 const EmpFRN   = require('../models/EmpFRN');
 const Service  = require('../models/Service');
 const { protect } = require('../middleware/authMiddleware');
+const { deleteMirroredRepairRows } = require('../utils/repairDeleteCleanup');
 
 function canViewAll(user) {
   const role = String(user?.role || '').toLowerCase();
@@ -437,8 +438,8 @@ router.delete('/:id', protect, async (req, res) => {
       }
     }
 
-    const deleted = await Atrr.findByIdAndDelete(req.params.id);
-    return res.json({ success:true, message:`Record "${deleted.scRefNo}" deleted.` });
+    const result = await deleteMirroredRepairRows(Atrr, req.params.id, existing);
+    return res.json({ success:true, message:`Record "${existing.scRefNo}" deleted.`, deletedCount: result.deletedCount });
   } catch (err) {
     console.error('Atrr DELETE error:', err.message);
     return res.status(500).json({ success:false, message: err.message });
