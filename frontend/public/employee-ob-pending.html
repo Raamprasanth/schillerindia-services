@@ -1237,7 +1237,6 @@ async function submitEstimation(){
   const missing=[];
   if(!estno) missing.push('Estimation No');
   if(!estdate) missing.push('Estimation Date');
-  if(!estamount) missing.push('Estimation Amount');
   if(!eststatus) missing.push('Order Type');
   if(!raeng) missing.push('RA Engineer');
   if(!header.techRemarks) missing.push('Problem Observed');
@@ -1398,7 +1397,7 @@ function generatePDFData(s, mode='download'){
     pricePerUnit:Math.max(0, Number(row.pricePerUnit) || 0),
     lineAmount:Math.max(0, Number(row.lineAmount ?? row.estAmount) || 0),
     lineNo:row.lineNo || index + 1,
-  }));
+  })).filter(row => row.lineAmount > 0);
   const itemsTotal=lineItems.reduce((sum,row)=>sum + row.lineAmount,0);
   const serviceCharge=Math.max(0, Number(s.serviceCharge) || 0);
   const groupTotal=itemsTotal + serviceCharge;

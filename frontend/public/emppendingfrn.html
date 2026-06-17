@@ -1352,7 +1352,7 @@ function generateEstimationPDFData(s, mode='download'){
     qty:Math.max(1, parseInt(row.qty,10) || 1),
     pricePerUnit:Math.max(0, Number(row.pricePerUnit) || 0),
     lineAmount:Math.max(0, Number(row.lineAmount ?? row.estAmount) || 0),
-  }));
+  })).filter(row => row.lineAmount > 0);
   const itemsTotal=lineItems.reduce((sum,row)=>sum + row.lineAmount,0);
   const serviceCharge=Math.max(0, Number(s.serviceCharge) || 0);
   const groupTotal=itemsTotal + serviceCharge;
