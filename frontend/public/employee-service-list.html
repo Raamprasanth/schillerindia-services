@@ -383,6 +383,7 @@ table.svc-table tbody tr:last-child td{border-bottom:none;}
               <th onclick="sortBy('entryDate')">Entry Date <span class="si">&#8693;</span></th>
               <th onclick="sortBy('scReNo')">Sc ReNo <span class="si">&#8693;</span></th>
               <th onclick="sortBy('scEng')">Sc Eng <span class="si">&#8693;</span></th>
+              <th onclick="sortBy('raEng')">RA Engineer <span class="si">&#8693;</span></th>
               <th onclick="sortBy('frnNo')">Frn No <span class="si">&#8693;</span></th>
               <th onclick="sortBy('branch')">Branch <span class="si">&#8693;</span></th>
               <th onclick="sortBy('eng')">Engineer <span class="si">&#8693;</span></th>
@@ -948,7 +949,7 @@ async function loadServices() {
 }
 
 function populateEngFilter() {
-  const engs = [...new Set(services.map(s=>s.eng||s.scEng).filter(Boolean))].sort();
+  const engs = [...new Set(services.flatMap(s=>[s.eng,s.scEng,s.raEng]).filter(Boolean))].sort();
   const sel  = document.getElementById('fl-eng');
   const existing = new Set(Array.from(sel.options).map(o=>o.value).filter(Boolean));
   engs.forEach(e=>{ if(!existing.has(e)){ const o=document.createElement('option');o.value=e;o.textContent=e;sel.appendChild(o); } });
@@ -1087,9 +1088,9 @@ function applyFilters() {
   const to   = document.getElementById('fl-to').value;
   const mine = document.getElementById('fl-mine').checked;
   filtered = services.filter(s=>{
-    const mQ    = !q    || ((s.scReNo||'')+' '+(s.custName||'')+' '+(s.eng||'')+' '+(s.scEng||'')+' '+(s.frnNo||'')+' '+(s.model||'')+' '+(s.defGir||'')).toLowerCase().includes(q);
+    const mQ    = !q    || ((s.scReNo||'')+' '+(s.custName||'')+' '+(s.eng||'')+' '+(s.scEng||'')+' '+(s.raEng||'')+' '+(s.frnNo||'')+' '+(s.model||'')+' '+(s.defGir||'')).toLowerCase().includes(q);
     const mS    = !stat || s.status===stat;
-    const mE    = !eng  || s.eng===eng||s.scEng===eng;
+    const mE    = !eng  || s.eng===eng||s.scEng===eng||s.raEng===eng;
     const mF    = !from || (s.entryDate||'')>=from;
     const mT    = !to   || (s.entryDate||'')<=to;
     const mMine = !mine || isOwner(s);
@@ -1144,6 +1145,7 @@ function renderTable() {
         <td style="font-size:11px;color:var(--soft);">${fmt(s.entryDate)}</td>
         <td style="font-weight:600;color:var(--accent2);">${s.scReNo||''}</td>
         <td>${s.scEng||''}</td>
+        <td>${s.raEng||''}</td>
         <td style="font-family:monospace;font-size:11px;">${s.frnNo||''}</td>
         <td><span style="background:rgba(0,104,181,0.1);color:var(--accent);padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;">${s.branch||''}</span></td>
         <td>${s.eng||''}</td>
@@ -1445,7 +1447,7 @@ async function submitForm() {
 
 function exportCSV() {
   const headers=[
-    'Status','SC Engineer','Division','Entry Date','SC Ref No','FRN No','FRN Date','Ser Comm Inward Date','Received Date at SC',
+    'Status','SC Engineer','RA Engineer','Division','Entry Date','SC Ref No','FRN No','FRN Date','Ser Comm Inward Date','Received Date at SC',
     'STOCK / CUST','Region','Branch','Engineer','Dealer Name','Customer Name','Supplier','Model','Model Configuration',
     'Unit SL No','Unit Status','Part Number','Mod / Brd Name','DEF Type','Type of Acc','DOI','DEF Part SNO','DEF GIR No',
     'REP Type','REP GIR SNO','Field Remarks','OB Details','Comm Warr Details','BSCON','Type of Work','Auto-sent to',
@@ -1472,6 +1474,7 @@ function exportCSV() {
     rows.push([
       s.status,
       s.scEng,
+      s.raEng,
       serviceDivisionLabel(s),
       s.entryDate,
       s.scReNo,

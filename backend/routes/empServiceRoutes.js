@@ -4,6 +4,8 @@ const mongoose            = require('mongoose');
 const Service             = require('../models/Service');
 const EstimationPending   = require('../models/EstimationPending');
 const Division            = require('../models/Division');
+const UnderRepair         = require('../models/UnderRepair');
+const CompletedFRN        = require('../models/CompletedFRN');
 const { protect }         = require('../middleware/authMiddleware');
 const { tryCreateFRNPending, tryCreateUnderRepair, cleanupLinkedRecords } = require('../services/queueSyncService');
 const { buildUrEscalationRow, enqueueEscalationSnapshot, UR_DAILY_TYPES } = require('../services/escalationService');
@@ -181,8 +183,20 @@ router.get('/', protect, async (req, res) => {
 
     const name   = req.user.name || '';
     const userId = String(req.user._id || '');
+    const serviceIds = records.map(r => String(r._id || '')).filter(Boolean);
+    const [underRepairRows, completedRows] = await Promise.all([
+      serviceIds.length ? UnderRepair.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng').lean() : [],
+      serviceIds.length ? CompletedFRN.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng').lean() : [],
+    ]);
+    const raByServiceId = new Map();
+    [...underRepairRows, ...completedRows].forEach(row => {
+      const key = String(row.serviceId || '');
+      if (key && row.raEng) raByServiceId.set(key, row.raEng);
+    });
+
     const annotated = records.map(r => {
       const obj = r.toObject ? r.toObject() : r;
+      obj.raEng = obj.raEng || raByServiceId.get(String(obj._id || '')) || '';
       obj.isOwner =
         obj.scEng       === name ||
         obj.eng         === name ||

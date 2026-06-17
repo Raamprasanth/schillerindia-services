@@ -434,6 +434,7 @@ table.cf-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('entryDate')">Entry Date <span class="si">&#8693;</span></th>
             <th onclick="sortBy('scRno')">Sc RNo <span class="si">&#8693;</span></th>
             <th onclick="sortBy('scEng')">Sc Eng <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('raEng')">RA Engineer <span class="si">&#8693;</span></th>
             <th onclick="sortBy('frnNo')">Frn No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('region')">Branch <span class="si">&#8693;</span></th>
             <th onclick="sortBy('eng')">Engineer <span class="si">&#8693;</span></th>
@@ -447,7 +448,7 @@ table.cf-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('pdays')">Pend Days <span class="si">&#8693;</span></th>
           </tr></thead>
           <tbody id="cf-tbody">
-            <tr class="loading-row"><td colspan="13"><span class="spin"></span>Loading records...</td></tr>
+            <tr class="loading-row"><td colspan="15"><span class="spin"></span>Loading records...</td></tr>
           </tbody>
         </table>
       </div>
@@ -545,7 +546,7 @@ function populateEngineerFilter() {
   const branch = document.getElementById('fl-branch').value;
   const engineers = [...new Set(DATA
     .filter(d => !branch || d.region === branch)
-    .map(d => String(d.eng || '').trim())
+    .flatMap(d => [d.eng, d.raEng].map(value => String(value || '').trim()))
     .filter(Boolean))]
     .sort((a, b) => a.localeCompare(b));
   const sel = document.getElementById('fl-eng');
@@ -592,7 +593,7 @@ function applyFilters() {
     (!q  || Object.values(d).some(v => String(v).toLowerCase().includes(q))) &&
     (!brn|| d.region === brn) && (!sts|| d.unitStatus === sts) &&
     (!tw || (d.typeWork||'').toUpperCase() === tw.toUpperCase()) &&
-    (!eng|| d.eng === eng) &&
+    (!eng|| d.eng === eng || d.raEng === eng) &&
     (!fr || (d.entryDate||'') >= fr) && (!to|| (d.entryDate||'') <= to)
   );
   sortArr(); currentPage = 1; renderTable();
@@ -622,7 +623,7 @@ function renderTable() {
   const tbody = document.getElementById('cf-tbody');
 
   if (!total) {
-    tbody.innerHTML = `<tr><td colspan="13"><div class="empty-state">
+    tbody.innerHTML = `<tr><td colspan="15"><div class="empty-state">
       <div class="empty-ico">&#128196;</div>
       <div class="empty-title">${DATA.length ? 'No records match the current filters' : 'No Completed FRN records'}</div>
       <div class="empty-sub">${DATA.length ? 'Try clearing the filters.' : 'Records appear here once FRNs are fully closed.'}</div>
@@ -634,6 +635,7 @@ function renderTable() {
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
         <td style="font-weight:600;">${esc(d.scRno||'-')}</td>
         <td>${esc(d.scEng||'-')}</td>
+        <td>${esc(d.raEng||'-')}</td>
         <td class="mono">${esc(String(d.frnNo||'-'))}</td>
         <td><span class="branch-tag">${esc(d.region||'-')}</span></td>
         <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.eng||'')}">${esc(d.eng||'-')}</td>
@@ -677,6 +679,7 @@ function openDetail(id) {
     <div class="dm-item"><label>FRN No</label><div class="dm-val mono-val">${esc(String(d.frnNo||'-'))}</div></div>
     <div class="dm-item"><label>SC Ref No</label><div class="dm-val accent">${esc(d.scRno||'-')}</div></div>
     <div class="dm-item"><label>SC Engineer</label><div class="dm-val">${esc(d.scEng||'-')}</div></div>
+    <div class="dm-item"><label>RA Engineer</label><div class="dm-val">${esc(d.raEng||'-')}</div></div>
     <div class="dm-item"><label>Field Engineer</label><div class="dm-val">${esc(d.eng||'-')}</div></div>
     <div class="dm-sep"></div>
     <div class="dm-item" style="grid-column:1/-1"><label>Customer Name</label><div class="dm-val" style="font-size:14px;font-weight:600;">${esc(d.customer||'-')}</div></div>
@@ -701,8 +704,8 @@ document.getElementById('detail-overlay').addEventListener('click', e => { if (e
 
 // -- EXPORT CSV --------------------------------------------
 function exportCSV() {
-  const headers = ['Entry Date','SC RNo','SC Eng','Frn No','Region','Engineer','Customer','Model','Unit Status','Part No','Def Mod','Def Gir No','Type of Work','Pend Days'];
-  const rows = filtered.map(d => [d.entryDate, d.scRno, d.scEng, d.frnNo, d.region, d.eng, d.customer, d.model, d.unitStatus, d.partNo, d.defMod, d.defGir, d.typeWork, d.pdays]);
+  const headers = ['Entry Date','SC RNo','SC Eng','RA Engineer','Frn No','Region','Engineer','Customer','Model','Unit Status','Part No','Def Mod','Def Gir No','Type of Work','Pend Days'];
+  const rows = filtered.map(d => [d.entryDate, d.scRno, d.scEng, d.raEng, d.frnNo, d.region, d.eng, d.customer, d.model, d.unitStatus, d.partNo, d.defMod, d.defGir, d.typeWork, d.pdays]);
   const csv = [headers, ...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
@@ -727,11 +730,11 @@ function gp(p) { currentPage = p; renderTable(); }
 
 // -- HELPERS -----------------------------------------------
 function setLoading() {
-  document.getElementById('cf-tbody').innerHTML = '<tr class="loading-row"><td colspan="13"><span class="spin"></span>Loading records...</td></tr>';
+  document.getElementById('cf-tbody').innerHTML = '<tr class="loading-row"><td colspan="15"><span class="spin"></span>Loading records...</td></tr>';
   ['s-total','s-repaired','s-scrapped','s-nofault','s-avg'].forEach(id => document.getElementById(id).textContent = '-');
 }
 function setError(msg) {
-  document.getElementById('cf-tbody').innerHTML = `<tr class="loading-row"><td colspan="13" style="color:var(--red);">&#9888; ${esc(msg)}</td></tr>`;
+  document.getElementById('cf-tbody').innerHTML = `<tr class="loading-row"><td colspan="15" style="color:var(--red);">&#9888; ${esc(msg)}</td></tr>`;
 }
 function fmtDate(d) {
   if (!d) return '-';
