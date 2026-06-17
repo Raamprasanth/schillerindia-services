@@ -186,11 +186,12 @@ function renderTourCardGroup(name, items, tourNum){
   const firstDate = sortedItems[0] ? fmtDate(sortedItems[0].startDate) : '';
   const lastDate = sortedItems[sortedItems.length - 1] ? fmtDate(sortedItems[sortedItems.length - 1].startDate) : '';
   const dateText = (firstDate === lastDate || !lastDate) ? firstDate : (firstDate + ' - ' + lastDate);
+  const creatorText = tourCreatorSummary(sortedItems);
 
   let html = '<div class="tour-card-wrapper" style="display: flex; align-items: flex-start; gap: 10px; width: 100%;">'
     + '<div class="tour-number" style="font-size: 13px; font-weight: 800; color: var(--muted); margin-top: 10px; background: var(--surface2); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); flex-shrink: 0;">' + tourNum + '</div>'
     + '<article class="tour-card" style="flex: 1; min-width: 0;">'
-    + '<div class="tour-card-top" onclick="toggleTourBody(this)" style="cursor: pointer; user-select: none; border-bottom: none;"><div><div class="tour-day">' + esc(name) + '</div><div class="tour-date">' + dateText + ' (' + items.length + ' day' + (items.length === 1 ? '' : 's') + ' logged)</div></div>'
+    + '<div class="tour-card-top" onclick="toggleTourBody(this)" style="cursor: pointer; user-select: none; border-bottom: none;"><div><div class="tour-day">' + esc(name) + '</div><div class="tour-date">' + dateText + ' (' + items.length + ' day' + (items.length === 1 ? '' : 's') + ' logged)</div><div style="font-size:11px; color:var(--muted); font-weight:800; margin-top:5px;">Added by ' + esc(creatorText) + '</div></div>'
     + '<div class="tour-card-actions" onclick="event.stopPropagation()">'
     + '  <button class="add-day" onclick="openNextDay(&quot;' + tourKey + '&quot;)">&#43; Add Day</button>'
     + '  <button class="pdf-day" onclick="generateTourExcel(&quot;' + tourKey + '&quot;)">&#128196; Excel</button>'
@@ -241,6 +242,12 @@ function toggleTourBody(headerEl) {
       headerEl.style.borderBottom = 'none';
     }
   }
+}
+function tourCreatorSummary(items){
+  const names = [...new Set((items||[]).map(t => String(t.createdBy || '').trim()).filter(Boolean))];
+  if(!names.length) return '-';
+  if(names.length === 1) return names[0];
+  return names.slice(0,2).join(', ') + (names.length > 2 ? ' +' + (names.length - 2) : '');
 }
 function meta(label,value){ return '<div class="tour-meta"><div class="tour-meta-label">'+esc(label)+'</div><div class="tour-meta-val" title="'+esc(value||'')+'">'+esc(value||'-')+'</div></div>'; }
 function note(label,value){ return '<div class="tour-note"><div class="tour-note-title">'+esc(label)+'</div><div class="tour-note-text" title="'+esc(value||'')+'">'+esc(value||'-')+'</div></div>'; }

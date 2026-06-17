@@ -1,21 +1,27 @@
 const ExcelJS = require('exceljs');
 
-const BASE_COLUMNS = [
-  { header: 'S.No', key: 'sno', width: 8 },
-  { header: 'Added By', key: 'createdBy', width: 18 },
-  { header: 'Tour Name', key: 'tourName', width: 24 },
-  { header: 'Day', key: 'dayNo', width: 8 },
-  { header: 'Start Date', key: 'startDate', width: 14 },
-  { header: 'Customer Name', key: 'customerName', width: 26 },
-  { header: 'Region', key: 'region', width: 16 },
-  { header: 'Branch', key: 'branch', width: 18 },
-  { header: 'Model', key: 'model', width: 18 },
-  { header: 'Unit Status', key: 'unitStatus', width: 14 },
-  { header: 'Unit SL No', key: 'unitSlNo', width: 18 },
-  { header: 'Problem Reported', key: 'problemReported', width: 34 },
-  { header: 'Problem Observed', key: 'problemObserved', width: 34 },
-  { header: 'Action Taken', key: 'actionTaken', width: 34 },
-];
+function tourColumns(includeSource = false) {
+  const columns = [
+    { header: 'S.No', key: 'sno', width: 8 },
+    { header: 'Added By', key: 'createdBy', width: 18 },
+    { header: 'Tour Name', key: 'tourName', width: 24 },
+    { header: 'Day', key: 'dayNo', width: 8 },
+    { header: 'Start Date', key: 'startDate', width: 14 },
+  ];
+  if (includeSource) columns.push({ header: 'Source', key: 'sourceType', width: 16 });
+  return [
+    ...columns,
+    { header: 'Customer Name', key: 'customerName', width: 26 },
+    { header: 'Region', key: 'region', width: 16 },
+    { header: 'Branch', key: 'branch', width: 18 },
+    { header: 'Model', key: 'model', width: 18 },
+    { header: 'Unit Status', key: 'unitStatus', width: 14 },
+    { header: 'Unit SL No', key: 'unitSlNo', width: 18 },
+    { header: 'Problem Reported', key: 'problemReported', width: 34 },
+    { header: 'Problem Observed', key: 'problemObserved', width: 34 },
+    { header: 'Action Taken', key: 'actionTaken', width: 34 },
+  ];
+}
 
 function imageExtension(dataUrl) {
   const match = String(dataUrl || '').match(/^data:image\/(png|jpe?g|gif);base64,/i);
@@ -38,17 +44,7 @@ async function buildTourWorkbookBuffer(records, options = {}) {
 
   const worksheet = workbook.addWorksheet(safeSheetName(options.sheetName));
   const includeSource = options.includeSource === true;
-  const columns = includeSource
-    ? [
-        BASE_COLUMNS[0],
-        BASE_COLUMNS[1],
-        BASE_COLUMNS[2],
-        BASE_COLUMNS[3],
-        BASE_COLUMNS[4],
-        { header: 'Source', key: 'sourceType', width: 16 },
-        ...BASE_COLUMNS.slice(5),
-      ]
-    : BASE_COLUMNS.slice();
+  const columns = tourColumns(includeSource);
 
   for (let i = 1; i <= 5; i += 1) {
     columns.push({ header: `Photo ${i}`, key: `photo${i}`, width: 20 });
