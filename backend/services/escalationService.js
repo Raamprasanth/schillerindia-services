@@ -14,6 +14,7 @@ const {
   getEscalationTimeMap,
   getEscalationScheduleConfig,
   getEnabledEscalationSlots,
+  getReportTypeForSlot,
   isEscalationSlotAllowedOnDay,
   parseTime,
   formatTimeLabel,
@@ -229,7 +230,44 @@ function addIstDays(parts, days) {
 }
 
 function scheduledTime(times, key, fallback) {
-  return parseTime(times?.[key], fallback);
+  const legacyKeyMap = {
+    morning: 'main_combined_slot_1',
+    evening: 'main_combined_slot_2',
+    sr_morning: 'sr_escalation_slot_1',
+    sr_afternoon: 'sr_escalation_slot_2',
+    to_morning: 'to_escalation_slot_1',
+    to_evening: 'to_escalation_slot_2',
+    ur_scrap: 'ur_scrap_slot_1',
+    ur_followup: 'ur_followup_slot_1',
+    prf_ob: 'prf_ob_escalation_slot_1',
+    supplier_warranty: 'supplier_warranty_escalation_slot_1',
+    external_repair: 'external_repair_escalation_slot_1',
+  };
+  return parseTime(times?.[key] || times?.[legacyKeyMap[key]], fallback);
+}
+
+function reportTypeForEscalationSlot(slot) {
+  const legacyReportTypeMap = {
+    morning: 'main_combined',
+    evening: 'main_combined',
+    sr_morning: 'sr_escalation',
+    sr_afternoon: 'sr_escalation',
+    to_morning: 'to_escalation',
+    to_evening: 'to_escalation',
+    ur_scrap: 'ur_scrap',
+    ur_followup: 'ur_followup',
+    prf_ob: 'prf_ob_escalation',
+    supplier_warranty: 'supplier_warranty_escalation',
+    external_repair: 'external_repair_escalation',
+  };
+  return getReportTypeForSlot(slot) || legacyReportTypeMap[slot] || '';
+}
+
+function slotOrder(slot) {
+  const match = String(slot || '').match(/_slot_(\d+)$/);
+  if (match) return Number(match[1]) || 1;
+  if (String(slot || '').includes('evening') || String(slot || '').includes('afternoon')) return 2;
+  return 1;
 }
 
 function getNextSupplierWarrantyRun(parts, referenceDate, times = {}) {
@@ -293,8 +331,8 @@ async function getSrSlotWindow(slot, referenceDate = new Date()) {
 async function getToSlotWindow(slot, referenceDate = new Date()) {
   const nowIst = getIstParts(referenceDate);
   const times = await getEscalationTimeMap();
-  const slotTime = scheduledTime(times, slot, slot === 'to_evening' ? '16:30' : '11:00');
-  const order = slot === 'to_evening' ? 2 : 1;
+  const order = slotOrder(slot);
+  const slotTime = scheduledTime(times, slot, order === 2 ? '16:30' : '11:00');
   const runAt = makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, slotTime.hour, slotTime.minute, 0, 0);
   return {
     slot,
@@ -328,21 +366,38 @@ function getPreviousSundayIstDateParts(parts) {
   };
 }
 
+function getPreviousAllowedRunParts(reportType, parts, referenceDate, runTime, scheduleConfig) {
+  for (let offset = 1; offset <= 7; offset += 1) {
+    const candidate = addIstDays(parts, -offset);
+    const dayUtc = makeUtcFromIst(candidate.year, candidate.month, candidate.day, runTime.hour, runTime.minute, 0, 0);
+    const weekday = toIstDate(dayUtc).getUTCDay();
+    if (isEscalationSlotAllowedOnDay(`${reportType}_slot_1`, weekday, scheduleConfig)) {
+      return candidate;
+    }
+  }
+  return getPreviousSundayIstDateParts(parts);
+}
+
 async function getUrSlotWindow(slot, referenceDate = new Date()) {
   const nowIst = getIstParts(referenceDate);
-  const times = await getEscalationTimeMap();
-  const scrapTime = scheduledTime(times, 'ur_scrap', '11:00');
-  const followupTime = scheduledTime(times, 'ur_followup', '20:00');
-  if (slot === 'ur_scrap') {
-    const previousSunday = getPreviousSundayIstDateParts(nowIst);
+  const [times, scheduleConfig] = await Promise.all([
+    getEscalationTimeMap(),
+    getEscalationScheduleConfig(),
+  ]);
+  const reportType = reportTypeForEscalationSlot(slot);
+  const isScrap = reportType === 'ur_scrap';
+  const runTime = scheduledTime(times, slot, isScrap ? '11:00' : '20:00');
+  const order = slotOrder(slot);
+  if (isScrap) {
+    const previousRun = getPreviousAllowedRunParts('ur_scrap', nowIst, referenceDate, runTime, scheduleConfig);
     return {
       slot,
       category: 'ur_scrap',
-      slotLabel: 'Weekly Scrap',
-      runTime: scrapTime.value,
+      slotLabel: `Weekly Scrap Send Time ${order}`,
+      runTime: runTime.value,
       jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
-      windowStart: makeUtcFromIst(previousSunday.year, previousSunday.month, previousSunday.day, scrapTime.hour, scrapTime.minute, 0, 0),
-      windowEnd: slot === 'Manual' ? referenceDate : new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, scrapTime.hour, scrapTime.minute, 0, 0).getTime() - 1),
+      windowStart: makeUtcFromIst(previousRun.year, previousRun.month, previousRun.day, runTime.hour, runTime.minute, 0, 0),
+      windowEnd: slot === 'Manual' ? referenceDate : new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, runTime.hour, runTime.minute, 0, 0).getTime() - 1),
       reportName: `ur-scrap-escalation-${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}.xlsx`,
     };
   }
@@ -350,11 +405,11 @@ async function getUrSlotWindow(slot, referenceDate = new Date()) {
   return {
     slot,
     category: 'ur_followup',
-    slotLabel: 'Daily Under Repair Follow-up',
-    runTime: followupTime.value,
+    slotLabel: `Daily Stock Follow-up Send Time ${order}`,
+    runTime: runTime.value,
     jobDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
-    windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, followupTime.hour, followupTime.minute, 0, 0),
-    windowEnd: slot === 'Manual' ? referenceDate : new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, followupTime.hour, followupTime.minute, 0, 0).getTime() - 1),
+    windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, runTime.hour, runTime.minute, 0, 0),
+    windowEnd: slot === 'Manual' ? referenceDate : new Date(makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, runTime.hour, runTime.minute, 0, 0).getTime() - 1),
     reportName: `ur-followup-escalation-${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}.xlsx`,
   };
 }
@@ -818,7 +873,9 @@ async function collectEscalationData(slotWindow) {
 }
 
 async function collectUrEscalationData(slotWindow) {
-  const moduleName = slotWindow.slot === 'ur_scrap' ? 'ur_scrap' : 'ur_followup';
+  const moduleName = slotWindow.category === 'ur_scrap' || reportTypeForEscalationSlot(slotWindow.slot) === 'ur_scrap'
+    ? 'ur_scrap'
+    : 'ur_followup';
   const queueDocs = await EscalationQueue.find({
     module: moduleName,
     queuedAt: { $lte: slotWindow.windowEnd }
@@ -977,7 +1034,7 @@ async function removeEscalationSnapshot(module, sourceId) {
 }
 
 function buildUrMailPayload(slotWindow, data) {
-  const isScrap = slotWindow.slot === 'ur_scrap';
+  const isScrap = slotWindow.category === 'ur_scrap' || reportTypeForEscalationSlot(slotWindow.slot) === 'ur_scrap';
   const title = isScrap ? 'Weekly Scrap Escalation Report' : 'Daily Stock Escalation Report';
   const bodyLines = [
     isScrap ? 'SchillerIndia scrap escalation report' : 'SchillerIndia stock escalation report',
@@ -1114,8 +1171,8 @@ function buildToMailPayload(slotWindow, data) {
     const items = normalizeToItems(row?.TO_ITEMS);
     if (!items.length) {
       rows.push({
-        'Division Name': pick(doc, ['divisionName', 'division.name', 'division']),
-    'DIVISION NAME': row['Division Name'] || row['DIVISION NAME'] || '',
+        'Division Name': row['Division Name'] || row['DIVISION NAME'] || '',
+        'DIVISION NAME': row['Division Name'] || row['DIVISION NAME'] || '',
         'SCH REF': row['SCH REF'] || row.SC_REF_NO || '',
         FRN_NO: row.FRN_NO || '',
         STK_CUST: row.STK_CUST || '',
@@ -1133,8 +1190,8 @@ function buildToMailPayload(slotWindow, data) {
     }
     items.forEach((item) => {
       rows.push({
-        'Division Name': pick(doc, ['divisionName', 'division.name', 'division']),
-    'DIVISION NAME': row['Division Name'] || row['DIVISION NAME'] || '',
+        'Division Name': row['Division Name'] || row['DIVISION NAME'] || '',
+        'DIVISION NAME': row['Division Name'] || row['DIVISION NAME'] || '',
         'SCH REF': row['SCH REF'] || row.SC_REF_NO || '',
         FRN_NO: row.FRN_NO || '',
         STK_CUST: row.STK_CUST || '',

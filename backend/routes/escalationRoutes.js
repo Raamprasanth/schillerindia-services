@@ -6,7 +6,7 @@ const EscalationRunLog = require('../models/EscalationRunLog');
 const EscalationQueue = require('../models/EscalationQueue');
 const { runEscalationSlot, runSrEscalationSlot, runToEscalationSlot, runUrEscalationSlot, runCustomEscalationSlot, getEscalationRecipients, getSrSlotWindow, getToSlotWindow } = require('../services/escalationService');
 const { getEscalationLabelMap, labelFor, composeSlotLabel } = require('../utils/escalationLabels');
-const { getEscalationTimeMap, getEscalationScheduleConfig, getEnabledSlotsForReportType, parseTime, formatTimeLabel } = require('../utils/escalationSchedule');
+const { getEscalationTimeMap, getEscalationScheduleConfig, getEnabledSlotsForReportType, isEscalationReportAllowedOnDay, parseTime, formatTimeLabel } = require('../utils/escalationSchedule');
 
 const IST_OFFSET_MINUTES = 330;
 const IST_OFFSET_MS = IST_OFFSET_MINUTES * 60 * 1000;
@@ -70,7 +70,20 @@ function pad(value) {
 }
 
 function scheduledTime(times, key, fallback) {
-  return parseTime(times?.[key], fallback);
+  const legacyKeyMap = {
+    morning: 'main_combined_slot_1',
+    evening: 'main_combined_slot_2',
+    sr_morning: 'sr_escalation_slot_1',
+    sr_afternoon: 'sr_escalation_slot_2',
+    to_morning: 'to_escalation_slot_1',
+    to_evening: 'to_escalation_slot_2',
+    ur_scrap: 'ur_scrap_slot_1',
+    ur_followup: 'ur_followup_slot_1',
+    prf_ob: 'prf_ob_escalation_slot_1',
+    supplier_warranty: 'supplier_warranty_escalation_slot_1',
+    external_repair: 'external_repair_escalation_slot_1',
+  };
+  return parseTime(times?.[key] || times?.[legacyKeyMap[key]], fallback);
 }
 
 function visibleLatestLog(log, activeTotal = 0) {
@@ -95,20 +108,31 @@ async function getOrderedConfiguredSlots(reportType, fallbackSlots, fallbackTime
 
 async function getActiveConfiguredQueueWindow(reportType, fallbackSlots, fallbackTimes, labelPrefix, referenceDate = new Date()) {
   const nowIst = getIstParts(referenceDate);
-  const minutes = nowIst.hour * 60 + nowIst.minute;
+  const scheduleConfig = await getEscalationScheduleConfig();
   const slots = await getOrderedConfiguredSlots(reportType, fallbackSlots, fallbackTimes);
-  const activeIndex = slots.findIndex((item) => minutes < item.time.minutes);
-  const active = activeIndex >= 0 ? slots[activeIndex] : slots[0];
-  const base = activeIndex === 0 ? getPreviousIstDateParts(nowIst) : nowIst;
+  const candidates = [];
+  for (let offset = 0; offset <= 7; offset += 1) {
+    const parts = addIstDays(nowIst, offset);
+    const dayUtc = makeUtcFromIst(parts.year, parts.month, parts.day, 0, 0, 0, 0);
+    const weekday = toIstDate(dayUtc).getUTCDay();
+    if (!isEscalationReportAllowedOnDay(reportType, weekday, scheduleConfig)) continue;
+    slots.forEach((item) => {
+      const runAt = makeUtcFromIst(parts.year, parts.month, parts.day, item.time.hour, item.time.minute, 0, 0);
+      if (runAt > referenceDate) candidates.push({ ...item, parts, runAt });
+    });
+  }
+  const active = candidates.sort((a, b) => a.runAt - b.runAt)[0] || { ...slots[0], parts: nowIst, runAt: referenceDate };
+  const prevBase = getPreviousIstDateParts(active.parts);
+  const dayName = toIstDate(active.runAt).toLocaleDateString('en-US', { weekday: 'long' });
 
   return {
     slot: active.slot,
     slotLabel: `${labelPrefix ? `${labelPrefix} ` : ''}Send Time ${active.order}`,
-    nextRunLabel: formatTimeLabel(active.time.value),
-    windowStart: makeUtcFromIst(base.year, base.month, base.day, 0, 0, 0, 0),
+    nextRunLabel: `${dayName} ${formatTimeLabel(active.time.value)}`,
+    windowStart: makeUtcFromIst(prevBase.year, prevBase.month, prevBase.day, 0, 0, 0, 0),
     windowEnd: referenceDate,
     queueKey: `send${active.order}`,
-    windowDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
+    windowDate: `${active.parts.year}-${pad(active.parts.month)}-${pad(active.parts.day)}`,
   };
 }
 
@@ -198,63 +222,23 @@ async function getActiveQueueWindow(referenceDate = new Date()) {
 }
 
 async function getActiveUrFollowupQueueWindow(referenceDate = new Date()) {
-  const nowIst = getIstParts(referenceDate);
-  const minutes = nowIst.hour * 60 + nowIst.minute;
-  const times = await getEscalationTimeMap();
-  const run = scheduledTime(times, 'ur_followup', '20:00');
-
-  if (minutes < run.minutes) {
-    const prev = getPreviousIstDateParts(nowIst);
-    return {
-      slot: 'ur_followup',
-      slotLabel: 'Daily UR Follow-up',
-      nextRunLabel: formatTimeLabel(run.value),
-      windowStart: makeUtcFromIst(prev.year, prev.month, prev.day, run.hour, run.minute, 0, 0),
-      windowEnd: referenceDate,
-      windowDate: `${nowIst.year}-${pad(nowIst.month)}-${pad(nowIst.day)}`,
-    };
-  }
-
-  const next = getNextIstDateParts(nowIst);
-  return {
-    slot: 'ur_followup',
-    slotLabel: 'Daily UR Follow-up',
-    nextRunLabel: formatTimeLabel(run.value),
-    windowStart: makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, run.hour, run.minute, 0, 0),
-    windowEnd: referenceDate,
-    windowDate: `${next.year}-${pad(next.month)}-${pad(next.day)}`,
-  };
+  return getActiveConfiguredQueueWindow(
+    'ur_followup',
+    ['ur_followup'],
+    { ur_followup: '20:00' },
+    'Daily Stock Follow-up',
+    referenceDate
+  );
 }
 
 async function getActiveUrScrapQueueWindow(referenceDate = new Date()) {
-  const times = await getEscalationTimeMap();
-  const run = scheduledTime(times, 'ur_scrap', '11:00');
-  const nowIstDate = toIstDate(referenceDate);
-  const nowParts = getIstParts(referenceDate);
-  const thisSunday = getPreviousSundayIstDateParts(nowParts);
-  const thisSundayRunAt = makeUtcFromIst(thisSunday.year, thisSunday.month, thisSunday.day, run.hour, run.minute, 0, 0);
-
-  if (referenceDate < thisSundayRunAt) {
-    const lastSundayBase = toIstDate(new Date(thisSundayRunAt.getTime() - 7 * 24 * 60 * 60 * 1000));
-    return {
-      slot: 'ur_scrap',
-      slotLabel: 'Weekly Scrap',
-      nextRunLabel: `Sunday ${formatTimeLabel(run.value)}`,
-      windowStart: makeUtcFromIst(lastSundayBase.getUTCFullYear(), lastSundayBase.getUTCMonth() + 1, lastSundayBase.getUTCDate(), run.hour, run.minute, 0, 0),
-      windowEnd: referenceDate,
-      windowDate: `${thisSunday.year}-${pad(thisSunday.month)}-${pad(thisSunday.day)}`,
-    };
-  }
-
-  const nextSundayBase = toIstDate(new Date(thisSundayRunAt.getTime() + 7 * 24 * 60 * 60 * 1000));
-  return {
-    slot: 'ur_scrap',
-    slotLabel: 'Weekly Scrap',
-    nextRunLabel: `Sunday ${formatTimeLabel(run.value)}`,
-    windowStart: thisSundayRunAt,
-    windowEnd: referenceDate,
-    windowDate: `${nextSundayBase.getUTCFullYear()}-${pad(nextSundayBase.getUTCMonth() + 1)}-${pad(nextSundayBase.getUTCDate())}`,
-  };
+  return getActiveConfiguredQueueWindow(
+    'ur_scrap',
+    ['ur_scrap'],
+    { ur_scrap: '11:00' },
+    'Weekly Scrap',
+    referenceDate
+  );
 }
 
 async function getActiveSrQueueWindow(referenceDate = new Date()) {
