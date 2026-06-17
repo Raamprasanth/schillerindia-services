@@ -2,6 +2,7 @@ const ExcelJS = require('exceljs');
 
 const BASE_COLUMNS = [
   { header: 'S.No', key: 'sno', width: 8 },
+  { header: 'Added By', key: 'createdBy', width: 18 },
   { header: 'Tour Name', key: 'tourName', width: 24 },
   { header: 'Day', key: 'dayNo', width: 8 },
   { header: 'Start Date', key: 'startDate', width: 14 },
@@ -14,7 +15,6 @@ const BASE_COLUMNS = [
   { header: 'Problem Reported', key: 'problemReported', width: 34 },
   { header: 'Problem Observed', key: 'problemObserved', width: 34 },
   { header: 'Action Taken', key: 'actionTaken', width: 34 },
-  { header: 'Added By', key: 'createdBy', width: 18 },
 ];
 
 function imageExtension(dataUrl) {
@@ -44,8 +44,9 @@ async function buildTourWorkbookBuffer(records, options = {}) {
         BASE_COLUMNS[1],
         BASE_COLUMNS[2],
         BASE_COLUMNS[3],
+        BASE_COLUMNS[4],
         { header: 'Source', key: 'sourceType', width: 16 },
-        ...BASE_COLUMNS.slice(4),
+        ...BASE_COLUMNS.slice(5),
       ]
     : BASE_COLUMNS.slice();
 

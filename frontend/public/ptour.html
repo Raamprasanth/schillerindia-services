@@ -102,6 +102,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <div class="section-title">Visit Details</div>
       <div class="visit-grid">
         <div class="field"><label>Tour Name</label><input type="text" id="tour-name"></div>
+        <div class="field"><label>Added By</label><input type="text" id="tour-addedby" readonly></div>
         <div class="field"><label>Day</label><input type="number" id="tour-day" min="1" step="1" value="1"></div>
         <div class="field"><label>Start Date <span class="req">*</span></label><input type="date" id="tour-date"></div>
         <div class="field"><label>Customer Name <span class="req">*</span></label><input type="text" id="tour-customer"></div>
@@ -246,6 +247,8 @@ function note(label,value){ return '<div class="tour-note"><div class="tour-note
 function openTourModal(defaults){
   clearForm();
   defaults = defaults || {};
+  const addedBy = document.getElementById('tour-addedby');
+  if(addedBy) addedBy.value = currentUserName();
   document.getElementById('tour-date').value = defaults.startDate || new Date().toISOString().slice(0,10);
   if(defaults.tourName) document.getElementById('tour-name').value = defaults.tourName;
   if(defaults.dayNo) document.getElementById('tour-day').value = defaults.dayNo;
@@ -272,7 +275,7 @@ function openNextDay(tourName){
   });
 }
 function closeTourModal(){ document.getElementById('tour-overlay').classList.remove('open'); }
-function clearForm(){ ['tour-name','tour-day','tour-date','tour-customer','tour-branch','tour-model','tour-status','tour-slno','tour-reported','tour-observed','tour-action'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';}); const day=document.getElementById('tour-day'); if(day) day.value='1'; tourImgs=[null,null,null,null,null]; renderSlots(); showMsg(''); }
+function clearForm(){ ['tour-name','tour-day','tour-date','tour-customer','tour-branch','tour-model','tour-status','tour-slno','tour-reported','tour-observed','tour-action'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';}); const addedBy=document.getElementById('tour-addedby'); if(addedBy) addedBy.value=currentUserName(); const day=document.getElementById('tour-day'); if(day) day.value='1'; tourImgs=[null,null,null,null,null]; renderSlots(); showMsg(''); }
 function renderSlots(){ const wrap=document.getElementById('img-slots'); if(!wrap) return; wrap.innerHTML=[0,1,2,3,4].map(i=>'<div class="img-slot" onclick="document.getElementById(&quot;tour-img-'+i+'&quot;).click()"><input type="file" id="tour-img-'+i+'" accept="image/*" style="display:none" onchange="handleImg('+i+',this)">'+(tourImgs[i]?'<img class="img-preview" src="'+tourImgs[i]+'"><button class="img-remove" onclick="removeImg('+i+',event)">&#10005;</button>':'<div class="img-placeholder"><span>&#128247;</span>Add Photo</div>')+'</div>').join(''); }
 function handleImg(i,input){ const file=input.files&&input.files[0]; if(!file) return; if(!/^image\//.test(file.type||'')){ alert('Please upload an image file.'); input.value=''; return; } if(file.size > 3*1024*1024){ alert('Image '+(i+1)+' exceeds 3 MB limit.'); input.value=''; return; } const reader=new FileReader(); reader.onload=e=>{ tourImgs[i]=e.target.result; renderSlots(); }; reader.readAsDataURL(file); }
 function removeImg(i,event){ event.stopPropagation(); tourImgs[i]=null; renderSlots(); }
@@ -326,6 +329,7 @@ async function downloadTourWorkbook(items, fileBase){
 function safeFileName(s){ return String(s||'tour-summary').toLowerCase().replace(/[^a-z0-9\-]+/g,'-').replace(/^-+|-+$/g,'').slice(0,80) || 'tour-summary'; }
 function viewImg(src){ const ov=document.createElement('div'); ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out'; ov.onclick=()=>ov.remove(); const img=document.createElement('img'); img.src=src; img.style.cssText='max-width:90vw;max-height:88vh;border-radius:12px'; ov.appendChild(img); document.body.appendChild(ov); }
 function val(id){ return (document.getElementById(id)?.value || '').trim(); }
+function currentUserName(){ const u=JSON.parse(sessionStorage.getItem('schiller_user')||'{}'); return u.name || u.email || 'User'; }
 function setText(id,v){ const el=document.getElementById(id); if(el) el.textContent=v; }
 function showMsg(m){ const el=document.getElementById('tour-msg'); if(!el) return; el.textContent=m; el.style.display=m?'block':'none'; }
 function fmtDate(d){ if(!d)return'-'; const p=String(d).split('T')[0].split('-'); return p.length===3 ? p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Number(p[1])-1]+' '+p[0] : String(d); }
