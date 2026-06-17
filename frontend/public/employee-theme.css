@@ -61,6 +61,14 @@ html[data-emp-theme="dark"] .toast {
   box-shadow: var(--shadow) !important;
 }
 
+html[data-emp-theme="dark"] .filter-strip {
+  background: var(--surface2) !important;
+  border-color: var(--border) !important;
+}
+html[data-emp-theme="dark"] .filter-strip label {
+  color: var(--muted) !important;
+}
+
 html[data-emp-theme="dark"] .sidebar,
 html[data-emp-theme="dark"] aside.sidebar {
   background: #0b1526 !important;
