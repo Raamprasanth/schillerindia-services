@@ -516,6 +516,36 @@ function pick(doc, keys = []) {
   return '';
 }
 
+function isObjectIdLike(value) {
+  return /^[a-f\d]{24}$/i.test(String(value || '').trim());
+}
+
+function cleanDisplayValue(value) {
+  if (!isFilledCell(value)) return '';
+  if (typeof value === 'object') {
+    return cleanDisplayValue(value.name || value.displayName || value.divisionName || value.label);
+  }
+  const text = String(value).trim();
+  return isObjectIdLike(text) ? '' : text;
+}
+
+function pickClean(doc, keys = []) {
+  for (const key of keys) {
+    const value = String(key).split('.').reduce((acc, part) => (acc && acc[part] !== undefined ? acc[part] : undefined), doc);
+    const clean = cleanDisplayValue(value);
+    if (clean) return clean;
+  }
+  return '';
+}
+
+function pickEntryDate(doc) {
+  return pick(doc, ['entryDate', 'rcvdDate', 'receivedDate', 'frnEntryDate', 'createdAt']);
+}
+
+function pickRepairEngineer(doc) {
+  return pickClean(doc, ['raEng', 'repairEngineer', 'repairedBy', 'estRaEng', 'obRaEng']);
+}
+
 function pickStockCustomer(doc) {
   return pick(doc, ['stkCust', 'stockCust', 'customer', 'custName']);
 }
@@ -624,16 +654,23 @@ function buildToEscalationRow(doc, items = []) {
 }
 
 function buildUrEscalationRow(doc) {
+  const divisionName = pickClean(doc, ['divisionName', 'division.name', 'division.displayName', 'division']);
+  const entryDate = pickEntryDate(doc);
+  const repairEngineer = pickRepairEngineer(doc);
   return {
-    'Division Name': pick(doc, ['divisionName', 'division.name', 'division']),
-    'DIVISION NAME': pick(doc, ['divisionName', 'division.name', 'division']),
+    'Division Name': divisionName,
+    'DIVISION NAME': divisionName,
     'SCH REF': pick(doc, ['scReNo', 'scRno', 'scRefNo']),
     SC_REF_NO: pick(doc, ['scReNo', 'scRno', 'scRefNo']),
     FRN_NO: doc.frnNo || '',
-    DIVISION: pick(doc, ['divisionName', 'division.name', 'division']),
+    ENTRY_DATE: entryDate,
+    'ENTRY DATE': entryDate,
+    'FRN ENTRY DATE': entryDate,
+    DIVISION: divisionName,
     BRANCH: pick(doc, ['branch', 'reg', 'region']),
     SC_ENGINEER: doc.scEng || '',
-    RA_ENGINEER: doc.raEng || '',
+    RA_ENGINEER: repairEngineer,
+    REPAIR_ENGINEER: repairEngineer,
     SUPPLIER_NAME: doc.supplier || '',
     ENGINEER_ID: doc.eng || '',
     CUSTOMER_NAME: pick(doc, ['custName', 'customer']),
@@ -818,6 +855,18 @@ function mergeEscalationRow(base = {}, queued = {}) {
   });
   ['STK_CUST', 'STK/CUST', 'CUST_NAME', 'CUSTOMER_NAME', 'ITEM DESCRIPTION'].forEach((key) => {
     if (isFilledCell(base[key])) {
+      merged[key] = base[key];
+    }
+  });
+  ['Division Name', 'DIVISION NAME', 'DIVISION'].forEach((key) => {
+    const baseValue = cleanDisplayValue(base[key]);
+    const mergedValue = cleanDisplayValue(merged[key]);
+    if (baseValue && (!mergedValue || isObjectIdLike(merged[key]))) {
+      merged[key] = baseValue;
+    }
+  });
+  ['ENTRY_DATE', 'ENTRY DATE', 'FRN ENTRY DATE', 'RA_ENGINEER', 'REPAIR_ENGINEER'].forEach((key) => {
+    if (isFilledCell(base[key]) && !isFilledCell(merged[key])) {
       merged[key] = base[key];
     }
   });
