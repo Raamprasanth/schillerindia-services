@@ -55,6 +55,43 @@ function buildTodrDescription(doc, item = {}) {
   return String(item.description || doc.defMod || doc.defBrdModName || '').trim() || 'TO/DR entry';
 }
 
+async function findLinkedServiceForFrn(doc) {
+  if (!doc) return null;
+  if (doc.serviceId) {
+    const byId = await Service.findById(doc.serviceId);
+    if (byId) return byId;
+  }
+
+  const scReNo = String(doc.scRno || doc.scReNo || '').trim();
+  const frnNo = String(doc.frnNo || '').trim();
+  const unitSl = String(doc.unitSl || '').trim();
+  const filters = [];
+  if (scReNo && frnNo) filters.push({ scReNo, frnNo });
+  if (scReNo && unitSl) filters.push({ scReNo, unitSl });
+  if (frnNo && unitSl) filters.push({ frnNo, unitSl });
+  if (scReNo) filters.push({ scReNo });
+  if (!filters.length) return null;
+
+  return Service.findOne({ $or: filters }).sort({ createdAt: -1 });
+}
+
+async function updateLinkedServiceForFrn(doc, setFields) {
+  const service = await findLinkedServiceForFrn(doc);
+  if (!service) return null;
+
+  await Service.findByIdAndUpdate(
+    service._id,
+    { $set: setFields },
+    { runValidators: false }
+  );
+
+  if (!doc.serviceId) {
+    await Empfrn.findByIdAndUpdate(doc._id, { $set: { serviceId: service._id } }, { runValidators: false });
+  }
+
+  return service;
+}
+
 async function mirrorFrnToTodr(doc, action, items = [], queuedBy = '') {
   try {
     const rows = action === 'TO'
@@ -720,19 +757,14 @@ router.put('/:id/update', protect, async (req, res) => {
     // ── If completed or scrapped → write to CompletedFRN ──
     if (doc.status === 'completed' || doc.status === 'scrapped') {
       try {
-        if (doc.status === 'completed' && doc.serviceId) {
-          await Service.findByIdAndUpdate(
-            doc.serviceId,
-            {
-              $set: {
-                type: doc.typeWork || 'Completed',
-                typeWork: doc.typeWork || 'Completed',
-                status: 'completed',
-                updatedAt: new Date().toISOString(),
-              },
-            },
-            { runValidators: false }
-          );
+        if (doc.status === 'completed') {
+          await updateLinkedServiceForFrn(doc, {
+            type: doc.typeWork || 'Completed',
+            typeWork: doc.typeWork || 'Completed',
+            status: 'completed',
+            completedAt: new Date(),
+            updatedAt: new Date().toISOString(),
+          });
         }
         const already = await CompletedFRN.findOne({ frnId: doc._id });
         if (!already) {
