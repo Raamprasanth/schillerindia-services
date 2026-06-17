@@ -308,10 +308,11 @@ async function sendToScod(id, btn) {
       </div>
       <div class="page-title">Service Request</div>
     </div>
-    <div class="topbar-actions">
-      <button class="topbar-btn btn-primary" onclick="openAddModal()">&#10133; Add New</button>
-      <button class="topbar-btn" onclick="loadData()">&#10227; Refresh</button>
-      <button class="topbar-btn" onclick="exportCSV()">&#128228; Export</button>
+    <div style="display:flex;align-items:center;gap:9px;">
+      <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
+      <button class="btn btn-primary btn-sm" onclick="openAddModal()">&#10133; Add New</button>
+      <button class="btn btn-outline btn-sm" onclick="loadData()">&#8635; Refresh</button>
+      <button class="btn btn-primary btn-sm" onclick="exportCSV()">&#128228; Export</button>
     </div>
   </div>
 
@@ -452,6 +453,7 @@ let DATA = [], filtered = [], divisions = [], sortKey = 'date', sortDir = -1, cu
     (document.getElementById('emp-avatar')||{}).textContent = u.name.charAt(0).toUpperCase();
     (document.getElementById('emp-desig')||{}).textContent = u.designation || u.desig || u.role || 'Employee';
   }
+  (document.getElementById('topbar-date')||{}).textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   loadDivisions();
   loadData();
 })();
