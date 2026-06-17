@@ -2,6 +2,7 @@
 const router              = require('express').Router();
 const mongoose            = require('mongoose');
 const Service             = require('../models/Service');
+const EmpFRN              = require('../models/EmpFRN');
 const EstimationPending   = require('../models/EstimationPending');
 const Division            = require('../models/Division');
 const UnderRepair         = require('../models/UnderRepair');
@@ -103,6 +104,29 @@ function pickUrEscalationModule(typeWork) {
   return '';
 }
 
+function isUnitStatusValue(value) {
+  return ['OW', 'LAMC', 'CAMC', 'EW', 'STOCK', 'IW', 'DEMO', 'REPEAT', 'BUY BACK', 'BUYBACK']
+    .includes(String(value || '').trim().toUpperCase());
+}
+
+function pickRealTypeWork(row) {
+  const candidates = [row?.typeWork, row?.typeOfWork, row?.obStatus, row?.status];
+  for (const value of candidates) {
+    const text = String(value || '').trim();
+    if (text && !isUnitStatusValue(text) && !['pending', 'estimation'].includes(text.toLowerCase())) return text;
+  }
+  return '';
+}
+
+function putLatestTypeWork(map, row) {
+  const key = String(row?.serviceId || '');
+  const typeWork = pickRealTypeWork(row);
+  if (!key || !typeWork) return;
+  const when = new Date(row.updatedAt || row.createdAt || row.estUpdatedAt || row.obUpdatedAt || 0).getTime() || 0;
+  const existing = map.get(key);
+  if (!existing || when >= existing.when) map.set(key, { typeWork, when });
+}
+
 // Logic moved to queueSyncService.js
 
 // ════════════════════════════════════════════════════════════════
@@ -184,19 +208,27 @@ router.get('/', protect, async (req, res) => {
     const name   = req.user.name || '';
     const userId = String(req.user._id || '');
     const serviceIds = records.map(r => String(r._id || '')).filter(Boolean);
-    const [underRepairRows, completedRows] = await Promise.all([
-      serviceIds.length ? UnderRepair.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng').lean() : [],
-      serviceIds.length ? CompletedFRN.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng').lean() : [],
+    const [frnRows, underRepairRows, estimationRows, completedRows] = await Promise.all([
+      serviceIds.length ? EmpFRN.find({ serviceId: { $in: serviceIds } }).select('serviceId typeWork status updatedAt createdAt').lean() : [],
+      serviceIds.length ? UnderRepair.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng typeWork typeOfWork status updatedAt createdAt').lean() : [],
+      serviceIds.length ? EstimationPending.find({ serviceId: { $in: serviceIds } }).select('serviceId typeWork obStatus status estUpdatedAt obUpdatedAt updatedAt createdAt').lean() : [],
+      serviceIds.length ? CompletedFRN.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng typeWork updatedAt createdAt').lean() : [],
     ]);
     const raByServiceId = new Map();
     [...underRepairRows, ...completedRows].forEach(row => {
       const key = String(row.serviceId || '');
       if (key && row.raEng) raByServiceId.set(key, row.raEng);
     });
+    const typeWorkByServiceId = new Map();
+    [...frnRows, ...underRepairRows, ...estimationRows, ...completedRows].forEach(row => {
+      putLatestTypeWork(typeWorkByServiceId, row);
+    });
 
     const annotated = records.map(r => {
       const obj = r.toObject ? r.toObject() : r;
       obj.raEng = obj.raEng || raByServiceId.get(String(obj._id || '')) || '';
+      const linkedTypeWork = typeWorkByServiceId.get(String(obj._id || ''))?.typeWork || '';
+      if (linkedTypeWork) obj.typeWork = linkedTypeWork;
       obj.isOwner =
         obj.scEng       === name ||
         obj.eng         === name ||

@@ -1242,6 +1242,12 @@ function serviceDivisionLabel(s) {
   return div || '';
 }
 
+function exportTypeWorkLabel(s) {
+  const text = String((s && (s.typeWork || s.type)) || '').trim();
+  const unitStatus = String((s && s.unitSts) || '').trim();
+  return text && text.toLowerCase() !== unitStatus.toLowerCase() ? text : '';
+}
+
 function editService(id) {
   const s=services.find(x=>(x._id||x.id)===id);
   if(!s){showToast('Record not found','err');return;}
@@ -1506,7 +1512,7 @@ function exportCSV() {
       s.obDetails,
       s.commWarrDetails,
       s.bscon,
-      s.typeWork || s.type,
+      exportTypeWorkLabel(s),
       tags.join(' + ') || '',
       dynPdPfrn,
       dynPdEstp,
