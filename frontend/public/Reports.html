@@ -1994,7 +1994,8 @@ async function exportPDF(type) {
   const containerId = isDiv ? 'perf-pane-div-summary' : 'perf-pane-summary';
   const originalNode = document.getElementById(containerId);
   if (!originalNode) return;
-  const isSimpleEmployee = !isDiv && !!originalNode.querySelector('[data-perf-mode="simple-employee"]');
+  const simpleEmployeeNode = !isDiv ? originalNode.querySelector('[data-perf-mode="simple-employee"]') : null;
+  const isSimpleEmployee = !!simpleEmployeeNode;
 
   await new Promise(resolve => {
     const img = new Image();
@@ -2005,12 +2006,12 @@ async function exportPDF(type) {
   });
 
   const wrapper = document.createElement('div');
-  wrapper.style.width = isSimpleEmployee ? '760px' : '1120px';
+  wrapper.style.width = '1120px';
   wrapper.style.minHeight = '600px';
   wrapper.style.background = '#ffffff';
   wrapper.style.color = '#000000';
-  wrapper.style.padding = isSimpleEmployee ? '18px' : '20px';
-  wrapper.style.border = '1px solid #000000';
+  wrapper.style.padding = '20px';
+  wrapper.style.border = isSimpleEmployee ? 'none' : '1px solid #000000';
   wrapper.style.boxSizing = 'border-box';
   wrapper.style.fontFamily = "Calibri, Arial, sans-serif";
 
@@ -2019,7 +2020,9 @@ async function exportPDF(type) {
   wrapper.style.setProperty('--surface2', '#eaf1f6');
   wrapper.style.setProperty('--border', '#d0e0ec');
 
-  wrapper.innerHTML = `
+  wrapper.innerHTML = isSimpleEmployee ? `
+    <div class="pdf-content-area" style="width:100%;height:auto;overflow:visible;"></div>
+  ` : `
     <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #000;padding:0 0 12px;margin-bottom:16px;">
       <img src="logo.png" alt="SCHILLER" style="height:50px;max-width:250px;object-fit:contain;">
       <div style="text-align:right;color:#000;">
@@ -2032,7 +2035,9 @@ async function exportPDF(type) {
   `;
 
   const tableContainer = originalNode.querySelector('.perf-review-table-container');
-  const contentClone = tableContainer ? tableContainer.cloneNode(true) : originalNode.cloneNode(true);
+  const contentClone = isSimpleEmployee
+    ? simpleEmployeeNode.cloneNode(true)
+    : (tableContainer ? tableContainer.cloneNode(true) : originalNode.cloneNode(true));
   contentClone.style.display = 'block';
   contentClone.style.height = 'auto';
   contentClone.style.overflow = 'visible';
@@ -2057,21 +2062,27 @@ async function exportPDF(type) {
       el.style.boxSizing = 'border-box';
       if (isSimpleEmployee) {
         el.style.transform = 'none';
-        if (el.style.display === 'grid') {
-          el.style.gridTemplateColumns = 'repeat(2, minmax(0, 1fr))';
-        }
       }
     }
   });
 
   if (isSimpleEmployee) {
-    const simpleRoot = contentClone.querySelector('[data-perf-mode="simple-employee"]') || contentClone;
-    simpleRoot.style.border = 'none';
-    simpleRoot.style.borderRadius = '0';
-    simpleRoot.style.padding = '0';
+    const simpleRoot = contentClone;
     simpleRoot.style.width = '100%';
     simpleRoot.style.maxWidth = '100%';
+    simpleRoot.style.overflow = 'visible';
+    const simpleHead = simpleRoot.firstElementChild;
+    if (simpleHead) {
+      simpleHead.style.display = 'flex';
+      simpleHead.style.alignItems = 'flex-end';
+      simpleHead.style.justifyContent = 'space-between';
+    }
     simpleRoot.querySelectorAll('h2').forEach(el => { el.style.fontSize = '20px'; });
+    simpleRoot.querySelectorAll('div').forEach(el => {
+      if (el.style.display === 'grid') {
+        el.style.gridTemplateColumns = 'repeat(4, minmax(0, 1fr))';
+      }
+    });
     simpleRoot.querySelectorAll('table').forEach(el => {
       el.style.tableLayout = 'fixed';
       el.style.width = '100%';
@@ -2082,11 +2093,11 @@ async function exportPDF(type) {
 
   try {
     await html2pdf().set({
-      margin: isSimpleEmployee ? 0.25 : 0.2,
+      margin: 0.2,
       filename: `Performance_Analysis_${scope}_${month}.pdf`,
       image: { type: 'jpeg', quality: 1.0 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: isSimpleEmployee ? 760 : 1120, scrollX: 0, scrollY: 0 },
-      jsPDF: { unit: 'in', format: 'a4', orientation: isSimpleEmployee ? 'portrait' : 'landscape' }
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 1120, scrollX: 0, scrollY: 0 },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
     }).from(wrapper).save();
   } catch(e) {
     toast('PDF export failed: ' + e.message, 'error');
