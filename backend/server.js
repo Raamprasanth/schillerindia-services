@@ -180,8 +180,40 @@ async function connectMongo() {
   }
 }
 
-connectMongo();
+let mongoConnectPromise = null;
+
+function ensureMongoConnection() {
+  if (mongoose.connection.readyState === 1 || mongoose.connection.readyState === 2) return;
+  mongoConnectPromise = mongoConnectPromise || connectMongo().finally(() => {
+    mongoConnectPromise = null;
+  });
+}
+
+ensureMongoConnection();
 initEscalationScheduler();
+
+function waitForMongoConnection(timeoutMs = 10000) {
+  if (mongoose.connection.readyState === 1) return Promise.resolve(true);
+  ensureMongoConnection();
+
+  return new Promise((resolve) => {
+    const done = (ok) => {
+      clearTimeout(timer);
+      mongoose.connection.off('connected', onConnected);
+      mongoose.connection.off('error', onError);
+      mongoose.connection.off('disconnected', onDisconnected);
+      resolve(ok);
+    };
+    const onConnected = () => done(true);
+    const onError = () => done(false);
+    const onDisconnected = () => done(false);
+    const timer = setTimeout(() => done(mongoose.connection.readyState === 1), timeoutMs);
+
+    mongoose.connection.once('connected', onConnected);
+    mongoose.connection.once('error', onError);
+    mongoose.connection.once('disconnected', onDisconnected);
+  });
+}
 
 mongoose.connection.on('connected', () => {
   console.log('ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦  MongoDB connection established');
@@ -205,8 +237,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-app.use('/api', (req, res, next) => {
+app.use('/api', async (req, res, next) => {
   if (mongoose.connection.readyState !== 1) {
+    const connected = await waitForMongoConnection();
+    if (connected) return next();
+
     return res.status(503).json({
       success: false,
       message: 'Database unavailable. Please try again after a moment.',

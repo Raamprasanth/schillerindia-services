@@ -1442,8 +1442,11 @@ async function submitForm() {
       else { showList(); applyFilters(); }
     },1200);
   } catch(e) {
-    msg.textContent=' '+e.message; msg.className='form-validate-msg show-err';
-    showToast('Save failed: '+e.message,'err');
+    const saveError = /database unavailable/i.test(e.message || '')
+      ? 'Database is reconnecting. Please wait a few seconds and click Save again.'
+      : e.message;
+    msg.textContent=' '+saveError; msg.className='form-validate-msg show-err';
+    showToast('Save failed: '+saveError,'err');
   } finally {
     saveBtn.disabled=false;
     saveBtn.textContent=editingId?' Update Service Record':' Save Service Record';
