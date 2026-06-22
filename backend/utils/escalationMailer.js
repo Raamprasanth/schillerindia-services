@@ -160,18 +160,30 @@ function postJson(provider, body) {
   });
 }
 
+function parseEmailAddress(addr) {
+  const match = String(addr).match(/(.*)<(.*)>/);
+  if (match) {
+    const name = match[1].trim();
+    const email = match[2].trim();
+    if (name) return { name, email };
+    return { email };
+  }
+  return { email: String(addr).trim() };
+}
+
 function buildApiBody(providerName, mailOptions, attachmentPath) {
   const attachmentName = path.basename(attachmentPath);
   const attachmentContent = fs.readFileSync(attachmentPath).toString('base64');
   const to = splitEmailList(mailOptions.to);
   const cc = splitEmailList(mailOptions.cc);
+  const senderParsed = parseEmailAddress(mailOptions.from);
 
   if (providerName === 'sendgrid') {
-    const personalization = { to: to.map(email => ({ email })) };
-    if (cc.length) personalization.cc = cc.map(email => ({ email }));
+    const personalization = { to: to.map(email => parseEmailAddress(email)) };
+    if (cc.length) personalization.cc = cc.map(email => parseEmailAddress(email));
     return {
       personalizations: [personalization],
-      from: { email: mailOptions.from },
+      from: senderParsed,
       subject: mailOptions.subject,
       content: [{ type: 'text/plain', value: mailOptions.text }],
       attachments: [{
@@ -196,13 +208,13 @@ function buildApiBody(providerName, mailOptions, attachmentPath) {
   }
 
   const body = {
-    sender: { email: mailOptions.from },
-    to: to.map(email => ({ email })),
+    sender: senderParsed,
+    to: to.map(email => parseEmailAddress(email)),
     subject: mailOptions.subject,
     textContent: mailOptions.text,
     attachment: [{ name: attachmentName, content: attachmentContent }],
   };
-  if (cc.length) body.cc = cc.map(email => ({ email }));
+  if (cc.length) body.cc = cc.map(email => parseEmailAddress(email));
   return body;
 }
 
