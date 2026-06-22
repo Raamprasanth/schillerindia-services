@@ -87,8 +87,15 @@ function normalizeScheduleConfig(value = {}) {
       : ALL_WEEKDAYS;
     const clean = [...new Set(selected
       .map((day) => Number.parseInt(day, 10))
-      .filter((day) => Number.isInteger(day) && day >= 0 && day <= 6))]
-      .sort((a, b) => a - b);
+      .filter((day) => Number.isInteger(day) && day >= 0 && day <= 6))];
+    
+    // Ensure Saturday (6) and Sunday (0) are included for daily escalations
+    if (group.reportType !== 'supplier_warranty_escalation') {
+      if (!clean.includes(0)) clean.push(0);
+      if (!clean.includes(6)) clean.push(6);
+    }
+    
+    clean.sort((a, b) => a - b);
     acc[group.reportType] = clean.length ? clean : ALL_WEEKDAYS;
     return acc;
   }, {});
