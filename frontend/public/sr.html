@@ -762,6 +762,28 @@ async function deleteItem(id){
   }
 }
 
+async function closeItem(id, btn) {
+  if (!confirm('Close this SR item?')) return;
+  const oldHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '&#9203;';
+  try {
+    const res = await fetch(API + '/api/sr/' + id + '/close', {
+      method: 'POST',
+      headers: authHeaders()
+    });
+    handleUnauth(res);
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
+    showToast('SR closed successfully.', 'ok');
+    await loadData();
+  } catch (e) {
+    if (e.message !== 'Unauthorized') showToast('Close failed: ' + e.message, 'err');
+    btn.disabled = false;
+    btn.innerHTML = oldHtml;
+  }
+}
+
 function exportCSV(){
   const headers = ['#','Part No','Description','Qty','GIR No','From Location','To Location','Remarks','TO No','TO Raised Date'];
   const rows = filtered.map((d,i) => [i+1,d.partNo,d.description,d.qty,d.girNo,d.fromLocation,d.toLocation,d.remarks,d.toNo,fmtDate(d.toRaisedDate)]);
