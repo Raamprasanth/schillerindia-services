@@ -53,7 +53,21 @@ router.get('/', async (req, res) => {
     }
 
     const docs = await Sr.find(filter).sort({ date: -1, createdAt: -1 }).lean();
-    res.json(docs);
+    const srIds = docs.map(d => d._id);
+    const scsrs = await ScSr.find({ srRef: { $in: srIds } }, 'srRef toNo toRaisedDate').lean();
+    const scsrMap = scsrs.reduce((acc, scsr) => {
+      acc[scsr.srRef.toString()] = scsr;
+      return acc;
+    }, {});
+    const finalDocs = docs.map(d => {
+      const related = scsrMap[d._id.toString()];
+      if (related) {
+        d.toNo = related.toNo;
+        d.toRaisedDate = related.toRaisedDate;
+      }
+      return d;
+    });
+    res.json(finalDocs);
   } catch (err) {
     console.error('[GET /api/sr]', err);
     res.status(500).json({ message: 'Server error', error: err.message });
