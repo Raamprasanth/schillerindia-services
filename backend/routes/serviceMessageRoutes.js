@@ -349,7 +349,7 @@ router.post('/threads', async (req, res) => {
     ).lean();
     res.status(201).json({ success: true, data: threadSummary(thread, req.user) });
   } catch (err) {
-    res.status(err.status || 500).json({ success: false, message: err.status ? err.message : 'Failed to send message', error: err.message });
+    res.status(err.status || 500).json({ success: false, message: err.status ? err.message : 'Failed to send message: ' + err.message, error: err.message });
   }
 });
 
@@ -394,7 +394,7 @@ router.post('/threads/:id/messages', async (req, res) => {
     await thread.save();
     res.status(201).json({ success: true, data: thread.toObject() });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Failed to send reply', error: err.message });
+    res.status(500).json({ success: false, message: 'Failed to send reply: ' + err.message, error: err.message });
   }
 });
 
