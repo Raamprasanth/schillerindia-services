@@ -89,6 +89,101 @@ router.post('/', async (req, res) => {
   }
 });
 
+function canAccessDivision(user, division) {
+  if (isPrivileged(user)) return true;
+  const userDivisions = getUserDivisions(user).map(d => d.toLowerCase());
+  return userDivisions.includes(String(division || '').trim().toLowerCase());
+}
+
+async function moveSrToClosed(doc, user) {
+  const csrDoc = await ScCsr.create({
+    date: doc.date,
+    closeDate: new Date().toISOString().split('T')[0],
+    division: doc.division,
+    partNo: doc.partNo,
+    description: doc.description,
+    qty: doc.qty,
+    girNo: doc.girNo,
+    fromLocation: doc.fromLocation,
+    toLocation: doc.toLocation,
+    remarks: doc.remarks,
+    toNo: doc.toNo,
+    toRaisedDate: doc.toRaisedDate,
+    sparesReceivedDate: doc.sparesReceivedDate,
+    createdBy: doc.createdBy,
+    updatedBy: doc.updatedBy,
+    closedBy: user?.name || user?.email || '',
+  });
+
+  await ScSr.findByIdAndDelete(doc._id);
+  return csrDoc;
+}
+
+router.put('/bulk-update', async (req, res) => {
+  try {
+    const { ids, toNo, toRaisedDate } = req.body || {};
+    if (!Array.isArray(ids) || !ids.length) {
+      return res.status(400).json({ message: 'Select at least one SR item.' });
+    }
+    if (!toNo || !toRaisedDate) {
+      return res.status(400).json({ message: 'TO No and TO Raised Date are required.' });
+    }
+
+    const docs = await ScSr.find({ _id: { $in: ids } });
+    if (docs.length !== ids.length) {
+      return res.status(404).json({ message: 'One or more SR items were not found.' });
+    }
+    if (docs.some(doc => !canAccessDivision(req.user, doc.division))) {
+      return res.status(403).json({ message: 'Not allowed to update one or more selected divisions.' });
+    }
+
+    const updated = [];
+    for (const doc of docs) {
+      doc.toNo = toNo;
+      doc.toRaisedDate = toRaisedDate;
+      doc.updatedBy = req.user?.name || req.user?.email || '';
+      updated.push(await doc.save());
+    }
+
+    res.json(updated);
+  } catch (err) {
+    console.error('[PUT /api/scsr/bulk-update]', err);
+    if (err.name === 'ValidationError' || err.name === 'CastError') return res.status(400).json({ message: err.message });
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+router.post('/bulk-fulfill', async (req, res) => {
+  try {
+    const { ids } = req.body || {};
+    if (!Array.isArray(ids) || !ids.length) {
+      return res.status(400).json({ message: 'Select at least one SR item.' });
+    }
+
+    const docs = await ScSr.find({ _id: { $in: ids } });
+    if (docs.length !== ids.length) {
+      return res.status(404).json({ message: 'One or more SR items were not found.' });
+    }
+    if (docs.some(doc => !canAccessDivision(req.user, doc.division))) {
+      return res.status(403).json({ message: 'Not allowed to fulfill one or more selected divisions.' });
+    }
+    if (docs.some(doc => !doc.toNo || !doc.toRaisedDate)) {
+      return res.status(400).json({ message: 'All selected SR items must have a TO No and TO Raised Date.' });
+    }
+
+    const fulfilled = [];
+    for (const doc of docs) {
+      fulfilled.push(await moveSrToClosed(doc, req.user));
+    }
+
+    res.json({ success: true, fulfilledCount: fulfilled.length, items: fulfilled });
+  } catch (err) {
+    console.error('[POST /api/scsr/bulk-fulfill]', err);
+    if (err.name === 'CastError') return res.status(400).json({ message: err.message });
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
 router.put('/:id', async (req, res) => {
   try {
     const updates = {};
@@ -121,34 +216,39 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.post('/:id/fulfill', async (req, res) => {
+  try {
+    const doc = await ScSr.findById(req.params.id);
+    if (!doc) return res.status(404).json({ message: 'SR item not found.' });
+
+    if (!canAccessDivision(req.user, doc.division)) {
+      return res.status(403).json({ message: 'Not allowed to fulfill this division.' });
+    }
+    if (!doc.toNo || !doc.toRaisedDate) {
+      return res.status(400).json({ message: 'TO No and TO Raised Date are required before fulfillment.' });
+    }
+
+    const csrDoc = await moveSrToClosed(doc, req.user);
+    res.json({ success: true, csrItem: csrDoc });
+  } catch (err) {
+    console.error('[POST /api/scsr/:id/fulfill]', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
 router.post('/:id/close', async (req, res) => {
   try {
     const doc = await ScSr.findById(req.params.id);
     if (!doc) return res.status(404).json({ message: 'SR item not found.' });
-    
-    // Create CSR
-    const csrDoc = await ScCsr.create({
-      date: doc.date,
-      closeDate: new Date().toISOString().split('T')[0],
-      division: doc.division,
-      partNo: doc.partNo,
-      description: doc.description,
-      qty: doc.qty,
-      girNo: doc.girNo,
-      fromLocation: doc.fromLocation,
-      toLocation: doc.toLocation,
-      remarks: doc.remarks,
-      toNo: doc.toNo,
-      toRaisedDate: doc.toRaisedDate,
-      sparesReceivedDate: doc.sparesReceivedDate,
-      createdBy: doc.createdBy,
-      updatedBy: doc.updatedBy,
-      closedBy: req.user?.name || req.user?.email || '',
-    });
-    
-    // Delete from Sr
-    await ScSr.findByIdAndDelete(req.params.id);
-    
+
+    if (!canAccessDivision(req.user, doc.division)) {
+      return res.status(403).json({ message: 'Not allowed to fulfill this division.' });
+    }
+    if (!doc.toNo || !doc.toRaisedDate) {
+      return res.status(400).json({ message: 'TO No and TO Raised Date are required before fulfillment.' });
+    }
+
+    const csrDoc = await moveSrToClosed(doc, req.user);
     res.json({ success: true, csrItem: csrDoc });
   } catch (err) {
     console.error('[POST /api/scsr/:id/close]', err);
