@@ -22,16 +22,23 @@ router.get('/', protect, async (req, res) => {
   try {
     const records = await Cdr.find().sort({ entryDate: -1, createdAt: -1 }).lean();
     
+    const sourceIds = [...new Set(records.map(r => r.sourceId).filter(Boolean))];
+    
+    const [empFrnDocs, serviceDocs, estPendDocs] = await Promise.all([
+      EmpFRN.find({ _id: { $in: sourceIds } }).populate('division', 'name').lean(),
+      Service.find({ _id: { $in: sourceIds } }).populate('division', 'name').lean(),
+      EstimationPending.find({ _id: { $in: sourceIds } }).lean()
+    ]);
+    
+    const docMap = {};
+    empFrnDocs.forEach(d => docMap[d._id.toString()] = d);
+    serviceDocs.forEach(d => docMap[d._id.toString()] = d);
+    estPendDocs.forEach(d => docMap[d._id.toString()] = d);
+    
     for (let r of records) {
       splitLegacyDescription(r);
       if (r.sourceId) {
-        let doc = null;
-        try {
-           doc = await EmpFRN.findById(r.sourceId).populate('division', 'name').lean();
-           if (!doc) doc = await Service.findById(r.sourceId).populate('division', 'name').lean();
-           if (!doc) doc = await EstimationPending.findById(r.sourceId).lean();
-        } catch(e) {}
-        
+        const doc = docMap[r.sourceId.toString()];
         if (doc) {
           const mName = doc.model || '';
           const bName = doc.defMod || doc.defBrdModName || r.description || '';
