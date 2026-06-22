@@ -1493,15 +1493,17 @@ function generateEstimationPDFData(s, mode='download'){
   doc.text(money(groupTotal),R-2,tableY+5,{align:'right'});
   tableY+=14;
 
-  if(lineItems.length > 7){
+  if(lineItems.length > 6){
     doc.addPage();
     drawSchillerHeader();
     tableY = 36;
   }
 
+  doc.setFontSize(8);
   doc.setFont('helvetica','bold');
   doc.text('Term & Condition:',L,tableY);
   tableY+=8;
+  doc.setFontSize(8);
   doc.setFont('helvetica','normal');
   const terms = [
     '1. The prices mentioned above are exclusive of GST except MRP. The MRP is inclusive of GST.',
