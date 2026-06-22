@@ -1137,10 +1137,29 @@ function filterByCard(type) {
   window.scrollTo({top: document.querySelector('.table-card') ? document.querySelector('.table-card').offsetTop - 10 : 0, behavior:'smooth'});
 }
 
-function openUpdate(id){
-  const s=allRecords.find(x=>(x._id||x.id)===id);
+async function openUpdate(id){
+  let s=allRecords.find(x=>(x._id||x.id)===id);
   if(!s) return;
   editingId=id;
+
+  // If RC is marked, fetch fresh data from server so components filled by repair team are visible
+  if(s.rtobCompleted||s.rtfrnCompleted){
+    try{
+      const freshRes=await fetch(API_BASE+'/api/emp/estimation/'+id,{headers:authHeaders()});
+      if(freshRes.ok){
+        const freshData=await freshRes.json();
+        if(freshData && (freshData._id||freshData.id)){
+          // Merge fresh data into allRecords so future opens also get it
+          const idx=allRecords.findIndex(x=>(x._id||x.id)===id);
+          if(idx!==-1) allRecords[idx]={...allRecords[idx],...freshData,id:freshData._id||freshData.id};
+          s={...freshData,id:freshData._id||freshData.id};
+        }
+      }
+    }catch(fetchErr){
+      console.warn('[openUpdate] Could not refresh record from server:',fetchErr.message);
+    }
+  }
+
   const set=(elId,val)=>{const el=document.getElementById(elId); if(el) el.value=val||'';};
   const put=(elId,val)=>{const el=document.getElementById(elId); if(el) el.textContent=val||'-';};
 
@@ -1199,6 +1218,7 @@ function openUpdate(id){
   const ms=document.querySelector('.modal-scroll');
   if(ms) ms.scrollTop=0;
 }
+
 
 function applyFilters(){
   const qEl=document.getElementById('tbl-search');
