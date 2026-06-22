@@ -106,6 +106,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .filter-strip label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;}
 .f-inp{padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s;}
 .f-inp:focus{border-color:var(--accent);}
+.f-inp.filled-red{background:#fee2e2;border-color:#dc2626;color:#7f1d1d;}
+.f-inp.filled-red:focus{border-color:#b91c1c;box-shadow:0 0 0 3px rgba(220,38,38,0.12);}
 .f-divider{width:1px;height:24px;background:var(--border);flex-shrink:0;}
 
 /* -- TABLE -- */
@@ -380,7 +382,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
       <div style="width:1px;height:24px;background:var(--border);margin:0 5px;"></div>
       <label style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;">Spares Rcd Date</label>
-      <input type="date" class="f-inp" id="bulk-spares-date" onchange="updateBulkFulfillBtn()" style="padding:5px 8px;font-size:11.5px;" max="">
+      <input type="date" class="f-inp" id="bulk-spares-date" onchange="toggleFilledInput(this);updateBulkFulfillBtn()" style="padding:5px 8px;font-size:11.5px;" max="">
       <button class="btn btn-success btn-sm" id="bulk-fulfill-btn" onclick="markFulfilledSelected()" disabled>&#10004; Fulfill Selected</button>
       <div style="width:1px;height:24px;background:var(--border);margin:0 5px;"></div>
       <button class="btn btn-primary btn-sm" onclick="exportCSV()">&#128228; Export</button>
@@ -544,7 +546,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <td>${esc(r.model || '-')}</td>
         <td class="wrap-cell">${esc(r.description)}</td>
         <td>${esc(r.unitStatus || '-')}</td>
-        <td><input type="date" max="${TODAY_ISO}" value="${dateInputValue(r.sparesReceivedDate)}" onchange="updateDateField('${r._id}','sparesReceivedDate',this.value)" style="width:130px; padding:4px; border:1px solid var(--border); border-radius:4px; font-family:'Plus Jakarta Sans',sans-serif; font-size:12px;"></td>
+        <td><input type="date" class="f-inp${r.sparesReceivedDate ? ' filled-red' : ''}" max="${TODAY_ISO}" value="${dateInputValue(r.sparesReceivedDate)}" onchange="toggleFilledInput(this);updateDateField('${r._id}','sparesReceivedDate',this.value)" style="width:130px; padding:4px; font-size:12px;"></td>
         <td style="text-align:center;"><button class="btn btn-primary btn-sm" onclick="markFulfilled('${r._id}')">Fulfilled</button></td>
       </tr>
     `).join('');
@@ -752,7 +754,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     const selAll = document.getElementById('selectAll');
     if(selAll) selAll.checked = false;
     const bd = document.getElementById('bulk-spares-date');
-    if(bd) bd.value = '';
+    if(bd) { bd.value = ''; toggleFilledInput(bd); }
     
     if (successCount < selectedRecords.length) {
       alert(`Fulfilled ${successCount} out of ${selectedRecords.length} entries. Some failed.`);
@@ -783,6 +785,11 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   }
 
   function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+  function toggleFilledInput(input) {
+    if(!input) return;
+    input.classList.toggle('filled-red', Boolean(input.value));
+  }
   
   // Close modal when clicking outside
   document.getElementById('dr-modal').addEventListener('click', e => { if(e.target.id==='dr-modal') closeModal(); });

@@ -106,6 +106,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .filter-strip label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;}
 .f-inp{padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s;}
 .f-inp:focus{border-color:var(--accent);}
+.f-inp.filled-red{background:#fee2e2;border-color:#dc2626;color:#7f1d1d;}
+.f-inp.filled-red:focus{border-color:#b91c1c;box-shadow:0 0 0 3px rgba(220,38,38,0.12);}
 .f-divider{width:1px;height:24px;background:var(--border);flex-shrink:0;}
 
 /* -- TABLE -- */
@@ -383,8 +385,8 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       <!-- Bulk apply inputs -->
       <div style="display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:10px;padding:4px 10px;background:var(--surface3);">
         <span style="font-size:11px;font-weight:700;color:var(--soft);text-transform:uppercase;letter-spacing:0.04em;">Bulk Apply:</span>
-        <input type="text" id="bulk-to-no" class="f-inp" placeholder="TO No" style="width:110px;padding:5px 8px;font-size:11px;height:28px;">
-        <input type="date" id="bulk-to-date" class="f-inp" style="width:120px;padding:5px 8px;font-size:11px;height:28px;">
+        <input type="text" id="bulk-to-no" class="f-inp" placeholder="TO No" oninput="toggleFilledInput(this)" style="width:110px;padding:5px 8px;font-size:11px;height:28px;">
+        <input type="date" id="bulk-to-date" class="f-inp" onchange="toggleFilledInput(this)" style="width:120px;padding:5px 8px;font-size:11px;height:28px;">
         <button class="btn btn-success btn-sm" onclick="applyBulkTo()" style="padding:4px 12px;font-size:11px;height:28px;box-shadow:none;">Apply</button>
         <button class="btn btn-primary btn-sm" onclick="applyBulkFulfill()" style="padding:4px 12px;font-size:11px;height:28px;box-shadow:none;">Fulfill</button>
       </div>
@@ -559,9 +561,9 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <td class="wrap-cell">${esc(r.description)}</td>
         <td>${esc(r.unitStatus || '-')}</td>
         <td>${esc(r.quantity || '-')}</td>
-        <td><input type="text" class="f-inp" value="${esc(r.toNo || '')}" onchange="updateTextField('${r._id}','toNo',this.value)" style="width:100px;"></td>
-        <td><input type="date" class="f-inp" min="${TODAY_ISO}" max="${TODAY_ISO}" value="${dateInputValue(r.toRaisedDate)}" onchange="updateDateField('${r._id}','toRaisedDate',this.value)" style="width:140px;"></td>
-        <td><input type="date" class="f-inp" max="${TODAY_ISO}" value="${dateInputValue(r.sparesReceivedDate)}" onchange="updateDateField('${r._id}','sparesReceivedDate',this.value)" style="width:140px;"></td>
+        <td><input type="text" class="f-inp${r.toNo ? ' filled-red' : ''}" value="${esc(r.toNo || '')}" oninput="toggleFilledInput(this)" onchange="updateTextField('${r._id}','toNo',this.value)" style="width:100px;"></td>
+        <td><input type="date" class="f-inp${r.toRaisedDate ? ' filled-red' : ''}" min="${TODAY_ISO}" max="${TODAY_ISO}" value="${dateInputValue(r.toRaisedDate)}" onchange="toggleFilledInput(this);updateDateField('${r._id}','toRaisedDate',this.value)" style="width:140px;"></td>
+        <td><input type="date" class="f-inp${r.sparesReceivedDate ? ' filled-red' : ''}" max="${TODAY_ISO}" value="${dateInputValue(r.sparesReceivedDate)}" onchange="toggleFilledInput(this);updateDateField('${r._id}','sparesReceivedDate',this.value)" style="width:140px;"></td>
         <td><button class="btn-xs update" ${!(r.toNo && r.toRaisedDate) ? 'disabled' : ''} onclick="fulfillRecord('${r._id}')">Fulfilled</button></td>
       </tr>
     `).join('');
@@ -724,6 +726,11 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   }
 
   function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+  function toggleFilledInput(input) {
+    if(!input) return;
+    input.classList.toggle('filled-red', Boolean(input.value));
+  }
   
   // Close modal when clicking outside
   document.getElementById('todr-modal').addEventListener('click', e => { if(e.target.id==='todr-modal') closeModal(); });
@@ -798,8 +805,10 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
       // Clear selection and inputs
       document.getElementById('select-all').checked = false;
-      document.getElementById('bulk-to-no').value = '';
-      document.getElementById('bulk-to-date').value = '';
+      const bulkToNo = document.getElementById('bulk-to-no');
+      const bulkToDate = document.getElementById('bulk-to-date');
+      if(bulkToNo) { bulkToNo.value = ''; toggleFilledInput(bulkToNo); }
+      if(bulkToDate) { bulkToDate.value = ''; toggleFilledInput(bulkToDate); }
       
       renderTable();
       showToast('Successfully applied TO details to selected entries.', 'ok');
