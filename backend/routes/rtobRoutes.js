@@ -2,9 +2,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  Repair Team — OB Pending Routes
 //
-//  Mirrors the structure of rtfrnRoutes.js for consistency.
-//  All routes require a valid JWT (Bearer token via authMiddleware).
-//
 //  Endpoints:
 //    GET    /api/rtob              → All records (admin)
 //    GET    /api/rtob/employee     → Records submitted by logged-in user (repair/employee)
@@ -13,10 +10,6 @@
 //    POST   /api/rtob              → Create new OB record
 //    PUT    /api/rtob/:id          → Update record (full or partial)
 //    DELETE /api/rtob/:id          → Delete record
-//
-//  Register in server.js:
-//    const rtobRoutes = require('./routes/rtobRoutes');
-//    app.use('/api/rtob', rtobRoutes);
 // ─────────────────────────────────────────────────────────────────────────────
 
 const router            = require('express').Router();
@@ -81,7 +74,6 @@ async function attachActualDivisions(records) {
   return records;
 }
 
-// ── HELPER: recalculate noOfDays for a record array ───────────────────────────
 function hydrate(docs) {
   return docs.map(d => {
     const obj = d.toObject ? d.toObject() : { ...d };
@@ -90,7 +82,6 @@ function hydrate(docs) {
   });
 }
 
-// ── HELPER: build employee filter ─────────────────────────────────────────────
 function employeeFilter(user) {
   const role = String(user?.role || '').toLowerCase();
   if (!user || role === 'admin' || role === 'repair' || role === 'repair_team') return {};
@@ -105,7 +96,6 @@ function employeeFilter(user) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  GET /api/rtob/stats
-//  Must be defined BEFORE /:id route to avoid "stats" being treated as an id
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/stats', protect, async (req, res) => {
   try {
@@ -119,7 +109,6 @@ router.get('/stats', protect, async (req, res) => {
       RTOB.countDocuments({ ...filter, status: 'on_hold' }),
     ]);
 
-    // Critical = pending/inprogress records older than 30 days
     const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
     const critical = await RTOB.countDocuments({
       ...filter,
@@ -136,7 +125,6 @@ router.get('/stats', protect, async (req, res) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  GET /api/rtob/employee
-//  Returns only records belonging to the logged-in user
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/employee', protect, async (req, res) => {
   try {
@@ -151,11 +139,9 @@ router.get('/employee', protect, async (req, res) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  GET /api/rtob
-//  Returns ALL records for admins; employee-scoped for other roles
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/', protect, async (req, res) => {
   try {
-    // Optional query filters from URL params e.g. ?division=SAG&status=pending
     const match = {};
     if (req.query.division) match.division = req.query.division;
     if (req.query.status)   match.status   = req.query.status;
@@ -166,7 +152,6 @@ router.get('/', protect, async (req, res) => {
       if (req.query.to)   match.entryDate.$lte = req.query.to;
     }
 
-    // Admins see all; others see only their own
     const baseFilter = req.user.role === 'admin' ? {} : employeeFilter(req.user);
     const filter = { ...baseFilter, ...match };
 
@@ -201,24 +186,18 @@ router.get('/:id', protect, async (req, res) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  POST /api/rtob
-//  Create a new OB record
 // ─────────────────────────────────────────────────────────────────────────────
 router.post('/', protect, async (req, res) => {
   try {
     const body = { ...req.body };
     const repairTeamEntryDate = new Date().toISOString().split('T')[0];
 
-    // Enforce server-side ownership stamp — client cannot spoof submittedBy
     body.submittedBy = req.user.name || body.submittedBy || '';
     body.submittedAt = body.submittedAt || new Date().toISOString();
-    body.entryDate = repairTeamEntryDate;
-
-    // Ensure category is always "OB"
-    body.category = 'OB';
-    body.rpDate = body.rpDate || body.submittedAt || new Date().toISOString();
-
-    // Calculate noOfDays at creation time
-    body.noOfDays = RTOB.calcDays(body.entryDate);
+    body.entryDate   = repairTeamEntryDate;
+    body.category    = 'OB';
+    body.rpDate      = body.rpDate || body.submittedAt || new Date().toISOString();
+    body.noOfDays    = RTOB.calcDays(body.entryDate);
 
     if ((!body.doi || !body.fieldRemarks) && body.sourceId && mongoose.Types.ObjectId.isValid(String(body.sourceId))) {
       try {
@@ -228,31 +207,27 @@ router.post('/', protect, async (req, res) => {
         if (body.sourceCollection === 'estimation' && source?.serviceId) {
           serviceDoc = await Service.findById(source.serviceId).lean();
         }
-        body.doi = body.doi || serviceDoc?.doi || '';
+        body.doi          = body.doi          || serviceDoc?.doi          || '';
         body.fieldRemarks = body.fieldRemarks || serviceDoc?.fieldRemarks || '';
       } catch (srcErr) {
         console.error('RTOB service DOI/remarks lookup failed:', srcErr.message);
       }
     }
 
-    // Basic required-field validation
     const required = ['entryDate', 'division', 'scRefNo', 'defGirNo', 'model', 'defBrdModName'];
     const missing  = required.filter(f => !body[f] || String(body[f]).trim() === '');
     if (missing.length) {
-      return res.status(400).json({
-        message: `Missing required fields: ${missing.join(', ')}`,
-      });
+      return res.status(400).json({ message: `Missing required fields: ${missing.join(', ')}` });
     }
 
     const record = await RTOB.create(body);
 
-    // Flag the source employee record as rtobSent (bypasses assertOwner)
     if (body.sourceId && mongoose.Types.ObjectId.isValid(String(body.sourceId))) {
       const SourceModel = body.sourceCollection === 'estimation' ? EstimationPending : Service;
       try {
         await SourceModel.findByIdAndUpdate(body.sourceId, {
-          rtobSent: true,
-          rtobSentAt: body.submittedAt,
+          rtobSent:    true,
+          rtobSentAt:  body.submittedAt,
         });
       } catch (srcErr) {
         console.error('RTOB → source rtobSent flag failed:', srcErr.message);
@@ -272,7 +247,6 @@ router.post('/', protect, async (req, res) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  PUT /api/rtob/:id
-//  Update an existing OB record (full or partial)
 // ─────────────────────────────────────────────────────────────────────────────
 router.put('/:id', protect, async (req, res) => {
   try {
@@ -283,6 +257,35 @@ router.put('/:id', protect, async (req, res) => {
     if (!existing)
       return res.status(404).json({ message: 'RT OB record not found.' });
 
+    const repairRoles = ['admin', 'repair', 'repair_team'];
+    if (!repairRoles.includes(req.user.role)) {
+      const name = req.user.name || '';
+      if (existing.submittedBy !== name && existing.raEng !== name) {
+        return res.status(403).json({ message: 'You can only update your own records.' });
+      }
+    }
+
+    const body = { ...req.body };
+    if (body.division !== undefined) {
+      body.division = cleanDivision(body.division, existing.division);
+    }
+
+    body.updatedBy = req.user.name || '';
+    body.updatedAt = new Date().toISOString();
+    delete body.submittedBy;
+    delete body.submittedAt;
+
+    if (body.entryDate) {
+      body.noOfDays = RTOB.calcDays(body.entryDate);
+    }
+
+    const updated = await RTOB.findByIdAndUpdate(
+      req.params.id,
+      body,
+      { new: true, runValidators: false }
+    );
+
+    // ── On completion: copy to RTCRL then delete RTOB ──
     if (body.status === 'completed') {
       try {
         await RTCRL.create({
@@ -297,18 +300,80 @@ router.put('/:id', protect, async (req, res) => {
           defBrdModName:    updated.defBrdModName,
           status:           'completed',
           closedBy:         body.updatedBy || req.user?.name || '',
-          repairedBy:       updated.repairedBy  || '',
-          compUsedToRepair: updated.components  || '',
-          techRemarks:      updated.techRemarks || '',
+          repairedBy:       updated.repairedBy   || '',
+          compUsedToRepair: updated.components   || '',
+          techRemarks:      updated.techRemarks  || '',
           repairRemarks:    updated.repairRemarks || '',
-          cost:             updated.cost || '',
-          timeTaken:        updated.timeTaken || '',
+          cost:             updated.cost         || '',
+          timeTaken:        updated.timeTaken    || '',
           repairStatus:     updated.repairStatus || '',
-          doi:              updated.doi || '',
+          doi:              updated.doi          || '',
           repairedDate:     updated.repairedDate || '',
-          components:       updated.components || '',
+          components:       updated.components   || '',
+          finalRemarks:     updated.finalRemarks || '',
+          submittedBy:      updated.submittedBy  || '',
+          submittedAt:      updated.submittedAt  || null,
+          sourceId:         updated._id,
+          sourceCollection: 'rtob',
+        });
+      } catch (crlErr) {
+        console.error('RTOB → RTCRL copy failed:', crlErr.message);
+      }
 
-          finalRemarks:     updated.finalRemarks|| '',
+      await RTOB.findByIdAndDelete(updated._id);
+
+      // Mark the source employee record as RC (Repair Completed)
+      // Use body.sourceCollection as fallback since Mongoose may not reliably
+      // return non-schema extra fields via the updated document even with strict:false
+      const sourceId         = (updated.sourceId         || body.sourceId         || '').toString();
+      const sourceCollection =  updated.sourceCollection || body.sourceCollection || '';
+
+      if (sourceId && mongoose.Types.ObjectId.isValid(sourceId)) {
+        const rcFields = {
+          rtobSent:           true,
+          rtobCompleted:      true,
+          rtobCompletedAt:    new Date().toISOString(),
+          components:         updated.components    || body.components    || '',
+          obComponents:       updated.components    || body.components    || '',
+          techRemarks:        updated.techRemarks   || '',
+          repairRemarks:      updated.repairRemarks || '',
+          finalRemarks:       updated.finalRemarks  || '',
+          repairStatus:       updated.repairStatus  || '',
+        };
+        try {
+          if (sourceCollection === 'estimation') {
+            await EstimationPending.findByIdAndUpdate(sourceId, rcFields);
+          } else if (sourceCollection === 'service') {
+            await Service.findByIdAndUpdate(sourceId, rcFields);
+          } else {
+            // sourceCollection unknown — update both models defensively
+            await EstimationPending.findByIdAndUpdate(sourceId, rcFields);
+            await Service.findByIdAndUpdate(sourceId, rcFields);
+          }
+        } catch (srcErr) {
+          console.error('RTOB → source RC flag failed:', srcErr.message);
+        }
+      }
+
+      return res.json({ success: true, completed: true, message: 'Repair completed and moved to RTCRL.' });
+    }
+
+    res.json(hydrate([updated])[0]);
+  } catch (err) {
+    if (err.name === 'ValidationError') {
+      const messages = Object.values(err.errors).map(e => e.message).join(', ');
+      return res.status(400).json({ message: messages });
+    }
+    console.error('RTOB update error:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  DELETE /api/rtob/:id
+// ─────────────────────────────────────────────────────────────────────────────
+router.delete('/:id', protect, async (req, res) => {
+  try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id))
       return res.status(400).json({ message: 'Invalid record ID.' });
 
@@ -316,7 +381,6 @@ router.put('/:id', protect, async (req, res) => {
     if (!existing)
       return res.status(404).json({ message: 'RT OB record not found.' });
 
-    // Non-admins can only delete records they submitted
     if (req.user.role !== 'admin') {
       const name = req.user.name || '';
       if (existing.submittedBy !== name) {
