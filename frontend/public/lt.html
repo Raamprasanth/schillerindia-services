@@ -203,7 +203,7 @@ table.frn-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
       <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
       <div style="width:1px;height:24px;background:var(--border);margin:0 5px;"></div>
       <label style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;">TO Raised Date</label>
-      <input type="date" class="f-inp" id="bulk-raised-date" onchange="updateBulkFulfillBtn()" style="padding:5px 8px;font-size:11.5px;">
+      <input type="date" class="f-inp" id="bulk-raised-date" onchange="syncBulkDate()" style="padding:5px 8px;font-size:11.5px;">
       <button class="btn btn-success btn-sm" id="bulk-fulfill-btn" onclick="bulkFulfill()" disabled>&#9989; Fulfill Selected</button>
       <div style="width:1px;height:24px;background:var(--border);margin:0 5px;"></div>
       <button class="btn btn-outline btn-sm" onclick="loadData()">&#10227; Refresh</button>
@@ -688,6 +688,7 @@ function toggleFulfillBtn(id) {
       btn.style.cursor = 'not-allowed';
     }
   }
+  updateBulkFulfillBtn();
 }
 
 async function moveToClosed(id){
@@ -783,25 +784,87 @@ Object.assign(window, {
   toggleSelectAll,
   toggleSelectRow,
   updateBulkFulfillBtn,
+  syncBulkDate,
   bulkFulfill,
   logout
 });
 
 // -- Bulk Fulfill Logic --
+function syncBulkDate() {
+  const dateInput = document.getElementById('bulk-raised-date');
+  if(!dateInput) return;
+  const val = dateInput.value;
+  
+  selectedIds.forEach(id => {
+    const input = document.getElementById('raised-date-' + id);
+    if(input) {
+      input.value = val;
+      const btn = document.getElementById('btn-fulfill-' + id);
+      if(btn) {
+        if(val) {
+          btn.disabled = false;
+          btn.style.opacity = '1';
+          btn.style.cursor = 'pointer';
+        } else {
+          btn.disabled = true;
+          btn.style.opacity = '0.4';
+          btn.style.cursor = 'not-allowed';
+        }
+      }
+    }
+  });
+  updateBulkFulfillBtn();
+}
+
 function toggleSelectAll(e) {
   const isChecked = e.target.checked;
+  const dateInput = document.getElementById('bulk-raised-date');
+  const dVal = dateInput ? dateInput.value : '';
+
   document.querySelectorAll('.row-cb').forEach(cb => {
     cb.checked = isChecked;
-    if(isChecked) selectedIds.add(cb.value);
-    else selectedIds.delete(cb.value);
+    const id = cb.value;
+    if(isChecked) {
+      selectedIds.add(id);
+      if(dVal) {
+        const input = document.getElementById('raised-date-' + id);
+        if(input) {
+          input.value = dVal;
+          const btn = document.getElementById('btn-fulfill-' + id);
+          if(btn) {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+          }
+        }
+      }
+    } else {
+      selectedIds.delete(id);
+    }
   });
   updateBulkFulfillBtn();
 }
 
 function toggleSelectRow(e) {
   const id = e.target.value;
-  if(e.target.checked) selectedIds.add(id);
-  else selectedIds.delete(id);
+  if(e.target.checked) {
+    selectedIds.add(id);
+    const dateInput = document.getElementById('bulk-raised-date');
+    if(dateInput && dateInput.value) {
+      const input = document.getElementById('raised-date-' + id);
+      if(input) {
+        input.value = dateInput.value;
+        const btn = document.getElementById('btn-fulfill-' + id);
+        if(btn) {
+          btn.disabled = false;
+          btn.style.opacity = '1';
+          btn.style.cursor = 'pointer';
+        }
+      }
+    }
+  } else {
+    selectedIds.delete(id);
+  }
   
   const allRowCbs = document.querySelectorAll('.row-cb');
   const allChecked = allRowCbs.length > 0 && Array.from(allRowCbs).every(cb => cb.checked);
@@ -813,9 +876,18 @@ function toggleSelectRow(e) {
 
 function updateBulkFulfillBtn() {
   const btn = document.getElementById('bulk-fulfill-btn');
-  const dateInput = document.getElementById('bulk-raised-date');
-  if(!btn || !dateInput) return;
-  if(selectedIds.size > 0 && dateInput.value) {
+  if(!btn) return;
+  
+  let allHaveDate = false;
+  if (selectedIds.size > 0) {
+    allHaveDate = true;
+    selectedIds.forEach(id => {
+      const input = document.getElementById('raised-date-' + id);
+      if(!input || !input.value) allHaveDate = false;
+    });
+  }
+  
+  if(selectedIds.size > 0 && allHaveDate) {
     btn.disabled = false;
   } else {
     btn.disabled = true;
@@ -824,9 +896,14 @@ function updateBulkFulfillBtn() {
 
 async function bulkFulfill() {
   if(selectedIds.size === 0) return;
-  const toRaisedDate = document.getElementById('bulk-raised-date').value;
-  if(!toRaisedDate) {
-    showToast('Please select a TO Raised Date for bulk fulfill.', 'err');
+  
+  let missingDate = false;
+  for(const id of selectedIds) {
+    const input = document.getElementById('raised-date-' + id);
+    if(!input || !input.value) missingDate = true;
+  }
+  if(missingDate) {
+    showToast('Please ensure all selected entries have a TO Raised Date.', 'err');
     return;
   }
   
@@ -844,6 +921,8 @@ async function bulkFulfill() {
     const d = DATA.find(x => (x._id || x.id) === id);
     if(!d) continue;
     
+    const individualDate = document.getElementById('raised-date-' + id)?.value;
+    
     const payload = {
       date: d.date,
       division: d.division,
@@ -853,7 +932,7 @@ async function bulkFulfill() {
       girNo: d.girNo,
       opt: d.opt,
       remarks: d.remarks,
-      toRaisedDate: toRaisedDate
+      toRaisedDate: individualDate
     };
     
     try {
