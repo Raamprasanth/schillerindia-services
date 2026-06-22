@@ -225,6 +225,12 @@ table.ob-table tbody tr:last-child td{border-bottom:none;}
 .nav-children{max-height:0;overflow:hidden;transition:max-height .28s ease;margin-bottom:3px;}
 .nav-children.open{max-height:650px;}
 .nav-sub .nav-item{padding-left:28px;font-size:11.5px;}
+.comp-repair-section{background:rgba(4,120,87,0.055);border:1.5px solid rgba(4,120,87,0.22);border-radius:10px;padding:13px 16px;}
+.comp-repair-header{font-size:9.5px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:0.09em;display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+.comp-repair-header .comp-rc-badge{background:var(--green);color:#fff;font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;letter-spacing:0.04em;}
+.comp-repair-value{font-size:12.5px;color:var(--text);line-height:1.65;white-space:pre-wrap;word-break:break-word;}
+.comp-repair-empty{font-size:11.5px;color:var(--muted);font-style:italic;}
+.comp-loading{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;}
 </style>
   <link rel="stylesheet" href="global-typography.css">
   <link rel="stylesheet" href="employee-theme.css">
@@ -353,6 +359,18 @@ table.ob-table tbody tr:last-child td{border-bottom:none;}
           <div class="fg-4">
             <div class="ff span4"><label>Problem Observed <span class="req">*</span></label><textarea id="u-techremarks" required rows="2" placeholder="Observed problem, diagnosis, fault description"></textarea></div>
           </div>
+        </div>
+
+        <!-- Components Used to Repair — only shown when repair button is RC. NOT included in PDF. -->
+        <div class="form-section" id="comp-repair-outer" style="display:none;">
+          <div class="form-section-title" style="color:var(--green);border-bottom-color:rgba(4,120,87,0.2);">&#128295; Components Used to Repair <span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--green-bg);color:var(--green);margin-left:6px;">Fetched from Repair Team</span></div>
+          <div class="comp-repair-section">
+            <div class="comp-repair-header">&#9989; Repair Completed <span class="comp-rc-badge">RC</span></div>
+            <div id="comp-repair-loading" class="comp-loading" style="display:none;"><span class="spin"></span>&nbsp;Fetching components from repair team...</div>
+            <div id="comp-repair-value" class="comp-repair-value"></div>
+            <div id="comp-repair-empty" class="comp-repair-empty" style="display:none;">No components recorded by the repair team yet.</div>
+          </div>
+          <div style="font-size:10.5px;color:var(--muted);margin-top:8px;">&#9432; This section is for reference only and is <strong>not included in the PDF</strong>.</div>
         </div>
 
       </div>
@@ -921,6 +939,50 @@ function setLockedEstimationNo(inputId, records){
   el.title = 'Auto generated from FRN No and SC Ref No';
 }
 
+async function _fetchCompRepair(sourceId, scRefNo) {
+  // Fetch components field from the RT OB record for this service
+  try {
+    const res = await fetch(API_BASE + '/api/rtob?sourceId=' + encodeURIComponent(sourceId), { headers: authHeaders() });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const rows = Array.isArray(data) ? data : (data.data ? data.data : (data._id ? [data] : []));
+    const match = rows.find(r =>
+      (r.sourceId && String(r.sourceId) === String(sourceId)) ||
+      (r.scRefNo && scRefNo && String(r.scRefNo).trim() === String(scRefNo).trim())
+    );
+    if (match) return match.components || match.componentsUsed || match.partsUsed || null;
+    return null;
+  } catch(e) {
+    return null;
+  }
+}
+
+function _showCompRepairSection(isCompleted, sourceId, scRefNo) {
+  const outer = document.getElementById('comp-repair-outer');
+  const loading = document.getElementById('comp-repair-loading');
+  const val = document.getElementById('comp-repair-value');
+  const empty = document.getElementById('comp-repair-empty');
+  if (!outer) return;
+  if (!isCompleted) {
+    outer.style.display = 'none';
+    return;
+  }
+  outer.style.display = '';
+  if (loading) loading.style.display = 'flex';
+  if (val) val.textContent = '';
+  if (empty) empty.style.display = 'none';
+  _fetchCompRepair(sourceId, scRefNo).then(components => {
+    if (loading) loading.style.display = 'none';
+    if (components && String(components).trim()) {
+      if (val) val.textContent = String(components).trim();
+      if (empty) empty.style.display = 'none';
+    } else {
+      if (val) val.textContent = '';
+      if (empty) empty.style.display = '';
+    }
+  });
+}
+
 function openEstimationForRecords(records){
   if(!records || !records.length) return;
   const first = records[0];
@@ -977,6 +1039,9 @@ function openEstimationForRecords(records){
   document.getElementById('modal-ok').classList.remove('show');
   document.getElementById('modal-est').classList.add('open');
   const ms=document.querySelector('.modal-scroll'); if(ms) ms.scrollTop=0;
+  // Show components used by repair team only when repair is RC — not in PDF
+  const _isRc = !!(first.rtobCompleted || first.rtfrnCompleted || first.rturCompleted);
+  _showCompRepairSection(_isRc, first._id || first.id, first.scReNo);
 }
 
 function openSelectedEstimation(){
