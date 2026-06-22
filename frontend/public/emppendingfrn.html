@@ -1403,18 +1403,18 @@ function generateEstimationPDFData(s, mode='download'){
   const leftBoxX=L;
   const rightBoxX=102;
   const topBoxY=33;
-  drawBox(leftBoxX, topBoxY, 68, 46);
+  drawBox(leftBoxX, topBoxY, 80, 54);
   drawBox(rightBoxX, topBoxY, 80, 54);
   labelValue(leftBoxX+2, topBoxY+7, 'Estimation No', s.estNo || '-');
   labelValue(leftBoxX+2, topBoxY+15, 'Date', fmtDate(s.estDate));
   labelValue(leftBoxX+2, topBoxY+23, 'Quote Valid Until', fmtDate(s.estValidDate));
   labelValue(leftBoxX+2, topBoxY+31, 'Type of Work Order', s.estStatus||s.orderType||'-');
   labelValue(leftBoxX+2, topBoxY+39, 'FRN', s.frnNo || '-');
+  labelValue(leftBoxX+2, topBoxY+47, 'SVC RCD Date', fmtDate(s.rcvdDate || s.entryDate), 34);
   wrappedLabelValue(rightBoxX+2, topBoxY+7, 'Customer Name', s.customer||s.custName||'-');
   wrappedLabelValue(rightBoxX+2, topBoxY+23, 'Dealer Name', s.dealer||'-');
   labelValue(rightBoxX+2, topBoxY+35, 'Engineer Name', s.eng || '-', 34);
   labelValue(rightBoxX+2, topBoxY+43, 'DATE', fmtDate(s.frnDate), 34);
-  labelValue(rightBoxX+2, topBoxY+51, 'SVC RCD Date', fmtDate(s.rcvdDate || s.entryDate), 34);
 
   y=96;
   doc.setFont('helvetica','bold');
@@ -1429,9 +1429,8 @@ function generateEstimationPDFData(s, mode='download'){
   y+=13;
   doc.setFont('helvetica','bold');
   doc.text('Problem Observed:',L,y);
-  y+=7;
   doc.setFont('helvetica','normal');
-  y += writeWrapped(s.techRemarks || s.defMod || 'NA', L, y, 170);
+  y += writeWrapped(s.techRemarks || s.defMod || 'NA', L+34, y, 136);
 
   y+=10;
   doc.setFont('helvetica','bold');
