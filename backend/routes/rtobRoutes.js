@@ -283,40 +283,6 @@ router.put('/:id', protect, async (req, res) => {
     if (!existing)
       return res.status(404).json({ message: 'RT OB record not found.' });
 
-    // repair / repair_team roles have full update access (same as admin)
-    const repairRoles = ['admin', 'repair', 'repair_team'];
-    if (!repairRoles.includes(req.user.role)) {
-      const name = req.user.name || '';
-      if (existing.submittedBy !== name && existing.raEng !== name) {
-        return res.status(403).json({ message: 'You can only update your own records.' });
-      }
-    }
-
-    const body = { ...req.body };
-    if (body.division !== undefined) {
-      body.division = cleanDivision(body.division, existing.division);
-    }
-
-    // Stamp who updated and when
-    body.updatedBy = req.user.name || '';
-    body.updatedAt = new Date().toISOString();
-
-    // Do not overwrite the original submitter
-    delete body.submittedBy;
-    delete body.submittedAt;
-
-    // Recalculate noOfDays if entryDate was changed
-    if (body.entryDate) {
-      body.noOfDays = RTOB.calcDays(body.entryDate);
-    }
-
-    const updated = await RTOB.findByIdAndUpdate(
-      req.params.id,
-      body,
-      { new: true, runValidators: false }
-    );
-
-    // ── On completion: copy to RTCRL then delete RTOB ──
     if (body.status === 'completed') {
       try {
         await RTCRL.create({
@@ -343,56 +309,6 @@ router.put('/:id', protect, async (req, res) => {
           components:       updated.components || '',
 
           finalRemarks:     updated.finalRemarks|| '',
-          submittedBy:      updated.submittedBy || '',
-          submittedAt:      updated.submittedAt || null,
-          sourceId:         updated._id,
-          sourceCollection: 'rtob',
-        });
-      } catch (crlErr) {
-        console.error('RTOB → RTCRL copy failed:', crlErr.message);
-      }
-
-      await RTOB.findByIdAndDelete(updated._id);
-
-      // Mark the source employee record as RC (Repair Completed)
-      if (updated.sourceId && mongoose.Types.ObjectId.isValid(updated.sourceId)) {
-        const SourceModel = updated.sourceCollection === 'estimation' ? EstimationPending : Service;
-        try {
-          await SourceModel.findByIdAndUpdate(updated.sourceId, {
-            rtobSent: true,
-            rtobCompleted: true,
-            rtobCompletedAt: new Date().toISOString(),
-            components: updated.components || '',
-            obComponents: updated.components || '',
-            techRemarks: updated.techRemarks || '',
-            repairRemarks: updated.repairRemarks || '',
-            finalRemarks: updated.finalRemarks || '',
-            repairStatus: updated.repairStatus || '',
-          });
-        } catch (srcErr) {
-          console.error('RTOB → source RC flag failed:', srcErr.message);
-        }
-      }
-
-      return res.json({ success: true, completed: true, message: 'Repair completed and moved to RTCRL.' });
-    }
-
-    res.json(hydrate([updated])[0]);
-  } catch (err) {
-    if (err.name === 'ValidationError') {
-      const messages = Object.values(err.errors).map(e => e.message).join(', ');
-      return res.status(400).json({ message: messages });
-    }
-    console.error('RTOB update error:', err);
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  DELETE /api/rtob/:id
-// ─────────────────────────────────────────────────────────────────────────────
-router.delete('/:id', protect, async (req, res) => {
-  try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id))
       return res.status(400).json({ message: 'Invalid record ID.' });
 
