@@ -2267,28 +2267,16 @@
       const row = prfobData.find(x => String(x._id) === String(id));
       if (!id || !row) { if (msg) { msg.className = 'form-msg err-msg'; msg.textContent = 'Record not found.'; } return; }
       
-      const requiredFields = ['ep-scEng', 'ep-crmRefNo', 'ep-partType', 'ep-partsDescription', 'ep-remarks'];
-      let isValid = true;
+      const fields = ['ep-scEng', 'ep-crmRefNo', 'ep-partType', 'ep-partsDescription', 'ep-remarks'];
       const values = {};
       
-      requiredFields.forEach(id => {
+      fields.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-          const val = el.value.trim();
-          if (!val) {
-            el.classList.add('err');
-            isValid = false;
-          } else {
-            el.classList.remove('err');
-            values[id] = val;
-          }
+          el.classList.remove('err');
+          values[id] = el.value.trim();
         }
       });
-
-      if (!isValid) {
-        if (msg) { msg.className = 'form-msg err-msg'; msg.textContent = 'Please fill in all mandatory fields.'; }
-        return;
-      }
 
       const payload = {
         ...row,
