@@ -699,42 +699,48 @@ router.put('/:id/update', protect, async (req, res) => {
 
     if (doc.status === 'supplier_warranty') {
       try {
-        let divisionName = '';
-        if (doc.serviceId) {
-          const svc = await Service.findById(doc.serviceId).populate('division').lean();
-          if (svc && svc.division) {
-            divisionName = typeof svc.division === 'object' ? svc.division.name : '';
-          }
-        }
+        let alreadyScrap = false;
+        if (doc.frnNo) alreadyScrap = await Scrap.findOne({ frnNo: doc.frnNo, typeWork: 'Supplier Warranty' });
+        if (!alreadyScrap && doc.serviceId) alreadyScrap = await Scrap.findOne({ serviceId: doc.serviceId, typeWork: 'Supplier Warranty' });
 
-        const scrapDoc = await Scrap.create({
-          serviceId: doc.serviceId || null,
-          entryDate: doc.entryDate || '',
-          scRno: doc.scRno || '',
-          scEng: doc.scEng || '',
-          frnNo: doc.frnNo || '',
-          region: doc.region || '',
-          engineer: doc.eng || '',
-          customer: doc.customer || '',
-          model: doc.model || '',
-          unitStatus: doc.unitStatus || '',
-          defMod: doc.defMod || '',
-          defGir: doc.defGir || '',
-          typeWork: 'Supplier Warranty',
-          rcvdDate: doc.entryDate || '',
-          pdPfrn: Math.floor((Date.now() - new Date(doc.rcvdDate || doc.entryDate || doc.createdAt).getTime()) / 86400000),
-          pdObp: 0,
-          pdUrp: 0,
-          pdScc: 0,
-          division: divisionName,
-          addedBy: req.user?.name || '',
-        });
-        await enqueueLatestEscalationSnapshot(
-          'supplier_warranty',
-          scrapDoc._id,
-          req.user?.name || '',
-          buildSupplierWarrantyEscalationRow(scrapDoc.toObject ? scrapDoc.toObject() : scrapDoc)
-        );
+        if (!alreadyScrap) {
+          let divisionName = '';
+          if (doc.serviceId) {
+            const svc = await Service.findById(doc.serviceId).populate('division').lean();
+            if (svc && svc.division) {
+              divisionName = typeof svc.division === 'object' ? svc.division.name : '';
+            }
+          }
+
+          const scrapDoc = await Scrap.create({
+            serviceId: doc.serviceId || null,
+            entryDate: doc.entryDate || '',
+            scRno: doc.scRno || '',
+            scEng: doc.scEng || '',
+            frnNo: doc.frnNo || '',
+            region: doc.region || '',
+            engineer: doc.eng || '',
+            customer: doc.customer || '',
+            model: doc.model || '',
+            unitStatus: doc.unitStatus || '',
+            defMod: doc.defMod || '',
+            defGir: doc.defGir || '',
+            typeWork: 'Supplier Warranty',
+            rcvdDate: doc.entryDate || '',
+            pdPfrn: Math.floor((Date.now() - new Date(doc.rcvdDate || doc.entryDate || doc.createdAt).getTime()) / 86400000),
+            pdObp: 0,
+            pdUrp: 0,
+            pdScc: 0,
+            division: divisionName,
+            addedBy: req.user?.name || '',
+          });
+          await enqueueLatestEscalationSnapshot(
+            'supplier_warranty',
+            scrapDoc._id,
+            req.user?.name || '',
+            buildSupplierWarrantyEscalationRow(scrapDoc.toObject ? scrapDoc.toObject() : scrapDoc)
+          );
+        }
         if (doc.serviceId) {
           await Service.findByIdAndUpdate(
             doc.serviceId,

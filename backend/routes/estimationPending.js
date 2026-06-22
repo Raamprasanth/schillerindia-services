@@ -501,53 +501,59 @@ router.put('/:id', async (req, res) => {
         ? Math.max(0, Math.floor((Date.now() - new Date(record.rcvdDate || record.entryDate).getTime()) / 86400000))
         : 0;
 
-      let externalDivisionName = '';
-      if (updated.serviceId) {
-        try {
-          const svc = await Service.findById(updated.serviceId).populate('division').lean();
-          if (svc && svc.division) {
-            externalDivisionName = typeof svc.division === 'object' ? svc.division.name : '';
-          }
-        } catch (_) {}
-      }
+      let alreadyExternal = false;
+      if (updated.frnNo) alreadyExternal = await SCCompletedFRN.findOne({ frnNo: updated.frnNo, typeWork: 'EXTERNAL REPAIR' });
+      if (!alreadyExternal && updated.serviceId) alreadyExternal = await SCCompletedFRN.findOne({ serviceId: updated.serviceId, typeWork: 'EXTERNAL REPAIR' });
 
-      const externalDoc = await SCCompletedFRN.create({
-        serviceId:    updated.serviceId ? String(updated.serviceId) : '',
-        entryDate:    updated.entryDate || '',
-        scRno:        updated.scReNo || '',
-        scEng:        updated.scEng || '',
-        frnNo:        updated.frnNo || '',
-        region:       updated.reg || updated.branch || '',
-        eng:          updated.eng || '',
-        customer:     updated.custName || updated.customer || '',
-        model:        updated.model || '',
-        unitStatus:   updated.unitSts || '',
-        partNo:       updated.partNo || '',
-        defMod:       updated.defMod || '',
-        defGir:       updated.defGir || '',
-        raEng:        updated.obRaEng || '',
-        defUnitGir:   updated.obDefUnitGir || updated.defGir || 'NA',
-        repGirSno:    updated.obRepGirNo || updated.obDefUnitGir || '',
-        finalRemarks: updated.finalRemarks || updated.obFinalRemarks || '',
-        techRemarks:  updated.techRemarks || '',
-        components:   updated.components || updated.obComponents || '',
-        revalue:      Number(updated.revalue || 0),
-        typeWork:     'EXTERNAL REPAIR',
-        reportType:   updated.obTypeReport || '',
-        destination:  updated.obDestination || '',
-        shipDateSC:   updated.obShipSc || '',
-        shipDateComm: updated.obShipComm || '',
-        pdays,
-        division:     externalDivisionName,
-        updatedBy:    name || '',
-        status:       'pending_update',
-      });
-      await enqueueLatestEscalationSnapshot(
-        'external_repair',
-        externalDoc._id,
-        name || '',
-        buildExternalRepairEscalationRow(externalDoc.toObject ? externalDoc.toObject() : externalDoc)
-      );
+      if (!alreadyExternal) {
+        let externalDivisionName = '';
+        if (updated.serviceId) {
+          try {
+            const svc = await Service.findById(updated.serviceId).populate('division').lean();
+            if (svc && svc.division) {
+              externalDivisionName = typeof svc.division === 'object' ? svc.division.name : '';
+            }
+          } catch (_) {}
+        }
+
+        const externalDoc = await SCCompletedFRN.create({
+          serviceId:    updated.serviceId ? String(updated.serviceId) : '',
+          entryDate:    updated.entryDate || '',
+          scRno:        updated.scReNo || '',
+          scEng:        updated.scEng || '',
+          frnNo:        updated.frnNo || '',
+          region:       updated.reg || updated.branch || '',
+          eng:          updated.eng || '',
+          customer:     updated.custName || updated.customer || '',
+          model:        updated.model || '',
+          unitStatus:   updated.unitSts || '',
+          partNo:       updated.partNo || '',
+          defMod:       updated.defMod || '',
+          defGir:       updated.defGir || '',
+          raEng:        updated.obRaEng || '',
+          defUnitGir:   updated.obDefUnitGir || updated.defGir || 'NA',
+          repGirSno:    updated.obRepGirNo || updated.obDefUnitGir || '',
+          finalRemarks: updated.finalRemarks || updated.obFinalRemarks || '',
+          techRemarks:  updated.techRemarks || '',
+          components:   updated.components || updated.obComponents || '',
+          revalue:      Number(updated.revalue || 0),
+          typeWork:     'EXTERNAL REPAIR',
+          reportType:   updated.obTypeReport || '',
+          destination:  updated.obDestination || '',
+          shipDateSC:   updated.obShipSc || '',
+          shipDateComm: updated.obShipComm || '',
+          pdays,
+          division:     externalDivisionName,
+          updatedBy:    name || '',
+          status:       'pending_update',
+        });
+        await enqueueLatestEscalationSnapshot(
+          'external_repair',
+          externalDoc._id,
+          name || '',
+          buildExternalRepairEscalationRow(externalDoc.toObject ? externalDoc.toObject() : externalDoc)
+        );
+      }
 
       if (updated.serviceId) {
         await Service.findByIdAndUpdate(
@@ -578,42 +584,48 @@ router.put('/:id', async (req, res) => {
         ? Math.max(0, Math.floor((Date.now() - new Date(record.entryDate).getTime()) / 86400000))
         : 0;
 
-      let divisionName = '';
-      if (updated.serviceId) {
-        const svc = await Service.findById(updated.serviceId).populate('division').lean();
-        if (svc && svc.division) {
-          divisionName = typeof svc.division === 'object' ? svc.division.name : '';
-        }
-      }
+      let alreadyScrap = false;
+      if (updated.frnNo) alreadyScrap = await Scrap.findOne({ frnNo: updated.frnNo, typeWork: 'Supplier Warranty' });
+      if (!alreadyScrap && updated.serviceId) alreadyScrap = await Scrap.findOne({ serviceId: updated.serviceId, typeWork: 'Supplier Warranty' });
 
-      const scrapDoc = await Scrap.create({
-        serviceId: updated.serviceId || null,
-        entryDate: updated.entryDate || '',
-        scRno: updated.scReNo || '',
-        scEng: updated.scEng || '',
-        frnNo: updated.frnNo || '',
-        region: updated.reg || updated.branch || '',
-        engineer: updated.eng || '',
-        customer: updated.custName || updated.customer || '',
-        model: updated.model || '',
-        unitStatus: updated.unitSts || '',
-        defMod: updated.defMod || '',
-        defGir: updated.defGir || '',
-        typeWork: 'Supplier Warranty',
-        rcvdDate: updated.entryDate || '',
-        pdPfrn,
-        pdObp: 0,
-        pdUrp: 0,
-        pdScc: 0,
-        division: divisionName,
-        addedBy: name || '',
-      });
-      await enqueueLatestEscalationSnapshot(
-        'supplier_warranty',
-        scrapDoc._id,
-        name || '',
-        buildSupplierWarrantyEscalationRow(scrapDoc.toObject ? scrapDoc.toObject() : scrapDoc)
-      );
+      if (!alreadyScrap) {
+        let divisionName = '';
+        if (updated.serviceId) {
+          const svc = await Service.findById(updated.serviceId).populate('division').lean();
+          if (svc && svc.division) {
+            divisionName = typeof svc.division === 'object' ? svc.division.name : '';
+          }
+        }
+
+        const scrapDoc = await Scrap.create({
+          serviceId: updated.serviceId || null,
+          entryDate: updated.entryDate || '',
+          scRno: updated.scReNo || '',
+          scEng: updated.scEng || '',
+          frnNo: updated.frnNo || '',
+          region: updated.reg || updated.branch || '',
+          engineer: updated.eng || '',
+          customer: updated.custName || updated.customer || '',
+          model: updated.model || '',
+          unitStatus: updated.unitSts || '',
+          defMod: updated.defMod || '',
+          defGir: updated.defGir || '',
+          typeWork: 'Supplier Warranty',
+          rcvdDate: updated.entryDate || '',
+          pdPfrn,
+          pdObp: 0,
+          pdUrp: 0,
+          pdScc: 0,
+          division: divisionName,
+          addedBy: name || '',
+        });
+        await enqueueLatestEscalationSnapshot(
+          'supplier_warranty',
+          scrapDoc._id,
+          name || '',
+          buildSupplierWarrantyEscalationRow(scrapDoc.toObject ? scrapDoc.toObject() : scrapDoc)
+        );
+      }
 
       if (updated.serviceId) {
         await Service.findByIdAndUpdate(

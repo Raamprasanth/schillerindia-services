@@ -313,42 +313,48 @@ router.put('/:id/update', protect, async (req, res) => {
     const normalizedTypeWork = String(doc.typeWork || doc.typeOfWork || '').trim().toLowerCase();
 
     if (normalizedTypeWork === 'external repair') {
-      const externalDoc = await SCCompletedFRN.create({
-        serviceId:    doc.serviceId ? String(doc.serviceId) : '',
-        entryDate:    doc.entryDate || '',
-        scRno:        doc.scRno || '',
-        scEng:        doc.scEng || '',
-        frnNo:        doc.frnNo || '',
-        region:       doc.region || '',
-        eng:          doc.engineer || '',
-        customer:     doc.customer || doc.custName || '',
-        model:        doc.model || '',
-        unitStatus:   doc.unitStatus || '',
-        defMod:       doc.defMod || doc.defModBrdName || '',
-        defGir:       doc.defGir || doc.defGirNo || '',
-        raEng:        doc.raEng || '',
-        repBrdDate:   doc.repBrd || '',
-        dcNo:         doc.dcNo || '',
-        defUnitGir:   doc.defUnitGir || 'NA',
-        repGirSno:    doc.repGirNo || '',
-        finalRemarks: doc.finalRemarks || '',
-        techRemarks:  doc.techRemarks || '',
-        components:   doc.components || '',
-        typeWork:     'EXTERNAL REPAIR',
-        reportType:   doc.typeReport || '',
-        destination:  doc.destination || '',
-        shipDateSC:   doc.shipSc || '',
-        shipDateComm: doc.shipComm || '',
-        pdays,
-        updatedBy:    req.user.name || '',
-        status:       'pending_update',
-      });
-      await enqueueLatestEscalationSnapshot(
-        'external_repair',
-        externalDoc._id,
-        req.user.name || '',
-        buildExternalRepairEscalationRow(externalDoc.toObject ? externalDoc.toObject() : externalDoc)
-      );
+      let alreadyExternal = false;
+      if (doc.frnNo) alreadyExternal = await SCCompletedFRN.findOne({ frnNo: doc.frnNo, typeWork: 'EXTERNAL REPAIR' });
+      if (!alreadyExternal && doc.serviceId) alreadyExternal = await SCCompletedFRN.findOne({ serviceId: doc.serviceId, typeWork: 'EXTERNAL REPAIR' });
+
+      if (!alreadyExternal) {
+        const externalDoc = await SCCompletedFRN.create({
+          serviceId:    doc.serviceId ? String(doc.serviceId) : '',
+          entryDate:    doc.entryDate || '',
+          scRno:        doc.scRno || '',
+          scEng:        doc.scEng || '',
+          frnNo:        doc.frnNo || '',
+          region:       doc.region || '',
+          eng:          doc.engineer || '',
+          customer:     doc.customer || doc.custName || '',
+          model:        doc.model || '',
+          unitStatus:   doc.unitStatus || '',
+          defMod:       doc.defMod || doc.defModBrdName || '',
+          defGir:       doc.defGir || doc.defGirNo || '',
+          raEng:        doc.raEng || '',
+          repBrdDate:   doc.repBrd || '',
+          dcNo:         doc.dcNo || '',
+          defUnitGir:   doc.defUnitGir || 'NA',
+          repGirSno:    doc.repGirNo || '',
+          finalRemarks: doc.finalRemarks || '',
+          techRemarks:  doc.techRemarks || '',
+          components:   doc.components || '',
+          typeWork:     'EXTERNAL REPAIR',
+          reportType:   doc.typeReport || '',
+          destination:  doc.destination || '',
+          shipDateSC:   doc.shipSc || '',
+          shipDateComm: doc.shipComm || '',
+          pdays,
+          updatedBy:    req.user.name || '',
+          status:       'pending_update',
+        });
+        await enqueueLatestEscalationSnapshot(
+          'external_repair',
+          externalDoc._id,
+          req.user.name || '',
+          buildExternalRepairEscalationRow(externalDoc.toObject ? externalDoc.toObject() : externalDoc)
+        );
+      }
 
       if (doc.serviceId) {
         await Service.findByIdAndUpdate(
@@ -388,33 +394,39 @@ router.put('/:id/update', protect, async (req, res) => {
     }
 
     if (normalizedTypeWork === 'supplier warranty' || normalizedTypeWork === 'supplier warrenty') {
-      const scrapDoc = await Scrap.create({
-        serviceId: doc.serviceId || null,
-        entryDate: doc.entryDate || '',
-        scRno: doc.scRno || '',
-        scEng: doc.scEng || '',
-        frnNo: doc.frnNo || '',
-        region: doc.region || '',
-        engineer: doc.engineer || '',
-        customer: doc.customer || doc.custName || '',
-        model: doc.model || '',
-        unitStatus: doc.unitStatus || '',
-        defMod: doc.defMod || doc.defModBrdName || '',
-        defGir: doc.defGir || doc.defGirNo || '',
-        typeWork: 'Supplier Warranty',
-        rcvdDate: doc.entryDate || '',
-        pdPfrn: pdays,
-        pdObp: 0,
-        pdUrp: 0,
-        pdScc: 0,
-        addedBy: req.user.name || '',
-      });
-      await enqueueLatestEscalationSnapshot(
-        'supplier_warranty',
-        scrapDoc._id,
-        req.user.name || '',
-        buildSupplierWarrantyEscalationRow(scrapDoc.toObject ? scrapDoc.toObject() : scrapDoc)
-      );
+      let alreadyScrap = false;
+      if (doc.frnNo) alreadyScrap = await Scrap.findOne({ frnNo: doc.frnNo, typeWork: 'Supplier Warranty' });
+      if (!alreadyScrap && doc.serviceId) alreadyScrap = await Scrap.findOne({ serviceId: doc.serviceId, typeWork: 'Supplier Warranty' });
+
+      if (!alreadyScrap) {
+        const scrapDoc = await Scrap.create({
+          serviceId: doc.serviceId || null,
+          entryDate: doc.entryDate || '',
+          scRno: doc.scRno || '',
+          scEng: doc.scEng || '',
+          frnNo: doc.frnNo || '',
+          region: doc.region || '',
+          engineer: doc.engineer || '',
+          customer: doc.customer || doc.custName || '',
+          model: doc.model || '',
+          unitStatus: doc.unitStatus || '',
+          defMod: doc.defMod || doc.defModBrdName || '',
+          defGir: doc.defGir || doc.defGirNo || '',
+          typeWork: 'Supplier Warranty',
+          rcvdDate: doc.entryDate || '',
+          pdPfrn: pdays,
+          pdObp: 0,
+          pdUrp: 0,
+          pdScc: 0,
+          addedBy: req.user.name || '',
+        });
+        await enqueueLatestEscalationSnapshot(
+          'supplier_warranty',
+          scrapDoc._id,
+          req.user.name || '',
+          buildSupplierWarrantyEscalationRow(scrapDoc.toObject ? scrapDoc.toObject() : scrapDoc)
+        );
+      }
 
       if (doc.serviceId) {
         await Service.findByIdAndUpdate(
