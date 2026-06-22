@@ -88,9 +88,7 @@ router.put('/:id', protect, async (req, res) => {
 
     const update = {
       ...body,
-      updatedAt: new Date(),
-      status: 'Closed',
-      executedDate: body.executedDate || existing.executedDate || new Date().toISOString().slice(0, 10),
+      updatedAt: new Date()
     };
 
     const doc = await EPrfOb.findByIdAndUpdate(
@@ -100,13 +98,45 @@ router.put('/:id', protect, async (req, res) => {
     );
     if (!doc) return res.status(404).json({ message: 'Record not found' });
 
+    res.json(doc);
+  } catch (err) {
+    console.error('[PUT /api/emp/eprfob/:id]', err);
+    if (err.name === 'ValidationError') {
+      return res.status(400).json({ message: err.message });
+    }
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+// POST /api/emp/eprfob/:id/moveToEcr
+router.post('/:id/moveToEcr', protect, async (req, res) => {
+  try {
+    const existing = await EPrfOb.findById(req.params.id);
+    if (!existing) return res.status(404).json({ message: 'Record not found' });
+    if (!isAdminUser(req.user) && !canAccessDivision(req.user, existing.division)) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    if (!existing.sparesReceivedAtSvc) {
+      return res.status(400).json({ message: 'Spares Received Date is required before moving to ECR' });
+    }
+
+    const update = {
+      status: 'Closed',
+      executedDate: existing.executedDate || new Date().toISOString().slice(0, 10),
+      updatedAt: new Date()
+    };
+
+    const doc = await EPrfOb.findByIdAndUpdate(
+      req.params.id,
+      update,
+      { new: true, runValidators: true }
+    );
+
     if (doc.sourceScPrfObId) {
       await ScPrfOb.findByIdAndUpdate(
         doc.sourceScPrfObId,
         {
-          scEng: doc.scEng || '',
-          crmRefNo: doc.crmRefNo || '',
-          remarks: doc.remarks || '',
           status: 'Closed',
           executedDate: doc.executedDate || '',
           updatedAt: new Date(),
@@ -153,10 +183,7 @@ router.put('/:id', protect, async (req, res) => {
 
     res.json(doc);
   } catch (err) {
-    console.error('[PUT /api/emp/eprfob/:id]', err);
-    if (err.name === 'ValidationError') {
-      return res.status(400).json({ message: err.message });
-    }
+    console.error('[POST /api/emp/eprfob/:id/moveToEcr]', err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });

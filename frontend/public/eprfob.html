@@ -1727,7 +1727,7 @@
                   <th onclick="sortTable('model')">Model<span class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
                   <th onclick="sortTable('warranty')">Warr Status<span class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
                   <th onclick="sortTable('prfobRef')">TO/SO Ref No<span class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
-                  <th onclick="sortTable('status')">Status<span class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
+                  <th onclick="sortTable('remarks')">Remarks<span class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
                   <th onclick="sortTable('sparesReceivedAtSvc')">Spares Rcv Date<span class="sort-icon"><span>&#9650;</span><span>&#9660;</span></span></th>
                   <th>Action</th>
                 </tr>
@@ -1796,7 +1796,7 @@
                   <th>Model</th>
                   <th>Warr Status</th>
                   <th>TO/SO Ref No</th>
-                  <th>Status</th>
+                  <th>Remarks</th>
                   <th>Spares Rcv Date</th>
                   <th>Action</th>
                 </tr>
@@ -2195,9 +2195,12 @@
         <td>${esc(e.model)}</td>
         <td>${esc(e.warranty)}</td>
         <td><span class="chip">${esc(e.prfobRef)}</span></td>
-        <td><span class="${statusClass(e.status)}">${esc(e.status)}</span></td>
+        <td>${esc(e.remarks || '')}</td>
         <td>${esc(e.sparesReceivedAtSvc || '')}</td>
-        <td>${e.sparesReceivedAtSvc ? `<button class="btn-xs" onclick="openEmployeeUpdateModal('${e._id}')" title="Update">&#9999;&#65039;</button>` : `<button class="btn-xs" disabled style="opacity:0.5;cursor:not-allowed;" title="Waiting for Spares Received Date">&#9999;&#65039;</button>`}</td>
+        <td>
+          <button class="btn-xs" style="color:#059669;margin-right:5px;font-weight:bold;background:#e8f5e9;border:1px solid #059669;${e.sparesReceivedAtSvc ? '' : 'opacity:0.5;cursor:not-allowed;'}" onclick="moveToEcr('${e._id}')" ${e.sparesReceivedAtSvc ? '' : 'disabled title="Requires Spares Received Date"'} title="Move to ECR">&#10003;</button>
+          <button class="btn-xs" onclick="openEmployeeUpdateModal('${e._id}')" title="Update">&#9999;&#65039;</button>
+        </td>
       </tr>`).join('');
       }
       const info = document.getElementById('main-info');
@@ -2215,7 +2218,7 @@
         ? `<tr class="empty-row"><td colspan="11">No closed TO/SO records found.</td></tr>`
         : pageRows.map(e => `
       <tr>
-        <td>${esc(e.entryDate)}</td><td>${esc(e.division)}</td><td>${esc(e.type)}</td><td>${esc(e.branch)}</td><td>${esc(e.engineer)}</td><td>${esc(e.model)}</td><td>${esc(e.warranty)}</td><td>${esc(e.prfobRef)}</td><td>${esc(e.status)}</td><td>${esc(e.sparesReceivedAtSvc || '')}</td>
+        <td>${esc(e.entryDate)}</td><td>${esc(e.division)}</td><td>${esc(e.type)}</td><td>${esc(e.branch)}</td><td>${esc(e.engineer)}</td><td>${esc(e.model)}</td><td>${esc(e.warranty)}</td><td>${esc(e.prfobRef)}</td><td>${esc(e.remarks || '')}</td><td>${esc(e.sparesReceivedAtSvc || '')}</td>
         <td><button class="btn-xs" onclick="openEmployeeUpdateModal('${e._id}')">&#128065; View</button></td>
       </tr>`).join('');
       const info = document.getElementById('closed-info');
@@ -2289,8 +2292,6 @@
 
       const payload = {
         ...row,
-        status: 'Closed',
-        executedDate: new Date().toISOString().slice(0, 10),
         scEng: values['ep-scEng'],
         crmRefNo: values['ep-crmRefNo'],
         partType: values['ep-partType'],
@@ -2314,20 +2315,39 @@
             warranty: saved.warrantyStatus || prfobData[idx].warranty,
             prfobRef: saved.refNo || prfobData[idx].prfobRef,
             crmRef: saved.crmRefNo || '',
-            crmRefNo: saved.crmRefNo || ''
+            crmRefNo: saved.crmRefNo || '',
+            remarks: saved.remarks || ''
           };
         }
-        prfobData = prfobData.filter(x => String(x._id) !== String(id));
         filteredData = [...prfobData].filter(x => !['closed', 'completed'].includes(String(x.status).toLowerCase()));
         updateStats(); updateBadges(); renderMainTable(); renderClosedTable();
         if (msg) { msg.className = 'form-msg ok'; msg.textContent = 'Update saved successfully!'; }
         showToast('TO/SO update saved.', 'ok');
-        setTimeout(() => { closeEmployeeUpdateModal(); window.location.href = 'ecr.html'; }, 900);
+        setTimeout(() => { closeEmployeeUpdateModal(); }, 900);
       } catch (e) {
         if (msg) { msg.className = 'form-msg err-msg'; msg.textContent = 'Save failed: ' + e.message; }
         showToast('Save failed: ' + e.message, 'err');
       } finally {
         if (btn) { btn.disabled = false; btn.innerHTML = '&#128190; Save Update'; }
+      }
+    }
+
+    async function moveToEcr(id) {
+      if (!confirm('Move this entry to ECR?')) return;
+      try {
+        const res = await fetch('/api/prfob/' + encodeURIComponent(id) + '/moveToEcr', { method: 'POST', headers: authH() });
+        if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || ('HTTP ' + res.status)); }
+        
+        const idx = prfobData.findIndex(x => String(x._id) === String(id));
+        if (idx !== -1) {
+          prfobData[idx].status = 'Closed';
+        }
+        filteredData = [...prfobData].filter(x => !['closed', 'completed'].includes(String(x.status).toLowerCase()));
+        
+        updateStats(); updateBadges(); renderMainTable(); renderClosedTable();
+        showToast('Moved to ECR successfully!', 'ok');
+      } catch (e) {
+        showToast('Failed to move to ECR: ' + e.message, 'err');
       }
     }
 
