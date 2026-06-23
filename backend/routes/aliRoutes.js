@@ -22,20 +22,24 @@ router.get('/', adminOnly, async (req, res) => {
     // Sync existing items from LoanItem that might not be in AdminLoanItem
     const existingLoanItems = await LoanItem.find().lean();
     for (const lt of existingLoanItems) {
-      const exists = await AdminLoanItem.exists({ loanItemId: lt._id });
-      if (!exists) {
-        await AdminLoanItem.create({
-          date: lt.date,
-          division: lt.division,
-          partNo: lt.partNo,
-          description: lt.description,
-          revalue: lt.revalue,
-          girNo: lt.girNo,
-          opt: lt.opt,
-          remarks: lt.remarks,
-          loanItemId: lt._id,
-          createdBy: lt.createdBy || 'System',
-        });
+      try {
+        const exists = await AdminLoanItem.exists({ loanItemId: lt._id });
+        if (!exists) {
+          await AdminLoanItem.create({
+            date: lt.date || new Date().toISOString().split('T')[0],
+            division: lt.division || 'Unknown',
+            partNo: lt.partNo || 'Unknown',
+            description: lt.description || 'Unknown',
+            revalue: lt.revalue || 0,
+            girNo: lt.girNo || 'Unknown',
+            opt: lt.opt || '',
+            remarks: lt.remarks || '',
+            loanItemId: String(lt._id),
+            createdBy: lt.createdBy || 'System',
+          });
+        }
+      } catch (err) {
+        console.error(`[GET /api/ali-items] Sync error for LoanItem ${lt._id}:`, err.message);
       }
     }
 
