@@ -926,10 +926,20 @@ function handleUnauth(res) {
   if (res.status===401) { showToast('Session expired  logging out.','err'); setTimeout(()=>{ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; },1500); throw new Error('Unauthorized'); }
 }
 
-async function apiGetAll() { const res = await fetch(API_BASE_URL+'/api/emp/services',{headers:authHeaders()}); handleUnauth(res); if(!res.ok) throw new Error('HTTP '+res.status); return res.json(); }
-async function apiCreate(record) { const res = await fetch(API_BASE_URL+'/api/emp/services',{method:'POST',headers:authHeaders(),body:JSON.stringify(record)}); handleUnauth(res); if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Save failed');} return res.json(); }
-async function apiUpdate(id,record) { const res = await fetch(API_BASE_URL+'/api/emp/services/'+id,{method:'PUT',headers:authHeaders(),body:JSON.stringify(record)}); handleUnauth(res); if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Update failed');} return res.json(); }
-async function apiDelete(id) { const res = await fetch(API_BASE_URL+'/api/emp/services/'+id,{method:'DELETE',headers:authHeaders()}); handleUnauth(res); if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Delete failed');} return res.json(); }
+async function fetchWithRetry(url, options = {}, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    const res = await fetch(url, options);
+    if (res.status === 503 && i < retries - 1) {
+      await new Promise(r => setTimeout(r, 2000));
+      continue;
+    }
+    return res;
+  }
+}
+async function apiGetAll() { const res = await fetchWithRetry(API_BASE_URL+'/api/emp/services',{headers:authHeaders()}); handleUnauth(res); if(!res.ok) throw new Error('HTTP '+res.status); return res.json(); }
+async function apiCreate(record) { const res = await fetchWithRetry(API_BASE_URL+'/api/emp/services',{method:'POST',headers:authHeaders(),body:JSON.stringify(record)}); handleUnauth(res); if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Save failed');} return res.json(); }
+async function apiUpdate(id,record) { const res = await fetchWithRetry(API_BASE_URL+'/api/emp/services/'+id,{method:'PUT',headers:authHeaders(),body:JSON.stringify(record)}); handleUnauth(res); if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Update failed');} return res.json(); }
+async function apiDelete(id) { const res = await fetchWithRetry(API_BASE_URL+'/api/emp/services/'+id,{method:'DELETE',headers:authHeaders()}); handleUnauth(res); if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Delete failed');} return res.json(); }
 
 let services=[], filtered=[], sortKey='entryDate', sortDir=-1, currentPage=1, editingId=null;
 
