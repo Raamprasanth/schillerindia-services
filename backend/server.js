@@ -360,6 +360,7 @@ app.use('/api/admin/bir',             abirRoutes);
 app.use('/api/admin/aprfob',          aprfobRoutes);
 app.use('/api/admin/notifications',   notificationRoutes);
 app.use('/api/admin/backup',          backupRoutes);
+app.use('/api/backup',                backupRoutes); // Fallback for clients requesting /api/backup/excel
 app.use('/api/notifications',         userNotificationRoutes);
 
 // /api/me
