@@ -8,6 +8,89 @@ const router = express.Router();
 
 router.use(protect);
 
+const srFields = 'date division partNo description qty girNo fromLocation toLocation remarks createdBy createdAt updatedAt';
+const editableFields = ['date', 'division', 'partNo', 'description', 'qty', 'girNo', 'fromLocation', 'toLocation', 'remarks'];
+const requiredSrFields = ['date', 'division', 'partNo', 'description', 'girNo'];
+
+function hasRequiredSrFields(sr) {
+  return requiredSrFields.every(field => String(sr?.[field] || '').trim());
+}
+
+function buildSrPayload(sr, userLabel = '') {
+  const payload = {};
+  editableFields.forEach((field) => {
+    if (sr[field] !== undefined) payload[field] = field === 'qty' ? Number(sr[field]) || 0 : sr[field];
+  });
+  if (userLabel) payload.updatedBy = userLabel;
+  return payload;
+}
+
+async function syncMissingSrItems() {
+  const existingSrIds = new Set(
+    (await AdminSR.distinct('srId', { srId: { $ne: '' } })).map(id => String(id))
+  );
+  const sourceItems = await SR.find({}, srFields).lean();
+  const operations = [];
+  let skipped = 0;
+
+  sourceItems.forEach((sr) => {
+    const srId = String(sr._id);
+    if (existingSrIds.has(srId)) return;
+    if (!hasRequiredSrFields(sr)) {
+      skipped += 1;
+      return;
+    }
+
+    operations.push({
+      insertOne: {
+        document: {
+          date: sr.date,
+          division: sr.division,
+          partNo: sr.partNo,
+          description: sr.description,
+          qty: Number(sr.qty) || 0,
+          girNo: sr.girNo,
+          fromLocation: sr.fromLocation,
+          toLocation: sr.toLocation,
+          remarks: sr.remarks,
+          srId,
+          createdBy: sr.createdBy || 'System',
+          createdAt: sr.createdAt,
+          updatedAt: sr.updatedAt
+        }
+      }
+    });
+  });
+
+  if (operations.length) {
+    await AdminSR.bulkWrite(operations, { ordered: false });
+  }
+  if (skipped) {
+    console.warn(`[GET /api/asr] Skipped ${skipped} SR item(s) with missing required fields during sync.`);
+  }
+}
+
+async function attachScsrDetails(docs) {
+  const srIds = docs.map(d => String(d.srId || '')).filter(id => /^[0-9a-fA-F]{24}$/.test(id));
+  if (!srIds.length) return docs;
+
+  const scsrs = await Scsr.find({ srRef: { $in: srIds } }, 'srRef toNo toRaisedDate').lean();
+  const scsrMap = scsrs.reduce((acc, scsr) => {
+    if (scsr.srRef) acc[String(scsr.srRef)] = scsr;
+    return acc;
+  }, {});
+
+  return docs.map((doc) => {
+    const related = scsrMap[String(doc.srId)];
+    if (!related) return doc;
+    return {
+      ...doc,
+      toNo: related.toNo,
+      toRaisedDate: related.toRaisedDate
+    };
+  });
+}
+
 router.get('/', adminOnly, async (req, res) => {
   try {
     const { from, to, division } = req.query;
@@ -19,31 +102,10 @@ router.get('/', adminOnly, async (req, res) => {
     }
     if (division) filter.division = division;
 
-    // Synchronize missing items from SR to AdminSR
-    const existingSRs = await SR.find().lean();
-    for (const sr of existingSRs) {
-      const exists = await AdminSR.exists({ srId: sr._id });
-      if (!exists) {
-        await AdminSR.create({
-          date: sr.date,
-          division: sr.division,
-          partNo: sr.partNo,
-          description: sr.description,
-          qty: sr.qty,
-          girNo: sr.girNo,
-          fromLocation: sr.fromLocation,
-          toLocation: sr.toLocation,
-          remarks: sr.remarks,
-          srId: sr._id,
-          createdBy: sr.createdBy || 'System',
-          createdAt: sr.createdAt,
-          updatedAt: sr.updatedAt
-        });
-      }
-    }
+    await syncMissingSrItems();
 
     const docs = await AdminSR.find(filter).sort({ date: -1, createdAt: -1 }).lean();
-    res.json(docs);
+    res.json(await attachScsrDetails(docs));
   } catch (err) {
     console.error('[GET /api/asr]', err);
     res.status(500).json({ message: 'Server error', error: err.message });
@@ -78,6 +140,33 @@ router.post('/', adminOnly, async (req, res) => {
   }
 });
 
+router.put('/:id', adminOnly, async (req, res) => {
+  try {
+    const updates = {};
+    editableFields.forEach((field) => {
+      if (req.body[field] !== undefined) updates[field] = field === 'qty' ? Number(req.body[field]) || 0 : req.body[field];
+    });
+    updates.updatedBy = req.user?.name || req.user?.email || '';
+
+    const doc = await AdminSR.findByIdAndUpdate(req.params.id, updates, {
+      new: true,
+      runValidators: true,
+    }).lean();
+    if (!doc) return res.status(404).json({ message: 'Admin SR item not found.' });
+
+    if (doc.srId) {
+      const linkedUpdates = buildSrPayload(updates, updates.updatedBy);
+      await SR.findByIdAndUpdate(doc.srId, linkedUpdates, { runValidators: true }).catch(e => console.error('Failed to update associated SR:', e));
+      await Scsr.findOneAndUpdate({ srRef: doc.srId }, linkedUpdates, { runValidators: true }).catch(e => console.error('Failed to update associated SCSR:', e));
+    }
+
+    res.json(doc);
+  } catch (err) {
+    console.error('[PUT /api/asr/:id]', err);
+    if (err.name === 'ValidationError') return res.status(400).json({ message: err.message });
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
 router.delete('/:id', adminOnly, async (req, res) => {
   try {
     const doc = await AdminSR.findByIdAndDelete(req.params.id);

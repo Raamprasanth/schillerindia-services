@@ -750,7 +750,7 @@ async function saveItem(){
 async function deleteItem(id){
   if(!confirm('Delete this ELT?')) return;
   try{
-    const res = await fetch(API + '/api/sr/' + id, { method:'DELETE', headers:authHeaders() });
+    const res = await fetch(API + '/api/asr/' + id, { method:'DELETE', headers:authHeaders() });
     handleUnauth(res);
     const json = await res.json().catch(()=>({}));
     if(!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
