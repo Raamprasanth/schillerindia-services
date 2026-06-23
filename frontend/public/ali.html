@@ -14,19 +14,20 @@
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --bg:#f4f7fa;--surface:#ffffff;--surface2:#eaf1f6;--surface3:#f5f9fc;
-  --border:#d0e0ec;--border2:#ddeaf4;
-  --accent:#0077cc;--accent2:#007a8a;--accent3:#e8f3fb;
-  --green:#059669;--green-bg:rgba(4,120,87,0.08);
-  --amber:#d97706;--amber-bg:rgba(180,83,9,0.08);
-  --red:#cc0000;--red-bg:rgba(185,28,28,0.07);
+  --bg:#f0f4f8;--surface:#ffffff;--surface2:#e8f0f7;--surface3:#f5f9fc;
+  --border:#ccdde8;--border2:#ddeaf4;
+  --accent:#0068b5;--accent2:#005a9e;--accent3:#e8f3fb;
+  --green:#047857;--green-bg:rgba(4,120,87,0.08);
+  --amber:#b45309;--amber-bg:rgba(180,83,9,0.08);
+  --red:#b91c1c;--red-bg:rgba(185,28,28,0.07);
   --purple:#5b21b6;--purple-bg:rgba(91,33,182,0.08);
   --teal:#0e7490;--teal-bg:rgba(14,116,144,0.08);
-  --text:#1a2a3a;--muted:#7a9ab0;--soft:#4a6a8a;--card:#ffffff;
+  --text:#0f2236;--muted:#6b8ca8;--soft:#3d6480;--card:#ffffff;
   --shadow:0 1px 8px rgba(0,60,120,0.07);
   --shadow-md:0 4px 20px rgba(0,60,120,0.1);
 }
 body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
 .main{flex:1;display:flex;flex-direction:column;min-width:0;}
 .topbar{padding:13px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:var(--shadow);}
 .breadcrumb{display:flex;align-items:center;gap:5px;font-size:10.5px;margin-bottom:2px;}
@@ -38,31 +39,31 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
 .stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;box-shadow:var(--shadow);transition:all 0.2s;position:relative;overflow:hidden;display:grid;grid-template-columns:24px 1fr;column-gap:8px;align-items:start;}
 .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:11px 11px 0 0;}
-.sc-blue::before{background:linear-gradient(90deg,#0077cc,#0ea5e9);}
-.sc-green::before{background:linear-gradient(90deg,#059669,#10b981);}
+.sc-blue::before{background:linear-gradient(90deg,#0068b5,#0ea5e9);}
+.sc-green::before{background:linear-gradient(90deg,#047857,#059669);}
 .sc-purple::before{background:linear-gradient(90deg,#5b21b6,#7c3aed);}
-.sc-amber::before{background:linear-gradient(90deg,#d97706,#f59e0b);}
-.sc-red::before{background:linear-gradient(90deg,#cc0000,#ef4444);}
+.sc-amber::before{background:linear-gradient(90deg,#b45309,#d97706);}
+.sc-red::before{background:linear-gradient(90deg,#b91c1c,#dc2626);}
 .stat-icon{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;grid-column:1;grid-row:1;}
-.si-blue{background:rgba(0,119,204,0.1);}.si-green{background:rgba(5,150,105,0.1);}.si-purple{background:rgba(91,33,182,0.1);}.si-amber{background:rgba(217,119,6,0.1);}
+.si-blue{background:rgba(0,104,181,0.1);}.si-green{background:rgba(4,120,87,0.1);}.si-purple{background:rgba(91,33,182,0.1);}.si-amber{background:rgba(180,83,9,0.1);}
 .stat-label{font-size:8.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;grid-column:2;grid-row:1;align-self:center;}
 .stat-value{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);line-height:1;grid-column:1 / span 2;grid-row:2;margin-top:6px;}
 .stat-sub{font-size:9px;color:var(--muted);margin-top:2px;grid-column:1 / span 2;grid-row:3;}
 .table-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);}
 .table-top{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--surface3);}
 .table-title{font-family:'Syne',sans-serif;font-size:13.5px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
-.count-chip{background:var(--accent3);color:var(--accent);font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:10px;border:1px solid rgba(0,119,204,0.15);}
+.count-chip{background:var(--accent3);color:var(--accent);font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:10px;border:1px solid rgba(0,104,181,0.15);}
 .toolbar-r{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
 .show-row{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted);}
 .f-select,.f-inp{padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s;}
 .f-select:focus,.f-inp:focus{border-color:var(--accent);}
 .f-inp.filled-red{background:#fee2e2;border-color:#dc2626;color:#7f1d1d;}
-.f-inp.filled-red:focus{border-color:#cc0000;box-shadow:0 0 0 3px rgba(204,0,0,0.12);}
+.f-inp.filled-red:focus{border-color:#b91c1c;box-shadow:0 0 0 3px rgba(220,38,38,0.12);}
 .srch-wrap{position:relative;}
 .srch-wrap input{padding:7px 12px 7px 30px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;width:240px;transition:border-color 0.2s,box-shadow 0.2s;}
-.srch-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,119,204,0.07);}
+.srch-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,104,181,0.07);}
 .srch-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);}
-.filter-strip{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--surface3);}
+.filter-strip{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fafcfe;}
 .filter-strip label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;}
 .f-divider{width:1px;height:24px;background:var(--border);flex-shrink:0;}
 .table-wrap{overflow-x:auto;}
@@ -70,68 +71,67 @@ table.frn-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:9
 table.frn-table thead th{padding:9px 10px;font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;text-align:left;border-bottom:2px solid var(--border);background:var(--surface3);white-space:nowrap;cursor:pointer;user-select:none;transition:color 0.2s;}
 table.frn-table thead th:hover,table.frn-table thead th.sorted{color:var(--accent);}
 table.frn-table thead th .si{font-size:8px;margin-left:2px;opacity:0.45;}
-table.frn-table tbody td{padding:9px 10px;border-bottom:1px solid rgba(0,40,80,0.05);vertical-align:middle;white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis;}
+table.frn-table tbody td{padding:9px 10px;border-bottom:1px solid rgba(0,60,120,0.05);vertical-align:middle;white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis;}
 table.frn-table tbody td.wrap-cell{white-space:normal;line-height:1.45;}
-table.frn-table tbody tr:hover td{background:rgba(0,119,204,0.03);}
+table.frn-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
 .table-foot{padding:11px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--muted);flex-wrap:wrap;gap:8px;background:var(--surface3);}
-.pager-row{display:flex;gap:4px;align-items:center;}
-.pager-btn{min-width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--soft);font-size:11px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
-.pager-btn:hover:not(:disabled){background:var(--surface2);color:var(--text);}
-.pager-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
-.pager-btn:disabled{opacity:0.4;cursor:not-allowed;}
-.btn{padding:7px 14px;border-radius:8px;font-size:11.5px;font-weight:600;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s;}
-.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 6px rgba(0,119,204,0.25);}
-.btn-primary:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,119,204,0.3);}
-.btn-outline{background:none;border:1.5px solid var(--border);color:var(--soft);}
-.btn-outline:hover{border-color:var(--muted);color:var(--text);background:var(--surface2);}
-.btn-success{background:var(--green);color:#fff;}
-.btn-success:hover{background:#047857;box-shadow:0 4px 10px rgba(4,120,87,0.3);}
-.btn-danger{background:var(--red);color:#fff;}
-.btn-sm{padding:6px 12px;font-size:11px;border-radius:6px;}
-.btn-xs{padding:3px 8px;border-radius:5px;font-size:10.5px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:none;color:var(--soft);transition:all 0.2s;}
-.btn-xs.update{color:var(--accent);border-color:rgba(0,119,204,0.3);background:rgba(0,119,204,0.05);}
-.btn-xs.update:hover{background:rgba(0,119,204,0.1);border-color:var(--accent);}
-.btn-xs.delete{color:var(--red);border-color:rgba(204,0,0,0.3);background:rgba(204,0,0,0.05);}
-.btn-xs.delete:hover{background:rgba(204,0,0,0.1);border-color:var(--red);}
-.div-tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;background:var(--purple-bg);color:var(--purple);border:1px solid rgba(91,33,182,0.15);}
-.mono{font-family:monospace;font-size:11.5px;}
-.empty-st{padding:40px;text-align:center;}
-.empty-st .ei{font-size:32px;color:var(--border2);margin-bottom:10px;}
-.empty-st .et{font-size:13.5px;font-weight:700;color:var(--text);margin-bottom:4px;}
-.empty-st .es{font-size:11px;color:var(--muted);}
-.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(4px);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity 0.3s;}
-.modal-overlay.open{display:flex;opacity:1;}
-.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:850px;max-height:90vh;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,0.15);display:flex;flex-direction:column;transform:scale(0.95);transition:transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275);}
-.modal-overlay.open .modal-box{transform:scale(1);}
-.modal-header{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--surface);}
-.modal-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);}
-.modal-close{width:28px;height:28px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:14px;transition:all 0.2s;}
-.modal-close:hover{background:var(--red-bg);color:var(--red);border-color:rgba(204,0,0,0.2);}
-.modal-body{padding:24px 28px;overflow-y:auto;}
+.pager-row{display:flex;align-items:center;gap:3px;}
+.pager{min-width:28px;height:28px;padding:0 7px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--soft);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.18s;font-family:'Plus Jakarta Sans',sans-serif;}
+.pager:hover{border-color:var(--accent);color:var(--accent);}
+.pager.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.pager:disabled{opacity:0.3;cursor:not-allowed;}
+.div-tag{background:var(--purple-bg);color:var(--purple);padding:2px 7px;border-radius:9px;font-size:9.5px;font-weight:700;}
+.mono{font-family:monospace;font-size:10.5px;}
+.btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(0,104,181,0.22);}.btn-primary:hover{background:var(--accent2);}
+.btn-success{background:var(--green);color:#fff;box-shadow:0 2px 8px rgba(4,120,87,0.2);}.btn-success:hover{background:#036644;}
+.btn-outline{background:none;border:1.5px solid var(--border);color:var(--soft);}.btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+.btn-sm{padding:6px 13px;font-size:12px;}
+.btn-xs{padding:4px 10px;font-size:11px;border-radius:6px;border:1.5px solid var(--border);background:none;color:var(--soft);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;font-weight:600;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;}
+.btn-xs:hover{border-color:var(--accent);color:var(--accent);background:var(--accent3);}
+.btn-xs.danger:hover{border-color:rgba(185,28,28,0.35);color:var(--red);background:var(--red-bg);}
+.loading-row td{text-align:center;padding:50px 20px;color:var(--muted);font-size:13px;}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:8px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty-st{text-align:center;padding:50px 20px;}
+.ei{font-size:38px;margin-bottom:10px;opacity:0.28;}
+.et{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:5px;}
+.es{font-size:12px;color:var(--muted);}
+.overlay{position:fixed;top:0;left:230px;right:0;bottom:0;background:rgba(5,18,38,0.55);backdrop-filter:blur(4px);z-index:500;display:none;align-items:stretch;}
+.overlay.open{display:flex;animation:fadeIn 0.18s ease;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.modal{background:var(--surface);width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;}
+.modal-header{padding:16px 28px;border-bottom:1px solid var(--border);background:var(--surface);z-index:2;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);}
+.modal-close{width:34px;height:34px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:16px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.modal-close:hover{background:var(--red-bg);color:var(--red);border-color:rgba(185,28,28,0.3);}
+.modal-sub{font-size:11.5px;color:var(--muted);font-weight:500;margin-top:3px;}
+.modal-scroll{flex:1;overflow-y:auto;}
+.modal-body{padding:24px 28px;}
 .form-section{margin-bottom:24px;}
 .form-section-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:var(--muted);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
-.modal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 16px;}
-.field{display:flex;flex-direction:column;gap:5px;}
-.field label{font-size:10.5px;font-weight:700;color:var(--muted);}
-.field.req label::after{content:'*';color:var(--red);margin-left:2px;}
-.field input,.field textarea,.field select{border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:12.5px;color:var(--text);background:var(--surface);font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:border-color 0.2s,box-shadow 0.2s;width:100%;}
-.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,119,204,0.08);}
-.span-1{grid-column:span 1;}
-.span-2{grid-column:span 2;}
-.span-3{grid-column:span 3;}
-.span-4{grid-column:span 4;}
-.modal-footer{padding:14px 24px;border-top:1px solid var(--border);background:var(--surface3);display:flex;gap:10px;justify-content:flex-end;align-items:center;}
-.form-msg{font-size:11.5px;font-weight:600;padding:7px 12px;border-radius:6px;margin-right:auto;display:none;}
-.form-msg.err{display:block;background:var(--red-bg);color:var(--red);border:1px solid rgba(204,0,0,0.15);}
-.form-msg.ok{display:block;background:var(--green-bg);color:var(--green);border:1px solid rgba(5,150,105,0.15);}
-.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:3000;display:flex;flex-direction:column;gap:10px;pointer-events:none;}
-.toast{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:12.5px;font-weight:600;color:var(--text);box-shadow:0 8px 24px rgba(0,0,0,0.12);display:flex;align-items:center;gap:10px;animation:fadeUp 0.3s forwards;pointer-events:auto;min-width:280px;}
-.toast.err{border-color:rgba(204,0,0,0.35);}.toast.err .td{background:var(--red);}
-.toast.info{border-color:rgba(0,119,204,0.35);}.toast.info .td{background:var(--accent);}
-.toast.ok{border-color:rgba(5,150,105,0.35);}.toast.ok .td{background:var(--green);}
-.td{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.fg-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.fg-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+.ff{display:flex;flex-direction:column;gap:5px;}
+.ff label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
+.ff label .req{color:var(--red);}
+.ff input,.ff select,.ff textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color 0.2s,box-shadow 0.2s;width:100%;}
+.ff input:focus,.ff select:focus,.ff textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,104,181,0.08);}
+.ff input.err,.ff select.err,.ff textarea.err{border-color:var(--red)!important;}
+.ff textarea{resize:none;height:88px;}
+.span2{grid-column:span 2;}.span4{grid-column:span 4;}
+.modal-footer{padding:16px 28px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;justify-content:flex-end;background:var(--surface3);flex-shrink:0;}
+.form-msg{font-size:11.5px;font-weight:600;padding:7px 13px;border-radius:7px;margin-right:auto;display:none;}
+.form-msg.ok{display:block;background:var(--green-bg);color:var(--green);border:1px solid rgba(4,120,87,0.2);}
+.form-msg.err{display:block;background:var(--red-bg);color:var(--red);border:1px solid rgba(185,28,28,0.18);}
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:700;display:flex;flex-direction:column;gap:7px;}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:11px 15px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:9px;min-width:230px;animation:fadeUp 0.28s ease;box-shadow:0 8px 22px rgba(0,0,0,0.1);}
+.toast.ok{border-color:rgba(4,120,87,0.35);}.toast.ok .td{background:var(--green);}
+.toast.err{border-color:rgba(185,28,28,0.35);}.toast.err .td{background:var(--red);}
+.toast.info{border-color:rgba(0,104,181,0.35);}.toast.info .td{background:var(--accent);}
+.td{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
-@media(max-width:900px){.stats-row{grid-template-columns:repeat(2,1fr);}.modal-grid{grid-template-columns:repeat(2,1fr);}.span-1,.span-2,.span-3,.span-4{grid-column:span 2;}.sidebar{display:none;}}
+@media(max-width:900px){.stats-row{grid-template-columns:repeat(2,1fr);}.fg-4,.fg-2{grid-template-columns:1fr;}.span2,.span4{grid-column:span 1;}.overlay{left:0;}.sidebar{display:none;}}
 </style>
 <link rel="stylesheet" href="global-typography.css">
 <link rel="stylesheet" href="admin-sidebar.css">
@@ -141,105 +141,87 @@ table.frn-table tbody tr:hover td{background:rgba(0,119,204,0.03);}
 <link rel="stylesheet" href="dashboard-topbar-actions.css">
 <script src="dashboard-topbar-actions.js" defer></script>
 </head>
-<link rel="stylesheet" href="global-typography.css">
-<link rel="stylesheet" href="dashboard-topbar-actions.css">
-<script src="dashboard-topbar-actions.js" defer></script>
-<link rel="stylesheet" href="brand-logo.css">
-</head>
 <body>
-> <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-logo">
-        <img class="brand-logo-img" src="logo.png" alt="SCHILLER">
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <img class="brand-logo-img" src="logo.png" alt="SCHILLER">
+    </div>
+  </div>
+  <div style="padding:10px 20px 0;"><span class="role-badge">Admin</span></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <button class="nav-item " onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
+    <button class="nav-item " onclick="window.location.href='company-section.html'"><span class="icon">&#127970;</span> Company</button>
+    <button class="nav-item " onclick="window.location.href='division-section.html'"><span class="icon">&#128309;</span> Division</button>
+    <button class="nav-item " onclick="window.location.href='engineer-section.html'"><span class="icon">&#128119;</span> Engineers</button>
+    <button class="nav-item " onclick="window.location.href='dealer-section.html'"><span class="icon">&#129309;</span> Dealers</button>
+    <div class="nav-section">Operations</div>
+    <button class="nav-group-toggle " id="sf-toggle" onclick="toggleSF()">
+      <span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span>
+    </button>
+    <div class="nav-children " id="sf-children">
+      <div class="nav-sub">
+        <button class="nav-item " onclick="window.location.href='service-list.html'"><span class="icon">&#128225;</span> Services</button>
+        <button class="nav-item " onclick="window.location.href='pending-frn.html'"><span class="icon">&#128221;</span> Pending FRN</button>
+        <button class="nav-item " onclick="window.location.href='ob-pending.html'"><span class="icon">&#128194;</span> OB Pending</button>
+        <button class="nav-item " onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
+        <button class="nav-item " onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
+        <button class="nav-item " onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
+        <button class="nav-item " onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
+        <button class="nav-item " onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
       </div>
     </div>
-    <div style="padding:10px 20px 0;"><span class="role-badge">Admin</span></div>
-    <nav class="sidebar-nav">
-      <div class="nav-section">Main</div>
-      <button class="nav-item" onclick="window.location.href='admin-dashboard.html'"><span class="icon">&#128202;</span> Dashboard</button>
-      <button class="nav-item" onclick="window.location.href='company-section.html'"><span class="icon">&#127970;</span> Company</button>
-      <button class="nav-item" onclick="window.location.href='division-section.html'"><span class="icon">&#128309;</span> Division</button>
-      <button class="nav-item" onclick="window.location.href='engineer-section.html'"><span class="icon">&#128119;</span> Engineers</button>
-      <button class="nav-item" onclick="window.location.href='dealer-section.html'"><span class="icon">&#129309;</span> Dealers</button>
-      <div class="nav-section">Operations</div>
-      <button class="nav-group-toggle" id="sf-toggle" onclick="toggleSF()">
-        <span class="icon">&#128295;</span> Services &amp; Filter <span class="caret">&#9656;</span>
-      </button>
-      <div class="nav-children" id="sf-children">
-        <div class="nav-sub">
-          <button class="nav-item" onclick="window.location.href='service-list.html'"><span class="icon">&#128225;</span> Services</button>
-          <button class="nav-item" onclick="window.location.href='pending-frn.html'"><span class="icon">&#128221;</span> Pending FRN</button>
-          <button class="nav-item" onclick="window.location.href='ob-pending.html'"><span class="icon">&#128194;</span> OB Pending</button>
-          <button class="nav-item" onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
-          <button class="nav-item" onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
-          <button class="nav-item" onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
-          <button class="nav-item" onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
-          <button class="nav-item" onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
-        </div>
-      </div>
-      <button class="nav-group-toggle open" id="ar-toggle" onclick="toggleAR()"><span class="icon">&#128196;</span> Activity Register <span class="caret">&#9656;</span></button>
-      <div class="nav-children open" id="ar-children">
-        <div class="nav-sub">
-          <a class="nav-item" href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
-          <a class="nav-item" href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
-          <a class="nav-item" href="aprfob.html"><span class="icon">&#128203;</span> TO/SO List</a>
-          <a class="nav-item" href="acr.html"><span class="icon">&#128209;</span> Closed TO/SO</a>
-          <a class="nav-item" href="ans.html"><span class="icon">&#128230;</span> Non Saleable</a>
-          <a class="nav-item" href="as.html"><span class="icon">&#128176;</span> Saleable</a>
-          <a class="nav-item" href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
-          <a class="nav-item" href="acbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
-          <a class="nav-item active" href="apa.html"><span class="icon">&#128221;</span> Pending Activity</a>
-          <a class="nav-item " href="acpa.html"><span class="icon">&#9989;</span> Closed Activity</a>
-        </div>
-      </div>
-      <button class="nav-group-toggle" id="rta-toggle" onclick="toggleRTA()"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
-      <div class="nav-children" id="rta-children">
-        <div class="nav-sub">
-          <a class="nav-item" href="atfrn.html"><span class="icon">&#128221;</span> Admin RT FRN</a>
-          <a class="nav-item" href="atob.html"><span class="icon">&#128230;</span> Admin RT OB</a>
-          <a class="nav-item" href="atur.html"><span class="icon">&#128736;&#65039;</span> Admin RT UR</a>
-          <a class="nav-item" href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
-          <a class="nav-item" href="admin-re-repair-atrr.html"><span class="icon">&#128260;</span> Admin ATRR</a>
-          <a class="nav-item" href="admin-closed-re-repair-atcrr.html"><span class="icon">&#128683;</span> Admin ATCRR</a>
-        </div>
-      </div>
-      <button class="nav-group-toggle open" id="scod-toggle" onclick="toggleSCOD()"><span class="icon">&#128188;</span> SCOD Activities <span class="caret">&#9656;</span></button>
-      <div class="nav-children open" id="scod-children">
-        <div class="nav-sub">
-          <a class="nav-item active" href="ali.html"><span class="icon">&#128221;</span> Loan Item</a>
-        </div>
-      </div>
-      <div class="nav-section">Admin</div>
-      <button class="nav-item" onclick="window.location.href='usermanagement.html'"><span class="icon">&#128101;</span> User Management</button>
-      <button class="nav-item" onclick="window.location.href='Reports.html'"><span class="icon">&#128200;</span> Reports</button>
-      <button class="nav-item" onclick="window.location.href='settings.html'"><span class="icon">&#9881;&#65039;</span> Settings</button>
-      <button class="nav-item" onclick="window.location.href='notifications.html'"><span class="icon">&#128276;</span> Notifications</button>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="user-info">
-        <div class="user-avatar" id="admin-avatar">A</div>
-        <div>
-          <div class="user-name" id="admin-name">Admin</div>
-          <div class="user-role">Administrator</div>
-        </div>
-        <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
+    <button class="nav-group-toggle " id="ar-toggle" onclick="toggleAR()"><span class="icon">&#128196;</span> Activity Register <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="ar-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="acall.html"><span class="icon">&#128222;</span> Call Register</a>
+        <a class="nav-item " href="aclose.html"><span class="icon">&#9989;</span> Closed Calls</a>
+        <a class="nav-item " href="aprfob.html"><span class="icon">&#128203;</span> TO/SO List</a>
+        <a class="nav-item " href="acr.html"><span class="icon">&#128209;</span> Closed TO/SO</a>
+        <a class="nav-item " href="ans.html"><span class="icon">&#128230;</span> Non Saleable</a>
+        <a class="nav-item " href="as.html"><span class="icon">&#128176;</span> Saleable</a>
+        <a class="nav-item " href="abir.html"><span class="icon">&#128202;</span> BIR List</a>
+        <a class="nav-item " href="acbir.html"><span class="icon">&#128193;</span> Closed BIR</a>
+        <a class="nav-item " href="apa.html"><span class="icon">&#128221;</span> Pending Activity</a>
+        <a class="nav-item " href="acpa.html"><span class="icon">&#9989;</span> Closed Activity</a>
+        <a class="nav-item " href="atour.html"><span class="icon">&#128205;</span> Tour Summary</a>
+        <a class="nav-item " href="adaily.html"><span class="icon">&#128197;</span> Daily Work</a>
       </div>
     </div>
-  </aside>
-  
-  <div class="main">
-    <div class="topbar">
+    <button class="nav-group-toggle " id="rta-toggle" onclick="toggleRTA()"><span class="icon">&#128295;</span> Repair Team Activities <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="rta-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="atfrn.html"><span class="icon">&#128221;</span> Admin RT FRN</a>
+        <a class="nav-item " href="atob.html"><span class="icon">&#128230;</span> Admin RT OB</a>
+        <a class="nav-item " href="atur.html"><span class="icon">&#128736;&#65039;</span> Admin RT UR</a>
+        <a class="nav-item " href="Atcrl.html"><span class="icon">&#9989;</span> Admin CRL</a>
+        <a class="nav-item" href="admin-re-repair-atrr.html"><span class="icon">&#128260;</span> Admin ATRR</a>
+        <a class="nav-item" href="admin-closed-re-repair-atcrr.html"><span class="icon">&#128683;</span> Admin ATCRR</a>
+      </div>
+    </div>
+    <button class="nav-group-toggle open" id="scod-toggle" onclick="toggleSCOD()"><span class="icon">&#128188;</span> SCOD Activities <span class="caret">&#9656;</span></button>
+    <div class="nav-children open" id="scod-children">
+      <div class="nav-sub">
+        <a class="nav-item active" href="ali.html"><span class="icon">&#128221;</span> Loan Item</a>
+      </div>
+    </div>
+    <div class="nav-section">Admin</div>
+    <button class="nav-item " onclick="window.location.href='usermanagement.html'"><span class="icon">&#128101;</span> User Management</button>
+    <button class="nav-item " onclick="window.location.href='Reports.html'"><span class="icon">&#128200;</span> Reports</button>
+    <button class="nav-item " onclick="window.location.href='settings.html'"><span class="icon">&#9881;&#65039;</span> Settings</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="admin-avatar">A</div>
       <div>
-        <div class="breadcrumb"><a href="admin-dashboard.html">Dashboard</a><span>&#8250;</span><span>Activity Register</span><span>&#8250;</span><span>Pending Activity</span></div>
-        <div class="page-title">Admin Pending Activity List</div>
+        <div class="user-name" id="admin-name">Admin</div>
+        <div class="user-role">Administrator</div>
       </div>
-      <div class="topbar-actions">
-        <button class="btn btn-outline btn-sm" onclick="loadData()">&#128259; Refresh</button>
-        <button class="btn btn-outline btn-sm" onclick="exportCSV()">&#128228; Export</button>
-        <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add Activity</button>
-      </div>
+      <button class="logout-btn" onclick="logout()">&#8617;&#65039;</button>
     </div>
-
+  </div>
+</aside>
 
 <div class="main">
   <div class="topbar">
@@ -825,13 +807,13 @@ function toggleFilledInput(input){ if(!input) return; input.classList.toggle('fi
 function showToast(msg,type='ok'){ const w=document.getElementById('toast-wrap'); const el=document.createElement('div'); el.className='toast '+type; el.innerHTML='<span class="td"></span>'+esc(msg); w.appendChild(el); setTimeout(()=>el.remove(),3400); }
 function showFormMsg(msg,type){ const el=document.getElementById('form-msg'); el.textContent=msg; el.className='form-msg '+type; }
 function clearFormMsg(){ const el=document.getElementById('form-msg'); el.textContent=''; el.className='form-msg'; }
-  function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; }
-  function toggleSF(){ const t=document.getElementById('sf-toggle'), c=document.getElementById('sf-children'); if(t) t.classList.toggle('open'); if(c) c.classList.toggle('open'); }
-  function toggleAR(){ const t=document.getElementById('ar-toggle'), c=document.getElementById('ar-children'); if(t) t.classList.toggle('open'); if(c) c.classList.toggle('open'); }
-  function toggleRTA(){ const t=document.getElementById('rta-toggle'), c=document.getElementById('rta-children'); if(t) t.classList.toggle('open'); if(c) c.classList.toggle('open'); }
-  function toggleSCOD(){ const t=document.getElementById('scod-toggle'), c=document.getElementById('scod-children'); if(t) t.classList.toggle('open'); if(c) c.classList.toggle('open'); }
+function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; }
+function toggleSF(){ const t=document.getElementById('sf-toggle'), c=document.getElementById('sf-children'); if(t) t.classList.toggle('open'); if(c) c.classList.toggle('open'); }
+function toggleAR(){ const t=document.getElementById('ar-toggle'), c=document.getElementById('ar-children'); if(t) t.classList.toggle('open'); if(c) c.classList.toggle('open'); }
+function toggleRTA(){ const t=document.getElementById('rta-toggle'), c=document.getElementById('rta-children'); if(t) t.classList.toggle('open'); if(c) c.classList.toggle('open'); }
+function toggleSCOD(){ const t=document.getElementById('scod-toggle'), c=document.getElementById('scod-children'); if(t) t.classList.toggle('open'); if(c) c.classList.toggle('open'); }
 
-  Object.assign(window, {
+Object.assign(window, {
   toggleSF, toggleAR, toggleRTA, toggleSCOD,
   loadData,
   renderTable,
@@ -1034,5 +1016,4 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal();
 <script src="tab-fix.js"></script>
 </body>
 </html>
-
 
