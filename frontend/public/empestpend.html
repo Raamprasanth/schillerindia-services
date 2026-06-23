@@ -1359,188 +1359,174 @@ function closeModal(){ document.getElementById('modal-update').classList.remove(
 async function submitUpdate(){
   const errEl=document.getElementById('modal-err');
   const okEl=document.getElementById('modal-ok');
-  errEl.classList.remove('show'); okEl.classList.remove('show');
-  const estno=document.getElementById('u-estno').value.trim();
-  const estdate=document.getElementById('u-estdate').value;
-  const estamount=document.getElementById('u-estamount').value;
-  const eststatus=document.getElementById('u-eststatus').value;
-  const raeng=document.getElementById('u-raeng').value;
-  const missing=[];
+  errEl.classList.remove('show');
+  okEl.classList.remove('show');
+
+  // ── Collect values from BOTH the Estimation section AND OB Update section ──
+  const estno       = document.getElementById('u-estno').value.trim();
+  const estdate     = document.getElementById('u-estdate').value;
+  const estamount   = document.getElementById('u-estamount').value;
+  const eststatus   = document.getElementById('u-eststatus').value;
+  const raeng       = document.getElementById('u-raeng').value;
+
+  const sameGir           = document.getElementById('u-same-gir').value;
+  const selectedTypeWork  = document.getElementById('u-typework').value;
+  const isUpgrade         = selectedTypeWork === 'Upgrade';
+  const isRepNotRequired  = selectedTypeWork === 'REP not required';
+  let   repGirNo          = document.getElementById('u-defunitgir').value.trim();
+  if(isRepNotRequired && !repGirNo) repGirNo = 'NA';
+
+  const missing = [];
+  // Estimation required fields
   if(!estno)     missing.push('Estimation No');
   if(!estdate)   missing.push('Estimation Date');
   if(!estamount) missing.push('Estimation Amount');
   if(!eststatus) missing.push('Order Type');
   if(!raeng)     missing.push('RA Engineer');
-  if(missing.length){errEl.textContent='Required: '+missing.join(', ');errEl.classList.add('show');return;}
-  const btn=document.getElementById('update-btn');
-  btn.disabled=true; btn.textContent='\uD83D\uDCBE Saving...';
-  try {
-    const existing=allRecords.find(x=>(x._id||x.id)===editingId);
-    const payload={
-      ...existing,
-      estNo:       estno,
-      estDate:     estdate,
-      estValidDate:document.getElementById('u-validdate').value,
-      estAmount:   parseFloat(estamount)||0,
-      estStatus:   eststatus,
-      orderType:   eststatus,
-      estRaEng:    raeng,
-      techRemarks: document.getElementById('u-techremarks').value.trim(),
-      partNo:      document.getElementById('u-partno').value.trim(),
-      qty:         parseInt(document.getElementById('u-qty').value)||1,
-      defPartSno:document.getElementById('u-defpartsno').value.trim(),
-      estUpdatedBy:EMP_NAME,
-      estUpdatedAt:new Date().toISOString(),
-    };
-    delete payload._id; delete payload.id; delete payload.pdEst;
-    const res=await fetch(API_BASE+'/api/emp/estimation/'+editingId,{method:'PUT',headers:authHeaders(),body:JSON.stringify(payload)});
-    if(res.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
-    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'HTTP '+res.status);}
-    const updated=await res.json();
-    updated.pdEst=calcPendingDays(updated.rcvdDate || updated.entryDate);
-    const idx=allRecords.findIndex(x=>(x._id||x.id)===editingId);
-    if(idx!==-1) allRecords[idx]={...updated,...payload,pdEst:updated.pdEst,id:updated._id||updated.id};
-    updateStats(); applyFilters();
-    bumpEscalationQueue('est',1);
-    
-    okEl.textContent='Record updated successfully!'; okEl.classList.add('show');
-    showToast('Estimation record updated.','ok');
-    setTimeout(closeModal,1200);
-  } catch(e){
-    errEl.textContent=e.message; errEl.classList.add('show');
-    showToast('Update failed: '+e.message,'err');
-  } finally{ btn.disabled=false; btn.innerHTML ='&#128190; Save Update'; }
-}
 
-async function submitUpdate(){
-  const errEl=document.getElementById('modal-err');
-  const okEl=document.getElementById('modal-ok');
-  errEl.classList.remove('show');
-  okEl.classList.remove('show');
-  const sameGir=document.getElementById('u-same-gir').value;
-  const selectedTypeWork=document.getElementById('u-typework').value;
-  const isUpgrade=selectedTypeWork==='Upgrade';
-  const isRepNotRequired=selectedTypeWork==='REP not required';
-  let repGirNo=document.getElementById('u-defunitgir').value.trim();
-  if(isRepNotRequired && !repGirNo) {
-    repGirNo = 'NA';
-  }
-  const missing=[];
-  const reqList=[
-    ['u-upd-raeng','RA Engineer'],
-    ['u-shipsc','Ship Date from Service Centre'],
-    ['u-destination','Destination'],
+  // OB Update required fields
+  const obReqList = [
+    ['u-upd-raeng',      'OB RA Engineer'],
+    ['u-shipsc',         'Ship Date from SC'],
+    ['u-destination',    'Destination'],
     ['u-upd-techremarks','Technical Remarks'],
-    ['u-finalremarks','Final Remarks'],
-    ['u-typework','Type of Work'],
+    ['u-finalremarks',   'Final Remarks'],
+    ['u-typework',       'Type of Work'],
   ];
-  if(!isUpgrade && !isRepNotRequired) reqList.push(['u-revalue','Revalue']);
-  if(!isUpgrade && !isRepNotRequired) reqList.push(['u-same-gir','Same GIR No']);
-  reqList.forEach(([fid,label])=>{
-    const el=document.getElementById(fid);
+  if(!isUpgrade && !isRepNotRequired) obReqList.push(['u-revalue','Revalue']);
+  if(!isUpgrade && !isRepNotRequired) obReqList.push(['u-same-gir','Same GIR No']);
+  obReqList.forEach(([fid, label]) => {
+    const el = document.getElementById(fid);
     if(!el) return;
-    const hasValue=String(el.value||'').trim();
-    el.classList.toggle('err',!hasValue);
+    const hasValue = String(el.value || '').trim();
+    el.classList.toggle('err', !hasValue);
     if(!hasValue) missing.push(label);
   });
-  if(!isUpgrade && !isRepNotRequired && sameGir==='no' && !repGirNo){
+  if(!isUpgrade && !isRepNotRequired && sameGir === 'no' && !repGirNo){
     document.getElementById('u-defunitgir').classList.add('err');
     missing.push('REP GIR No');
-  }else{
+  } else {
     document.getElementById('u-defunitgir').classList.remove('err');
   }
+
   if(missing.length){
-    errEl.textContent='Required: '+missing.join(', ');
+    errEl.textContent = 'Required: ' + missing.join(', ');
     errEl.classList.add('show');
     return;
   }
-  const btn=document.getElementById('update-btn');
-  btn.disabled=true;
-  btn.textContent='Saving...';
-  try{
-    const existing=allRecords.find(x=>(x._id||x.id)===editingId);
-    const payload={
+
+  const btn = document.getElementById('update-btn');
+  btn.disabled = true;
+  btn.textContent = '💾 Saving...';
+  try {
+    const existing = allRecords.find(x => (x._id||x.id) === editingId);
+    const payload = {
       ...existing,
-      obRaEng:document.getElementById('u-upd-raeng').value,
-      obDefUnitGir:repGirNo,
-      obShipSc:document.getElementById('u-shipsc').value,
+      // ── Estimation fields ──
+      estNo:        estno,
+      estDate:      estdate,
+      estValidDate: document.getElementById('u-validdate').value,
+      estAmount:    parseFloat(estamount) || 0,
+      estStatus:    eststatus,
+      orderType:    eststatus,
+      estRaEng:     raeng,
+      techRemarks:  document.getElementById('u-techremarks').value.trim(),
+      partNo:       document.getElementById('u-partno').value.trim(),
+      qty:          parseInt(document.getElementById('u-qty').value) || 1,
+      defPartSno:   document.getElementById('u-defpartsno').value.trim(),
+      // ── OB Update fields ──
+      obRaEng:      document.getElementById('u-upd-raeng').value,
+      obDefUnitGir: repGirNo,
+      obShipSc:     document.getElementById('u-shipsc').value,
       obDestination:document.getElementById('u-destination').value.trim(),
-      typeWork:selectedTypeWork,
-      revalue:document.getElementById('u-revalue').value.trim() === '' ? undefined : Number(document.getElementById('u-revalue').value),
-      obd:document.getElementById('u-obd').value.trim(),
-      obDetails:document.getElementById('u-obd').value.trim(),
-      components:document.getElementById('u-components').value,
-      techRemarks:document.getElementById('u-upd-techremarks').value.trim(),
-      finalRemarks:document.getElementById('u-finalremarks').value.trim(),
-      sameGir:(isUpgrade || isRepNotRequired) ? 'yes' : sameGir,
-      estUpdatedBy:EMP_NAME,
-      estUpdatedAt:new Date().toISOString(),
+      typeWork:     selectedTypeWork,
+      revalue:      document.getElementById('u-revalue').value.trim() === ''
+                      ? undefined
+                      : Number(document.getElementById('u-revalue').value),
+      obd:          document.getElementById('u-obd').value.trim(),
+      obDetails:    document.getElementById('u-obd').value.trim(),
+      components:   document.getElementById('u-components').value,
+      obComponents: document.getElementById('u-components').value,
+      obTechRemarks:document.getElementById('u-upd-techremarks').value.trim(),
+      finalRemarks: document.getElementById('u-finalremarks').value.trim(),
+      sameGir:      (isUpgrade || isRepNotRequired) ? 'yes' : sameGir,
+      // ── Audit ──
+      estUpdatedBy: EMP_NAME,
+      estUpdatedAt: new Date().toISOString(),
       dispatchQueue:true,
     };
     delete payload._id; delete payload.id; delete payload.pdEst;
-    const res=await fetch(API_BASE+'/api/emp/estimation/'+editingId,{method:'PUT',headers:authHeaders(),body:JSON.stringify(payload)});
-    if(res.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
-    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'HTTP '+res.status);}
-    const updated=await res.json();
+
+    const res = await fetch(API_BASE+'/api/emp/estimation/'+editingId, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify(payload),
+    });
+    if(res.status === 401){ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; return; }
+    if(!res.ok){ const e = await res.json().catch(() => ({})); throw new Error(e.message || 'HTTP '+res.status); }
+    const updated = await res.json();
+
     if(updated && updated.externalRepair){
-      allRecords=allRecords.filter(x=>(x._id||x.id)!==editingId);
-      filtered=filtered.filter(x=>(x._id||x.id)!==editingId);
+      allRecords = allRecords.filter(x => (x._id||x.id) !== editingId);
+      filtered   = filtered.filter(x => (x._id||x.id) !== editingId);
       updateStats(); applyFilters();
-      okEl.textContent='Moved to External Repair successfully!';
+      okEl.textContent = 'Moved to External Repair successfully!';
       okEl.classList.add('show');
       showToast('Moved to External Repair.','ok');
-      setTimeout(()=>{ closeModal(); window.location.href='sc-completed-frn.html'; },1200);
+      setTimeout(() => { closeModal(); window.location.href='sc-completed-frn.html'; }, 1200);
       return;
     }
     if(updated && updated.supplierWarranty){
-      allRecords=allRecords.filter(x=>(x._id||x.id)!==editingId);
-      filtered=filtered.filter(x=>(x._id||x.id)!==editingId);
+      allRecords = allRecords.filter(x => (x._id||x.id) !== editingId);
+      filtered   = filtered.filter(x => (x._id||x.id) !== editingId);
       updateStats(); applyFilters();
-      okEl.textContent='Moved to Supplier Warranty successfully!';
+      okEl.textContent = 'Moved to Supplier Warranty successfully!';
       okEl.classList.add('show');
       showToast('Moved to Supplier Warranty.','ok');
-      setTimeout(()=>{ closeModal(); window.location.href='Emp-scrap-list.html'; },1200);
+      setTimeout(() => { closeModal(); window.location.href='Emp-scrap-list.html'; }, 1200);
       return;
     }
     if(updated && updated.completed){
-      allRecords=allRecords.filter(x=>(x._id||x.id)!==editingId);
-      filtered=filtered.filter(x=>(x._id||x.id)!==editingId);
+      allRecords = allRecords.filter(x => (x._id||x.id) !== editingId);
+      filtered   = filtered.filter(x => (x._id||x.id) !== editingId);
       updateStats(); applyFilters();
-      okEl.textContent='Moved to Completed FRN successfully!';
+      okEl.textContent = 'Moved to Completed FRN successfully!';
       okEl.classList.add('show');
       showToast('Moved to Completed FRN.','ok');
-      setTimeout(()=>{ closeModal(); window.location.href='completed-frn.html'; },1200);
+      setTimeout(() => { closeModal(); window.location.href='completed-frn.html'; }, 1200);
       return;
     }
     if(updated && updated.underRepair){
-      allRecords=allRecords.filter(x=>(x._id||x.id)!==editingId);
-      filtered=filtered.filter(x=>(x._id||x.id)!==editingId);
+      allRecords = allRecords.filter(x => (x._id||x.id) !== editingId);
+      filtered   = filtered.filter(x => (x._id||x.id) !== editingId);
       updateStats(); applyFilters();
-      okEl.textContent='Moved to Under Repair successfully!';
+      okEl.textContent = 'Moved to Under Repair successfully!';
       okEl.classList.add('show');
       showToast('Moved to Under Repair.','ok');
-      setTimeout(()=>{ closeModal(); window.location.href='empunderep.html'; },1200);
+      setTimeout(() => { closeModal(); window.location.href='empunderep.html'; }, 1200);
       return;
     }
-    updated.pdEst=calcPendingDays(updated.rcvdDate || updated.entryDate);
-    const idx=allRecords.findIndex(x=>(x._id||x.id)===editingId);
-    if(idx!==-1) allRecords[idx]={...updated,...payload,pdEst:updated.pdEst,id:updated._id||updated.id};
+
+    updated.pdEst = calcPendingDays(updated.rcvdDate || updated.entryDate);
+    const idx = allRecords.findIndex(x => (x._id||x.id) === editingId);
+    if(idx !== -1) allRecords[idx] = { ...updated, ...payload, pdEst: updated.pdEst, id: updated._id||updated.id };
     updateStats(); applyFilters();
-    bumpEscalationQueue('est',1);
-    
-    okEl.textContent='Record updated successfully!';
+    bumpEscalationQueue('est', 1);
+
+    okEl.textContent = 'Record updated successfully!';
     okEl.classList.add('show');
     showToast('Estimation record updated.','ok');
-    setTimeout(closeModal,1200);
-  }catch(e){
-    errEl.textContent='Update failed: '+e.message;
+    setTimeout(closeModal, 1200);
+  } catch(e) {
+    errEl.textContent = 'Update failed: ' + e.message;
     errEl.classList.add('show');
-    showToast('Update failed: '+e.message,'err');
-  }finally{
-    btn.disabled=false;
-    btn.textContent='Save Update';
+    showToast('Update failed: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '&#128190; Save Update';
   }
 }
+
 
 async function deleteRecord(id){
   if(!confirm('Delete this estimation record? This cannot be undone.')) return;
