@@ -1430,7 +1430,6 @@ function buildMailAcceptedFields(mailResult = {}) {
     const parts = [
       `Accepted by ${providerStr} API`,
       messageIds.length ? `Message IDs: ${messageIds.join(', ')}` : '',
-      tos.length ? `To: ${tos.join('; ')}` : '',
     ].filter(Boolean);
     return {
       message: parts.join(' | '),
@@ -1447,7 +1446,6 @@ function buildMailAcceptedFields(mailResult = {}) {
   const parts = [
     provider ? `Accepted by ${provider} API` : 'Mail accepted by provider',
     messageId ? `Message ID: ${messageId}` : '',
-    acceptedTo ? `To: ${acceptedTo}` : '',
   ].filter(Boolean);
   return {
     message: parts.join(' | '),
