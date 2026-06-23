@@ -641,7 +641,7 @@ function renderTable(){
       return`<tr>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
         <td><button class="btn-xs upd" onclick="openUpdate('${id}')" title="Update">&#9999;&#65039;</button></td>
-        <td><button class="btn-xs del" onclick="confirmDelete('${id}','${esc(d.scRefNo||id)}')" title="Delete">&#128465;</button></td>
+        <td><button class="btn-xs del" onclick="confirmDelete('${id}')" title="Delete">&#128465;</button></td>
         <td><span class="div-tag">${esc(d.division||'-')}</span></td>
         <td style="font-size:13.5px;font-weight:800;color:var(--text);">${esc(d.scRefNo||'-')}</td>
         <td style="font-size:13.5px;font-weight:900;color:var(--purple);font-family:monospace;">${esc(d.defGirNo||'-')}</td>
@@ -760,7 +760,9 @@ async function submitUpdate(){
   }finally{btn.disabled=false;btn.innerHTML ='&#128190; Save Update';}
 }
 // -- DELETE RECORD ---------------------------------------
-function confirmDelete(id, ref) {
+function confirmDelete(id) {
+  const d = allData.find(x => (x._id||x.id) === id);
+  const ref = d ? (d.scRefNo || id) : id;
   if (!confirm(`Delete record "${ref}"?\n\nThis action cannot be undone.`)) return;
   deleteRecord(id, ref);
 }
