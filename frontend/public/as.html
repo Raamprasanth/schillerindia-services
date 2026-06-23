@@ -415,8 +415,10 @@ let selectedIds = new Set(), pendingConfirmFn = null;
 
 (function init() {
   const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
-  if (u.name) { document.getElementById('u-name').textContent = u.name; document.getElementById('u-avatar').textContent = u.name.charAt(0).toUpperCase(); }
-  document.getElementById('u-role').textContent = 'Administrator';
+  if (u.name) { 
+    const nm = document.getElementById('admin-name'); if(nm) nm.textContent = u.name; 
+    const av = document.getElementById('admin-avatar'); if(av) av.textContent = u.name.charAt(0).toUpperCase(); 
+  }
   document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('en-IN', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
   loadData();
 })();
