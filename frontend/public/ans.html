@@ -388,8 +388,8 @@ let ALL_DATA = [], filtered = [];
 (function init(){
   const user = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   const name = user.name || 'Admin';
-  document.getElementById('admin-name-side').textContent = name;
-  document.getElementById('admin-avatar-side').textContent = name.charAt(0).toUpperCase();
+  document.getElementById('admin-name').textContent = name;
+  document.getElementById('admin-avatar').textContent = name.charAt(0).toUpperCase();
   loadData();
 })();
 
