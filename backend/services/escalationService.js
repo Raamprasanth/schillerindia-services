@@ -1033,7 +1033,10 @@ async function clearGenericEscalationQueue(queueDocs = []) {
 
 async function clearUrCustomEscalationQueue(queueDocs = []) {
   if (!queueDocs.length) return;
-  const queueIds = queueDocs.map((doc) => doc._id).filter(Boolean);
+  const queueIds = queueDocs
+    .filter(doc => !['ur_followup', 'ur_scrap'].includes(doc.module))
+    .map((doc) => doc._id)
+    .filter(Boolean);
   if (queueIds.length) {
     await EscalationQueue.deleteMany({ _id: { $in: queueIds } });
   }

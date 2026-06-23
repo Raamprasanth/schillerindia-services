@@ -459,8 +459,8 @@ function renderTable(){
   tbody.innerHTML = filtered.map((d, i) => `
     <tr>
       <td class="mono">${i + 1}</td>
-      <td><span class="src-tag src-${d.source.toLowerCase()}">${d.source}</span></td>
-      <td><span class="div-tag">${d.division}</span></td>
+      <td><span class="src-tag src-${(d.source || 'unknown').toLowerCase()}">${d.source || 'Unknown'}</span></td>
+      <td><span class="div-tag">${d.division || '-'}</span></td>
       <td>${(d.fqcInDate || d.entryDate || '').slice(0,10)}</td>
       <td>${d.unitDetails || '-'}</td>
       <td style="font-weight:700;">${d.model}</td>
