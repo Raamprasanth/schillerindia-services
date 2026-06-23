@@ -251,7 +251,7 @@ table.ur-table tbody tr:last-child td{border-bottom:none;}
             <div class="ff"><label>Repair Team Remarks <span class="req">*</span></label><textarea id="u-repairremarks" rows="1" style="height:38px;min-height:38px;resize:none;"></textarea></div>
             <div class="ff"><label>Components Used to Repaired <span class="req">*</span></label><textarea id="u-components" rows="1" style="height:38px;min-height:38px;resize:none;"></textarea></div>
             <div class="ff"><label>Cost in INR <span class="req">*</span></label><input type="number" id="u-cost" min="0" step="0.01" inputmode="decimal"/></div>
-            <div class="ff"><label>Time Taken to Repair <span class="req">*</span></label><input type="text" id="u-timetaken" placeholder="hh.mm.ss" pattern="^\d{2}\.\d{2}\.\d{2}$" title="Format: hh.mm.ss (e.g., 02.30.00)" /></div>
+            <div class="ff"><label>Time Taken to Repair <span class="req">*</span></label><input type="time" id="u-timetaken" step="1"/></div>
             <div class="ff"><label>Repair Status <span class="req">*</span></label>
               <select id="u-repairstatus"><option value="">Select...</option><option value="repaired">Repaired</option><option value="supplier_repair">Supplier Repair</option><option value="wrong_entry">Wrong Entry</option><option value="no_fault">No Fault</option><option value="not_repairable">Not Repairable</option><option value="returned_as_is">Returned as it is</option></select>
             </div>
