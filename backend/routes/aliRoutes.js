@@ -19,6 +19,26 @@ router.get('/', adminOnly, async (req, res) => {
     }
     if (division) filter.division = division;
 
+    // Sync existing items from LoanItem that might not be in AdminLoanItem
+    const existingLoanItems = await LoanItem.find().lean();
+    for (const lt of existingLoanItems) {
+      const exists = await AdminLoanItem.exists({ loanItemId: lt._id });
+      if (!exists) {
+        await AdminLoanItem.create({
+          date: lt.date,
+          division: lt.division,
+          partNo: lt.partNo,
+          description: lt.description,
+          revalue: lt.revalue,
+          girNo: lt.girNo,
+          opt: lt.opt,
+          remarks: lt.remarks,
+          loanItemId: lt._id,
+          createdBy: lt.createdBy || 'System',
+        });
+      }
+    }
+
     const docs = await AdminLoanItem.find(filter).sort({ date: -1, createdAt: -1 }).lean();
     res.json(docs);
   } catch (err) {
