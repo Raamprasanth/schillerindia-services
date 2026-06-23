@@ -1350,7 +1350,7 @@ function applyMailAckStatus(idPrefix, payload){
   setMailAckText(idPrefix+'-assigned-time', queue.nextRunLabel || '-');
   setMailAckText(idPrefix+'-assigned-slot', [queue.slotLabel, queue.windowDate ? fmtMailAckDayDate(queue.windowDate) : ''].filter(Boolean).join(' | ') || '-');
   setMailAckText(idPrefix+'-receivers-count', recipients.length);
-  setMailAckText(idPrefix+'-receivers-names', recipients.join(', ') || '-');
+  setMailAckText(idPrefix+'-receivers-names', recipients.map(r => r.email || r).join(', ') || '-');
   setMailAckText(idPrefix+'-last-status', last.status);
   setMailAckText(idPrefix+'-last-detail', last.detail);
   setMailAckText(idPrefix+'-last-time', fmtMailAckDate(latest?.sentAt || latest?.updatedAt || latest?.createdAt));

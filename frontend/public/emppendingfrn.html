@@ -4494,7 +4494,7 @@
       setMailAckText(idPrefix + '-assigned-time', queue.nextRunLabel || '-');
       setMailAckText(idPrefix + '-assigned-slot', [queue.slotLabel, queue.windowDate ? fmtMailAckDayDate(queue.windowDate) : ''].filter(Boolean).join(' | ') || '-');
       setMailAckText(idPrefix + '-receivers-count', recipients.length);
-      setMailAckText(idPrefix + '-receivers-names', recipients.join(', ') || '-');
+      setMailAckText(idPrefix + '-receivers-names', recipients.map(r => r.email || r).join(', ') || '-');
       setMailAckText(idPrefix + '-last-status', last.status);
       setMailAckText(idPrefix + '-last-detail', last.detail);
       setMailAckText(idPrefix + '-last-time', fmtMailAckDate(latest?.sentAt || latest?.updatedAt || latest?.createdAt));
@@ -4587,7 +4587,7 @@
         const recipients = Array.isArray(data && data.recipients) ? data.recipients : [];
         const totalCount = data?.queue?.totalCount || 0;
         document.getElementById('main-receivers-count').textContent = recipients.length;
-        document.getElementById('main-receivers-names').textContent = recipients.join(', ') || '-';
+        document.getElementById('main-receivers-names').textContent = recipients.map(r => r.email || r).join(', ') || '-';
         document.getElementById('main-queued-count').textContent = totalCount;
         applyMailAckStatus('main', data);
       } catch (e) { }
@@ -4602,7 +4602,7 @@
         const recipients = Array.isArray(data && data.recipients) ? data.recipients : [];
         const totalCount = data?.queue?.totalCount || 0;
         document.getElementById('sr-receivers-count').textContent = recipients.length;
-        document.getElementById('sr-receivers-names').textContent = recipients.join(', ') || '-';
+        document.getElementById('sr-receivers-names').textContent = recipients.map(r => r.email || r).join(', ') || '-';
         document.getElementById('sr-queued-count').textContent = totalCount;
         applyMailAckStatus('sr', data);
       } catch (e) { }
@@ -4617,7 +4617,7 @@
         const recipients = Array.isArray(data && data.recipients) ? data.recipients : [];
         const totalCount = data?.queue?.totalCount || 0;
         document.getElementById('to-receivers-count').textContent = recipients.length;
-        document.getElementById('to-receivers-names').textContent = recipients.join(', ') || '-';
+        document.getElementById('to-receivers-names').textContent = recipients.map(r => r.email || r).join(', ') || '-';
         document.getElementById('to-queued-count').textContent = totalCount;
         applyMailAckStatus('to', data);
       } catch (e) { }
