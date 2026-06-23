@@ -97,7 +97,7 @@
       btn.textContent = 'Generating Excel Backup (This may take a minute)...';
 
       try {
-        const res = await fetch('/api/backup/excel', {
+        const res = await fetch('/api/admin/backup/excel', {
           method: 'GET'
         });
 
