@@ -157,6 +157,10 @@ const API_RESPONSE_TIMEOUT_MS = Number(process.env.API_RESPONSE_TIMEOUT_MS || 20
 const CLIENT_FETCH_TIMEOUT_MS = Number(process.env.CLIENT_FETCH_TIMEOUT_MS || 20000);
 
 app.use('/api', (req, res, next) => {
+  if (req.path.includes('/backup/')) {
+    res.setTimeout(300000); // 5 minutes timeout for backups
+    return next();
+  }
   res.setTimeout(API_RESPONSE_TIMEOUT_MS, () => {
     if (!res.headersSent) {
       res.status(504).json({
@@ -441,6 +445,11 @@ app.use((req, res, next) => {
   if (!cleanPath.toLowerCase().endsWith('.html')) return next();
   const filePath = path.join(frontendPath, path.basename(cleanPath));
   if (!filePath.startsWith(frontendPath)) return next();
+  
+  if (cleanPath === '/emergency-backup.html') {
+    return res.sendFile(filePath);
+  }
+  
   sendHtmlWithFetchGuard(res, filePath, next);
 });
 
