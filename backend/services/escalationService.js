@@ -1416,6 +1416,30 @@ async function sendEscalationWorkbook(payload, outputPath, senderConfig = null) 
 }
 
 function buildMailAcceptedFields(mailResult = {}) {
+  if (Array.isArray(mailResult)) {
+    const providers = new Set();
+    const messageIds = [];
+    const tos = [];
+    mailResult.forEach(res => {
+      const r = res.mailResult || res || {};
+      if (r.provider) providers.add(r.provider);
+      if (r.messageId) messageIds.push(r.messageId);
+      if (r.to) tos.push(r.to);
+    });
+    const providerStr = Array.from(providers).join(', ') || 'provider';
+    const parts = [
+      `Accepted by ${providerStr} API`,
+      messageIds.length ? `Message IDs: ${messageIds.join(', ')}` : '',
+      tos.length ? `To: ${tos.join('; ')}` : '',
+    ].filter(Boolean);
+    return {
+      message: parts.join(' | '),
+      mailProvider: Array.from(providers).join(', '),
+      mailMessageId: messageIds.join(', '),
+      mailAcceptedTo: tos.join('; '),
+    };
+  }
+
   const result = mailResult.mailResult || mailResult || {};
   const provider = String(result.provider || '').trim();
   const messageId = String(result.messageId || '').trim();
@@ -1466,12 +1490,15 @@ async function sendEscalationSenderTest(toEmail = '') {
 }
 
 function filterDataByDivisionAndRegion(data, division) {
-  const targetDiv = String(division || 'all').toLowerCase();
-  if (targetDiv === 'all') return data;
+  const targetDivStr = String(division || 'all').toLowerCase();
+  if (targetDivStr === 'all' || !targetDivStr) return data;
+  
+  const targetDivs = targetDivStr.split(',').map(d => d.trim()).filter(Boolean);
   
   const filterRow = (row) => {
-    const div = String(row['Division Name'] || row['DIVISION NAME'] || row['DIVISION'] || '').toLowerCase();
-    return div === targetDiv;
+    const div = String(row['Division Name'] || row['DIVISION NAME'] || row['DIVISION'] || row.division || row.Division || '').toLowerCase().trim();
+    if (!div) return false;
+    return targetDivs.includes(div);
   };
 
   const result = { ...data };
@@ -1555,7 +1582,7 @@ async function runEscalationSlot(slot, options = {}) {
     );
     const sender = await getReadyEscalationSenderConfig();
     const results = await dispatchEscalationGroups(slotWindow, data, recipients, buildMailPayload, reportPath, sender);
-    const mailResult = results[0]?.mailResult || {};
+    const mailResults = results.map(r => r.mailResult).filter(Boolean);
     reportPath = results.map(r => r.reportPath).join(',');
     await clearGenericEscalationQueue(data.queueDocs || []);
 
@@ -1568,7 +1595,7 @@ async function runEscalationSlot(slot, options = {}) {
           estCount: data.estimationRows.length,
           totalCount,
           reportPath,
-          ...buildMailAcceptedFields(mailResult),
+          ...buildMailAcceptedFields(mailResults),
           sentAt: new Date(),
         },
       },
@@ -1602,7 +1629,7 @@ async function runUrEscalationSlot(slot, options = {}) {
   let log = prepared.log;
 
   try {
-    const recipients = await getEscalationRecipients(slotWindow.category);
+    const recipients = await getEscalationRecipients('ur_escalation');
     if (!recipients.length) {
       log = await EscalationRunLog.findByIdAndUpdate(log._id, { $set: { status: 'skipped', error: 'ESCALATION_EMAIL_TO is empty.' } }, { new: true });
       return { ok: false, skipped: true, message: 'ESCALATION_EMAIL_TO is not configured.', log };
@@ -1625,7 +1652,7 @@ async function runUrEscalationSlot(slot, options = {}) {
     );
     const sender = await getReadyEscalationSenderConfig();
     const results = await dispatchEscalationGroups(slotWindow, data, recipients, buildUrMailPayload, reportPath, sender);
-    const mailResult = results[0]?.mailResult || {};
+    const mailResults = results.map(r => r.mailResult).filter(Boolean);
     reportPath = results.map(r => r.reportPath).join(',');
     await clearUrCustomEscalationQueue(data.queueDocs || []);
 
@@ -1637,7 +1664,7 @@ async function runUrEscalationSlot(slot, options = {}) {
           urCount: data.rows.length,
           totalCount: data.rows.length,
           reportPath,
-          ...buildMailAcceptedFields(mailResult),
+          ...buildMailAcceptedFields(mailResults),
           sentAt: new Date(),
         },
       },
@@ -1696,7 +1723,7 @@ async function runSrEscalationSlot(slot, options = {}) {
     );
     const sender = await getReadyEscalationSenderConfig();
     const results = await dispatchEscalationGroups(slotWindow, data, recipients, buildSrMailPayload, reportPath, sender);
-    const mailResult = results[0]?.mailResult || {};
+    const mailResults = results.map(r => r.mailResult).filter(Boolean);
     reportPath = results.map(r => r.reportPath).join(',');
     await clearSrEscalationQueue(data.queueDocs || []);
 
@@ -1709,7 +1736,7 @@ async function runSrEscalationSlot(slot, options = {}) {
           estCount: data.estimationRows.length,
           totalCount,
           reportPath,
-          ...buildMailAcceptedFields(mailResult),
+          ...buildMailAcceptedFields(mailResults),
           sentAt: new Date(),
         },
       },
@@ -1769,7 +1796,7 @@ async function runToEscalationSlot(slot, options = {}) {
     );
     const sender = await getReadyEscalationSenderConfig();
     const results = await dispatchEscalationGroups(slotWindow, data, recipients, buildToMailPayload, reportPath, sender);
-    const mailResult = results[0]?.mailResult || {};
+    const mailResults = results.map(r => r.mailResult).filter(Boolean);
     reportPath = results.map(r => r.reportPath).join(',');
     await clearToEscalationQueue(data.queueDocs || []);
 
@@ -1783,7 +1810,7 @@ async function runToEscalationSlot(slot, options = {}) {
           urCount: (data.underRepairRows || []).length,
           totalCount,
           reportPath,
-          ...buildMailAcceptedFields(mailResult),
+          ...buildMailAcceptedFields(mailResults),
           sentAt: new Date(),
         },
       },
@@ -1839,7 +1866,7 @@ async function runCustomEscalationSlot(slot, options = {}) {
     );
     const sender = await getReadyEscalationSenderConfig();
     const results = await dispatchEscalationGroups(slotWindow, data, recipients, buildCustomMailPayload, reportPath, sender);
-    const mailResult = results[0]?.mailResult || {};
+    const mailResults = results.map(r => r.mailResult).filter(Boolean);
     reportPath = results.map(r => r.reportPath).join(',');
     await clearUrCustomEscalationQueue(data.queueDocs || []);
 
@@ -1850,7 +1877,7 @@ async function runCustomEscalationSlot(slot, options = {}) {
           status: 'success',
           totalCount: data.rows.length,
           reportPath,
-          ...buildMailAcceptedFields(mailResult),
+          ...buildMailAcceptedFields(mailResults),
           sentAt: new Date(),
         },
       },

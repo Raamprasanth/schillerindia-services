@@ -2537,55 +2537,17 @@
     }
 
     async function _fetchCompRepair(sourceId, scRefNo) {
-      // Strategy:
-      // 1. Fetch EstimationPending record directly — backend writes components/obComponents
-      //    on RC completion, so this is the most reliable source.
-      // 2. Fallback: query RTOB list (for in-progress repairs not yet completed).
-      // 3. Fallback: query RTCRL list (archived completed records).
-      const pick = r => r && (r.components || r.obComponents || r.compUsedToRepair || r.componentsUsed || r.partsUsed || null);
-
-      // 1. Primary — EstimationPending record by ID
-      if (sourceId) {
-        try {
-          const r1 = await fetch(API_BASE + '/api/emp/estimation/' + encodeURIComponent(sourceId), { headers: authHeaders() });
-          if (r1.ok) {
-            const d1 = await r1.json();
-            const v1 = pick(d1);
-            if (v1 && String(v1).trim()) return String(v1).trim();
-          }
-        } catch (_) {}
+      if (!scRefNo) return null;
+      try {
+        const url = API_BASE + '/api/emp/ob-pending/components/' + encodeURIComponent(scRefNo) + (sourceId ? '?sourceId=' + encodeURIComponent(sourceId) : '');
+        const r = await fetch(url, { headers: authHeaders() });
+        if (r.ok) {
+          const d = await r.json();
+          if (d && d.components && String(d.components).trim()) return String(d.components).trim();
+        }
+      } catch (e) {
+        console.error('Fetch comp error:', e);
       }
-
-      // 2. Fallback — RTOB live records (repair in-progress, not yet completed)
-      try {
-        const r2 = await fetch(API_BASE + '/api/rtob', { headers: authHeaders() });
-        if (r2.ok) {
-          const d2 = await r2.json();
-          const rows2 = Array.isArray(d2) ? d2 : (d2.data ? d2.data : (d2._id ? [d2] : []));
-          const match2 = rows2.find(r =>
-            (r.sourceId && String(r.sourceId) === String(sourceId)) ||
-            (r.scRefNo && scRefNo && String(r.scRefNo).trim() === String(scRefNo).trim())
-          );
-          const v2 = pick(match2);
-          if (v2 && String(v2).trim()) return String(v2).trim();
-        }
-      } catch (_) {}
-
-      // 3. Fallback — RTCRL archived completed records
-      try {
-        const r3 = await fetch(API_BASE + '/api/rtcrl', { headers: authHeaders() });
-        if (r3.ok) {
-          const d3 = await r3.json();
-          const rows3 = Array.isArray(d3) ? d3 : (d3.data ? d3.data : (d3._id ? [d3] : []));
-          const match3 = rows3.find(r =>
-            (r.sourceId && String(r.sourceId) === String(sourceId)) ||
-            (r.scRefNo && scRefNo && String(r.scRefNo).trim() === String(scRefNo).trim())
-          );
-          const v3 = pick(match3);
-          if (v3 && String(v3).trim()) return String(v3).trim();
-        }
-      } catch (_) {}
-
       return null;
     }
 

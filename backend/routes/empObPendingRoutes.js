@@ -310,4 +310,43 @@ router.post('/sync', protect, async (req, res) => {
   }
 });
 
+// "?"? GET Repair Components "?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?
+router.get('/components/:scReNo', protect, async (req, res) => {
+  try {
+    const scReNo = req.params.scReNo;
+    if (!scReNo) return res.json({ components: null });
+
+    const EstimationPending = require('../models/EstimationPending');
+    const RTOB = require('../models/RTOB');
+    const RTFRN = require('../models/RTFRN');
+    const RTUR = require('../models/RTUR');
+
+    const est = await EstimationPending.findOne({ scReNo }).lean();
+    if (est && (est.components || est.obComponents || est.compUsedToRepair || est.partsUsed)) {
+      return res.json({ components: est.components || est.obComponents || est.compUsedToRepair || est.partsUsed });
+    }
+
+    const rtob = await RTOB.findOne({ scReNo }).lean();
+    if (rtob && (rtob.obComponents || rtob.compUsedToRepair || rtob.componentsUsed || rtob.partsUsed)) {
+      return res.json({ components: rtob.obComponents || rtob.compUsedToRepair || rtob.componentsUsed || rtob.partsUsed });
+    }
+
+    const rtfrn = await RTFRN.findOne({ scRno: scReNo }).lean();
+    if (rtfrn && (rtfrn.componentsUsed || rtfrn.compUsedToRepair || rtfrn.partsUsed)) {
+      return res.json({ components: rtfrn.componentsUsed || rtfrn.compUsedToRepair || rtfrn.partsUsed });
+    }
+    
+    // Fallback: check sourceId in RTOB
+    const rtobBySource = await RTOB.findOne({ sourceId: req.query.sourceId }).lean();
+    if (rtobBySource && (rtobBySource.obComponents || rtobBySource.compUsedToRepair || rtobBySource.componentsUsed)) {
+      return res.json({ components: rtobBySource.obComponents || rtobBySource.compUsedToRepair || rtobBySource.componentsUsed });
+    }
+
+    res.json({ components: null });
+  } catch (err) {
+    console.error('Components fetch error:', err);
+    res.json({ components: null });
+  }
+});
+
 module.exports = router;

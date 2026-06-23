@@ -10,7 +10,7 @@ const adminLoanItemSchema = new mongoose.Schema(
     revalue: { type: Number, default: 0 },
     opt: { type: String, trim: true, default: '' },
     remarks: { type: String, trim: true, default: '' },
-    loanItemId: { type: String, trim: true, default: '' }, // Reference to the original LoanItem
+    loanItemId: { type: String, trim: true, default: '' },
     createdBy: { type: String, trim: true, default: '' },
     updatedBy: { type: String, trim: true, default: '' },
   },

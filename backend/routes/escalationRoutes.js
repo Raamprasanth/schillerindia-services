@@ -304,6 +304,21 @@ async function getActiveCustomQueueWindow(config, referenceDate = new Date()) {
   };
 }
 
+function filterRecipientsByUser(recipients, user) {
+  const userDivs = Array.isArray(user?.assignedDivisions)
+    ? user.assignedDivisions.map(d => String(d).toLowerCase().trim())
+    : [];
+  
+  if (!userDivs.length || userDivs.includes('all') || (user?.role === 'admin' && !user?.assignedDivisions?.length)) {
+    return recipients;
+  }
+
+  return recipients.filter(rc => {
+    const rcDivs = String(rc.division || 'all').toLowerCase().split(',').map(d => d.trim());
+    return rcDivs.includes('all') || rcDivs.some(d => userDivs.includes(d));
+  });
+}
+
 router.use('/status', protect, markStaleRunningEscalations);
 
 router.get('/status', protect, async (req, res) => {
@@ -321,7 +336,7 @@ router.get('/status', protect, async (req, res) => {
   res.json({
     label: labelFor(labels, 'main_combined'),
     latest: visibleLatestLog(latest, totalQueued),
-    recipients,
+    recipients: filterRecipientsByUser(recipients, req.user),
     queue: {
       slot: queueWindow.slot,
       slotLabel: composeSlotLabel(labels, 'main_combined', queueWindow.slotLabel),
@@ -358,9 +373,9 @@ router.get('/status/under-repair', protect, async (req, res) => {
       scrap: labelFor(labels, 'ur_scrap'),
       followup: labelFor(labels, 'ur_followup'),
     },
-    recipients: Array.from(new Set([...(scrapRecipients || []), ...(followupRecipients || [])])),
+    recipients: filterRecipientsByUser(Array.from(new Set([...(scrapRecipients || []), ...(followupRecipients || [])])), req.user),
     scrap: {
-      recipients: scrapRecipients,
+      recipients: filterRecipientsByUser(scrapRecipients, req.user),
       latest: visibleLatestLog(latestScrap, scrapQueued),
       queue: {
         slot: scrapQueueWindow.slot,
@@ -371,7 +386,7 @@ router.get('/status/under-repair', protect, async (req, res) => {
       },
     },
     followup: {
-      recipients: followupRecipients,
+      recipients: filterRecipientsByUser(followupRecipients, req.user),
       latest: visibleLatestLog(latestFollowup, followupQueued),
       queue: {
         slot: followupQueueWindow.slot,
@@ -398,7 +413,7 @@ router.get('/status/sr', protect, async (req, res) => {
 
   res.json({
     label: labelFor(labels, 'sr_escalation'),
-    recipients,
+    recipients: filterRecipientsByUser(recipients, req.user),
     latest: visibleLatestLog(latest, totalCount),
     queue: {
       slot: activeQueueWindow.slot,
@@ -427,7 +442,7 @@ router.get('/status/to', protect, async (req, res) => {
 
   res.json({
     label: labelFor(labels, 'to_escalation'),
-    recipients,
+    recipients: filterRecipientsByUser(recipients, req.user),
     latest: visibleLatestLog(latest, totalCount),
     queue: {
       slot: activeQueueWindow.slot,
@@ -459,7 +474,7 @@ router.get('/status/:kind', protect, async (req, res) => {
 
   res.json({
     label: labelFor(labels, config.reportType),
-    recipients,
+    recipients: filterRecipientsByUser(recipients, req.user),
     latest: visibleLatestLog(latest, totalCount),
     queue: {
       slot: queueWindow.slot,
