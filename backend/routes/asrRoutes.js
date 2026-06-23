@@ -1,7 +1,7 @@
 const express = require('express');
 const AdminSR = require('../models/AdminSR');
-const SR = require('../models/SR');
-const Scsr = require('../models/Scsr');
+const SR = require('../models/Sr');
+const Scsr = require('../models/ScSr');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 
 const router = express.Router();
