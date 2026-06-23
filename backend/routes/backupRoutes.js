@@ -50,10 +50,18 @@ router.get('/excel', async (req, res) => {
       return res.status(503).json({ success: false, message: 'Database is not connected.' });
     }
 
+    const fileName = `schiller-backup-${safeFileDate()}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+
     const ExcelJS = require('exceljs');
-    const workbook = new ExcelJS.Workbook();
+    const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
+      stream: res,
+      useStyles: false,
+      useSharedStrings: false
+    });
+    
     workbook.creator = req.user?.name || 'System';
-    workbook.created = new Date();
 
     const db = mongoose.connection.db;
     const collections = await db.listCollections().toArray();
@@ -61,55 +69,50 @@ router.get('/excel', async (req, res) => {
     for (const info of collections) {
       if (!info.name || info.name.startsWith('system.')) continue;
       
-      const docs = await db.collection(info.name).find({}).toArray();
-      if (docs.length === 0) continue; // Skip empty collections
+      const cursor = db.collection(info.name).find({});
+      if (!(await cursor.hasNext())) continue;
 
-      // Excel sheet names cannot exceed 31 characters
       const sheetName = info.name.substring(0, 31);
       const worksheet = workbook.addWorksheet(sheetName);
 
-      // Dynamically generate columns based on keys of the first document
-      // We also collect all unique keys across all docs to be safe, but typically first doc is enough
-      const keySet = new Set();
-      docs.forEach(doc => Object.keys(doc).forEach(key => keySet.add(key)));
+      const firstDoc = await cursor.next();
+      const keySet = Object.keys(firstDoc);
       
-      const columns = Array.from(keySet).map(key => ({
+      worksheet.columns = keySet.map(key => ({
         header: key,
         key: key,
         width: 20
       }));
-      worksheet.columns = columns;
 
-      // Add rows, converting nested objects or arrays to strings
-      const rows = docs.map(doc => {
+      const formatRow = (doc) => {
         const row = {};
         for (const key of keySet) {
           let val = doc[key];
           if (val && typeof val === 'object' && !(val instanceof Date)) {
-            try {
-              val = JSON.stringify(val);
-            } catch (e) {
-              val = String(val);
-            }
+            try { val = JSON.stringify(val); } catch (e) { val = String(val); }
           }
           row[key] = val;
         }
         return row;
-      });
+      };
 
-      worksheet.addRows(rows);
+      worksheet.addRow(formatRow(firstDoc)).commit();
+
+      while (await cursor.hasNext()) {
+        const doc = await cursor.next();
+        worksheet.addRow(formatRow(doc)).commit();
+      }
+
+      worksheet.commit();
     }
 
-    const fileName = `schiller-backup-${safeFileDate()}.xlsx`;
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-
-    await workbook.xlsx.write(res);
-    res.end();
+    await workbook.commit();
   } catch (err) {
     console.error('[GET /api/admin/backup/excel]', err);
     if (!res.headersSent) {
       res.status(500).json({ success: false, message: err.message || 'Excel Backup failed.' });
+    } else {
+      res.end(); // Ensure stream closes if it fails halfway
     }
   }
 });
