@@ -400,10 +400,21 @@ async function loadData(){
   try {
     const res = await fetch(`${API}/api/admin/nonsaleable`, { headers: authHeaders() });
     if (res.status === 401) return location.href = 'login.html';
+    if (!res.ok) {
+      const errText = await res.text();
+      alert('Failed to load data: ' + errText);
+      console.error('API Error:', res.status, errText);
+      document.getElementById('ns-tbody').innerHTML = '<tr><td colspan="11" style="text-align:center; color:red;">Failed to load data.</td></tr>';
+      return;
+    }
     ALL_DATA = await res.json();
     applyFilters();
     updateStats();
-  } catch(e) { console.error(e); }
+  } catch(e) {
+    console.error(e);
+    alert('Fetch error: ' + e.message);
+    document.getElementById('ns-tbody').innerHTML = '<tr><td colspan="11" style="text-align:center; color:red;">Fetch error.</td></tr>';
+  }
 }
 
 function updateStats(){
