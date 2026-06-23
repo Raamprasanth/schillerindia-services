@@ -66,10 +66,17 @@ router.put('/:id', protect, adminOnly, async (req, res) => {
   } catch (e) { res.status(400).json({ message: e.message }); }
 });
 
-router.delete('/:id', protect, adminOnly, async (req, res) => {
+router.delete('/:source/:id', protect, adminOnly, async (req, res) => {
   try {
-    const doc = await AClose.findByIdAndDelete(req.params.id);
-    if (!doc) return res.status(404).json({ message: 'Not found. (Note: Admin can only delete Admin-created closed calls here)' });
+    let Model;
+    const s = req.params.source.toLowerCase();
+    if (s === 'admin') Model = AClose;
+    else if (s === 'employee') Model = Eclose;
+    else if (s === 'puducherry' || s === 'pt') Model = PtClose;
+    else return res.status(400).json({ message: 'Invalid call source.' });
+
+    const doc = await Model.findByIdAndDelete(req.params.id);
+    if (!doc) return res.status(404).json({ message: 'Not found.' });
     res.json({ success: true });
   } catch (e) { res.status(500).json({ message: e.message }); }
 });

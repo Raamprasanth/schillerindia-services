@@ -355,6 +355,7 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
         <table class="call-table">
           <thead><tr>
             <th style="width:40px;">#</th>
+            <th>Action</th>
             <th onclick="sortBy('source')">Source <span class="si">&#8693;</span></th>
             <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
             <th onclick="sortBy('entryDate')">Entry Date <span class="si">&#8693;</span></th>
@@ -365,10 +366,10 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('scEngg')">SC Engg <span class="si">&#8693;</span></th>
             <th onclick="sortBy('typeCall')">Type <span class="si">&#8693;</span></th>
             <th>Remarks</th>
-            <th>Actions</th>
+            <th>Details</th>
           </tr></thead>
           <tbody id="call-tbody">
-            <tr class="loading-row"><td colspan="12"><span class="spin"></span>Fetching unified records...</td></tr>
+            <tr class="loading-row"><td colspan="13"><span class="spin"></span>Fetching unified records...</td></tr>
           </tbody>
         </table>
       </div>
@@ -454,11 +455,12 @@ function renderTable(){
   const tbody = document.getElementById('call-tbody');
   
   if(!total){
-    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:50px;color:var(--muted);">No records found</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:50px;color:var(--muted);">No records found</td></tr>';
   } else {
     tbody.innerHTML = slice.map((d,i)=>`
       <tr>
         <td class="mono">${(currentPage-1)*per+i+1}</td>
+        <td><button class="btn-xs" style="color:var(--red);border-color:rgba(204,0,0,0.3);" onclick="deleteRecord('${d._id}', '${d.source||'Admin'}')" title="Delete">&#128465;&#65039;</button></td>
         <td><span class="src-tag src-${(d.source||'Admin').toLowerCase()}">${d.source||'Admin'}</span></td>
         <td><span class="div-tag">${d.division||'-'}</span></td>
         <td style="font-weight:600;">${fmtDate(entryDateForClosedCall(d))}</td>
@@ -471,7 +473,6 @@ function renderTable(){
         <td style="font-size:11px; color:var(--soft); max-width:150px; overflow:hidden; text-overflow:ellipsis;">${d.remarks||'-'}</td>
         <td>
           <button class="btn-xs view" onclick="openDetailModal('${d._id}')">View</button>
-          ${d.source==='Admin' ? `<button class="btn-xs delete" onclick="deleteRecord('${d._id}')">Del</button>` : ''}
         </td>
       </tr>
     `).join('');
@@ -516,10 +517,10 @@ function openDetailModal(id){
 }
 function closeDetailModal(){ document.getElementById('detail-overlay').classList.remove('open'); }
 
-async function deleteRecord(id){
-  if(!confirm('Are you sure you want to delete this Admin record?')) return;
+async function deleteRecord(id, source){
+  if(!confirm('Are you sure you want to delete this closed call record?')) return;
   try {
-    const res = await fetch('/api/admin/calls/closed/' + id, {
+    const res = await fetch('/api/admin/calls/closed/' + source + '/' + id, {
       method: 'DELETE',
       headers: { Authorization: 'Bearer ' + sessionStorage.getItem('schiller_token') }
     });
