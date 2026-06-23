@@ -756,12 +756,12 @@ async function loadStats() {
       fetch('/api/ob-pending', opts).then(r=>r.ok?r.json():[]).catch(()=>[]),
       fetch('/api/under-repair', opts).then(r=>r.ok?r.json():[]).catch(()=>[]),
       fetch('/api/dashboard/admin', opts).then(r=>r.ok?r.json():{}).catch(()=>({})),
-      fetch('/api/completed-frn/admin/all', opts).then(r=>r.ok?r.json():[]).catch(()=>[])
+      fetch('/api/emp/completed-frn', opts).then(r=>r.ok?r.json():[]).catch(()=>[])
     ]);
 
     if(document.getElementById('stat-total-services')) document.getElementById('stat-total-services').textContent = dashboardData?.stats?.totalServices || 0;
     if(document.getElementById('stat-pending-frn')) document.getElementById('stat-pending-frn').textContent = Array.isArray(frn) ? frn.length : 0;
-    if(document.getElementById('stat-ob-pending')) document.getElementById('stat-ob-pending').textContent = Array.isArray(ob) ? ob.filter(o => o.status === 'pending').length : 0;
+    if(document.getElementById('stat-ob-pending')) document.getElementById('stat-ob-pending').textContent = Array.isArray(ob) ? ob.length : 0;
     if(document.getElementById('stat-under-repair')) document.getElementById('stat-under-repair').textContent = Array.isArray(ur) ? ur.length : 0;
     if(document.getElementById('stat-completed-frn')) document.getElementById('stat-completed-frn').textContent = Array.isArray(closed) ? closed.length : 0;
     renderDivisionBreakdown(dashboardData?.divisionBreakdown || []);
