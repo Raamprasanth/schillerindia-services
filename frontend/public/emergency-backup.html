@@ -9,7 +9,6 @@
       --bg: #0d1117;
       --fg: #c9d1d9;
       --accent: #58a6ff;
-      --accent-hover: #3182ce;
       --danger: #f85149;
       --border: #30363d;
       --card-bg: #161b22;
@@ -48,43 +47,25 @@
       text-align: center;
       margin-bottom: 20px;
     }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-size: 13px;
-      font-weight: 600;
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      background-color: var(--bg);
-      color: var(--fg);
-      box-sizing: border-box;
-    }
-    input:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
-    }
     button {
       width: 100%;
-      padding: 10px;
-      background-color: var(--accent);
+      padding: 12px;
+      background-color: #238636;
       color: #fff;
       border: none;
       border-radius: 6px;
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 600;
       cursor: pointer;
       transition: background-color 0.2s;
     }
     button:hover {
-      background-color: var(--accent-hover);
+      background-color: #2ea043;
+    }
+    button:disabled {
+      background-color: #1a5c27;
+      color: #8b949e;
+      cursor: not-allowed;
     }
     .error {
       color: var(--danger);
@@ -93,91 +74,20 @@
       text-align: center;
       display: none;
     }
-    #download-section {
-      display: none;
-      text-align: center;
-    }
-    #download-btn {
-      background-color: #238636;
-      margin-top: 15px;
-    }
-    #download-btn:hover {
-      background-color: #2ea043;
-    }
   </style>
 </head>
 <body>
 
   <div class="container">
     <h1>Emergency Data Export</h1>
-    <p>Use this page to download a complete Excel backup if the main application UI is unavailable.</p>
+    <p>Use this page to download a complete Excel backup if the main application UI is unavailable. No authentication is required.</p>
 
     <div id="error-message" class="error"></div>
 
-    <form id="login-form">
-      <div class="form-group">
-        <label for="email">Admin Email</label>
-        <input type="email" id="email" required autocomplete="email">
-      </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" required autocomplete="current-password">
-      </div>
-      <button type="submit" id="login-btn">Authenticate</button>
-    </form>
-
-    <div id="download-section">
-      <div style="color: #3fb950; font-weight: 600; margin-bottom: 10px;">Authenticated successfully!</div>
-      <button id="download-btn">Download Full Excel Backup</button>
-    </div>
+    <button id="download-btn">Download Full Excel Backup</button>
   </div>
 
   <script>
-    let authToken = '';
-
-    document.getElementById('login-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const errorEl = document.getElementById('error-message');
-      const loginBtn = document.getElementById('login-btn');
-
-      errorEl.style.display = 'none';
-      loginBtn.disabled = true;
-      loginBtn.textContent = 'Authenticating...';
-
-      try {
-        const res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        
-        const data = await res.json();
-        
-        if (!res.ok) {
-          throw new Error(data.message || 'Authentication failed');
-        }
-
-        if (data.user?.role !== 'admin' && data.user?.role !== 'superadmin') {
-           throw new Error('Only admins can download emergency backups.');
-        }
-
-        authToken = data.token;
-        
-        // Hide login, show download
-        document.getElementById('login-form').style.display = 'none';
-        document.getElementById('download-section').style.display = 'block';
-
-      } catch (err) {
-        errorEl.textContent = err.message;
-        errorEl.style.display = 'block';
-      } finally {
-        loginBtn.disabled = false;
-        loginBtn.textContent = 'Authenticate';
-      }
-    });
-
     document.getElementById('download-btn').addEventListener('click', async () => {
       const btn = document.getElementById('download-btn');
       const errorEl = document.getElementById('error-message');
@@ -188,10 +98,7 @@
 
       try {
         const res = await fetch('/api/backup/excel', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${authToken}`
-          }
+          method: 'GET'
         });
 
         if (!res.ok) {

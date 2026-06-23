@@ -44,7 +44,7 @@ router.get('/download', protect, adminOnly, async (req, res) => {
   }
 });
 
-router.get('/excel', protect, adminOnly, async (req, res) => {
+router.get('/excel', async (req, res) => {
   try {
     if (mongoose.connection.readyState !== 1 || !mongoose.connection.db) {
       return res.status(503).json({ success: false, message: 'Database is not connected.' });
