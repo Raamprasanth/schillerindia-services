@@ -121,16 +121,37 @@ async function getEscalationRecipients(reportType = '') {
         if (!item || typeof item !== 'object') return !normalizedReportType;
         if (!normalizedReportType) return true;
         const itemType = String(item.reportType || '').trim();
-        return itemType === normalizedReportType || itemType === 'all_escalation';
+        // Since reportType can be a comma-separated list
+        const types = itemType.split(',').map(t => t.trim()).filter(Boolean);
+        return types.includes(normalizedReportType) || types.includes('all_escalation');
       })
       .map((item) => {
-        if (item && typeof item === 'object' && item.email) return String(item.email).trim();
-        return String(item || '').trim();
+        if (item && typeof item === 'object' && item.email) {
+          return {
+            email: String(item.email).trim(),
+            division: String(item.division || 'all').trim(),
+            region: String(item.region || 'all').trim()
+          };
+        }
+        return { email: String(item || '').trim(), division: 'all', region: 'all' };
       })
-      .filter(Boolean);
-    if (configured.length) return Array.from(new Set(configured));
+      .filter((item) => item.email);
+    
+    if (configured.length) {
+      // Deduplicate by email+division+region
+      const unique = [];
+      const seen = new Set();
+      for (const c of configured) {
+        const key = `${c.email}|${c.division}|${c.region}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          unique.push(c);
+        }
+      }
+      return unique;
+    }
   } catch (_) {}
-  return splitCsv(process.env.ESCALATION_EMAIL_TO);
+  return splitCsv(process.env.ESCALATION_EMAIL_TO).map(email => ({ email, division: 'all', region: 'all' }));
 }
 
 async function getEscalationSenderConfig() {
@@ -1444,6 +1465,52 @@ async function sendEscalationSenderTest(toEmail = '') {
   }
 }
 
+function filterDataByDivisionAndRegion(data, division) {
+  const targetDiv = String(division || 'all').toLowerCase();
+  if (targetDiv === 'all') return data;
+  
+  const filterRow = (row) => {
+    const div = String(row['Division Name'] || row['DIVISION NAME'] || row['DIVISION'] || '').toLowerCase();
+    return div === targetDiv;
+  };
+
+  const result = { ...data };
+  if (data.frnRows) result.frnRows = data.frnRows.filter(filterRow);
+  if (data.estimationRows) result.estimationRows = data.estimationRows.filter(filterRow);
+  if (data.underRepairRows) result.underRepairRows = data.underRepairRows.filter(filterRow);
+  if (data.rows) result.rows = data.rows.filter(filterRow);
+  return result;
+}
+
+async function dispatchEscalationGroups(slotWindow, data, recipientsConfig, payloadBuilder, baseReportPath, sender) {
+  const groups = {};
+  for (const rc of recipientsConfig) {
+    const key = `${String(rc.division || 'all').toLowerCase()}|${String(rc.region || 'all').toLowerCase()}`;
+    if (!groups[key]) groups[key] = { division: String(rc.division || 'all'), region: String(rc.region || 'all'), emails: new Set() };
+    groups[key].emails.add(rc.email);
+  }
+
+  const results = [];
+  const ext = require('path').extname(baseReportPath) || '.xlsx';
+  const baseName = baseReportPath.slice(0, -ext.length);
+
+  for (const key in groups) {
+    const group = groups[key];
+    const groupEmails = Array.from(group.emails);
+    
+    const filteredData = filterDataByDivisionAndRegion(data, group.division);
+    const divSuffix = group.division === 'all' ? '' : `-${group.division.replace(/[^a-z0-9]/gi, '')}`;
+    const reportPath = `${baseName}${divSuffix}${ext}`;
+    
+    const payload = payloadBuilder(slotWindow, filteredData);
+    payload.to = groupEmails;
+    
+    const mailResult = await sendEscalationWorkbook(payload, reportPath, sender);
+    results.push({ reportPath, mailResult });
+  }
+  return results;
+}
+
 async function runEscalationSlot(slot, options = {}) {
   if (!mongoose.connection || mongoose.connection.readyState !== 1) {
     return { ok: false, skipped: true, message: 'MongoDB is not connected.' };
@@ -1473,7 +1540,7 @@ async function runEscalationSlot(slot, options = {}) {
     const totalCount = data.frnRows.length + data.estimationRows.length;
 
     fs.mkdirSync(REPORT_DIR, { recursive: true });
-    const reportPath = path.join(REPORT_DIR, `dispatch-escalation-${slotWindow.slot}-${slotWindow.jobDate}.xlsx`);
+    let reportPath = path.join(REPORT_DIR, `dispatch-escalation-${slotWindow.slot}-${slotWindow.jobDate}.xlsx`);
     log = await EscalationRunLog.findByIdAndUpdate(
       log._id,
       {
@@ -1487,9 +1554,9 @@ async function runEscalationSlot(slot, options = {}) {
       { new: true }
     );
     const sender = await getReadyEscalationSenderConfig();
-    const payload = buildMailPayload(slotWindow, data);
-    payload.to = recipients;
-    const mailResult = await sendEscalationWorkbook(payload, reportPath, sender);
+    const results = await dispatchEscalationGroups(slotWindow, data, recipients, buildMailPayload, reportPath, sender);
+    const mailResult = results[0]?.mailResult || {};
+    reportPath = results.map(r => r.reportPath).join(',');
     await clearGenericEscalationQueue(data.queueDocs || []);
 
     log = await EscalationRunLog.findByIdAndUpdate(
@@ -1544,7 +1611,7 @@ async function runUrEscalationSlot(slot, options = {}) {
     const data = await collectUrEscalationData(slotWindow);
 
     fs.mkdirSync(REPORT_DIR, { recursive: true });
-    const reportPath = path.join(REPORT_DIR, slotWindow.reportName);
+    let reportPath = path.join(REPORT_DIR, slotWindow.reportName);
     log = await EscalationRunLog.findByIdAndUpdate(
       log._id,
       {
@@ -1557,9 +1624,9 @@ async function runUrEscalationSlot(slot, options = {}) {
       { new: true }
     );
     const sender = await getReadyEscalationSenderConfig();
-    const payload = buildUrMailPayload(slotWindow, data);
-    payload.to = recipients;
-    const mailResult = await sendEscalationWorkbook(payload, reportPath, sender);
+    const results = await dispatchEscalationGroups(slotWindow, data, recipients, buildUrMailPayload, reportPath, sender);
+    const mailResult = results[0]?.mailResult || {};
+    reportPath = results.map(r => r.reportPath).join(',');
     await clearUrCustomEscalationQueue(data.queueDocs || []);
 
     log = await EscalationRunLog.findByIdAndUpdate(
@@ -1614,7 +1681,7 @@ async function runSrEscalationSlot(slot, options = {}) {
     const totalCount = data.frnRows.length + data.estimationRows.length;
 
     fs.mkdirSync(REPORT_DIR, { recursive: true });
-    const reportPath = path.join(REPORT_DIR, slotWindow.reportName);
+    let reportPath = path.join(REPORT_DIR, slotWindow.reportName);
     log = await EscalationRunLog.findByIdAndUpdate(
       log._id,
       {
@@ -1628,9 +1695,9 @@ async function runSrEscalationSlot(slot, options = {}) {
       { new: true }
     );
     const sender = await getReadyEscalationSenderConfig();
-    const payload = buildSrMailPayload(slotWindow, data);
-    payload.to = recipients;
-    const mailResult = await sendEscalationWorkbook(payload, reportPath, sender);
+    const results = await dispatchEscalationGroups(slotWindow, data, recipients, buildSrMailPayload, reportPath, sender);
+    const mailResult = results[0]?.mailResult || {};
+    reportPath = results.map(r => r.reportPath).join(',');
     await clearSrEscalationQueue(data.queueDocs || []);
 
     log = await EscalationRunLog.findByIdAndUpdate(
@@ -1686,7 +1753,7 @@ async function runToEscalationSlot(slot, options = {}) {
     const totalCount = data.frnRows.length + data.estimationRows.length + (data.underRepairRows || []).length;
 
     fs.mkdirSync(REPORT_DIR, { recursive: true });
-    const reportPath = path.join(REPORT_DIR, slotWindow.reportName);
+    let reportPath = path.join(REPORT_DIR, slotWindow.reportName);
     log = await EscalationRunLog.findByIdAndUpdate(
       log._id,
       {
@@ -1701,9 +1768,9 @@ async function runToEscalationSlot(slot, options = {}) {
       { new: true }
     );
     const sender = await getReadyEscalationSenderConfig();
-    const payload = buildToMailPayload(slotWindow, data);
-    payload.to = recipients;
-    const mailResult = await sendEscalationWorkbook(payload, reportPath, sender);
+    const results = await dispatchEscalationGroups(slotWindow, data, recipients, buildToMailPayload, reportPath, sender);
+    const mailResult = results[0]?.mailResult || {};
+    reportPath = results.map(r => r.reportPath).join(',');
     await clearToEscalationQueue(data.queueDocs || []);
 
     log = await EscalationRunLog.findByIdAndUpdate(
@@ -1759,7 +1826,7 @@ async function runCustomEscalationSlot(slot, options = {}) {
     const data = await collectCustomEscalationData(slotWindow);
 
     fs.mkdirSync(REPORT_DIR, { recursive: true });
-    const reportPath = path.join(REPORT_DIR, slotWindow.reportName);
+    let reportPath = path.join(REPORT_DIR, slotWindow.reportName);
     log = await EscalationRunLog.findByIdAndUpdate(
       log._id,
       {
@@ -1771,9 +1838,9 @@ async function runCustomEscalationSlot(slot, options = {}) {
       { new: true }
     );
     const sender = await getReadyEscalationSenderConfig();
-    const payload = buildCustomMailPayload(slotWindow, data);
-    payload.to = recipients;
-    const mailResult = await sendEscalationWorkbook(payload, reportPath, sender);
+    const results = await dispatchEscalationGroups(slotWindow, data, recipients, buildCustomMailPayload, reportPath, sender);
+    const mailResult = results[0]?.mailResult || {};
+    reportPath = results.map(r => r.reportPath).join(',');
     await clearUrCustomEscalationQueue(data.queueDocs || []);
 
     log = await EscalationRunLog.findByIdAndUpdate(
