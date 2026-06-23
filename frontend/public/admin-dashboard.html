@@ -293,6 +293,12 @@
         <a class="nav-item" href="admin-closed-re-repair-atcrr.html"><span class="icon">&#128683;</span> Admin ATCRR</a>
       </div>
     </div>
+    <button class="nav-group-toggle " id="scod-toggle" onclick="toggleSCOD()"><span class="icon">&#128188;</span> SCOD Activities <span class="caret">&#9656;</span></button>
+    <div class="nav-children " id="scod-children">
+      <div class="nav-sub">
+        <a class="nav-item " href="ali.html"><span class="icon">&#128221;</span> Loan Item</a>
+      </div>
+    </div>
     <div class="nav-section">Admin</div>
     <button class="nav-item " onclick="window.location.href='usermanagement.html'"><span class="icon">&#128101;</span> User Management</button>
     <button class="nav-item " onclick="window.location.href='Reports.html'"><span class="icon">&#128200;</span> Reports</button>
@@ -740,6 +746,7 @@ let sfOpen=false;
 function toggleSF(){sfOpen=!sfOpen;applySF();}
 function toggleAR(){ var btn=document.getElementById('ar-toggle'); var panel=document.getElementById('ar-children'); if(!btn||!panel)return; btn.classList.toggle('open'); panel.classList.toggle('open'); }
 function toggleRTA(){ var btn=document.getElementById('rta-toggle'); var panel=document.getElementById('rta-children'); if(!btn||!panel)return; btn.classList.toggle('open'); panel.classList.toggle('open'); }
+function toggleSCOD(){ var btn=document.getElementById('scod-toggle'); var panel=document.getElementById('scod-children'); if(!btn||!panel)return; btn.classList.toggle('open'); panel.classList.toggle('open'); }
 function openSF(){sfOpen=true;applySF();}
 function applySF(){
   document.getElementById('sf-children').classList.toggle('open',sfOpen);

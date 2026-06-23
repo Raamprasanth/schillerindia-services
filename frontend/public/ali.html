@@ -415,7 +415,7 @@ function populateDivisionSelects(){
 async function loadData(){
   setLoading();
   try{
-    const res = await fetch(API + '/api/loan-items', { headers: authHeaders() });
+    const res = await fetch(API + '/api/ali-items', { headers: authHeaders() });
     handleUnauth(res);
     const json = await res.json().catch(()=>[]);
     if(!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
@@ -512,7 +512,7 @@ function renderTable(){
         <td class="wrap-cell" title="${esc(d.remarks || '')}">${esc(d.remarks || '-')}</td>
         <td><input type="date" class="f-inp${d.toRaisedDate ? ' filled-red' : ''}" style="padding:4px 8px;font-size:11px;" id="raised-date-${id}" value="${d.toRaisedDate ? d.toRaisedDate.split('T')[0] : ''}" min="${todayISO()}" max="${todayISO()}" onchange="toggleFilledInput(this);toggleFulfillBtn('${id}')"></td>
         <td>
-          <button class="btn-xs update" id="btn-fulfill-${id}" onclick="moveToClosed('${id}')" ${d.toRaisedDate ? '' : 'disabled style="opacity:0.4;cursor:not-allowed;"'}>Fulfilled</button>
+          <button class="btn-xs update" onclick="deleteRecord('${id}')" style="color:var(--red);border-color:rgba(220,38,38,0.3);" title="Delete">&#128465;&#65039;</button>
         </td>
       </tr>`;
     }).join('');
@@ -625,7 +625,7 @@ async function saveItem(){
   btn.disabled = true;
   btn.innerHTML = '&#9203; Saving...';
   try{
-    const res = await fetch(API + '/api/loan-items' + (id ? '/' + id : ''), {
+    const res = await fetch(API + '/api/ali-items' + (id ? '/' + id : ''), {
       method: id ? 'PUT' : 'POST',
       headers: authHeaders(),
       body: JSON.stringify(payload)
@@ -675,7 +675,7 @@ async function saveItem(){
 async function deleteItem(id){
   if(!confirm('Delete this loan item?')) return;
   try{
-    const res = await fetch(API + '/api/loan-items/' + id, { method:'DELETE', headers:authHeaders() });
+    const res = await fetch(API + '/api/ali-items/' + id, { method:'DELETE', headers:authHeaders() });
     handleUnauth(res);
     const json = await res.json().catch(()=>({}));
     if(!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
@@ -743,7 +743,7 @@ async function moveToClosed(id){
     const json = await res.json().catch(()=>({}));
     if(!res.ok) throw new Error(json.message || 'HTTP ' + res.status);
 
-    await fetch(API + '/api/loan-items/' + id, { method:'DELETE', headers:authHeaders() });
+    await fetch(API + '/api/ali-items/' + id, { method:'DELETE', headers:authHeaders() });
     
     showToast('Item moved to Closed Loan successfully.', 'ok');
     await loadData();
@@ -956,7 +956,7 @@ async function bulkFulfill() {
       });
       if(!res.ok) throw new Error('Failed to create closed loan');
       
-      const delRes = await fetch(API + '/api/loan-items/' + id, { method:'DELETE', headers:authHeaders() });
+      const delRes = await fetch(API + '/api/ali-items/' + id, { method:'DELETE', headers:authHeaders() });
       if(!delRes.ok) throw new Error('Failed to delete loan item');
       
       successCount++;
