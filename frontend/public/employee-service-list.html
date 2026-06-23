@@ -1410,7 +1410,7 @@ async function submitForm() {
     unitSts:      unitStsVal,
     doi:          document.getElementById('f-doi').value,
     defMod:       document.getElementById('f-modbrd').value.trim(),
-    partNo:       document.getElementById('f-partno').value.trim(),
+    partNo:       document.getElementById('f-partno').value.trim().toUpperCase(),
     defPartSno:   document.getElementById('f-defpartsno').value.trim(),
     defType:      document.getElementById('f-deftype').value,
     typeAcc:      document.getElementById('f-typeacc').value,
