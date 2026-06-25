@@ -33,7 +33,7 @@ const SCHEDULER_GRACE_MS = Math.max(60000, parseInt(process.env.ESCALATION_SCHED
 const SCHEDULER_TICK_MS = Math.max(1000, parseInt(process.env.ESCALATION_SCHEDULER_TICK_MS || '1000', 10) || 1000);
 const DEFAULT_STALE_RUNNING_MS = Math.max(10 * 60 * 1000, MAIL_TIMEOUT_MS * 4 + 60 * 1000);
 const STALE_RUNNING_MS = Math.max(60000, parseInt(process.env.ESCALATION_STALE_RUNNING_MS || String(DEFAULT_STALE_RUNNING_MS), 10) || DEFAULT_STALE_RUNNING_MS);
-const UR_DAILY_TYPES = ['UR Stock', 'WS Stock', 'External Repair', 'Completed', 'Supplier Warrenty', 'No Fault', 'Given to PSP'];
+const UR_DAILY_TYPES = ['UR Stock', 'WS Stock', 'External Repair', 'Completed', 'Supplier Warranty', 'Supplier Warrenty', 'No Fault', 'Given to PSP'];
 const CUSTOM_ESCALATIONS = {
   prf_ob: {
     slot: 'prf_ob',

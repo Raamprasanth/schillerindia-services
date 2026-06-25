@@ -95,6 +95,20 @@ function normalizeUnderRepairStatus(typeWork) {
   if (value === 'Given to PSP') return 'Given to PSP';
   return 'Completed';
 }
+function normalizeTypeWorkKey(typeWork) {
+  return String(typeWork || '').trim().toLowerCase();
+}
+
+function canonicalUrFollowupTypeWork(typeWork) {
+  const value = normalizeTypeWorkKey(typeWork);
+  if (value === 'ur stock') return 'UR Stock';
+  if (value === 'ws stock') return 'WS Stock';
+  if (value === 'no fault') return 'No Fault';
+  if (value === 'external repair' || value === 'external rep') return 'External Repair';
+  if (value === 'supplier warranty' || value === 'supplier warrenty') return 'Supplier Warranty';
+  if (value === 'given to psp') return 'Given to PSP';
+  return '';
+}
 
 // ══════════════════════════════════════════════════════════
 //  GET /api/under-repair
@@ -210,6 +224,7 @@ router.put('/:id/update', protect, async (req, res) => {
       raEng, defUnitGir, repBrd,
       finalRemarks, techRemarks, components,
       typeWork, typeOfWork,
+      revalue,
       shipSc, shipComm, repGirNo, dcNo,
       typeReport, destination, repairTeam,
     } = req.body;
@@ -218,7 +233,8 @@ router.put('/:id/update', protect, async (req, res) => {
       return res.status(400).json({ message: 'finalRemarks and typeWork are required.' });
     }
 
-    const normalizedStatus = normalizeUnderRepairStatus(typeWork || typeOfWork);
+    const submittedTypeWork = canonicalUrFollowupTypeWork(typeWork || typeOfWork) || typeWork || typeOfWork;
+    const normalizedStatus = normalizeUnderRepairStatus(submittedTypeWork);
 
     const update = {
       raEng:        raEng       || '',
@@ -228,8 +244,9 @@ router.put('/:id/update', protect, async (req, res) => {
       finalRemarks,
       techRemarks:  techRemarks || '',
       components:   components  || '',
-      typeWork,
-      typeOfWork:   typeOfWork  || typeWork,
+      revalue:      Number(revalue) || 0,
+      typeWork:     submittedTypeWork,
+      typeOfWork:   submittedTypeWork,
       status:       normalizedStatus,
       shipSc:       shipSc      || '',
       shipComm:     shipComm    || '',
@@ -310,7 +327,23 @@ router.put('/:id/update', protect, async (req, res) => {
     if (!doc) return res.status(404).json({ message: 'Record not found.' });
 
     const pdays = Math.floor((Date.now() - new Date(doc.createdAt || doc.entryDate).getTime()) / 86400000);
-    const normalizedTypeWork = String(doc.typeWork || doc.typeOfWork || '').trim().toLowerCase();
+    const normalizedTypeWork = normalizeTypeWorkKey(doc.typeWork || doc.typeOfWork);
+    const urFollowupTypeWork = canonicalUrFollowupTypeWork(doc.typeWork || doc.typeOfWork);
+
+    if (urFollowupTypeWork) {
+      const rowDoc = {
+        ...(doc.toObject ? doc.toObject() : doc),
+        typeWork: urFollowupTypeWork,
+        typeOfWork: urFollowupTypeWork,
+        urTypeWork: urFollowupTypeWork,
+      };
+      await enqueueLatestEscalationSnapshot(
+        'ur_followup',
+        doc.serviceId || doc._id,
+        req.user.name || '',
+        buildUrEscalationRow(rowDoc)
+      );
+    }
 
     if (normalizedTypeWork === 'external repair') {
       let alreadyExternal = false;
