@@ -328,7 +328,7 @@ router.get('/components/:scReNo', protect, async (req, res) => {
       return res.json({ components: est.components || est.obComponents || est.compUsedToRepair || est.partsUsed });
     }
 
-    const rtob = await RTOB.findOne({ scReNo }).lean();
+    const rtob = await RTOB.findOne({ scRefNo: scReNo }).lean();
     if (rtob && (rtob.components || rtob.obComponents || rtob.compUsedToRepair || rtob.componentsUsed || rtob.partsUsed)) {
       return res.json({ components: rtob.components || rtob.obComponents || rtob.compUsedToRepair || rtob.componentsUsed || rtob.partsUsed });
     }
@@ -349,7 +349,7 @@ router.get('/components/:scReNo', protect, async (req, res) => {
       return res.json({ components: rtobBySource.components || rtobBySource.obComponents || rtobBySource.compUsedToRepair || rtobBySource.componentsUsed });
     }
 
-    const scComp = await SCCompletedFRN.findOne({ scReNo }).lean();
+    const scComp = await SCCompletedFRN.findOne({ scRno: scReNo }).lean();
     if (scComp && (scComp.components || scComp.compUsedToRepair || scComp.partsUsed)) {
       return res.json({ components: scComp.components || scComp.compUsedToRepair || scComp.partsUsed });
     }
