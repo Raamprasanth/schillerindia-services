@@ -3166,11 +3166,13 @@
       doc.text('Received Item:', L, y);
       doc.setFont('helvetica', 'normal');
       y += 5;
-      labelValue(L, y, 'Item Name', s.model || s.defMod || s.defBrdModName || s.itemDescription || '-', 20);
+      const receivedDefMod = s.defMod || s.defBrdModName || s.defModBrdName || s.itemDescription || '-';
+      labelValue(L, y, 'Item Name', s.model || '-', 20);
       labelValueBoldLabel(104, y, 'Unit S/N', s.unitSl || '-', 22);
       labelValueBoldLabel(150, y, 'Unit Status', s.unitStatus || s.unitSts || '-', 22);
+      wrappedLabelValue(L, y + 6, 'Def Mod / Brd', receivedDefMod, 24, 78);
 
-      y += 13;
+      y += 19;
       doc.setFont('helvetica', 'bold');
       doc.text('Problem Observed:', L, y);
       doc.setFont('helvetica', 'normal');
