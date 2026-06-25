@@ -13,6 +13,7 @@ const Service           = require('../models/Service');
 const Division          = require('../models/Division');
 const Todr              = require('../models/Todr');
 const Dr                = require('../models/Dr');
+const RTCRL             = require('../models/rtcrlModel');
 const { protect }       = require('../middleware/authMiddleware');
 const {
   buildEstimationEscalationRow,
@@ -208,6 +209,74 @@ function estimationOwnerFallback(user) {
   ];
 }
 
+function pickRepairComponents(doc) {
+  return String(doc?.components || doc?.obComponents || doc?.compUsedToRepair || doc?.componentsUsed || doc?.partsUsed || '').trim();
+}
+
+function escapeRegex(value) {
+  return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function sourceIdText(value) {
+  const raw = value && typeof value === 'object' ? (value._id || value.id || '') : value;
+  return String(raw || '').trim();
+}
+
+function buildRepairLookup(record) {
+  const values = [record.scReNo, record.scRno, record.scRefNo, record.defGir, record.defGirNo, record.obDefUnitGir, record.defUnitGir]
+    .map(value => String(value || '').trim())
+    .filter(value => value && value !== '-');
+  const ors = [];
+  [...new Set(values)].forEach(value => {
+    const regex = new RegExp('^' + escapeRegex(value) + '$', 'i');
+    ors.push({ scReNo: regex }, { scRno: regex }, { scRefNo: regex }, { defGir: regex }, { defGirNo: regex });
+  });
+  return ors.length ? { $or: ors } : null;
+}
+
+async function enrichEstimationComponents(record) {
+  const out = { ...record };
+  if (pickRepairComponents(out)) return out;
+
+  const serviceId = sourceIdText(out.serviceId) || sourceIdText(out.sourceId);
+  if (serviceId && mongoose.Types.ObjectId.isValid(serviceId)) {
+    const service = await Service.findById(serviceId).select('components obComponents compUsedToRepair componentsUsed partsUsed scReNo scRno scRefNo defGir defGirNo defUnitGir').lean();
+    const serviceComponents = pickRepairComponents(service);
+    if (serviceComponents) {
+      out.components = serviceComponents;
+      out.obComponents = serviceComponents;
+      return out;
+    }
+    if (service) {
+      out.scReNo = out.scReNo || service.scReNo || service.scRno || service.scRefNo || '';
+      out.defGir = out.defGir || service.defGir || service.defGirNo || service.defUnitGir || '';
+    }
+  }
+
+  const lookup = buildRepairLookup(out);
+  if (!lookup) return out;
+  const componentTextQuery = {
+    $or: [
+      { components: { $exists: true, $nin: ['', null] } },
+      { compUsedToRepair: { $exists: true, $nin: ['', null] } },
+      { partsUsed: { $exists: true, $nin: ['', null] } },
+    ],
+  };
+  const rtcrl =
+    await RTCRL.findOne({ $and: [lookup, { category: 'OB' }, componentTextQuery] }).sort({ closedDate: -1, createdAt: -1 }).lean() ||
+    await RTCRL.findOne({ $and: [lookup, componentTextQuery] }).sort({ closedDate: -1, createdAt: -1 }).lean();
+  const rtcrlComponents = pickRepairComponents(rtcrl);
+  if (rtcrlComponents) {
+    out.components = rtcrlComponents;
+    out.obComponents = rtcrlComponents;
+  }
+  return out;
+}
+
+async function enrichEstimationComponentList(records) {
+  return Promise.all(records.map(record => enrichEstimationComponents(record)));
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  GET  /api/emp/estimation
 //  Admin → all records  |  Employee → own division records
@@ -220,7 +289,7 @@ router.get('/', async (req, res) => {
       const { getServiceIdsFilter } = require('../utils/visibility');
       query = await getServiceIdsFilter(req.user);
     }
-    const records = await EstimationPending.find(query).populate('serviceId', 'dealer defPartSno').sort({ createdAt: -1 }).lean();
+    const records = await enrichEstimationComponentList(await EstimationPending.find(query).populate('serviceId', 'dealer defPartSno').sort({ createdAt: -1 }).lean());
     res.json(records.map(record => ({
       ...record,
       dealer: record.dealer || (record.serviceId ? record.serviceId.dealer : '') || '',
@@ -239,7 +308,7 @@ router.get('/employee', async (req, res) => {
   try {
     const { getServiceIdsFilter } = require('../utils/visibility');
     const query = await getServiceIdsFilter(req.user);
-    const records = await EstimationPending.find(query).populate('serviceId', 'dealer defPartSno').sort({ createdAt: -1 }).lean();
+    const records = await enrichEstimationComponentList(await EstimationPending.find(query).populate('serviceId', 'dealer defPartSno').sort({ createdAt: -1 }).lean());
     res.json(records.map(record => ({
       ...record,
       dealer: record.dealer || (record.serviceId ? record.serviceId.dealer : '') || '',
@@ -263,10 +332,11 @@ router.get('/:id', async (req, res) => {
       const allowed = await hasDivisionAccessToService(req.user, record.serviceId && (record.serviceId._id || record.serviceId));
       if (!allowed) return res.status(403).json({ message: 'Access denied' });
     }
+    const enrichedRecord = await enrichEstimationComponents(record);
     res.json({
-      ...record,
-      dealer: record.dealer || (record.serviceId ? record.serviceId.dealer : '') || '',
-      defPartSno: record.defPartSno || (record.serviceId ? record.serviceId.defPartSno : '') || '',
+      ...enrichedRecord,
+      dealer: enrichedRecord.dealer || (enrichedRecord.serviceId ? enrichedRecord.serviceId.dealer : '') || '',
+      defPartSno: enrichedRecord.defPartSno || (enrichedRecord.serviceId ? enrichedRecord.serviceId.defPartSno : '') || '',
     });
   } catch (err) {
     console.error('[GET /api/emp/estimation/:id]', err);
