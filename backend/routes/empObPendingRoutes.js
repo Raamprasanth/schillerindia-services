@@ -356,7 +356,7 @@ router.get('/components/:scReNo', protect, async (req, res) => {
 
     const rtfrn = await RTFRN.findOne({ scRefNo: regexMatch }).lean();
     if (rtfrn && (rtfrn.components || rtfrn.componentsUsed || rtfrn.compUsedToRepair || rtfrn.partsUsed)) {
-      return res.json({ source: 'RTUR', components: rtur.components || rtur.compUsedToRepair || rtur.partsUsed });
+      return res.json({ components: rtfrn.components || rtfrn.componentsUsed || rtfrn.compUsedToRepair || rtfrn.partsUsed });
     }
 
     // 6. Fallback: check sourceId in RTOB
