@@ -539,7 +539,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     tb.innerHTML = filtered.map(r => `
       <tr>
         <td style="text-align:center;"><input type="checkbox" class="dr-row-chk" value="${r._id}" onchange="updateBulkFulfillBtn()"></td>
-        <td>${r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-'}</td>
+        <td>${r.createdAt ? new Date(r.createdAt).toLocaleDateString('en-IN') : (r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-')}</td>
         <td>${esc(r.division || '-')}</td>
         <td><span style="font-weight:700;color:var(--accent);">${esc(r.frnNo)}</span></td>
         <td>${esc(r.partNo)}</td>
@@ -768,7 +768,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   function exportCSV() {
     const headers = ['DR Req Date','Division','FRN No','Part No','Model','Description','Unit Status','Spares Rcd Date'];
     const rows = filtered.map(r => [
-      r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-',
+      r.createdAt ? new Date(r.createdAt).toLocaleDateString('en-IN') : (r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-'),
       r.division || '-',
       r.frnNo || '-',
       r.partNo || '-',

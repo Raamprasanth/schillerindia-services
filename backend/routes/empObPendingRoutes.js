@@ -310,23 +310,34 @@ router.post('/sync', protect, async (req, res) => {
   }
 });
 
-// "?"? GET Repair Components "?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?
+// ──────────────── GET Repair Components ──────────────────────────────
 router.get('/components/:scReNo', protect, async (req, res) => {
   try {
     const scReNoParam = req.params.scReNo;
     if (!scReNoParam) return res.json({ components: null });
 
     const scReNo = scReNoParam.trim();
-    // Escape special characters in scReNo just in case, though usually it's plain text like SH-0579
     const escapedScReNo = scReNo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regexMatch = new RegExp(`^${escapedScReNo}$`, 'i');
 
     const EstimationPending = require('../models/EstimationPending');
+    const Service = require('../models/Service');
     const RTOB = require('../models/RTOB');
     const RTFRN = require('../models/RTFRN');
-    const RTUR = require('../models/RTUR');
     const SCCompletedFRN = require('../models/SCCompletedFRN');
-    const RTCRL = require('../models/rtcrlModel'); // Or correct RTCRL model name
+    const RTCRL = require('../models/rtcrlModel');
+    const RTUR = require('../models/rturModel');
+
+    if (req.query.sourceId) {
+      const svc = await Service.findById(req.query.sourceId).lean();
+      if (svc && (svc.components || svc.obComponents || svc.compUsedToRepair || svc.partsUsed)) {
+        return res.json({ components: svc.components || svc.obComponents || svc.compUsedToRepair || svc.partsUsed });
+      }
+    }
+    const svcBySc = await Service.findOne({ scReNo: regexMatch }).lean();
+    if (svcBySc && (svcBySc.components || svcBySc.obComponents || svcBySc.compUsedToRepair || svcBySc.partsUsed)) {
+      return res.json({ components: svcBySc.components || svcBySc.obComponents || svcBySc.compUsedToRepair || svcBySc.partsUsed });
+    }
 
     const est = await EstimationPending.findOne({ scReNo: regexMatch }).lean();
     if (est && (est.components || est.obComponents || est.compUsedToRepair || est.partsUsed)) {
@@ -345,10 +356,10 @@ router.get('/components/:scReNo', protect, async (req, res) => {
 
     const rtfrn = await RTFRN.findOne({ scRefNo: regexMatch }).lean();
     if (rtfrn && (rtfrn.components || rtfrn.componentsUsed || rtfrn.compUsedToRepair || rtfrn.partsUsed)) {
-      return res.json({ components: rtfrn.components || rtfrn.componentsUsed || rtfrn.compUsedToRepair || rtfrn.partsUsed });
+      return res.json({ source: 'RTUR', components: rtur.components || rtur.compUsedToRepair || rtur.partsUsed });
     }
-    
-    // Fallback: check sourceId in RTOB
+
+    // 6. Fallback: check sourceId in RTOB
     if (req.query.sourceId) {
       const rtobBySource = await RTOB.findOne({ sourceId: req.query.sourceId }).lean();
       if (rtobBySource && (rtobBySource.components || rtobBySource.obComponents || rtobBySource.compUsedToRepair || rtobBySource.componentsUsed)) {
@@ -356,15 +367,22 @@ router.get('/components/:scReNo', protect, async (req, res) => {
       }
     }
 
+    // 7. SCCompletedFRN
     const scComp = await SCCompletedFRN.findOne({ scRno: regexMatch }).lean();
     if (scComp && (scComp.components || scComp.compUsedToRepair || scComp.partsUsed)) {
-      return res.json({ components: scComp.components || scComp.compUsedToRepair || scComp.partsUsed });
+      return res.json({ source: 'SCCompletedFRN', components: scComp.components || scComp.compUsedToRepair || scComp.partsUsed });
     }
 
-    res.json({ components: null });
+    // 8. Service model fallback
+    const svc = await Service.findOne({ scRno: regexMatch }).lean();
+    if (svc && (svc.components || svc.compUsedToRepair || svc.obComponents)) {
+      return res.json({ source: 'Service', components: svc.components || svc.compUsedToRepair || svc.obComponents });
+    }
+
+    res.json({ components: null, message: "Not found in any model" });
   } catch (err) {
     console.error('Components fetch error:', err);
-    res.json({ components: null });
+    res.json({ components: null, error: err.message });
   }
 });
 
