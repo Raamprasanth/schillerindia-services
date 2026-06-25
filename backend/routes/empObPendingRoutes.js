@@ -320,6 +320,7 @@ router.get('/components/:scReNo', protect, async (req, res) => {
     const RTOB = require('../models/RTOB');
     const RTFRN = require('../models/RTFRN');
     const RTUR = require('../models/RTUR');
+    const SCCompletedFRN = require('../models/SCCompletedFRN');
 
     const est = await EstimationPending.findOne({ scReNo }).lean();
     if (est && (est.components || est.obComponents || est.compUsedToRepair || est.partsUsed)) {
@@ -327,19 +328,24 @@ router.get('/components/:scReNo', protect, async (req, res) => {
     }
 
     const rtob = await RTOB.findOne({ scReNo }).lean();
-    if (rtob && (rtob.obComponents || rtob.compUsedToRepair || rtob.componentsUsed || rtob.partsUsed)) {
-      return res.json({ components: rtob.obComponents || rtob.compUsedToRepair || rtob.componentsUsed || rtob.partsUsed });
+    if (rtob && (rtob.components || rtob.obComponents || rtob.compUsedToRepair || rtob.componentsUsed || rtob.partsUsed)) {
+      return res.json({ components: rtob.components || rtob.obComponents || rtob.compUsedToRepair || rtob.componentsUsed || rtob.partsUsed });
     }
 
-    const rtfrn = await RTFRN.findOne({ scRno: scReNo }).lean();
-    if (rtfrn && (rtfrn.componentsUsed || rtfrn.compUsedToRepair || rtfrn.partsUsed)) {
-      return res.json({ components: rtfrn.componentsUsed || rtfrn.compUsedToRepair || rtfrn.partsUsed });
+    const rtfrn = await RTFRN.findOne({ scRefNo: scReNo }).lean();
+    if (rtfrn && (rtfrn.components || rtfrn.componentsUsed || rtfrn.compUsedToRepair || rtfrn.partsUsed)) {
+      return res.json({ components: rtfrn.components || rtfrn.componentsUsed || rtfrn.compUsedToRepair || rtfrn.partsUsed });
     }
     
     // Fallback: check sourceId in RTOB
     const rtobBySource = await RTOB.findOne({ sourceId: req.query.sourceId }).lean();
-    if (rtobBySource && (rtobBySource.obComponents || rtobBySource.compUsedToRepair || rtobBySource.componentsUsed)) {
-      return res.json({ components: rtobBySource.obComponents || rtobBySource.compUsedToRepair || rtobBySource.componentsUsed });
+    if (rtobBySource && (rtobBySource.components || rtobBySource.obComponents || rtobBySource.compUsedToRepair || rtobBySource.componentsUsed)) {
+      return res.json({ components: rtobBySource.components || rtobBySource.obComponents || rtobBySource.compUsedToRepair || rtobBySource.componentsUsed });
+    }
+
+    const scComp = await SCCompletedFRN.findOne({ scReNo }).lean();
+    if (scComp && (scComp.components || scComp.compUsedToRepair || scComp.partsUsed)) {
+      return res.json({ components: scComp.components || scComp.compUsedToRepair || scComp.partsUsed });
     }
 
     res.json({ components: null });
