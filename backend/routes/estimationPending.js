@@ -420,14 +420,14 @@ router.post('/from-ob', async (req, res) => {
       obShipComm:     body.shipComm       || '',
       obDcNo:         body.dcNo           || '',
       obDestination:  body.destination    || '',
-      obComponents:   body.components     || '',
+      obComponents:   body.components     || body.obComponents || '',
       revalue:        Number(body.revalue || 0),
       obTypeReport:   body.typeReport     || '',
 
       // ── carry common remark fields ───────────────────────
       techRemarks:  body.techRemarks  || '',
       finalRemarks: body.obFinalRemarks || body.finalRemarks || '',
-      components:   body.components   || '',
+      components:   body.components   || body.obComponents || '',
 
       // ── default estimation status ────────────────────────
       estStatus: 'Estimation Pending',

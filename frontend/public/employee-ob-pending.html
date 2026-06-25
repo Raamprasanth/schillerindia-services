@@ -2943,6 +2943,9 @@
           const source = allRecords.find(x => (x._id || x.id) === line.serviceId) || existing;
           const lineAmount = Math.max(0, Number(line.lineAmount) || 0);
           const lineEstNo = buildAutoEstimationNo(source) || estno;
+          const repairComponents =
+            source.components || source.obComponents || source.compUsedToRepair || source.componentsUsed ||
+            existing.components || existing.obComponents || existing.compUsedToRepair || existing.componentsUsed || '';
           const basePayload = {
             entryDate: source.entryDate || '',
             scReNo: source.scReNo || existing.scReNo || '',
@@ -2971,6 +2974,8 @@
             estRaEng: raeng,
             defUnitGir: header.defUnitGir,
             techRemarks: header.techRemarks,
+            components: repairComponents,
+            obComponents: repairComponents,
             partNo: line.partNo,
             estPartNo: line.estPartNo,
             qty: line.qty,
@@ -3382,7 +3387,7 @@
         submittedBy: EMP_NAME || LOGGED_USER.name || '',
         submittedAt: sentAt,
         sourceId: id,
-        sourceCollection: 'services',
+        sourceCollection: 'service',
         doi: current.doi || '',
         fieldRemarks: current.fieldRemarks || ''
       };
