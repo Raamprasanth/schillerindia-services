@@ -18,7 +18,7 @@ const {
   enqueueLatestEscalationSnapshot,
 } = require('../services/escalationService');
 const Division = require('../models/Division');
-const { tryCreateFRNPending } = require('../services/queueSyncService');
+const { tryCreateFRNPending, tryCreateUnderRepair } = require('../services/queueSyncService');
 
 function normalizeUnitStatus(value) {
   const raw = String(value || '').trim();
@@ -595,12 +595,13 @@ router.put('/:id/update', protect, async (req, res) => {
 
     if (doc.status === 'under_repair' && doc.serviceId) {
       try {
-        await Service.findByIdAndUpdate(
+        const underRepairService = await Service.findByIdAndUpdate(
           doc.serviceId,
           {
             $set: {
               type:         'Under Repair',
               typeWork:     'UNDER REPAIR',
+              repType:      'NA',
               raEng:        doc.raEng || '',
               repGirNo:     doc.repGirNo || '',
               typeReport:   doc.typeReport || '',
@@ -617,8 +618,11 @@ router.put('/:id/update', protect, async (req, res) => {
               updatedAt:    new Date().toISOString(),
             },
           },
-          { runValidators: false }
-        );
+          { new: true, runValidators: false }
+        ).lean();
+        if (underRepairService) {
+          await tryCreateUnderRepair(underRepairService, req.user);
+        }
       } catch (underRepairSyncErr) {
         console.error('[EmpFRN -> Service under_repair sync] FAILED:', underRepairSyncErr.message);
       }

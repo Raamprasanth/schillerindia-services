@@ -15,6 +15,7 @@ const Todr              = require('../models/Todr');
 const Dr                = require('../models/Dr');
 const RTCRL             = require('../models/rtcrlModel');
 const { protect }       = require('../middleware/authMiddleware');
+const { tryCreateUnderRepair } = require('../services/queueSyncService');
 const {
   buildEstimationEscalationRow,
   buildToEscalationRow,
@@ -776,12 +777,13 @@ router.put('/:id', async (req, res) => {
     }
 
     if (sameGir === 'no' && updated.serviceId) {
-      await Service.findByIdAndUpdate(
+      const underRepairService = await Service.findByIdAndUpdate(
         updated.serviceId,
         {
           $set: {
             type:         'Under Repair',
             typeWork:     'UNDER REPAIR',
+            repType:      'NA',
             repGirNo:     updateData.obDefUnitGir || '',
             raEng:        updateData.obRaEng || '',
             shipSc:       updateData.obShipSc || '',
@@ -793,8 +795,11 @@ router.put('/:id', async (req, res) => {
             updatedAt:    new Date().toISOString(),
           },
         },
-        { runValidators: false }
-      );
+        { new: true, runValidators: false }
+      ).lean();
+      if (underRepairService) {
+        await tryCreateUnderRepair(underRepairService, req.user);
+      }
 
       await EstimationPending.findByIdAndDelete(req.params.id);
       return res.json({ success: true, underRepair: true, message: 'Moved to Under Repair.' });
