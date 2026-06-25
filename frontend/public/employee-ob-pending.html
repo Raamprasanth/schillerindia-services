@@ -2539,7 +2539,7 @@
     async function _fetchCompRepair(sourceId, scRefNo) {
       if (!scRefNo) return null;
       try {
-        const url = API_BASE + '/api/emp/ob-pending/components/' + encodeURIComponent(scRefNo) + (sourceId ? '?sourceId=' + encodeURIComponent(sourceId) : '');
+        const url = API_BASE + '/api/ob-pending/components/' + encodeURIComponent(scRefNo) + (sourceId ? '?sourceId=' + encodeURIComponent(sourceId) : '');
         const r = await fetch(url, { headers: authHeaders() });
         if (r.ok) {
           const d = await r.json();
