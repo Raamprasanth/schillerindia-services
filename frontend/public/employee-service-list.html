@@ -1466,13 +1466,13 @@ async function submitForm() {
 
 function exportCSV() {
   const headers=[
-    'ENTRY DATE', 'DIVISION', 'SC_REF_NO', 'SC_ENGINEER', 'RA_ENGINEER', 'FRN_NO', 'FRN_DATE', 'DOCKET_NO',
+    'ENTRY DATE', 'DIVISION', 'SC_REF_NO', 'SC_ENGINEER', 'RA_ENGINEER', 'FRN_NO', 'FRN_DATE',
     'SER_COMM_INWARD_DATE', 'SER_CENTRE_RECEIVED_DATE', 'STK_CUST', 'REGION', 'BRANCH', 'ENGINEER', 'DEALER_NAME',
-    'CUST_NAME', 'SUPPLIER_NAME', 'PRODUCT_MODEL', 'UNIT_SLNO', 'DOD', 'UNIT_STATUS', 'MOD_BRD_NAME',
+    'CUST_NAME', 'SUPPLIER_NAME', 'PRODUCT_MODEL', 'UNIT_SLNO', 'DOD', 'UNIT_STATUS', 'Part no',
     'DEF_MOD_BRD_NAME', 'DEF_TYPE', 'TYPE_OF_ACC', 'DEF_PART_SN', 'DEF_GIR_NO', 'REP_TYPE', 'REP_GIR_NO',
     'DEF_UNIT_GIR_NO', 'FIELD_REMARKS', 'TECHNICAL_REMARKS', 'COMPONENTS_USEDFOR_REPAIR', 'REPAIRED_BRD_STK_DATE',
-    'FINAL_REMARKS', 'TYPE_OF_WORK', 'SHIP_DT_FRM_SER_CNTR', 'DISP_ADV_NO', 'SHIP_DATE_FROM_COMMERCIAL', 'DC_NO',
-    'COMRCL_DTL_INV_RMRK'
+    'FINAL_REMARKS', 'TYPE_OF_WORK', 'SHIP_DATE_FROM_COMMERCIAL',
+    'Comm Warr details'
   ];
   const rows=[headers];
   filtered.forEach(s=>{
@@ -1484,7 +1484,6 @@ function exportCSV() {
       s.raEng,
       s.frnNo,
       s.frnDate,
-      s.docketNo || '',
       s.serComm,
       s.rcvdDate,
       s.stkCust,
@@ -1513,10 +1512,7 @@ function exportCSV() {
       s.repBrd,
       s.finalRemarks,
       exportTypeWorkLabel(s),
-      s.shipSc,
-      s.dispAdvNo || '',
       s.shipComm,
-      s.dcNo,
       s.commRemarks
     ]);
   });
