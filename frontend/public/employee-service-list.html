@@ -1466,39 +1466,25 @@ async function submitForm() {
 
 function exportCSV() {
   const headers=[
-    'Status','SC Engineer','RA Engineer','Division','Entry Date','SC Ref No','FRN No','FRN Date','Ser Comm Inward Date','Received Date at SC',
-    'STOCK / CUST','Region','Branch','Engineer','Dealer Name','Customer Name','Supplier','Model','Model Configuration',
-    'Unit SL No','Unit Status','Part Number','Mod / Brd Name','DEF Type','Type of Acc','DOI','DEF Part SNO','DEF GIR No',
-    'REP Type','REP GIR SNO','Field Remarks','OB Details','Comm Warr Details','BSCON','Type of Work','Auto-sent to',
-    'PD PFRN','PD ESTP','PD URP'
+    'ENTRY DATE', 'DIVISION', 'SC_REF_NO', 'SC_ENGINEER', 'RA_ENGINEER', 'FRN_NO', 'FRN_DATE', 'DOCKET_NO',
+    'SER_COMM_INWARD_DATE', 'SER_CENTRE_RECEIVED_DATE', 'STK_CUST', 'REGION', 'BRANCH', 'ENGINEER', 'DEALER_NAME',
+    'CUST_NAME', 'SUPPLIER_NAME', 'PRODUCT_MODEL', 'UNIT_SLNO', 'DOD', 'UNIT_STATUS', 'MOD_BRD_NAME',
+    'DEF_MOD_BRD_NAME', 'DEF_TYPE', 'TYPE_OF_ACC', 'DEF_PART_SN', 'DEF_GIR_NO', 'REP_TYPE', 'REP_GIR_NO',
+    'DEF_UNIT_GIR_NO', 'FIELD_REMARKS', 'TECHNICAL_REMARKS', 'COMPONENTS_USEDFOR_REPAIR', 'REPAIRED_BRD_STK_DATE',
+    'FINAL_REMARKS', 'TYPE_OF_WORK', 'SHIP_DT_FRM_SER_CNTR', 'DISP_ADV_NO', 'SHIP_DATE_FROM_COMMERCIAL', 'DC_NO',
+    'COMRCL_DTL_INV_RMRK'
   ];
   const rows=[headers];
   filtered.forEach(s=>{
-    const tags=[];
-    if(FRN_UNIT_STATUSES.includes(s.unitSts)&&(s.repType==='NA'||s.frnCreated))tags.push('Pending FRN');
-    if(EST_UNIT_STATUSES.includes(s.unitSts)&&s.repType!=='BS/SO'&&(s.repType==='NA'||s.estPending))tags.push('Estimation Pending');
-    if(EST_UNIT_STATUSES.includes(s.unitSts)&&(s.repType==='BS/SO'||s.soPending))tags.push('SO Pending');
-    if(s.repType==='TO/ADV SO')tags.push('Under Repair');
-    let dynPdPfrn = 0, dynPdEstp = 0, dynPdUrp = 0;
-    const baseDateStr = s.rcvdDate || s.entryDate || s.createdAt;
-    if(baseDateStr) {
-      const d = new Date(baseDateStr);
-      if(!isNaN(d.getTime())) {
-        const days = Math.max(0, Math.floor((Date.now() - d.getTime()) / 86400000));
-        if(tags.includes('Pending FRN')) dynPdPfrn = days;
-        if(tags.includes('Estimation Pending') || tags.includes('SO Pending')) dynPdEstp = days;
-        if(tags.includes('Under Repair')) dynPdUrp = days;
-      }
-    }
     rows.push([
-      s.status,
+      s.entryDate,
+      serviceDivisionLabel(s),
+      s.scReNo,
       s.scEng,
       s.raEng,
-      serviceDivisionLabel(s),
-      s.entryDate,
-      s.scReNo,
       s.frnNo,
       s.frnDate,
+      s.docketNo || '',
       s.serComm,
       s.rcvdDate,
       s.stkCust,
@@ -1509,27 +1495,29 @@ function exportCSV() {
       s.custName || s.customer,
       s.supplier,
       s.model,
-      s.modelConfig,
       s.unitSl,
+      s.doi || s.dod,
       s.unitSts,
       s.partNo,
       s.defMod,
       s.defType,
       s.typeAcc,
-      s.doi,
       s.defPartSno,
       s.defGir,
       s.repType,
       s.repGirNo,
+      s.defUnitGirNo || '',
       s.fieldRemarks,
-      s.obDetails,
-      s.commWarrDetails,
-      s.bscon,
+      s.techRemarks,
+      s.components,
+      s.repBrd,
+      s.finalRemarks,
       exportTypeWorkLabel(s),
-      tags.join(' + ') || '',
-      dynPdPfrn,
-      dynPdEstp,
-      dynPdUrp
+      s.shipSc,
+      s.dispAdvNo || '',
+      s.shipComm,
+      s.dcNo,
+      s.commRemarks
     ]);
   });
   const csv=rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
