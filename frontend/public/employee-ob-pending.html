@@ -2552,7 +2552,7 @@
     }
 
 
-    function _showCompRepairSection(isSent, sourceId, scRefNo, isRc) {
+    function _showCompRepairSection(isSent, sourceId, scRefNo, isRc, fallbackComponents = '') {
       const outer = document.getElementById('comp-repair-outer');
       const loading = document.getElementById('comp-repair-loading');
       const val = document.getElementById('comp-repair-value');
@@ -2568,13 +2568,15 @@
       // Update badge and header text based on RC vs in-progress
       if (badge) badge.textContent = isRc ? 'RC — Repair Completed' : 'In Progress';
       if (header) header.textContent = isRc ? '✅ Repair Completed' : '🔧 Repair In Progress';
-      if (loading) loading.style.display = 'flex';
-      if (val) val.textContent = '';
+      const fallbackText = String(fallbackComponents || '').trim();
+      if (loading) loading.style.display = fallbackText ? 'none' : 'flex';
+      if (val) val.textContent = fallbackText;
       if (empty) empty.style.display = 'none';
       _fetchCompRepair(sourceId, scRefNo).then(components => {
         if (loading) loading.style.display = 'none';
-        if (components && String(components).trim()) {
-          if (val) val.textContent = String(components).trim();
+        const text = String(components || fallbackText || '').trim();
+        if (text) {
+          if (val) val.textContent = text;
           if (empty) empty.style.display = 'none';
         } else {
           if (val) val.textContent = '';
@@ -2642,7 +2644,7 @@
       // Show components used by repair team whenever sent to repair team — not in PDF
       const _isRc = !!(first.rtobCompleted || first.rtfrnCompleted || first.rturCompleted);
       const _isSent = !!(first.rtobSent || first.rtfrnSent || first.rturSent || _isRc);
-      _showCompRepairSection(_isSent, first.serviceId || first._id || first.id, first.scReNo || first.scRno || first.scRefNo, _isRc);
+      _showCompRepairSection(_isSent, first.serviceId || first._id || first.id, first.scReNo || first.scRno || first.scRefNo, _isRc, first.components || first.obComponents || first.compUsedToRepair || first.componentsUsed || first.partsUsed || '');
     }
 
     function openSelectedEstimation() {
