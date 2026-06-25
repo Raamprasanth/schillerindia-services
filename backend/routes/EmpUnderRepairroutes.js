@@ -265,7 +265,8 @@ router.put('/:id/update', protect, async (req, res) => {
     }
     if (!existing && req.params.id) {
       const svc = await Service.findById(req.params.id).lean();
-      if (svc && svc.repType === 'TO/ADV SO') {
+      const isUnderRepair = svc && (String(svc.typeWork || svc.type || '').toUpperCase() === 'UNDER REPAIR' || svc.repType === 'TO/ADV SO');
+      if (isUnderRepair) {
         existing = await UnderRepair.create({
           serviceId:     svc._id,
           entryDate:     svc.entryDate || new Date().toISOString().split('T')[0],
@@ -600,8 +601,9 @@ router.post('/:id/send-rtur', protect, async (req, res) => {
   try {
     const service = await Service.findById(req.params.id).lean();
     if (!service) return res.status(404).json({ message: 'Service record not found.' });
-    if (service.repType !== 'TO/ADV SO') {
-      return res.status(400).json({ message: 'Only TO/ADV SO under-repair records can be sent to RT UR.' });
+    const isUnderRepair = String(service.typeWork || service.type || '').toUpperCase() === 'UNDER REPAIR' || service.repType === 'TO/ADV SO';
+    if (!isUnderRepair) {
+      return res.status(400).json({ message: 'Only Under Repair records can be sent to RT UR.' });
     }
     if (service.rturSent || service.rtfrnSent) {
       return res.status(409).json({ message: 'This record is already sent to repair team.' });

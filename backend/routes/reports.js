@@ -162,7 +162,7 @@ async function gatherReportData(reportType, dateRange, filters) {
       case 'under_repair': {
         const model = UnderRepair || Service;
         if (!model) break;
-        const q = UnderRepair ? baseQuery : { ...baseQuery, repType:'TO/ADV SO' };
+        const q = UnderRepair ? baseQuery : { ...baseQuery, $or: [{ repType: 'TO/ADV SO' }, { typeWork: { $regex: /^UNDER REPAIR$/i } }] };
         const records = await model.find(q).lean().limit(500);
         const overdue = records.filter(r => calcDays(r.entryDate) > 30);
         data.records = records.slice(0,100);

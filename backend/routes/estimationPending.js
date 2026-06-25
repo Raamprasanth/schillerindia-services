@@ -780,7 +780,6 @@ router.put('/:id', async (req, res) => {
         updated.serviceId,
         {
           $set: {
-            repType:      'TO/ADV SO',
             type:         'Under Repair',
             typeWork:     'UNDER REPAIR',
             repGirNo:     updateData.obDefUnitGir || '',

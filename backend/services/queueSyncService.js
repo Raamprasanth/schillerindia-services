@@ -135,8 +135,8 @@ async function tryCreateFRNPending(svc, user) {
 
 async function tryCreateUnderRepair(svc, user) {
   try {
-    const eligible = svc.repType === 'TO/ADV SO';
-    if (!eligible) return;
+    const isUnderRepair = String(svc.typeWork || svc.type || '').toUpperCase() === 'UNDER REPAIR' || svc.repType === 'TO/ADV SO';
+    if (!isUnderRepair) return;
 
     const exists = await UnderRepair.findOne({ serviceId: svc._id });
     if (exists) {
@@ -228,7 +228,7 @@ function isEstimationEligible(svc) {
 }
 
 function isUnderRepairEligible(svc) {
-  return normalizeRepType(svc.repType) === 'TO/ADV SO';
+  return String(svc.typeWork || svc.type || '').toUpperCase() === 'UNDER REPAIR' || normalizeRepType(svc.repType) === 'TO/ADV SO';
 }
 
 function serviceToEstimationDoc(svc, user) {

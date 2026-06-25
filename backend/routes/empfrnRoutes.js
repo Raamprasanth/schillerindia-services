@@ -599,7 +599,6 @@ router.put('/:id/update', protect, async (req, res) => {
           doc.serviceId,
           {
             $set: {
-              repType:      'TO/ADV SO',
               type:         'Under Repair',
               typeWork:     'UNDER REPAIR',
               raEng:        doc.raEng || '',
