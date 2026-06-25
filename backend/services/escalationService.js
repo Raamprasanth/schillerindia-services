@@ -907,7 +907,11 @@ function validObjectIds(queueDocs = [], moduleName = '') {
 
 async function loadSourceMap(Model, ids = []) {
   if (!ids.length) return new Map();
-  const docs = await Model.find({ _id: { $in: ids } }).lean();
+  const query = Model.find({ _id: { $in: ids } });
+  if (['Service', 'Empfrn', 'EstimationPending'].includes(Model.modelName)) {
+    query.populate('division', 'name');
+  }
+  const docs = await query.lean();
   return new Map(docs.map((doc) => [String(doc._id), doc]));
 }
 
@@ -951,6 +955,17 @@ async function collectUrEscalationData(slotWindow) {
     queuedAt: { $lte: slotWindow.windowEnd }
   }).sort({ queuedAt: 1 }).lean();
   const serviceMap = await loadSourceMap(Service, validObjectIds(queueDocs, moduleName));
+
+  if (moduleName === 'ur_scrap') {
+    const missingIds = validObjectIds(queueDocs, moduleName).filter(id => !serviceMap.has(id));
+    if (missingIds.length > 0) {
+      const Scrap = require('../models/Scrap');
+      const scrapMap = await loadSourceMap(Scrap, missingIds);
+      for (const [k, v] of scrapMap.entries()) {
+        serviceMap.set(k, v);
+      }
+    }
+  }
 
   return {
     rows: queueDocs.map((doc) => hydratedQueueRow(doc, serviceMap, buildUrEscalationRow)),
