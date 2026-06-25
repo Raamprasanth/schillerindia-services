@@ -894,9 +894,11 @@ function updateBulkFulfillBtn() {
   let allHaveDate = false;
   if (selectedIds.size > 0) {
     allHaveDate = true;
+    const bulkDateVal = document.getElementById('bulk-raised-date')?.value;
     selectedIds.forEach(id => {
       const input = document.getElementById('raised-date-' + id);
-      if(!input || !input.value) allHaveDate = false;
+      const dateVal = (input && input.value) ? input.value : bulkDateVal;
+      if(!dateVal) allHaveDate = false;
     });
   }
   
@@ -911,9 +913,15 @@ async function bulkFulfill() {
   if(selectedIds.size === 0) return;
   
   let missingDate = false;
+  const bulkDateVal = document.getElementById('bulk-raised-date')?.value;
+
   for(const id of selectedIds) {
     const input = document.getElementById('raised-date-' + id);
-    if(!input || !input.value) missingDate = true;
+    const dateVal = (input && input.value) ? input.value : bulkDateVal;
+    if(!dateVal) {
+      missingDate = true;
+      break;
+    }
   }
   if(missingDate) {
     showToast('Please ensure all selected entries have a TO Raised Date.', 'err');
@@ -934,7 +942,8 @@ async function bulkFulfill() {
     const d = DATA.find(x => (x._id || x.id) === id);
     if(!d) continue;
     
-    const individualDate = document.getElementById('raised-date-' + id)?.value;
+    const inputEl = document.getElementById('raised-date-' + id);
+    const individualDate = (inputEl && inputEl.value) ? inputEl.value : bulkDateVal;
     
     const payload = {
       date: d.date,
@@ -954,14 +963,19 @@ async function bulkFulfill() {
         headers: authHeaders(),
         body: JSON.stringify(payload)
       });
-      if(!res.ok) throw new Error('Failed to create closed loan');
+      const json = await res.json().catch(()=>({}));
+      if(!res.ok) throw new Error(json.message || 'Failed to create closed loan');
       
       const delRes = await fetch(API + '/api/loan-items/' + id, { method:'DELETE', headers:authHeaders() });
       if(!delRes.ok) throw new Error('Failed to delete loan item');
       
       successCount++;
     } catch(e) {
+      console.error("Bulk fulfill error for id " + id + ":", e);
       failCount++;
+      if (failCount === 1) { // Show the first error
+        showToast('Error: ' + e.message, 'err');
+      }
     }
   }
   
