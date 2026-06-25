@@ -104,7 +104,7 @@ async function mirrorFrnToTodr(doc, action, items = [], queuedBy = '') {
       : [{
           partNo: String(doc.partNo || doc.defMod || doc.defGir || 'DR').trim(),
           model: buildTodrModel(doc),
-          quantity: item.qty || 1,
+          quantity: doc.qty || 1,
           description: buildTodrDescription(doc),
         }];
 
