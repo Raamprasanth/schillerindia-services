@@ -319,7 +319,7 @@ router.get('/components/:scReNo', protect, async (req, res) => {
     const scReNo = scReNoParam.trim();
     const escapedScReNo = scReNo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regexMatch = new RegExp(`^${escapedScReNo}$`, 'i');
-    const scQuery = { $or: [{ scReNo: regexMatch }, { scRefNo: regexMatch }, { scRno: regexMatch }] };
+    let scQuery = { $or: [{ scReNo: regexMatch }, { scRefNo: regexMatch }, { scRno: regexMatch }] };
 
     const EstimationPending = require('../models/EstimationPending');
     const Service = require('../models/Service');
@@ -332,8 +332,20 @@ router.get('/components/:scReNo', protect, async (req, res) => {
 
     if (req.query.sourceId) {
       const svc = await Service.findById(req.query.sourceId).lean();
-      if (svc && (svc.components || svc.obComponents || svc.compUsedToRepair || svc.partsUsed)) {
-        return res.json({ components: svc.components || svc.obComponents || svc.compUsedToRepair || svc.partsUsed });
+      if (svc) {
+        if (svc.components || svc.obComponents || svc.compUsedToRepair || svc.partsUsed) {
+          return res.json({ source: 'Service', components: svc.components || svc.obComponents || svc.compUsedToRepair || svc.partsUsed });
+        }
+        const extraLookups = [svc.scReNo, svc.scRno, svc.scRefNo, svc.defGir, svc.defGirNo, svc.defUnitGir]
+          .map(v => String(v || '').trim())
+          .filter(v => v && v !== '-');
+        const extraOr = [];
+        [...new Set(extraLookups)].forEach(value => {
+          const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const regex = new RegExp(`^${escaped}$`, 'i');
+          extraOr.push({ scReNo: regex }, { scRefNo: regex }, { scRno: regex }, { defGir: regex }, { defGirNo: regex });
+        });
+        if (extraOr.length) scQuery = { $or: [...scQuery.$or, ...extraOr] };
       }
     }
     
@@ -355,10 +367,19 @@ router.get('/components/:scReNo', protect, async (req, res) => {
       return res.json({ components: rtob.components || rtob.obComponents || rtob.compUsedToRepair || rtob.componentsUsed || rtob.partsUsed });
     }
 
-    // Check RTCRL
-    const rtcrl = await RTCRL.findOne(scQuery).lean();
+    // Check RTCRL. Completed RTOB records are deleted from RTOB and copied here.
+    const componentTextQuery = {
+      $or: [
+        { components: { $exists: true, $nin: ['', null] } },
+        { compUsedToRepair: { $exists: true, $nin: ['', null] } },
+        { partsUsed: { $exists: true, $nin: ['', null] } },
+      ],
+    };
+    const rtcrl =
+      await RTCRL.findOne({ $and: [scQuery, { category: 'OB' }, componentTextQuery] }).sort({ closedDate: -1, createdAt: -1 }).lean() ||
+      await RTCRL.findOne({ $and: [scQuery, componentTextQuery] }).sort({ closedDate: -1, createdAt: -1 }).lean();
     if (rtcrl && (rtcrl.components || rtcrl.compUsedToRepair || rtcrl.partsUsed)) {
-      return res.json({ components: rtcrl.components || rtcrl.compUsedToRepair || rtcrl.partsUsed });
+      return res.json({ source: 'RTCRL', components: rtcrl.components || rtcrl.compUsedToRepair || rtcrl.partsUsed });
     }
 
     // Check RTFRN
