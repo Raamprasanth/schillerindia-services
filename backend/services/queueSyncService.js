@@ -163,6 +163,7 @@ async function tryCreateUnderRepair(svc, user) {
           revalue:       svc.revalue || 0,
           typeWork:      svc.typeWork || svc.type || 'UNDER REPAIR',
           typeOfWork:    svc.typeWork || svc.type || 'UNDER REPAIR',
+          status:        'UNDER REPAIR',
         }
       );
       return;
