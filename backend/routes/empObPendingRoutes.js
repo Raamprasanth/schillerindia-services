@@ -313,8 +313,13 @@ router.post('/sync', protect, async (req, res) => {
 // "?"? GET Repair Components "?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?
 router.get('/components/:scReNo', protect, async (req, res) => {
   try {
-    const scReNo = req.params.scReNo;
-    if (!scReNo) return res.json({ components: null });
+    const scReNoParam = req.params.scReNo;
+    if (!scReNoParam) return res.json({ components: null });
+
+    const scReNo = scReNoParam.trim();
+    // Escape special characters in scReNo just in case, though usually it's plain text like SH-0579
+    const escapedScReNo = scReNo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regexMatch = new RegExp(`^${escapedScReNo}$`, 'i');
 
     const EstimationPending = require('../models/EstimationPending');
     const RTOB = require('../models/RTOB');
@@ -323,33 +328,35 @@ router.get('/components/:scReNo', protect, async (req, res) => {
     const SCCompletedFRN = require('../models/SCCompletedFRN');
     const RTCRL = require('../models/rtcrlModel'); // Or correct RTCRL model name
 
-    const est = await EstimationPending.findOne({ scReNo }).lean();
+    const est = await EstimationPending.findOne({ scReNo: regexMatch }).lean();
     if (est && (est.components || est.obComponents || est.compUsedToRepair || est.partsUsed)) {
       return res.json({ components: est.components || est.obComponents || est.compUsedToRepair || est.partsUsed });
     }
 
-    const rtob = await RTOB.findOne({ scRefNo: scReNo }).lean();
+    const rtob = await RTOB.findOne({ scRefNo: regexMatch }).lean();
     if (rtob && (rtob.components || rtob.obComponents || rtob.compUsedToRepair || rtob.componentsUsed || rtob.partsUsed)) {
       return res.json({ components: rtob.components || rtob.obComponents || rtob.compUsedToRepair || rtob.componentsUsed || rtob.partsUsed });
     }
 
-    const rtcrl = await RTCRL.findOne({ scRefNo: scReNo }).lean();
+    const rtcrl = await RTCRL.findOne({ scRefNo: regexMatch }).lean();
     if (rtcrl && (rtcrl.components || rtcrl.compUsedToRepair || rtcrl.partsUsed)) {
       return res.json({ components: rtcrl.components || rtcrl.compUsedToRepair || rtcrl.partsUsed });
     }
 
-    const rtfrn = await RTFRN.findOne({ scRefNo: scReNo }).lean();
+    const rtfrn = await RTFRN.findOne({ scRefNo: regexMatch }).lean();
     if (rtfrn && (rtfrn.components || rtfrn.componentsUsed || rtfrn.compUsedToRepair || rtfrn.partsUsed)) {
       return res.json({ components: rtfrn.components || rtfrn.componentsUsed || rtfrn.compUsedToRepair || rtfrn.partsUsed });
     }
     
     // Fallback: check sourceId in RTOB
-    const rtobBySource = await RTOB.findOne({ sourceId: req.query.sourceId }).lean();
-    if (rtobBySource && (rtobBySource.components || rtobBySource.obComponents || rtobBySource.compUsedToRepair || rtobBySource.componentsUsed)) {
-      return res.json({ components: rtobBySource.components || rtobBySource.obComponents || rtobBySource.compUsedToRepair || rtobBySource.componentsUsed });
+    if (req.query.sourceId) {
+      const rtobBySource = await RTOB.findOne({ sourceId: req.query.sourceId }).lean();
+      if (rtobBySource && (rtobBySource.components || rtobBySource.obComponents || rtobBySource.compUsedToRepair || rtobBySource.componentsUsed)) {
+        return res.json({ components: rtobBySource.components || rtobBySource.obComponents || rtobBySource.compUsedToRepair || rtobBySource.componentsUsed });
+      }
     }
 
-    const scComp = await SCCompletedFRN.findOne({ scRno: scReNo }).lean();
+    const scComp = await SCCompletedFRN.findOne({ scRno: regexMatch }).lean();
     if (scComp && (scComp.components || scComp.compUsedToRepair || scComp.partsUsed)) {
       return res.json({ components: scComp.components || scComp.compUsedToRepair || scComp.partsUsed });
     }
