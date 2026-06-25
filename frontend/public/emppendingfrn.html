@@ -2368,7 +2368,7 @@
                 </select>
               </div>
               <div class="ff">
-                <label>Revalue</label>
+                <label>Revalue <span class="req" id="upd-revalue-req" style="display:none;">*</span></label>
                 <input type="number" id="upd-revalue" min="0" step="0.01" placeholder="" />
               </div>
               <div class="ff">
@@ -3341,6 +3341,8 @@
       document.getElementById('upd-id').value = id;
       // Pre-fill Update tab
       document.getElementById('same-gir').value = '';
+      const revalueReq = document.getElementById('upd-revalue-req');
+      if (revalueReq) revalueReq.style.display = 'none';
       const girInput = document.getElementById('upd-defunitgir');
       girInput.value = d.defUnitGir || ''; girInput.readOnly = false; girInput.classList.remove('gir-autofill');
       const set = (elId, val) => { const el = document.getElementById(elId); if (el) el.value = val || ''; };
@@ -4016,6 +4018,8 @@
         input.classList.remove('gir-autofill');
         if (revalue) { revalue.readOnly = false; revalue.classList.remove('gir-autofill'); }
       }
+      const revalueReq = document.getElementById('upd-revalue-req');
+      if (revalueReq) revalueReq.style.display = val === 'yes' ? '' : 'none';
     }
 
     async function submitUpdate() {
@@ -4035,11 +4039,11 @@
       document.getElementById('upd-revalue')?.classList.remove('err');
       if (!isUpgrade && !isRepNotRequired && !sameGir) { showUpdMsg('Please select Same GIR No.', 'err'); return; }
       if (!isUpgrade && !isRepNotRequired && sameGir === 'no' && !repGirNo) { document.getElementById('upd-defunitgir').classList.add('err'); showUpdMsg('Please enter REP GIR No when Same GIR No is set to No.', 'err'); return; }
-      if (!isUpgrade && !isRepNotRequired && sameGir === 'no') {
+      if (!isUpgrade && !isRepNotRequired && sameGir === 'yes') {
         const revVal = document.getElementById('upd-revalue').value;
         if (!revVal || Number(revVal) <= 0) {
           document.getElementById('upd-revalue').classList.add('err');
-          showUpdMsg('Please enter Revalue when Same GIR No is set to No.', 'err');
+          showUpdMsg('Please enter Revalue when Same GIR No is set to Yes.', 'err');
           return;
         }
       }

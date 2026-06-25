@@ -547,7 +547,7 @@ table.est-table tbody tr:last-child td{border-bottom:none;}
                 <option value="Upgrade">Upgrade</option>
               </select>
             </div>
-            <div class="ff"><label>Revalue <span class="req">*</span></label><input type="number" id="u-revalue" min="0" step="0.01" placeholder=""/></div>
+            <div class="ff"><label>Revalue <span class="req" id="u-revalue-req" style="display:none;">*</span></label><input type="number" id="u-revalue" min="0" step="0.01" placeholder=""/></div>
             <div class="ff"><label>DEF Part SNO</label><input type="text" id="u-defpartsno" /></div>
             <div class="ff"><label>OB Details</label><input type="text" id="u-obd" placeholder="OB notes..."/></div>
           </div>
@@ -949,6 +949,8 @@ function handleEstimateSameGir(val){
     input.classList.remove('gir-autofill');
     if(revalue){revalue.readOnly=false;revalue.classList.remove('gir-autofill');}
   }
+  const revalueReq=document.getElementById('u-revalue-req');
+  if(revalueReq) revalueReq.style.display=val==='yes'?'':'none';
 }
 
 async function queueSrEscalation(id){
@@ -1209,6 +1211,8 @@ async function openUpdate(id){
   });
   set('u-finalremarks',s.finalRemarks||s.obFinalRemarks||'');
   set('u-same-gir','');
+  const revalueReq=document.getElementById('u-revalue-req');
+  if(revalueReq) revalueReq.style.display='none';
   const err=document.getElementById('modal-err');
   const ok=document.getElementById('modal-ok');
   if(err) err.classList.remove('show');
@@ -1393,7 +1397,6 @@ async function submitUpdate(){
     ['u-finalremarks',   'Final Remarks'],
     ['u-typework',       'Type of Work'],
   ];
-  if(!isUpgrade && !isRepNotRequired) obReqList.push(['u-revalue','Revalue']);
   if(!isUpgrade && !isRepNotRequired) obReqList.push(['u-same-gir','Same GIR No']);
   obReqList.forEach(([fid, label]) => {
     const el = document.getElementById(fid);
@@ -1407,6 +1410,14 @@ async function submitUpdate(){
     missing.push('REP GIR No');
   } else {
     document.getElementById('u-defunitgir').classList.remove('err');
+  }
+  const revalueEl = document.getElementById('u-revalue');
+  const revalueVal = String(revalueEl?.value || '').trim();
+  if(!isUpgrade && !isRepNotRequired && sameGir === 'yes' && (!revalueVal || Number(revalueVal) <= 0)){
+    if(revalueEl) revalueEl.classList.add('err');
+    missing.push('Revalue');
+  } else if(revalueEl) {
+    revalueEl.classList.remove('err');
   }
 
   if(missing.length){
