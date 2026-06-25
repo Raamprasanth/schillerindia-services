@@ -1109,6 +1109,26 @@ function getDisplayEstAmount(s){
   return Number(s.estAmount||0) + Number(s.serviceCharge||0);
 }
 
+function getRepairComponentsText(s){
+  return String(s?.components || s?.obComponents || s?.compUsedToRepair || s?.componentsUsed || s?.partsUsed || '').trim();
+}
+
+async function fetchRepairComponentsForRecord(s){
+  const scRefNo = s?.scReNo || s?.scRno || s?.scRefNo || '';
+  if(!scRefNo) return '';
+  const rawServiceId = s?.serviceId && typeof s.serviceId === 'object' ? (s.serviceId._id || s.serviceId.id || '') : (s?.serviceId || s?.sourceId || '');
+  const qs = rawServiceId ? '?sourceId=' + encodeURIComponent(rawServiceId) : '';
+  try{
+    const res = await fetch(API_BASE + '/api/ob-pending/components/' + encodeURIComponent(scRefNo) + qs, {headers:authHeaders()});
+    if(!res.ok) return '';
+    const data = await res.json().catch(()=>({}));
+    return String(data?.components || '').trim();
+  }catch(err){
+    console.warn('[openUpdate] Could not fetch repair components:', err.message);
+    return '';
+  }
+}
+
 function populateEngFilter(){
   const engs=[...new Set(allRecords.map(d=>d.eng||d.scEng||d.estRaEng).filter(Boolean))].sort();
   const sel=document.getElementById('fl-eng');
@@ -1199,7 +1219,16 @@ async function openUpdate(id){
   set('u-obd',s.obd||s.obDetails||'');
   const revalueInput=document.getElementById('u-revalue');
   if(revalueInput){revalueInput.readOnly=false;revalueInput.classList.remove('gir-autofill');}
-  set('u-components',s.components||s.obComponents||'');
+  let repairComponents = getRepairComponentsText(s);
+  if((s.rtobCompleted||s.rtfrnCompleted||s.rturCompleted) && !repairComponents){
+    repairComponents = await fetchRepairComponentsForRecord(s);
+    if(repairComponents){
+      const idx=allRecords.findIndex(x=>(x._id||x.id)===id);
+      if(idx!==-1) allRecords[idx]={...allRecords[idx],components:repairComponents,obComponents:repairComponents};
+      s={...s,components:repairComponents,obComponents:repairComponents};
+    }
+  }
+  set('u-components',repairComponents);
   set('u-upd-techremarks',s.obTechRemarks||s.techRemarks||'');
   const lockRepairFields = !!(s.rtobSent||s.rtfrnSent);
   ['u-techremarks','u-upd-techremarks','u-components'].forEach(fid => {
@@ -2032,8 +2061,3 @@ document.getElementById('problem-modal')?.addEventListener('click', e => { if (e
 </script>
 </body>
 </html>
-
-
-
-
-
