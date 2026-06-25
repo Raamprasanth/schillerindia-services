@@ -2552,7 +2552,19 @@
     }
 
 
-    function _showCompRepairSection(isSent, sourceId, scRefNo, isRc, fallbackComponents = '') {
+    function getLocalRepairComponents(record) {
+      return String(record.components || record.obComponents || record.compUsedToRepair || record.componentsUsed || record.partsUsed || '').trim();
+    }
+
+    function formatRepairComponents(records) {
+      return records
+        .filter(item => item && item.components)
+        .map(item => records.length > 1 ? (item.label + ': ' + item.components) : item.components)
+        .join('\\n');
+    }
+
+    function _showCompRepairSection(records, isRc) {
+      records = (Array.isArray(records) ? records : [records]).filter(Boolean);
       const outer = document.getElementById('comp-repair-outer');
       const loading = document.getElementById('comp-repair-loading');
       const val = document.getElementById('comp-repair-value');
@@ -2560,21 +2572,34 @@
       const badge = document.getElementById('comp-repair-badge');
       const header = document.getElementById('comp-repair-header');
       if (!outer) return;
-      if (!isSent) {
+      const sentRecords = records.filter(record => record.rtobSent || record.rtfrnSent || record.rturSent || record.rtobCompleted || record.rtfrnCompleted || record.rturCompleted);
+      if (!sentRecords.length) {
         outer.style.display = 'none';
         return;
       }
       outer.style.display = '';
-      // Update badge and header text based on RC vs in-progress
-      if (badge) badge.textContent = isRc ? 'RC — Repair Completed' : 'In Progress';
-      if (header) header.textContent = isRc ? '✅ Repair Completed' : '🔧 Repair In Progress';
-      const fallbackText = String(fallbackComponents || '').trim();
-      if (loading) loading.style.display = fallbackText ? 'none' : 'flex';
-      if (val) val.textContent = fallbackText;
+      if (badge) badge.textContent = isRc ? 'RC - Repair Completed' : 'In Progress';
+      if (header) header.textContent = isRc ? 'Repair Completed' : 'Repair In Progress';
+
+      const componentRows = sentRecords.map(record => ({
+        key: String(record._id || record.id || record.serviceId || ''),
+        label: record.scReNo || record.scRno || record.scRefNo || record.defGir || record.unitSl || 'Entry',
+        components: getLocalRepairComponents(record),
+      }));
+      const renderText = () => formatRepairComponents(componentRows);
+      const initialText = renderText();
+      if (val) val.textContent = initialText;
       if (empty) empty.style.display = 'none';
-      _fetchCompRepair(sourceId, scRefNo).then(components => {
+      if (loading) loading.style.display = componentRows.some(item => !item.components) ? 'flex' : 'none';
+
+      Promise.all(componentRows.map((item, index) => {
+        if (item.components) return Promise.resolve();
+        const record = sentRecords[index];
+        return _fetchCompRepair(record.serviceId || record._id || record.id, record.scReNo || record.scRno || record.scRefNo)
+          .then(components => { item.components = String(components || '').trim(); });
+      })).then(() => {
         if (loading) loading.style.display = 'none';
-        const text = String(components || fallbackText || '').trim();
+        const text = renderText();
         if (text) {
           if (val) val.textContent = text;
           if (empty) empty.style.display = 'none';
@@ -2641,10 +2666,9 @@
       document.getElementById('modal-ok').classList.remove('show');
       document.getElementById('modal-est').classList.add('open');
       const ms = document.querySelector('.modal-scroll'); if (ms) ms.scrollTop = 0;
-      // Show components used by repair team whenever sent to repair team — not in PDF
-      const _isRc = !!(first.rtobCompleted || first.rtfrnCompleted || first.rturCompleted);
-      const _isSent = !!(first.rtobSent || first.rtfrnSent || first.rturSent || _isRc);
-      _showCompRepairSection(_isSent, first.serviceId || first._id || first.id, first.scReNo || first.scRno || first.scRefNo, _isRc, first.components || first.obComponents || first.compUsedToRepair || first.componentsUsed || first.partsUsed || '');
+      // Show components used by repair team whenever sent to repair team - not in PDF
+      const _isRc = records.some(record => record.rtobCompleted || record.rtfrnCompleted || record.rturCompleted);
+      _showCompRepairSection(records, _isRc);
     }
 
     function openSelectedEstimation() {
