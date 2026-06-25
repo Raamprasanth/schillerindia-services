@@ -97,9 +97,14 @@
       btn.textContent = 'Generating Excel Backup (This may take a minute)...';
 
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes
+
         const res = await fetch('/api/admin/backup/excel', {
-          method: 'GET'
+          method: 'GET',
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
 
         if (!res.ok) {
           let errText = 'Failed to generate backup.';
