@@ -319,6 +319,7 @@ router.get('/components/:scReNo', protect, async (req, res) => {
     const scReNo = scReNoParam.trim();
     const escapedScReNo = scReNo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regexMatch = new RegExp(`^${escapedScReNo}$`, 'i');
+    const scQuery = { $or: [{ scReNo: regexMatch }, { scRefNo: regexMatch }, { scRno: regexMatch }] };
 
     const EstimationPending = require('../models/EstimationPending');
     const Service = require('../models/Service');
@@ -327,6 +328,7 @@ router.get('/components/:scReNo', protect, async (req, res) => {
     const SCCompletedFRN = require('../models/SCCompletedFRN');
     const RTCRL = require('../models/rtcrlModel');
     const RTUR = require('../models/rturModel');
+    const EmpOBPending = require('../models/EmpOBPending');
 
     if (req.query.sourceId) {
       const svc = await Service.findById(req.query.sourceId).lean();
@@ -334,32 +336,38 @@ router.get('/components/:scReNo', protect, async (req, res) => {
         return res.json({ components: svc.components || svc.obComponents || svc.compUsedToRepair || svc.partsUsed });
       }
     }
-    const svcBySc = await Service.findOne({ scReNo: regexMatch }).lean();
+    
+    // Check Service
+    const svcBySc = await Service.findOne(scQuery).lean();
     if (svcBySc && (svcBySc.components || svcBySc.obComponents || svcBySc.compUsedToRepair || svcBySc.partsUsed)) {
       return res.json({ components: svcBySc.components || svcBySc.obComponents || svcBySc.compUsedToRepair || svcBySc.partsUsed });
     }
 
-    const est = await EstimationPending.findOne({ scReNo: regexMatch }).lean();
+    // Check EstimationPending
+    const est = await EstimationPending.findOne(scQuery).lean();
     if (est && (est.components || est.obComponents || est.compUsedToRepair || est.partsUsed)) {
       return res.json({ components: est.components || est.obComponents || est.compUsedToRepair || est.partsUsed });
     }
 
-    const rtob = await RTOB.findOne({ scRefNo: regexMatch }).lean();
+    // Check RTOB
+    const rtob = await RTOB.findOne(scQuery).lean();
     if (rtob && (rtob.components || rtob.obComponents || rtob.compUsedToRepair || rtob.componentsUsed || rtob.partsUsed)) {
       return res.json({ components: rtob.components || rtob.obComponents || rtob.compUsedToRepair || rtob.componentsUsed || rtob.partsUsed });
     }
 
-    const rtcrl = await RTCRL.findOne({ scRefNo: regexMatch }).lean();
+    // Check RTCRL
+    const rtcrl = await RTCRL.findOne(scQuery).lean();
     if (rtcrl && (rtcrl.components || rtcrl.compUsedToRepair || rtcrl.partsUsed)) {
       return res.json({ components: rtcrl.components || rtcrl.compUsedToRepair || rtcrl.partsUsed });
     }
 
-    const rtfrn = await RTFRN.findOne({ scRefNo: regexMatch }).lean();
+    // Check RTFRN
+    const rtfrn = await RTFRN.findOne(scQuery).lean();
     if (rtfrn && (rtfrn.components || rtfrn.componentsUsed || rtfrn.compUsedToRepair || rtfrn.partsUsed)) {
       return res.json({ components: rtfrn.components || rtfrn.componentsUsed || rtfrn.compUsedToRepair || rtfrn.partsUsed });
     }
 
-    // 6. Fallback: check sourceId in RTOB
+    // Fallback: check sourceId in RTOB
     if (req.query.sourceId) {
       const rtobBySource = await RTOB.findOne({ sourceId: req.query.sourceId }).lean();
       if (rtobBySource && (rtobBySource.components || rtobBySource.obComponents || rtobBySource.compUsedToRepair || rtobBySource.componentsUsed)) {
@@ -367,16 +375,16 @@ router.get('/components/:scReNo', protect, async (req, res) => {
       }
     }
 
-    // 7. SCCompletedFRN
-    const scComp = await SCCompletedFRN.findOne({ scRno: regexMatch }).lean();
+    // SCCompletedFRN
+    const scComp = await SCCompletedFRN.findOne(scQuery).lean();
     if (scComp && (scComp.components || scComp.compUsedToRepair || scComp.partsUsed)) {
       return res.json({ source: 'SCCompletedFRN', components: scComp.components || scComp.compUsedToRepair || scComp.partsUsed });
     }
-
-    // 8. Service model fallback
-    const svc = await Service.findOne({ scRno: regexMatch }).lean();
-    if (svc && (svc.components || svc.compUsedToRepair || svc.obComponents)) {
-      return res.json({ source: 'Service', components: svc.components || svc.compUsedToRepair || svc.obComponents });
+    
+    // Check EmpOBPending itself as a last resort
+    const empOb = await EmpOBPending.findOne(scQuery).lean();
+    if (empOb && (empOb.obComponents || empOb.components || empOb.compUsedToRepair || empOb.partsUsed)) {
+      return res.json({ components: empOb.obComponents || empOb.components || empOb.compUsedToRepair || empOb.partsUsed });
     }
 
     res.json({ components: null, message: "Not found in any model" });

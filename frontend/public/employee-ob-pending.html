@@ -2642,7 +2642,7 @@
       // Show components used by repair team whenever sent to repair team — not in PDF
       const _isRc = !!(first.rtobCompleted || first.rtfrnCompleted || first.rturCompleted);
       const _isSent = !!(first.rtobSent || first.rtfrnSent || first.rturSent || _isRc);
-      _showCompRepairSection(_isSent, first._id || first.id, first.scReNo || first.scRno || first.scRefNo, _isRc);
+      _showCompRepairSection(_isSent, first.serviceId || first._id || first.id, first.scReNo || first.scRno || first.scRefNo, _isRc);
     }
 
     function openSelectedEstimation() {
