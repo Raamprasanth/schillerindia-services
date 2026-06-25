@@ -321,6 +321,7 @@ router.get('/components/:scReNo', protect, async (req, res) => {
     const RTFRN = require('../models/RTFRN');
     const RTUR = require('../models/RTUR');
     const SCCompletedFRN = require('../models/SCCompletedFRN');
+    const RTCRL = require('../models/rtcrlModel'); // Or correct RTCRL model name
 
     const est = await EstimationPending.findOne({ scReNo }).lean();
     if (est && (est.components || est.obComponents || est.compUsedToRepair || est.partsUsed)) {
@@ -330,6 +331,11 @@ router.get('/components/:scReNo', protect, async (req, res) => {
     const rtob = await RTOB.findOne({ scReNo }).lean();
     if (rtob && (rtob.components || rtob.obComponents || rtob.compUsedToRepair || rtob.componentsUsed || rtob.partsUsed)) {
       return res.json({ components: rtob.components || rtob.obComponents || rtob.compUsedToRepair || rtob.componentsUsed || rtob.partsUsed });
+    }
+
+    const rtcrl = await RTCRL.findOne({ scRefNo: scReNo }).lean();
+    if (rtcrl && (rtcrl.components || rtcrl.compUsedToRepair || rtcrl.partsUsed)) {
+      return res.json({ components: rtcrl.components || rtcrl.compUsedToRepair || rtcrl.partsUsed });
     }
 
     const rtfrn = await RTFRN.findOne({ scRefNo: scReNo }).lean();
