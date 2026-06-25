@@ -1540,8 +1540,8 @@ async function deleteRecord(id){
 }
 
 function exportCSV(){
-  const h=['Entry Date','SC Ref No','SC Eng','FRN No','Branch','Engineer','Customer','Model','Unit Sts','Def Mod/Brd','Def GIR No','Est No','Est Date','Est Amount','Order Type','RA Engineer','Part No','Qty','Pend Days'];
-  const rows=filtered.map(s=>[s.entryDate,s.scReNo,s.scEng,s.frnNo,s.branch||s.reg,s.eng,s.custName||s.customer,s.model,s.unitSts,s.defMod,s.defGir,s.estNo||'-',s.estDate||'-',getDisplayEstAmount(s)||'-',s.orderType||s.estStatus||'-',s.estRaEng||'-',s.partNo||'-',s.qty||1,s.pdEst]);
+  const h=['Entry Date','SC Ref No','SC Eng','FRN No','Branch','Engineer','Customer','Model','Unit Sts','Part No','Def Mod/Brd','Def GIR No','Est No','Est Date','Est Amount','Order Type','RA Engineer','Qty','Pend Days'];
+  const rows=filtered.map(s=>[s.entryDate,s.scReNo,s.scEng,s.frnNo,s.branch||s.reg,s.eng,s.custName||s.customer,s.model,s.unitSts,s.partNo||'-',s.defMod,s.defGir,s.estNo||'-',s.estDate||'-',getDisplayEstAmount(s)||'-',s.orderType||s.estStatus||'-',s.estRaEng||'-',s.qty||1,s.pdEst]);
   const csv=[h,...rows].map(r=>r.map(v=>`"${v||''}"`).join(',')).join('\n');
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);

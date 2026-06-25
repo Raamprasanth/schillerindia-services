@@ -4369,7 +4369,7 @@
         btn.textContent = 'Queue to TO Escalation';
       }
     }
-    function exportCSV() { const headers = ['#', 'Entry Date', 'SC RNo', 'SC Eng', 'FRN No', 'Branch', 'Engineer', 'Customer', 'Model', 'Unit Status', 'Def Mod', 'Def Gir No', 'BSCON', 'Pend Days']; const rows = filtered.map((d, i) => [i + 1, d.entryDate, d.scRno, d.scEng, d.frnNo, d.branch || d.region, d.eng, d.customer, d.model, d.unitStatus, d.defMod, d.defGir, d.bscon, d.pdays]); const csv = [headers, ...rows].map(r => r.map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(',')).join('\n'); const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'pending-frn-' + new Date().toISOString().split('T')[0] + '.csv'; a.click(); showToast('Exported ' + filtered.length + ' records.', 'ok'); }
+    function exportCSV() { const headers = ['#', 'Entry Date', 'SC RNo', 'SC Eng', 'FRN No', 'Branch', 'Engineer', 'Customer', 'Model', 'Unit Status', 'Part No', 'Def Mod', 'Def Gir No', 'BSCON', 'Pend Days']; const rows = filtered.map((d, i) => [i + 1, d.entryDate, d.scRno, d.scEng, d.frnNo, d.branch || d.region, d.eng, d.customer, d.model, d.unitStatus, d.partNo, d.defMod, d.defGir, d.bscon, d.pdays]); const csv = [headers, ...rows].map(r => r.map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(',')).join('\n'); const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'pending-frn-' + new Date().toISOString().split('T')[0] + '.csv'; a.click(); showToast('Exported ' + filtered.length + ' records.', 'ok'); }
 
     function configurePendingStatCards() {
       const cards = document.querySelectorAll('.stats-row .stat-card');
