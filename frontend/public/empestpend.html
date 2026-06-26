@@ -517,7 +517,7 @@ table.est-table tbody tr:last-child td{border-bottom:none;}
           </div>
         </div>
         <!-- Section 4 - Assignment & Repair Details -->
-        <div class="form-section" id="frn-like-sec-1">
+        <div class="form-section" id="frn-like-sec-1" style="display:none;">
           <div class="form-section-title">Assignment &amp; Repair Details</div>
           <div class="fg-4">
             <div class="ff"><label>RA Engineer <span class="req">*</span></label>
@@ -553,7 +553,7 @@ table.est-table tbody tr:last-child td{border-bottom:none;}
           </div>
         </div>
         <!-- Section 5 - Remarks & Notes -->
-        <div class="form-section" id="frn-like-sec-2">
+        <div class="form-section" id="frn-like-sec-2" style="display:none;">
           <div class="form-section-title">Remarks &amp; Notes</div>
           <div class="fg-3">
             <div class="ff"><label>Components Used to Repair</label><textarea id="u-components" rows="1" placeholder="List all components replaced or used during repair..." style="height:auto;"></textarea></div>
@@ -1413,37 +1413,7 @@ async function submitUpdate(){
   if(!eststatus) missing.push('Order Type');
   if(!raeng)     missing.push('RA Engineer');
 
-  // OB Update required fields
-  const obReqList = [
-    ['u-upd-raeng',      'OB RA Engineer'],
-    ['u-shipsc',         'Ship Date from SC'],
-    ['u-destination',    'Destination'],
-    ['u-upd-techremarks','Technical Remarks'],
-    ['u-finalremarks',   'Final Remarks'],
-    ['u-typework',       'Type of Work'],
-  ];
-  if(!isUpgrade && !isRepNotRequired) obReqList.push(['u-same-gir','Same GIR No']);
-  obReqList.forEach(([fid, label]) => {
-    const el = document.getElementById(fid);
-    if(!el) return;
-    const hasValue = String(el.value || '').trim();
-    el.classList.toggle('err', !hasValue);
-    if(!hasValue) missing.push(label);
-  });
-  if(!isUpgrade && !isRepNotRequired && sameGir === 'no' && !repGirNo){
-    document.getElementById('u-defunitgir').classList.add('err');
-    missing.push('REP GIR No');
-  } else {
-    document.getElementById('u-defunitgir').classList.remove('err');
-  }
-  const revalueEl = document.getElementById('u-revalue');
-  const revalueVal = String(revalueEl?.value || '').trim();
-  if(!isUpgrade && !isRepNotRequired && sameGir === 'yes' && (!revalueVal || Number(revalueVal) <= 0)){
-    if(revalueEl) revalueEl.classList.add('err');
-    missing.push('Revalue');
-  } else if(revalueEl) {
-    revalueEl.classList.remove('err');
-  }
+  // OB Update required fields bypassed for Estimation Pending page
 
   if(missing.length){
     errEl.textContent = 'Required: ' + missing.join(', ');
