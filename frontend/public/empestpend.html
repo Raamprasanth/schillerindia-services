@@ -1223,7 +1223,8 @@ async function submitUpdate(){
   const estdate     = document.getElementById('u-estdate').value;
   const estamount   = document.getElementById('u-estamount').value;
   const eststatus   = document.getElementById('u-eststatus').value;
-  const raeng       = document.getElementById('u-raeng').value;
+  const updRaeng    = document.getElementById('u-upd-raeng').value;
+  const raeng       = document.getElementById('u-raeng').value || updRaeng;
 
   const sameGir           = document.getElementById('u-same-gir').value;
   const selectedTypeWork  = document.getElementById('u-typework').value;
@@ -1268,7 +1269,7 @@ async function submitUpdate(){
       qty:          parseInt(document.getElementById('u-qty').value) || 1,
       defPartSno:   document.getElementById('u-defpartsno').value.trim(),
       // ── OB Update fields ──
-      obRaEng:      document.getElementById('u-upd-raeng').value,
+      obRaEng:      updRaeng || raeng,
       obDefUnitGir: repGirNo,
       obShipSc:     document.getElementById('u-shipsc').value,
       obDestination:document.getElementById('u-destination').value.trim(),

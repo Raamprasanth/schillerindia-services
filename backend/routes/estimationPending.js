@@ -755,7 +755,7 @@ router.put('/:id', async (req, res) => {
         unitStatus:   updated.unitSts || '',
         defMod:       updated.defMod || '',
         defGir:       updated.defGir || '',
-        raEng:        updated.obRaEng || '',
+        raEng:        updated.obRaEng || updated.estRaEng || updated.raEng || '',
         defUnitGir:   updated.obDefUnitGir || updated.defGir || 'NA',
         repGirSno:    updated.obRepGirNo || updated.obDefUnitGir || '',
         finalRemarks: updated.finalRemarks || updated.obFinalRemarks || '',
