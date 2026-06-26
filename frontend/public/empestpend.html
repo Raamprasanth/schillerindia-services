@@ -877,10 +877,6 @@ function fillEngSelect(selId, division, selected) {
   fetchAllEngineers();
   loadData();
   refreshMailAckStatus();
-  const oldSections=document.querySelectorAll('#modal-update .modal-body > .form-section');
-  oldSections.forEach((section, index) => {
-    if(index < 3) section.style.display='none';
-  });
 })();
 
 function logout(){ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; }

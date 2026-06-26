@@ -587,10 +587,6 @@ let currentToRecord=null, currentToRows=[];
   if (typeof toggleSF === 'function') toggleSF(true);
   (document.getElementById('topbar-date')||{}).textContent =new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   loadData();
-  const oldSections=document.querySelectorAll('#modal-update .modal-body > .form-section');
-  oldSections.forEach((section, index) => {
-    if(index < 3) section.style.display='none';
-  });
 })();
 
 function toggleSF(forceOpen){
