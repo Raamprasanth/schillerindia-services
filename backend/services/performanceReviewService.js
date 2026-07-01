@@ -1063,56 +1063,25 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
   ];
 
   const previousWithinCounters = [
-    (rows) => countWithinTarget(rows, 3),          // Pending frn
-    (rows) => countWithinTarget(rows, 3),          // pending FRN con
-    (rows) => {                                    // SO Pending (estimation docs)
-      return rows.filter((record) => {
-        const startDate = firstDate(record.estUpdatedAt, record.estDate, record.createdAt);
-        const completedMatch = firstByServiceId(completedDocs, record.serviceId);
-        const endDate = firstDate(completedMatch?.closedAt, completedMatch?.createdAt);
-        const days = diffDays(startDate, endDate);
-        return days !== null && days <= 3;
-      }).length;
-    },
-    (rows) => countUnderRepairWithinTarget(rows, 5), // Under Repair
-    (rows) => rows.filter((record) => {            // TO/SO
-      const startDate = firstDate(record.entryDate, record.raisedDate, record.createdAt);
-      const ecrMatch = firstByMatcher(
-        ecrDocs,
-        (doc) => String(doc.sourceEPrfObId || '') === String(record._id || '') ||
-          (normalizeUpper(doc.refNo) === normalizeUpper(record.refNo) && normalizeUpper(doc.type) === normalizeUpper(record.type) && normalizeUpper(doc.division) === normalizeUpper(record.division)),
-        (doc) => firstDate(doc.executedDate, doc.receivedDate, doc.createdAt)
-      );
-      const endDate = firstDate(ecrMatch?.executedDate, ecrMatch?.receivedDate, ecrMatch?.createdAt);
-      const days = diffDays(startDate, endDate);
-      return days !== null && days <= 5;
-    }).length,
-    (rows) => rows.filter((record) => {            // Non-Saleable
-      const startDate = firstDate(record.entryDate, record.fqcInDate, record.createdAt);
-      const fsMatch = firstByMatcher(
-        fqcNonSaleableFsDocs,
-        (doc) => normalizeUpper(doc.modelSn) === normalizeUpper(record.modelSn) && (!record.division || normalizeUpper(doc.division) === normalizeUpper(record.division)),
-        (doc) => firstDate(doc.entryDate, doc.fqcInwardDate, doc.updatedAt, doc.createdAt)
-      );
-      const endDate = firstDate(fsMatch?.entryDate, fsMatch?.fqcInwardDate, fsMatch?.updatedAt, fsMatch?.createdAt);
-      const days = diffDays(startDate, endDate);
-      return days !== null && days <= 5;
-    }).length,
-    (rows) => countWithinTarget(rows, 5),          // BIR list
-    (rows) => rows.filter((record) => {            // Estimation (obPending)
-      const startDate = firstDate(record.entryDate, record.createdAt);
-      const estimationMatch = firstByServiceId(estimationDocs, record.serviceId);
-      const endDate = firstDate(estimationMatch?.createdAt, estimationMatch?.submittedAt, estimationMatch?.obUpdatedAt);
-      const days = diffDays(startDate, endDate);
-      return days !== null && days <= 3;
-    }).length,
+    (rows) => countWithinTarget(rows, 3),            // [0] Pending frn
+    (rows) => countWithinTarget(rows, 3),            // [1] pending FRN con
+    (rows) => countWithinTarget(rows, 3),            // [2] SO Pending (Estimation)
+    (rows) => countUnderRepairWithinTarget(rows, 5), // [3] Under Repair
+    (rows) => countWithinTarget(rows, 5),            // [4] TO/SO
+    (rows) => countScrapWithinTarget(rows, 5),       // [5] Non-Saleable
+    (rows) => countWithinTarget(rows, 5),            // [6] BIR list
+    (rows) => countEstimationWithinTarget(rows),     // [7] Estimation
   ];
 
   currentActivityRows.forEach((row, index) => {
     const previousSet = previousRows[index] || [];
     const counter = previousWithinCounters[index];
     const prevWithin = counter ? counter(previousSet) : 0;
-    row.prevRate = rate(prevWithin, previousSet.length);
+    const total = previousSet.length;
+    
+    // User requested "execution out of target date" for previous month %
+    const prevOutOfTarget = Math.max(0, total - prevWithin);
+    row.prevRate = rate(prevOutOfTarget, total);
     row.nextRate = targetNext(row.prevRate);
   });
   if (row14 || row15) {
