@@ -1024,29 +1024,94 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
   const previousPendingFrnNonCon = previousIwCamcStock.filter((record) => !isConsumable(record));
   const previousBirRows = previousServices.filter((record) => isBirRecord(record));
 
+  // Previous month TO/SO rows (eprfob docs in previous month scope)
+  const previousToSoRows = eprfobDocs.filter((record) =>
+    ['TO', 'SO'].includes(normalizeUpper(record.type)) &&
+    (() => {
+      const recordDate = parseAnyDate(record.entryDate || record.raisedDate || record.createdAt);
+      return isDateInRange(recordDate, previousMonthInfo.start, previousMonthInfo.end);
+    })() &&
+    recordInScope(record)
+  );
+
+  // Previous month OB Pending (Estimation) rows scoped to previous month services
+  const previousObPendingRows = empObPendingDocs.filter((record) => {
+    const recordDate = parseAnyDate(record.entryDate || record.createdAt);
+    return isDateInRange(recordDate, previousMonthInfo.start, previousMonthInfo.end) && recordInScope(record);
+  });
+
+  // Previous month Non-Saleable rows
+  const previousNonSaleableRows = fqcNonsaleableDocs.filter((record) => {
+    const recordDate = parseAnyDate(record.entryDate || record.fqcInDate || record.createdAt);
+    return isDateInRange(recordDate, previousMonthInfo.start, previousMonthInfo.end) && recordInScope(record);
+  });
+
+  const previousUnderRepairRows = previousUnderRepair.filter((record) => !isSupplierWarrantyUnderRepair(record));
+
+  // Align exactly with currentActivityRows order:
+  // [0] Pending frn, [1] pending FRN con, [2] SO Pending, [3] Under Repair,
+  // [4] TO/SO, [5] Non-Saleable, [6] BIR list, [7] Estimation
   const previousRows = [
     previousPendingFrnNonCon,
     previousPendingFrnCon,
-    previousEstimation,
-    previousServices.filter((record) => /PRF|TO|SO/i.test(String(record.typeReport || record.repType || record.type || ''))),
-    previousScrap,
+    previousEstimation,       // SO Pending uses estimation data
+    previousUnderRepairRows,
+    previousToSoRows,
+    previousNonSaleableRows,
     previousBirRows,
-    previousServices.filter((r) => false),
+    previousObPendingRows,
   ];
 
   const previousWithinCounters = [
-    (rows) => countWithinTarget(rows, 3), // Pending frn
-    (rows) => countWithinTarget(rows, 3), // pending FRN con
-    (rows) => countWithinTarget(rows, 3), // SO Pending
-    (rows) => countWithinTarget(rows, 5), // TO/SO
-    (rows) => countScrapWithinTarget(rows, 5), // Non-Saleable
-    (rows) => countWithinTarget(rows, 5), // BIR list
-    (rows) => countEstimationWithinTarget(rows), // Estimation
+    (rows) => countWithinTarget(rows, 3),          // Pending frn
+    (rows) => countWithinTarget(rows, 3),          // pending FRN con
+    (rows) => {                                    // SO Pending (estimation docs)
+      return rows.filter((record) => {
+        const startDate = firstDate(record.estUpdatedAt, record.estDate, record.createdAt);
+        const completedMatch = firstByServiceId(completedDocs, record.serviceId);
+        const endDate = firstDate(completedMatch?.closedAt, completedMatch?.createdAt);
+        const days = diffDays(startDate, endDate);
+        return days !== null && days <= 3;
+      }).length;
+    },
+    (rows) => countUnderRepairWithinTarget(rows, 5), // Under Repair
+    (rows) => rows.filter((record) => {            // TO/SO
+      const startDate = firstDate(record.entryDate, record.raisedDate, record.createdAt);
+      const ecrMatch = firstByMatcher(
+        ecrDocs,
+        (doc) => String(doc.sourceEPrfObId || '') === String(record._id || '') ||
+          (normalizeUpper(doc.refNo) === normalizeUpper(record.refNo) && normalizeUpper(doc.type) === normalizeUpper(record.type) && normalizeUpper(doc.division) === normalizeUpper(record.division)),
+        (doc) => firstDate(doc.executedDate, doc.receivedDate, doc.createdAt)
+      );
+      const endDate = firstDate(ecrMatch?.executedDate, ecrMatch?.receivedDate, ecrMatch?.createdAt);
+      const days = diffDays(startDate, endDate);
+      return days !== null && days <= 5;
+    }).length,
+    (rows) => rows.filter((record) => {            // Non-Saleable
+      const startDate = firstDate(record.entryDate, record.fqcInDate, record.createdAt);
+      const fsMatch = firstByMatcher(
+        fqcNonSaleableFsDocs,
+        (doc) => normalizeUpper(doc.modelSn) === normalizeUpper(record.modelSn) && (!record.division || normalizeUpper(doc.division) === normalizeUpper(record.division)),
+        (doc) => firstDate(doc.entryDate, doc.fqcInwardDate, doc.updatedAt, doc.createdAt)
+      );
+      const endDate = firstDate(fsMatch?.entryDate, fsMatch?.fqcInwardDate, fsMatch?.updatedAt, fsMatch?.createdAt);
+      const days = diffDays(startDate, endDate);
+      return days !== null && days <= 5;
+    }).length,
+    (rows) => countWithinTarget(rows, 5),          // BIR list
+    (rows) => rows.filter((record) => {            // Estimation (obPending)
+      const startDate = firstDate(record.entryDate, record.createdAt);
+      const estimationMatch = firstByServiceId(estimationDocs, record.serviceId);
+      const endDate = firstDate(estimationMatch?.createdAt, estimationMatch?.submittedAt, estimationMatch?.obUpdatedAt);
+      const days = diffDays(startDate, endDate);
+      return days !== null && days <= 3;
+    }).length,
   ];
 
   currentActivityRows.forEach((row, index) => {
     const previousSet = previousRows[index] || [];
-    const prevWithin = previousWithinCounters[index] ? previousWithinCounters[index](previousSet) : 0;
+    const counter = previousWithinCounters[index];
+    const prevWithin = counter ? counter(previousSet) : 0;
     row.prevRate = rate(prevWithin, previousSet.length);
     row.nextRate = targetNext(row.prevRate);
   });
