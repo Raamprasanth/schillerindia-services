@@ -17,6 +17,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 :root{
@@ -1645,8 +1646,8 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
           Sundays are excluded from the selected month. Each remaining day expects one call entry update and one daily work update.
         </div>
         <div style="margin-top:24px; display:flex; justify-content:flex-end; gap:12px;">
-          <button class="btn btn-green" style="padding:10px 18px; font-weight:600; border-radius:8px; font-size:13px;" onclick="exportPDF('emp')">
-            <i class="fas fa-file-pdf" style="margin-right:6px;"></i> Export PDF
+          <button class="btn btn-green" style="padding:10px 18px; font-weight:600; border-radius:8px; font-size:13px;" onclick="exportExcel('emp')">
+            <i class="fas fa-file-excel" style="margin-right:6px;"></i> Export Excel
           </button>
         </div>
       </div>
@@ -1839,8 +1840,8 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
         ${bottomTable}
       </div>
       <div style="margin-top:24px; display:flex; justify-content:flex-end; gap:12px;">
-        <button class="btn btn-green" style="padding:10px 18px; font-weight:600; border-radius:8px; font-size:13px;" onclick="exportPDF('${scopeType === 'division' ? 'div' : 'emp'}')">
-          <i class="fas fa-file-pdf" style="margin-right:6px;"></i> Export ${scopeType === 'division' ? 'Division ' : ''}PDF
+        <button class="btn btn-green" style="padding:10px 18px; font-weight:600; border-radius:8px; font-size:13px;" onclick="exportExcel('${scopeType === 'division' ? 'div' : 'emp'}')">
+          <i class="fas fa-file-excel" style="margin-right:6px;"></i> Export Excel
         </button>
       </div>
     </div>
@@ -1976,92 +1977,88 @@ function renderLeaderboard(rows,month,isDivisionPane=false){
   pane.innerHTML=tbl;
 }
 
-async function exportPDF(type) {
+async function exportExcel(type) {
   const isDiv = type === 'div';
   const params = isDiv ? perfDivCurrentParams : perfCurrentParams;
   if(!params) return;
   const month = params.month||'Report';
   const scope = params.division||params.employee||'Performance';
 
-  const containerId = isDiv ? 'perf-pane-div-summary' : 'perf-pane-summary';
-  const originalNode = document.getElementById(containerId);
-  if (!originalNode) return;
-  const simpleEmployeeNode = !isDiv ? originalNode.querySelector('[data-perf-mode="simple-employee"]') : null;
-  const isSimpleEmployee = !!simpleEmployeeNode;
-
-  await new Promise(resolve => {
-    const img = new Image();
-    img.onload = resolve; img.onerror = resolve;
-    img.src = 'logo.png';
-    setTimeout(resolve, 800);
-  });
-
-  // Build the source clone first
-  const tableContainer = originalNode.querySelector('.perf-review-table-container');
-  const sourceNode = isSimpleEmployee ? simpleEmployeeNode : (tableContainer || originalNode);
-  const contentClone = sourceNode.cloneNode(true);
-  contentClone.style.cssText = 'display:block;height:auto;overflow:visible;width:100%;max-width:100%;margin:0;box-sizing:border-box;';
-  contentClone.removeAttribute('id');
-  contentClone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
-  contentClone.querySelectorAll('button').forEach(el => el.remove());
-  contentClone.querySelectorAll('table').forEach(el => {
-    el.style.tableLayout = 'auto';
-    el.style.width = '100%';
-    el.style.fontSize = '10.5px';
-    el.style.borderCollapse = 'collapse';
-  });
-  contentClone.querySelectorAll('th, td').forEach(el => {
-    el.style.padding = '6px 8px';
-    el.style.wordBreak = 'break-word';
-    el.style.boxSizing = 'border-box';
-    el.style.backdropFilter = 'none';
-    el.style.filter = 'none';
-  });
-  contentClone.querySelectorAll('*').forEach(el => {
-    if(el.style) {
-      el.style.backdropFilter = 'none';
-      el.style.filter = 'none';
-      el.style.maxWidth = '100%';
-      el.style.boxSizing = 'border-box';
-      if(isSimpleEmployee) el.style.transform = 'none';
-    }
-  });
-  if(isSimpleEmployee) {
-    contentClone.querySelectorAll('div').forEach(el => {
-      if(el.style.display === 'grid') el.style.gridTemplateColumns = 'repeat(4,minmax(0,1fr))';
-    });
+  const data = isDiv ? window._lastPerfDivData : window._lastPerfEmpData;
+  if(!data) { toast('No data loaded to export','error'); return; }
+  
+  if (typeof XLSX === 'undefined') {
+    toast('Excel library not loaded','error');
+    return;
   }
 
-  // Build wrapper with header
-  const wrapper = document.createElement('div');
-  wrapper.style.cssText = 'position:absolute;left:-9999px;top:0;width:1100px;background:#ffffff;color:#1e293b;padding:20px;box-sizing:border-box;font-family:Arial,sans-serif;';
+  const wb = XLSX.utils.book_new();
+  const wsData = [];
+  
+  const scopeLabel = isDiv ? 'Division' : 'Employee';
+  const divisionLabel = data.division || params.division || '';
+  const employeeLabel = data.employee || params.employee || '';
+  const monthLabel = data.monthLabel || month;
 
-  const header = `
-    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #0f172a;padding-bottom:12px;margin-bottom:18px;">
-      <img src="logo.png" alt="SCHILLER" style="height:44px;max-width:200px;object-fit:contain;">
-      <div style="text-align:right;">
-        <div style="font-size:16px;font-weight:800;color:#0f172a;letter-spacing:.5px;">PERFORMANCE ANALYSIS REPORT</div>
-        <div style="font-size:12px;color:#475569;margin-top:3px;">${isDiv?'Division':'Employee'}: <strong style="color:#0f172a;">${escapeHtml(scope)}</strong> &nbsp;|&nbsp; Month: <strong style="color:#0f172a;">${escapeHtml(month)}</strong></div>
-      </div>
-    </div>`;
-
-  wrapper.innerHTML = header;
-  wrapper.appendChild(contentClone);
-  document.body.appendChild(wrapper);
-
-  try {
-    await html2pdf().set({
-      margin: 0.25,
-      filename: `Performance_Analysis_${scope}_${month}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 1100, scrollX: 0, scrollY: 0 },
-      jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
-    }).from(wrapper).save();
-  } catch(e) {
-    toast('PDF export failed: ' + e.message, 'error');
-  } finally {
-    if(document.body.contains(wrapper)) document.body.removeChild(wrapper);
-  }
+  wsData.push([`PERFORMANCE REVIEW - ${monthLabel}`]);
+  wsData.push([`${scopeLabel}:`, isDiv ? divisionLabel : employeeLabel]);
+  wsData.push([]);
+  
+  wsData.push(['Activity', 'Total Inward', 'Within Target', '% Execution', 'Prev Month %', 'Limit']);
+  
+  const rows = data.activityRows || [];
+  const hideFrnCon = isDiv && /^(monitors?|ventilators?)$/i.test(divisionLabel.trim());
+  
+  const pctVal = (v) => {
+    if (v === undefined || v === null) return '-';
+    const isRateFraction = typeof v === 'number' && v >= 0 && v <= 1;
+    return Math.round(isRateFraction ? v * 100 : v) + '%';
+  };
+  
+  rows.forEach(r => {
+    if (hideFrnCon && (r.label || '').toLowerCase() === 'pending frn con') return;
+    const limitText = r.targetDays != null ? `<=${r.targetDays}d` : '-';
+    wsData.push([
+      r.label || '',
+      r.total ?? '-',
+      r.withinTarget ?? '-',
+      pctVal(r.withinPercent ?? r.completionPercent),
+      pctVal(r.prevRate),
+      limitText
+    ]);
+  });
+  
+  wsData.push([]);
+  wsData.push(['COMPLIANCE TRACKER']);
+  const comp = data.compliance || {};
+  wsData.push(['Weekly CRM Reports', comp.weeklyCrm != null ? comp.weeklyCrm + '%' : '-']);
+  wsData.push(['Pending Activity (Monday)', comp.pendingActivity != null ? comp.pendingActivity + '%' : '-']);
+  wsData.push(['Non-Saleable Tracker', comp.nonSaleable != null ? comp.nonSaleable + '%' : '-']);
+  wsData.push(['Supplier Warranty', comp.supplierWarranty != null ? comp.supplierWarranty + '%' : '-']);
+  wsData.push(['Critical Pending Report', comp.criticalPending != null ? comp.criticalPending + '%' : '-']);
+  wsData.push(['Purchase Indent', comp.purchaseIndent != null ? comp.purchaseIndent + '%' : '-']);
+  
+  wsData.push([]);
+  const summary = data.summary || {};
+  const rate = summary.completionRate || 0;
+  const remark = rate >= 90 ? 'Excellent' : rate >= 75 ? 'Good' : rate >= 60 ? 'Average' : 'Needs Improvement';
+  wsData.push(['Overall Completion Rate', rate + '%']);
+  wsData.push(['Overall Remark', remark]);
+  
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  
+  // Set some column widths for better readability
+  ws['!cols'] = [
+    { wch: 30 }, // Activity
+    { wch: 15 }, // Total Inward
+    { wch: 15 }, // Within Target
+    { wch: 15 }, // % Execution
+    { wch: 15 }, // Prev Month %
+    { wch: 10 }  // Limit
+  ];
+  
+  XLSX.utils.book_append_sheet(wb, ws, "Performance");
+  XLSX.writeFile(wb, `Performance_Analysis_${scope}_${month}.xlsx`);
 }
 
 function escapeHtml(value){
