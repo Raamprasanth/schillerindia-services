@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -164,16 +164,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <span class="fl-label">Division</span>
       <select class="fl-select" id="fl-div" onchange="applyFilters()">
         <option value="">All Divisions</option>
-        <option>PATIENT MONITORS</option><option>MONITORS CON</option>
-        <option>SAG</option>
-        <option>VENTILATOR</option><option>VENT CON</option>
-        <option>DEFIBRILLATOR</option>
-        <option>ECG</option>
-        <option>SYRINGE PUMP</option>
-        <option>INFUSION PUMP</option>
-        <option>ULTRASOUND</option>
-        <option>ANAESTHESIA</option>
-        <option>OTHER</option>
       </select>
       <span class="fl-label">Source</span>
       <select class="fl-select" id="fl-source" onchange="applyFilters()">
@@ -246,16 +236,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           <label>Division <span class="req">*</span></label>
           <select id="m-division" required>
             <option value="">Select Division</option>
-            <option>PATIENT MONITORS</option><option>MONITORS CON</option>
-            <option>SAG</option>
-            <option>VENTILATOR</option><option>VENT CON</option>
-            <option>DEFIBRILLATOR</option>
-            <option>ECG</option>
-            <option>SYRINGE PUMP</option>
-            <option>INFUSION PUMP</option>
-            <option>ULTRASOUND</option>
-            <option>ANAESTHESIA</option>
-            <option>OTHER</option>
           </select>
         </div>
         <div class="field span-2">
@@ -308,6 +288,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 const API = '';
 let DATA = [], filtered = [], sortKey = 'initiatedDate', sortDir = -1, currentPage = 1;
 const expandedTextCells = new Set();
+let DIVISIONS_LIST = [];
 
 (function init(){
   const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
@@ -315,8 +296,42 @@ const expandedTextCells = new Set();
     uName('admin-name', u.name);
     uName('admin-avatar', u.name.charAt(0).toUpperCase());
   }
+  loadDivisions();
   loadData();
 })();
+
+async function loadDivisions(){
+  try {
+    const res = await fetch(API + '/api/divisions');
+    const json = await res.json();
+    const raw = Array.isArray(json) ? json : (Array.isArray(json?.data) ? json.data : []);
+    DIVISIONS_LIST = raw.map(d => String(d?.name || d?.displayName || '').trim()).filter(Boolean).sort((a,b)=>a.localeCompare(b));
+  } catch(e) {
+    DIVISIONS_LIST = [];
+  }
+  populateDivisionDropdowns();
+}
+
+function populateDivisionDropdowns(){
+  const flDiv = document.getElementById('fl-div');
+  if (flDiv) {
+    flDiv.innerHTML = '<option value="">All Divisions</option>';
+    DIVISIONS_LIST.forEach(d => {
+      const o = document.createElement('option');
+      o.value = d; o.textContent = d; flDiv.appendChild(o);
+    });
+  }
+  
+  const mDiv = document.getElementById('m-division');
+  if (mDiv) {
+    mDiv.innerHTML = '<option value="">Select Division</option>';
+    DIVISIONS_LIST.forEach(d => {
+      const o = document.createElement('option');
+      o.value = d; o.textContent = d; mDiv.appendChild(o);
+    });
+  }
+}
+
 
 function uName(id, v){ const el = document.getElementById(id); if(el) el.textContent = v; }
 function toggleSF(){ document.getElementById('sf-toggle').classList.toggle('open'); document.getElementById('sf-children').classList.toggle('open'); }
