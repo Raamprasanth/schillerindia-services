@@ -730,25 +730,22 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     const originalText = btn ? btn.innerHTML : '';
     if(btn) { btn.disabled = true; btn.textContent = 'Processing...'; }
 
-    for(const r of selectedRecords) {
-      try {
-        const payload = { ...r };
-        delete payload._id;
-        delete payload.__v;
-        payload.closedDate = new Date();
-        if(bulkDate) payload.sparesReceivedDate = bulkDate;
-
-        const res = await fetch('/api/cdr', { 
-          method: 'POST', 
-          headers: hdrs(), 
-          body: JSON.stringify(payload) 
-        });
-        if(!res.ok) throw new Error('Failed to move to closed DR');
-        
-        await fetch(`/api/dr/${r._id}`, { method: 'DELETE', headers: hdrs() });
-        successCount++;
-      } catch(e) { console.error('Fulfill error:', e); }
+    try {
+      const res = await fetch('/api/dr/bulk-fulfill', {
+        method: 'POST',
+        headers: hdrs(),
+        body: JSON.stringify({
+          ids: selectedRecords.map(r => r._id),
+          sparesReceivedDate: bulkDate || undefined
+        })
+      });
+      const data = await res.json().catch(() => {});
+      if (!res.ok) throw new Error(data?.message || 'Server error');
+      successCount = data.fulfilledCount || 0;
+    } catch(e) {
+      console.error('Bulk fulfill error:', e);
     }
+
     
     if(btn) { btn.disabled = false; btn.innerHTML = '&#10004; Fulfill Selected'; }
     const selAll = document.getElementById('selectAll');

@@ -6,6 +6,7 @@ const { protect } = require('../middleware/authMiddleware');
 const EmpFRN = require('../models/EmpFRN');
 const Service = require('../models/Service');
 const EstimationPending = require('../models/EstimationPending');
+const Cdr = require('../models/Cdr');
 
 function todayIso() {
   const now = new Date();
@@ -133,6 +134,40 @@ router.delete('/:id', protect, async (req, res) => {
     res.json({ message: 'Record deleted successfully' });
   } catch (error) {
     console.error('Error deleting DR record:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// POST bulk fulfill DR entries
+router.post('/bulk-fulfill', protect, async (req, res) => {
+  try {
+    const { ids, sparesReceivedDate } = req.body;
+    if (!ids || !Array.isArray(ids)) {
+      return res.status(400).json({ message: 'ids array is required' });
+    }
+    
+    const results = [];
+    const closedDate = new Date();
+    
+    for (const id of ids) {
+      const record = await Dr.findById(id).lean();
+      if (record) {
+        const payload = { ...record };
+        delete payload._id;
+        delete payload.__v;
+        payload.closedDate = closedDate;
+        if (sparesReceivedDate) {
+          payload.sparesReceivedDate = sparesReceivedDate;
+        }
+        
+        await Cdr.create(payload);
+        await Dr.findByIdAndDelete(id);
+        results.push(id);
+      }
+    }
+    res.json({ success: true, fulfilledCount: results.length });
+  } catch (error) {
+    console.error('Error bulk fulfilling DR records:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
