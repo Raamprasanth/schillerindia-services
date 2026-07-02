@@ -164,11 +164,14 @@ router.put('/bulk-update', protect, async (req, res) => {
     const dateError = validateDatePayload({ toRaisedDate });
     if (dateError) return res.status(400).json({ message: dateError });
 
+    const updateData = { toRaisedDate, updatedAt: new Date() };
+    if (toNo !== undefined) updateData.toNo = toNo;
+
     const results = [];
     for (const id of ids) {
       const record = await Todr.findByIdAndUpdate(
         id,
-        { toNo, toRaisedDate, updatedAt: new Date() },
+        updateData,
         { new: true }
       );
       if (record) results.push(record);

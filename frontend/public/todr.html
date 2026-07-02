@@ -385,7 +385,6 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       <!-- Bulk apply inputs -->
       <div style="display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:10px;padding:4px 10px;background:var(--surface3);">
         <span style="font-size:11px;font-weight:700;color:var(--soft);text-transform:uppercase;letter-spacing:0.04em;">Bulk Apply:</span>
-        <input type="text" id="bulk-to-no" class="f-inp" placeholder="TO No" oninput="toggleFilledInput(this)" style="width:110px;padding:5px 8px;font-size:11px;height:28px;">
         <input type="date" id="bulk-to-date" class="f-inp" onchange="toggleFilledInput(this)" style="width:120px;padding:5px 8px;font-size:11px;height:28px;">
         <button class="btn btn-success btn-sm" onclick="applyBulkTo()" style="padding:4px 12px;font-size:11px;height:28px;box-shadow:none;">Apply</button>
         <button class="btn btn-primary btn-sm" onclick="applyBulkFulfill()" style="padding:4px 12px;font-size:11px;height:28px;box-shadow:none;">Fulfill</button>
@@ -767,11 +766,10 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   }
 
   async function applyBulkTo() {
-    const toNo = document.getElementById('bulk-to-no').value.trim();
     const toRaisedDate = document.getElementById('bulk-to-date').value;
 
-    if (!toNo || !toRaisedDate) {
-      alert('Please enter both TO No and TO Raised Date.');
+    if (!toRaisedDate) {
+      alert('Please enter TO Raised Date.');
       return;
     }
 
@@ -792,7 +790,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       const res = await fetch('/api/todr/bulk-update', {
         method: 'PUT',
         headers: hdrs(),
-        body: JSON.stringify({ ids, toNo, toRaisedDate })
+        body: JSON.stringify({ ids, toRaisedDate })
       });
       const json = await res.json().catch(() => {});
       if (!res.ok) throw new Error(json?.message || 'Server error');
@@ -805,9 +803,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
       // Clear selection and inputs
       document.getElementById('select-all').checked = false;
-      const bulkToNo = document.getElementById('bulk-to-no');
       const bulkToDate = document.getElementById('bulk-to-date');
-      if(bulkToNo) { bulkToNo.value = ''; toggleFilledInput(bulkToNo); }
       if(bulkToDate) { bulkToDate.value = ''; toggleFilledInput(bulkToDate); }
       
       renderTable();
