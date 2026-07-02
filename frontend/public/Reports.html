@@ -1863,6 +1863,7 @@ function renderPerfSummary(data,params) {
     document.getElementById('perf-pane-summary').innerHTML='<div class="empty-state"><div class="empty-icon">&#128196;</div><div class="empty-title">No Data</div></div>';
     return;
   }
+  window._lastPerfEmpData = data;
   const html = generatePerfAnalysisHtml(data, params, 'employee');
   document.getElementById('perf-pane-summary').innerHTML = html;
 }
@@ -1977,6 +1978,77 @@ function renderLeaderboard(rows,month,isDivisionPane=false){
 }
 
 async function exportPDF(type) {
+  {
+    const isDiv = type === 'div';
+    const params = isDiv ? perfDivCurrentParams : perfCurrentParams;
+    if(!params) return;
+
+    const data = isDiv ? window._lastPerfDivData : window._lastPerfEmpData;
+    if(!data) { toast('No data loaded to export','error'); return; }
+
+    const month = params.month || 'Report';
+    const scope = params.division || params.employee || 'Performance';
+    const scopeLabel = isDiv ? 'Division' : 'Employee';
+    const divisionLabel = data.division || params.division || '';
+    const employeeLabel = data.employee || params.employee || '';
+    const monthLabel = data.monthLabel || month;
+    const reportHtml = generatePerfAnalysisHtml(data, params, isDiv ? 'division' : 'employee');
+
+    const html = `
+      <div class="perf-pdf-page">
+        <style>
+          .perf-pdf-page,.perf-pdf-page *{box-sizing:border-box;}
+          .perf-pdf-page{width:1060px;min-height:740px;font-family:Arial,sans-serif;background:#fff;color:#1e293b;padding:22px 28px;}
+          .perf-pdf-head{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #0f172a;padding-bottom:14px;margin-bottom:18px;}
+          .perf-pdf-title{font-size:20px;font-weight:800;letter-spacing:.5px;color:#0f172a;text-align:right;}
+          .perf-pdf-meta{font-size:14px;margin-top:6px;color:#475569;text-align:right;}
+          .perf-pdf-content>div{border:0!important;border-radius:0!important;padding:0!important;width:100%!important;box-shadow:none!important;}
+          .perf-pdf-content .submission-panel,.perf-pdf-content button,.perf-pdf-content .btn{display:none!important;}
+          .perf-pdf-content table{width:100%!important;max-width:100%!important;table-layout:fixed;border-collapse:collapse!important;margin-left:0!important;margin-right:0!important;}
+          .perf-pdf-content th,.perf-pdf-content td{font-size:11px!important;line-height:1.25!important;padding:7px 8px!important;word-break:normal!important;overflow-wrap:anywhere!important;}
+          .perf-pdf-content [style*="font-size:18px"]{font-size:15px!important;}
+          .perf-pdf-content [style*="font-size:32px"]{font-size:28px!important;}
+          .perf-pdf-content [style*="margin-top:24px"]{margin-top:14px!important;}
+          .perf-pdf-content [style*="gap:20px"]{gap:14px!important;}
+        </style>
+        <div class="perf-pdf-head">
+          <img src="logo.png" alt="SCHILLER" style="height:48px;object-fit:contain;">
+          <div>
+            <div class="perf-pdf-title">PERFORMANCE ANALYSIS REPORT</div>
+            <div class="perf-pdf-meta">${scopeLabel}: <strong style="color:#0f172a;">${escapeHtml(isDiv ? divisionLabel : employeeLabel)}</strong> &nbsp;|&nbsp; Month: <strong style="color:#0f172a;">${escapeHtml(monthLabel)}</strong></div>
+          </div>
+        </div>
+        <div class="perf-pdf-content">${reportHtml}</div>
+      </div>`;
+
+    const wrapper = document.createElement('div');
+    wrapper.style.position = 'fixed';
+    wrapper.style.left = '0px';
+    wrapper.style.top = '0px';
+    wrapper.style.width = '1060px';
+    wrapper.style.background = '#ffffff';
+    wrapper.style.pointerEvents = 'none';
+    wrapper.style.zIndex = '-1';
+    wrapper.innerHTML = html;
+    document.body.appendChild(wrapper);
+
+    try {
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      await html2pdf().set({
+        margin: 0.2,
+        filename: `Performance_Analysis_${scope}_${month}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 1060, windowWidth: 1060, scrollX: 0, scrollY: 0 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+      }).from(wrapper.firstElementChild).save();
+      toast('PDF export completed!', 'success');
+    } catch(e) {
+      toast('PDF export failed: ' + e.message, 'error');
+    } finally {
+      if (document.body.contains(wrapper)) document.body.removeChild(wrapper);
+    }
+    return;
+  }
   const isDiv = type === 'div';
   const params = isDiv ? perfDivCurrentParams : perfCurrentParams;
   if(!params) return;
