@@ -2376,7 +2376,7 @@
     /* ----------- EXPORT ----------- */
     function exportAll() {
       const d = filteredData;
-      const csv = ['Id,Division,Entry Date,Sc Engg,Type,Received Date,Branch,Engineer,Model,Warranty,TO/SO Ref,CRM Ref,Status,Executed Date,Remarks', ...d.map(e => [e.id, e.division, e.entryDate, e.scEngg, e.type, e.receivedDate, e.branch, e.engineer, e.model, e.warranty, e.prfobRef, e.crmRef, e.status, e.executedDate, '"' + (e.remarks || '').replace(/"/g, '""') + '"'].join(','))].join('\n');
+      const csv = ['Id,Division,Entry Date,Sc Engg,Type,Received Date,Branch,Engineer,Model,Warranty,TO/SO Ref,GIR No,Part No,Part Description,CRM Ref,Status,Executed Date,Remarks', ...d.map(e => [e.id, e.division, e.entryDate, e.scEngg, e.type, e.receivedDate, e.branch, e.engineer, e.model, e.warranty, e.prfobRef, e.crmRefNo || '', e.partType || '', '"' + (e.partsDescription || '').replace(/"/g, '""') + '"', e.crmRef, e.status, e.executedDate, '"' + (e.remarks || '').replace(/"/g, '""') + '"'].join(','))].join('\n');
       downloadCSV(csv, 'prfob-export-' + Date.now() + '.csv');
       showToast('Exported ' + d.length + ' entries as CSV.', 'ok');
     }

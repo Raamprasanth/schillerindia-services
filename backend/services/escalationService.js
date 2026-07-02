@@ -318,8 +318,8 @@ function formatIstStamp(date) {
 async function getSlotWindow(slot, referenceDate = new Date()) {
   const nowIst = getIstParts(referenceDate);
   const times = await getEscalationTimeMap();
-  const slotTime = scheduledTime(times, slot, slot === 'evening' ? '18:15' : '11:30');
-  const order = slot === 'evening' ? 2 : 1;
+  const order = slotOrder(slot);
+  const slotTime = scheduledTime(times, slot, order === 2 ? '18:15' : '11:30');
   const runAt = makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, slotTime.hour, slotTime.minute, 0, 0);
   return {
     slot,
@@ -334,8 +334,8 @@ async function getSlotWindow(slot, referenceDate = new Date()) {
 async function getSrSlotWindow(slot, referenceDate = new Date()) {
   const nowIst = getIstParts(referenceDate);
   const times = await getEscalationTimeMap();
-  const slotTime = scheduledTime(times, slot, slot === 'sr_afternoon' ? '15:00' : '11:00');
-  const order = slot === 'sr_afternoon' ? 2 : 1;
+  const order = slotOrder(slot);
+  const slotTime = scheduledTime(times, slot, order === 2 ? '15:00' : '11:00');
   const runAt = makeUtcFromIst(nowIst.year, nowIst.month, nowIst.day, slotTime.hour, slotTime.minute, 0, 0);
   return {
     slot,
