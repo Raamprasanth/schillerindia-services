@@ -55,34 +55,11 @@ async function getAllowedCreatorIds(user) {
 }
 
 async function buildDivisionAccessFilter(user) {
-  if (isAdminUser(user)) return {};
-  const divisions = getUserDivisions(user);
-  const creatorIds = await getAllowedCreatorIds(user);
-  const orFilters = [];
-  if (divisions.length) {
-    orFilters.push({ division: { $in: divisions.map(value => new RegExp(`^${value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i')) } });
-  }
-  if (creatorIds.length) {
-    orFilters.push({ createdBy: { $in: creatorIds } });
-  }
-  if (user?._id) {
-    orFilters.push({ createdBy: user._id });
-  }
-  return orFilters.length ? { $or: orFilters } : { createdBy: user?._id };
+  return {};
 }
 
 async function canAccessDoc(user, doc) {
-  if (!doc) return false;
-  if (isAdminUser(user)) return true;
-  const divisions = getUserDivisions(user);
-  const docDivision = normalizeDivision(doc.division);
-  if (docDivision && divisions.includes(docDivision)) return true;
-  if (doc.createdBy && String(doc.createdBy) === String(user?._id || '')) return true;
-  if (!doc.createdBy) return false;
-  const creator = await User.findById(doc.createdBy).select('division activeDivision divisions').lean();
-  if (!creator) return false;
-  const creatorDivisions = getUserDivisions(creator);
-  return creatorDivisions.some((value) => divisions.includes(value));
+  return true;
 }
 
 router.get('/', async (req, res) => {
