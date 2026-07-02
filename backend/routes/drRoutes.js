@@ -45,30 +45,44 @@ function validateDatePayload(body) {
 router.get('/', protect, async (req, res) => {
   try {
     const records = await Dr.find().sort({ entryDate: -1, createdAt: -1 }).lean();
+    const sourceIds = [...new Set(
+      records
+        .map(r => r.sourceId)
+        .filter(id => id && /^[0-9a-fA-F]{24}$/.test(String(id)))
+    )];
+    
+    const docMap = new Map();
+    if (sourceIds.length > 0) {
+      const empFrns = await EmpFRN.find({ _id: { $in: sourceIds } }).populate('division', 'name').lean();
+      empFrns.forEach(d => docMap.set(String(d._id), d));
+      
+      const missingIds1 = sourceIds.filter(id => !docMap.has(id));
+      if (missingIds1.length > 0) {
+        const services = await Service.find({ _id: { $in: missingIds1 } }).populate('division', 'name').lean();
+        services.forEach(d => docMap.set(String(d._id), d));
+      }
+      
+      const missingIds2 = sourceIds.filter(id => !docMap.has(id));
+      if (missingIds2.length > 0) {
+        const estPendings = await EstimationPending.find({ _id: { $in: missingIds2 } }).lean();
+        estPendings.forEach(d => docMap.set(String(d._id), d));
+      }
+    }
     
     // Dynamically fetch 'mod brd name' for descriptions
     for (let r of records) {
       splitLegacyDescription(r);
-      if (r.sourceId) {
-        let doc = null;
-        try {
-           doc = await EmpFRN.findById(r.sourceId).populate('division', 'name').lean();
-           if (!doc) doc = await Service.findById(r.sourceId).populate('division', 'name').lean();
-           if (!doc) doc = await EstimationPending.findById(r.sourceId).lean();
-        } catch(e) {}
-        
-        if (doc) {
-          const mName = doc.model || '';
-          const bName = doc.defMod || doc.defBrdModName || r.description || '';
-          if (mName) r.model = mName;
-          if (bName) r.description = bName;
-          r.unitStatus = doc.unitSts || doc.unitStatus || '';
-          r.quantity = doc.qty || doc.quantity || '';
-          r.division = (doc.division && doc.division.name) ? doc.division.name : (doc.divisionName || '');
-        }
+      if (r.sourceId && docMap.has(String(r.sourceId))) {
+        const doc = docMap.get(String(r.sourceId));
+        const mName = doc.model || '';
+        const bName = doc.defMod || doc.defBrdModName || r.description || '';
+        if (mName) r.model = mName;
+        if (bName) r.description = bName;
+        r.unitStatus = doc.unitSts || doc.unitStatus || '';
+        r.quantity = doc.qty || doc.quantity || '';
+        r.division = (doc.division && doc.division.name) ? doc.division.name : (doc.divisionName || '');
       }
     }
-    
     res.json(records);
   } catch (error) {
     console.error('Error fetching DR records:', error);
