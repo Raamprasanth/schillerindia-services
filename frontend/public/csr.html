@@ -357,9 +357,11 @@ async function sendToScod(id, btn) {
             <th onclick="sortBy('fromLocation')">From Location <span class="si">&#8693;</span></th>
             <th onclick="sortBy('toLocation')">To Location <span class="si">&#8693;</span></th>
             <th onclick="sortBy('remarks')">Remarks <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('toNo')">To No <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('toRaisedDate')">To Raised Date <span class="si">&#8693;</span></th>
           </tr></thead>
           <tbody id="lt-tbody">
-            <tr class="loading-row"><td colspan="7"><span class="spin"></span>Loading from database</td></tr>
+            <tr class="loading-row"><td colspan="9"><span class="spin"></span>Loading from database</td></tr>
           </tbody>
         </table>
       </div>
@@ -544,6 +546,8 @@ function renderTable(){
         <td>${esc(d.fromLocation || '-')}</td>
         <td>${esc(d.toLocation || '-')}</td>
         <td>${esc(d.remarks || '')}</td>
+        <td>${esc(d.toNo || '-')}</td>
+        <td>${fmtDate(d.toRaisedDate)}</td>
       </tr>`;
     }).join('');
   }
@@ -684,8 +688,8 @@ async function deleteItem(id){
 }
 
 function exportCSV(){
-  const headers = ['#','Part No','Description','Qty','GIR No','From Location','To Location','Remarks'];
-  const rows = filtered.map((d,i) => [i+1,d.partNo,d.description,d.qty,d.girNo,d.fromLocation,d.toLocation,d.remarks]);
+  const headers = ['#','Part No','Description','Qty','GIR No','From Location','To Location','Remarks','To No','To Raised Date'];
+  const rows = filtered.map((d,i) => [i+1,d.partNo,d.description,d.qty,d.girNo,d.fromLocation,d.toLocation,d.remarks,d.toNo,fmtDate(d.toRaisedDate)]);
   const csv = [headers,...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);

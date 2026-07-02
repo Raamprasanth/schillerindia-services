@@ -12,6 +12,9 @@ const csrSchema = new mongoose.Schema(
     fromLocation: { type: String, trim: true, default: '' },
     toLocation: { type: String, trim: true, default: '' },
     remarks: { type: String, trim: true, default: '' },
+    toNo: { type: String, trim: true, default: '' },
+    toRaisedDate: { type: Date },
+    sparesReceivedDate: { type: Date },
     createdBy: { type: String, trim: true, default: '' },
     updatedBy: { type: String, trim: true, default: '' },
     closedBy: { type: String, trim: true, default: '' }

@@ -169,6 +169,12 @@ router.post('/:id/close', async (req, res) => {
     const doc = await Sr.findById(req.params.id);
     if (!doc) return res.status(404).json({ message: 'SR item not found.' });
     
+    // Find related ScSr or ScCsr to get toNo and toRaisedDate
+    let related = await ScCsr.findOne({ srRef: doc._id }).lean();
+    if (!related) {
+      related = await ScSr.findOne({ srRef: doc._id }).lean();
+    }
+
     // Create CSR
     const csrDoc = await Csr.create({
       date: doc.date,
@@ -181,6 +187,9 @@ router.post('/:id/close', async (req, res) => {
       fromLocation: doc.fromLocation,
       toLocation: doc.toLocation,
       remarks: doc.remarks,
+      toNo: related?.toNo || '',
+      toRaisedDate: related?.toRaisedDate || null,
+      sparesReceivedDate: related?.sparesReceivedDate || null,
       createdBy: doc.createdBy,
       updatedBy: doc.updatedBy,
       closedBy: req.user?.name || req.user?.email || '',
