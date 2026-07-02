@@ -2,6 +2,7 @@ const express = require('express');
 const Sr = require('../models/Sr');
 const Csr = require('../models/Csr');
 const ScSr = require('../models/ScSr');
+const ScCsr = require('../models/ScCsr');
 const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -54,8 +55,14 @@ router.get('/', async (req, res) => {
 
     const docs = await Sr.find(filter).sort({ date: -1, createdAt: -1 }).lean();
     const srIds = docs.map(d => d._id);
-    const scsrs = await ScSr.find({ srRef: { $in: srIds } }, 'srRef toNo toRaisedDate').lean();
-    const scsrMap = scsrs.reduce((acc, scsr) => {
+    
+    const [scsrs, scCsrs] = await Promise.all([
+      ScSr.find({ srRef: { $in: srIds } }, 'srRef toNo toRaisedDate').lean(),
+      ScCsr.find({ srRef: { $in: srIds } }, 'srRef toNo toRaisedDate').lean()
+    ]);
+    
+    const combined = [...scsrs, ...scCsrs];
+    const scsrMap = combined.reduce((acc, scsr) => {
       acc[scsr.srRef.toString()] = scsr;
       return acc;
     }, {});

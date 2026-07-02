@@ -110,6 +110,7 @@ async function moveSrToClosed(doc, user) {
     toNo: doc.toNo,
     toRaisedDate: doc.toRaisedDate,
     sparesReceivedDate: doc.sparesReceivedDate,
+    srRef: doc.srRef,
     createdBy: doc.createdBy,
     updatedBy: doc.updatedBy,
     closedBy: user?.name || user?.email || '',

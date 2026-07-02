@@ -14,6 +14,7 @@ const scCsrSchema = new mongoose.Schema(
     toNo: { type: String, trim: true, default: '' },
     toRaisedDate: { type: Date },
     sparesReceivedDate: { type: Date },
+    srRef: { type: mongoose.Schema.Types.ObjectId, ref: 'Sr' },
     createdBy: { type: String, trim: true, default: '' },
     updatedBy: { type: String, trim: true, default: '' },
     closedBy: { type: String, trim: true, default: '' },
