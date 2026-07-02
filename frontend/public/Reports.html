@@ -1998,12 +1998,20 @@ async function exportPDF(type) {
     const employeeLabel = data.employee || params.employee || '';
     const monthLabel = data.monthLabel || month;
     const reportHtml = generatePerfAnalysisHtml(data, params, isDiv ? 'division' : 'employee');
+    const reportScratch = document.createElement('div');
+    reportScratch.innerHTML = reportHtml;
+    const lowerSection = reportScratch.querySelector('table.perf-pdf-page-break');
+    const secondPageHtml = lowerSection ? lowerSection.outerHTML : '';
+    if (lowerSection) lowerSection.remove();
+    const firstPageHtml = reportScratch.innerHTML;
 
     const html = `
-      <div class="perf-pdf-page">
+      <div class="perf-pdf-doc">
         <style>
-          .perf-pdf-page,.perf-pdf-page *{box-sizing:border-box;}
-          .perf-pdf-page{width:1120px;min-height:740px;font-family:Arial,sans-serif;background:#fff;color:#1e293b;padding:22px 36px 22px 150px;}
+          .perf-pdf-doc,.perf-pdf-doc *{box-sizing:border-box;}
+          .perf-pdf-doc{width:1120px;font-family:Arial,sans-serif;background:#fff;color:#1e293b;}
+          .perf-pdf-sheet{width:1120px;min-height:740px;background:#fff;padding:22px 36px 22px 150px;}
+          .perf-pdf-page-2{break-before:page;page-break-before:always;padding-top:44px;}
           .perf-pdf-head{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #0f172a;padding-bottom:14px;margin-bottom:18px;}
           .perf-pdf-title{font-size:20px;font-weight:800;letter-spacing:.5px;color:#0f172a;text-align:right;}
           .perf-pdf-meta{font-size:14px;margin-top:6px;color:#475569;text-align:right;}
@@ -2011,8 +2019,8 @@ async function exportPDF(type) {
           .perf-pdf-content .submission-panel,.perf-pdf-content button,.perf-pdf-content .btn{display:none!important;}
           .perf-pdf-content table{width:100%!important;max-width:100%!important;table-layout:fixed;border-collapse:collapse!important;margin-left:0!important;margin-right:0!important;}
           .perf-pdf-content tr,.perf-pdf-content td,.perf-pdf-content th{break-inside:avoid!important;page-break-inside:avoid!important;}
-          .perf-pdf-content .perf-pdf-page-break{break-before:page!important;page-break-before:always!important;}
-          .perf-pdf-content table.perf-pdf-page-break{margin-top:36px!important;}
+          .perf-pdf-content .perf-pdf-page-break{break-before:auto!important;page-break-before:auto!important;}
+          .perf-pdf-content table.perf-pdf-page-break{margin-top:0!important;}
           .perf-pdf-content th,.perf-pdf-content td{font-size:9.5px!important;line-height:1.18!important;padding:5px 6px!important;word-break:normal!important;overflow-wrap:anywhere!important;}
           .perf-pdf-content th[colspan]{font-size:12px!important;}
           .perf-pdf-content [style*="font-size:18px"]{font-size:15px!important;}
@@ -2020,14 +2028,17 @@ async function exportPDF(type) {
           .perf-pdf-content [style*="margin-top:24px"]{margin-top:14px!important;}
           .perf-pdf-content [style*="gap:20px"]{gap:14px!important;}
         </style>
-        <div class="perf-pdf-head">
-          <img src="logo.png" alt="SCHILLER" style="height:48px;object-fit:contain;">
-          <div>
-            <div class="perf-pdf-title">PERFORMANCE ANALYSIS REPORT</div>
-            <div class="perf-pdf-meta">${scopeLabel}: <strong style="color:#0f172a;">${escapeHtml(isDiv ? divisionLabel : employeeLabel)}</strong> &nbsp;|&nbsp; Month: <strong style="color:#0f172a;">${escapeHtml(monthLabel)}</strong></div>
+        <section class="perf-pdf-sheet">
+          <div class="perf-pdf-head">
+            <img src="logo.png" alt="SCHILLER" style="height:48px;object-fit:contain;">
+            <div>
+              <div class="perf-pdf-title">PERFORMANCE ANALYSIS REPORT</div>
+              <div class="perf-pdf-meta">${scopeLabel}: <strong style="color:#0f172a;">${escapeHtml(isDiv ? divisionLabel : employeeLabel)}</strong> &nbsp;|&nbsp; Month: <strong style="color:#0f172a;">${escapeHtml(monthLabel)}</strong></div>
+            </div>
           </div>
-        </div>
-        <div class="perf-pdf-content">${reportHtml}</div>
+          <div class="perf-pdf-content">${firstPageHtml}</div>
+        </section>
+        ${secondPageHtml ? `<section class="perf-pdf-sheet perf-pdf-page-2"><div class="perf-pdf-content">${secondPageHtml}</div></section>` : ''}
       </div>`;
 
     const wrapper = document.createElement('div');
@@ -2048,7 +2059,7 @@ async function exportPDF(type) {
         filename: `Performance_Analysis_${scope}_${month}.pdf`,
         image: { type: 'jpeg', quality: 1 },
         html2canvas: { scale: 4, useCORS: true, backgroundColor: '#ffffff', width: 1120, windowWidth: 1280, scrollX: 0, scrollY: 0 },
-        pagebreak: { mode: ['css', 'legacy'], before: '.perf-pdf-page-break', avoid: ['tr', 'td', 'th'] },
+        pagebreak: { mode: ['css', 'legacy'], before: '.perf-pdf-page-2', avoid: ['tr', 'td', 'th'] },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
       }).from(wrapper.firstElementChild).save();
       toast('PDF export completed!', 'success');
