@@ -23,6 +23,7 @@ const scrapSchema = new mongoose.Schema(
     frnNo:      { type: String, default: '' },          // FRN No
     region:     { type: String, default: '' },          // Region
     engineer:   { type: String, default: '' },          // Field Engineer
+    raEng:      { type: String, default: '' },          // RA Engineer
     customer:   { type: String, required: true, trim: true },
     year:       { type: String, default: '' },
     vendorName: { type: String, default: '' },
