@@ -396,6 +396,10 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <input type="date" class="f-inp" id="fl-from" onchange="applyFilters()">
         <label>To</label>
         <input type="date" class="f-inp" id="fl-to" onchange="applyFilters()">
+        <label>Division</label>
+        <select class="f-select" id="fl-division" onchange="applyFilters()">
+          <option value="">All Divisions</option>
+        </select>
         <button class="btn btn-outline btn-sm" onclick="clearFilters()" style="margin-left:auto;">&#10005; Clear</button>
       </div>
       <div class="table-wrap">
@@ -403,6 +407,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
           <thead>
             <tr>
               <th>Part No</th>
+              <th>Division</th>
               <th>Description</th>
               <th>Qty</th>
               <th>GIR No</th>
@@ -417,7 +422,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             </tr>
           </thead>
           <tbody id="tb">
-            <tr><td colspan="12" style="text-align:center;padding:30px;">Loading...</td></tr>
+            <tr><td colspan="13" style="text-align:center;padding:30px;">Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -476,6 +481,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   let records = [];
   let filtered = [];
+  let DIVISIONS_LIST = [];
 
   function extractArrayPayload(payload){
     if(Array.isArray(payload)) return payload;
@@ -483,13 +489,22 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     return payload.data || payload.records || payload.items || payload.results || payload.docs || [];
   }
 
-  
+  async function loadDivisionsList() {
+    try {
+      const res = await fetch('/api/divisions');
+      const json = await res.json();
+      const raw = Array.isArray(json) ? json : (Array.isArray(json?.data) ? json.data : []);
+      DIVISIONS_LIST = raw.map(d => String(d?.name || d?.displayName || '').trim()).filter(Boolean).sort((a,b)=>a.localeCompare(b));
+    } catch(e) {
+      DIVISIONS_LIST = [];
+    }
+  }
+
   function populateDivisions() {
     const sel = document.getElementById('fl-division');
     if (!sel) return;
-    const divs = [...new Set(records.map(r => r.division).filter(Boolean))].sort();
     const current = sel.value;
-    sel.innerHTML = '<option value="">All Divisions</option>' + divs.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
+    sel.innerHTML = '<option value="">All Divisions</option>' + DIVISIONS_LIST.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
     sel.value = current;
   }
 
@@ -524,17 +539,18 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       applyFilters();
     } catch(e) {
       console.error(e);
-      if(tb) tb.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:30px;color:var(--red);font-weight:700;">&#9888; Could not load data: ${esc(e.message)}</td></tr>`;
+      if(tb) tb.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:30px;color:var(--red);font-weight:700;">&#9888; Could not load data: ${esc(e.message)}</td></tr>`;
     }
   }
 
   function renderTable() {
     const tb = document.getElementById('tb');
-    if(!filtered.length) { tb.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:30px;">No closed SC Service Requests found.</td></tr>'; return; }
+    if(!filtered.length) { tb.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:30px;">No closed SC Service Requests found.</td></tr>'; return; }
     
     tb.innerHTML = filtered.map(r => `
       <tr>
         <td><span style="font-weight:700;color:var(--accent);">${esc(r.partNo)}</span></td>
+        <td><span class="div-tag">${esc(r.division || '-')}</span></td>
         <td class="wrap-cell">${esc(r.description)}</td>
         <td>${esc(r.qty || '-')}</td>
         <td class="mono">${esc(r.girNo || '-')}</td>
@@ -640,9 +656,10 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   }
 
   function exportCSV() {
-    const headers = ['Part No','Description','Qty','GIR No','From Location','To Location','Remarks','TO NO','TO Raised Date','Spares Rcd Date','Closed By','Close Date'];
+    const headers = ['Part No','Division','Description','Qty','GIR No','From Location','To Location','Remarks','TO NO','TO Raised Date','Spares Rcd Date','Closed By','Close Date'];
     const rows = records.map(r => [
       r.partNo || '-',
+      r.division || '-',
       r.description || '-',
       r.qty || '-',
       r.girNo || '-',
@@ -668,7 +685,11 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   document.getElementById('ctodr-modal').addEventListener('click', e => { if(e.target.id==='ctodr-modal') closeModal(); });
   document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
 
-  loadData();
+  async function initApp() {
+    await loadDivisionsList();
+    await loadData();
+  }
+  initApp();
 </script>
 <script src="tab-fix.js"></script>
 </body>
