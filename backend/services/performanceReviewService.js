@@ -1079,9 +1079,8 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     const prevWithin = counter ? counter(previousSet) : 0;
     const total = previousSet.length;
     
-    // User requested "execution out of target date" for previous month %
-    const prevOutOfTarget = Math.max(0, total - prevWithin);
-    row.prevRate = rate(prevOutOfTarget, total);
+    // User clarified: they want the actual completion rate (% Execution) of the previous month.
+    row.prevRate = rate(prevWithin, total);
     row.nextRate = targetNext(row.prevRate);
   });
   if (row14 || row15) {
