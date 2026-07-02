@@ -652,14 +652,14 @@ async function saveEntry(){
   };
   
   let valid = true;
-  ['m-initiated', 'm-activity'].forEach(id => {
+  ['m-initiated', 'm-activity', 'm-target-date'].forEach(id => {
     const el = document.getElementById(id);
     if(!el.value.trim()){ el.classList.add('err'); valid = false; }
     else el.classList.remove('err');
   });
   
   if(!valid){
-    showModalErr('Please fill in all required fields (Initiated Date and Model / Activity).');
+    showModalErr('Please fill in all required fields (Initiated Date, Model / Activity, Target Date).');
     return;
   }
   

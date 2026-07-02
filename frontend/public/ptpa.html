@@ -670,8 +670,8 @@ async function saveData(){
     remarks: val('f-remarks'),
   };
   
-  if(!payload.initiatedDate || !payload.activity){ 
-    showMsg('Required: Initiated Date and Model / Activity.'); return; 
+  if(!payload.initiatedDate || !payload.activity || !payload.targetDate){ 
+    showMsg('Required: Initiated Date, Model / Activity, and Target Date.'); return; 
   }
   
   const id = val('entry-id');
