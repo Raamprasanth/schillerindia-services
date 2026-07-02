@@ -2054,14 +2054,33 @@ async function exportPDF(type) {
 
     try {
       await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      await html2pdf().set({
-        margin: 0.2,
-        filename: `Performance_Analysis_${scope}_${month}.pdf`,
-        image: { type: 'jpeg', quality: 1 },
-        html2canvas: { scale: 4, useCORS: true, backgroundColor: '#ffffff', width: 1120, windowWidth: 1280, scrollX: 0, scrollY: 0 },
-        pagebreak: { mode: ['css', 'legacy'], before: '.perf-pdf-page-2', avoid: ['tr', 'td', 'th'] },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
-      }).from(wrapper.firstElementChild).save();
+      const jsPDF = window.jspdf && window.jspdf.jsPDF;
+      if (!window.html2canvas || !jsPDF) throw new Error('PDF libraries are not loaded');
+      const pdf = new jsPDF({ unit: 'in', format: 'a4', orientation: 'landscape' });
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const margin = 0.18;
+      const usableW = pageW - margin * 2;
+      const usableH = pageH - margin * 2;
+      const sheets = Array.from(wrapper.querySelectorAll('.perf-pdf-sheet'));
+      for (let i = 0; i < sheets.length; i++) {
+        const canvas = await html2canvas(sheets[i], {
+          scale: 4,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          width: 1120,
+          windowWidth: 1280,
+          scrollX: 0,
+          scrollY: 0
+        });
+        const imgData = canvas.toDataURL('image/jpeg', 1);
+        const ratio = Math.min(usableW / canvas.width, usableH / canvas.height);
+        const imgW = canvas.width * ratio;
+        const imgH = canvas.height * ratio;
+        if (i > 0) pdf.addPage('a4', 'landscape');
+        pdf.addImage(imgData, 'JPEG', margin + (usableW - imgW) / 2, margin, imgW, imgH, undefined, 'FAST');
+      }
+      pdf.save(`Performance_Analysis_${scope}_${month}.pdf`);
       toast('PDF export completed!', 'success');
     } catch(e) {
       toast('PDF export failed: ' + e.message, 'error');
