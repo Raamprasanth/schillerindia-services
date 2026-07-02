@@ -1998,14 +1998,15 @@ async function exportPDF(type) {
       <div class="perf-pdf-page">
         <style>
           .perf-pdf-page,.perf-pdf-page *{box-sizing:border-box;}
-          .perf-pdf-page{width:1020px;min-height:740px;font-family:Arial,sans-serif;background:#fff;color:#1e293b;padding:22px 28px 22px 42px;}
+          .perf-pdf-page{width:1120px;min-height:740px;font-family:Arial,sans-serif;background:#fff;color:#1e293b;padding:22px 36px 22px 150px;}
           .perf-pdf-head{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #0f172a;padding-bottom:14px;margin-bottom:18px;}
           .perf-pdf-title{font-size:20px;font-weight:800;letter-spacing:.5px;color:#0f172a;text-align:right;}
           .perf-pdf-meta{font-size:14px;margin-top:6px;color:#475569;text-align:right;}
           .perf-pdf-content>div{border:0!important;border-radius:0!important;padding:0!important;width:100%!important;box-shadow:none!important;}
           .perf-pdf-content .submission-panel,.perf-pdf-content button,.perf-pdf-content .btn{display:none!important;}
           .perf-pdf-content table{width:100%!important;max-width:100%!important;table-layout:fixed;border-collapse:collapse!important;margin-left:0!important;margin-right:0!important;}
-          .perf-pdf-content th,.perf-pdf-content td{font-size:11px!important;line-height:1.25!important;padding:7px 8px!important;word-break:normal!important;overflow-wrap:anywhere!important;}
+          .perf-pdf-content th,.perf-pdf-content td{font-size:9.5px!important;line-height:1.18!important;padding:5px 6px!important;word-break:normal!important;overflow-wrap:anywhere!important;}
+          .perf-pdf-content th[colspan]{font-size:12px!important;}
           .perf-pdf-content [style*="font-size:18px"]{font-size:15px!important;}
           .perf-pdf-content [style*="font-size:32px"]{font-size:28px!important;}
           .perf-pdf-content [style*="margin-top:24px"]{margin-top:14px!important;}
@@ -2023,9 +2024,9 @@ async function exportPDF(type) {
 
     const wrapper = document.createElement('div');
     wrapper.style.position = 'fixed';
-    wrapper.style.left = '0px';
+    wrapper.style.left = '80px';
     wrapper.style.top = '0px';
-    wrapper.style.width = '1020px';
+    wrapper.style.width = '1120px';
     wrapper.style.background = '#ffffff';
     wrapper.style.pointerEvents = 'none';
     wrapper.style.zIndex = '-1';
@@ -2038,7 +2039,7 @@ async function exportPDF(type) {
         margin: 0.2,
         filename: `Performance_Analysis_${scope}_${month}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 1020, windowWidth: 1020, scrollX: 0, scrollY: 0 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 1120, windowWidth: 1280, scrollX: 0, scrollY: 0 },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
       }).from(wrapper.firstElementChild).save();
       toast('PDF export completed!', 'success');
