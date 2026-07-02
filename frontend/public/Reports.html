@@ -1790,7 +1790,7 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
           <td colspan="2" style="border:1px solid #cbd5e1; padding:14px; background-color:#f1f5f9;"></td>
         </tr>
 
-        <tr>
+        <tr class="perf-pdf-page-break">
           <td colspan="3" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4;">Supplier Warranty transaction<br><span style="color:#ef4444; font-size:11px; font-weight:600;">If NA mark NA</span></td>
           <td colspan="3" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4;">Critical Pending report<br><span style="color:#ef4444; font-size:11px; font-weight:600;">If NA mark NA</span></td>
         </tr>
@@ -2005,6 +2005,8 @@ async function exportPDF(type) {
           .perf-pdf-content>div{border:0!important;border-radius:0!important;padding:0!important;width:100%!important;box-shadow:none!important;}
           .perf-pdf-content .submission-panel,.perf-pdf-content button,.perf-pdf-content .btn{display:none!important;}
           .perf-pdf-content table{width:100%!important;max-width:100%!important;table-layout:fixed;border-collapse:collapse!important;margin-left:0!important;margin-right:0!important;}
+          .perf-pdf-content tr,.perf-pdf-content td,.perf-pdf-content th{break-inside:avoid!important;page-break-inside:avoid!important;}
+          .perf-pdf-content .perf-pdf-page-break{break-before:page!important;page-break-before:always!important;}
           .perf-pdf-content th,.perf-pdf-content td{font-size:9.5px!important;line-height:1.18!important;padding:5px 6px!important;word-break:normal!important;overflow-wrap:anywhere!important;}
           .perf-pdf-content th[colspan]{font-size:12px!important;}
           .perf-pdf-content [style*="font-size:18px"]{font-size:15px!important;}
@@ -2038,8 +2040,9 @@ async function exportPDF(type) {
       await html2pdf().set({
         margin: 0.2,
         filename: `Performance_Analysis_${scope}_${month}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 1120, windowWidth: 1280, scrollX: 0, scrollY: 0 },
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 4, useCORS: true, backgroundColor: '#ffffff', width: 1120, windowWidth: 1280, scrollX: 0, scrollY: 0 },
+        pagebreak: { mode: ['css', 'legacy'], before: '.perf-pdf-page-break', avoid: ['tr', 'td', 'th'] },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
       }).from(wrapper.firstElementChild).save();
       toast('PDF export completed!', 'success');
