@@ -56,21 +56,27 @@ router.get('/', async (req, res) => {
     const docs = await Sr.find(filter).sort({ date: -1, createdAt: -1 }).lean();
     const srIds = docs.map(d => d._id);
     
+    const girNos = docs.map(d => d.girNo).filter(Boolean);
     const [scsrs, scCsrs] = await Promise.all([
-      ScSr.find({ srRef: { $in: srIds } }, 'srRef toNo toRaisedDate').lean(),
-      ScCsr.find({ srRef: { $in: srIds } }, 'srRef toNo toRaisedDate').lean()
+      ScSr.find({ $or: [{ srRef: { $in: srIds } }, { girNo: { $in: girNos } }] }, 'srRef girNo partNo toNo toRaisedDate').lean(),
+      ScCsr.find({ $or: [{ srRef: { $in: srIds } }, { girNo: { $in: girNos } }] }, 'srRef girNo partNo toNo toRaisedDate').lean()
     ]);
     
     const combined = [...scsrs, ...scCsrs];
     const scsrMap = combined.reduce((acc, scsr) => {
-      acc[scsr.srRef.toString()] = scsr;
+      if (scsr.srRef) acc[scsr.srRef.toString()] = scsr;
+      if (scsr.girNo && scsr.partNo) acc[scsr.girNo + '_' + scsr.partNo] = scsr;
       return acc;
     }, {});
+    
     const finalDocs = docs.map(d => {
-      const related = scsrMap[d._id.toString()];
+      let related = scsrMap[d._id.toString()];
+      if (!related && d.girNo && d.partNo) {
+        related = scsrMap[d.girNo + '_' + d.partNo];
+      }
       if (related) {
-        d.toNo = related.toNo;
-        d.toRaisedDate = related.toRaisedDate;
+        d.toNo = related.toNo || '';
+        d.toRaisedDate = related.toRaisedDate || null;
       }
       return d;
     });

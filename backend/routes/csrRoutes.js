@@ -1,5 +1,6 @@
 const express = require('express');
 const Csr = require('../models/Csr');
+const ScCsr = require('../models/ScCsr');
 const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -51,6 +52,27 @@ router.get('/', async (req, res) => {
     }
 
     const docs = await Csr.find(filter).sort({ closeDate: -1, createdAt: -1 }).lean();
+    
+    // Fetch related ScCsr to fill in missing toNo and toRaisedDate for older entries
+    const girNos = docs.filter(d => !d.toNo).map(d => d.girNo).filter(Boolean);
+    if (girNos.length > 0) {
+      const scCsrs = await ScCsr.find({ girNo: { $in: girNos } }, 'girNo partNo toNo toRaisedDate').lean();
+      const scsrMap = scCsrs.reduce((acc, scsr) => {
+        if (scsr.girNo && scsr.partNo) acc[scsr.girNo + '_' + scsr.partNo] = scsr;
+        return acc;
+      }, {});
+      
+      for (const d of docs) {
+        if (!d.toNo && d.girNo && d.partNo) {
+          const related = scsrMap[d.girNo + '_' + d.partNo];
+          if (related) {
+            d.toNo = related.toNo || '';
+            d.toRaisedDate = related.toRaisedDate || null;
+          }
+        }
+      }
+    }
+    
     res.json(docs);
   } catch (err) {
     console.error('[GET /api/csr]', err);
