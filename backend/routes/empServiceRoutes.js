@@ -209,10 +209,10 @@ router.get('/', protect, async (req, res) => {
     const userId = String(req.user._id || '');
     const serviceIds = records.map(r => String(r._id || '')).filter(Boolean);
     const [frnRows, underRepairRows, estimationRows, completedRows] = await Promise.all([
-      serviceIds.length ? EmpFRN.find({ serviceId: { $in: serviceIds } }).select('serviceId typeWork status repBrd shipSc shipComm updatedAt createdAt').lean() : [],
-      serviceIds.length ? UnderRepair.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng typeWork typeOfWork status repBrd shipSc shipComm updatedAt createdAt').lean() : [],
-      serviceIds.length ? EstimationPending.find({ serviceId: { $in: serviceIds } }).select('serviceId typeWork obStatus status estUpdatedAt obUpdatedAt updatedAt createdAt').lean() : [],
-      serviceIds.length ? CompletedFRN.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng typeWork repBrdDate shipDateSC shipDateComm updatedAt createdAt').lean() : [],
+      serviceIds.length ? EmpFRN.find({ serviceId: { $in: serviceIds } }).select('serviceId typeWork status repGirNo repBrd shipSc shipComm updatedAt createdAt').lean() : [],
+      serviceIds.length ? UnderRepair.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng typeWork typeOfWork status repGirNo repBrd shipSc shipComm updatedAt createdAt').lean() : [],
+      serviceIds.length ? EstimationPending.find({ serviceId: { $in: serviceIds } }).select('serviceId typeWork obRepGirNo obStatus status estUpdatedAt obUpdatedAt updatedAt createdAt').lean() : [],
+      serviceIds.length ? CompletedFRN.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng typeWork repGirSno repBrdDate shipDateSC shipDateComm updatedAt createdAt').lean() : [],
     ]);
     const raByServiceId = new Map();
     [...underRepairRows, ...completedRows].forEach(row => {
@@ -224,17 +224,22 @@ router.get('/', protect, async (req, res) => {
       putLatestTypeWork(typeWorkByServiceId, row);
     });
     const exportFieldsByServiceId = new Map();
-    [...frnRows, ...underRepairRows, ...completedRows].forEach(row => {
+    [...frnRows, ...underRepairRows, ...estimationRows, ...completedRows].forEach(row => {
       const key = String(row.serviceId || '');
       if (!key) return;
       const when = new Date(row.updatedAt || row.createdAt || 0).getTime() || 0;
       const current = exportFieldsByServiceId.get(key);
-      if (current && current.when > when) return;
+      const rowRepGirNo = row.repGirNo || row.obRepGirNo || row.repGirSno || '';
+      if (current && current.when > when) {
+        if (!current.repGirNo && rowRepGirNo) current.repGirNo = rowRepGirNo;
+        return;
+      }
       exportFieldsByServiceId.set(key, {
         when,
         repBrd: row.repBrd || row.repBrdDate || '',
         shipSc: row.shipSc || row.shipDateSC || '',
         shipComm: row.shipComm || row.shipDateComm || '',
+        repGirNo: rowRepGirNo || (current && current.repGirNo) || '',
       });
     });
 
@@ -247,6 +252,7 @@ router.get('/', protect, async (req, res) => {
       obj.repBrd = obj.repBrd || linkedExportFields.repBrd || '';
       obj.shipSc = obj.shipSc || linkedExportFields.shipSc || '';
       obj.shipComm = obj.shipComm || linkedExportFields.shipComm || '';
+      obj.repGirNo = obj.repGirNo || linkedExportFields.repGirNo || '';
       obj.isOwner =
         obj.scEng       === name ||
         obj.eng         === name ||
