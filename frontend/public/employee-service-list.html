@@ -1464,6 +1464,14 @@ async function submitForm() {
   }
 }
 
+function pickExportValue(row, keys) {
+  for (const key of keys) {
+    const value = row && row[key];
+    if (value !== undefined && value !== null && String(value).trim() !== '') return value;
+  }
+  return '';
+}
+
 function exportCSV() {
   const headers=[
     'ENTRY DATE', 'DIVISION', 'SC_REF_NO', 'SC_ENGINEER', 'RA_ENGINEER', 'FRN_NO', 'FRN_DATE',
@@ -1471,7 +1479,7 @@ function exportCSV() {
     'CUST_NAME', 'SUPPLIER_NAME', 'PRODUCT_MODEL', 'UNIT_SLNO', 'DOD', 'UNIT_STATUS', 'Part no',
     'DEF_MOD_BRD_NAME', 'DEF_TYPE', 'TYPE_OF_ACC', 'DEF_PART_SN', 'DEF_GIR_NO', 'REP_TYPE', 'REP_GIR_NO',
     'DEF_UNIT_GIR_NO', 'FIELD_REMARKS', 'TECHNICAL_REMARKS', 'COMPONENTS_USEDFOR_REPAIR', 'REPAIRED_BRD_STK_DATE',
-    'FINAL_REMARKS', 'TYPE_OF_WORK', 'SHIP_DATE_FROM_COMMERCIAL',
+    'FINAL_REMARKS', 'TYPE_OF_WORK', 'SHIP_DATE_FROM_SERVICE_CENTRE',
     'Comm Warr details'
   ];
   const rows=[headers];
@@ -1509,11 +1517,11 @@ function exportCSV() {
       s.fieldRemarks,
       s.techRemarks,
       s.components,
-      s.repBrd,
+      pickExportValue(s, ['repBrd','repBrdDate','repairedBrdStkDate']),
       s.finalRemarks,
       exportTypeWorkLabel(s),
-      s.shipComm,
-      s.commRemarks
+      pickExportValue(s, ['shipSc','shipDateSC','shipDateFromServiceCenter']),
+      pickExportValue(s, ['commWarrDetails','commRemarks'])
     ]);
   });
   const csv=rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
