@@ -1253,9 +1253,11 @@ function serviceDivisionLabel(s) {
 }
 
 function exportTypeWorkLabel(s) {
-  const text = String((s && (s.typeWork || s.type)) || 'UNDER REPAIR').trim();
+  const text = String((s && (s.typeWork || s.type)) || '').trim();
   const unitStatus = String((s && s.unitSts) || '').trim();
-  return text || 'UNDER REPAIR';
+  const unitValues = ['OW','LAMC','CAMC','EW','STOCK','IW','DEMO','REPEAT','BUY BACK','BUYBACK'];
+  if (!text || text.toUpperCase() === unitStatus.toUpperCase() || unitValues.includes(text.toUpperCase())) return 'UNDER REPAIR';
+  return text;
 }
 
 function editService(id) {
