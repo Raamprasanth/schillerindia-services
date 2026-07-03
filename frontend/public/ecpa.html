@@ -177,6 +177,7 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
 .es{font-size:12px;color:var(--muted);}
 .spin{display:inline-block;width:15px;height:15px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:8px;}
 @keyframes spin{to{transform:rotate(360deg);}}
+.remarks-preview{cursor:pointer;border:1px solid #e2e8f0;border-radius:4px;padding:4px 6px;background:#f8fafc;white-space:pre-wrap;word-break:break-word;max-height:45px;overflow-y:auto;font-size:13px;color:var(--soft);}
 </style>
 <link rel="stylesheet" href="global-typography.css">
 <link rel="stylesheet" href="employee-theme.css">
@@ -265,6 +266,17 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
   </div>
 </div>
 
+<div class="modal-overlay" id="remarks-modal" style="z-index:3000;">
+  <div class="modal-box" style="max-width:500px;height:auto;max-height:80vh;margin:auto;border-radius:14px;">
+    <div class="modal-head">
+      <div class="modal-title">&#128269; View Remarks</div>
+      <button class="modal-close" type="button" onclick="document.getElementById('remarks-modal').classList.remove('open')">&#10005;</button>
+    </div>
+    <div class="modal-body" style="white-space:pre-wrap;font-size:14px;line-height:1.5;color:var(--text);">
+      <div id="remarks-modal-content"></div>
+    </div>
+  </div>
+</div>
 <!-- -- CONFIRM DELETE -- -->
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-box">
@@ -550,7 +562,9 @@ function renderTable(){
         <td>${esc(d.responsible||'-')}</td>
         <td style="font-size:11px;color:var(--soft);">${formatDate(d.pendingFrom)}</td>
         <td style="font-size:11px;color:var(--soft);">${formatDate(d.targetDate)}</td>
-        <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:normal;font-size:11px;color:var(--soft);" title="${esc(d.remarks||'')}">${esc(d.remarks||'-')}</td>
+        <td style="min-width:300px;padding:4px;" onclick="showRemarksPopup('${rid}')" title="Click to view full remarks">
+          <div class="remarks-preview">${esc(d.remarks||'-')}</div>
+        </td>
         <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:normal;font-size:11px;color:var(--soft);" title="${esc(d.scInchargeRemarks||'')}">${esc(d.scInchargeRemarks||'-')}</td>
         <td><span class="status-pill ${statCls}">${esc(d.status||'Completed')}</span></td>
       </tr>`;
@@ -564,6 +578,12 @@ function renderTable(){
   renderPagination(pages);
 }
 
+function showRemarksPopup(id){
+  const doc = ACTIVITY_DATA.find(x => (x._id||x.id) === id);
+  if(!doc) return;
+  document.getElementById('remarks-modal-content').textContent = doc.remarks || '-';
+  document.getElementById('remarks-modal').classList.add('open');
+}
 /* -- ADD / EDIT MODAL -- */
 function openAddModal(){
   editMode = false;
