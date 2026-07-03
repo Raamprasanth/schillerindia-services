@@ -291,6 +291,18 @@ let selectedDateStr = new Date(currentDate.getTime() - todayOffset).toISOString(
   renderCalendar();
 })();
 
+function currentUserId(){
+  const user = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
+  return String(user._id || user.id || user.userId || '');
+}
+
+function canDeleteDw(item){
+  const user = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
+  const role = String(user.role || '').toLowerCase();
+  if (['admin','superadmin','administrator'].includes(role)) return true;
+  const ownerId = String((item.userId && (item.userId._id || item.userId.id)) || item.userId || '');
+  return ownerId && ownerId === currentUserId();
+}
 function hdrs(){
   return {
     "Content-Type": "application/json",
@@ -409,7 +421,7 @@ function renderKanban(){
         <div class="kb-user">By <span>${esc(item.addedBy || "User")}</span></div>
         <div style="display:flex;gap:8px;align-items:center;">
           <button class="kb-view" onclick="viewDw('${escAttr(item._id)}')" title="View Entry">View</button>
-          <button class="kb-del" onclick="deleteDw('${escAttr(item._id)}')" title="Delete Entry">&#128465;</button>
+          ${canDeleteDw(item) ? `<button class="kb-del" onclick="deleteDw('${escAttr(item._id)}')" title="Delete Entry">&#128465;</button>` : ''}
         </div>
       </div>
     </div>

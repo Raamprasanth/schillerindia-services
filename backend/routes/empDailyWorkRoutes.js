@@ -2,10 +2,15 @@ const express = require('express');
 const EmpDailyWork = require('../models/EmpDailyWork');
 const ADailyWork = require('../models/ADailyWork');
 const { protect } = require('../middleware/authMiddleware');
+const { resolveDivisions } = require('../utils/visibility');
 
 const router = express.Router();
 
 router.use(protect);
+
+function normalizeDivisionKey(value) {
+  return String(value || '').trim().toLowerCase();
+}
 
 function ownerFilter(user) {
   const role = String(user?.role || '').toLowerCase();
@@ -13,9 +18,42 @@ function ownerFilter(user) {
   return { userId: user?._id };
 }
 
+async function divisionVisibilityFilter(user) {
+  const role = String(user?.role || '').toLowerCase();
+  if (['admin', 'superadmin', 'administrator'].includes(role)) return {};
+
+  const divisions = await resolveDivisions(user);
+  const names = [...new Set(divisions.flatMap(d => [d.name, d.displayName]).map(v => String(v || '').trim()).filter(Boolean))];
+  const keys = names.map(normalizeDivisionKey).filter(Boolean);
+  const own = { userId: user?._id };
+
+  if (!keys.length && !names.length) return own;
+
+  return {
+    $or: [
+      { divisionKey: { $in: keys } },
+      { division: { $in: names } },
+      { divisionName: { $in: names } },
+      { team: { $in: names } },
+      own,
+    ],
+  };
+}
+
+async function currentDivisionMeta(user) {
+  const divisions = await resolveDivisions(user);
+  const division = divisions[0] || null;
+  const divisionName = String(division?.name || division?.displayName || user?.activeDivision || user?.division || '').trim();
+  return {
+    division: divisionName,
+    divisionName,
+    divisionKey: normalizeDivisionKey(divisionName),
+  };
+}
+
 router.get('/', async (req, res) => {
   try {
-    const docs = await EmpDailyWork.find(ownerFilter(req.user)).sort({ date: -1, fromTime: -1 }).lean();
+    const docs = await EmpDailyWork.find(await divisionVisibilityFilter(req.user)).sort({ date: -1, fromTime: -1 }).lean();
     res.json(docs);
   } catch (err) {
     console.error('[GET /api/empdw]', err);
@@ -30,12 +68,15 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'Required fields missing.' });
     }
 
+    const divisionMeta = await currentDivisionMeta(req.user);
+
     const doc = await EmpDailyWork.create({
       date: body.date,
       activity: body.activity,
       fromTime: body.fromTime,
       toTime: body.toTime,
       team: body.team,
+      ...divisionMeta,
       dayTotal: body.dayTotal,
       addedBy: req.user?.name || req.user?.email || 'User',
       userId: req.user?._id,
@@ -48,6 +89,9 @@ router.post('/', async (req, res) => {
       fromTime: doc.fromTime,
       toTime: doc.toTime,
       team: doc.team,
+      division: doc.division,
+      divisionName: doc.divisionName,
+      divisionKey: doc.divisionKey,
       dayTotal: doc.dayTotal,
       addedBy: doc.addedBy,
       userId: doc.userId,
@@ -111,6 +155,9 @@ router.put('/:id', async (req, res) => {
         fromTime: doc.fromTime,
         toTime: doc.toTime,
         team: doc.team,
+        division: doc.division,
+        divisionName: doc.divisionName,
+        divisionKey: doc.divisionKey,
         dayTotal: doc.dayTotal
       }
     );
