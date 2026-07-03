@@ -1,6 +1,8 @@
 const express = require('express');
 const EmpDailyWork = require('../models/EmpDailyWork');
 const ADailyWork = require('../models/ADailyWork');
+const Employee = require('../models/Employee');
+const User = require('../models/User');
 const { protect } = require('../middleware/authMiddleware');
 const { resolveDivisions } = require('../utils/visibility');
 
@@ -8,6 +10,47 @@ const router = express.Router();
 
 router.use(protect);
 
+function rawUserDivisionNames(user) {
+  const raw = [user?.activeDivision, user?.division, ...(Array.isArray(user?.divisions) ? user.divisions : [])];
+  return [...new Set(raw.map(v => String(v || '').trim()).filter(Boolean))];
+}
+
+async function currentDivisionNames(user) {
+  const divisions = await resolveDivisions(user);
+  const resolvedNames = divisions.flatMap(d => [d.name, d.displayName]);
+  return [...new Set([...resolvedNames, ...rawUserDivisionNames(user)].map(v => String(v || '').trim()).filter(Boolean))];
+}
+
+async function divisionMemberNames(user) {
+  const role = String(user?.role || '').toLowerCase();
+  if (['admin', 'superadmin', 'administrator'].includes(role)) {
+    const [employees, users] = await Promise.all([
+      Employee.find({ isActive: { $ne: false } }).select('name').lean(),
+      User.find({ isActive: { $ne: false }, role: { $in: ['employee', 'service_coordinator'] } }).select('name').lean(),
+    ]);
+    return [...new Set([...employees, ...users].map(u => String(u.name || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  }
+
+  const names = await currentDivisionNames(user);
+  if (!names.length) return [String(user?.name || '').trim()].filter(Boolean);
+
+  const memberFilter = {
+    isActive: { $ne: false },
+    $or: [
+      { division: { $in: names } },
+      { divisions: { $in: names } },
+    ],
+  };
+
+  const [employees, users] = await Promise.all([
+    Employee.find(memberFilter).select('name').lean(),
+    User.find({ ...memberFilter, role: { $in: ['employee', 'service_coordinator'] } }).select('name').lean(),
+  ]);
+
+  const ownName = String(user?.name || '').trim();
+  return [...new Set([ownName, ...employees.map(u => u.name), ...users.map(u => u.name)].map(v => String(v || '').trim()).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b));
+}
 function normalizeDivisionKey(value) {
   return String(value || '').trim().toLowerCase();
 }
@@ -51,6 +94,14 @@ async function currentDivisionMeta(user) {
   };
 }
 
+router.get('/members', async (req, res) => {
+  try {
+    res.json(await divisionMemberNames(req.user));
+  } catch (err) {
+    console.error('[GET /api/empdw/members]', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
 router.get('/', async (req, res) => {
   try {
     const docs = await EmpDailyWork.find(await divisionVisibilityFilter(req.user)).sort({ date: -1, fromTime: -1 }).lean();

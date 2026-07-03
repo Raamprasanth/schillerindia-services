@@ -263,6 +263,7 @@ let currentMonth = currentDate.getMonth();
 let currentYear = currentDate.getFullYear();
 let editId = null;
 let DW_ALL_LIST = [];
+let DW_MEMBER_NAMES = [];
 let DW_LIST = [];
 let selectedMemberName = '';
 const todayOffset = currentDate.getTimezoneOffset() * 60000;
@@ -313,7 +314,7 @@ function renderMemberFilter(){
   if (!select) return;
   const current = currentUserName();
   if (!selectedMemberName) selectedMemberName = current;
-  const names = [...new Set(DW_ALL_LIST.map(entryMemberName).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const names = [...new Set([...DW_MEMBER_NAMES, ...DW_ALL_LIST.map(entryMemberName)].filter(Boolean))].sort((a,b)=>a.localeCompare(b));
   if (current && !names.includes(current)) names.unshift(current);
   select.innerHTML = names.map(name => `<option value="${escAttr(name)}" ${name === selectedMemberName ? 'selected' : ''}>${esc(name === current ? 'My entries' : name)}</option>`).join('');
 }
@@ -348,8 +349,19 @@ function hdrs(){
   };
 }
 
+async function fetchDwMembers(){
+  try {
+    const res = await fetch('/api/empdw/members', { headers: hdrs(), cache: 'no-store' });
+    const data = await res.json().catch(() => []);
+    DW_MEMBER_NAMES = res.ok && Array.isArray(data) ? data.map(normalizeName).filter(Boolean) : [];
+  } catch (err) {
+    console.warn('[dailyw] member fetch failed', err);
+    DW_MEMBER_NAMES = [];
+  }
+}
 async function fetchDwList(){
   try {
+    await fetchDwMembers();
     const res = await fetch("/api/empdw", { headers: hdrs(), cache: "no-store" });
     if (res.status === 401 || res.status === 403) {
       window.location.href = "login.html";
