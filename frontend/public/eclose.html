@@ -631,10 +631,10 @@ function closeDetailModal(){
 
 // -- EXPORT CSV ------------------------------------------------------------
 function exportCSV(){
-  const headers = ['#','Division','Entry Date','SC Engg','Call Date','Close Date','Engineer','Customer','Model','Type of Call','Status','Remarks'];
+  const headers = ['#','Division','Entry Date','SC Engg','Call Date','Close Date','Engineer','Customer','Model','Call','Type of Call','Status','Remarks'];
   const rows = filtered.map((d, i) => [
     i + 1, d.division, fmtDate(entryDateForClosedCall(d)), d.scEngg, fmtDate(d.callDate), fmtDate(d.closeDate),
-    d.engineer, d.customer, d.model, d.typeCall, d.status, d.remarks
+    d.engineer, d.customer, d.model, d.call, d.typeCall, d.status, d.remarks
   ]);
   const csv = [headers, ...rows].map(r => r.map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
