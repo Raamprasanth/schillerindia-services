@@ -1285,20 +1285,83 @@ async function saveUpdate(){
   }
 }
 
+const EXPORT_FILE_PREFIX = 'under-repair';
+function pickExportValue(row, keys) {
+  for (const key of keys) {
+    const value = row && row[key];
+    if (value !== undefined && value !== null && String(value).trim() !== '') return value;
+  }
+  return '';
+}
+function exportDivisionLabel(row) {
+  if (row.divisionName) return row.divisionName;
+  const division = row.division;
+  if (division && typeof division === 'object') return division.name || division.label || division._id || '';
+  return division || '';
+}
+function exportTypeWorkLabel(row) {
+  return pickExportValue(row, ['urTypeWork','typeWork','typeOfWork','orderType','estStatus','obStatus','status']);
+}
+function exportCsvCell(value) {
+  return `"${String(value || '').replace(/"/g, '""')}"`;
+}
+function buildServiceExportRow(s) {
+  return [
+    pickExportValue(s, ['entryDate']),
+    exportDivisionLabel(s),
+    pickExportValue(s, ['scReNo','scRno','scRefNo']),
+    pickExportValue(s, ['scEng']),
+    pickExportValue(s, ['raEng','estRaEng','obRaEng','urRepairTeam','repairTeam']),
+    pickExportValue(s, ['frnNo']),
+    pickExportValue(s, ['frnDate']),
+    pickExportValue(s, ['serComm','serCommInwardDate']),
+    pickExportValue(s, ['rcvdDate','receivedDate','receivedDateAtSc']),
+    pickExportValue(s, ['stkCust']),
+    pickExportValue(s, ['reg','region']),
+    pickExportValue(s, ['branch']),
+    pickExportValue(s, ['eng','engineer']),
+    pickExportValue(s, ['dealer']),
+    pickExportValue(s, ['custName','customer']),
+    pickExportValue(s, ['supplier']),
+    pickExportValue(s, ['model']),
+    pickExportValue(s, ['unitSl']),
+    pickExportValue(s, ['doi','dod']),
+    pickExportValue(s, ['unitSts','unitStatus']),
+    pickExportValue(s, ['partNo']),
+    pickExportValue(s, ['defMod','defModBrdName','defBrdModName']),
+    pickExportValue(s, ['defType']),
+    pickExportValue(s, ['typeAcc']),
+    pickExportValue(s, ['defPartSno']),
+    pickExportValue(s, ['defGir','defGirNo']),
+    pickExportValue(s, ['repType']),
+    pickExportValue(s, ['repGirNo','obRepGirNo','defUnitGir','obDefUnitGir']),
+    pickExportValue(s, ['bscon']),
+    pickExportValue(s, ['fieldRemarks']),
+    pickExportValue(s, ['techRemarks','obTechRemarks']),
+    pickExportValue(s, ['components','obComponents']),
+    pickExportValue(s, ['repBrd','repBrdDate','repairedBrdStkDate','obRepBrd']),
+    pickExportValue(s, ['finalRemarks','obFinalRemarks']),
+    exportTypeWorkLabel(s),
+    pickExportValue(s, ['shipSc','shipDateSC','shipDateFromServiceCenter','obShipSc']),
+    pickExportValue(s, ['commWarrDetails','commRemarks'])
+  ];
+}
 function exportCSV(){
-  const h=['Id','Entry Date','SC RNo','SC Eng','FRN No','Region','Engineer','Cust Name','Model','Unit Status','Part No','Def Mod','Def Gir No','Final Remarks','Type of Work','Pend Days'];
-  const rows=filtered.map((d,i)=>[
-    i+1, fmtDate(d.entryDate), d.scReNo, d.scEng, d.frnNo,
-    d.reg, d.eng, d.custName||d.customer, d.model, d.unitSts, d.partNo,
-    d.defMod, d.defGir, d.finalRemarks, d.urTypeWork||d.typeWork,
-    d.pdays
-  ]);
-  const csv=[h,...rows].map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');
-  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
-  a.download='under-repair-'+new Date().toISOString().split('T')[0]+'.csv';
+  const headers = [
+    'ENTRY DATE', 'DIVISION', 'SC_REF_NO', 'SC_ENGINEER', 'RA_ENGINEER', 'FRN_NO', 'FRN_DATE',
+    'SER_COMM_INWARD_DATE', 'SER_CENTRE_RECEIVED_DATE', 'STK_CUST', 'REGION', 'BRANCH', 'ENGINEER', 'DEALER_NAME',
+    'CUST_NAME', 'SUPPLIER_NAME', 'PRODUCT_MODEL', 'UNIT_SLNO', 'DOD', 'UNIT_STATUS', 'Part no',
+    'DEF_MOD_BRD_NAME', 'DEF_TYPE', 'TYPE_OF_ACC', 'DEF_PART_SN', 'DEF_GIR_NO', 'REP_TYPE', 'REP_GIR_NO',
+    'BSCON', 'FIELD_REMARKS', 'TECHNICAL_REMARKS', 'COMPONENTS_USEDFOR_REPAIR', 'REPAIRED_BRD_STK_DATE',
+    'FINAL_REMARKS', 'TYPE_OF_WORK', 'SHIP_DATE_FROM_SERVICE_CENTRE',
+    'Comm Warr details'
+  ];
+  const csv = [headers, ...filtered.map(buildServiceExportRow)].map(r => r.map(exportCsvCell).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = EXPORT_FILE_PREFIX + '-' + new Date().toISOString().split('T')[0] + '.csv';
   a.click();
-  showToast('Exported '+filtered.length+' records.','ok');
+  showToast('Exported ' + filtered.length + ' records.', 'ok');
 }
 
 function renderPagination(pages){

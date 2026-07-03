@@ -127,11 +127,39 @@ router.get('/', protect, async (req, res) => {
       ]);
     }
 
-    const docs = await UnderRepair.find(filter).populate('serviceId', 'defPartSno partNo').sort({ createdAt: -1 }).lean();
+    const docs = await UnderRepair.find(filter).populate({ path: 'serviceId', select: 'branch dealer division divisionName partNo doi unitSl defPartSno bscon scReNo scEng frnNo frnDate serComm rcvdDate stkCust reg eng custName customer supplier model unitSts defMod defType typeAcc defGir repType repGirNo fieldRemarks commWarrDetails techRemarks components finalRemarks shipSc repBrd shipComm', populate: { path: 'division', select: 'name' } }).sort({ createdAt: -1 }).lean();
     res.json(docs.map(d => ({
       ...d,
+      branch: d.branch || (d.serviceId ? d.serviceId.branch : '') || '',
+      dealer: d.dealer || (d.serviceId ? d.serviceId.dealer : '') || '',
+      scReNo: d.scReNo || d.scRno || (d.serviceId ? d.serviceId.scReNo : '') || '',
+      frnDate: d.frnDate || (d.serviceId ? d.serviceId.frnDate : '') || '',
+      serComm: d.serComm || (d.serviceId ? d.serviceId.serComm : '') || '',
+      rcvdDate: d.rcvdDate || (d.serviceId ? d.serviceId.rcvdDate : '') || '',
+      stkCust: d.stkCust || (d.serviceId ? d.serviceId.stkCust : '') || '',
+      reg: d.reg || d.region || (d.serviceId ? d.serviceId.reg : '') || '',
+      eng: d.eng || d.engineer || (d.serviceId ? d.serviceId.eng : '') || '',
+      custName: d.custName || d.customer || (d.serviceId ? (d.serviceId.custName || d.serviceId.customer) : '') || '',
+      customer: d.customer || d.custName || (d.serviceId ? (d.serviceId.customer || d.serviceId.custName) : '') || '',
+      supplier: d.supplier || (d.serviceId ? d.serviceId.supplier : '') || '',
+      model: d.model || (d.serviceId ? d.serviceId.model : '') || '',
+      unitSts: d.unitSts || d.unitStatus || (d.serviceId ? d.serviceId.unitSts : '') || '',
+      unitStatus: d.unitStatus || d.unitSts || (d.serviceId ? d.serviceId.unitSts : '') || '',
       partNo: d.partNo || (d.serviceId ? d.serviceId.partNo : '') || '',
+      defMod: d.defMod || d.defModBrdName || (d.serviceId ? d.serviceId.defMod : '') || '',
+      defType: d.defType || (d.serviceId ? d.serviceId.defType : '') || '',
+      typeAcc: d.typeAcc || (d.serviceId ? d.serviceId.typeAcc : '') || '',
+      defGir: d.defGir || d.defGirNo || (d.serviceId ? d.serviceId.defGir : '') || '',
       defPartSno: d.defPartSno || (d.serviceId ? d.serviceId.defPartSno : '') || '',
+      repType: d.repType || (d.serviceId ? d.serviceId.repType : '') || '',
+      repGirNo: d.repGirNo || (d.serviceId ? d.serviceId.repGirNo : '') || '',
+      fieldRemarks: d.fieldRemarks || (d.serviceId ? d.serviceId.fieldRemarks : '') || '',
+      commWarrDetails: d.commWarrDetails || (d.serviceId ? d.serviceId.commWarrDetails : '') || '',
+      bscon: d.bscon || (d.serviceId ? d.serviceId.bscon : '') || '',
+      doi: d.doi || (d.serviceId ? d.serviceId.doi : '') || '',
+      unitSl: d.unitSl || (d.serviceId ? d.serviceId.unitSl : '') || '',
+      division: d.division || (d.serviceId && d.serviceId.division ? d.serviceId.division._id : null),
+      divisionName: d.divisionName || (d.serviceId && d.serviceId.division ? d.serviceId.division.name : '') || (d.serviceId ? d.serviceId.divisionName : ''),
       pdays: Math.floor((Date.now() - new Date(d.rcvdDate || d.entryDate || d.createdAt).getTime()) / 86400000),
     })));
   } catch (e) {
@@ -144,7 +172,7 @@ router.get('/', protect, async (req, res) => {
 // ══════════════════════════════════════════════════════════
 router.get('/:id', protect, async (req, res) => {
   try {
-    const doc = await UnderRepair.findById(req.params.id).populate('serviceId', 'defPartSno partNo').lean();
+    const doc = await UnderRepair.findById(req.params.id).populate({ path: 'serviceId', select: 'branch dealer division divisionName partNo doi unitSl defPartSno bscon scReNo scEng frnNo frnDate serComm rcvdDate stkCust reg eng custName customer supplier model unitSts defMod defType typeAcc defGir repType repGirNo fieldRemarks commWarrDetails techRemarks components finalRemarks shipSc repBrd shipComm', populate: { path: 'division', select: 'name' } }).lean();
     if (!doc) return res.status(404).json({ message: 'Record not found.' });
     if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
       const { hasDivisionAccessToService } = require('../utils/visibility');
@@ -154,6 +182,7 @@ router.get('/:id', protect, async (req, res) => {
     const d = withPdays(doc);
     d.partNo = doc.partNo || (doc.serviceId ? doc.serviceId.partNo : '') || '';
     d.defPartSno = doc.defPartSno || (doc.serviceId ? doc.serviceId.defPartSno : '') || '';
+    d.bscon = doc.bscon || (doc.serviceId ? doc.serviceId.bscon : '') || '';
     res.json(d);
   } catch (e) {
     res.status(500).json({ message: e.message });

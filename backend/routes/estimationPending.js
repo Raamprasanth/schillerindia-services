@@ -290,11 +290,39 @@ router.get('/', async (req, res) => {
       const { getServiceIdsFilter } = require('../utils/visibility');
       query = await getServiceIdsFilter(req.user);
     }
-    const records = await enrichEstimationComponentList(await EstimationPending.find(query).populate('serviceId', 'dealer defPartSno').sort({ createdAt: -1 }).lean());
+    const records = await enrichEstimationComponentList(await EstimationPending.find(query).populate({ path: 'serviceId', select: 'branch dealer division divisionName partNo doi unitSl defPartSno bscon scReNo scEng frnNo frnDate serComm rcvdDate stkCust reg eng custName customer supplier model unitSts defMod defType typeAcc defGir repType repGirNo fieldRemarks commWarrDetails techRemarks components finalRemarks shipSc repBrd shipComm', populate: { path: 'division', select: 'name' } }).sort({ createdAt: -1 }).lean());
     res.json(records.map(record => ({
       ...record,
       dealer: record.dealer || (record.serviceId ? record.serviceId.dealer : '') || '',
+      branch: record.branch || (record.serviceId ? record.serviceId.branch : '') || '',
+      scReNo: record.scReNo || record.scRno || (record.serviceId ? record.serviceId.scReNo : '') || '',
+      frnDate: record.frnDate || (record.serviceId ? record.serviceId.frnDate : '') || '',
+      serComm: record.serComm || (record.serviceId ? record.serviceId.serComm : '') || '',
+      rcvdDate: record.rcvdDate || (record.serviceId ? record.serviceId.rcvdDate : '') || '',
+      stkCust: record.stkCust || (record.serviceId ? record.serviceId.stkCust : '') || '',
+      reg: record.reg || record.region || (record.serviceId ? record.serviceId.reg : '') || '',
+      eng: record.eng || (record.serviceId ? record.serviceId.eng : '') || '',
+      custName: record.custName || record.customer || (record.serviceId ? (record.serviceId.custName || record.serviceId.customer) : '') || '',
+      customer: record.customer || record.custName || (record.serviceId ? (record.serviceId.customer || record.serviceId.custName) : '') || '',
+      supplier: record.supplier || (record.serviceId ? record.serviceId.supplier : '') || '',
+      model: record.model || (record.serviceId ? record.serviceId.model : '') || '',
+      unitSts: record.unitSts || record.unitStatus || (record.serviceId ? record.serviceId.unitSts : '') || '',
+      unitStatus: record.unitStatus || record.unitSts || (record.serviceId ? record.serviceId.unitSts : '') || '',
+      partNo: record.partNo || (record.serviceId ? record.serviceId.partNo : '') || '',
+      defMod: record.defMod || (record.serviceId ? record.serviceId.defMod : '') || '',
+      defType: record.defType || (record.serviceId ? record.serviceId.defType : '') || '',
+      typeAcc: record.typeAcc || (record.serviceId ? record.serviceId.typeAcc : '') || '',
+      defGir: record.defGir || (record.serviceId ? record.serviceId.defGir : '') || '',
       defPartSno: record.defPartSno || (record.serviceId ? record.serviceId.defPartSno : '') || '',
+      repType: record.repType || (record.serviceId ? record.serviceId.repType : '') || '',
+      repGirNo: record.repGirNo || record.obRepGirNo || (record.serviceId ? record.serviceId.repGirNo : '') || '',
+      fieldRemarks: record.fieldRemarks || (record.serviceId ? record.serviceId.fieldRemarks : '') || '',
+      commWarrDetails: record.commWarrDetails || (record.serviceId ? record.serviceId.commWarrDetails : '') || '',
+      bscon: record.bscon || (record.serviceId ? record.serviceId.bscon : '') || '',
+      doi: record.doi || (record.serviceId ? record.serviceId.doi : '') || '',
+      unitSl: record.unitSl || (record.serviceId ? record.serviceId.unitSl : '') || '',
+      division: record.division || (record.serviceId && record.serviceId.division ? record.serviceId.division._id : null),
+      divisionName: record.divisionName || (record.serviceId && record.serviceId.division ? record.serviceId.division.name : '') || (record.serviceId ? record.serviceId.divisionName : ''),
     })));
   } catch (err) {
     console.error('[GET /api/emp/estimation]', err);
@@ -309,11 +337,39 @@ router.get('/employee', async (req, res) => {
   try {
     const { getServiceIdsFilter } = require('../utils/visibility');
     const query = await getServiceIdsFilter(req.user);
-    const records = await enrichEstimationComponentList(await EstimationPending.find(query).populate('serviceId', 'dealer defPartSno').sort({ createdAt: -1 }).lean());
+    const records = await enrichEstimationComponentList(await EstimationPending.find(query).populate({ path: 'serviceId', select: 'branch dealer division divisionName partNo doi unitSl defPartSno bscon scReNo scEng frnNo frnDate serComm rcvdDate stkCust reg eng custName customer supplier model unitSts defMod defType typeAcc defGir repType repGirNo fieldRemarks commWarrDetails techRemarks components finalRemarks shipSc repBrd shipComm', populate: { path: 'division', select: 'name' } }).sort({ createdAt: -1 }).lean());
     res.json(records.map(record => ({
       ...record,
       dealer: record.dealer || (record.serviceId ? record.serviceId.dealer : '') || '',
+      branch: record.branch || (record.serviceId ? record.serviceId.branch : '') || '',
+      scReNo: record.scReNo || record.scRno || (record.serviceId ? record.serviceId.scReNo : '') || '',
+      frnDate: record.frnDate || (record.serviceId ? record.serviceId.frnDate : '') || '',
+      serComm: record.serComm || (record.serviceId ? record.serviceId.serComm : '') || '',
+      rcvdDate: record.rcvdDate || (record.serviceId ? record.serviceId.rcvdDate : '') || '',
+      stkCust: record.stkCust || (record.serviceId ? record.serviceId.stkCust : '') || '',
+      reg: record.reg || record.region || (record.serviceId ? record.serviceId.reg : '') || '',
+      eng: record.eng || (record.serviceId ? record.serviceId.eng : '') || '',
+      custName: record.custName || record.customer || (record.serviceId ? (record.serviceId.custName || record.serviceId.customer) : '') || '',
+      customer: record.customer || record.custName || (record.serviceId ? (record.serviceId.customer || record.serviceId.custName) : '') || '',
+      supplier: record.supplier || (record.serviceId ? record.serviceId.supplier : '') || '',
+      model: record.model || (record.serviceId ? record.serviceId.model : '') || '',
+      unitSts: record.unitSts || record.unitStatus || (record.serviceId ? record.serviceId.unitSts : '') || '',
+      unitStatus: record.unitStatus || record.unitSts || (record.serviceId ? record.serviceId.unitSts : '') || '',
+      partNo: record.partNo || (record.serviceId ? record.serviceId.partNo : '') || '',
+      defMod: record.defMod || (record.serviceId ? record.serviceId.defMod : '') || '',
+      defType: record.defType || (record.serviceId ? record.serviceId.defType : '') || '',
+      typeAcc: record.typeAcc || (record.serviceId ? record.serviceId.typeAcc : '') || '',
+      defGir: record.defGir || (record.serviceId ? record.serviceId.defGir : '') || '',
       defPartSno: record.defPartSno || (record.serviceId ? record.serviceId.defPartSno : '') || '',
+      repType: record.repType || (record.serviceId ? record.serviceId.repType : '') || '',
+      repGirNo: record.repGirNo || record.obRepGirNo || (record.serviceId ? record.serviceId.repGirNo : '') || '',
+      fieldRemarks: record.fieldRemarks || (record.serviceId ? record.serviceId.fieldRemarks : '') || '',
+      commWarrDetails: record.commWarrDetails || (record.serviceId ? record.serviceId.commWarrDetails : '') || '',
+      bscon: record.bscon || (record.serviceId ? record.serviceId.bscon : '') || '',
+      doi: record.doi || (record.serviceId ? record.serviceId.doi : '') || '',
+      unitSl: record.unitSl || (record.serviceId ? record.serviceId.unitSl : '') || '',
+      division: record.division || (record.serviceId && record.serviceId.division ? record.serviceId.division._id : null),
+      divisionName: record.divisionName || (record.serviceId && record.serviceId.division ? record.serviceId.division.name : '') || (record.serviceId ? record.serviceId.divisionName : ''),
     })));
   } catch (err) {
     console.error('[GET /api/emp/estimation/employee]', err);
@@ -326,7 +382,7 @@ router.get('/employee', async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/:id', async (req, res) => {
   try {
-    const record = await EstimationPending.findById(req.params.id).populate('serviceId', 'dealer defPartSno').lean();
+    const record = await EstimationPending.findById(req.params.id).populate({ path: 'serviceId', select: 'branch dealer division divisionName partNo doi unitSl defPartSno bscon scReNo scEng frnNo frnDate serComm rcvdDate stkCust reg eng custName customer supplier model unitSts defMod defType typeAcc defGir repType repGirNo fieldRemarks commWarrDetails techRemarks components finalRemarks shipSc repBrd shipComm', populate: { path: 'division', select: 'name' } }).lean();
     if (!record) return res.status(404).json({ message: 'Record not found' });
     if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
       const { hasDivisionAccessToService } = require('../utils/visibility');
