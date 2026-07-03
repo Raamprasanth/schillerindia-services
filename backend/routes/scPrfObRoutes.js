@@ -38,6 +38,19 @@ function buildEmployeePrfObPayload(body, userId, sourceId) {
   };
 }
 
+function buildEmployeePrfObMatch(doc) {
+  const body = doc.toObject ? doc.toObject() : doc;
+  const naturalMatch = {
+    division: body.division || 'OTHER',
+    type: body.type || 'TO',
+    refNo: body.refNo || '',
+    branch: body.branch || '',
+    model: body.model || '',
+  };
+  const matches = [{ sourceScPrfObId: body._id }];
+  if (naturalMatch.refNo) matches.push(naturalMatch);
+  return { $or: matches };
+}
 // GET /api/emp/prfob
 router.get('/', protect, async (req, res) => {
   try {
@@ -81,7 +94,7 @@ router.post('/', protect, async (req, res) => {
     if (['open', 'pending'].includes(String(saved.status).toLowerCase())) {
       const employeePayload = buildEmployeePrfObPayload(saved.toObject(), req.user._id, saved._id);
       await EPrfOb.findOneAndUpdate(
-        { sourceScPrfObId: saved._id },
+        buildEmployeePrfObMatch(saved),
         employeePayload,
         { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }
       );
@@ -125,7 +138,7 @@ router.put('/:id', protect, async (req, res) => {
     if (['open', 'pending'].includes(String(doc.status).toLowerCase())) {
       const employeePayload = buildEmployeePrfObPayload(doc.toObject(), req.user._id, doc._id);
       await EPrfOb.findOneAndUpdate(
-        { sourceScPrfObId: doc._id },
+        buildEmployeePrfObMatch(doc),
         employeePayload,
         { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }
       );
@@ -136,7 +149,7 @@ router.put('/:id', protect, async (req, res) => {
         buildPrfObEscalationRow(doc.toObject())
       );
     } else {
-      await EPrfOb.deleteOne({ sourceScPrfObId: doc._id });
+      await EPrfOb.deleteOne(buildEmployeePrfObMatch(doc));
       await removeEscalationSnapshot('prf_ob', doc._id);
     }
     res.json(doc);

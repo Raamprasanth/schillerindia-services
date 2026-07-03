@@ -26,6 +26,31 @@ function canAccessDivision(user, division) {
   return Boolean(target) && getUserDivisions(user).some(value => value.toLowerCase() === target);
 }
 
+async function hydrateSparesReceivedFromSc(rows = []) {
+  return Promise.all(rows.map(async (row) => {
+    if (row.sparesReceivedAtSvc) return row;
+    const sourceQuery = row.sourceScPrfObId ? { _id: row.sourceScPrfObId } : null;
+    const naturalQuery = row.refNo ? {
+      division: row.division || 'OTHER',
+      type: row.type || 'TO',
+      refNo: row.refNo || '',
+      branch: row.branch || '',
+      model: row.model || '',
+    } : null;
+    const query = sourceQuery && naturalQuery ? { $or: [sourceQuery, naturalQuery] } : (sourceQuery || naturalQuery);
+    if (!query) return row;
+    const source = await ScPrfOb.findOne(query).select('_id sparesReceivedAtSvc').lean();
+    if (!source?.sparesReceivedAtSvc) return row;
+    row.sparesReceivedAtSvc = source.sparesReceivedAtSvc;
+    if (!row.sourceScPrfObId && source._id) row.sourceScPrfObId = source._id;
+    await EPrfOb.updateOne(
+      { _id: row._id },
+      { $set: { sparesReceivedAtSvc: row.sparesReceivedAtSvc, sourceScPrfObId: row.sourceScPrfObId, updatedAt: new Date() } },
+      { runValidators: false }
+    );
+    return row;
+  }));
+}
 // GET /api/emp/eprfob
 router.get('/', protect, async (req, res) => {
   try {
@@ -47,7 +72,7 @@ router.get('/', protect, async (req, res) => {
       if (to)   filter.entryDate.$lte = to;
     }
     const docs = await EPrfOb.find(filter).sort({ createdAt: -1 }).lean();
-    res.json(docs);
+    res.json(await hydrateSparesReceivedFromSc(docs));
   } catch (err) {
     console.error('[GET /api/emp/eprfob]', err);
     res.status(500).json({ message: 'Server error', error: err.message });
