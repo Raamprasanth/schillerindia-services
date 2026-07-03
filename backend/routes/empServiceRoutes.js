@@ -248,8 +248,12 @@ router.get('/', protect, async (req, res) => {
       obj.raEng = obj.raEng || raByServiceId.get(String(obj._id || '')) || '';
       const linkedTypeWork = typeWorkByServiceId.get(String(obj._id || ''))?.typeWork || '';
       const serviceTypeWork = pickRealTypeWork(obj);
-      obj.typeWork = linkedTypeWork || serviceTypeWork || '';
-      obj.type = obj.typeWork;
+      const serviceIsUnderRepair = String(obj.type || '').trim().toLowerCase() === 'under repair'
+        || String(serviceTypeWork || '').trim().toLowerCase() === 'under repair'
+        || String(linkedTypeWork || '').trim().toLowerCase() === 'replacement given'
+        || String(obj.status || '').trim().toLowerCase() === 'under_repair';
+      obj.typeWork = serviceIsUnderRepair ? (serviceTypeWork || 'UNDER REPAIR') : (linkedTypeWork || serviceTypeWork || '');
+      obj.type = serviceIsUnderRepair ? 'Under Repair' : obj.typeWork;
       const linkedExportFields = exportFieldsByServiceId.get(String(obj._id || '')) || {};
       obj.repBrd = obj.repBrd || linkedExportFields.repBrd || '';
       obj.shipSc = obj.shipSc || linkedExportFields.shipSc || '';

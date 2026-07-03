@@ -832,7 +832,7 @@ router.put('/:id', async (req, res) => {
       return res.json({ success: true, completed: true, message: 'Moved to Completed FRN.' });
     }
 
-    if (sameGir === 'no' && updated.serviceId) {
+    if ((sameGir === 'no' || normalizedTypeWork === 'replacement given') && updated.serviceId) {
       const underRepairService = await Service.findByIdAndUpdate(
         updated.serviceId,
         {
