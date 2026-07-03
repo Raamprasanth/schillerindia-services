@@ -7,6 +7,7 @@ const rtClosedOtherActivitySchema = new mongoose.Schema(
     division: { type: String, trim: true, index: true },
     model: { type: String, trim: true, default: '' },
     partNumber: { type: String, trim: true, default: '' },
+    girNo: { type: String, trim: true, default: '' },
     description: { type: String, trim: true, default: '' },
     problemObserved: { type: String, trim: true },
     componentsUsed: { type: String, trim: true, default: '' },

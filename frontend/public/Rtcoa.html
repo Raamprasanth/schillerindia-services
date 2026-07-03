@@ -273,6 +273,7 @@ table.coa-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('division')">Division &#8597;</th>
             <th onclick="sortBy('model')">Model &#8597;</th>
             <th onclick="sortBy('partNumber')">Part No &#8597;</th>
+            <th onclick="sortBy('girNo')">GIR No &#8597;</th>
             <th onclick="sortBy('description')">Description &#8597;</th>
             <th onclick="sortBy('problemObserved')">Problem Observed &#8597;</th>
             <th onclick="sortBy('componentsUsed')">Components Used &#8597;</th>
@@ -281,7 +282,7 @@ table.coa-table tbody tr:last-child td{border-bottom:none;}
             <th>View</th>
           </tr></thead>
           <tbody id="coa-tbody">
-            <tr><td colspan="12" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
+            <tr><td colspan="13" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -312,6 +313,7 @@ table.coa-table tbody tr:last-child td{border-bottom:none;}
             <div class="ff"><label>Division</label><div class="dval" id="d-division">-</div></div>
             <div class="ff"><label>Model</label><div class="dval" id="d-model">-</div></div>
             <div class="ff"><label>Part Number</label><div class="dval" id="d-partNumber">-</div></div>
+            <div class="ff"><label>GIR No</label><div class="dval" id="d-girNo">-</div></div>
             <div class="ff"><label>Repaired Date</label><div class="dval" id="d-repairedDate">-</div></div>
             <div class="ff"><label>Closed By</label><div class="dval" id="d-closedBy">-</div></div>
           </div>
@@ -392,7 +394,7 @@ async function loadData() {
 
 function showError(msg) {
   document.getElementById('coa-tbody').innerHTML =
-    `<tr><td colspan="12"><div class="empty-st">
+    `<tr><td colspan="13"><div class="empty-st">
       <div class="ei">&#9888;&#65039;</div><div class="et">Cannot load data</div>
       <div class="es">${msg}</div>
       <div style="margin-top:14px;"><button class="btn btn-rep btn-sm" onclick="loadData()">&#10227; Try Again</button></div>
@@ -463,7 +465,7 @@ function renderTable() {
   (document.getElementById('count-pill')||{}).textContent = total + ' entr' + (total === 1 ? 'y' : 'ies');
   const tbody = document.getElementById('coa-tbody');
   if (!slice.length) {
-    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-st">
+    tbody.innerHTML = `<tr><td colspan="13"><div class="empty-st">
       <div class="ei">&#9989;</div>
       <div class="et">${allData.length ? 'No records match filters' : 'No Closed Activities'}</div>
       <div class="es">${allData.length ? 'Try clearing filters.' : 'Closed activities will appear here.'}</div>
@@ -479,6 +481,7 @@ function renderTable() {
         <td><span style="font-size:10px;background:rgba(91,33,182,0.08);color:#5b21b6;border:1px solid rgba(91,33,182,0.18);border-radius:8px;padding:2px 8px;font-weight:700;">${esc(d.division||'-')}</span></td>
         <td style="font-weight:600;">${esc(d.model||'-')}</td>
         <td style="font-family:monospace;font-size:10.5px;">${esc(d.partNumber||'-')}</td>
+        <td style="font-family:monospace;font-size:10.5px;">${esc(d.girNo||'-')}</td>
         <td style="max-width:150px;" title="${esc(d.description||'')}">${trunc(d.description,50)}</td>
         <td style="max-width:150px;" title="${esc(d.problemObserved||'')}">${trunc(d.problemObserved,50)}</td>
         <td style="max-width:150px;" title="${esc(d.componentsUsed||'')}">${trunc(d.componentsUsed,50)}</td>
@@ -509,6 +512,7 @@ function openDetail(id) {
   set('d-division', d.division);
   set('d-model', d.model);
   set('d-partNumber', d.partNumber);
+  set('d-girNo', d.girNo);
   set('d-repairedDate', fmtDate(d.repairedDate));
   set('d-closedBy', d.closedBy);
   set('d-description', d.description);
@@ -521,10 +525,10 @@ function openDetail(id) {
 function closeModal() { document.getElementById('modal-detail').classList.remove('open'); }
 
 function exportCSV() {
-  const headers = ['Entry Date','Closed Date','Repaired By','Division','Model','Part No','Description','Problem Observed','Components Used','Final Remarks','Repaired Date','Remarks','Closed By'];
+  const headers = ['Entry Date','Closed Date','Repaired By','Division','Model','Part No','GIR No','Description','Problem Observed','Components Used','Final Remarks','Repaired Date','Remarks','Closed By'];
   const rows = filtered.map(d => [
     fmtDate(d.entryDate), fmtDate(d.closedDate), d.repairedBy||'-', d.division||'-',
-    d.model||'-', d.partNumber||'-', d.description||'-', d.problemObserved||'-',
+    d.model||'-', d.partNumber||'-', d.girNo||'-', d.description||'-', d.problemObserved||'-',
     d.componentsUsed||'-', d.finalRemarks||'-', fmtDate(d.repairedDate), d.remarks||'-', d.closedBy||'-'
   ]);
   const csv = [headers, ...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');

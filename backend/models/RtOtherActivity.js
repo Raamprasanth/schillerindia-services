@@ -28,6 +28,11 @@ const rtOtherActivitySchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    girNo: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     description: {
       type: String,
       trim: true,

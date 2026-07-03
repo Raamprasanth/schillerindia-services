@@ -271,6 +271,7 @@ table.oa-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('division')">Division &#8597;</th>
             <th onclick="sortBy('model')">Model &#8597;</th>
             <th onclick="sortBy('partNumber')">Part No &#8597;</th>
+            <th onclick="sortBy('girNo')">GIR No &#8597;</th>
             <th onclick="sortBy('description')">Description &#8597;</th>
             <th onclick="sortBy('problemObserved')">Problem Observed &#8597;</th>
             <th onclick="sortBy('componentsUsed')">Components Used &#8597;</th>
@@ -279,7 +280,7 @@ table.oa-table tbody tr:last-child td{border-bottom:none;}
             <th>Actions</th>
           </tr></thead>
           <tbody id="oa-tbody">
-            <tr><td colspan="12" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
+            <tr><td colspan="13" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -313,6 +314,7 @@ table.oa-table tbody tr:last-child td{border-bottom:none;}
           
           <div class="ff"><label>Description</label><textarea id="f-description"></textarea></div>
           <div class="ff"><label>Part Number</label><input type="text" id="f-partNumber"/></div>
+          <div class="ff"><label>GIR No</label><input type="text" id="f-girNo"/></div>
           <div class="ff"><label>Problem Observed <span class="req">*</span></label><textarea id="f-problemObserved"></textarea></div>
           <div class="ff"><label>Components Used to Repair</label><textarea id="f-componentsUsed"></textarea></div>
 
@@ -377,7 +379,7 @@ async function populateDivisions(){
 
 async function loadData(){
   const tbody = document.getElementById('oa-tbody');
-  if(tbody) tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>';
+  if(tbody) tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:44px;color:var(--muted);"><span class="spin"></span>Loading...</td></tr>';
   try{
     const res = await fetch(`${API}/api/rtoa`, { headers: authHeaders() });
     handleUnauth(res);
@@ -390,7 +392,7 @@ async function loadData(){
     if(['Unauthorized','Forbidden'].includes(e.message)) return;
     allData = []; filteredData = [];
     updateStats();
-    if(tbody) tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:44px;color:var(--red);">Could not load: ${esc(e.message)}</td></tr>`;
+    if(tbody) tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:44px;color:var(--red);">Could not load: ${esc(e.message)}</td></tr>`;
     const info = document.getElementById('tbl-info'); if(info) info.textContent = '0 entries';
     renderPagination(1);
   }
@@ -406,7 +408,7 @@ function applyFilters(){
     if(summaryFilter === 'Open') summaryOk = status === 'open';
     if(summaryFilter === 'In Progress') summaryOk = status === 'in progress';
     if(summaryFilter === 'today') summaryOk = String(d.closedDate || '').slice(0,10) === today;
-    const text = [d.repairedBy,d.division,d.model,d.partNumber,d.description,d.problemObserved,d.componentsUsed,d.finalRemarks,d.status].join(' ').toLowerCase();
+    const text = [d.repairedBy,d.division,d.model,d.partNumber,d.girNo,d.description,d.problemObserved,d.componentsUsed,d.finalRemarks,d.status].join(' ').toLowerCase();
     return summaryOk && (!q || text.includes(q));
   });
   renderTable();
@@ -450,6 +452,7 @@ function renderTable(){
       <td>${esc(d.division || '-')}</td>
       <td>${esc(d.model || '-')}</td>
       <td>${esc(d.partNumber || '-')}</td>
+      <td>${esc(d.girNo || '-')}</td>
       <td style="min-width:180px;white-space:normal;">${esc(d.description || '-')}</td>
       <td style="min-width:180px;white-space:normal;">${esc(d.problemObserved || '-')}</td>
       <td style="min-width:170px;white-space:normal;">${esc(d.componentsUsed || '-')}</td>
@@ -461,7 +464,7 @@ function renderTable(){
         <span class="status-pill ${statusClass(d.status)}" style="margin-left:6px;">${esc(d.status || 'In Progress')}</span>
       </td>
     </tr>`;
-  }).join('') : '<tr><td colspan="12" style="text-align:center;padding:44px;color:var(--muted);">No active other activities found.</td></tr>';
+  }).join('') : '<tr><td colspan="13" style="text-align:center;padding:44px;color:var(--muted);">No active other activities found.</td></tr>';
   const info = document.getElementById('tbl-info');
   if(info) info.textContent = total ? `Showing ${start + 1} to ${Math.min(start + pageRows.length, total)} of ${total} entries` : '0 entries';
   renderPagination(pages);
@@ -489,6 +492,7 @@ function openEdit(id) {
   document.getElementById('f-division2').value     = d.division || '';
   document.getElementById('f-model').value         = d.model || '';
   document.getElementById('f-partNumber').value    = d.partNumber || '';
+  document.getElementById('f-girNo').value         = d.girNo || '';
   document.getElementById('f-description').value   = d.description || '';
   document.getElementById('f-problemObserved').value = d.problemObserved || '';
   document.getElementById('f-componentsUsed').value  = d.componentsUsed || '';
@@ -502,7 +506,7 @@ function openEdit(id) {
 function closeModal() { document.getElementById('modal-form').classList.remove('open'); }
 
 function clearForm() {
-  ['f-repairedBy','f-entryDate','f-division2','f-model','f-partNumber',
+  ['f-repairedBy','f-entryDate','f-division2','f-model','f-partNumber','f-girNo',
    'f-description','f-problemObserved','f-componentsUsed','f-finalRemarks','f-repairedDate'
   ].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
 }
@@ -513,6 +517,7 @@ async function saveRecord() {
   const division        = document.getElementById('f-division2').value.trim();
   const model           = document.getElementById('f-model').value.trim();
   const partNumber      = document.getElementById('f-partNumber').value.trim();
+  const girNo           = document.getElementById('f-girNo').value.trim();
   const description     = document.getElementById('f-description').value.trim();
   const problemObserved = document.getElementById('f-problemObserved').value.trim();
   const componentsUsed  = document.getElementById('f-componentsUsed').value.trim();
@@ -526,7 +531,7 @@ async function saveRecord() {
   if (repairedDate && repairedDate < todayISO()) {
     showToast('Repaired Date cannot be a back date.', 'err'); return;
   }
-  const body = { repairedBy, entryDate, division, model, partNumber, description,
+  const body = { repairedBy, entryDate, division, model, partNumber, girNo, description,
                  problemObserved, componentsUsed, finalRemarks, repairedDate, remarks, status: status || 'In Progress' };
   const btn = document.getElementById('save-btn');
   btn.disabled = true; btn.textContent = 'Saving...';

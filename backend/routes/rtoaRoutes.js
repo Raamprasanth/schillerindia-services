@@ -36,7 +36,7 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const {
-      repairedBy, entryDate, division, model, partNumber,
+      repairedBy, entryDate, division, model, partNumber, girNo,
       description, problemObserved, componentsUsed,
       finalRemarks, repairedDate, remarks, status,
     } = req.body;
@@ -51,6 +51,7 @@ router.post('/', async (req, res) => {
       division,
       model:        model        || '',
       partNumber:   partNumber   || '',
+      girNo:        girNo        || '',
       description:  description  || '',
       problemObserved,
       componentsUsed: componentsUsed || '',
@@ -74,7 +75,7 @@ router.put('/:id', async (req, res) => {
     if (!record) return fail(res, 404, 'Record not found');
 
     const fields = [
-      'repairedBy','division','model','partNumber','description',
+      'repairedBy','division','model','partNumber','girNo','description',
       'problemObserved','componentsUsed','finalRemarks','remarks','status',
     ];
     fields.forEach(f => { if (req.body[f] !== undefined) record[f] = req.body[f]; });
@@ -93,6 +94,7 @@ router.put('/:id', async (req, res) => {
           division: saved.division,
           model: saved.model,
           partNumber: saved.partNumber,
+          girNo: saved.girNo,
           description: saved.description,
           problemObserved: saved.problemObserved,
           componentsUsed: saved.componentsUsed,
@@ -136,6 +138,7 @@ router.put('/:id/close', async (req, res) => {
         division: saved.division,
         model: saved.model,
         partNumber: saved.partNumber,
+        girNo: saved.girNo,
         description: saved.description,
         problemObserved: saved.problemObserved,
         componentsUsed: saved.componentsUsed,
