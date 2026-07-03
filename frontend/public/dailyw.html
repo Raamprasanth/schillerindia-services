@@ -183,6 +183,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     </div>
     <div class="topbar-actions">
       <span class="topbar-date-pill" id="topbar-date"></span>
+      <select id="member-filter" class="btn btn-outline" style="min-width:170px;justify-content:flex-start;" onchange="changeDailyWorkMember()"></select>
       <button class="btn btn-outline" onclick="renderCalendar()">&#10227; Refresh</button>
       <button class="btn btn-primary" style="background:#047857;" onclick="exportToExcel()">&#128229; Export</button>
       <button class="btn btn-primary" onclick="openDwModal()">&#43; Add Entry</button>
@@ -261,14 +262,17 @@ let currentDate = new Date();
 let currentMonth = currentDate.getMonth();
 let currentYear = currentDate.getFullYear();
 let editId = null;
+let DW_ALL_LIST = [];
 let DW_LIST = [];
+let selectedMemberName = '';
 const todayOffset = currentDate.getTimezoneOffset() * 60000;
 let selectedDateStr = new Date(currentDate.getTime() - todayOffset).toISOString().split("T")[0];
 
 (function initDailyWorkPage(){
   const user = JSON.parse(sessionStorage.getItem("schiller_user") || "{}");
   const name = user.name || "Employee";
-  const role = user.designation || "Field Engineer";
+  const role = user.designation || 'Field Engineer';
+  selectedMemberName = name;
 
   ["emp-name", "user-nm", "tb-name"].forEach(id => {
     const el = document.getElementById(id);
@@ -291,6 +295,40 @@ let selectedDateStr = new Date(currentDate.getTime() - todayOffset).toISOString(
   renderCalendar();
 })();
 
+function normalizeName(value){
+  return String(value || '').trim();
+}
+
+function currentUserName(){
+  const user = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
+  return normalizeName(user.name || 'Employee');
+}
+
+function entryMemberName(item){
+  return normalizeName(item.addedBy || 'User');
+}
+
+function renderMemberFilter(){
+  const select = document.getElementById('member-filter');
+  if (!select) return;
+  const current = currentUserName();
+  if (!selectedMemberName) selectedMemberName = current;
+  const names = [...new Set(DW_ALL_LIST.map(entryMemberName).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  if (current && !names.includes(current)) names.unshift(current);
+  select.innerHTML = names.map(name => `<option value="${escAttr(name)}" ${name === selectedMemberName ? 'selected' : ''}>${esc(name === current ? 'My entries' : name)}</option>`).join('');
+}
+
+function applyMemberFilter(){
+  const selected = normalizeName(selectedMemberName || currentUserName());
+  DW_LIST = DW_ALL_LIST.filter(item => entryMemberName(item) === selected);
+}
+
+function changeDailyWorkMember(){
+  const select = document.getElementById('member-filter');
+  selectedMemberName = select ? select.value : currentUserName();
+  applyMemberFilter();
+  renderCalendar();
+}
 function currentUserId(){
   const user = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   return String(user._id || user.id || user.userId || '');
@@ -318,9 +356,12 @@ async function fetchDwList(){
       return;
     }
     const data = await res.json().catch(() => []);
-    DW_LIST = res.ok && Array.isArray(data) ? data : [];
+    DW_ALL_LIST = res.ok && Array.isArray(data) ? data : [];
+    renderMemberFilter();
+    applyMemberFilter();
   } catch (err) {
     console.error("[dailyw] fetch failed", err);
+    DW_ALL_LIST = [];
     DW_LIST = [];
   }
 }
