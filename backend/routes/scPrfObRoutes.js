@@ -37,7 +37,22 @@ function buildEmployeePrfObPayload(body, userId, sourceId) {
     sourceScPrfObId: sourceId,
   };
 }
+function buildEmployeePrfObSyncUpdate(body, userId, sourceId) {
+  const payload = buildEmployeePrfObPayload(body, userId, sourceId);
+  const employeeUpdateFields = ['scEng', 'crmRefNo', 'partType', 'partsDescription', 'remarks'];
+  const set = { ...payload };
+  const setOnInsert = {};
 
+  employeeUpdateFields.forEach((field) => {
+    setOnInsert[field] = payload[field] || '';
+    delete set[field];
+  });
+
+  return {
+    $set: set,
+    $setOnInsert: setOnInsert,
+  };
+}
 function buildEmployeePrfObMatch(doc) {
   const body = doc.toObject ? doc.toObject() : doc;
   const naturalMatch = {
@@ -92,10 +107,10 @@ router.post('/', protect, async (req, res) => {
     });
     const saved = await doc.save();
     if (['open', 'pending'].includes(String(saved.status).toLowerCase())) {
-      const employeePayload = buildEmployeePrfObPayload(saved.toObject(), req.user._id, saved._id);
+      const employeeUpdate = buildEmployeePrfObSyncUpdate(saved.toObject(), req.user._id, saved._id);
       await EPrfOb.findOneAndUpdate(
         buildEmployeePrfObMatch(saved),
-        employeePayload,
+        employeeUpdate,
         { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }
       );
       await enqueueLatestEscalationSnapshot(
@@ -136,10 +151,10 @@ router.put('/:id', protect, async (req, res) => {
     );
     if (!doc) return res.status(404).json({ message: 'Record not found' });
     if (['open', 'pending'].includes(String(doc.status).toLowerCase())) {
-      const employeePayload = buildEmployeePrfObPayload(doc.toObject(), req.user._id, doc._id);
+      const employeeUpdate = buildEmployeePrfObSyncUpdate(doc.toObject(), req.user._id, doc._id);
       await EPrfOb.findOneAndUpdate(
         buildEmployeePrfObMatch(doc),
-        employeePayload,
+        employeeUpdate,
         { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }
       );
       await enqueueLatestEscalationSnapshot(
