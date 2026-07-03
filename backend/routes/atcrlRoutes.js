@@ -19,7 +19,6 @@
 const express = require('express');
 const router  = express.Router();
 const ATCRL   = require('../models/atcrlModel');
-const { deleteMirroredRepairRows } = require('../utils/repairDeleteCleanup');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPER
@@ -162,11 +161,10 @@ router.get('/:id', async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.delete('/:id', async (req, res) => {
   try {
-    const record = await ATCRL.findById(req.params.id).lean();
-    if (!record) return fail(res, 404, 'Record not found');
+    const deleted = await ATCRL.findByIdAndDelete(req.params.id);
+    if (!deleted) return fail(res, 404, 'Record not found');
 
-    const result = await deleteMirroredRepairRows(ATCRL, req.params.id, record);
-    return res.json({ success: true, message: 'Record deleted successfully', deletedCount: result.deletedCount });
+    return res.json({ success: true, message: 'Record deleted successfully', deletedCount: 1 });
   } catch (err) {
     return fail(res, 500, 'Failed to delete record', err);
   }
