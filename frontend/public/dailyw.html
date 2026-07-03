@@ -327,8 +327,7 @@ function applyMemberFilter(){
 function changeDailyWorkMember(){
   const select = document.getElementById('member-filter');
   selectedMemberName = select ? select.value : currentUserName();
-  applyMemberFilter();
-  renderCalendar();
+  renderCalendar(false);
 }
 function currentUserId(){
   const user = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
@@ -378,8 +377,12 @@ async function fetchDwList(){
   }
 }
 
-async function renderCalendar(){
-  await fetchDwList();
+async function renderCalendar(fetchFresh = true){
+  if (fetchFresh) {
+    await fetchDwList();
+  } else {
+    applyMemberFilter();
+  }
   const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
   const title = document.getElementById("cal-title");
   const grid = document.getElementById("cal-grid");

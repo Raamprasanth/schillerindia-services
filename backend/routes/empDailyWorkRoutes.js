@@ -21,24 +21,30 @@ async function currentDivisionNames(user) {
   return [...new Set([...resolvedNames, ...rawUserDivisionNames(user)].map(v => String(v || '').trim()).filter(Boolean))];
 }
 
-async function divisionMemberNames(user) {
+function divisionNamePatterns(names) {
+  return names.map(name => new RegExp('^' + String(name).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?:\\b|$)', 'i'));
+}
+async function divisionMembers(user) {
   const role = String(user?.role || '').toLowerCase();
   if (['admin', 'superadmin', 'administrator'].includes(role)) {
     const [employees, users] = await Promise.all([
       Employee.find({ isActive: { $ne: false } }).select('name').lean(),
       User.find({ isActive: { $ne: false }, role: { $in: ['employee', 'service_coordinator'] } }).select('name').lean(),
     ]);
-    return [...new Set([...employees, ...users].map(u => String(u.name || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+    return [...employees, ...users];
   }
 
   const names = await currentDivisionNames(user);
-  if (!names.length) return [String(user?.name || '').trim()].filter(Boolean);
+  if (!names.length) return [];
 
+  const divisionPatterns = divisionNamePatterns(names);
   const memberFilter = {
     isActive: { $ne: false },
     $or: [
       { division: { $in: names } },
       { divisions: { $in: names } },
+      { division: { $in: divisionPatterns } },
+      { divisions: { $in: divisionPatterns } },
     ],
   };
 
@@ -47,8 +53,13 @@ async function divisionMemberNames(user) {
     User.find({ ...memberFilter, role: { $in: ['employee', 'service_coordinator'] } }).select('name').lean(),
   ]);
 
+  return [...employees, ...users];
+}
+
+async function divisionMemberNames(user) {
   const ownName = String(user?.name || '').trim();
-  return [...new Set([ownName, ...employees.map(u => u.name), ...users.map(u => u.name)].map(v => String(v || '').trim()).filter(Boolean))]
+  const members = await divisionMembers(user);
+  return [...new Set([ownName, ...members.map(u => u.name)].map(v => String(v || '').trim()).filter(Boolean))]
     .sort((a, b) => a.localeCompare(b));
 }
 function normalizeDivisionKey(value) {
@@ -65,12 +76,13 @@ async function divisionVisibilityFilter(user) {
   const role = String(user?.role || '').toLowerCase();
   if (['admin', 'superadmin', 'administrator'].includes(role)) return {};
 
-  const divisions = await resolveDivisions(user);
-  const names = [...new Set(divisions.flatMap(d => [d.name, d.displayName]).map(v => String(v || '').trim()).filter(Boolean))];
+  const names = await currentDivisionNames(user);
   const keys = names.map(normalizeDivisionKey).filter(Boolean);
+  const members = await divisionMembers(user);
+  const memberIds = [...new Set([user?._id, ...members.map(member => member._id)].filter(Boolean).map(String))];
   const own = { userId: user?._id };
 
-  if (!keys.length && !names.length) return own;
+  if (!keys.length && !names.length && !memberIds.length) return own;
 
   return {
     $or: [
@@ -78,6 +90,7 @@ async function divisionVisibilityFilter(user) {
       { division: { $in: names } },
       { divisionName: { $in: names } },
       { team: { $in: names } },
+      { userId: { $in: memberIds } },
       own,
     ],
   };
