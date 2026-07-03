@@ -62,8 +62,8 @@ const serviceSchema = new mongoose.Schema(
     // ── Report & Dispatch ─────────────────────────────────────
     repType:     { type: String, default: '' },
     repGirNo:    { type: String, default: '' },
-    typeWork:    { type: String, default: '' },
-    type:        { type: String, default: '' }, // alias for typeWork
+    typeWork:    { type: String, default: 'UNDER REPAIR' },
+    type:        { type: String, default: 'UNDER REPAIR' }, // alias for typeWork
     shipSc:      { type: String, default: '' },
     repBrd:      { type: String, default: '' },
     shipComm:    { type: String, default: '' },

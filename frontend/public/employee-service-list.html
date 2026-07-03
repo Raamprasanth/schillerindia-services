@@ -1253,9 +1253,9 @@ function serviceDivisionLabel(s) {
 }
 
 function exportTypeWorkLabel(s) {
-  const text = String((s && (s.typeWork || s.type)) || '').trim();
+  const text = String((s && (s.typeWork || s.type)) || 'UNDER REPAIR').trim();
   const unitStatus = String((s && s.unitSts) || '').trim();
-  return text && text.toLowerCase() !== unitStatus.toLowerCase() ? text : '';
+  return text || 'UNDER REPAIR';
 }
 
 function editService(id) {
@@ -1384,7 +1384,7 @@ async function submitForm() {
   const willCreateEST= !editingId&&EST_UNIT_STATUSES.includes(unitStsVal)&&repTypeVal==='NA';
   const willCreateUR = !editingId&&repTypeVal==='TO/ADV SO';
   const willCreateSO = !editingId&&EST_UNIT_STATUSES.includes(unitStsVal)&&repTypeVal==='BS/SO';
-  const typeWorkVal  = unitStsVal;
+  const typeWorkVal  = 'UNDER REPAIR';
   const obdEl        = document.getElementById('f-Obd');
   const obdVal       = obdEl?obdEl.value.trim():'';
   const rec = {

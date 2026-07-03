@@ -247,7 +247,8 @@ router.get('/', protect, async (req, res) => {
       const obj = r.toObject ? r.toObject() : r;
       obj.raEng = obj.raEng || raByServiceId.get(String(obj._id || '')) || '';
       const linkedTypeWork = typeWorkByServiceId.get(String(obj._id || ''))?.typeWork || '';
-      if (linkedTypeWork) obj.typeWork = linkedTypeWork;
+      obj.typeWork = linkedTypeWork || obj.typeWork || 'UNDER REPAIR';
+      obj.type = obj.type || obj.typeWork;
       const linkedExportFields = exportFieldsByServiceId.get(String(obj._id || '')) || {};
       obj.repBrd = obj.repBrd || linkedExportFields.repBrd || '';
       obj.shipSc = obj.shipSc || linkedExportFields.shipSc || '';
@@ -316,6 +317,8 @@ router.post('/', protect, async (req, res) => {
     if (!body.status) body.status = 'pending';
     if (body.unitSts !== undefined || body.unitStatus !== undefined) body.unitSts = normalizeUnitStatus(body.unitSts || body.unitStatus);
     if (body.repType !== undefined) body.repType = normalizeRepType(body.repType);
+    if (!String(body.typeWork || '').trim()) body.typeWork = 'UNDER REPAIR';
+    if (!String(body.type || '').trim()) body.type = body.typeWork;
 
     // Resolve division: use valid ObjectId if already provided, otherwise resolve by name
     // from body.divisionName, body.division (string), or the employee's own division.
@@ -407,6 +410,8 @@ router.put('/:id', protect, async (req, res) => {
     body.updatedAt   = new Date().toISOString();
     if (body.unitSts !== undefined || body.unitStatus !== undefined) body.unitSts = normalizeUnitStatus(body.unitSts || body.unitStatus);
     if (body.repType !== undefined) body.repType = normalizeRepType(body.repType);
+    if (!String(body.typeWork || '').trim()) body.typeWork = 'UNDER REPAIR';
+    if (!String(body.type || '').trim()) body.type = body.typeWork;
 
     // Division is locked to the original record — do not allow changes.
     delete body.division;
