@@ -1478,7 +1478,7 @@ function exportCSV() {
     'SER_COMM_INWARD_DATE', 'SER_CENTRE_RECEIVED_DATE', 'STK_CUST', 'REGION', 'BRANCH', 'ENGINEER', 'DEALER_NAME',
     'CUST_NAME', 'SUPPLIER_NAME', 'PRODUCT_MODEL', 'UNIT_SLNO', 'DOD', 'UNIT_STATUS', 'Part no',
     'DEF_MOD_BRD_NAME', 'DEF_TYPE', 'TYPE_OF_ACC', 'DEF_PART_SN', 'DEF_GIR_NO', 'REP_TYPE', 'REP_GIR_NO',
-    'DEF_UNIT_GIR_NO', 'FIELD_REMARKS', 'TECHNICAL_REMARKS', 'COMPONENTS_USEDFOR_REPAIR', 'REPAIRED_BRD_STK_DATE',
+    'BSCON', 'FIELD_REMARKS', 'TECHNICAL_REMARKS', 'COMPONENTS_USEDFOR_REPAIR', 'REPAIRED_BRD_STK_DATE',
     'FINAL_REMARKS', 'TYPE_OF_WORK', 'SHIP_DATE_FROM_SERVICE_CENTRE',
     'Comm Warr details'
   ];
@@ -1513,7 +1513,7 @@ function exportCSV() {
       s.defGir,
       s.repType,
       s.repGirNo,
-      s.defUnitGirNo || '',
+      s.bscon || '',
       s.fieldRemarks,
       s.techRemarks,
       s.components,
