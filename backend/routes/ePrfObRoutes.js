@@ -26,6 +26,20 @@ function canAccessDivision(user, division) {
   return Boolean(target) && getUserDivisions(user).some(value => value.toLowerCase() === target);
 }
 
+function buildScPrfObMatchFromEmployee(doc = {}) {
+  const matches = [];
+  if (doc.sourceScPrfObId) matches.push({ _id: doc.sourceScPrfObId });
+  if (doc.refNo) {
+    matches.push({
+      division: doc.division || 'OTHER',
+      type: doc.type || 'TO',
+      refNo: doc.refNo || '',
+      branch: doc.branch || '',
+      model: doc.model || '',
+    });
+  }
+  return matches.length ? { $or: matches } : null;
+}
 async function hydrateSparesReceivedFromSc(rows = []) {
   return Promise.all(rows.map(async (row) => {
     if (row.sparesReceivedAtSvc) return row;
@@ -157,13 +171,14 @@ router.post('/:id/moveToEcr', protect, async (req, res) => {
       update,
       { new: true, runValidators: true }
     );
-
-    if (doc.sourceScPrfObId) {
-      await ScPrfOb.findByIdAndUpdate(
-        doc.sourceScPrfObId,
+    const scMatch = buildScPrfObMatchFromEmployee(doc);
+    if (scMatch) {
+      await ScPrfOb.updateMany(
+        scMatch,
         {
           status: 'Closed',
           executedDate: doc.executedDate || '',
+          sparesReceivedAtSvc: doc.sparesReceivedAtSvc || '',
           updatedAt: new Date(),
         },
         { runValidators: false }
