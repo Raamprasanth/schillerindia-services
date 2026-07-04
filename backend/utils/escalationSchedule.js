@@ -82,21 +82,8 @@ function normalizeScheduleConfig(value = {}) {
     return acc;
   }, {});
   const weekdays = DEFAULT_ESCALATION_GROUPS.reduce((acc, group) => {
-    const selected = Array.isArray(sourceWeekdays[group.reportType])
-      ? sourceWeekdays[group.reportType]
-      : ALL_WEEKDAYS;
-    const clean = [...new Set(selected
-      .map((day) => Number.parseInt(day, 10))
-      .filter((day) => Number.isInteger(day) && day >= 0 && day <= 6))];
-    
-    // Ensure Saturday (6) and Sunday (0) are included for daily escalations
-    if (group.reportType !== 'supplier_warranty_escalation') {
-      if (!clean.includes(0)) clean.push(0);
-      if (!clean.includes(6)) clean.push(6);
-    }
-    
-    clean.sort((a, b) => a - b);
-    acc[group.reportType] = clean.length ? clean : ALL_WEEKDAYS;
+    // Force all escalations to come 24/7 on all days as requested
+    acc[group.reportType] = ALL_WEEKDAYS;
     return acc;
   }, {});
   return { runCounts, weekdays };

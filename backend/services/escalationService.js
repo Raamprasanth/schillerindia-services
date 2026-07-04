@@ -29,7 +29,7 @@ const PROJECT_PYTHON = path.join(__dirname, '..', '..', '.venv', process.platfor
 const BUNDLED_PYTHON = path.join(os.homedir(), '.cache', 'codex-runtimes', 'codex-primary-runtime', 'dependencies', 'python', process.platform === 'win32' ? 'python.exe' : 'bin/python');
 const MAIL_ATTEMPTS = Math.max(1, parseInt(process.env.ESCALATION_MAIL_ATTEMPTS || '2', 10) || 2);
 const MAIL_TIMEOUT_MS = Math.max(30000, parseInt(process.env.ESCALATION_MAIL_TIMEOUT_MS || '120000', 10) || 120000);
-const SCHEDULER_GRACE_MS = Math.max(60000, parseInt(process.env.ESCALATION_SCHEDULER_GRACE_MS || '60000', 10) || 60000);
+const SCHEDULER_GRACE_MS = Math.max(60000, parseInt(process.env.ESCALATION_SCHEDULER_GRACE_MS || '3600000', 10) || 3600000);
 const SCHEDULER_TICK_MS = Math.max(1000, parseInt(process.env.ESCALATION_SCHEDULER_TICK_MS || '1000', 10) || 1000);
 const DEFAULT_STALE_RUNNING_MS = Math.max(10 * 60 * 1000, MAIL_TIMEOUT_MS * 4 + 60 * 1000);
 const STALE_RUNNING_MS = Math.max(60000, parseInt(process.env.ESCALATION_STALE_RUNNING_MS || String(DEFAULT_STALE_RUNNING_MS), 10) || DEFAULT_STALE_RUNNING_MS);
