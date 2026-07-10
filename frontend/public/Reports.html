@@ -1019,8 +1019,17 @@ body{
             <div class="perf-body">
               <div class="fg">
                 <div class="fg-field">
-                  <label>Select Month</label>
-                  <input type="month" id="perf-com-month" onchange="fetchCommercialData()" />
+                  <label class="field-label">Select Month</label>
+                  <input type="month" id="perf-com-month" class="field-input" />
+                </div>
+                <div class="fg-field" style="margin-top:12px;">
+                  <label class="field-label">Select Division</label>
+                  <select id="perf-com-division" class="field-select">
+                    <option value=""> All Divisions </option>
+                  </select>
+                </div>
+                <div class="fg-field" style="margin-top:16px;">
+                  <button class="btn btn-red" style="width:100%; padding:10px; font-weight:700; border-radius:8px;" onclick="fetchCommercialData()">Generate Report</button>
                 </div>
               </div>
             </div>
