@@ -1264,7 +1264,7 @@ async function getCommercialPerformanceData({ month }) {
 
   const divisionsMap = {};
   const ensureDivision = (div) => {
-    const d = (div || 'Unknown').trim();
+    const d = String(div || 'Unknown').trim();
     if (!divisionsMap[d]) {
       divisionsMap[d] = {
         FRN: { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
