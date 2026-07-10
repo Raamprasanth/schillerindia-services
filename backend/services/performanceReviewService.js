@@ -50,7 +50,7 @@ function parseAnyDate(value, fallback = null) {
     if (!Number.isNaN(date.getTime())) return date;
   }
 
-  const dmy = text.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  const dmy = text.match(/^(\d{2})[-\/\.](\d{2})[-\/\.](\d{4})$/);
   if (dmy) {
     const date = new Date(`${dmy[3]}-${dmy[2]}-${dmy[1]}T00:00:00`);
     if (!Number.isNaN(date.getTime())) return date;
@@ -1223,23 +1223,9 @@ async function getCommercialPerformanceData({ month }) {
   const ScPrfOb = require('../models/ScPrfOb');
   const ScSr = require('../models/ScSr');
 
-  const parseDateString = (d) => {
-    if (!d) return null;
-    if (d instanceof Date) return isNaN(d.getTime()) ? null : d;
-    if (typeof d === 'string') {
-      let parts = d.split('-');
-      if (parts.length === 3) {
-        if (parts[0].length === 4) return new Date(d); 
-        if (parts[2].length === 4) return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`); 
-      }
-      return new Date(d);
-    }
-    return null;
-  };
-
   const getDiff = (d1, d2) => {
-    const date1 = parseDateString(d1);
-    const date2 = parseDateString(d2);
+    const date1 = parseAnyDate(d1);
+    const date2 = parseAnyDate(d2);
     if (!date1 || !date2 || isNaN(date1.getTime()) || isNaN(date2.getTime())) return null;
     const utc1 = Date.UTC(date1.getFullYear(), date1.getMonth(), date1.getDate());
     const utc2 = Date.UTC(date2.getFullYear(), date2.getMonth(), date2.getDate());
@@ -1257,10 +1243,22 @@ async function getCommercialPerformanceData({ month }) {
   const start = monthInfo.start;
   const end = monthInfo.end;
 
-  const services = await Service.find({ createdAt: { $gte: start, $lt: end } }).lean();
-  const todrs = await Todr.find({ createdAt: { $gte: start, $lt: end } }).lean();
-  const scPrfObs = await ScPrfOb.find({ createdAt: { $gte: start, $lt: end } }).lean();
-  const scSrs = await ScSr.find({ createdAt: { $gte: start, $lt: end } }).lean();
+  const isDateInRange = (date, s, e) => {
+    if (!date || isNaN(date.getTime())) return false;
+    return date.getTime() >= s.getTime() && date.getTime() < e.getTime();
+  };
+
+  const allServices = await Service.find().lean();
+  const services = allServices.filter(s => isDateInRange(parseAnyDate(s.entryDate, s.createdAt), start, end));
+  
+  const allTodrs = await Todr.find().lean();
+  const todrs = allTodrs.filter(t => isDateInRange(parseAnyDate(t.entryDate, t.createdAt), start, end));
+  
+  const allScPrfObs = await ScPrfOb.find().lean();
+  const scPrfObs = allScPrfObs.filter(p => isDateInRange(parseAnyDate(p.entryDate, p.createdAt), start, end));
+  
+  const allScSrs = await ScSr.find().lean();
+  const scSrs = allScSrs.filter(s => isDateInRange(parseAnyDate(s.date, s.createdAt), start, end));
 
   const divisionsMap = {};
   const ensureDivision = (div) => {
