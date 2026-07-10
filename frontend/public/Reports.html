@@ -4,33 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 
-      <!-- COMMERCIAL SUB-TAB -->
-      <div id="perf-com-pane" class="perf-subpane" style="display:none;">
-        <div class="perf-layout">
-          <div class="perf-builder">
-            <div class="perf-head">
-              <div class="perf-head-title">&#128188; Commercial Performance Analysis</div>
-              <div class="perf-head-sub">Division-wise calculations for FRN, TO, TO/SO, and SR</div>
-            </div>
-            <div class="perf-body">
-              <div class="fg">
-                <div class="fg-field">
-                  <label>Select Month</label>
-                  <input type="month" id="perf-com-month" onchange="fetchCommercialData()" />
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="perf-view" style="flex:2;">
-            <div class="perf-head">
-              <div class="perf-head-title">Commercial Report</div>
-            </div>
-            <div class="perf-body" id="perf-com-result">
-              <div class="empty-sub">Select a month to view the commercial performance report.</div>
-            </div>
-          </div>
-        </div>
-      </div>
+      
 <script>(function(){
   document.documentElement.setAttribute('data-theme',localStorage.getItem('si_theme')||'light');
   const t=sessionStorage.getItem('schiller_token');
@@ -1033,7 +1007,35 @@ body{
         </div>
       </div>
 
-    </div><!-- /tab-performance -->
+    
+<!-- COMMERCIAL SUB-TAB -->
+      <div id="perf-com-pane" class="perf-subpane" style="display:none;">
+        <div class="perf-layout">
+          <div class="perf-builder">
+            <div class="perf-head">
+              <div class="perf-head-title">&#128188; Commercial Performance Analysis</div>
+              <div class="perf-head-sub">Division-wise calculations for FRN, TO, TO/SO, and SR</div>
+            </div>
+            <div class="perf-body">
+              <div class="fg">
+                <div class="fg-field">
+                  <label>Select Month</label>
+                  <input type="month" id="perf-com-month" onchange="fetchCommercialData()" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="perf-view" style="flex:2;">
+            <div class="perf-head">
+              <div class="perf-head-title">Commercial Report</div>
+            </div>
+            <div class="perf-body" id="perf-com-result">
+              <div class="empty-sub">Select a month to view the commercial performance report.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div><!-- /tab-performance -->
 
     <!-- --------------------------------------------------
          TAB 3  ANALYTICS
