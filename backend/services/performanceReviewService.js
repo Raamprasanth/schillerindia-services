@@ -1236,8 +1236,8 @@ async function getCommercialPerformanceData({ month }) {
 
   const categorize = (diff) => {
     if (diff === null || isNaN(diff)) return null;
-    if (diff <= 1) return '< 1 day';
-    if (diff > 1 && diff <= 2) return '1 to 2 days';
+    if (diff < 1) return '< 1 day';
+    if (diff <= 2) return '1 to 2 days';
     return '> 2 days';
   };
 
