@@ -1253,11 +1253,11 @@ async function getCommercialPerformanceData({ month }) {
   const allServices = await Service.find().populate('division', 'name').lean();
   const services = allServices.filter(s => isDateInRange(parseAnyDate(s.entryDate, s.createdAt), start, end));
   
-  const allTodrs = (await Ctodr.find().lean()).filter(t => String(t.action || '').trim().toUpperCase() === 'TO');
+  const allTodrs = await Ctodr.find().lean();
   const todrs = allTodrs.filter(t => {
     const raisedDate = parseAnyDate(t.toRaisedDate);
     const receivedDate = parseAnyDate(t.sparesReceivedDate);
-    return raisedDate && receivedDate && isDateInRange(raisedDate, start, end);
+    return raisedDate && receivedDate && isDateInRange(receivedDate, start, end);
   });
   
   const allScPrfObs = await ScPrfOb.find().lean();
@@ -1267,12 +1267,13 @@ async function getCommercialPerformanceData({ month }) {
   const scSrs = allScSrs.filter(s => {
     const raisedDate = parseAnyDate(s.toRaisedDate);
     const receivedDate = parseAnyDate(s.sparesReceivedDate);
-    return raisedDate && receivedDate && isDateInRange(raisedDate, start, end);
+    const closedDate = parseAnyDate(s.closeDate, s.createdAt);
+    return raisedDate && receivedDate && isDateInRange(closedDate, start, end);
   });
 
   const divisionsMap = {};
   const ensureDivision = (div) => {
-    const d = String(div || 'Unknown').trim();
+    const d = String(div || 'Unknown').trim().replace(/\s+/g, ' ').toUpperCase();
     if (!divisionsMap[d]) {
       divisionsMap[d] = {
         FRN: { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
