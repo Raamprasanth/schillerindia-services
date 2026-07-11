@@ -389,11 +389,15 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       <div class="table-top">
         <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;">Closed DR Register</div>
       </div>
-            <div class="filter-strip">
+      <div class="filter-strip">
         <label>From</label>
         <input type="date" class="f-inp" id="fl-from" onchange="applyFilters()">
         <label>To</label>
         <input type="date" class="f-inp" id="fl-to" onchange="applyFilters()">
+        <label>Division</label>
+        <select class="f-inp" id="fl-division" onchange="applyFilters()" style="min-width:140px;">
+          <option value="">All Divisions</option>
+        </select>
         <button class="btn btn-outline btn-sm" onclick="clearFilters()" style="margin-left:auto;">&#10005; Clear</button>
       </div>
       <div class="table-wrap">
@@ -472,19 +476,30 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   let filtered = [];
 
   
+  function populateDivisions() {
+    const sel = document.getElementById('fl-division');
+    if (!sel) return;
+    const divs = [...new Set(records.map(r => r.division).filter(Boolean))].sort();
+    const current = sel.value;
+    sel.innerHTML = '<option value="">All Divisions</option>' + divs.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
+    if (current) sel.value = current;
+  }
+
   function clearFilters() {
-    ['fl-from','fl-to'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+    ['fl-from','fl-to','fl-division'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
     applyFilters();
   }
 
   function applyFilters() {
-    const from = document.getElementById('fl-from')?.value || '';
-    const to = document.getElementById('fl-to')?.value || '';
-    
+    const from     = document.getElementById('fl-from')?.value || '';
+    const to       = document.getElementById('fl-to')?.value || '';
+    const division = document.getElementById('fl-division')?.value || '';
+
     filtered = records.filter(d => {
       const entryDateStr = d.entryDate ? new Date(d.entryDate).toISOString().split('T')[0] : '';
       return (!from || entryDateStr >= from) &&
-             (!to || entryDateStr <= to);
+             (!to   || entryDateStr <= to)   &&
+             (!division || d.division === division);
     });
     renderTable();
   }
@@ -494,7 +509,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       const res = await fetch('/api/cdr', { headers: hdrs() });
       if(res.status===401||res.status===403) return logout();
       const data = await res.json();
-      if(res.ok) { records = data; applyFilters(); }
+      if(res.ok) { records = data; populateDivisions(); applyFilters(); }
     } catch(e) { console.error(e); }
   }
 
