@@ -2448,10 +2448,10 @@
     }
 
     function getGroupedEstimateRows(seed) {
-      const scRef = String(seed?.scReNo || '').trim();
-      if (!scRef) return [];
+      const defGir = String(seed?.defGir || '').trim();
+      if (!defGir) return getSingleEstimateRows(seed);
       return allRecords
-        .filter(r => String(r.scReNo || '').trim() === scRef)
+        .filter(r => String(r.defGir || '').trim() === defGir)
         .sort((a, b) => {
           const av = String(a.partNo || a.defMod || a.defGir || '');
           const bv = String(b.partNo || b.defMod || b.defGir || '');
