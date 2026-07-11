@@ -1285,8 +1285,12 @@ async function getCommercialPerformanceData({ month }) {
     }
   }
 
+  const today = new Date();
+
   for (const t of todrs) {
-    const diff = getDiff(t.toRaisedDate || t.entryDate, t.sparesReceivedDate);
+    // Use sparesReceivedDate if available, otherwise use today (still pending)
+    const endDate = t.sparesReceivedDate || today;
+    const diff = getDiff(t.toRaisedDate || t.entryDate, endDate);
     const cat = categorize(diff);
     if (cat) {
       const divData = ensureDivision(t.division || t.sourceModule || 'All');
@@ -1296,7 +1300,9 @@ async function getCommercialPerformanceData({ month }) {
   }
 
   for (const p of scPrfObs) {
-    const diff = getDiff(p.raisedDate || p.entryDate, p.receivedDate);
+    // Use receivedDate if available, otherwise use today (still pending)
+    const endDate = p.receivedDate || today;
+    const diff = getDiff(p.raisedDate || p.entryDate, endDate);
     const cat = categorize(diff);
     if (cat) {
       const divData = ensureDivision(p.division);
@@ -1306,7 +1312,9 @@ async function getCommercialPerformanceData({ month }) {
   }
 
   for (const s of scSrs) {
-    const diff = getDiff(s.toRaisedDate || s.date, s.sparesReceivedDate);
+    // Use sparesReceivedDate if available, otherwise use today (still pending)
+    const endDate = s.sparesReceivedDate || today;
+    const diff = getDiff(s.toRaisedDate || s.date, endDate);
     const cat = categorize(diff);
     if (cat) {
       const divData = ensureDivision(s.division);
