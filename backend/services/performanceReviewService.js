@@ -1259,7 +1259,11 @@ async function getCommercialPerformanceData({ month }) {
     Ctodr.find().lean(),
   ]);
   const allTodrs = [...openTodrs, ...closedTodrs].filter(t => String(t.action || '').trim().toUpperCase() === 'TO');
-  const todrs = allTodrs.filter(t => isDateInRange(parseAnyDate(t.toRaisedDate), start, end));
+  const todrs = allTodrs.filter(t => {
+    const raisedDate = parseAnyDate(t.toRaisedDate);
+    const receivedDate = parseAnyDate(t.sparesReceivedDate);
+    return raisedDate && receivedDate && isDateInRange(raisedDate, start, end);
+  });
   
   const allScPrfObs = await ScPrfOb.find().lean();
   const scPrfObs = allScPrfObs.filter(p => isDateInRange(parseAnyDate(p.entryDate, p.createdAt), start, end));
