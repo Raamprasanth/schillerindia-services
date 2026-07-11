@@ -1234,8 +1234,8 @@ async function getCommercialPerformanceData({ month }) {
 
   const categorize = (diff) => {
     if (diff === null || isNaN(diff)) return null;
-    if (diff < 1) return '< 1 day';
-    if (diff >= 1 && diff <= 2) return '1 to 2 days';
+    if (diff <= 1) return '< 1 day';
+    if (diff > 1 && diff <= 2) return '1 to 2 days';
     return '> 2 days';
   };
 
@@ -1248,7 +1248,7 @@ async function getCommercialPerformanceData({ month }) {
     return date.getTime() >= s.getTime() && date.getTime() < e.getTime();
   };
 
-  const allServices = await Service.find().lean();
+  const allServices = await Service.find().populate('division', 'name').lean();
   const services = allServices.filter(s => isDateInRange(parseAnyDate(s.entryDate, s.createdAt), start, end));
   
   const allTodrs = await Todr.find().lean();
@@ -1275,19 +1275,20 @@ async function getCommercialPerformanceData({ month }) {
   };
 
   for (const s of services) {
-    const cat = categorize(getDiff(s.serComm, s.rcvdDate));
+    const diff = getDiff(s.entryDate || s.createdAt, s.frnDate);
+    const cat = categorize(diff);
     if (cat) {
-      const divData = ensureDivision(s.division);
+      const divName = s.division?.name || s.divisionName || s.division || 'Unknown';
+      const divData = ensureDivision(divName);
       divData['FRN'][cat]++;
       divData['FRN'].total++;
     }
   }
 
   for (const t of todrs) {
-    const cat = categorize(getDiff(t.toRaisedDate, t.sparesReceivedDate));
+    const diff = getDiff(t.toRaisedDate || t.entryDate, t.sparesReceivedDate);
+    const cat = categorize(diff);
     if (cat) {
-      // todr might not have a direct division, let's try to map if it's there
-      // wait, Todr doesn't have division directly. I'll just group under "All" or if it has sourceModule.
       const divData = ensureDivision(t.division || t.sourceModule || 'All');
       divData['TO'][cat]++;
       divData['TO'].total++;
@@ -1295,7 +1296,8 @@ async function getCommercialPerformanceData({ month }) {
   }
 
   for (const p of scPrfObs) {
-    const cat = categorize(getDiff(p.entryDate, p.receivedDate));
+    const diff = getDiff(p.raisedDate || p.entryDate, p.receivedDate);
+    const cat = categorize(diff);
     if (cat) {
       const divData = ensureDivision(p.division);
       divData['TO/SO'][cat]++;
@@ -1304,7 +1306,8 @@ async function getCommercialPerformanceData({ month }) {
   }
 
   for (const s of scSrs) {
-    const cat = categorize(getDiff(s.toRaisedDate, s.sparesReceivedDate));
+    const diff = getDiff(s.toRaisedDate || s.date, s.sparesReceivedDate);
+    const cat = categorize(diff);
     if (cat) {
       const divData = ensureDivision(s.division);
       divData['SR'][cat]++;
