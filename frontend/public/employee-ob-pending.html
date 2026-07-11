@@ -3323,19 +3323,11 @@
       const headerRow = document.querySelector('.ob-table thead tr');
       if (!headerRow) return;
       const headers = Array.from(headerRow.children);
-      if (headers.length < 15) return;
-      const unitHeader = headers[9];
-      const modelHeader = headers[8];
-      const typeHeader = headers[12];
-      const statusHeader = headers[14];
-      if (unitHeader && modelHeader) headerRow.insertBefore(unitHeader, modelHeader);
-      if (typeHeader) typeHeader.remove();
-      if (statusHeader) statusHeader.remove();
-      if (!headerRow.querySelector('[data-col="repair"]')) {
-        const repairHeader = document.createElement('th');
-        repairHeader.textContent = 'Repair';
-        repairHeader.setAttribute('data-col', 'repair');
-        headerRow.appendChild(repairHeader);
+      // Rename the last header (OB Status) to "Repair" since data renders the RT OB button there
+      const lastHeader = headers[headers.length - 1];
+      if (lastHeader && !lastHeader.getAttribute('data-col')) {
+        lastHeader.textContent = 'Repair';
+        lastHeader.setAttribute('data-col', 'repair');
       }
     }
 
