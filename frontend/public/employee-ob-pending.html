@@ -2516,9 +2516,9 @@
     }
 
     function buildAutoEstimationNo(record) {
-      const frn = String(record?.frnNo || '').trim();
+      const defGir = String(record?.defGir || '').trim();
       const scRef = String(record?.scReNo || record?.scRno || '').trim();
-      return [frn, scRef].filter(Boolean).join(' / ');
+      return [defGir, scRef].filter(Boolean).join(' / ');
     }
     function buildAutoEstimationNoForRecords(records) {
       const values = (records || []).map(buildAutoEstimationNo).filter(Boolean);
@@ -2532,7 +2532,7 @@
       el.readOnly = true;
       el.classList.add('locked-field');
       el.setAttribute('tabindex', '-1');
-      el.title = 'Auto generated from FRN No and SC Ref No';
+      el.title = 'Auto generated from DEF GIR No and SC Ref No';
     }
 
     async function _fetchCompRepair(sourceId, scRefNo) {
