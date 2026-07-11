@@ -712,20 +712,33 @@ router.put('/:id', async (req, res) => {
         : 0;
 
       let alreadyScrap = false;
+      const mongoose = require('mongoose');
+      let validServiceId = null;
+
+      if (updated.serviceId) {
+        if (mongoose.Types.ObjectId.isValid(updated.serviceId) && String(updated.serviceId).length === 24) {
+          validServiceId = updated.serviceId;
+        } else if (typeof updated.serviceId === 'string' && updated.serviceId.startsWith('SVC-')) {
+          const Service = require('../models/Service');
+          const svcObj = await Service.findOne({ serviceNo: updated.serviceId }).lean();
+          if (svcObj) validServiceId = svcObj._id;
+        }
+      }
+
       if (updated.frnNo) alreadyScrap = await Scrap.findOne({ frnNo: updated.frnNo, typeWork: 'Supplier Warranty' });
-      if (!alreadyScrap && updated.serviceId) alreadyScrap = await Scrap.findOne({ serviceId: updated.serviceId, typeWork: 'Supplier Warranty' });
+      if (!alreadyScrap && validServiceId) alreadyScrap = await Scrap.findOne({ serviceId: validServiceId, typeWork: 'Supplier Warranty' });
 
       if (!alreadyScrap) {
         let divisionName = '';
-        if (updated.serviceId) {
-          const svc = await Service.findById(updated.serviceId).populate('division').lean();
+        if (validServiceId) {
+          const svc = await Service.findById(validServiceId).populate('division').lean();
           if (svc && svc.division) {
             divisionName = typeof svc.division === 'object' ? svc.division.name : '';
           }
         }
 
         const scrapDoc = await Scrap.create({
-          serviceId: updated.serviceId || null,
+          serviceId: validServiceId || null,
           entryDate: updated.entryDate || '',
           scRno: updated.scReNo || '',
           scEng: updated.scEng || '',
