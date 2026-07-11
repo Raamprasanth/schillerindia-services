@@ -338,11 +338,11 @@ table.est-table tbody tr:last-child td{border-bottom:none;}
         <div class="form-section">
           <div class="form-section-title" style="color:var(--amber);border-bottom-color:rgba(180,83,9,0.2);">Estimation Details</div>
           <div class="fg-4">
-            <div class="ff"><label>Estimation No <span class="req">*</span></label><input type="text" id="u-estno" placeholder=""/></div>
-            <div class="ff"><label>Estimation Date <span class="req">*</span></label><input type="date" id="u-estdate"/></div>
+            <div class="ff"><label>Estimation No</label><input type="text" id="u-estno" placeholder=""/></div>
+            <div class="ff"><label>Estimation Date</label><input type="date" id="u-estdate"/></div>
             <div class="ff"><label>Valid Date</label><input type="date" id="u-validdate" readonly style="background:var(--surface3);color:var(--muted);cursor:not-allowed;"/></div>
-            <div class="ff"><label>Estimation Amount (Rs.) <span class="req">*</span></label><input type="number" id="u-estamount" placeholder="" min="0"/></div>
-            <div class="ff"><label>Order Type <span class="req">*</span></label>
+            <div class="ff"><label>Estimation Amount (Rs.)</label><input type="number" id="u-estamount" placeholder="" min="0"/></div>
+            <div class="ff"><label>Order Type</label>
               <select id="u-eststatus">
                 <option value="">Select...</option>
                 <option value="New">New</option>
@@ -1235,10 +1235,11 @@ async function submitUpdate(){
 
   const missing = [];
   // Estimation required fields
-  if(!estno)     missing.push('Estimation No');
-  if(!estdate)   missing.push('Estimation Date');
-  if(!estamount) missing.push('Estimation Amount');
-  if(!eststatus) missing.push('Order Type');
+  // Estimation fields are optional — removed mandatory validation
+  // if(!estno)     missing.push('Estimation No');
+  // if(!estdate)   missing.push('Estimation Date');
+  // if(!estamount) missing.push('Estimation Amount');
+  // if(!eststatus) missing.push('Order Type');
   if(!raeng)     missing.push('RA Engineer');
 
   // OB Update required fields bypassed for Estimation Pending page
