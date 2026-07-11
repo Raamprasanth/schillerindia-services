@@ -1257,7 +1257,8 @@ async function getCommercialPerformanceData({ month }) {
   const todrs = allTodrs.filter(t => {
     const raisedDate = parseAnyDate(t.toRaisedDate);
     const receivedDate = parseAnyDate(t.sparesReceivedDate);
-    return raisedDate && receivedDate && isDateInRange(receivedDate, start, end);
+    const entryDate = parseAnyDate(t.entryDate, t.createdAt);
+    return raisedDate && receivedDate && isDateInRange(entryDate, start, end);
   });
   
   const allScPrfObs = await ScPrfOb.find().lean();
