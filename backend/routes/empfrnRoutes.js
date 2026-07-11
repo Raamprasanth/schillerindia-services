@@ -743,21 +743,34 @@ router.put('/:id/update', protect, async (req, res) => {
 
     if (doc.status === 'supplier_warranty') {
       try {
+        // Resolve serviceId to a valid MongoDB ObjectId
+        const mongoose = require('mongoose');
+        let validServiceId = null;
+        if (doc.serviceId) {
+          if (mongoose.Types.ObjectId.isValid(doc.serviceId) && String(doc.serviceId).length === 24) {
+            validServiceId = doc.serviceId;
+          } else {
+            // It's a custom string like "SVC-...", look up the actual _id
+            const svcByCustomId = await Service.findOne({ serviceId: String(doc.serviceId) }).lean();
+            if (svcByCustomId) validServiceId = svcByCustomId._id;
+          }
+        }
+
         let alreadyScrap = false;
         if (doc.frnNo) alreadyScrap = await Scrap.findOne({ frnNo: doc.frnNo, typeWork: 'Supplier Warranty' });
-        if (!alreadyScrap && doc.serviceId) alreadyScrap = await Scrap.findOne({ serviceId: doc.serviceId, typeWork: 'Supplier Warranty' });
+        if (!alreadyScrap && validServiceId) alreadyScrap = await Scrap.findOne({ serviceId: validServiceId, typeWork: 'Supplier Warranty' });
 
         if (!alreadyScrap) {
           let divisionName = '';
-          if (doc.serviceId) {
-            const svc = await Service.findById(doc.serviceId).populate('division').lean();
+          if (validServiceId) {
+            const svc = await Service.findById(validServiceId).populate('division').lean();
             if (svc && svc.division) {
               divisionName = typeof svc.division === 'object' ? svc.division.name : '';
             }
           }
 
           const scrapDoc = await Scrap.create({
-            serviceId: doc.serviceId || null,
+            serviceId: validServiceId || null,
             entryDate: doc.entryDate || '',
             scRno: doc.scRno || '',
             scEng: doc.scEng || '',
@@ -785,9 +798,9 @@ router.put('/:id/update', protect, async (req, res) => {
             buildSupplierWarrantyEscalationRow(scrapDoc.toObject ? scrapDoc.toObject() : scrapDoc)
           );
         }
-        if (doc.serviceId) {
+        if (validServiceId) {
           await Service.findByIdAndUpdate(
-            doc.serviceId,
+            validServiceId,
             {
               $set: {
                 type: 'Supplier Warranty',
