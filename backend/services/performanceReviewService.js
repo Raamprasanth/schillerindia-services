@@ -1219,12 +1219,10 @@ async function getCommercialPerformanceData({ month }) {
   const monthInfo = monthParts(month);
   
   const Service = require('../models/Service');
-  const Todr = require('../models/Todr');
   const Ctodr = require('../models/Ctodr');
   const EmpFRN = require('../models/EmpFRN');
   const EstimationPending = require('../models/EstimationPending');
   const ScPrfOb = require('../models/ScPrfOb');
-  const ScSr = require('../models/ScSr');
   const ScCsr = require('../models/ScCsr');
 
   const getDiff = (d1, d2) => {
@@ -1255,11 +1253,7 @@ async function getCommercialPerformanceData({ month }) {
   const allServices = await Service.find().populate('division', 'name').lean();
   const services = allServices.filter(s => isDateInRange(parseAnyDate(s.entryDate, s.createdAt), start, end));
   
-  const [openTodrs, closedTodrs] = await Promise.all([
-    Todr.find().lean(),
-    Ctodr.find().lean(),
-  ]);
-  const allTodrs = [...openTodrs, ...closedTodrs].filter(t => String(t.action || '').trim().toUpperCase() === 'TO');
+  const allTodrs = (await Ctodr.find().lean()).filter(t => String(t.action || '').trim().toUpperCase() === 'TO');
   const todrs = allTodrs.filter(t => {
     const raisedDate = parseAnyDate(t.toRaisedDate);
     const receivedDate = parseAnyDate(t.sparesReceivedDate);
@@ -1269,11 +1263,7 @@ async function getCommercialPerformanceData({ month }) {
   const allScPrfObs = await ScPrfOb.find().lean();
   const scPrfObs = allScPrfObs.filter(p => isDateInRange(parseAnyDate(p.entryDate, p.createdAt), start, end));
   
-  const [openScSrs, closedScSrs] = await Promise.all([
-    ScSr.find().lean(),
-    ScCsr.find().lean(),
-  ]);
-  const allScSrs = [...openScSrs, ...closedScSrs];
+  const allScSrs = await ScCsr.find().lean();
   const scSrs = allScSrs.filter(s => {
     const raisedDate = parseAnyDate(s.toRaisedDate);
     const receivedDate = parseAnyDate(s.sparesReceivedDate);
