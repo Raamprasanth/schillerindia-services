@@ -1,6 +1,9 @@
 // routes/scrapRoutes.js
 const router = require('express').Router();
+const mongoose = require('mongoose');
 const Scrap  = require('../models/Scrap');
+const Service = require('../models/Service');
+const Division = require('../models/Division');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 const { resolveDivision } = require('../utils/visibility');
 const { buildSupplierWarrantyEscalationRow, enqueueLatestEscalationSnapshot } = require('../services/escalationService');
@@ -18,6 +21,32 @@ async function canAccessScrapDoc(doc, user = {}) {
   const allowedName = empName && [doc.scEng, doc.engineer, doc.addedBy]
     .some((name) => String(name || '').trim() === empName);
   return Boolean(allowedDiv || allowedName);
+}
+
+function serviceReferenceValue(value) {
+  if (!value) return '';
+  if (typeof value === 'object') {
+    return value._id || value.id || value.serviceId || '';
+  }
+  return String(value).trim();
+}
+
+async function resolveServiceReference(value) {
+  const ref = serviceReferenceValue(value);
+  if (!ref) return { serviceObjectId: null, serviceDoc: null };
+
+  let serviceDoc = null;
+  if (mongoose.Types.ObjectId.isValid(ref) && String(ref).length === 24) {
+    serviceDoc = await Service.findById(ref).lean();
+  }
+  if (!serviceDoc) {
+    serviceDoc = await Service.findOne({ serviceId: ref }).lean();
+  }
+
+  return {
+    serviceObjectId: serviceDoc ? serviceDoc._id : null,
+    serviceDoc,
+  };
 }
 
 // ── GET all scrap records ─────────────────────────────────
@@ -89,14 +118,13 @@ router.post('/', protect, async (req, res) => {
     const finalCustomer = String(customerName || customer || '').trim();
     if (!finalCustomer) return res.status(400).json({ message: 'Customer name is required.' });
 
+    const { serviceObjectId, serviceDoc } = await resolveServiceReference(serviceId);
+
     // Resolve division from linked Service record
     let divisionName = '';
     try {
-      const Service  = require('../models/Service');
-      const Division = require('../models/Division');
-      const svc = serviceId ? await Service.findOne({ serviceId }).lean() : null;
-      if (svc && svc.division) {
-        const divDoc = await Division.findById(svc.division).lean();
+      if (serviceDoc && serviceDoc.division) {
+        const divDoc = await Division.findById(serviceDoc.division).lean();
         if (divDoc) divisionName = divDoc.name;
       }
     } catch (_) { /* non-fatal */ }
@@ -108,7 +136,7 @@ router.post('/', protect, async (req, res) => {
     const finalReceivedDate = receivedDateAtEsskay || rcvdDate || entryDate || '';
 
     const doc = await Scrap.create({
-      serviceId: serviceId || null,
+      serviceId: serviceObjectId,
       entryDate: entryDate || finalReceivedDate,
       scRno,
       scEng: scEng || req.user.name || '',

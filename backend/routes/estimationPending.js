@@ -720,7 +720,7 @@ router.put('/:id', async (req, res) => {
           validServiceId = updated.serviceId;
         } else if (typeof updated.serviceId === 'string' && updated.serviceId.startsWith('SVC-')) {
           const Service = require('../models/Service');
-          const svcObj = await Service.findOne({ serviceNo: updated.serviceId }).lean();
+          const svcObj = await Service.findOne({ serviceId: updated.serviceId }).lean();
           if (svcObj) validServiceId = svcObj._id;
         }
       }
@@ -767,9 +767,9 @@ router.put('/:id', async (req, res) => {
         );
       }
 
-      if (updated.serviceId) {
+      if (validServiceId) {
         await Service.findByIdAndUpdate(
-          updated.serviceId,
+          validServiceId,
           {
             $set: {
               type: 'Supplier Warranty',
