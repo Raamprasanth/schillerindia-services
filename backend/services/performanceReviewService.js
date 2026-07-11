@@ -1220,6 +1220,9 @@ async function getCommercialPerformanceData({ month }) {
   
   const Service = require('../models/Service');
   const Todr = require('../models/Todr');
+  const Ctodr = require('../models/Ctodr');
+  const EmpFRN = require('../models/EmpFRN');
+  const EstimationPending = require('../models/EstimationPending');
   const ScPrfOb = require('../models/ScPrfOb');
   const ScSr = require('../models/ScSr');
 
@@ -1251,8 +1254,12 @@ async function getCommercialPerformanceData({ month }) {
   const allServices = await Service.find().populate('division', 'name').lean();
   const services = allServices.filter(s => isDateInRange(parseAnyDate(s.entryDate, s.createdAt), start, end));
   
-  const allTodrs = await Todr.find().lean();
-  const todrs = allTodrs.filter(t => isDateInRange(parseAnyDate(t.entryDate, t.createdAt), start, end));
+  const [openTodrs, closedTodrs] = await Promise.all([
+    Todr.find().lean(),
+    Ctodr.find().lean(),
+  ]);
+  const allTodrs = [...openTodrs, ...closedTodrs].filter(t => String(t.action || '').trim().toUpperCase() === 'TO');
+  const todrs = allTodrs.filter(t => isDateInRange(parseAnyDate(t.toRaisedDate), start, end));
   
   const allScPrfObs = await ScPrfOb.find().lean();
   const scPrfObs = allScPrfObs.filter(p => isDateInRange(parseAnyDate(p.entryDate, p.createdAt), start, end));
@@ -1274,6 +1281,29 @@ async function getCommercialPerformanceData({ month }) {
     return divisionsMap[d];
   };
 
+  const toSourceIds = [...new Set(
+    todrs
+      .map(t => t.sourceId)
+      .filter(id => id && /^[0-9a-fA-F]{24}$/.test(String(id)))
+      .map(String)
+  )];
+  const toSourceMap = new Map();
+  if (toSourceIds.length) {
+    const [empFrns, services, estimations] = await Promise.all([
+      EmpFRN.find({ _id: { $in: toSourceIds } }).populate('division', 'name').lean(),
+      Service.find({ _id: { $in: toSourceIds } }).populate('division', 'name').lean(),
+      EstimationPending.find({ _id: { $in: toSourceIds } }).populate('division', 'name').lean(),
+    ]);
+    [...empFrns, ...services, ...estimations].forEach(doc => toSourceMap.set(String(doc._id), doc));
+  }
+
+  const divisionNameForTo = (row) => {
+    if (row.division) return row.division;
+    const source = row.sourceId ? toSourceMap.get(String(row.sourceId)) : null;
+    if (!source) return 'Unknown';
+    return source.division?.name || source.divisionName || source.division || 'Unknown';
+  };
+
   for (const s of services) {
     const diff = getDiff(s.entryDate || s.createdAt, s.frnDate);
     const cat = categorize(diff);
@@ -1288,12 +1318,10 @@ async function getCommercialPerformanceData({ month }) {
   const today = new Date();
 
   for (const t of todrs) {
-    // Use sparesReceivedDate if available, otherwise use today (still pending)
-    const endDate = t.sparesReceivedDate || today;
-    const diff = getDiff(t.toRaisedDate || t.entryDate, endDate);
+    const diff = getDiff(t.toRaisedDate, t.sparesReceivedDate);
     const cat = categorize(diff);
     if (cat) {
-      const divData = ensureDivision(t.division || t.sourceModule || 'All');
+      const divData = ensureDivision(divisionNameForTo(t));
       divData['TO'][cat]++;
       divData['TO'].total++;
     }
