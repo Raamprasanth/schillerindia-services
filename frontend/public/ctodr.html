@@ -396,6 +396,10 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <input type="date" class="f-inp" id="fl-from" onchange="applyFilters()">
         <label>To</label>
         <input type="date" class="f-inp" id="fl-to" onchange="applyFilters()">
+        <label>Division</label>
+        <select class="f-inp" id="fl-division" onchange="applyFilters()" style="min-width:140px;">
+          <option value="">All Divisions</option>
+        </select>
         <button class="btn btn-outline btn-sm" onclick="clearFilters()" style="margin-left:auto;">&#10005; Clear</button>
       </div>
       <div class="table-wrap">
