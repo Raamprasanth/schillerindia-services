@@ -1300,9 +1300,8 @@ async function getCommercialPerformanceData({ month }) {
   }
 
   for (const p of scPrfObs) {
-    // Use receivedDate if available, otherwise use today (still pending)
-    const endDate = p.receivedDate || today;
-    const diff = getDiff(p.raisedDate || p.entryDate, endDate);
+    const endDate = p.sparesReceivedAtSvc;
+    const diff = getDiff(p.entryDate, endDate);
     const cat = categorize(diff);
     if (cat) {
       const divData = ensureDivision(p.division);
