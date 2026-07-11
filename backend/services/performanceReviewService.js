@@ -1225,6 +1225,7 @@ async function getCommercialPerformanceData({ month }) {
   const EstimationPending = require('../models/EstimationPending');
   const ScPrfOb = require('../models/ScPrfOb');
   const ScSr = require('../models/ScSr');
+  const ScCsr = require('../models/ScCsr');
 
   const getDiff = (d1, d2) => {
     const date1 = parseAnyDate(d1);
@@ -1268,8 +1269,16 @@ async function getCommercialPerformanceData({ month }) {
   const allScPrfObs = await ScPrfOb.find().lean();
   const scPrfObs = allScPrfObs.filter(p => isDateInRange(parseAnyDate(p.entryDate, p.createdAt), start, end));
   
-  const allScSrs = await ScSr.find().lean();
-  const scSrs = allScSrs.filter(s => isDateInRange(parseAnyDate(s.date, s.createdAt), start, end));
+  const [openScSrs, closedScSrs] = await Promise.all([
+    ScSr.find().lean(),
+    ScCsr.find().lean(),
+  ]);
+  const allScSrs = [...openScSrs, ...closedScSrs];
+  const scSrs = allScSrs.filter(s => {
+    const raisedDate = parseAnyDate(s.toRaisedDate);
+    const receivedDate = parseAnyDate(s.sparesReceivedDate);
+    return raisedDate && receivedDate && isDateInRange(raisedDate, start, end);
+  });
 
   const divisionsMap = {};
   const ensureDivision = (div) => {
@@ -1343,9 +1352,7 @@ async function getCommercialPerformanceData({ month }) {
   }
 
   for (const s of scSrs) {
-    // Use sparesReceivedDate if available, otherwise use today (still pending)
-    const endDate = s.sparesReceivedDate || today;
-    const diff = getDiff(s.toRaisedDate || s.date, endDate);
+    const diff = getDiff(s.toRaisedDate, s.sparesReceivedDate);
     const cat = categorize(diff);
     if (cat) {
       const divData = ensureDivision(s.division);
