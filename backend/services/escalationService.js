@@ -909,7 +909,7 @@ async function loadSourceMap(Model, ids = []) {
   if (!ids.length) return new Map();
   const query = Model.find({ _id: { $in: ids } });
   if (['Service', 'Empfrn', 'EstimationPending'].includes(Model.modelName)) {
-    query.populate('division', 'name');
+    query.populate({ path: 'division', select: 'name', strictPopulate: false });
   }
   const docs = await query.lean();
   return new Map(docs.map((doc) => [String(doc._id), doc]));
