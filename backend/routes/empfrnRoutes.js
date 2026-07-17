@@ -908,7 +908,7 @@ router.put('/:id/update', protect, async (req, res) => {
 // ─────────────────────────────────────────────────────────
 router.post('/:id/sr', protect, async (req, res) => {
   try {
-    const doc = await Empfrn.findById(req.params.id).populate({ path: 'serviceId', populate: { path: 'division' } });
+    const doc = await Empfrn.findById(req.params.id).populate({ path: 'serviceId', strictPopulate: false, populate: { path: 'division', strictPopulate: false } });
     if (!doc) return res.status(404).json({ message: 'Record not found' });
 
     if (!(await hasQueueAccess(req.user, doc))) {
@@ -958,7 +958,7 @@ router.post('/:id/sr', protect, async (req, res) => {
 
 router.post('/:id/to', protect, async (req, res) => {
   try {
-    const doc = await Empfrn.findById(req.params.id).populate({ path: 'serviceId', populate: { path: 'division' } });
+    const doc = await Empfrn.findById(req.params.id).populate({ path: 'serviceId', strictPopulate: false, populate: { path: 'division', strictPopulate: false } });
     if (!doc) return res.status(404).json({ message: 'Record not found' });
     const rawItems = Array.isArray(req.body?.items) ? req.body.items : [];
 

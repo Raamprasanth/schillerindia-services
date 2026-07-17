@@ -585,7 +585,7 @@ router.post('/from-ob', async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.put('/:id', async (req, res) => {
   try {
-    const record = await EstimationPending.findById(req.params.id).populate({ path: 'serviceId', populate: { path: 'division' } });
+    const record = await EstimationPending.findById(req.params.id).populate({ path: 'serviceId', strictPopulate: false, populate: { path: 'division', strictPopulate: false } });
     if (!record) return res.status(404).json({ message: 'Record not found' });
 
     const { role, name } = req.user;
@@ -886,7 +886,7 @@ router.put('/:id', async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.post('/:id/sr', async (req, res) => {
   try {
-    const record = await EstimationPending.findById(req.params.id).populate({ path: 'serviceId', populate: { path: 'division' } });
+    const record = await EstimationPending.findById(req.params.id).populate({ path: 'serviceId', strictPopulate: false, populate: { path: 'division', strictPopulate: false } });
     if (!record) return res.status(404).json({ message: 'Record not found' });
 
     const { role, name } = req.user;
@@ -932,7 +932,7 @@ router.post('/:id/sr', async (req, res) => {
 
 router.post('/:id/to', async (req, res) => {
   try {
-    const record = await EstimationPending.findById(req.params.id).populate({ path: 'serviceId', populate: { path: 'division' } });
+    const record = await EstimationPending.findById(req.params.id).populate({ path: 'serviceId', strictPopulate: false, populate: { path: 'division', strictPopulate: false } });
     if (!record) return res.status(404).json({ message: 'Record not found' });
     const rawItems = Array.isArray(req.body?.items) ? req.body.items : [];
 
@@ -999,7 +999,7 @@ router.post('/:id/to', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
-    const record = await EstimationPending.findById(req.params.id).populate({ path: 'serviceId', populate: { path: 'division' } });
+    const record = await EstimationPending.findById(req.params.id).populate({ path: 'serviceId', strictPopulate: false, populate: { path: 'division', strictPopulate: false } });
     if (!record) return res.status(404).json({ message: 'Record not found' });
 
     const { role } = req.user;
