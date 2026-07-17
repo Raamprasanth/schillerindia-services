@@ -524,7 +524,9 @@ function renderTable() {
       <td style="font-weight:600;">${esc(t.scEngineer)}</td>
       <td>${formatDate(t.initiatedDate)}</td>
       <td class="compact-cell activity">${compactText(t.activity, rid+'-activity', true)}</td>
-      <td class="compact-cell">${compactText(t.description, rid+'-description')}</td>
+      <td style="min-width:250px; padding:4px;" onclick="showDescPopup('${rid}')" title="Click to view full description">
+        <div style="cursor:pointer; border:1px solid #e2e8f0; border-radius:4px; padding:4px 6px; background:#f8fafc; white-space:pre-wrap; word-break:break-word; max-height:45px; overflow-y:auto; font-size:13px; color:var(--soft);">${esc(t.description||'-')}</div>
+      </td>
       <td>${esc(t.responsible)}</td>
       <td>${formatDate(t.targetDate)}</td>
       <td>${formatDate(t.pendingFrom)}</td>
@@ -603,9 +605,17 @@ function showRemarksPopup(id) {
   const doc = currentData.find(x => x._id === id || x.id === id || x.serviceId === id);
   if (!doc) return;
   document.getElementById('remarks-modal-content').textContent = doc.remarks || '-';
+  document.querySelector('#remarks-modal .modal-title').innerHTML = '&#128269; View Remarks';
   document.getElementById('remarks-modal').classList.add('open');
 }
 
+function showDescPopup(id) {
+  const doc = currentData.find(x => x._id === id || x.id === id || x.serviceId === id);
+  if (!doc) return;
+  document.getElementById('remarks-modal-content').textContent = doc.description || '-';
+  document.querySelector('#remarks-modal .modal-title').innerHTML = '&#128269; View Activity Details';
+  document.getElementById('remarks-modal').classList.add('open');
+}
 
 function openModal(){ 
   clearForm(); 
