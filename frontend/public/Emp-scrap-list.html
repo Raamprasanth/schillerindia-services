@@ -736,8 +736,14 @@ function openUpdateModal(id) {
     
     let controlHtml = '';
     
-    if (field.key === 'warrApprovedStatus' || field.key === 'repRepaired') {
+    if (field.key === 'warrApprovedStatus') {
       const opts = ['Yes', 'No'];
+      controlHtml = `<select id="dyn-${field.key}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);">
+        <option value="">-Select-</option>
+        ${opts.map(o => `<option value="${o}" ${String(val).toLowerCase()===o.toLowerCase()?'selected':''}>${o}</option>`).join('')}
+      </select>`;
+    } else if (field.key === 'repRepaired') {
+      const opts = ['Repaired and return', 'Replacement received'];
       controlHtml = `<select id="dyn-${field.key}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);">
         <option value="">-Select-</option>
         ${opts.map(o => `<option value="${o}" ${String(val).toLowerCase()===o.toLowerCase()?'selected':''}>${o}</option>`).join('')}
@@ -756,7 +762,7 @@ function openUpdateModal(id) {
         ${opts.map(o => `<option value="${o}" ${String(val).toLowerCase()===o.toLowerCase()?'selected':''}>${o}</option>`).join('')}
       </select>`;
     } else if (field.key === 'replacementReceivedStatus') {
-      const opts = ['repaired', 'pending from supplier', 'pending from commercial', 'pending from Re-export'];
+      const opts = ['received', 'pending from supplier', 'pending from commercial', 'pending from Re-export'];
       controlHtml = `<select id="dyn-${field.key}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);">
         <option value="">-Select-</option>
         ${opts.map(o => `<option value="${o}" ${String(val).toLowerCase()===o.toLowerCase()?'selected':''}>${o}</option>`).join('')}
