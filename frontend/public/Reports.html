@@ -1060,12 +1060,7 @@ body{
                   <label class="field-label">Select Month</label>
                   <input type="month" id="perf-repairteam-month" class="field-input" />
                 </div>
-                <div class="fg-field" style="margin-top:12px;">
-                  <label class="field-label">Select Division</label>
-                  <select id="perf-repairteam-division" class="field-select">
-                    <option value=""> All Divisions </option>
-                  </select>
-                </div>
+
                 <div class="fg-field" style="margin-top:16px;">
                   <button class="btn btn-red" style="width:100%; padding:10px; font-weight:700; border-radius:8px;" onclick="fetchRepairTeamData()">Generate Report</button>
                 </div>
@@ -3053,7 +3048,6 @@ async function fetchRepairTeamData() {
     toast('Please select a month first', 'error');
     return;
   }
-  const selectedDiv = document.getElementById('perf-repairteam-division') ? document.getElementById('perf-repairteam-division').value : '';
   const res = document.getElementById('perf-repairteam-result');
   res.innerHTML = '<div class="empty-sub">Loading repair team data...</div>';
   try {
@@ -3072,14 +3066,12 @@ async function fetchRepairTeamData() {
     </div>
     <div id="repairteam-pdf-content" style="background:#fff;padding:20px;border-radius:8px;">`;
     
-    const divisions = Object.keys(d.data).sort((a,b) => a.localeCompare(b));
+    const divisions = Object.keys(d.data);
     let hasData = false;
     for (const div of divisions) {
-      if (selectedDiv && selectedDiv !== div && selectedDiv !== 'all') continue;
       hasData = true;
       const metrics = d.data[div];
       reportHtml += `<div style="margin-bottom:30px; page-break-inside: avoid;">
-        <h4 style="margin:0 0 10px 0; background:#0f172a; color:#fff; padding:8px 12px; border-radius:4px;">${div}</h4>
         <table style="width:100%; border-collapse:collapse; border:1px solid #cbd5e1; font-family:'Inter',sans-serif; font-size:13px;">
           <thead>
             <tr>
@@ -3115,7 +3107,7 @@ async function fetchRepairTeamData() {
     reportHtml += `</div>`;
     
     if (!hasData) {
-      res.innerHTML = '<div class="empty-sub">No repair team data found for the selected division in this month.</div>';
+      res.innerHTML = '<div class="empty-sub">No repair team data found for this month.</div>';
     } else {
       res.innerHTML = reportHtml;
     }

@@ -1400,7 +1400,7 @@ async function getRepairTeamPerformanceData({ month }) {
 
   const divisionsMap = {};
   const ensureDivision = (div) => {
-    const d = String(div || 'Unknown').trim().replace(/\s+/g, ' ').toUpperCase();
+    const d = 'All Divisions';
     if (!divisionsMap[d]) {
       divisionsMap[d] = {
         'Pending FRN': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
