@@ -619,6 +619,7 @@ body{
         <button class="perf-subtab active" id="pst-division" onclick="switchPerfSubTab('division')">&#127986; Division</button>
         <button class="perf-subtab" id="pst-individual" onclick="switchPerfSubTab('individual')">&#128100; Individual</button>
           <button class="perf-subtab" id="pst-commercial" onclick="switchPerfSubTab('commercial')">&#128188; Commercial</button>
+          <button class="perf-subtab" id="pst-repairteam" onclick="switchPerfSubTab('repairteam')">&#128736; Repair Team</button>
       </div>
 
       <!-- DIVISION SUB-TAB -->
@@ -1044,6 +1045,43 @@ body{
           </div>
         </div>
       </div>
+
+<!-- REPAIR TEAM SUB-TAB -->
+      <div id="perf-repairteam-pane" class="perf-subpane" style="display:none;">
+        <div class="perf-layout">
+          <div class="perf-builder">
+            <div class="perf-head">
+              <div class="perf-head-title">&#128736; Repair Team Performance Analysis</div>
+              <div class="perf-head-sub">Division-wise calculations for Pending FRN, OB Pending, Under Repair, and Re-Repair</div>
+            </div>
+            <div class="perf-body">
+              <div class="fg">
+                <div class="fg-field">
+                  <label class="field-label">Select Month</label>
+                  <input type="month" id="perf-repairteam-month" class="field-input" />
+                </div>
+                <div class="fg-field" style="margin-top:12px;">
+                  <label class="field-label">Select Division</label>
+                  <select id="perf-repairteam-division" class="field-select">
+                    <option value=""> All Divisions </option>
+                  </select>
+                </div>
+                <div class="fg-field" style="margin-top:16px;">
+                  <button class="btn btn-red" style="width:100%; padding:10px; font-weight:700; border-radius:8px;" onclick="fetchRepairTeamData()">Generate Report</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="perf-view" style="flex:2;">
+            <div class="perf-head">
+              <div class="perf-head-title">Repair Team Report</div>
+            </div>
+            <div class="perf-body" id="perf-repairteam-result">
+              <div class="empty-sub">Select a month to view the repair team performance report.</div>
+            </div>
+          </div>
+        </div>
+      </div>
       </div><!-- /tab-performance -->
 
     <!-- --------------------------------------------------
@@ -1378,6 +1416,7 @@ async function loadPerfOptions(){
 
     setOptions(document.getElementById('perf-division'), perfOptions.divisions, ' Select Division ');
       setOptions(document.getElementById('perf-com-division'), perfOptions.divisions, '', true);
+      setOptions(document.getElementById('perf-repairteam-division'), perfOptions.divisions, '', true);
     setOptions(document.getElementById('perf-emp-division'), perfOptions.divisions, " Division (for report) ");
     setOptions(document.getElementById('kanban-div-filter'), perfOptions.divisions, '', true);
     setOptions(document.getElementById('perf-employee'), perfOptions.employees, ' Select Employee ');
@@ -1413,8 +1452,10 @@ function switchPerfSubTab(tab) {
   document.getElementById('pst-'+tab).classList.add('active');
   document.getElementById('perf-div-pane').style.display = tab === 'division' ? 'block' : 'none';
   document.getElementById('perf-ind-pane').style.display = tab === 'individual' ? 'block' : 'none';
-    const comPane = document.getElementById('perf-com-pane');
-    if (comPane) comPane.style.display = tab === 'commercial' ? 'block' : 'none';
+  const comPane = document.getElementById('perf-com-pane');
+  if (comPane) comPane.style.display = tab === 'commercial' ? 'block' : 'none';
+  const rtPane = document.getElementById('perf-repairteam-pane');
+  if (rtPane) rtPane.style.display = tab === 'repairteam' ? 'block' : 'none';
   if (tab === 'division') { perfScope = 'division'; } else { perfScope = 'employee'; }
   if (tab === 'division') refreshDivisionSubmissionBoxes();
 }
@@ -2999,6 +3040,96 @@ async function exportCommercialPDF() {
   const opt = {
     margin: [10, 10, 10, 10],
     filename: 'Commercial_Performance.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(el).save();
+}
+
+async function fetchRepairTeamData() {
+  const month = document.getElementById('perf-repairteam-month').value;
+  if (!month) {
+    toast('Please select a month first', 'error');
+    return;
+  }
+  const selectedDiv = document.getElementById('perf-repairteam-division') ? document.getElementById('perf-repairteam-division').value : '';
+  const res = document.getElementById('perf-repairteam-result');
+  res.innerHTML = '<div class="empty-sub">Loading repair team data...</div>';
+  try {
+    const r = await fetch('/api/reports/performance/repairteam?month=' + month, {headers: hdrs()});
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message);
+    
+    if (Object.keys(d.data).length === 0) {
+      res.innerHTML = '<div class="empty-sub">No data available for this month.</div>';
+      return;
+    }
+    
+    let reportHtml = `<div style="display:flex;justify-content:space-between;margin-bottom:16px;">
+      <h3 style="margin:0;font-family:'Syne',sans-serif;color:#0f172a;">Repair Team Report - ${month}</h3>
+      <button class="btn btn-green" onclick="exportRepairTeamPDF()"><i class="fas fa-file-pdf" style="margin-right:6px;"></i> Export PDF</button>
+    </div>
+    <div id="repairteam-pdf-content" style="background:#fff;padding:20px;border-radius:8px;">`;
+    
+    const divisions = Object.keys(d.data).sort((a,b) => a.localeCompare(b));
+    let hasData = false;
+    for (const div of divisions) {
+      if (selectedDiv && selectedDiv !== div && selectedDiv !== 'all') continue;
+      hasData = true;
+      const metrics = d.data[div];
+      reportHtml += `<div style="margin-bottom:30px; page-break-inside: avoid;">
+        <h4 style="margin:0 0 10px 0; background:#0f172a; color:#fff; padding:8px 12px; border-radius:4px;">${div}</h4>
+        <table style="width:100%; border-collapse:collapse; border:1px solid #cbd5e1; font-family:'Inter',sans-serif; font-size:13px;">
+          <thead>
+            <tr>
+              <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:left;">Report Type</th>
+              <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:center;">&lt; 1 day</th>
+              <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:center;">1 to 2 days</th>
+              <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:center;">&gt; 2 days</th>
+              <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:center; color:#0f172a;">Total</th>
+            </tr>
+          </thead>
+          <tbody>`;
+          
+      for (const m of ['Pending FRN', 'OB Pending', 'Under Repair', 'Re-Repair']) {
+        const val = metrics[m];
+        if (!val) continue;
+        const t = val.total || 0;
+        const p1 = t > 0 ? Math.round((val['< 1 day']/t)*100) : 0;
+        const p2 = t > 0 ? Math.round((val['1 to 2 days']/t)*100) : 0;
+        const p3 = t > 0 ? Math.round((val['> 2 days']/t)*100) : 0;
+        
+        reportHtml += `
+            <tr>
+              <td style="border:1px solid #cbd5e1; padding:10px; font-weight:600; color:#334155;">${m}</td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${val['< 1 day']} <br><span style="color:#64748b;font-size:11px;">(${p1}%)</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${val['1 to 2 days']} <br><span style="color:#64748b;font-size:11px;">(${p2}%)</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${val['> 2 days']} <br><span style="color:#64748b;font-size:11px;">(${p3}%)</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${t}</td>
+            </tr>`;
+      }
+      reportHtml += `</tbody></table></div>`;
+    }
+    
+    reportHtml += `</div>`;
+    
+    if (!hasData) {
+      res.innerHTML = '<div class="empty-sub">No repair team data found for the selected division in this month.</div>';
+    } else {
+      res.innerHTML = reportHtml;
+    }
+  } catch (e) {
+    res.innerHTML = '<div style="color:red;padding:20px;">Error loading data: ' + e.message + '</div>';
+  }
+}
+
+async function exportRepairTeamPDF() {
+  const el = document.getElementById('repairteam-pdf-content');
+  if (!el) return;
+  const opt = {
+    margin: [10, 10, 10, 10],
+    filename: 'RepairTeam_Performance.pdf',
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }

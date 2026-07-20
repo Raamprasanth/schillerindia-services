@@ -1356,8 +1356,123 @@ async function getCommercialPerformanceData({ month }) {
   return divisionsMap;
 }
 
+async function getRepairTeamPerformanceData({ month }) {
+  const monthInfo = monthParts(month);
+  
+  const RTFRN = require('../models/RTFRN.JS');
+  const RTOB = require('../models/RTOB');
+  const RTUR = require('../models/rturModel');
+  const RTRR = require('../models/Rtrr');
+  const RTCRL = require('../models/rtcrlModel');
+  const RTCRR = require('../models/Rtcrr');
+
+  const getDiff = (d1, d2) => {
+    const date1 = parseAnyDate(d1);
+    const date2 = parseAnyDate(d2);
+    if (!date1 || !date2 || isNaN(date1.getTime()) || isNaN(date2.getTime())) return null;
+    const utc1 = Date.UTC(date1.getFullYear(), date1.getMonth(), date1.getDate());
+    const utc2 = Date.UTC(date2.getFullYear(), date2.getMonth(), date2.getDate());
+    return (utc2 - utc1) / (1000 * 60 * 60 * 24);
+  };
+
+  const categorize = (diff) => {
+    if (diff === null || isNaN(diff)) return null;
+    if (diff < 1) return '< 1 day';
+    if (diff <= 2) return '1 to 2 days';
+    return '> 2 days';
+  };
+
+  const start = monthInfo.start;
+  const end = monthInfo.end;
+  const isDateInRange = (date, s, e) => {
+    if (!date || isNaN(date.getTime())) return false;
+    return date.getTime() >= s.getTime() && date.getTime() < e.getTime();
+  };
+
+  const [activeFrns, activeObs, activeUrs, activeRrs, closedCrls, closedRrs] = await Promise.all([
+    RTFRN.find().lean(),
+    RTOB.find().lean(),
+    RTUR.find().lean(),
+    RTRR.find().lean(),
+    RTCRL.find().lean(),
+    RTCRR.find().lean()
+  ]);
+
+  const divisionsMap = {};
+  const ensureDivision = (div) => {
+    const d = String(div || 'Unknown').trim().replace(/\s+/g, ' ').toUpperCase();
+    if (!divisionsMap[d]) {
+      divisionsMap[d] = {
+        'Pending FRN': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
+        'OB Pending': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
+        'Under Repair': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
+        'Re-Repair': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 }
+      };
+    }
+    return divisionsMap[d];
+  };
+
+  const processActive = (items, actKey, dateField) => {
+    for (const item of items) {
+      const d = parseAnyDate(item[dateField], item.createdAt);
+      if (isDateInRange(d, start, end)) {
+        const divName = item.division || 'Unknown';
+        const divData = ensureDivision(divName);
+        divData[actKey].total++;
+      }
+    }
+  };
+
+  processActive(activeFrns, 'Pending FRN', 'entryDate');
+  processActive(activeObs, 'OB Pending', 'entryDate');
+  processActive(activeUrs, 'Under Repair', 'entryDate');
+  processActive(activeRrs, 'Re-Repair', 'revertedDate');
+
+  const processClosed = (items, actKey, categoryCheck, entryField, closedField) => {
+    for (const item of items) {
+      if (categoryCheck && item.category !== categoryCheck) continue;
+      const dEntry = parseAnyDate(item[entryField], item.createdAt);
+      if (isDateInRange(dEntry, start, end)) {
+        const divName = item.division || 'Unknown';
+        const divData = ensureDivision(divName);
+        divData[actKey].total++;
+
+        const dClosed = parseAnyDate(item[closedField]);
+        const diff = getDiff(dEntry, dClosed || new Date());
+        const cat = categorize(diff);
+        if (cat) {
+          divData[actKey][cat]++;
+        }
+      }
+    }
+  };
+
+  processClosed(closedCrls, 'Pending FRN', 'PFRN', 'entryDate', 'closedDate');
+  processClosed(closedCrls, 'OB Pending', 'OB', 'entryDate', 'closedDate');
+  processClosed(closedCrls, 'Under Repair', 'UR', 'entryDate', 'closedDate');
+  
+  for (const item of closedRrs) {
+    const dEntry = parseAnyDate(item.revertedDate || item.entryDate, item.createdAt);
+    if (isDateInRange(dEntry, start, end)) {
+      const divName = item.division || 'Unknown';
+      const divData = ensureDivision(divName);
+      divData['Re-Repair'].total++;
+
+      const dClosed = parseAnyDate(item.reRepDate || item.closedDate);
+      const diff = getDiff(dEntry, dClosed || new Date());
+      const cat = categorize(diff);
+      if (cat) {
+        divData['Re-Repair'][cat]++;
+      }
+    }
+  }
+
+  return divisionsMap;
+}
+
 module.exports = {
   getCommercialPerformanceData,
+  getRepairTeamPerformanceData,
   getPerformanceReviewOptions,
   getPerformanceReviewData,
 };

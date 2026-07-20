@@ -651,6 +651,21 @@ router.get('/performance/commercial', verifyToken, async (req, res) => {
   }
 });
 
+router.get('/performance/repairteam', verifyToken, async (req, res) => {
+  try {
+    const { month } = req.query;
+    if (!month) return res.status(400).json({ success: false, message: 'Month is required' });
+
+    const { getRepairTeamPerformanceData } = require('../services/performanceReviewService');
+    const data = await getRepairTeamPerformanceData({ month });
+
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('Error generating repair team performance summary:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 router.get('/performance/summary', verifyToken, async (req, res) => {
   try {
     const { scope, month, division, employee } = req.query;
