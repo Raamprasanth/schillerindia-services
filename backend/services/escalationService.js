@@ -34,6 +34,24 @@ const SCHEDULER_TICK_MS = Math.max(1000, parseInt(process.env.ESCALATION_SCHEDUL
 const DEFAULT_STALE_RUNNING_MS = Math.max(10 * 60 * 1000, MAIL_TIMEOUT_MS * 4 + 60 * 1000);
 const STALE_RUNNING_MS = Math.max(60000, parseInt(process.env.ESCALATION_STALE_RUNNING_MS || String(DEFAULT_STALE_RUNNING_MS), 10) || DEFAULT_STALE_RUNNING_MS);
 const UR_DAILY_TYPES = ['UR Stock', 'WS Stock', 'External Repair', 'Completed', 'Supplier Warranty', 'Supplier Warrenty', 'No Fault', 'Given to PSP'];
+const SCRAP_ESCALATION_HEADERS = [
+  'DIVISION NAME',
+  'ENTRY DATE',
+  'SC_REF_NO',
+  'SC_ENGINEER',
+  'RA_ENGINEER',
+  'FRN_NO',
+  'SUPPLIER_NAME',
+  'PRODUCT_MODEL',
+  'DEF_MOD_BRD_NAME',
+  'DEF_TYPE',
+  'TYPE_OF_ACC',
+  'PART_NO',
+  'DEF_GIR_NO',
+  'TECHNICAL_REMARKS',
+  'FINAL_REMARKS',
+  'TIMESTAMP',
+];
 const CUSTOM_ESCALATIONS = {
   prf_ob: {
     slot: 'prf_ob',
@@ -678,6 +696,7 @@ function buildUrEscalationRow(doc) {
   const divisionName = pickClean(doc, ['divisionName', 'division.name', 'division.displayName', 'division']);
   const entryDate = pickEntryDate(doc);
   const repairEngineer = pickRepairEngineer(doc);
+  const partNo = pick(doc, ['partNo', 'partNumber', 'PART_NO', 'PART NUMBER']);
   return {
     'Division Name': divisionName,
     'DIVISION NAME': divisionName,
@@ -702,8 +721,10 @@ function buildUrEscalationRow(doc) {
     DEF_MOD_BRD_NAME: doc.defMod || '',
     MOD_BRD_NAME: doc.defMod || '',
     DEF_TYPE: doc.defType || '',
+    PART_NO: partNo,
+    'Part No': partNo,
+    'PART NUMBER': partNo,
     DEF_GIR_NO: doc.defGir || '',
-    'PART NUMBER': doc.partNo || '',
     'ITEM DESCRIPTION': pickItemDescription(doc),
     REP_GIR_NO: doc.repGirNo || '',
     TYPE_OF_WORK: doc.urTypeWork || doc.typeWork || '',
@@ -1129,6 +1150,7 @@ function buildUrMailPayload(slotWindow, data) {
         name: isScrap ? 'Scrap Escalation' : 'Stock Escalation',
         template: isScrap ? 'Scrap Escalation' : 'Stock Escalation',
         headerRow: isScrap ? 4 : 1,
+        headers: isScrap ? SCRAP_ESCALATION_HEADERS : undefined,
         rows: data.rows,
       },
     ],
