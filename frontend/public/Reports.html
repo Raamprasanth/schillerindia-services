@@ -2999,12 +2999,12 @@ async function fetchCommercialData() {
     if (!selectedDiv || selectedDiv === 'all' || selectedDiv === 'consolidated') {
       const allDivData = {};
       const metricKeys = [
-        'FRN ( Inward - Svc )', 
+        'FRN ( Inward - SVC )', 
         'TO ( Raised - Received )', 
-        'Field TO/SO ( Entry - Received )', 
+        'TO/SO ( Entry - Received )', 
         'SR ( Raised - Received )',
         'DR ( Requested - Received )',
-        'Field TO/SO ( Raised - Entry )'
+        'Field TO/SO ( ER Raised - Entry )'
       ];
       for (const m of metricKeys) {
         allDivData[m] = { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 };
@@ -3050,12 +3050,12 @@ async function fetchCommercialData() {
           <tbody>`;
           
       for (const m of [
-        'FRN ( Inward - Svc )', 
+        'FRN ( Inward - SVC )', 
         'TO ( Raised - Received )', 
-        'Field TO/SO ( Entry - Received )', 
+        'TO/SO ( Entry - Received )', 
         'SR ( Raised - Received )',
         'DR ( Requested - Received )',
-        'Field TO/SO ( Raised - Entry )'
+        'Field TO/SO ( ER Raised - Entry )'
       ]) {
         const val = metrics[m];
         if (!val) continue; // safety check

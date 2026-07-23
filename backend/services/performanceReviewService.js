@@ -1320,12 +1320,12 @@ async function getCommercialPerformanceData({ month }) {
     const d = String(div || 'Unknown').trim().replace(/\s+/g, ' ').toUpperCase();
     if (!divisionsMap[d]) {
       divisionsMap[d] = {
-        'FRN ( Inward - Svc )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
+        'FRN ( Inward - SVC )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
         'TO ( Raised - Received )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
-        'Field TO/SO ( Entry - Received )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
+        'TO/SO ( Entry - Received )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
         'SR ( Raised - Received )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
         'DR ( Requested - Received )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
-        'Field TO/SO ( Raised - Entry )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 }
+        'Field TO/SO ( ER Raised - Entry )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 }
       };
     }
     return divisionsMap[d];
@@ -1359,8 +1359,8 @@ async function getCommercialPerformanceData({ month }) {
       const divName = s.division?.name || s.divisionName || s.division || 'Unknown';
     if (!divName || String(divName).toUpperCase() === 'UNKNOWN') return;
     const divData = ensureDivision(divName);
-      divData['FRN ( Inward - Svc )'][cat]++;
-      divData['FRN ( Inward - Svc )'].total++;
+      divData['FRN ( Inward - SVC )'][cat]++;
+      divData['FRN ( Inward - SVC )'].total++;
     }
   }
 
@@ -1375,23 +1375,23 @@ async function getCommercialPerformanceData({ month }) {
   }
 
   for (const p of scPrfObs) {
-    // 1. Field TO/SO ( Entry - Received )
+    // 1. TO/SO ( Entry - Received )
     const endDate = p.sparesReceivedAtSvc;
     let diff = getDiff(p.entryDate, endDate);
     let cat = categorize(diff);
     if (cat) {
       const divData = ensureDivision(p.division);
-      divData['Field TO/SO ( Entry - Received )'][cat]++;
-      divData['Field TO/SO ( Entry - Received )'].total++;
+      divData['TO/SO ( Entry - Received )'][cat]++;
+      divData['TO/SO ( Entry - Received )'].total++;
     }
     
-    // 2. Field TO/SO ( Raised - Entry )
+    // 2. Field TO/SO ( ER Raised - Entry )
     const diffRaised = getDiff(p.raisedDate, p.entryDate);
     const catRaised = categorize(diffRaised);
     if (catRaised) {
       const divData = ensureDivision(p.division);
-      divData['Field TO/SO ( Raised - Entry )'][catRaised]++;
-      divData['Field TO/SO ( Raised - Entry )'].total++;
+      divData['Field TO/SO ( ER Raised - Entry )'][catRaised]++;
+      divData['Field TO/SO ( ER Raised - Entry )'].total++;
     }
   }
 
