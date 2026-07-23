@@ -417,6 +417,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
               <th>Part No</th>
               <th>Model</th>
               <th>Description</th>
+              <th>Def GIR No</th>
               <th>Unit Status</th>
               <th>Spares rcd date</th>
               <th>Action</th>
@@ -545,6 +546,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <td>${esc(r.partNo)}</td>
         <td>${esc(r.model || '-')}</td>
         <td class="wrap-cell">${esc(r.description)}</td>
+        <td class="wrap-cell">${esc(r.defGirNo || '-')}</td>
         <td>${esc(r.unitStatus || '-')}</td>
         <td><input type="date" class="f-inp${r.sparesReceivedDate ? ' filled-red' : ''}" max="${TODAY_ISO}" value="${dateInputValue(r.sparesReceivedDate)}" onchange="toggleFilledInput(this);updateDateField('${r._id}','sparesReceivedDate',this.value)" style="width:130px; padding:4px; font-size:12px;"></td>
         <td style="text-align:center;"><button class="btn btn-primary btn-sm" onclick="markFulfilled('${r._id}')">Fulfilled</button></td>
@@ -763,7 +765,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   }
 
   function exportCSV() {
-    const headers = ['DR Req Date','Division','FRN No','Part No','Model','Description','Unit Status','Spares Rcd Date'];
+    const headers = ['DR Req Date','Division','FRN No','Part No','Model','Description','Def GIR No','Unit Status','Spares Rcd Date'];
     const rows = filtered.map(r => [
       r.createdAt ? new Date(r.createdAt).toLocaleDateString('en-IN') : (r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-'),
       r.division || '-',
@@ -771,6 +773,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       r.partNo || '-',
       r.model || '-',
       r.description || '-',
+      r.defGirNo || '-',
       r.unitStatus || '-',
       r.sparesReceivedDate ? new Date(r.sparesReceivedDate).toLocaleDateString('en-IN') : '-'
     ]);

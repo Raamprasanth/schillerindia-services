@@ -412,6 +412,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
               <th>Part No</th>
               <th>Model</th>
               <th>Description</th>
+              <th>Def GIR No</th>
               <th>Unit Status</th>
               <th>Quantity</th>
               <th>TO NO</th>
@@ -530,6 +531,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <td>${esc(r.partNo)}</td>
         <td>${esc(r.model || '-')}</td>
         <td class="wrap-cell">${esc(r.description)}</td>
+        <td class="wrap-cell">${esc(r.defGirNo || '-')}</td>
         <td>${esc(r.unitStatus || '-')}</td>
         <td>${esc(r.quantity || '-')}</td>
         <td><span style="font-weight:600;">${esc(r.toNo || '-')}</span></td>
@@ -629,7 +631,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   }
 
   function exportCSV() {
-    const headers = ['TO Req Date','Division','FRN No','Part No','Model','Description','TO NO','TO Raised Date','Spares Rcd Date'];
+    const headers = ['TO Req Date','Division','FRN No','Part No','Model','Description','Def GIR No','TO NO','TO Raised Date','Spares Rcd Date'];
     const rows = filtered.map(r => [
       r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-',
       r.division || '-',
@@ -637,6 +639,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       r.partNo || '-',
       r.model || '-',
       r.description || '-',
+      r.defGirNo || '-',
       r.toNo || '-',
       r.toRaisedDate ? new Date(r.toRaisedDate).toLocaleDateString('en-IN') : '-',
       r.sparesReceivedDate ? new Date(r.sparesReceivedDate).toLocaleDateString('en-IN') : '-'

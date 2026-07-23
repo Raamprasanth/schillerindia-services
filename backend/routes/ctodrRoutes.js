@@ -44,6 +44,7 @@ router.get('/', protect, async (req, res) => {
           const bName = (r.description && r.description !== 'TO/DR entry') ? r.description : (doc.defMod || doc.defBrdModName || r.description || '');
           if (mName) r.model = mName;
           if (bName) r.description = bName;
+          r.defGirNo = doc.defGir || doc.defGirNo || doc.defUnitGir || '';
           r.unitStatus = doc.unitSts || doc.unitStatus || '';
           r.quantity = doc.qty || doc.quantity || '';
           r.division = (doc.division && doc.division.name) ? doc.division.name : (doc.divisionName || '');

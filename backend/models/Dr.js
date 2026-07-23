@@ -7,6 +7,7 @@ const drSchema = new mongoose.Schema({
   model: { type: String, trim: true, default: '' },
   quantity: { type: Number, default: 1 },
   description: { type: String, required: true },
+  defGirNo: { type: String, trim: true, default: '' },
   action: { type: String, required: true },
   sparesReceivedDate: { type: Date, default: null },
   sourceId: { type: String, trim: true, default: '' },

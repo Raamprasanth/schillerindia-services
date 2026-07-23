@@ -6,6 +6,7 @@ const ctodrSchema = new mongoose.Schema({
   partNo: { type: String, required: true },
   model: { type: String, trim: true, default: '' },
   description: { type: String, required: true },
+  defGirNo: { type: String, trim: true, default: '' },
   action: { type: String, required: true },
   quantity: { type: Number, default: 1 },
   toNo: { type: String, trim: true, default: '' },
