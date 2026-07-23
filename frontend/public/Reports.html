@@ -636,12 +636,16 @@ body{
             <div class="perf-body">
               <div>
                 <label class="field-label">Timeframe <span style="font-weight:normal;color:#64748b;font-size:11px;">(Month OR Custom Dates)</span></label>
-                <div style="display:flex; gap:10px; align-items:center;">
-    <input type="month" class="field-input" id="perf-month-div" onchange="syncMonthToDates(this.value, 'perf-from-div', 'perf-to-div'); refreshDivisionSubmissionBoxes()" style="width:130px;"/>
-    <span style="align-self:center; color:#64748b; font-weight:bold; font-size:12px;">OR</span>
-    <input type="date" class="field-input" id="perf-from-div" onchange="clearMonthInput('perf-month-div'); refreshDivisionSubmissionBoxes()" style="width:130px;"/>
-    <span style="align-self:center;">to</span>
-    <input type="date" class="field-input" id="perf-to-div" onchange="clearMonthInput('perf-month-div'); refreshDivisionSubmissionBoxes()" style="width:130px;"/>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+    <div>
+      <input type="month" class="field-input" id="perf-month-div" onchange="syncMonthToDates(this.value, 'perf-from-div', 'perf-to-div'); refreshDivisionSubmissionBoxes()" style="width:130px;"/>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <span style="color:#64748b; font-weight:bold; font-size:12px; margin-right:5px; width:20px;">OR</span>
+      <input type="date" class="field-input" id="perf-from-div" onchange="clearMonthInput('perf-month-div'); refreshDivisionSubmissionBoxes()" style="width:130px;"/>
+      <span>to</span>
+      <input type="date" class="field-input" id="perf-to-div" onchange="clearMonthInput('perf-month-div'); refreshDivisionSubmissionBoxes()" style="width:130px;"/>
+    </div>
   </div>
               </div>
               <div>
@@ -954,12 +958,16 @@ body{
             <div class="perf-body">
               <div>
                 <label class="field-label">Timeframe <span style="font-weight:normal;color:#64748b;font-size:11px;">(Month OR Custom Dates)</span></label>
-                <div style="display:flex; gap:10px; align-items:center;">
-    <input type="month" class="field-input" id="perf-month" onchange="syncMonthToDates(this.value, 'perf-from', 'perf-to');" style="width:130px;"/>
-    <span style="align-self:center; color:#64748b; font-weight:bold; font-size:12px;">OR</span>
-    <input type="date" class="field-input" id="perf-from" onchange="clearMonthInput('perf-month');" style="width:130px;"/>
-    <span style="align-self:center;">to</span>
-    <input type="date" class="field-input" id="perf-to" onchange="clearMonthInput('perf-month');" style="width:130px;"/>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+    <div>
+      <input type="month" class="field-input" id="perf-month" onchange="syncMonthToDates(this.value, 'perf-from', 'perf-to');" style="width:130px;"/>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <span style="color:#64748b; font-weight:bold; font-size:12px; margin-right:5px; width:20px;">OR</span>
+      <input type="date" class="field-input" id="perf-from" onchange="clearMonthInput('perf-month');" style="width:130px;"/>
+      <span>to</span>
+      <input type="date" class="field-input" id="perf-to" onchange="clearMonthInput('perf-month');" style="width:130px;"/>
+    </div>
   </div>
               </div>
               <div id="perf-emp-field">
@@ -1035,12 +1043,16 @@ body{
               <div class="fg">
                 <div class="fg-field">
                   <label class="field-label">Select Month</label>
-                  <div style="display:flex; gap:10px; align-items:center;">
-    <input type="month" class="field-input" id="perf-com-month" onchange="syncMonthToDates(this.value, 'perf-com-from', 'perf-com-to');" style="width:130px;"/>
-    <span style="align-self:center; color:#64748b; font-weight:bold; font-size:12px;">OR</span>
-    <input type="date" id="perf-com-from" class="field-input" onchange="clearMonthInput('perf-com-month');" style="width:130px;"/>
-    <span style="align-self:center;">to</span>
-    <input type="date" id="perf-com-to" class="field-input" onchange="clearMonthInput('perf-com-month');" style="width:130px;"/>
+                  <div style="display:flex; flex-direction:column; gap:10px;">
+    <div>
+      <input type="month" class="field-input" id="perf-com-month" onchange="syncMonthToDates(this.value, 'perf-com-from', 'perf-com-to');" style="width:130px;"/>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <span style="color:#64748b; font-weight:bold; font-size:12px; margin-right:5px; width:20px;">OR</span>
+      <input type="date" id="perf-com-from" class="field-input" onchange="clearMonthInput('perf-com-month');" style="width:130px;"/>
+      <span>to</span>
+      <input type="date" id="perf-com-to" class="field-input" onchange="clearMonthInput('perf-com-month');" style="width:130px;"/>
+    </div>
   </div>
                 </div>
                 <div class="fg-field" style="margin-top:12px;">
@@ -1078,12 +1090,16 @@ body{
               <div class="fg">
                 <div class="fg-field">
                   <label class="field-label">Select Month</label>
-                  <div style="display:flex; gap:10px; align-items:center;">
-    <input type="month" class="field-input" id="perf-repairteam-month" onchange="syncMonthToDates(this.value, 'perf-repairteam-from', 'perf-repairteam-to');" style="width:130px;"/>
-    <span style="align-self:center; color:#64748b; font-weight:bold; font-size:12px;">OR</span>
-    <input type="date" id="perf-repairteam-from" class="field-input" onchange="clearMonthInput('perf-repairteam-month');" style="width:130px;"/>
-    <span style="align-self:center;">to</span>
-    <input type="date" id="perf-repairteam-to" class="field-input" onchange="clearMonthInput('perf-repairteam-month');" style="width:130px;"/>
+                  <div style="display:flex; flex-direction:column; gap:10px;">
+    <div>
+      <input type="month" class="field-input" id="perf-repairteam-month" onchange="syncMonthToDates(this.value, 'perf-repairteam-from', 'perf-repairteam-to');" style="width:130px;"/>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <span style="color:#64748b; font-weight:bold; font-size:12px; margin-right:5px; width:20px;">OR</span>
+      <input type="date" id="perf-repairteam-from" class="field-input" onchange="clearMonthInput('perf-repairteam-month');" style="width:130px;"/>
+      <span>to</span>
+      <input type="date" id="perf-repairteam-to" class="field-input" onchange="clearMonthInput('perf-repairteam-month');" style="width:130px;"/>
+    </div>
   </div>
                 </div>
 

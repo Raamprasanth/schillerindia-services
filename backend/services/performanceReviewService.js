@@ -62,24 +62,21 @@ function parseAnyDate(value, fallback = null) {
   return fallback ? parseAnyDate(fallback, null) : null;
 }
 
-function monthParts(month) {
-  const match = String(month || '').match(/^(\d{4})-(\d{2})$/);
-  if (!match) throw new Error('Month must be in YYYY-MM format.');
-  const year = Number(match[1]);
-  const monthIndex = Number(match[2]);
-  const start = new Date(Date.UTC(year, monthIndex - 1, 1, 0, 0, 0, 0));
-  const end = new Date(Date.UTC(year, monthIndex, 1, 0, 0, 0, 0));
-  const shortMonth = start.toLocaleString('en-IN', { month: 'short', timeZone: 'UTC' });
-  const longMonth = start.toLocaleString('en-IN', { month: 'long', timeZone: 'UTC' });
+function dateRangeParts(from, to) {
+  if (!from || !to) throw new Error('Both from and to dates are required. Format YYYY-MM-DD.');
+  const start = new Date(from);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(to);
+  end.setHours(23, 59, 59, 999);
+  const year = start.getFullYear();
+  const monthIndex = start.getMonth() + 1;
   return {
     year,
     month: monthIndex,
     start,
     end,
     monthKey: `${year}-${String(monthIndex).padStart(2, '0')}`,
-    shortMonth,
-    longMonth,
-    label: `${shortMonth} ${year}`,
+    label: `${from} to ${to}`,
   };
 }
 
