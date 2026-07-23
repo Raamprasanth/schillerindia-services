@@ -1109,7 +1109,23 @@ function editService(id) {
   document.getElementById('f-division').value = divName !== '' ? divName : '';
   if(s.entryDate){ document.getElementById('f-entrydate').value = String(s.entryDate).slice(0, 10); (document.getElementById('strip-entrydate')||{}).textContent = String(s.entryDate).slice(0, 10); }
   setTimeout(()=>{
-    const set=(elId,val)=>{const el=document.getElementById(elId);if(el)el.value=val||'';};
+    const set=(elId,val)=>{
+      const el=document.getElementById(elId);
+      if(el){
+        if(el.tagName==='SELECT' && val){
+          let found=false;
+          for(let i=0;i<el.options.length;i++){
+            if(el.options[i].value===val||el.options[i].text===val){found=true;break;}
+          }
+          if(!found){
+            const o=document.createElement('option');
+            o.value=val;o.textContent=val;
+            el.appendChild(o);
+          }
+        }
+        el.value=val||'';
+      }
+    };
     set('f-screfno',s.scReNo); set('f-frnno',s.frnNo); set('f-frndate',s.frnDate);
     set('f-sercomm',s.serComm); set('f-rcvdatesc',s.rcvdDate); set('f-stkcust',s.stkCust);
     set('f-region',s.reg); onRegionChange();
