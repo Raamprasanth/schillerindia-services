@@ -668,8 +668,8 @@ router.get('/performance/repairteam', verifyToken, async (req, res) => {
 
 router.get('/performance/summary', verifyToken, async (req, res) => {
   try {
-    const { scope, month, division, employee } = req.query;
-    const data = await getPerformanceReviewData({ scope, month, division, employee });
+    const { scope, month, from, to, division, employee } = req.query;
+    const data = await getPerformanceReviewData({ scope, month, from, to, division, employee });
     return res.json({ success: true, data: summarizePerformanceRows(data) });
   } catch (err) {
     return res.status(400).json({ success: false, message: err.message });
@@ -681,8 +681,8 @@ router.get('/performance/summary', verifyToken, async (req, res) => {
 // ══════════════════════════════════════════════════════════════════════════
 router.get('/performance/leaderboard', verifyToken, async (req, res) => {
   try {
-    const { month } = req.query;
-    if (!month) return res.status(400).json({ success: false, message: 'month is required' });
+    const { month, from, to } = req.query;
+    if (!month && (!from || !to)) return res.status(400).json({ success: false, message: 'month or from/to is required' });
     const { getPerformanceReviewOptions } = require('../services/performanceReviewService');
     const options = await getPerformanceReviewOptions();
     const divisions = (options.divisions || []).map(d => d.name || d).filter(Boolean);
