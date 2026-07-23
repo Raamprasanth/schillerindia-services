@@ -1285,12 +1285,12 @@ async function getCommercialPerformanceData({ month }) {
     const d = String(div || 'Unknown').trim().replace(/\s+/g, ' ').toUpperCase();
     if (!divisionsMap[d]) {
       divisionsMap[d] = {
-        'FRN ( inward - svc)': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
-        'TO ( raised - received)': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
-        'TO/SO (entry - received)': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
-        'SR ( raised - received )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
-        'DR ( requested - received )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
-        'TO/SO ( raised - entry)': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 }
+        'FRN ( Inward - Svc )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
+        'TO ( Raised - Received )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
+        'Field TO/SO ( Entry - Received )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
+        'SR ( Raised - Received )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
+        'DR ( Requested - Received )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
+        'Field TO/SO ( Raised - Entry )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 }
       };
     }
     return divisionsMap[d];
@@ -1322,9 +1322,10 @@ async function getCommercialPerformanceData({ month }) {
     const cat = categorize(diff);
     if (cat) {
       const divName = s.division?.name || s.divisionName || s.division || 'Unknown';
-      const divData = ensureDivision(divName);
-      divData['FRN ( inward - svc)'][cat]++;
-      divData['FRN ( inward - svc)'].total++;
+    if (!divName || String(divName).toUpperCase() === 'UNKNOWN') return;
+    const divData = ensureDivision(divName);
+      divData['FRN ( Inward - Svc )'][cat]++;
+      divData['FRN ( Inward - Svc )'].total++;
     }
   }
 
@@ -1333,29 +1334,29 @@ async function getCommercialPerformanceData({ month }) {
     const cat = categorize(diff);
     if (cat) {
       const divData = ensureDivision(divisionNameForTo(t));
-      divData['TO ( raised - received)'][cat]++;
-      divData['TO ( raised - received)'].total++;
+      divData['TO ( Raised - Received )'][cat]++;
+      divData['TO ( Raised - Received )'].total++;
     }
   }
 
   for (const p of scPrfObs) {
-    // 1. TO/SO (entry - received)
+    // 1. Field TO/SO ( Entry - Received )
     const endDate = p.sparesReceivedAtSvc;
     let diff = getDiff(p.entryDate, endDate);
     let cat = categorize(diff);
     if (cat) {
       const divData = ensureDivision(p.division);
-      divData['TO/SO (entry - received)'][cat]++;
-      divData['TO/SO (entry - received)'].total++;
+      divData['Field TO/SO ( Entry - Received )'][cat]++;
+      divData['Field TO/SO ( Entry - Received )'].total++;
     }
     
-    // 2. TO/SO ( raised - entry)
+    // 2. Field TO/SO ( Raised - Entry )
     const diffRaised = getDiff(p.raisedDate, p.entryDate);
     const catRaised = categorize(diffRaised);
     if (catRaised) {
       const divData = ensureDivision(p.division);
-      divData['TO/SO ( raised - entry)'][catRaised]++;
-      divData['TO/SO ( raised - entry)'].total++;
+      divData['Field TO/SO ( Raised - Entry )'][catRaised]++;
+      divData['Field TO/SO ( Raised - Entry )'].total++;
     }
   }
 
@@ -1367,8 +1368,8 @@ async function getCommercialPerformanceData({ month }) {
       const cat = categorize(diff);
       if (cat) {
         const divData = ensureDivision(s.division);
-        divData['SR ( raised - received )'][cat]++;
-        divData['SR ( raised - received )'].total++;
+        divData['SR ( Raised - Received )'][cat]++;
+        divData['SR ( Raised - Received )'].total++;
       }
     }
   }
@@ -1378,8 +1379,8 @@ async function getCommercialPerformanceData({ month }) {
     const cat = categorize(diff);
     if (cat) {
       const divData = ensureDivision(divisionNameForTo(c));
-      divData['DR ( requested - received )'][cat]++;
-      divData['DR ( requested - received )'].total++;
+      divData['DR ( Requested - Received )'][cat]++;
+      divData['DR ( Requested - Received )'].total++;
     }
   }
 
@@ -1448,7 +1449,8 @@ async function getRepairTeamPerformanceData({ month }) {
   const processActive = (items, actKey, dateField) => {
     for (const item of items) {
       const divName = item.division || 'Unknown';
-      const divData = ensureDivision(divName);
+    if (!divName || String(divName).toUpperCase() === 'UNKNOWN') return;
+    const divData = ensureDivision(divName);
       // Increment RP for active items only if querying the current month
       if (isCurrentMonth) {
         divData[actKey].RP++;
@@ -1472,7 +1474,8 @@ async function getRepairTeamPerformanceData({ month }) {
       const dEntry = parseAnyDate(item[entryField], item.createdAt);
       if (isDateInRange(dEntry, start, end)) {
         const divName = item.division || 'Unknown';
-        const divData = ensureDivision(divName);
+    if (!divName || String(divName).toUpperCase() === 'UNKNOWN') return;
+    const divData = ensureDivision(divName);
         divData[actKey].total++;
 
         const dClosed = parseAnyDate(item[closedField]);
@@ -1493,7 +1496,8 @@ async function getRepairTeamPerformanceData({ month }) {
     const dEntry = parseAnyDate(item.revertedDate || item.entryDate, item.createdAt);
     if (isDateInRange(dEntry, start, end)) {
       const divName = item.division || 'Unknown';
-      const divData = ensureDivision(divName);
+    if (!divName || String(divName).toUpperCase() === 'UNKNOWN') return;
+    const divData = ensureDivision(divName);
       divData['Re-Repair'].total++;
 
       const dClosed = parseAnyDate(item.reRepDate || item.closedDate);

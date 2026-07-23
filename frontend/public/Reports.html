@@ -2987,12 +2987,12 @@ async function fetchCommercialData() {
     if (!selectedDiv || selectedDiv === 'all' || selectedDiv === 'consolidated') {
       const allDivData = {};
       const metricKeys = [
-        'FRN ( inward - svc)', 
-        'TO ( raised - received)', 
-        'TO/SO (entry - received)', 
-        'SR ( raised - received )',
-        'DR ( requested - received )',
-        'TO/SO ( raised - entry)'
+        'FRN ( Inward - Svc )', 
+        'TO ( Raised - Received )', 
+        'Field TO/SO ( Entry - Received )', 
+        'SR ( Raised - Received )',
+        'DR ( Requested - Received )',
+        'Field TO/SO ( Raised - Entry )'
       ];
       for (const m of metricKeys) {
         allDivData[m] = { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 };
@@ -3038,12 +3038,12 @@ async function fetchCommercialData() {
           <tbody>`;
           
       for (const m of [
-        'FRN ( inward - svc)', 
-        'TO ( raised - received)', 
-        'TO/SO (entry - received)', 
-        'SR ( raised - received )',
-        'DR ( requested - received )',
-        'TO/SO ( raised - entry)'
+        'FRN ( Inward - Svc )', 
+        'TO ( Raised - Received )', 
+        'Field TO/SO ( Entry - Received )', 
+        'SR ( Raised - Received )',
+        'DR ( Requested - Received )',
+        'Field TO/SO ( Raised - Entry )'
       ]) {
         const val = metrics[m];
         if (!val) continue; // safety check
@@ -3080,8 +3080,8 @@ async function exportCommercialPDF() {
   const el = document.getElementById('commercial-pdf-content');
   if (!el) return;
   
-  const month = document.getElementById('perf-commercial-month').value || 'Report';
-  const div = document.getElementById('perf-commercial-division').value;
+  const month = document.getElementById('perf-com-month').value || 'Report';
+  const div = document.getElementById('perf-com-division').value;
   const divisionLabel = div || 'All Divisions';
   
   await generatePremiumPDF(el.innerHTML, 'COMMERCIAL PERFORMANCE REPORT', divisionLabel, month, 'Commercial_Performance');
