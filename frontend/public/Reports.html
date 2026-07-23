@@ -2979,8 +2979,40 @@ async function fetchCommercialData() {
     </div>
     <div id="commercial-pdf-content" style="background:#fff;padding:20px;border-radius:8px;">`;
     
-    // Sort divisions alphabetically
-    const divisions = Object.keys(d.data).sort((a,b) => a.localeCompare(b));
+    // If all divisions selected, generate an aggregated ALL DIVISIONS object
+    if (!selectedDiv || selectedDiv === 'all') {
+      const allDivData = {};
+      const metricKeys = [
+        'FRN ( inward - svc)', 
+        'TO ( raised - received)', 
+        'TO/SO (entry - received)', 
+        'SR ( raised - received )',
+        'DR ( requested - received )',
+        'TO/SO ( raised - entry)'
+      ];
+      for (const m of metricKeys) {
+        allDivData[m] = { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 };
+      }
+      for (const div in d.data) {
+        if (div === 'ALL DIVISIONS') continue;
+        for (const m of metricKeys) {
+          if (d.data[div][m]) {
+            allDivData[m]['< 1 day'] += d.data[div][m]['< 1 day'] || 0;
+            allDivData[m]['1 to 2 days'] += d.data[div][m]['1 to 2 days'] || 0;
+            allDivData[m]['> 2 days'] += d.data[div][m]['> 2 days'] || 0;
+            allDivData[m].total += d.data[div][m].total || 0;
+          }
+        }
+      }
+      d.data['ALL DIVISIONS'] = allDivData;
+    }
+
+    // Sort divisions alphabetically, keeping ALL DIVISIONS at the top
+    const divisions = Object.keys(d.data).sort((a,b) => {
+      if (a === 'ALL DIVISIONS') return -1;
+      if (b === 'ALL DIVISIONS') return 1;
+      return a.localeCompare(b);
+    });
     let hasData = false;
     for (const div of divisions) {
       if (selectedDiv && selectedDiv !== div && selectedDiv !== 'all') continue;
