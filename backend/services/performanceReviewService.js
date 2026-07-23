@@ -1227,7 +1227,7 @@ async function getPerformanceReviewData({ scope, from, to, month, division, empl
 
 
 async function getCommercialPerformanceData({ from, to }) {
-  const monthInfo = monthParts(month);
+  const monthInfo = dateRangeParts(from, to);
   
   const Service = require('../models/Service');
   const Ctodr = require('../models/Ctodr');
@@ -1398,7 +1398,7 @@ async function getCommercialPerformanceData({ from, to }) {
 }
 
 async function getRepairTeamPerformanceData({ from, to }) {
-  const monthInfo = monthParts(month);
+  const monthInfo = dateRangeParts(from, to);
   
   const RTFRN = require('../models/RTFRN.JS');
   const RTOB = require('../models/RTOB');
