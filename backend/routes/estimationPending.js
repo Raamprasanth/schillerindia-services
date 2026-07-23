@@ -791,6 +791,37 @@ router.put('/:id', async (req, res) => {
       });
     }
 
+    if ((sameGir === 'no' || normalizedTypeWork === 'replacement given') && updated.serviceId) {
+      const underRepairService = await Service.findByIdAndUpdate(
+        updated.serviceId,
+        {
+          $set: {
+            type:         'Under Repair',
+            typeWork:     'UNDER REPAIR',
+            status:       'under_repair',
+            repType:      'NA',
+            repGirNo:     updateData.obDefUnitGir || '',
+            raEng:        updateData.obRaEng || '',
+            shipSc:       updateData.obShipSc || '',
+            destination:  updateData.obDestination || '',
+            techRemarks:  updateData.techRemarks || '',
+            components:   updateData.components || '',
+            revalue:      Number(updateData.revalue || 0),
+            finalRemarks: updateData.finalRemarks || '',
+            updatedAt:    new Date().toISOString(),
+          },
+          $unset: { completedAt: "" }
+        },
+        { new: true, runValidators: false }
+      ).lean();
+      if (underRepairService) {
+        await tryCreateUnderRepair(underRepairService, req.user);
+      }
+
+      await EstimationPending.findByIdAndDelete(req.params.id);
+      return res.json({ success: true, underRepair: true, message: 'Moved to Under Repair.' });
+    }
+
     if (normalizedTypeWork === 'upgrade' || normalizedTypeWork === 'rep not required' || sameGir === 'yes') {
       const pdays = (record.rcvdDate || record.entryDate)
         ? Math.max(0, Math.floor((Date.now() - new Date(record.rcvdDate || record.entryDate).getTime()) / 86400000))
@@ -843,37 +874,6 @@ router.put('/:id', async (req, res) => {
 
       await EstimationPending.findByIdAndDelete(req.params.id);
       return res.json({ success: true, completed: true, message: 'Moved to Completed FRN.' });
-    }
-
-    if ((sameGir === 'no' || normalizedTypeWork === 'replacement given') && updated.serviceId) {
-      const underRepairService = await Service.findByIdAndUpdate(
-        updated.serviceId,
-        {
-          $set: {
-            type:         'Under Repair',
-            typeWork:     'UNDER REPAIR',
-            status:       'under_repair',
-            repType:      'NA',
-            repGirNo:     updateData.obDefUnitGir || '',
-            raEng:        updateData.obRaEng || '',
-            shipSc:       updateData.obShipSc || '',
-            destination:  updateData.obDestination || '',
-            techRemarks:  updateData.techRemarks || '',
-            components:   updateData.components || '',
-            revalue:      Number(updateData.revalue || 0),
-            finalRemarks: updateData.finalRemarks || '',
-            updatedAt:    new Date().toISOString(),
-          },
-          $unset: { completedAt: "" }
-        },
-        { new: true, runValidators: false }
-      ).lean();
-      if (underRepairService) {
-        await tryCreateUnderRepair(underRepairService, req.user);
-      }
-
-      await EstimationPending.findByIdAndDelete(req.params.id);
-      return res.json({ success: true, underRepair: true, message: 'Moved to Under Repair.' });
     }
 
     res.json(updated);

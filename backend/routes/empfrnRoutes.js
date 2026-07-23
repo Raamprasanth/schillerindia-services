@@ -608,18 +608,18 @@ router.put('/:id/update', protect, async (req, res) => {
       doc.status = 'external_repair';
     } else if (tw === 'supplier warranty' || tw === 'supplier warrenty') {
       doc.status = 'supplier_warranty';
+    } else if (tw === 'scrapped') {
+      doc.status = 'scrapped';
+    } else if (bodyStatus === 'under_repair') {
+      // ✅ FIXED: Prioritize 'under_repair' from Same GIR = No above 'completed'
+      doc.status = 'under_repair';
     } else if (
       ['completed', 'unit returned', 'no fault', 'upgrade', 'rep not required'].includes(tw) ||
       bodyStatus === 'completed'
     ) {
       doc.status = 'completed';
-    } else if (tw === 'scrapped') {
-      doc.status = 'scrapped';
     } else if (bodyStatus === 'estimation') {
       doc.status = 'estimation';
-    } else if (bodyStatus === 'under_repair') {
-      // ✅ FIXED: was missing — Same GIR = No routes here, used to fall through to 'pending'
-      doc.status = 'under_repair';
     }
     // else: leave as 'pending'
 
