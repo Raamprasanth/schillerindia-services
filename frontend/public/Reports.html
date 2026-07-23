@@ -635,12 +635,8 @@ body{
             </div>
             <div class="perf-body">
               <div>
-                <label class="field-label">Select Month Span</label>
-                <div style="display:flex; gap:10px; align-items:center;">
-  <input type="month" class="field-input" id="perf-start-month-div" onchange="refreshDivisionSubmissionBoxes()" style="width:140px;"/>
-  <span style="align-self:center;">to</span>
-  <input type="month" class="field-input" id="perf-end-month-div" onchange="refreshDivisionSubmissionBoxes()" style="width:140px;"/>
-</div>
+                <label class="field-label">Month</label>
+                <input type="month" class="field-input" id="perf-month-div" onchange="refreshDivisionSubmissionBoxes()"/>
               </div>
               <div>
                 <label class="field-label">Division</label>
@@ -951,12 +947,8 @@ body{
             </div>
             <div class="perf-body">
               <div>
-                <label class="field-label">Select Month Span</label>
-                <div style="display:flex; gap:10px; align-items:center;">
-  <input type="month" class="field-input" id="perf-start-month-ind" style="width:140px;"/>
-  <span style="align-self:center;">to</span>
-  <input type="month" class="field-input" id="perf-end-month-ind" style="width:140px;"/>
-</div>
+                <label class="field-label">Month</label>
+                <input type="month" class="field-input" id="perf-month"/>
               </div>
               <div id="perf-emp-field">
                 <label class="field-label">Employee</label>
@@ -1031,11 +1023,7 @@ body{
               <div class="fg">
                 <div class="fg-field">
                   <label class="field-label">Select Month</label>
-                  <div style="display:flex; gap:10px; align-items:center;">
-  <input type="month" class="field-input" id="perf-start-month-com" style="width:140px;"/>
-  <span style="align-self:center;">to</span>
-  <input type="month" class="field-input" id="perf-end-month-com" style="width:140px;"/>
-</div>
+                  <input type="month" id="perf-com-month" class="field-input" />
                 </div>
                 <div class="fg-field" style="margin-top:12px;">
                   <label class="field-label">Select Division</label>
@@ -1072,11 +1060,7 @@ body{
               <div class="fg">
                 <div class="fg-field">
                   <label class="field-label">Select Month</label>
-                  <div style="display:flex; gap:10px; align-items:center;">
-  <input type="month" class="field-input" id="perf-start-month-rt" style="width:140px;"/>
-  <span style="align-self:center;">to</span>
-  <input type="month" class="field-input" id="perf-end-month-rt" style="width:140px;"/>
-</div>
+                  <input type="month" id="perf-repairteam-month" class="field-input" />
                 </div>
 
                 <div class="fg-field" style="margin-top:16px;">
@@ -1416,16 +1400,9 @@ function setOptions(select, items, placeholder, includeAll = false, includeConso
 
 async function loadPerfOptions(){
   const month = getCurrentMonthValue();
-  // Set initial dates to current month
-  const today = new Date();
-  const currentMonthStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0');
-  ['perf-start-month-div','perf-start-month-ind','perf-start-month-com','perf-start-month-rt'].forEach(id => {
+  ['perf-month-div','perf-month'].forEach(id => {
     const el = document.getElementById(id);
-    if(el && !el.value) el.value = currentMonthStr;
-  });
-  ['perf-end-month-div','perf-end-month-ind','perf-end-month-com','perf-end-month-rt'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el && !el.value) el.value = currentMonthStr;
+    if(el && !el.value) el.value = month;
   });
 
   try{
@@ -1508,16 +1485,13 @@ function switchPerfTab(tab, btn) {
 }
 
 async function loadPerfSummary() {
-  const startM = document.getElementById('perf-start-month-ind').value;
-  const endM = document.getElementById('perf-end-month-ind').value;
-  const boundaries = calculateMonthBoundaryDates(startM, endM);
-  if(!boundaries){ toast('Please select valid Start and End months', 'error'); return; }
-  const { from, to, title } = boundaries;
+  const month = document.getElementById('perf-month').value;
   const employee = document.getElementById('perf-employee').value;
   const division = document.getElementById('perf-emp-division')?.value || '';
+  if(!month){ toast('Please select a month', 'error'); return; }
   if(!employee){ toast('Please select an employee', 'error'); return; }
 
-  const params = { scope:'employee', from, to, employee, division };
+  const params = { scope:'employee', month, employee, division };
   perfCurrentParams = params;
   const btn = document.getElementById('perf-preview-btn');
   btn.disabled = true;
@@ -1536,7 +1510,7 @@ async function loadPerfSummary() {
     document.getElementById('perf-out-meta').textContent = `Month: ${month}${division ? ' | Division: ' + division : ''}`;
     document.getElementById('perf-inner-tabs').style.display = 'flex';
     document.getElementById('perf-comment-section').style.display = 'block';
-    const key = 'perf_comment_' + employee + '_' + from + '_' + to;
+    const key = 'perf_comment_' + employee + '_' + month;
     document.getElementById('perf-comment').value = localStorage.getItem(key) || '';
     document.getElementById('perf-comment').dataset.key = key;
     switchPerfTab('summary', document.querySelector('#perf-inner-tabs .perf-inner-tab'));
@@ -1572,15 +1546,12 @@ async function loadDivTrend(){
 }
 
 async function loadDivisionPerf() {
-  const startM = document.getElementById('perf-start-month-div').value;
-  const endM = document.getElementById('perf-end-month-div').value;
-  const boundaries = calculateMonthBoundaryDates(startM, endM);
-  if(!boundaries){ toast('Please select valid Start and End months','error'); return; }
-  const { from, to, title } = boundaries;
+  const month=document.getElementById('perf-month-div').value;
+  if(!month){toast('Please select a month','error');return;}
   const div=document.getElementById('perf-division').value;
   if(!div){toast('Please select a division','error');return;}
 
-  const params={scope:'division',from,to,division:div};
+  const params={scope:'division',month,division:div};
   perfDivCurrentParams=params;
   const btn=document.getElementById('perf-preview-btn-div');
   btn.disabled=true;btn.innerHTML='&#9203; Loading';
@@ -1600,7 +1571,7 @@ async function loadDivisionPerf() {
     document.getElementById('perf-div-inner-tabs').style.display='flex';
     document.getElementById('perf-div-comment-section').style.display='block';
     
-    const key='perf_comment_div_'+params.division+'_'+params.from+'_'+params.to;
+    const key='perf_comment_div_'+params.division+'_'+params.month;
     document.getElementById('perf-div-comment').value=localStorage.getItem(key)||'';
     document.getElementById('perf-div-comment').dataset.key=key;
     switchPerfDivTab('summary',document.querySelector('#perf-div-inner-tabs .perf-inner-tab'));
@@ -2040,22 +2011,16 @@ function renderTrendChart(points, isDiv = false){
 
 async function loadLeaderboard(){
   const isDivisionPane = perfScope === 'division' || document.getElementById('perf-div-pane')?.style.display !== 'none';
-  const startMDiv = document.getElementById('perf-start-month-div')?.value;
-    const endMDiv = document.getElementById('perf-end-month-div')?.value;
-    const startMInd = document.getElementById('perf-start-month-ind')?.value;
-    const endMInd = document.getElementById('perf-end-month-ind')?.value;
-    const bDiv = startMDiv && endMDiv ? calculateMonthBoundaryDates(startMDiv, endMDiv) : null;
-    const bInd = startMInd && endMInd ? calculateMonthBoundaryDates(startMInd, endMInd) : null;
-    const boundaries = isDivisionPane ? bDiv : bInd;
-    if(!boundaries){
-      toast('Please select valid Start and End months first','error');
+  const month=(isDivisionPane ? document.getElementById('perf-month-div') : document.getElementById('perf-month')).value;
+  if(!month){
+    toast('Please select a month first','error');
     if(isDivisionPane) switchPerfDivTab('summary',document.querySelector('#perf-div-inner-tabs .perf-inner-tab'));
     else switchPerfTab('summary',document.querySelector('.perf-inner-tab'));
     return;
   }
   const pane=document.getElementById(isDivisionPane ? 'perf-pane-leaderboard-div' : 'perf-pane-leaderboard');
   if(!pane){ toast('Leaderboard is available in the Division tab.', 'info'); return; }
-  pane.innerHTML=`<div class="loading-state"><div class="spinner"></div><div class="loading-title">Building Division Leaderboard</div><div class="loading-sub">Computing all divisions for ${boundaries.title}...</div></div>`;
+  pane.innerHTML=`<div class="loading-state"><div class="spinner"></div><div class="loading-title">Building Division Leaderboard</div><div class="loading-sub">Computing all divisions for ${month}...</div></div>`;
   document.getElementById(isDivisionPane ? 'perf-div-inner-tabs' : 'perf-inner-tabs').style.display='flex';
   if(isDivisionPane) {
     document.querySelectorAll('#perf-div-inner-tabs .perf-inner-tab').forEach((b,i)=>{b.classList.toggle('active',i===2);});
@@ -2413,11 +2378,8 @@ function buildPerfPdfPage(data,label,month){
 
 async function exportPriorityDivisionPDF(){
   try{
-    const startM = document.getElementById('perf-start-month-com').value;
-  const endM = document.getElementById('perf-end-month-com').value;
-  const boundaries = calculateMonthBoundaryDates(startM, endM);
-  if(!boundaries){ toast('Please select valid Start and End months','error'); return; }
-  const { from, to, title } = boundaries;
+    const month=document.getElementById('perf-month').value;
+    if(!month){toast('Please select a month','error');return;}
     if(!perfOptionsLoaded) await loadPerfOptions();
     const wanted=[
       {label:'Ventilator',patterns:['VENTILATOR']},
@@ -2807,11 +2769,7 @@ function escapeHtml(str) {
 function refreshDivisionSubmissionBoxes(){
   const panel = document.getElementById('perf-submission-panel');
   if(!panel) return;
-  const startM = document.getElementById('perf-start-month-rt').value;
-  const endM = document.getElementById('perf-end-month-rt').value;
-  const boundaries = calculateMonthBoundaryDates(startM, endM);
-  if(!boundaries){ toast('Please select valid Start and End months','error'); return; }
-  const { from, to, title } = boundaries;
+  const month = document.getElementById('perf-month-div')?.value || getCurrentMonthValue();
   const division = document.getElementById('perf-division')?.value || '';
   const meta = division ? `${escapeHtml(division)} | ${escapeHtml(month)}` : `Select division | ${escapeHtml(month)}`;
   panel.innerHTML = `
@@ -2999,36 +2957,18 @@ if (currentTab === 'kanban') loadKanbanBoard(); // Handle direct loads if modifi
 <script src="tab-fix.js"></script>
 
 <script>
-function calculateMonthBoundaryDates(startMonthStr, endMonthStr) {
-  if (!startMonthStr || !endMonthStr) return null;
-  const sy = parseInt(startMonthStr.split('-')[0], 10);
-  const sm = parseInt(startMonthStr.split('-')[1], 10);
-  const ey = parseInt(endMonthStr.split('-')[0], 10);
-  const em = parseInt(endMonthStr.split('-')[1], 10);
-  const startDate = new Date(sy, sm - 1, 1);
-  const endDate = new Date(ey, em, 0); // Last day of end month
-  if (startDate > endDate) return null; // Invalid range
-  return {
-    from: startDate.getFullYear() + '-' + String(startDate.getMonth()+1).padStart(2,'0') + '-' + String(startDate.getDate()).padStart(2,'0'),
-    to: endDate.getFullYear() + '-' + String(endDate.getMonth()+1).padStart(2,'0') + '-' + String(endDate.getDate()).padStart(2,'0'),
-    title: startMonthStr === endMonthStr ? startMonthStr : `${startMonthStr} to ${endMonthStr}`
-  };
-}
 
 async function fetchCommercialData() {
-  const startM = document.getElementById('perf-start-month-com').value;
-  const endM = document.getElementById('perf-end-month-com').value;
-  const boundaries = calculateMonthBoundaryDates(startM, endM);
-  if (!boundaries) {
-    toast('Please select valid Start and End months', 'error');
+  const month = document.getElementById('perf-com-month').value;
+  if (!month) {
+    toast('Please select a month first', 'error');
     return;
   }
-  const { from, to, title } = boundaries;
   const selectedDiv = document.getElementById('perf-com-division') ? document.getElementById('perf-com-division').value : '';
   const res = document.getElementById('perf-com-result');
   res.innerHTML = '<div class="empty-sub">Loading commercial data...</div>';
   try {
-    const r = await fetch(`/api/reports/performance/commercial?from=${from}&to=${to}`, {headers: hdrs()});
+    const r = await fetch('/api/reports/performance/commercial?month=' + month, {headers: hdrs()});
     const d = await r.json();
     if (!d.success) throw new Error(d.message);
     
@@ -3038,7 +2978,7 @@ async function fetchCommercialData() {
     }
     
     let reportHtml = `<div style="display:flex;justify-content:space-between;margin-bottom:16px;">
-      <h3 style="margin:0;font-family:'Syne',sans-serif;color:#0f172a;">Commercial Report - ${title}</h3>
+      <h3 style="margin:0;font-family:'Syne',sans-serif;color:#0f172a;">Commercial Report - ${month}</h3>
       <button class="btn btn-green" onclick="exportCommercialPDF()"><i class="fas fa-file-pdf" style="margin-right:6px;"></i> Export PDF</button>
     </div>
     <div id="commercial-pdf-content" style="background:#fff;padding:20px;border-radius:8px;">`;
@@ -3148,18 +3088,15 @@ async function exportCommercialPDF() {
 }
 
 async function fetchRepairTeamData() {
-  const startM = document.getElementById('perf-start-month-rt').value;
-  const endM = document.getElementById('perf-end-month-rt').value;
-  const boundaries = calculateMonthBoundaryDates(startM, endM);
-  if (!boundaries) {
-    toast('Please select valid Start and End months', 'error');
+  const month = document.getElementById('perf-repairteam-month').value;
+  if (!month) {
+    toast('Please select a month first', 'error');
     return;
   }
-  const { from, to, title } = boundaries;
   const res = document.getElementById('perf-repairteam-result');
   res.innerHTML = '<div class="empty-sub">Loading repair team data...</div>';
   try {
-    const r = await fetch(`/api/reports/performance/repairteam?from=${from}&to=${to}`, {headers: hdrs()});
+    const r = await fetch('/api/reports/performance/repairteam?month=' + month, {headers: hdrs()});
     const d = await r.json();
     if (!d.success) throw new Error(d.message);
     

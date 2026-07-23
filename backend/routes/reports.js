@@ -638,11 +638,11 @@ router.get('/performance/options', verifyToken, async (req, res) => {
 
 router.get('/performance/commercial', verifyToken, async (req, res) => {
   try {
-    const { from, to } = req.query;
-    if (!from || !to) return res.status(400).json({ success: false, message: 'from and to dates are required' });
+    const { month } = req.query;
+    if (!month) return res.status(400).json({ success: false, message: 'Month is required' });
 
     const { getCommercialPerformanceData } = require('../services/performanceReviewService');
-    const data = await getCommercialPerformanceData({ from, to });
+    const data = await getCommercialPerformanceData({ month });
 
     res.json({ success: true, data });
   } catch (error) {
@@ -653,11 +653,11 @@ router.get('/performance/commercial', verifyToken, async (req, res) => {
 
 router.get('/performance/repairteam', verifyToken, async (req, res) => {
   try {
-    const { from, to } = req.query;
-    if (!from || !to) return res.status(400).json({ success: false, message: 'from and to dates are required' });
+    const { month } = req.query;
+    if (!month) return res.status(400).json({ success: false, message: 'Month is required' });
 
     const { getRepairTeamPerformanceData } = require('../services/performanceReviewService');
-    const data = await getRepairTeamPerformanceData({ from, to });
+    const data = await getRepairTeamPerformanceData({ month });
 
     res.json({ success: true, data });
   } catch (error) {
@@ -668,8 +668,8 @@ router.get('/performance/repairteam', verifyToken, async (req, res) => {
 
 router.get('/performance/summary', verifyToken, async (req, res) => {
   try {
-    const { scope, month, from, to, division, employee } = req.query;
-    const data = await getPerformanceReviewData({ scope, month, from, to, division, employee });
+    const { scope, month, division, employee } = req.query;
+    const data = await getPerformanceReviewData({ scope, month, division, employee });
     return res.json({ success: true, data: summarizePerformanceRows(data) });
   } catch (err) {
     return res.status(400).json({ success: false, message: err.message });
@@ -681,8 +681,8 @@ router.get('/performance/summary', verifyToken, async (req, res) => {
 // ══════════════════════════════════════════════════════════════════════════
 router.get('/performance/leaderboard', verifyToken, async (req, res) => {
   try {
-    const { month, from, to } = req.query;
-    if (!month && (!from || !to)) return res.status(400).json({ success: false, message: 'month or from/to is required' });
+    const { month } = req.query;
+    if (!month) return res.status(400).json({ success: false, message: 'month is required' });
     const { getPerformanceReviewOptions } = require('../services/performanceReviewService');
     const options = await getPerformanceReviewOptions();
     const divisions = (options.divisions || []).map(d => d.name || d).filter(Boolean);
@@ -691,7 +691,7 @@ router.get('/performance/leaderboard', verifyToken, async (req, res) => {
     const results = await Promise.all(
       divisions.map(async (div) => {
         try {
-          const data = await getPerformanceReviewData({ scope: 'division', month, from, to, division: div });
+          const data = await getPerformanceReviewData({ scope: 'division', month, division: div });
           const s = summarizePerformanceRows(data);
           return {
             division: div,
@@ -718,7 +718,7 @@ router.get('/performance/leaderboard', verifyToken, async (req, res) => {
 // ══════════════════════════════════════════════════════════════════════════
 router.get('/performance/trend', verifyToken, async (req, res) => {
   try {
-    const { scope, division, employee, months: monthsParam, from, to } = req.query;
+    const { scope, division, employee, months: monthsParam } = req.query;
     if (!scope) return res.status(400).json({ success: false, message: 'scope is required' });
     const count = Math.min(parseInt(monthsParam) || 6, 12);
 
