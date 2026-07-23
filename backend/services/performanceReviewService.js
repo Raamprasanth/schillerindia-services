@@ -1412,12 +1412,17 @@ async function getRepairTeamPerformanceData({ month }) {
     return divisionsMap[d];
   };
 
+  const now = new Date();
+  const isCurrentMonth = (monthInfo.year === now.getFullYear() && monthInfo.month === (now.getMonth() + 1));
+
   const processActive = (items, actKey, dateField) => {
     for (const item of items) {
       const divName = item.division || 'Unknown';
       const divData = ensureDivision(divName);
-      // Increment RP for ALL active items (no month filter)
-      divData[actKey].RP++;
+      // Increment RP for active items only if querying the current month
+      if (isCurrentMonth) {
+        divData[actKey].RP++;
+      }
       
       const d = parseAnyDate(item[dateField], item.createdAt);
       if (isDateInRange(d, start, end)) {
