@@ -951,16 +951,16 @@ body{
                 <input type="month" class="field-input" id="perf-month"/>
               </div>
               <div id="perf-emp-field">
-                <label class="field-label">Employee</label>
-                <select class="field-select" id="perf-employee">
-                  <option value=""> Select Employee </option>
-                </select>
-                <div style="margin-top:8px;">
+                <div style="margin-bottom:8px;">
                   <label class="field-label">Employee's Division</label>
                   <select class="field-select" id="perf-emp-division">
                     <option value=""> Division (for report) </option>
                   </select>
                 </div>
+                <label class="field-label">Employee</label>
+                <select class="field-select" id="perf-employee">
+                  <option value=""> Select Employee </option>
+                </select>
               </div>
             </div>
             <div class="perf-footer">
@@ -1423,14 +1423,26 @@ async function loadPerfOptions(){
     setOptions(document.getElementById('perf-employee'), perfOptions.employees, ' Select Employee ');
 
     const empSel = document.getElementById('perf-employee');
+    const divSel = document.getElementById('perf-emp-division');
+    
     if(empSel && !empSel.dataset.boundDivisionSync){
       empSel.dataset.boundDivisionSync = '1';
       empSel.addEventListener('change', () => {
         const emp = (perfOptions.employees || []).find(e => optionLabel(e) === empSel.value);
-        const divSel = document.getElementById('perf-emp-division');
         if(divSel && emp && emp.division && [...divSel.options].some(o => o.value === emp.division)) {
           divSel.value = emp.division;
         }
+      });
+    }
+
+    if(divSel && !divSel.dataset.boundEmpSync){
+      divSel.dataset.boundEmpSync = '1';
+      divSel.addEventListener('change', () => {
+        const selectedDiv = divSel.value;
+        const filteredEmps = selectedDiv
+          ? (perfOptions.employees || []).filter(e => e.division === selectedDiv || (e.divisions && e.divisions.includes(selectedDiv)))
+          : (perfOptions.employees || []);
+        setOptions(document.getElementById('perf-employee'), filteredEmps, ' Select Employee ');
       });
     }
 
