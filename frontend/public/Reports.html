@@ -1383,14 +1383,18 @@ function optionLabel(item){
   return item && typeof item === 'object' ? (item.name || item.division || item.label || '') : String(item || '');
 }
 
-function setOptions(select, items, placeholder, includeAll = false){
+function setOptions(select, items, placeholder, includeAll = false, includeConsolidated = false){
   if(!select) return;
   const current = select.value;
-  select.innerHTML = (includeAll ? '<option value="all">All Divisions</option>' : `<option value="">${placeholder}</option>`) +
-    (items || []).map(item => {
+  let html = '';
+  if (includeAll) html += '<option value="all">All Divisions</option>';
+  if (includeConsolidated) html += '<option value="consolidated">Consolidated</option>';
+  if (!includeAll && !includeConsolidated) html += `<option value="">${placeholder}</option>`;
+  html += (items || []).map(item => {
       const label = optionLabel(item);
       return label ? `<option value="${escapeHtml(label)}">${escapeHtml(label)}</option>` : '';
-    }).join('');
+  }).join('');
+  select.innerHTML = html;
   if([...select.options].some(o => o.value === current)) select.value = current;
 }
 
@@ -1412,7 +1416,7 @@ async function loadPerfOptions(){
     };
 
     setOptions(document.getElementById('perf-division'), perfOptions.divisions, ' Select Division ');
-      setOptions(document.getElementById('perf-com-division'), perfOptions.divisions, '', true);
+      setOptions(document.getElementById('perf-com-division'), perfOptions.divisions, '', true, true);
       setOptions(document.getElementById('perf-repairteam-division'), perfOptions.divisions, '', true);
     setOptions(document.getElementById('perf-emp-division'), perfOptions.divisions, " Division (for report) ");
     setOptions(document.getElementById('kanban-div-filter'), perfOptions.divisions, '', true);
@@ -2979,8 +2983,8 @@ async function fetchCommercialData() {
     </div>
     <div id="commercial-pdf-content" style="background:#fff;padding:20px;border-radius:8px;">`;
     
-    // If all divisions selected, generate an aggregated ALL DIVISIONS object
-    if (!selectedDiv || selectedDiv === 'all') {
+    // If all divisions or consolidated selected, generate an aggregated ALL DIVISIONS object
+    if (!selectedDiv || selectedDiv === 'all' || selectedDiv === 'consolidated') {
       const allDivData = {};
       const metricKeys = [
         'FRN ( inward - svc)', 
@@ -3015,7 +3019,8 @@ async function fetchCommercialData() {
     });
     let hasData = false;
     for (const div of divisions) {
-      if (selectedDiv && selectedDiv !== div && selectedDiv !== 'all') continue;
+      if (selectedDiv === 'consolidated' && div !== 'ALL DIVISIONS') continue;
+      if (selectedDiv !== 'consolidated' && selectedDiv && selectedDiv !== 'all' && selectedDiv !== div) continue;
       hasData = true;
       const metrics = d.data[div];
       reportHtml += `<div style="margin-bottom:30px; page-break-inside: avoid;">
