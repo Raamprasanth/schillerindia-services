@@ -1224,6 +1224,7 @@ async function getCommercialPerformanceData({ month }) {
   const EstimationPending = require('../models/EstimationPending');
   const ScPrfOb = require('../models/ScPrfOb');
   const ScCsr = require('../models/ScCsr');
+  const Cdr = require('../models/Cdr');
 
   const getDiff = (d1, d2) => {
     const date1 = parseAnyDate(d1);
@@ -1272,34 +1273,41 @@ async function getCommercialPerformanceData({ month }) {
     return raisedDate && receivedDate && isDateInRange(closedDate, start, end);
   });
 
+  const allCdrs = await Cdr.find().lean();
+  const cdrs = allCdrs.filter(c => {
+    const reqDate = parseAnyDate(c.entryDate);
+    const recDate = parseAnyDate(c.sparesReceivedDate);
+    return reqDate && recDate && isDateInRange(reqDate, start, end);
+  });
+
   const divisionsMap = {};
   const ensureDivision = (div) => {
     const d = String(div || 'Unknown').trim().replace(/\s+/g, ' ').toUpperCase();
     if (!divisionsMap[d]) {
       divisionsMap[d] = {
-        FRN: { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
-        TO: { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
-        'TO/SO': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
-        SR: { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 }
+        'FRN ( inward - svc)': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
+        'TO ( raised - received)': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
+        'TO/SO (entry - received)': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
+        'SR ( raised - received )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
+        'DR ( requested - received )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
+        'TO/SO ( raised - entry)': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 }
       };
     }
     return divisionsMap[d];
   };
 
-  const toSourceIds = [...new Set(
-    todrs
-      .map(t => t.sourceId)
-      .filter(id => id && /^[0-9a-fA-F]{24}$/.test(String(id)))
-      .map(String)
-  )];
+  const toSourceIds = [...new Set([
+    ...todrs.map(t => t.sourceId),
+    ...cdrs.map(c => c.sourceId)
+  ].filter(id => id && /^[0-9a-fA-F]{24}$/.test(String(id))).map(String))];
   const toSourceMap = new Map();
   if (toSourceIds.length) {
-    const [empFrns, services, estimations] = await Promise.all([
+    const [empFrns, servicesRef, estimations] = await Promise.all([
       EmpFRN.find({ _id: { $in: toSourceIds } }).populate('division', 'name').lean(),
       Service.find({ _id: { $in: toSourceIds } }).populate('division', 'name').lean(),
       EstimationPending.find({ _id: { $in: toSourceIds } }).populate('division', 'name').lean(),
     ]);
-    [...empFrns, ...services, ...estimations].forEach(doc => toSourceMap.set(String(doc._id), doc));
+    [...empFrns, ...servicesRef, ...estimations].forEach(doc => toSourceMap.set(String(doc._id), doc));
   }
 
   const divisionNameForTo = (row) => {
@@ -1315,41 +1323,63 @@ async function getCommercialPerformanceData({ month }) {
     if (cat) {
       const divName = s.division?.name || s.divisionName || s.division || 'Unknown';
       const divData = ensureDivision(divName);
-      divData['FRN'][cat]++;
-      divData['FRN'].total++;
+      divData['FRN ( inward - svc)'][cat]++;
+      divData['FRN ( inward - svc)'].total++;
     }
   }
-
-  const today = new Date();
 
   for (const t of todrs) {
     const diff = getDiff(t.toRaisedDate, t.sparesReceivedDate);
     const cat = categorize(diff);
     if (cat) {
       const divData = ensureDivision(divisionNameForTo(t));
-      divData['TO'][cat]++;
-      divData['TO'].total++;
+      divData['TO ( raised - received)'][cat]++;
+      divData['TO ( raised - received)'].total++;
     }
   }
 
   for (const p of scPrfObs) {
+    // 1. TO/SO (entry - received)
     const endDate = p.sparesReceivedAtSvc;
-    const diff = getDiff(p.entryDate, endDate);
-    const cat = categorize(diff);
+    let diff = getDiff(p.entryDate, endDate);
+    let cat = categorize(diff);
     if (cat) {
       const divData = ensureDivision(p.division);
-      divData['TO/SO'][cat]++;
-      divData['TO/SO'].total++;
+      divData['TO/SO (entry - received)'][cat]++;
+      divData['TO/SO (entry - received)'].total++;
+    }
+    
+    // 2. TO/SO ( raised - entry)
+    const diffRaised = getDiff(p.raisedDate, p.entryDate);
+    const catRaised = categorize(diffRaised);
+    if (catRaised) {
+      const divData = ensureDivision(p.division);
+      divData['TO/SO ( raised - entry)'][catRaised]++;
+      divData['TO/SO ( raised - entry)'].total++;
     }
   }
 
   for (const s of scSrs) {
-    const diff = getDiff(s.toRaisedDate, s.sparesReceivedDate);
+    const fromLoc = String(s.fromLocation || '').toLowerCase();
+    const toLoc = String(s.toLocation || '').toLowerCase();
+    if (fromLoc.includes('serv') && toLoc.includes('pdy')) {
+      const diff = getDiff(s.toRaisedDate, s.sparesReceivedDate);
+      const cat = categorize(diff);
+      if (cat) {
+        const divData = ensureDivision(s.division);
+        divData['SR ( raised - received )'][cat]++;
+        divData['SR ( raised - received )'].total++;
+      }
+    }
+  }
+
+  for (const c of cdrs) {
+    const diff = getDiff(c.entryDate, c.sparesReceivedDate);
     const cat = categorize(diff);
     if (cat) {
-      const divData = ensureDivision(s.division);
-      divData['SR'][cat]++;
-      divData['SR'].total++;
+      const divData = ensureDivision(divisionNameForTo(c));
+      divData['DR ( requested - received )'][cat]++;
+      divData['DR ( requested - received )'].total++;
     }
   }
 

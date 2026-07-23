@@ -3000,8 +3000,16 @@ async function fetchCommercialData() {
           </thead>
           <tbody>`;
           
-      for (const m of ['FRN', 'TO', 'TO/SO', 'SR']) {
+      for (const m of [
+        'FRN ( inward - svc)', 
+        'TO ( raised - received)', 
+        'TO/SO (entry - received)', 
+        'SR ( raised - received )',
+        'DR ( requested - received )',
+        'TO/SO ( raised - entry)'
+      ]) {
         const val = metrics[m];
+        if (!val) continue; // safety check
         const t = val.total || 0;
         const p1 = t > 0 ? Math.round((val['< 1 day']/t)*100) : 0;
         const p2 = t > 0 ? Math.round((val['1 to 2 days']/t)*100) : 0;
