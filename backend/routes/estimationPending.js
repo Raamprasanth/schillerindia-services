@@ -852,6 +852,7 @@ router.put('/:id', async (req, res) => {
           $set: {
             type:         'Under Repair',
             typeWork:     'UNDER REPAIR',
+            status:       'under_repair',
             repType:      'NA',
             repGirNo:     updateData.obDefUnitGir || '',
             raEng:        updateData.obRaEng || '',
@@ -863,6 +864,7 @@ router.put('/:id', async (req, res) => {
             finalRemarks: updateData.finalRemarks || '',
             updatedAt:    new Date().toISOString(),
           },
+          $unset: { completedAt: "" }
         },
         { new: true, runValidators: false }
       ).lean();
