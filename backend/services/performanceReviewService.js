@@ -364,9 +364,13 @@ async function getSimpleEmployeePerformanceData({ monthInfo, employee, selectedD
     makeActivityRow('Daily work updated', workingDays, dailyWorkDays.size, null, null),
   ];
 
-  const previousMonthDate = new Date(Date.UTC(monthInfo.year, monthInfo.month - 2, 1));
-  const previousMonth = `${previousMonthDate.getUTCFullYear()}-${String(previousMonthDate.getUTCMonth() + 1).padStart(2, '0')}`;
-  const previousMonthInfo = monthParts(previousMonth);
+  const prevStart = new Date(monthInfo.start);
+  prevStart.setMonth(prevStart.getMonth() - 1);
+  const prevEnd = new Date(monthInfo.end);
+  prevEnd.setMonth(prevEnd.getMonth() - 1);
+  const pFrom = prevStart.toISOString().split('T')[0];
+  const pTo = prevEnd.toISOString().split('T')[0];
+  const previousMonthInfo = dateRangeParts(pFrom, pTo);
   const previousWorkingDayKeys = getNonSundayDates(previousMonthInfo);
   const previousWorkingDaySet = new Set(previousWorkingDayKeys);
   const previousStartKey = previousMonthInfo.monthKey + '-01';
@@ -682,7 +686,7 @@ async function getPerformanceReviewOptions() {
   };
 }
 
-async function getPerformanceReviewData({ scope, month, division, employee }) {
+async function getPerformanceReviewData({ scope, from, to, division, employee }) {
   if (!['division', 'employee'].includes(scope)) {
     throw new Error('Scope must be either division or employee.');
   }
@@ -693,7 +697,7 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     throw new Error('Employee is required for individual review.');
   }
 
-  const monthInfo = monthParts(month);
+  const monthInfo = dateRangeParts(from, to);
   const options = await getPerformanceReviewOptions();
   const divisionLookup = new Map(
     (options.divisions || []).map((item) => [String(item.id), item.name])
@@ -979,9 +983,13 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     row15 = makeActivityRow('No of FRN entered on the same day', frnEligible.length, sameDayCount);
   }
 
-  const previousMonthDate = new Date(Date.UTC(monthInfo.year, monthInfo.month - 2, 1));
-  const previousMonth = `${previousMonthDate.getUTCFullYear()}-${String(previousMonthDate.getUTCMonth() + 1).padStart(2, '0')}`;
-  const previousMonthInfo = monthParts(previousMonth);
+  const prevStart = new Date(monthInfo.start);
+  prevStart.setMonth(prevStart.getMonth() - 1);
+  const prevEnd = new Date(monthInfo.end);
+  prevEnd.setMonth(prevEnd.getMonth() - 1);
+  const pFrom = prevStart.toISOString().split('T')[0];
+  const pTo = prevEnd.toISOString().split('T')[0];
+  const previousMonthInfo = dateRangeParts(pFrom, pTo);
   const previousServices = services.filter((record) => {
     const recordDate = parseAnyDate(record.entryDate, record.createdAt);
     if (!isDateInRange(recordDate, previousMonthInfo.start, previousMonthInfo.end)) return false;
@@ -1215,7 +1223,7 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
 
 
 
-async function getCommercialPerformanceData({ month }) {
+async function getCommercialPerformanceData({ from, to }) {
   const monthInfo = monthParts(month);
   
   const Service = require('../models/Service');
@@ -1386,7 +1394,7 @@ async function getCommercialPerformanceData({ month }) {
   return divisionsMap;
 }
 
-async function getRepairTeamPerformanceData({ month }) {
+async function getRepairTeamPerformanceData({ from, to }) {
   const monthInfo = monthParts(month);
   
   const RTFRN = require('../models/RTFRN.JS');
@@ -1443,7 +1451,7 @@ async function getRepairTeamPerformanceData({ month }) {
   };
 
   const now = new Date();
-  const isCurrentMonth = (monthInfo.year === now.getFullYear() && monthInfo.month === (now.getMonth() + 1));
+  const isCurrentMonth = (now >= monthInfo.start && now <= monthInfo.end);
 
   const processActive = (items, actKey, dateField) => {
     for (const item of items) {

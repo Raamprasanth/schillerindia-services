@@ -636,7 +636,7 @@ body{
             <div class="perf-body">
               <div>
                 <label class="field-label">Month</label>
-                <input type="month" class="field-input" id="perf-month-div" onchange="refreshDivisionSubmissionBoxes()"/>
+                <div style="display:flex; gap:10px;"><input type="date" class="field-input" id="perf-from-div" onchange="refreshDivisionSubmissionBoxes()" style="width:130px;"/><span style="align-self:center;">to</span><input type="date" class="field-input" id="perf-to-div" onchange="refreshDivisionSubmissionBoxes()" style="width:130px;"/></div>
               </div>
               <div>
                 <label class="field-label">Division</label>
@@ -948,7 +948,7 @@ body{
             <div class="perf-body">
               <div>
                 <label class="field-label">Month</label>
-                <input type="month" class="field-input" id="perf-month"/>
+                <div style="display:flex; gap:10px;"><input type="date" class="field-input" id="perf-from" style="width:130px;"/><span style="align-self:center;">to</span><input type="date" class="field-input" id="perf-to" style="width:130px;"/></div>
               </div>
               <div id="perf-emp-field">
                 <label class="field-label">Employee</label>
@@ -1023,7 +1023,7 @@ body{
               <div class="fg">
                 <div class="fg-field">
                   <label class="field-label">Select Month</label>
-                  <input type="month" id="perf-com-month" class="field-input" />
+                  <div style="display:flex; gap:10px;"><input type="date" id="perf-com-from" class="field-input" style="width:130px;"/><span style="align-self:center;">to</span><input type="date" id="perf-com-to" class="field-input" style="width:130px;"/></div>
                 </div>
                 <div class="fg-field" style="margin-top:12px;">
                   <label class="field-label">Select Division</label>
@@ -1060,7 +1060,7 @@ body{
               <div class="fg">
                 <div class="fg-field">
                   <label class="field-label">Select Month</label>
-                  <input type="month" id="perf-repairteam-month" class="field-input" />
+                  <div style="display:flex; gap:10px;"><input type="date" id="perf-repairteam-from" class="field-input" style="width:130px;"/><span style="align-self:center;">to</span><input type="date" id="perf-repairteam-to" class="field-input" style="width:130px;"/></div>
                 </div>
 
                 <div class="fg-field" style="margin-top:16px;">
@@ -1400,9 +1400,16 @@ function setOptions(select, items, placeholder, includeAll = false, includeConso
 
 async function loadPerfOptions(){
   const month = getCurrentMonthValue();
-  ['perf-month-div','perf-month'].forEach(id => {
+  // Set initial dates to first day of month and today
+  const firstDay = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+  const todayDate = new Date().toISOString().split('T')[0];
+  ['perf-from-div','perf-from','perf-com-from','perf-repairteam-from'].forEach(id => {
     const el = document.getElementById(id);
-    if(el && !el.value) el.value = month;
+    if(el && !el.value) el.value = firstDay;
+  });
+  ['perf-to-div','perf-to','perf-com-to','perf-repairteam-to'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el && !el.value) el.value = todayDate;
   });
 
   try{
@@ -2959,16 +2966,17 @@ if (currentTab === 'kanban') loadKanbanBoard(); // Handle direct loads if modifi
 <script>
 
 async function fetchCommercialData() {
-  const month = document.getElementById('perf-com-month').value;
-  if (!month) {
-    toast('Please select a month first', 'error');
+  const from = document.getElementById('perf-com-from').value;
+  const to = document.getElementById('perf-com-to').value;
+  if (!from || !to) {
+    toast('Please select from and to dates', 'error');
     return;
   }
   const selectedDiv = document.getElementById('perf-com-division') ? document.getElementById('perf-com-division').value : '';
   const res = document.getElementById('perf-com-result');
   res.innerHTML = '<div class="empty-sub">Loading commercial data...</div>';
   try {
-    const r = await fetch('/api/reports/performance/commercial?month=' + month, {headers: hdrs()});
+    const r = await fetch(`/api/reports/performance/commercial?from=${from}&to=${to}`, {headers: hdrs()});
     const d = await r.json();
     if (!d.success) throw new Error(d.message);
     
@@ -2978,7 +2986,7 @@ async function fetchCommercialData() {
     }
     
     let reportHtml = `<div style="display:flex;justify-content:space-between;margin-bottom:16px;">
-      <h3 style="margin:0;font-family:'Syne',sans-serif;color:#0f172a;">Commercial Report - ${month}</h3>
+      <h3 style="margin:0;font-family:'Syne',sans-serif;color:#0f172a;">Commercial Report - ${from} to ${to}</h3>
       <button class="btn btn-green" onclick="exportCommercialPDF()"><i class="fas fa-file-pdf" style="margin-right:6px;"></i> Export PDF</button>
     </div>
     <div id="commercial-pdf-content" style="background:#fff;padding:20px;border-radius:8px;">`;
@@ -3088,15 +3096,16 @@ async function exportCommercialPDF() {
 }
 
 async function fetchRepairTeamData() {
-  const month = document.getElementById('perf-repairteam-month').value;
-  if (!month) {
-    toast('Please select a month first', 'error');
+  const from = document.getElementById('perf-repairteam-from').value;
+  const to = document.getElementById('perf-repairteam-to').value;
+  if (!from || !to) {
+    toast('Please select from and to dates', 'error');
     return;
   }
   const res = document.getElementById('perf-repairteam-result');
   res.innerHTML = '<div class="empty-sub">Loading repair team data...</div>';
   try {
-    const r = await fetch('/api/reports/performance/repairteam?month=' + month, {headers: hdrs()});
+    const r = await fetch(`/api/reports/performance/repairteam?from=${from}&to=${to}`, {headers: hdrs()});
     const d = await r.json();
     if (!d.success) throw new Error(d.message);
     

@@ -638,11 +638,11 @@ router.get('/performance/options', verifyToken, async (req, res) => {
 
 router.get('/performance/commercial', verifyToken, async (req, res) => {
   try {
-    const { month } = req.query;
-    if (!month) return res.status(400).json({ success: false, message: 'Month is required' });
+    const { from, to } = req.query;
+    if (!from || !to) return res.status(400).json({ success: false, message: 'from and to dates are required' });
 
     const { getCommercialPerformanceData } = require('../services/performanceReviewService');
-    const data = await getCommercialPerformanceData({ month });
+    const data = await getCommercialPerformanceData({ from, to });
 
     res.json({ success: true, data });
   } catch (error) {
@@ -653,11 +653,11 @@ router.get('/performance/commercial', verifyToken, async (req, res) => {
 
 router.get('/performance/repairteam', verifyToken, async (req, res) => {
   try {
-    const { month } = req.query;
-    if (!month) return res.status(400).json({ success: false, message: 'Month is required' });
+    const { from, to } = req.query;
+    if (!from || !to) return res.status(400).json({ success: false, message: 'from and to dates are required' });
 
     const { getRepairTeamPerformanceData } = require('../services/performanceReviewService');
-    const data = await getRepairTeamPerformanceData({ month });
+    const data = await getRepairTeamPerformanceData({ from, to });
 
     res.json({ success: true, data });
   } catch (error) {
