@@ -508,6 +508,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   function clearFilters() {
     ['fl-from','fl-to'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
     const divEl = document.getElementById('fl-division'); if(divEl) divEl.value = '';
+    const searchEl = document.getElementById('fl-search'); if(searchEl) searchEl.value = '';
     applyFilters();
   }
 
@@ -515,12 +516,28 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     const from = document.getElementById('fl-from')?.value || '';
     const to = document.getElementById('fl-to')?.value || '';
     const division = document.getElementById('fl-division')?.value || '';
+    const search = document.getElementById('fl-search')?.value.toLowerCase() || '';
     
     filtered = records.filter(d => {
       const entryDateStr = d.entryDate ? new Date(d.entryDate).toISOString().split('T')[0] : '';
       if (from && entryDateStr < from) return false;
       if (to && entryDateStr > to) return false;
       if (division && (d.division || '').toLowerCase() !== division.toLowerCase()) return false;
+      
+      if (search) {
+        const searchableText = [
+          d.frnNo,
+          d.partNo,
+          d.model,
+          d.description,
+          d.defGirNo,
+          d.unitStatus,
+          d.division
+        ].join(' ').toLowerCase();
+        
+        if (!searchableText.includes(search)) return false;
+      }
+      
       return true;
     });
     renderTable();
