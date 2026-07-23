@@ -404,7 +404,9 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <select class="f-select" id="fl-division" onchange="applyFilters()">
           <option value="">All Divisions</option>
         </select>
-        <button class="btn btn-outline btn-sm" onclick="clearFilters()" style="margin-left:auto;">&#10005; Clear</button>
+        <div class="f-divider"></div>
+        <input type="text" class="f-inp" id="fl-search" placeholder="Search..." onkeyup="applyFilters()" style="width: 200px; margin-left:auto;">
+        <button class="btn btn-outline btn-sm" onclick="clearFilters()">&#10005; Clear</button>
       </div>
       <div class="table-wrap">
         <table class="frn-table">
