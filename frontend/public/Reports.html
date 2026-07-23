@@ -1816,7 +1816,7 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
   `;
   };
 
-  const hideFrnCon = scopeType === 'division' && /^(monitors?|ventilators?)$/i.test(divisionLabel.trim());
+  const hideFrnCon = scopeType === 'division';
 
   const topTable = `
     <table style="width:100%; border-collapse:collapse; border:1px solid #cbd5e1; font-family:'Inter',system-ui,sans-serif; margin-bottom:28px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); overflow:hidden;">
@@ -2100,7 +2100,8 @@ async function exportPDF(type) {
     const reportScratch = document.createElement('div');
     reportScratch.innerHTML = reportHtml;
     const lowerSection = reportScratch.querySelector('table.perf-pdf-page-break');
-    const secondPageHtml = lowerSection ? lowerSection.outerHTML : '';
+    const hideBottom = isDiv && /monitors|ventilators/i.test(divisionLabel);
+      const secondPageHtml = (lowerSection && !hideBottom) ? lowerSection.outerHTML : '';
     if (lowerSection) lowerSection.remove();
     const firstPageHtml = reportScratch.innerHTML;
 
@@ -2203,7 +2204,7 @@ async function exportPDF(type) {
   const monthLabel = data.monthLabel || month;
 
   const rows = data.activityRows || [];
-  const hideFrnCon = isDiv && /^(monitors?|ventilators?)$/i.test(divisionLabel.trim());
+  const hideFrnCon = scopeType === 'division';
 
   const pctVal = (v) => {
     if (v === undefined || v === null) return '-';
