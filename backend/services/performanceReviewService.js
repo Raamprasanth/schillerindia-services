@@ -340,7 +340,7 @@ async function getSimpleEmployeePerformanceData({ monthInfo, employee, selectedD
     ],
   };
 
-  const [openCallDocs, closedCallDocs, dailyWorkDocs] = await Promise.all([
+  const [openCallDocs, closedCallDocs, dailyWorkDocs, currentOpenCallReviews] = await Promise.all([
     Ecall.find({
       ...monthDateFilter,
     }).lean(),
@@ -353,6 +353,7 @@ async function getSimpleEmployeePerformanceData({ monthInfo, employee, selectedD
         { createdAt: { $gte: monthInfo.start, $lt: monthInfo.end } },
       ],
     }).lean(),
+    TrackerSubmission.find({ employee: { $in: userIds }, month: monthInfo.monthKey, type: 'OpenCallReview' }).lean(),
   ]);
 
   const callEntryDays = new Set();
@@ -369,9 +370,12 @@ async function getSimpleEmployeePerformanceData({ monthInfo, employee, selectedD
     if (workingDaySet.has(key)) dailyWorkDays.add(key);
   }
 
+  const openCallReviewDays = new Set((currentOpenCallReviews || []).map(doc => doc.reportDate));
+
   const currentActivityRows = [
     makeActivityRow('Call entries updated', workingDays, callEntryDays.size, null, null),
     makeActivityRow('Daily work updated', workingDays, dailyWorkDays.size, null, null),
+    makeActivityRow('Open Call Review', workingDays, openCallReviewDays.size, null, null),
   ];
 
   const previousMonthDate = new Date(Date.UTC(monthInfo.year, monthInfo.month - 2, 1));
@@ -391,7 +395,7 @@ async function getSimpleEmployeePerformanceData({ monthInfo, employee, selectedD
     ],
   };
 
-  const [previousOpenCallDocs, previousClosedCallDocs, previousDailyWorkDocs] = await Promise.all([
+  const [previousOpenCallDocs, previousClosedCallDocs, previousDailyWorkDocs, previousOpenCallReviews] = await Promise.all([
     Ecall.find({
       ...previousMonthDateFilter,
     }).lean(),
@@ -404,6 +408,7 @@ async function getSimpleEmployeePerformanceData({ monthInfo, employee, selectedD
         { createdAt: { $gte: previousMonthInfo.start, $lt: previousMonthInfo.end } },
       ],
     }).lean(),
+    TrackerSubmission.find({ employee: { $in: userIds }, month: previousMonthInfo.monthKey, type: 'OpenCallReview' }).lean(),
   ]);
 
   const previousCallDays = new Set();
@@ -420,10 +425,14 @@ async function getSimpleEmployeePerformanceData({ monthInfo, employee, selectedD
     if (previousWorkingDaySet.has(key)) previousDailyWorkDays.add(key);
   }
 
+  const previousOpenCallReviewDays = new Set((previousOpenCallReviews || []).map(doc => doc.reportDate));
+
   currentActivityRows[0].prevRate = rate(previousCallDays.size, previousWorkingDayKeys.length);
   currentActivityRows[0].nextRate = targetNext(currentActivityRows[0].prevRate);
   currentActivityRows[1].prevRate = rate(previousDailyWorkDays.size, previousWorkingDayKeys.length);
   currentActivityRows[1].nextRate = targetNext(currentActivityRows[1].prevRate);
+  currentActivityRows[2].prevRate = rate(previousOpenCallReviewDays.size, previousWorkingDayKeys.length);
+  currentActivityRows[2].nextRate = targetNext(currentActivityRows[2].prevRate);
 
   const totalTracked = workingDays * currentActivityRows.length;
   const completedCount = callEntryDays.size + dailyWorkDays.size;

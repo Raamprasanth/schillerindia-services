@@ -123,6 +123,24 @@ function buildReportDefinitions(year, month) {
       label: 'PI Request',
       schedule: '5',
       expectedPerEmployee: countDatesInMonth(year, month, [5])
+    },
+    {
+      type: 'OpenCallReview',
+      label: 'Open Call Review',
+      schedule: 'Daily (exc. 3rd Sat)',
+      expectedPerEmployee: (() => {
+        let d = new Date(year, month - 1, 1), days = [];
+        let saturdayCount = 0;
+        while (d.getMonth() === month - 1) {
+          if (d.getDay() === 6) saturdayCount++;
+          const isThirdSaturday = (d.getDay() === 6 && saturdayCount === 3);
+          if (d.getDay() !== 0 && !isThirdSaturday) {
+            days.push(new Date(d));
+          }
+          d.setDate(d.getDate() + 1);
+        }
+        return days.length;
+      })()
     }
   ];
 }

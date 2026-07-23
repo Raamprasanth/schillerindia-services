@@ -234,15 +234,17 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <input type="hidden" id="edit-source"/>
       
       <div class="modal-grid">
-        <div class="field span-2">
+        <div class="field span-4">
           <label>Division <span class="req">*</span></label>
-          <select id="m-division" required>
+          <select id="m-division" required onchange="filterEngineers()">
             <option value="">Select Division</option>
           </select>
         </div>
-        <div class="field span-2">
+        <div class="field span-4">
           <label>SC Engineer <span class="req">*</span></label>
-          <input type="text" id="m-sceng" required placeholder="Engineer name..."/>
+          <select id="m-sceng" required>
+            <option value="">Select Engineer</option>
+          </select>
         </div>
         
         <div class="field span-1">
@@ -291,6 +293,7 @@ const API = '';
 let DATA = [], filtered = [], sortKey = 'initiatedDate', sortDir = -1, currentPage = 1;
 const expandedTextCells = new Set();
 let DIVISIONS_LIST = [];
+let ALL_ENGINEERS = [];
 
 (function init(){
   const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
@@ -299,8 +302,45 @@ let DIVISIONS_LIST = [];
     uName('admin-avatar', u.name.charAt(0).toUpperCase());
   }
   loadDivisions();
+  loadEngineers();
   loadData();
 })();
+
+async function loadEngineers() {
+  try {
+    const res = await fetch(API + '/api/engineers', { headers: authHeaders() });
+    const json = await res.json();
+    ALL_ENGINEERS = Array.isArray(json.data) ? json.data : [];
+  } catch(e) {
+    console.error('Failed to load engineers', e);
+  }
+}
+
+function filterEngineers() {
+  const div = document.getElementById('m-division').value;
+  const engSelect = document.getElementById('m-sceng');
+  if(!engSelect) return;
+  engSelect.innerHTML = '<option value="">Select Engineer</option>';
+  
+  const optAdmin = document.createElement('option');
+  optAdmin.value = 'Admin';
+  optAdmin.textContent = 'Admin';
+  engSelect.appendChild(optAdmin);
+
+  const filtered = ALL_ENGINEERS.filter(e => {
+    if (!div) return true;
+    if (e.division === div) return true;
+    if (e.divisions && e.divisions.includes(div)) return true;
+    return false;
+  });
+  
+  filtered.forEach(e => {
+    const opt = document.createElement('option');
+    opt.value = e.name;
+    opt.textContent = e.name;
+    engSelect.appendChild(opt);
+  });
+}
 
 async function loadDivisions(){
   try {
@@ -489,6 +529,7 @@ function openAddModal(){
   document.getElementById('modal-title').innerHTML = '&#128221; Add Pending Activity';
   clearForm();
   setFieldsLock(false);
+  filterEngineers();
   document.getElementById('m-sceng').value = 'Admin';
   document.getElementById('m-initiated').value = new Date().toISOString().split('T')[0];
   document.getElementById('add-modal').classList.add('open');
@@ -504,7 +545,8 @@ function openEditModal(id){
 
   clearForm();
   document.getElementById('m-division').value = d.division === '-' ? '' : d.division;
-  document.getElementById('m-sceng').value = d.scEngineer;
+  filterEngineers();
+  document.getElementById('m-sceng').value = d.scEngineer || '';
   document.getElementById('m-initiated').value = d.initiatedDate;
   document.getElementById('m-activity').value = d.activity;
   document.getElementById('m-description').value = d.description;
