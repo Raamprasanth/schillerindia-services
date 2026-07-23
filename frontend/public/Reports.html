@@ -3031,6 +3031,7 @@ async function fetchCommercialData() {
     });
     let hasData = false;
     for (const div of divisions) {
+      if (div.toUpperCase() === 'UNKNOWN') continue;
       if (selectedDiv === 'consolidated' && div !== 'ALL DIVISIONS') continue;
       if (selectedDiv !== 'consolidated' && selectedDiv && selectedDiv !== 'all' && selectedDiv !== div) continue;
       hasData = true;
