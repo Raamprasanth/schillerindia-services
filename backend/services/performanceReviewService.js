@@ -329,7 +329,22 @@ async function getSimpleEmployeePerformanceData({ monthInfo, employee, selectedD
       { userId: empTokenRegex },
     ],
   }).select('_id name email userId').lean();
-  const userIds = matchedUsers.map((user) => String(user._id));
+  
+  const matchedEmployees = await Employee.find({
+    $or: [
+      { name: empRegex },
+      { name: empTokenRegex },
+      { email: empRegex },
+      { email: empTokenRegex },
+      { employeeId: empRegex },
+      { employeeId: empTokenRegex },
+    ],
+  }).select('_id name email employeeId').lean();
+
+  const userIds = [
+    ...matchedUsers.map((user) => String(user._id)),
+    ...matchedEmployees.map((emp) => String(emp._id))
+  ];
 
   const monthDateFilter = {
     $or: [
@@ -697,6 +712,7 @@ async function getPerformanceReviewOptions() {
       name: employee.name,
       employeeId: employee.employeeId || '',
       division: employee.division || '',
+      divisions: employee.divisions || [],
     })),
   };
 }
