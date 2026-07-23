@@ -718,7 +718,7 @@ router.get('/performance/leaderboard', verifyToken, async (req, res) => {
 // ══════════════════════════════════════════════════════════════════════════
 router.get('/performance/trend', verifyToken, async (req, res) => {
   try {
-    const { scope, division, employee, months: monthsParam } = req.query;
+    const { scope, division, employee, months: monthsParam, from, to } = req.query;
     if (!scope) return res.status(400).json({ success: false, message: 'scope is required' });
     const count = Math.min(parseInt(monthsParam) || 6, 12);
 
