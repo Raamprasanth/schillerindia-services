@@ -3068,9 +3068,9 @@ async function fetchCommercialData() {
         reportHtml += `
             <tr>
               <td style="border:1px solid #cbd5e1; padding:10px; font-weight:600; color:#334155;">${m}</td>
-              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${val['< 1 day']} <br><span style="color:#64748b;font-size:11px;">(${p1}%)</span></td>
-              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${val['1 to 2 days']} <br><span style="color:#64748b;font-size:11px;">(${p2}%)</span></td>
-              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${val['> 2 days']} <br><span style="color:#64748b;font-size:11px;">(${p3}%)</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p1}% <br><span style="color:#64748b;font-size:11px;">(${val['< 1 day']})</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p2}% <br><span style="color:#64748b;font-size:11px;">(${val['1 to 2 days']})</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p3}% <br><span style="color:#64748b;font-size:11px;">(${val['> 2 days']})</span></td>
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${t}</td>
             </tr>`;
       }
@@ -3155,10 +3155,10 @@ async function fetchRepairTeamData() {
         reportHtml += `
             <tr>
               <td style="border:1px solid #cbd5e1; padding:10px; font-weight:600; color:#334155;">${m}</td>
-              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${val['< 1 day']} <br><span style="color:#64748b;font-size:11px;">(${p1}%)</span></td>
-              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${val['1 to 3 days']} <br><span style="color:#64748b;font-size:11px;">(${p2}%)</span></td>
-              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${val['> 3 days']} <br><span style="color:#64748b;font-size:11px;">(${p3}%)</span></td>
-              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${val.RP || 0} <br><span style="color:#64748b;font-size:11px;font-weight:normal;">(${prp}%)</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p1}% <br><span style="color:#64748b;font-size:11px;">(${val['< 1 day']})</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p2}% <br><span style="color:#64748b;font-size:11px;">(${val['1 to 3 days']})</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p3}% <br><span style="color:#64748b;font-size:11px;">(${val['> 3 days']})</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${prp}% <br><span style="color:#64748b;font-size:11px;font-weight:normal;">(${val.RP || 0})</span></td>
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${t}</td>
             </tr>`;
       }
