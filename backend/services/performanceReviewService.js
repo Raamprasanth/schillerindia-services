@@ -1378,8 +1378,8 @@ async function getRepairTeamPerformanceData({ month }) {
   const categorize = (diff) => {
     if (diff === null || isNaN(diff)) return null;
     if (diff < 1) return '< 1 day';
-    if (diff <= 2) return '1 to 2 days';
-    return '> 2 days';
+    if (diff <= 3) return '1 to 3 days';
+    return '> 3 days';
   };
 
   const start = monthInfo.start;
@@ -1403,10 +1403,10 @@ async function getRepairTeamPerformanceData({ month }) {
     const d = 'All Divisions';
     if (!divisionsMap[d]) {
       divisionsMap[d] = {
-        'Pending FRN': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
-        'OB Pending': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
-        'Under Repair': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
-        'Re-Repair': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 }
+        'Pending FRN': { '< 1 day': 0, '1 to 3 days': 0, '> 3 days': 0, total: 0 },
+        'OB Pending': { '< 1 day': 0, '1 to 3 days': 0, '> 3 days': 0, total: 0 },
+        'Under Repair': { '< 1 day': 0, '1 to 3 days': 0, '> 3 days': 0, total: 0 },
+        'Re-Repair': { '< 1 day': 0, '1 to 3 days': 0, '> 3 days': 0, total: 0 }
       };
     }
     return divisionsMap[d];

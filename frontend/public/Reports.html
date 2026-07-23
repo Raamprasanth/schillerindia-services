@@ -3079,8 +3079,8 @@ async function fetchRepairTeamData() {
             <tr>
               <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:left;">Report Type</th>
               <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:center;">&lt; 1 day</th>
-              <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:center;">1 to 2 days</th>
-              <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:center;">&gt; 2 days</th>
+              <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:center;">1 to 3 days</th>
+              <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:center;">&gt; 3 days</th>
               <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:center; color:#0f172a;">Total</th>
             </tr>
           </thead>
@@ -3091,15 +3091,15 @@ async function fetchRepairTeamData() {
         if (!val) continue;
         const t = val.total || 0;
         const p1 = t > 0 ? Math.round((val['< 1 day']/t)*100) : 0;
-        const p2 = t > 0 ? Math.round((val['1 to 2 days']/t)*100) : 0;
-        const p3 = t > 0 ? Math.round((val['> 2 days']/t)*100) : 0;
+        const p2 = t > 0 ? Math.round((val['1 to 3 days']/t)*100) : 0;
+        const p3 = t > 0 ? Math.round((val['> 3 days']/t)*100) : 0;
         
         reportHtml += `
             <tr>
               <td style="border:1px solid #cbd5e1; padding:10px; font-weight:600; color:#334155;">${m}</td>
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${val['< 1 day']} <br><span style="color:#64748b;font-size:11px;">(${p1}%)</span></td>
-              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${val['1 to 2 days']} <br><span style="color:#64748b;font-size:11px;">(${p2}%)</span></td>
-              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${val['> 2 days']} <br><span style="color:#64748b;font-size:11px;">(${p3}%)</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${val['1 to 3 days']} <br><span style="color:#64748b;font-size:11px;">(${p2}%)</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${val['> 3 days']} <br><span style="color:#64748b;font-size:11px;">(${p3}%)</span></td>
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${t}</td>
             </tr>`;
       }
