@@ -2103,6 +2103,12 @@ async function exportPDF(type) {
     const hideBottom = isDiv && /monitors|ventilators/i.test(divisionLabel);
       const secondPageHtml = (lowerSection && !hideBottom) ? lowerSection.outerHTML : '';
     if (lowerSection) lowerSection.remove();
+    if (hideBottom) {
+      const cTable = reportScratch.querySelector('.compliance-table');
+      if(cTable) cTable.remove();
+      const sBoxes = reportScratch.querySelector('.summary-boxes');
+      if(sBoxes) sBoxes.remove();
+    }
     const firstPageHtml = reportScratch.innerHTML;
 
     const html = `
@@ -2277,17 +2283,17 @@ async function exportPDF(type) {
       <tbody>${rowHtml}</tbody>
     </table>
 
-    <table style="width:60%;border-collapse:collapse;margin-bottom:24px;">
-      <thead>
-        <tr>
-          <th colspan="2" style="${TH}background:#0f172a;color:#fff;text-align:left;font-size:14px;">COMPLIANCE TRACKER</th>
+    <table class="compliance-table" style="width:60%;border-collapse:collapse;margin-bottom:24px;">
+        <thead>
+          <tr>
+            <th colspan="2" style="${TH}background:#0f172a;color:#fff;text-align:left;font-size:14px;">COMPLIANCE TRACKER</th>
         </tr>
       </thead>
       <tbody>${compRows}</tbody>
     </table>
 
-    <div style="display:flex;gap:20px;margin-top:16px;">
-      <div style="flex:1;border:1px solid #cbd5e1;border-radius:8px;padding:20px;text-align:center;background:#f8fafc;">
+    <div class="summary-boxes" style="display:flex;gap:20px;margin-top:16px;">
+        <div style="flex:1;border:1px solid #cbd5e1;border-radius:8px;padding:20px;text-align:center;background:#f8fafc;">
         <div style="font-size:13px;color:#64748b;font-weight:700;text-transform:uppercase;">Overall Completion Rate</div>
         <div style="font-size:32px;font-weight:900;color:#0f172a;margin-top:8px;">${rate}%</div>
       </div>
