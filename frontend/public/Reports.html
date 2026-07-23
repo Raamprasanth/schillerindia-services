@@ -1504,17 +1504,97 @@ function switchPerfTab(tab, btn) {
     const pane = document.getElementById('perf-pane-' + t);
     if(pane) pane.style.display = t === tab ? 'block' : 'none';
   });
+
+  try{
+    const res = await fetch('/api/reports/performance/options', { headers: hdrs() });
+    const data = await res.json().catch(() => ({}));
+    if(!res.ok) throw new Error(data.message || 'Could not load performance options');
+
+    perfOptions = {
+      divisions: Array.isArray(data.divisions) ? data.divisions : [],
+      employees: Array.isArray(data.employees) ? data.employees : [],
+    };
+
+    setOptions(document.getElementById('perf-division'), perfOptions.divisions, ' Select Division ');
+      setOptions(document.getElementById('perf-com-division'), perfOptions.divisions, '', true, true);
+      setOptions(document.getElementById('perf-repairteam-division'), perfOptions.divisions, '', true);
+    setOptions(document.getElementById('perf-emp-division'), perfOptions.divisions, " Division (for report) ");
+    setOptions(document.getElementById('kanban-div-filter'), perfOptions.divisions, '', true);
+    setOptions(document.getElementById('perf-employee'), perfOptions.employees, ' Select Employee ');
+
+    const empSel = document.getElementById('perf-employee');
+    if(empSel && !empSel.dataset.boundDivisionSync){
+      empSel.dataset.boundDivisionSync = '1';
+      empSel.addEventListener('change', () => {
+        const emp = (perfOptions.employees || []).find(e => optionLabel(e) === empSel.value);
+        const divSel = document.getElementById('perf-emp-division');
+        if(divSel && emp && emp.division && [...divSel.options].some(o => o.value === emp.division)) {
+          divSel.value = emp.division;
+        }
+      });
+    }
+
+    perfOptionsLoaded = true;
+    refreshDivisionSubmissionBoxes();
+    return perfOptions;
+  }catch(e){
+    perfOptionsLoaded = false;
+    const divPane = document.getElementById('perf-pane-div-summary');
+    if(divPane) {
+      divPane.innerHTML = `<div class="empty-state" style="padding:40px;"><div class="empty-icon">&#9888;</div><div class="empty-title">Options Not Loaded</div><div class="empty-sub">${escapeHtml(e.message)}</div></div>`;
+    }
+    toast('Performance options failed: ' + e.message, 'error');
+    throw e;
+  }
+}
+
+function switchPerfSubTab(tab) {
+  document.querySelectorAll('.perf-subtab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('pst-'+tab).classList.add('active');
+  document.getElementById('perf-div-pane').style.display = tab === 'division' ? 'block' : 'none';
+  document.getElementById('perf-ind-pane').style.display = tab === 'individual' ? 'block' : 'none';
+  const comPane = document.getElementById('perf-com-pane');
+  if (comPane) comPane.style.display = tab === 'commercial' ? 'block' : 'none';
+  const rtPane = document.getElementById('perf-repairteam-pane');
+  if (rtPane) rtPane.style.display = tab === 'repairteam' ? 'block' : 'none';
+  if (tab === 'division') { perfScope = 'division'; } else { perfScope = 'employee'; }
+  if (tab === 'division') refreshDivisionSubmissionBoxes();
+}
+
+function switchPerfDivTab(tab, btn) {
+  document.querySelectorAll('#perf-div-inner-tabs .perf-inner-tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  ['summary','trend','leaderboard'].forEach(t=>{
+    const el=document.getElementById('perf-pane-'+t+(t==='summary'?'-div':'-div')); // adjust mapping
+    let paneId = t === 'summary' ? 'perf-pane-div-summary' : 'perf-pane-'+t+'-div';
+    const paneEl = document.getElementById(paneId);
+    if(paneEl) paneEl.style.display=t===tab?'block':'none';
+  });
+  if(tab==='trend' && perfDivCurrentParams) loadDivTrend();
+  if(tab==='leaderboard') loadLeaderboard();
+}
+
+function switchPerfTab(tab, btn) {
+  document.querySelectorAll('#perf-inner-tabs .perf-inner-tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  ['summary','trend','leaderboard'].forEach(t => {
+    const pane = document.getElementById('perf-pane-' + t);
+    if(pane) pane.style.display = t === tab ? 'block' : 'none';
+  });
   if(tab === 'trend' && perfCurrentParams) loadTrend();
 }
 
 async function loadPerfSummary() {
-  const month = document.getElementById('perf-month').value;
+  const startM = document.getElementById('perf-start-month-ind').value;
+  const endM = document.getElementById('perf-end-month-ind').value;
+  const boundaries = calculateMonthBoundaryDates(startM, endM);
+  if(!boundaries){ toast('Please select valid Start and End months', 'error'); return; }
+  const { from, to, title } = boundaries;
   const employee = document.getElementById('perf-employee').value;
   const division = document.getElementById('perf-emp-division')?.value || '';
-  if(!month){ toast('Please select a month', 'error'); return; }
   if(!employee){ toast('Please select an employee', 'error'); return; }
 
-  const params = { scope:'employee', month, employee, division };
+  const params = { scope:'employee', from, to, employee, division };
   perfCurrentParams = params;
   const btn = document.getElementById('perf-preview-btn');
   btn.disabled = true;
@@ -1530,10 +1610,10 @@ async function loadPerfSummary() {
 
     renderPerfSummary(d.data, params);
     document.getElementById('perf-out-title').textContent = `Employee: ${employee}`;
-    document.getElementById('perf-out-meta').textContent = `Month: ${month}${division ? ' | Division: ' + division : ''}`;
+    document.getElementById('perf-out-meta').textContent = `Period: ${title}${division ? ' | Division: ' + division : ''}`;
     document.getElementById('perf-inner-tabs').style.display = 'flex';
     document.getElementById('perf-comment-section').style.display = 'block';
-    const key = 'perf_comment_' + employee + '_' + month;
+    const key = 'perf_comment_' + employee + '_' + from + '_' + to;
     document.getElementById('perf-comment').value = localStorage.getItem(key) || '';
     document.getElementById('perf-comment').dataset.key = key;
     switchPerfTab('summary', document.querySelector('#perf-inner-tabs .perf-inner-tab'));
@@ -1569,12 +1649,15 @@ async function loadDivTrend(){
 }
 
 async function loadDivisionPerf() {
-  const month=document.getElementById('perf-month-div').value;
-  if(!month){toast('Please select a month','error');return;}
+  const startM = document.getElementById('perf-start-month-div').value;
+  const endM = document.getElementById('perf-end-month-div').value;
+  const boundaries = calculateMonthBoundaryDates(startM, endM);
+  if(!boundaries){toast('Please select valid Start and End months','error');return;}
+  const { from, to, title } = boundaries;
   const div=document.getElementById('perf-division').value;
   if(!div){toast('Please select a division','error');return;}
 
-  const params={scope:'division',month,division:div};
+  const params={scope:'division',from,to,division:div};
   perfDivCurrentParams=params;
   const btn=document.getElementById('perf-preview-btn-div');
   btn.disabled=true;btn.innerHTML='&#9203; Loading';
@@ -1588,13 +1671,13 @@ async function loadDivisionPerf() {
     if(!res.ok) throw new Error(d.message||'Failed');
     
     renderDivisionPerfSummary(d.data,params);
-    document.getElementById('perf-div-out-title').textContent=`&#127986; Division: ${params.division}`;
-    document.getElementById('perf-div-out-meta').textContent=`Month: ${params.month}`;
+    document.getElementById('perf-div-out-title').textContent='Division: ' + params.division;
+    document.getElementById('perf-div-out-meta').textContent='Period: ' + title;
     
     document.getElementById('perf-div-inner-tabs').style.display='flex';
     document.getElementById('perf-div-comment-section').style.display='block';
     
-    const key='perf_comment_div_'+params.division+'_'+params.month;
+    const key='perf_comment_div_'+params.division+'_'+params.from+'_'+params.to;
     document.getElementById('perf-div-comment').value=localStorage.getItem(key)||'';
     document.getElementById('perf-div-comment').dataset.key=key;
     switchPerfDivTab('summary',document.querySelector('#perf-div-inner-tabs .perf-inner-tab'));
@@ -1670,7 +1753,7 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
   const c5S = data.compliance?.fiveSRate ?? 0;
   const cRR = data.compliance?.repairReport ?? 0;
 
-  const monthLabel = params.month || '';
+  const monthLabel = params.title || '';
   const employeeLabel = data.employee || params.employee || '';
   const divisionLabel = data.division || params.division || '';
 
@@ -1704,7 +1787,7 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
           </div>
           <div style="text-align:right;">
             <div style="font-size:12px; font-weight:700; color:#64748b; margin-bottom:4px; text-transform:uppercase;">Employee: <span style="color:#0f172a; font-size:14px;">${escapeHtml(employeeLabel)}</span></div>
-            <div style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase;">Month: <span style="color:#0f172a; font-size:14px;">${escapeHtml(monthLabel)}</span></div>
+            <div style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase;">Period: <span style="color:#0f172a; font-size:14px;">${escapeHtml(monthLabel)}</span></div>
           </div>
         </div>
 
@@ -1752,7 +1835,7 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
         </div>
 
         <div style="margin-top:16px; font-size:12px; color:#64748b; line-height:1.5;">
-          Sundays are excluded from the selected month. Each remaining day expects one call entry update and one daily work update.
+          Sundays are excluded from the selected period. Each remaining day expects one call entry update and one daily work update.
         </div>
         <div style="margin-top:24px; display:flex; justify-content:flex-end; gap:12px;">
           <button class="btn btn-green" style="padding:10px 18px; font-weight:600; border-radius:8px; font-size:13px;" onclick="exportPDF('emp')">
@@ -1763,7 +1846,7 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
     `;
   }
 
-  var [yearStr, mStr] = (params.month || '').split('-');
+  var [yearStr, mStr] = (params.from || '').split('-');
   var yearNum = parseInt(yearStr, 10);
   var monthNum = parseInt(mStr, 10) - 1;
 
@@ -1834,7 +1917,7 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
       <thead>
         <tr>
           <th colspan="3" rowspan="2" style="background-color:#0f172a; color:#ffffff; font-size:16px; font-weight:700; letter-spacing:1px; text-transform:uppercase; border:1px solid #334155; padding:16px 20px; text-align:left; width:50%;">PERFORMANCE REVIEW</th>
-          <th style="background-color:#f1f5f9; color:#475569; text-align:right; border:1px solid #cbd5e1; padding:12px 16px; font-weight:600; font-size:13px;">For the month of</th>
+          <th style="background-color:#f1f5f9; color:#475569; text-align:right; border:1px solid #cbd5e1; padding:12px 16px; font-weight:600; font-size:13px;">Period</th>
           <th colspan="2" style="background-color:#ffffff; color:#0f172a; border:1px solid #cbd5e1; padding:12px 16px; font-weight:700; font-size:14px; min-width:120px; text-align:center;">${monthLabel}</th>
         </tr>
         <tr>
@@ -1892,7 +1975,7 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
         <tr>
           <td style="border:1px solid #cbd5e1; padding:10px; vertical-align:middle;">${checkSub('CRM', tuesdays[4])}</td>
           <td style="border:1px solid #cbd5e1; padding:10px; vertical-align:middle;">${checkSub('PendingActivity', mondays[4])}</td>
-          <td style="border:1px solid #cbd5e1; padding:12px; font-weight:800; background-color:#e0e7ff; color:#3730a3; font-size:15px; text-align:center;">${cNonSaleableTracker}%</td>
+          <td style="border:1px solid #cbd5e1; padding:10px; vertical-align:middle; background-color:#e0e7ff; color:#3730a3; font-weight:800; font-size:15px; text-align:center;">${cNonSaleableTracker}%</td>
         </tr>
         <tr>
           <td colspan="2" style="border:1px solid #cbd5e1; padding:14px; font-weight:800; background-color:#e0e7ff; color:#3730a3; font-size:15px; text-align:center;">${cWeekly}%</td>
@@ -2034,380 +2117,14 @@ function renderTrendChart(points, isDiv = false){
 
 async function loadLeaderboard(){
   const isDivisionPane = perfScope === 'division' || document.getElementById('perf-div-pane')?.style.display !== 'none';
-  const month=(isDivisionPane ? document.getElementById('perf-month-div') : document.getElementById('perf-month')).value;
-  if(!month){
-    toast('Please select a month first','error');
-    if(isDivisionPane) switchPerfDivTab('summary',document.querySelector('#perf-div-inner-tabs .perf-inner-tab'));
-    else switchPerfTab('summary',document.querySelector('.perf-inner-tab'));
-    return;
-  }
-  const pane=document.getElementById(isDivisionPane ? 'perf-pane-leaderboard-div' : 'perf-pane-leaderboard');
-  if(!pane){ toast('Leaderboard is available in the Division tab.', 'info'); return; }
-  pane.innerHTML=`<div class="loading-state"><div class="spinner"></div><div class="loading-title">Building Division Leaderboard</div><div class="loading-sub">Computing all divisions for ${month}...</div></div>`;
-  document.getElementById(isDivisionPane ? 'perf-div-inner-tabs' : 'perf-inner-tabs').style.display='flex';
-  if(isDivisionPane) {
-    document.querySelectorAll('#perf-div-inner-tabs .perf-inner-tab').forEach((b,i)=>{b.classList.toggle('active',i===2);});
-    ['perf-pane-div-summary','perf-pane-trend-div'].forEach(id=>{const el=document.getElementById(id); if(el) el.style.display='none';});
-  } else {
-    document.querySelectorAll('.perf-inner-tab').forEach((b,i)=>{b.classList.toggle('active',i===2);});
-    ['summary','trend'].forEach(t=>document.getElementById('perf-pane-'+t).style.display='none');
-  }
-  pane.style.display='block';
-  try{
-    const res=await fetch('/api/reports/performance/leaderboard?month='+month,{headers:hdrs()});
-    const d=await res.json();
-    if(!res.ok) throw new Error(d.message||'Failed');
-    renderLeaderboard(d.leaderboard||[],month,isDivisionPane);
-  }catch(e){
-    pane.innerHTML=`<div class="empty-state" style="padding:40px;"><div class="empty-icon">!</div><div class="empty-title">Leaderboard Failed</div><div class="empty-sub">${e.message}</div></div>`;
-    toast('Leaderboard failed: '+e.message,'error');
-  }
-}
-
-function renderLeaderboard(rows,month,isDivisionPane=false){
-  const pane=document.getElementById(isDivisionPane ? 'perf-pane-leaderboard-div' : 'perf-pane-leaderboard');
-  if(!pane) return;
-  if(!rows.length){
-    pane.innerHTML='<div class="empty-state" style="padding:40px;"><div class="empty-icon">#</div><div class="empty-title">No Divisions Found</div></div>';
-    return;
-  }
-  let tbl=`<div style="padding:20px;">
-    <div style="font-family:Syne,sans-serif;font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;">Division Leaderboard — ${month}</div>
-    <table class="lb-table">
-      <thead><tr><th style="width:40px;">Rank</th><th>Division</th><th style="text-align:center;">Tracked</th><th style="text-align:center;">Completed</th><th style="text-align:center;">Pending</th><th style="text-align:center;">Critical</th><th>Status</th></tr></thead>
-      <tbody>`;
-  rows.forEach((r,i)=>{
-    const p=Math.min(100,Math.max(0,r.completionRate||0));
-    tbl+=`<tr>
-      <td><span class="lb-rank">${i+1}</span></td>
-      <td style="font-weight:600;">${r.division}</td>
-      <td style="text-align:center;">${r.totalTracked}</td>
-      <td style="text-align:center;color:#059669;font-weight:700;">${r.completedCount}</td>
-      <td style="text-align:center;color:${r.pendingCount>0?'#d97706':'var(--muted)'}">${r.pendingCount}</td>
-      <td style="text-align:center;color:${r.criticalPendingCount>0?'#b91c1c':'var(--muted)'}">${r.criticalPendingCount}</td>
-      <td>${flagBadge(p)}</td>
-    </tr>`;
-  });
-  tbl+='</tbody></table></div>';
-  pane.innerHTML=tbl;
-}
-
-async function exportPDF(type) {
-  {
-    const isDiv = type === 'div';
-    const params = isDiv ? perfDivCurrentParams : perfCurrentParams;
-    if(!params) return;
-
-    const data = isDiv ? window._lastPerfDivData : window._lastPerfEmpData;
-    if(!data) { toast('No data loaded to export','error'); return; }
-
-    const month = params.month || 'Report';
-    const scope = params.division || params.employee || 'Performance';
-    const scopeLabel = isDiv ? 'Division' : 'Employee';
-    const divisionLabel = data.division || params.division || '';
-    const employeeLabel = data.employee || params.employee || '';
-    const monthLabel = data.monthLabel || month;
-    const reportHtml = generatePerfAnalysisHtml(data, params, isDiv ? 'division' : 'employee');
-    const reportScratch = document.createElement('div');
-    reportScratch.innerHTML = reportHtml;
-    const lowerSection = reportScratch.querySelector('table.perf-pdf-page-break');
-    const secondPageHtml = lowerSection ? lowerSection.outerHTML : '';
-    if (lowerSection) lowerSection.remove();
-    const firstPageHtml = reportScratch.innerHTML;
-
-    const html = `
-      <div class="perf-pdf-doc">
-        <style>
-          .perf-pdf-doc,.perf-pdf-doc *{box-sizing:border-box;}
-          .perf-pdf-doc{width:1120px;font-family:Arial,sans-serif;background:#fff;color:#1e293b;}
-          .perf-pdf-sheet{width:1120px;background:#fff;padding:22px 36px 22px 150px;}
-          .perf-pdf-page-2{padding-top:44px;}
-          .perf-pdf-head{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #0f172a;padding-bottom:14px;margin-bottom:18px;}
-          .perf-pdf-title{font-size:20px;font-weight:800;letter-spacing:.5px;color:#0f172a;text-align:right;}
-          .perf-pdf-meta{font-size:14px;margin-top:6px;color:#475569;text-align:right;}
-          .perf-pdf-content>div{border:0!important;border-radius:0!important;padding:0!important;width:100%!important;box-shadow:none!important;}
-          .perf-pdf-content .submission-panel,.perf-pdf-content button,.perf-pdf-content .btn{display:none!important;}
-          .perf-pdf-content table{width:100%!important;max-width:100%!important;table-layout:fixed;border-collapse:collapse!important;margin-left:0!important;margin-right:0!important;}
-          .perf-pdf-content tr,.perf-pdf-content td,.perf-pdf-content th{break-inside:avoid!important;page-break-inside:avoid!important;}
-          .perf-pdf-content .perf-pdf-page-break{break-before:auto!important;page-break-before:auto!important;}
-          .perf-pdf-content table.perf-pdf-page-break{margin-top:0!important;}
-          .perf-pdf-content th,.perf-pdf-content td{font-size:9.5px!important;line-height:1.18!important;padding:5px 6px!important;word-break:normal!important;overflow-wrap:anywhere!important;}
-          .perf-pdf-content th[colspan]{font-size:12px!important;}
-          .perf-pdf-content [style*="font-size:18px"]{font-size:15px!important;}
-          .perf-pdf-content [style*="font-size:32px"]{font-size:28px!important;}
-          .perf-pdf-content [style*="margin-top:24px"]{margin-top:14px!important;}
-          .perf-pdf-content [style*="gap:20px"]{gap:14px!important;}
-        </style>
-        <section class="perf-pdf-sheet">
-          <div class="perf-pdf-head">
-            <img src="logo.png" alt="SCHILLER" style="height:48px;object-fit:contain;">
-            <div>
-              <div class="perf-pdf-title">PERFORMANCE ANALYSIS REPORT</div>
-              <div class="perf-pdf-meta">${scopeLabel}: <strong style="color:#0f172a;">${escapeHtml(isDiv ? divisionLabel : employeeLabel)}</strong> &nbsp;|&nbsp; Month: <strong style="color:#0f172a;">${escapeHtml(monthLabel)}</strong></div>
-            </div>
-          </div>
-          <div class="perf-pdf-content">${firstPageHtml}</div>
-        </section>
-        ${secondPageHtml ? `<section class="perf-pdf-sheet perf-pdf-page-2"><div class="perf-pdf-content">${secondPageHtml}</div></section>` : ''}
-      </div>`;
-
-    const wrapper = document.createElement('div');
-    wrapper.style.position = 'fixed';
-    wrapper.style.left = '80px';
-    wrapper.style.top = '0px';
-    wrapper.style.width = '1120px';
-    wrapper.style.background = '#ffffff';
-    wrapper.style.pointerEvents = 'none';
-    wrapper.style.zIndex = '-1';
-    wrapper.innerHTML = html;
-    document.body.appendChild(wrapper);
-
-    try {
-      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      const jsPDF = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
-      if (typeof window.html2canvas !== 'function' || !jsPDF) throw new Error('PDF libraries are not loaded. Please refresh the page and try again.');
-      const pdf = new jsPDF({ unit: 'in', format: 'a4', orientation: 'landscape' });
-      const pageW = pdf.internal.pageSize.getWidth();
-      const pageH = pdf.internal.pageSize.getHeight();
-      const margin = 0.18;
-      const usableW = pageW - margin * 2;
-      const usableH = pageH - margin * 2;
-      const sheets = Array.from(wrapper.querySelectorAll('.perf-pdf-sheet'));
-      for (let i = 0; i < sheets.length; i++) {
-        const canvas = await html2canvas(sheets[i], {
-          scale: 4,
-          useCORS: true,
-          backgroundColor: '#ffffff',
-          width: 1120,
-          windowWidth: 1280,
-          scrollX: 0,
-          scrollY: 0
-        });
-        const imgData = canvas.toDataURL('image/jpeg', 1);
-        const ratio = Math.min(usableW / canvas.width, usableH / canvas.height);
-        const imgW = canvas.width * ratio;
-        const imgH = canvas.height * ratio;
-        if (i > 0) pdf.addPage('a4', 'landscape');
-        pdf.addImage(imgData, 'JPEG', margin + (usableW - imgW) / 2, margin, imgW, imgH, undefined, 'FAST');
-      }
-      pdf.save(`Performance_Analysis_${scope}_${month}.pdf`);
-      toast('PDF export completed!', 'success');
-    } catch(e) {
-      toast('PDF export failed: ' + e.message, 'error');
-    } finally {
-      if (document.body.contains(wrapper)) document.body.removeChild(wrapper);
-    }
-    return;
-  }
-  const isDiv = type === 'div';
-  const params = isDiv ? perfDivCurrentParams : perfCurrentParams;
-  if(!params) return;
-  const month = params.month||'Report';
-  const scope = params.division||params.employee||'Performance';
-
-  const data = isDiv ? window._lastPerfDivData : window._lastPerfEmpData;
-  if(!data) { toast('No data loaded to export','error'); return; }
-  
-  const scopeLabel = isDiv ? 'Division' : 'Employee';
-  const divisionLabel = data.division || params.division || '';
-  const employeeLabel = data.employee || params.employee || '';
-  const monthLabel = data.monthLabel || month;
-
-  const rows = data.activityRows || [];
-  const hideFrnCon = isDiv && /^(monitors?|ventilators?)$/i.test(divisionLabel.trim());
-
-  const pctVal = (v) => {
-    if (v === undefined || v === null) return '-';
-    const isRateFraction = typeof v === 'number' && v >= 0 && v <= 1;
-    return Math.round(isRateFraction ? v * 100 : v) + '%';
-  };
-
-  const TD = 'border:1px solid #cbd5e1;padding:8px 10px;font-size:12px;';
-  const TH = 'border:1px solid #334155;padding:10px;font-size:13px;font-weight:700;';
-
-  const rowHtml = rows.filter(r => {
-    if (hideFrnCon && (r.label || '').toLowerCase() === 'pending frn con') return false;
-    return true;
-  }).map((r, i) => {
-    const bg = i % 2 === 0 ? '#ffffff' : '#f8fafc';
-    const limitText = r.targetDays != null ? `\u2264${r.targetDays}d` : '-';
-    return `<tr style="background:${bg};">
-      <td style="${TD}text-align:left;font-weight:600;color:#334155;">${escapeHtml(r.label||'')}</td>
-      <td style="${TD}text-align:center;color:#475569;">${r.total ?? '-'}</td>
-      <td style="${TD}text-align:center;color:#059669;font-weight:700;">${r.withinTarget ?? '-'}</td>
-      <td style="${TD}text-align:center;color:#0f172a;font-weight:700;">${pctVal(r.withinPercent ?? r.completionPercent)}</td>
-      <td style="${TD}text-align:center;color:#64748b;">${pctVal(r.prevRate)}</td>
-      <td style="${TD}text-align:center;color:#1e40af;font-weight:700;background:#dbeafe;">${limitText}</td>
-    </tr>`;
-  }).join('');
-
-  const comp = data.compliance || {};
-  const compRows = [
-    ['Weekly CRM Reports', comp.weeklyCrm != null ? comp.weeklyCrm + '%' : '-'],
-    ['Pending Activity (Monday)', comp.pendingActivity != null ? comp.pendingActivity + '%' : '-'],
-    ['Non-Saleable Tracker', comp.nonSaleable != null ? comp.nonSaleable + '%' : '-'],
-    ['Supplier Warranty', comp.supplierWarranty != null ? comp.supplierWarranty + '%' : '-'],
-    ['Critical Pending Report', comp.criticalPending != null ? comp.criticalPending + '%' : '-'],
-    ['Purchase Indent', comp.purchaseIndent != null ? comp.purchaseIndent + '%' : '-'],
-  ].map((row, i) => `<tr style="background:${i%2===0?'#ffffff':'#f8fafc'};">
-    <td style="${TD}font-weight:600;color:#334155;">${row[0]}</td>
-    <td style="${TD}text-align:center;font-weight:700;color:#3730a3;background:#eef2ff;">${row[1]}</td>
-  </tr>`).join('');
-
-  const summary = data.summary || {};
-  const rate = summary.completionRate || 0;
-  const remark = rate >= 90 ? 'Excellent' : rate >= 75 ? 'Good' : rate >= 60 ? 'Average' : 'Needs Improvement';
-  const remarkColor = rate >= 75 ? '#059669' : '#ef4444';
-  const remarkBg = rate >= 75 ? '#ecfdf5' : '#fef2f2';
-
-  const html = `
-  <div style="width:1050px;font-family:Arial,sans-serif;background:#fff;color:#1e293b;padding:30px;box-sizing:border-box;">
-    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #0f172a;padding-bottom:16px;margin-bottom:24px;">
-      <img src="logo.png" alt="SCHILLER" style="height:50px;object-fit:contain;">
-      <div style="text-align:right;">
-        <div style="font-size:20px;font-weight:800;letter-spacing:.5px;color:#0f172a;">PERFORMANCE ANALYSIS REPORT</div>
-        <div style="font-size:14px;margin-top:6px;color:#475569;">${scopeLabel}: <strong style="color:#0f172a;">${escapeHtml(isDiv ? divisionLabel : employeeLabel)}</strong> &nbsp;|&nbsp; Month: <strong style="color:#0f172a;">${escapeHtml(monthLabel)}</strong></div>
-      </div>
-    </div>
-    
-    <table style="width:100%;border-collapse:collapse;margin-bottom:24px;">
-      <thead>
-        <tr>
-          <th colspan="6" style="${TH}background:#0f172a;color:#fff;text-align:left;letter-spacing:.5px;font-size:15px;">PERFORMANCE REVIEW — ${escapeHtml(monthLabel)}</th>
-        </tr>
-        <tr>
-          <th style="${TH}background:#f1f5f9;color:#334155;text-align:left;width:28%;">Activity</th>
-          <th style="${TH}background:#f1f5f9;color:#334155;text-align:center;width:13%;">Total Inward</th>
-          <th style="${TH}background:#f1f5f9;color:#334155;text-align:center;width:15%;">Within Target</th>
-          <th style="${TH}background:#f1f5f9;color:#334155;text-align:center;width:15%;">% Execution</th>
-          <th style="${TH}background:#f1f5f9;color:#334155;text-align:center;width:15%;">Prev Month %</th>
-          <th style="${TH}background:#dbeafe;color:#1e40af;text-align:center;width:14%;">Limit</th>
-        </tr>
-      </thead>
-      <tbody>${rowHtml}</tbody>
-    </table>
-
-    <table style="width:60%;border-collapse:collapse;margin-bottom:24px;">
-      <thead>
-        <tr>
-          <th colspan="2" style="${TH}background:#0f172a;color:#fff;text-align:left;font-size:14px;">COMPLIANCE TRACKER</th>
-        </tr>
-      </thead>
-      <tbody>${compRows}</tbody>
-    </table>
-
-    <div style="display:flex;gap:20px;margin-top:16px;">
-      <div style="flex:1;border:1px solid #cbd5e1;border-radius:8px;padding:20px;text-align:center;background:#f8fafc;">
-        <div style="font-size:13px;color:#64748b;font-weight:700;text-transform:uppercase;">Overall Completion Rate</div>
-        <div style="font-size:32px;font-weight:900;color:#0f172a;margin-top:8px;">${rate}%</div>
-      </div>
-      <div style="flex:1;border:1px solid #cbd5e1;border-radius:8px;padding:20px;text-align:center;background:${remarkBg};">
-        <div style="font-size:13px;color:#64748b;font-weight:700;text-transform:uppercase;">Overall Remark</div>
-        <div style="font-size:32px;font-weight:900;color:${remarkColor};margin-top:8px;letter-spacing:1px;">${remark}</div>
-      </div>
-    </div>
-  </div>`;
-
-  const wrapper = document.createElement('div');
-  wrapper.style.position = 'absolute';
-  wrapper.style.left = '0px';
-  wrapper.style.top = '0px';
-  wrapper.style.opacity = '0';
-  wrapper.style.pointerEvents = 'none';
-  wrapper.innerHTML = html;
-  document.body.appendChild(wrapper);
-
-  try {
-    await html2pdf().set({
-      margin: 0.3,
-      filename: `Performance_Analysis_${scope}_${month}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 1100, scrollX: 0, scrollY: 0 },
-      jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
-    }).from(wrapper.firstElementChild).save();
-  } catch(e) {
-    toast('PDF export failed: ' + e.message, 'error');
-  } finally {
-    if (document.body.contains(wrapper)) document.body.removeChild(wrapper);
-  }
-}
-
-function escapeHtml(value){
-  return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-}
-
-function buildPerfPdfPage(data,label,month){
-  const rows=(data.activities||[]).map((act,i)=>{
-    const bg=i%2===0?'#ffffff':'#f9fbfd';
-    const oot=act.outOfTarget||0;
-    return `<tr style="background:${bg};">
-      <td style="border:1px solid #d0e0ec;padding:8px 10px;font-weight:600;font-size:11px;">${escapeHtml(act.label)}</td>
-      <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;">${act.total||0}</td>
-      <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;">${act.targetDays?act.targetDays+' days':'-'}</td>
-      <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;color:#059669;font-weight:700;">${act.withinTarget||0}</td>
-      <td style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:11px;color:${oot>0?'#b91c1c':'#666'};font-weight:${oot>0?'700':'500'};">${oot}</td>
-    </tr>`;
-  }).join('');
-  const rate=data.completionRate||0;
-  const isCrit=rate<60;
-  const isWarn=rate>=60&&rate<75;
-  const sColor=isCrit?'#b91c1c':isWarn?'#d97706':'#059669';
-  const sTxt=isCrit?'CRITICAL':isWarn?'AT RISK':'ON TRACK';
-  return `<section style="page-break-after:always;padding:28px;font-family:Arial,sans-serif;color:#1a2a3a;">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid #b91c1c;">
-      <div>
-        <div style="font-size:20px;font-weight:700;color:#b91c1c;font-family:Georgia,serif;">SchillerIndia</div>
-        <div style="font-size:12px;color:#666;">Performance Review Report</div>
-      </div>
-      <div style="text-align:right;">
-        <div style="font-size:13px;font-weight:700;">${escapeHtml(label)}</div>
-        <div style="font-size:11px;color:#666;">Month: ${escapeHtml(month)} | Generated: ${new Date().toLocaleDateString('en-IN')}</div>
-      </div>
-    </div>
-    <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
-      <tr>
-        <td style="border:1px solid #d0e0ec;padding:10px 14px;width:25%;">
-          <div style="font-size:18px;font-weight:700;">${data.totalTracked||0}</div>
-          <div style="font-size:10px;color:#666;margin-top:3px;">Total Tracked</div>
-        </td>
-        <td style="border:1px solid #d0e0ec;padding:10px 14px;width:25%;">
-          <div style="font-size:18px;font-weight:700;color:#059669;">${data.completedCount||0}</div>
-          <div style="font-size:10px;color:#666;margin-top:3px;">Within Target</div>
-        </td>
-        <td style="border:1px solid #d0e0ec;padding:10px 14px;width:25%;">
-          <div style="font-size:18px;font-weight:700;color:#b91c1c;">${data.pendingCount||0}</div>
-          <div style="font-size:10px;color:#666;margin-top:3px;">Out of Target</div>
-        </td>
-        <td style="border:1px solid #d0e0ec;padding:10px 14px;width:25%;background:${isCrit?'#fff5f5':isWarn?'#fffbeb':'#f0fdf4'};">
-          <div style="font-size:18px;font-weight:700;color:${sColor};">${rate}%</div>
-          <div style="font-size:10px;color:${sColor};margin-top:3px;font-weight:600;">${sTxt}</div>
-        </td>
-      </tr>
-    </table>
-    <table style="width:100%;border-collapse:collapse;">
-      <thead>
-        <tr style="background:#f4f7fa;">
-          <th style="border:1px solid #d0e0ec;padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#7a9ab0;">Activity</th>
-          <th style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#7a9ab0;">Total</th>
-          <th style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#7a9ab0;">Target Days</th>
-          <th style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#7a9ab0;">Within Target</th>
-          <th style="border:1px solid #d0e0ec;padding:8px 10px;text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#7a9ab0;">Out of Target</th>
-        </tr>
-      </thead>
-      <tbody>${rows||'<tr><td colspan="5" style="border:1px solid #d0e0ec;padding:14px;text-align:center;color:#999;">No activity data found.</td></tr>'}</tbody>
-    </table>
-  </section>`;
-}
-
-async function exportPriorityDivisionPDF(){
-  try{
-    const month=document.getElementById('perf-month').value;
-    if(!month){toast('Please select a month','error');return;}
-    if(!perfOptionsLoaded) await loadPerfOptions();
-    const wanted=[
-      {label:'Ventilator',patterns:['VENTILATOR']},
-      {label:'Vent Con',patterns:['VENT CON','VENTCON']},
-      {label:'Patient Monitors',patterns:['PATIENT MONITOR','MONITOR'],exclude:[' CON',' PM','PM CM']},
+  const startMDiv = document.getElementById('perf-start-month-div')?.value;
+  const endMDiv = document.getElementById('perf-end-month-div')?.value;
+  const startMInd = document.getElementById('perf-start-month-ind')?.value;
+  const endMInd = document.getElementById('perf-end-month-ind')?.value;
+  const bDiv = startMDiv && endMDiv ? calculateMonthBoundaryDates(startMDiv, endMDiv) : null;
+  const bInd = startMInd && endMInd ? calculateMonthBoundaryDates(startMInd, endMInd) : null;
+  const activeBoundaries = isDivisionPane ? bDiv : bInd;
+  if(!activeBoundaries){ toast('Please select valid Start and End months first','error'); return; }
       {label:'PM CM',patterns:['PM CM','PMCM','MONITOR CON','MONITORS CON']}
     ];
     const divisions=(perfOptions.divisions||[]).map(d=>d.name||d);
@@ -2792,7 +2509,10 @@ function escapeHtml(str) {
 function refreshDivisionSubmissionBoxes(){
   const panel = document.getElementById('perf-submission-panel');
   if(!panel) return;
-  const month = document.getElementById('perf-month-div')?.value || getCurrentMonthValue();
+  const startM = document.getElementById('perf-start-month-div')?.value;
+  const endM = document.getElementById('perf-end-month-div')?.value;
+  const b = (startM && endM) ? calculateMonthBoundaryDates(startM, endM) : null;
+  const month = b ? b.title : (startM || getCurrentMonthValue());
   const division = document.getElementById('perf-division')?.value || '';
   const meta = division ? `${escapeHtml(division)} | ${escapeHtml(month)}` : `Select division | ${escapeHtml(month)}`;
   panel.innerHTML = `
@@ -3212,7 +2932,10 @@ async function exportRepairTeamPDF() {
   const el = document.getElementById('repairteam-pdf-content');
   if (!el) return;
   
-  const month = document.getElementById('perf-repairteam-month').value || 'Report';
+  const startM = document.getElementById('perf-start-month-rt')?.value;
+  const endM = document.getElementById('perf-end-month-rt')?.value;
+  const b = (startM && endM) ? calculateMonthBoundaryDates(startM, endM) : null;
+  const month = b ? b.title : 'Report';
   const divisionLabel = 'All Divisions';
   
   await generatePremiumPDF(el.innerHTML, 'REPAIR TEAM PERFORMANCE REPORT', divisionLabel, month, 'RepairTeam_Performance');
