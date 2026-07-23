@@ -3092,6 +3092,7 @@ async function fetchRepairTeamData() {
         const p1 = t > 0 ? Math.round((val['< 1 day']/t)*100) : 0;
         const p2 = t > 0 ? Math.round((val['1 to 3 days']/t)*100) : 0;
         const p3 = t > 0 ? Math.round((val['> 3 days']/t)*100) : 0;
+        const prp = t > 0 ? Math.round(((val.RP || 0)/t)*100) : 0;
         
         reportHtml += `
             <tr>
@@ -3099,7 +3100,7 @@ async function fetchRepairTeamData() {
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${val['< 1 day']} <br><span style="color:#64748b;font-size:11px;">(${p1}%)</span></td>
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${val['1 to 3 days']} <br><span style="color:#64748b;font-size:11px;">(${p2}%)</span></td>
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${val['> 3 days']} <br><span style="color:#64748b;font-size:11px;">(${p3}%)</span></td>
-              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${val.RP || 0}</td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${val.RP || 0} <br><span style="color:#64748b;font-size:11px;font-weight:normal;">(${prp}%)</span></td>
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${t}</td>
             </tr>`;
       }
