@@ -185,6 +185,22 @@ router.get('/escalation-sender', async (req, res) => {
   }
 });
 
+router.get('/storage', async (req, res) => {
+  try {
+    const fs = require('fs').promises;
+    const path = require('path');
+    const stats = await fs.statfs(path.resolve(__dirname, '../../'));
+    res.json({
+      success: true,
+      totalBytes: stats.blocks * stats.bsize,
+      freeBytes: stats.bavail * stats.bsize
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+
 router.post('/escalation-emails', async (req, res) => {
   try {
     const nextEntry = normalizeEntry(req.body);

@@ -711,9 +711,7 @@ router.post('/:id/to', protect, async (req, res) => {
   try {
     const service = await Service.findById(req.params.id).populate('division');
     if (!service) return res.status(404).json({ message: 'Service record not found.' });
-    if (service.repType !== 'TO/ADV SO') {
-      return res.status(400).json({ message: 'Only TO/ADV SO under-repair records can be queued to TO escalation.' });
-    }
+
 
     const { hasDivisionAccessToService } = require('../utils/visibility');
     const role = String(req.user.role || '').toLowerCase();

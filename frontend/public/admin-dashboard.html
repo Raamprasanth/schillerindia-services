@@ -325,7 +325,9 @@
       <div class="topbar-date" id="admin-date"></div>
     </div>
     <div class="topbar-actions">
-      
+      <div id="storage-badge" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;background:var(--surface2);color:var(--text);border:1px solid var(--border);" title="Server Storage Space">
+        <span class="icon">&#128190;</span> <span id="storage-text">Loading storage...</span>
+      </div>
       <button class="topbar-btn" id="backup-btn" onclick="downloadBackup()">&#128190; Backup</button>
       <button class="topbar-btn primary" onclick="window.location.href='service-list.html'">+ New Service</button>
     </div>
@@ -1105,10 +1107,35 @@ const _origLoadStats = window.loadStats;
 window.loadStats = function() {
   if (typeof _origLoadStats === 'function') _origLoadStats();
   loadAdminTrackers();
+  loadStorageSpace();
 };
-document.addEventListener('DOMContentLoaded', loadAdminTrackers);
+document.addEventListener('DOMContentLoaded', () => { loadAdminTrackers(); loadStorageSpace(); });
 if(document.readyState === 'complete' || document.readyState === 'interactive') {
   loadAdminTrackers();
+  loadStorageSpace();
+}
+
+async function loadStorageSpace() {
+  const el = document.getElementById('storage-text');
+  if(!el) return;
+  try {
+    const res = await fetch('/api/settings/storage', {
+      headers: { 'Authorization': `Bearer ${sessionStorage.getItem('schiller_token')}` }
+    });
+    if(!res.ok) { el.textContent = 'Storage: Error'; return; }
+    const data = await res.json();
+    if(data.success) {
+      const freeGB = (data.freeBytes / (1024*1024*1024)).toFixed(1);
+      const totalGB = (data.totalBytes / (1024*1024*1024)).toFixed(1);
+      const pct = Math.round((data.totalBytes - data.freeBytes) / data.totalBytes * 100);
+      let color = pct > 90 ? 'var(--red)' : 'inherit';
+      el.innerHTML = `<span style="color:${color}">${freeGB} GB free</span> <span style="color:var(--muted);font-weight:400;font-size:11px;">/ ${totalGB} GB</span>`;
+    } else {
+      el.textContent = 'Storage: N/A';
+    }
+  } catch(e) {
+    el.textContent = 'Storage: Offline';
+  }
 }
 </script>
 </body>
