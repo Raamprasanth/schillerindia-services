@@ -1403,10 +1403,10 @@ async function getRepairTeamPerformanceData({ month }) {
     const d = 'All Divisions';
     if (!divisionsMap[d]) {
       divisionsMap[d] = {
-        'Pending FRN': { '< 1 day': 0, '1 to 3 days': 0, '> 3 days': 0, total: 0 },
-        'OB Pending': { '< 1 day': 0, '1 to 3 days': 0, '> 3 days': 0, total: 0 },
-        'Under Repair': { '< 1 day': 0, '1 to 3 days': 0, '> 3 days': 0, total: 0 },
-        'Re-Repair': { '< 1 day': 0, '1 to 3 days': 0, '> 3 days': 0, total: 0 }
+        'Pending FRN': { '< 1 day': 0, '1 to 3 days': 0, '> 3 days': 0, total: 0, RP: 0 },
+        'OB Pending': { '< 1 day': 0, '1 to 3 days': 0, '> 3 days': 0, total: 0, RP: 0 },
+        'Under Repair': { '< 1 day': 0, '1 to 3 days': 0, '> 3 days': 0, total: 0, RP: 0 },
+        'Re-Repair': { '< 1 day': 0, '1 to 3 days': 0, '> 3 days': 0, total: 0, RP: 0 }
       };
     }
     return divisionsMap[d];
@@ -1414,10 +1414,13 @@ async function getRepairTeamPerformanceData({ month }) {
 
   const processActive = (items, actKey, dateField) => {
     for (const item of items) {
+      const divName = item.division || 'Unknown';
+      const divData = ensureDivision(divName);
+      // Increment RP for ALL active items (no month filter)
+      divData[actKey].RP++;
+      
       const d = parseAnyDate(item[dateField], item.createdAt);
       if (isDateInRange(d, start, end)) {
-        const divName = item.division || 'Unknown';
-        const divData = ensureDivision(divName);
         divData[actKey].total++;
       }
     }

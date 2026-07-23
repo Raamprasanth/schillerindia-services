@@ -3034,14 +3034,12 @@ async function fetchCommercialData() {
 async function exportCommercialPDF() {
   const el = document.getElementById('commercial-pdf-content');
   if (!el) return;
-  const opt = {
-    margin: [10, 10, 10, 10],
-    filename: 'Commercial_Performance.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-  html2pdf().set(opt).from(el).save();
+  
+  const month = document.getElementById('perf-commercial-month').value || 'Report';
+  const div = document.getElementById('perf-commercial-division').value;
+  const divisionLabel = div || 'All Divisions';
+  
+  await generatePremiumPDF(el.innerHTML, 'COMMERCIAL PERFORMANCE REPORT', divisionLabel, month, 'Commercial_Performance');
 }
 
 async function fetchRepairTeamData() {
@@ -3081,6 +3079,7 @@ async function fetchRepairTeamData() {
               <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:center;">&lt; 1 day</th>
               <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:center;">1 to 3 days</th>
               <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:center;">&gt; 3 days</th>
+              <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:center; color:#0f172a;">RP</th>
               <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:center; color:#0f172a;">Total</th>
             </tr>
           </thead>
@@ -3100,6 +3099,7 @@ async function fetchRepairTeamData() {
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${val['< 1 day']} <br><span style="color:#64748b;font-size:11px;">(${p1}%)</span></td>
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${val['1 to 3 days']} <br><span style="color:#64748b;font-size:11px;">(${p2}%)</span></td>
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${val['> 3 days']} <br><span style="color:#64748b;font-size:11px;">(${p3}%)</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${val.RP || 0}</td>
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${t}</td>
             </tr>`;
       }
@@ -3121,14 +3121,11 @@ async function fetchRepairTeamData() {
 async function exportRepairTeamPDF() {
   const el = document.getElementById('repairteam-pdf-content');
   if (!el) return;
-  const opt = {
-    margin: [10, 10, 10, 10],
-    filename: 'RepairTeam_Performance.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-  html2pdf().set(opt).from(el).save();
+  
+  const month = document.getElementById('perf-repairteam-month').value || 'Report';
+  const divisionLabel = 'All Divisions';
+  
+  await generatePremiumPDF(el.innerHTML, 'REPAIR TEAM PERFORMANCE REPORT', divisionLabel, month, 'RepairTeam_Performance');
 }
 
 </script>
