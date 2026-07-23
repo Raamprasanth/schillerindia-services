@@ -13,6 +13,8 @@ const estimationPendingSchema = new mongoose.Schema(
   {
     // ── Link back to the originating Service record ──────
     serviceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Service', default: null },
+    division: { type: mongoose.Schema.Types.ObjectId, ref: 'Division', default: null },
+    divisionName: { type: String, trim: true, default: '' },
 
     // ── Source tag ────────────────────────────────────────
     // 'service' = auto-created from empServiceRoutes
