@@ -550,7 +550,6 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       const json = await res.json().catch(()=>{});
       if(!res.ok) throw new Error(json?.message || 'Server error');
       Object.assign(record, json);
-      renderTable();
     } catch(e) {
       alert('Update failed: ' + e.message);
       renderTable();

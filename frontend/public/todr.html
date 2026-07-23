@@ -596,7 +596,8 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       const json = await res.json().catch(()=>{});
       if(!res.ok) throw new Error(json?.message || 'Server error');
       Object.assign(record, json);
-      renderTable();
+      const btn = document.querySelector(`button[onclick="fulfillRecord('${id}')"]`);
+      if(btn) btn.disabled = !(record.toNo && record.toRaisedDate);
     } catch(e) {
       alert('Date update failed: ' + e.message);
       renderTable();
@@ -612,7 +613,8 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       const json = await res.json().catch(()=>{});
       if(!res.ok) throw new Error(json?.message || 'Server error');
       Object.assign(record, json);
-      renderTable();
+      const btn = document.querySelector(`button[onclick="fulfillRecord('${id}')"]`);
+      if(btn) btn.disabled = !(record.toNo && record.toRaisedDate);
     } catch(e) {
       alert('Update failed: ' + e.message);
       renderTable();
