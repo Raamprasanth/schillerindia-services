@@ -187,13 +187,32 @@ router.get('/escalation-sender', async (req, res) => {
 
 router.get('/storage', async (req, res) => {
   try {
-    const fs = require('fs').promises;
-    const path = require('path');
-    const stats = await fs.statfs(path.resolve(__dirname, '../../'));
+    const mongoose = require('mongoose');
+    let totalBytes = 0;
+    let freeBytes = 0;
+
+    try {
+      const dbStats = await mongoose.connection.db.command({ dbStats: 1 });
+      if (dbStats && dbStats.fsTotalSize) {
+        totalBytes = dbStats.fsTotalSize;
+        freeBytes = dbStats.fsTotalSize - dbStats.fsUsedSize;
+      }
+    } catch (dbErr) {
+      console.error('Could not fetch DB stats:', dbErr.message);
+    }
+
+    if (!totalBytes) {
+      const fs = require('fs').promises;
+      const path = require('path');
+      const stats = await fs.statfs(path.resolve(__dirname, '../../'));
+      totalBytes = stats.blocks * stats.bsize;
+      freeBytes = stats.bavail * stats.bsize;
+    }
+
     res.json({
       success: true,
-      totalBytes: stats.blocks * stats.bsize,
-      freeBytes: stats.bavail * stats.bsize
+      totalBytes,
+      freeBytes
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
