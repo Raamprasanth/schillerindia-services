@@ -3128,6 +3128,83 @@ async function exportRepairTeamPDF() {
   await generatePremiumPDF(el.innerHTML, 'REPAIR TEAM PERFORMANCE REPORT', divisionLabel, month, 'RepairTeam_Performance');
 }
 
+
+async function generatePremiumPDF(reportHtml, title, divisionLabel, monthLabel, filenamePrefix) {
+  const html = `
+    <div class="perf-pdf-doc">
+      <style>
+        .perf-pdf-doc,.perf-pdf-doc *{box-sizing:border-box;}
+        .perf-pdf-doc{width:1120px;font-family:Arial,sans-serif;background:#fff;color:#1e293b;}
+        .perf-pdf-sheet{width:1120px;background:#fff;padding:22px 36px 22px 150px;}
+        .perf-pdf-head{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #0f172a;padding-bottom:14px;margin-bottom:18px;}
+        .perf-pdf-title{font-size:20px;font-weight:800;letter-spacing:.5px;color:#0f172a;text-align:right;}
+        .perf-pdf-meta{font-size:14px;margin-top:6px;color:#475569;text-align:right;}
+        .perf-pdf-content>div{border:0!important;border-radius:0!important;padding:0!important;width:100%!important;box-shadow:none!important;}
+        .perf-pdf-content button,.perf-pdf-content .btn{display:none!important;}
+        .perf-pdf-content table{width:100%!important;max-width:100%!important;table-layout:fixed;border-collapse:collapse!important;margin-left:0!important;margin-right:0!important;}
+        .perf-pdf-content tr,.perf-pdf-content td,.perf-pdf-content th{break-inside:avoid!important;page-break-inside:avoid!important;}
+        .perf-pdf-content th,.perf-pdf-content td{font-size:9.5px!important;line-height:1.18!important;padding:5px 6px!important;word-break:normal!important;overflow-wrap:anywhere!important;}
+      </style>
+      <section class="perf-pdf-sheet">
+        <div class="perf-pdf-head">
+          <img src="logo.png" alt="SCHILLER" style="height:48px;object-fit:contain;">
+          <div>
+            <div class="perf-pdf-title">${escapeHtml(title)}</div>
+            <div class="perf-pdf-meta">Division: <strong style="color:#0f172a;">${escapeHtml(divisionLabel)}</strong> &nbsp;|&nbsp; Month: <strong style="color:#0f172a;">${escapeHtml(monthLabel)}</strong></div>
+          </div>
+        </div>
+        <div class="perf-pdf-content">${reportHtml}</div>
+      </section>
+    </div>`;
+
+  const wrapper = document.createElement('div');
+  wrapper.style.position = 'fixed';
+  wrapper.style.left = '80px';
+  wrapper.style.top = '0px';
+  wrapper.style.width = '1120px';
+  wrapper.style.background = '#ffffff';
+  wrapper.style.pointerEvents = 'none';
+  wrapper.style.zIndex = '-1';
+  wrapper.innerHTML = html;
+  document.body.appendChild(wrapper);
+
+  try {
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const jsPDF = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+    if (typeof window.html2canvas !== 'function' || !jsPDF) throw new Error('PDF libraries are not loaded. Please refresh the page and try again.');
+    const pdf = new jsPDF({ unit: 'in', format: 'a4', orientation: 'landscape' });
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const margin = 0.18;
+    const usableW = pageW - margin * 2;
+    const usableH = pageH - margin * 2;
+    const sheets = Array.from(wrapper.querySelectorAll('.perf-pdf-sheet'));
+    for (let i = 0; i < sheets.length; i++) {
+      const canvas = await html2canvas(sheets[i], {
+        scale: 4,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        width: 1120,
+        windowWidth: 1280,
+        scrollX: 0,
+        scrollY: 0
+      });
+      const imgData = canvas.toDataURL('image/jpeg', 1);
+      const ratio = Math.min(usableW / canvas.width, usableH / canvas.height);
+      const imgW = canvas.width * ratio;
+      const imgH = canvas.height * ratio;
+      if (i > 0) pdf.addPage('a4', 'landscape');
+      pdf.addImage(imgData, 'JPEG', margin + (usableW - imgW) / 2, margin, imgW, imgH, undefined, 'FAST');
+    }
+    const safeFilename = `${filenamePrefix}_${divisionLabel}_${monthLabel}`.replace(/[^a-zA-Z0-9_-]/g, '_') + '.pdf';
+    pdf.save(safeFilename);
+    toast('PDF export completed!', 'success');
+  } catch(e) {
+    toast('PDF export failed: ' + e.message, 'error');
+  } finally {
+    if (document.body.contains(wrapper)) document.body.removeChild(wrapper);
+  }
+}
 </script>
 </body>
 </html>
