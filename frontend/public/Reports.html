@@ -635,18 +635,12 @@ body{
             </div>
             <div class="perf-body">
               <div>
-                <label class="field-label">Timeframe <span style="font-weight:normal;color:#64748b;font-size:11px;">(Month OR Custom Dates)</span></label>
-                <div style="display:flex; flex-direction:column; gap:10px;">
-    <div>
-      <input type="month" class="field-input" id="perf-month-div" onchange="syncMonthToDates(this.value, 'perf-from-div', 'perf-to-div'); refreshDivisionSubmissionBoxes()" style="width:130px;"/>
-    </div>
-    <div style="display:flex; gap:10px; align-items:center;">
-      <span style="color:#64748b; font-weight:bold; font-size:12px; margin-right:5px; width:20px;">OR</span>
-      <input type="date" class="field-input" id="perf-from-div" onchange="clearMonthInput('perf-month-div'); refreshDivisionSubmissionBoxes()" style="width:130px;"/>
-      <span>to</span>
-      <input type="date" class="field-input" id="perf-to-div" onchange="clearMonthInput('perf-month-div'); refreshDivisionSubmissionBoxes()" style="width:130px;"/>
-    </div>
-  </div>
+                <label class="field-label">Select Month Span</label>
+                <div style="display:flex; gap:10px; align-items:center;">
+  <input type="month" class="field-input" id="perf-start-month-div" onchange="refreshDivisionSubmissionBoxes()" style="width:140px;"/>
+  <span style="align-self:center;">to</span>
+  <input type="month" class="field-input" id="perf-end-month-div" onchange="refreshDivisionSubmissionBoxes()" style="width:140px;"/>
+</div>
               </div>
               <div>
                 <label class="field-label">Division</label>
@@ -957,18 +951,12 @@ body{
             </div>
             <div class="perf-body">
               <div>
-                <label class="field-label">Timeframe <span style="font-weight:normal;color:#64748b;font-size:11px;">(Month OR Custom Dates)</span></label>
-                <div style="display:flex; flex-direction:column; gap:10px;">
-    <div>
-      <input type="month" class="field-input" id="perf-month" onchange="syncMonthToDates(this.value, 'perf-from', 'perf-to');" style="width:130px;"/>
-    </div>
-    <div style="display:flex; gap:10px; align-items:center;">
-      <span style="color:#64748b; font-weight:bold; font-size:12px; margin-right:5px; width:20px;">OR</span>
-      <input type="date" class="field-input" id="perf-from" onchange="clearMonthInput('perf-month');" style="width:130px;"/>
-      <span>to</span>
-      <input type="date" class="field-input" id="perf-to" onchange="clearMonthInput('perf-month');" style="width:130px;"/>
-    </div>
-  </div>
+                <label class="field-label">Select Month Span</label>
+                <div style="display:flex; gap:10px; align-items:center;">
+  <input type="month" class="field-input" id="perf-start-month-ind" style="width:140px;"/>
+  <span style="align-self:center;">to</span>
+  <input type="month" class="field-input" id="perf-end-month-ind" style="width:140px;"/>
+</div>
               </div>
               <div id="perf-emp-field">
                 <label class="field-label">Employee</label>
@@ -1043,17 +1031,11 @@ body{
               <div class="fg">
                 <div class="fg-field">
                   <label class="field-label">Select Month</label>
-                  <div style="display:flex; flex-direction:column; gap:10px;">
-    <div>
-      <input type="month" class="field-input" id="perf-com-month" onchange="syncMonthToDates(this.value, 'perf-com-from', 'perf-com-to');" style="width:130px;"/>
-    </div>
-    <div style="display:flex; gap:10px; align-items:center;">
-      <span style="color:#64748b; font-weight:bold; font-size:12px; margin-right:5px; width:20px;">OR</span>
-      <input type="date" id="perf-com-from" class="field-input" onchange="clearMonthInput('perf-com-month');" style="width:130px;"/>
-      <span>to</span>
-      <input type="date" id="perf-com-to" class="field-input" onchange="clearMonthInput('perf-com-month');" style="width:130px;"/>
-    </div>
-  </div>
+                  <div style="display:flex; gap:10px; align-items:center;">
+  <input type="month" class="field-input" id="perf-start-month-com" style="width:140px;"/>
+  <span style="align-self:center;">to</span>
+  <input type="month" class="field-input" id="perf-end-month-com" style="width:140px;"/>
+</div>
                 </div>
                 <div class="fg-field" style="margin-top:12px;">
                   <label class="field-label">Select Division</label>
@@ -1090,17 +1072,11 @@ body{
               <div class="fg">
                 <div class="fg-field">
                   <label class="field-label">Select Month</label>
-                  <div style="display:flex; flex-direction:column; gap:10px;">
-    <div>
-      <input type="month" class="field-input" id="perf-repairteam-month" onchange="syncMonthToDates(this.value, 'perf-repairteam-from', 'perf-repairteam-to');" style="width:130px;"/>
-    </div>
-    <div style="display:flex; gap:10px; align-items:center;">
-      <span style="color:#64748b; font-weight:bold; font-size:12px; margin-right:5px; width:20px;">OR</span>
-      <input type="date" id="perf-repairteam-from" class="field-input" onchange="clearMonthInput('perf-repairteam-month');" style="width:130px;"/>
-      <span>to</span>
-      <input type="date" id="perf-repairteam-to" class="field-input" onchange="clearMonthInput('perf-repairteam-month');" style="width:130px;"/>
-    </div>
-  </div>
+                  <div style="display:flex; gap:10px; align-items:center;">
+  <input type="month" class="field-input" id="perf-start-month-rt" style="width:140px;"/>
+  <span style="align-self:center;">to</span>
+  <input type="month" class="field-input" id="perf-end-month-rt" style="width:140px;"/>
+</div>
                 </div>
 
                 <div class="fg-field" style="margin-top:16px;">
@@ -1440,16 +1416,16 @@ function setOptions(select, items, placeholder, includeAll = false, includeConso
 
 async function loadPerfOptions(){
   const month = getCurrentMonthValue();
-  // Set initial dates to first day of month and today
-  const firstDay = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
-  const todayDate = new Date().toISOString().split('T')[0];
-  ['perf-from-div','perf-from','perf-com-from','perf-repairteam-from'].forEach(id => {
+  // Set initial dates to current month
+  const today = new Date();
+  const currentMonthStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0');
+  ['perf-start-month-div','perf-start-month-ind','perf-start-month-com','perf-start-month-rt'].forEach(id => {
     const el = document.getElementById(id);
-    if(el && !el.value) el.value = firstDay;
+    if(el && !el.value) el.value = currentMonthStr;
   });
-  ['perf-to-div','perf-to','perf-com-to','perf-repairteam-to'].forEach(id => {
+  ['perf-end-month-div','perf-end-month-ind','perf-end-month-com','perf-end-month-rt'].forEach(id => {
     const el = document.getElementById(id);
-    if(el && !el.value) el.value = todayDate;
+    if(el && !el.value) el.value = currentMonthStr;
   });
 
   try{
@@ -3004,33 +2980,31 @@ if (currentTab === 'kanban') loadKanbanBoard(); // Handle direct loads if modifi
 <script src="tab-fix.js"></script>
 
 <script>
-function syncMonthToDates(monthVal, fromId, toId) {
-  if (!monthVal) return;
-  const year = parseInt(monthVal.split('-')[0], 10);
-  const month = parseInt(monthVal.split('-')[1], 10);
-  
-  const startDate = new Date(year, month - 1, 1);
-  const endDate = new Date(year, month, 0); // Last day of that month
-  
-  const startStr = startDate.getFullYear() + '-' + String(startDate.getMonth()+1).padStart(2,'0') + '-' + String(startDate.getDate()).padStart(2,'0');
-  const endStr = endDate.getFullYear() + '-' + String(endDate.getMonth()+1).padStart(2,'0') + '-' + String(endDate.getDate()).padStart(2,'0');
-  
-  document.getElementById(fromId).value = startStr;
-  document.getElementById(toId).value = endStr;
-}
-
-function clearMonthInput(monthId) {
-  const el = document.getElementById(monthId);
-  if (el) el.value = '';
+function calculateMonthBoundaryDates(startMonthStr, endMonthStr) {
+  if (!startMonthStr || !endMonthStr) return null;
+  const sy = parseInt(startMonthStr.split('-')[0], 10);
+  const sm = parseInt(startMonthStr.split('-')[1], 10);
+  const ey = parseInt(endMonthStr.split('-')[0], 10);
+  const em = parseInt(endMonthStr.split('-')[1], 10);
+  const startDate = new Date(sy, sm - 1, 1);
+  const endDate = new Date(ey, em, 0); // Last day of end month
+  if (startDate > endDate) return null; // Invalid range
+  return {
+    from: startDate.getFullYear() + '-' + String(startDate.getMonth()+1).padStart(2,'0') + '-' + String(startDate.getDate()).padStart(2,'0'),
+    to: endDate.getFullYear() + '-' + String(endDate.getMonth()+1).padStart(2,'0') + '-' + String(endDate.getDate()).padStart(2,'0'),
+    title: startMonthStr === endMonthStr ? startMonthStr : `${startMonthStr} to ${endMonthStr}`
+  };
 }
 
 async function fetchCommercialData() {
-  const from = document.getElementById('perf-com-from').value;
-  const to = document.getElementById('perf-com-to').value;
-  if (!from || !to) {
-    toast('Please select from and to dates', 'error');
+  const startM = document.getElementById('perf-start-month-com').value;
+  const endM = document.getElementById('perf-end-month-com').value;
+  const boundaries = calculateMonthBoundaryDates(startM, endM);
+  if (!boundaries) {
+    toast('Please select valid Start and End months', 'error');
     return;
   }
+  const { from, to, title } = boundaries;
   const selectedDiv = document.getElementById('perf-com-division') ? document.getElementById('perf-com-division').value : '';
   const res = document.getElementById('perf-com-result');
   res.innerHTML = '<div class="empty-sub">Loading commercial data...</div>';
@@ -3045,7 +3019,7 @@ async function fetchCommercialData() {
     }
     
     let reportHtml = `<div style="display:flex;justify-content:space-between;margin-bottom:16px;">
-      <h3 style="margin:0;font-family:'Syne',sans-serif;color:#0f172a;">Commercial Report - ${from} to ${to}</h3>
+      <h3 style="margin:0;font-family:'Syne',sans-serif;color:#0f172a;">Commercial Report - ${title}</h3>
       <button class="btn btn-green" onclick="exportCommercialPDF()"><i class="fas fa-file-pdf" style="margin-right:6px;"></i> Export PDF</button>
     </div>
     <div id="commercial-pdf-content" style="background:#fff;padding:20px;border-radius:8px;">`;
@@ -3155,12 +3129,14 @@ async function exportCommercialPDF() {
 }
 
 async function fetchRepairTeamData() {
-  const from = document.getElementById('perf-repairteam-from').value;
-  const to = document.getElementById('perf-repairteam-to').value;
-  if (!from || !to) {
-    toast('Please select from and to dates', 'error');
+  const startM = document.getElementById('perf-start-month-rt').value;
+  const endM = document.getElementById('perf-end-month-rt').value;
+  const boundaries = calculateMonthBoundaryDates(startM, endM);
+  if (!boundaries) {
+    toast('Please select valid Start and End months', 'error');
     return;
   }
+  const { from, to, title } = boundaries;
   const res = document.getElementById('perf-repairteam-result');
   res.innerHTML = '<div class="empty-sub">Loading repair team data...</div>';
   try {
