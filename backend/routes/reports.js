@@ -691,7 +691,7 @@ router.get('/performance/leaderboard', verifyToken, async (req, res) => {
     const results = await Promise.all(
       divisions.map(async (div) => {
         try {
-          const data = await getPerformanceReviewData({ scope: 'division', month, division: div });
+          const data = await getPerformanceReviewData({ scope: 'division', month, from, to, division: div });
           const s = summarizePerformanceRows(data);
           return {
             division: div,

@@ -683,7 +683,13 @@ async function getPerformanceReviewOptions() {
   };
 }
 
-async function getPerformanceReviewData({ scope, from, to, division, employee }) {
+async function getPerformanceReviewData({ scope, from, to, month, division, employee }) {
+  if (month && (!from || !to)) {
+    const year = parseInt(month.split('-')[0], 10);
+    const monthNum = parseInt(month.split('-')[1], 10);
+    from = `${year}-${String(monthNum).padStart(2, '0')}-01`;
+    to = new Date(year, monthNum, 0).toISOString().split('T')[0];
+  }
   if (!['division', 'employee'].includes(scope)) {
     throw new Error('Scope must be either division or employee.');
   }
