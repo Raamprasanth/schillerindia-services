@@ -1479,30 +1479,6 @@ function switchPerfSubTab(tab) {
   const comPane = document.getElementById('perf-com-pane');
   if (comPane) comPane.style.display = tab === 'commercial' ? 'block' : 'none';
   const rtPane = document.getElementById('perf-repairteam-pane');
-  if (rtPane) rtPane.style.display = tab === 'repairteam' ? 'block' : 'none';
-  if (tab === 'division') { perfScope = 'division'; } else { perfScope = 'employee'; }
-  if (tab === 'division') refreshDivisionSubmissionBoxes();
-}
-
-function switchPerfDivTab(tab, btn) {
-  document.querySelectorAll('#perf-div-inner-tabs .perf-inner-tab').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  ['summary','trend','leaderboard'].forEach(t=>{
-    const el=document.getElementById('perf-pane-'+t+(t==='summary'?'-div':'-div')); // adjust mapping
-    let paneId = t === 'summary' ? 'perf-pane-div-summary' : 'perf-pane-'+t+'-div';
-    const paneEl = document.getElementById(paneId);
-    if(paneEl) paneEl.style.display=t===tab?'block':'none';
-  });
-  if(tab==='trend' && perfDivCurrentParams) loadDivTrend();
-  if(tab==='leaderboard') loadLeaderboard();
-}
-
-function switchPerfTab(tab, btn) {
-  document.querySelectorAll('#perf-inner-tabs .perf-inner-tab').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  ['summary','trend','leaderboard'].forEach(t => {
-    const pane = document.getElementById('perf-pane-' + t);
-    if(pane) pane.style.display = t === tab ? 'block' : 'none';
   });
 
   try{
@@ -1548,24 +1524,11 @@ function switchPerfTab(tab, btn) {
   }
 }
 
-function switchPerfSubTab(tab) {
-  document.querySelectorAll('.perf-subtab').forEach(b=>b.classList.remove('active'));
-  document.getElementById('pst-'+tab).classList.add('active');
-  document.getElementById('perf-div-pane').style.display = tab === 'division' ? 'block' : 'none';
-  document.getElementById('perf-ind-pane').style.display = tab === 'individual' ? 'block' : 'none';
-  const comPane = document.getElementById('perf-com-pane');
-  if (comPane) comPane.style.display = tab === 'commercial' ? 'block' : 'none';
-  const rtPane = document.getElementById('perf-repairteam-pane');
-  if (rtPane) rtPane.style.display = tab === 'repairteam' ? 'block' : 'none';
-  if (tab === 'division') { perfScope = 'division'; } else { perfScope = 'employee'; }
-  if (tab === 'division') refreshDivisionSubmissionBoxes();
-}
 
 function switchPerfDivTab(tab, btn) {
   document.querySelectorAll('#perf-div-inner-tabs .perf-inner-tab').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
   ['summary','trend','leaderboard'].forEach(t=>{
-    const el=document.getElementById('perf-pane-'+t+(t==='summary'?'-div':'-div')); // adjust mapping
     let paneId = t === 'summary' ? 'perf-pane-div-summary' : 'perf-pane-'+t+'-div';
     const paneEl = document.getElementById(paneId);
     if(paneEl) paneEl.style.display=t===tab?'block':'none';
