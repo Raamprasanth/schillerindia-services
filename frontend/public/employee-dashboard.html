@@ -2463,7 +2463,8 @@
     { panelId:'nonsaleable-tracker-body', icon:'&#128230;', title:'Non Saleable', schedule:'2 & 16' },
     { panelId:'supplierwarranty-tracker-body', icon:'&#9888;&#65039;', title:'Supplier Warranty', schedule:'3 & 16' },
     { panelId:'criticalpending-tracker-body', icon:'&#128680;', title:'Critical Pending', schedule:'2nd' },
-    { panelId:'pirequest-tracker-body', icon:'&#128196;', title:'PI Request', schedule:'5th' }
+    { panelId:'pirequest-tracker-body', icon:'&#128196;', title:'PI Request', schedule:'5th' },
+    { panelId:'opencallreview-tracker-body', icon:'&#128269;', title:'Open Call Review', schedule:'Daily (exc. 3rd Sat)' }
   ];
 
   function ensureSubmitReportBoxes(){
@@ -2514,6 +2515,21 @@
     renderTrackerPanel('supplierwarranty-tracker-body', getMonthDates(year, monthIndex, [3, 16]), submissions, 'SupplierWarranty', monthStr);
     renderTrackerPanel('criticalpending-tracker-body', getMonthDates(year, monthIndex, [2]), submissions, 'CriticalPendingReport', monthStr);
     renderTrackerPanel('pirequest-tracker-body', getMonthDates(year, monthIndex, [5]), submissions, 'PIRequest', monthStr);
+    renderTrackerPanel('opencallreview-tracker-body', getNonSundayNonThirdSaturdayDates(year, monthIndex), submissions, 'OpenCallReview', monthStr);
+  }
+
+  function getNonSundayNonThirdSaturdayDates(year, monthIndex) {
+    let d = new Date(year, monthIndex, 1), days = [];
+    let saturdayCount = 0;
+    while (d.getMonth() === monthIndex) {
+      if (d.getDay() === 6) saturdayCount++;
+      const isThirdSaturday = (d.getDay() === 6 && saturdayCount === 3);
+      if (d.getDay() !== 0 && !isThirdSaturday) {
+        days.push(new Date(d));
+      }
+      d.setDate(d.getDate() + 1);
+    }
+    return days;
   }
 
   function getDaysInMonth(year, monthIndex, dayOfWeek) {

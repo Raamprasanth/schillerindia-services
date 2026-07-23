@@ -237,8 +237,12 @@ function localDateKey(date) {
 function getNonSundayDates(monthInfo) {
   const days = [];
   const date = new Date(monthInfo.year, monthInfo.month - 1, 1);
+  let saturdayCount = 0;
   while (date.getMonth() === monthInfo.month - 1) {
-    if (date.getDay() !== 0) days.push(localDateKey(date));
+    if (date.getDay() === 6) saturdayCount++;
+    const isThirdSaturday = (date.getDay() === 6 && saturdayCount === 3);
+    
+    if (date.getDay() !== 0 && !isThirdSaturday) days.push(localDateKey(date));
     date.setDate(date.getDate() + 1);
   }
   return days;
@@ -250,6 +254,12 @@ function dayKeyInMonth(value, monthInfo) {
   const local = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   if (local.getFullYear() !== monthInfo.year || local.getMonth() !== monthInfo.month - 1) return '';
   if (local.getDay() === 0) return '';
+  // Check if it's the third saturday
+  if (local.getDay() === 6) {
+    const day = local.getDate();
+    // 1st saturday: 1-7, 2nd: 8-14, 3rd: 15-21
+    if (day >= 15 && day <= 21) return '';
+  }
   return localDateKey(local);
 }
 

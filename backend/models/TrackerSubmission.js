@@ -20,7 +20,8 @@ const trackerSubmissionSchema = new mongoose.Schema({
       'NonSaleable',
       'SupplierWarranty',
       'CriticalPendingReport',
-      'PIRequest'
+      'PIRequest',
+      'OpenCallReview'
     ],
     required: true
   },
