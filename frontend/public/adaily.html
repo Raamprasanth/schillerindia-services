@@ -207,7 +207,7 @@ let selectedIds = new Set();
 async function loadData() {
   try {
     const res = await fetch('/api/adaily', {
-      headers: { 'Authorization': \`Bearer \${sessionStorage.getItem('schiller_token')}\` }
+      headers: { 'Authorization': `Bearer ${sessionStorage.getItem('schiller_token')}` }
     });
     if (!res.ok) throw new Error('Failed to load');
     currentData = await res.json();
@@ -216,7 +216,7 @@ async function loadData() {
     renderCards();
   } catch(e) {
     console.error(e);
-    document.getElementById('kb-grid').innerHTML = \`<div style="color:var(--red);padding:20px;grid-column:1/-1;">Error loading data.</div>\`;
+    document.getElementById('kb-grid').innerHTML = `<div style="color:var(--red);padding:20px;grid-column:1/-1;">Error loading data.</div>`;
   }
 }
 
@@ -236,7 +236,7 @@ function renderCards() {
   });
 
   if (!filtered.length) {
-    grid.innerHTML = \`<div style="padding:60px 20px; text-align:center; grid-column:1/-1; color:var(--muted); background:var(--card); border-radius:12px; border:1.5px dashed var(--border);">No entries found matching filters.</div>\`;
+    grid.innerHTML = `<div style="padding:60px 20px; text-align:center; grid-column:1/-1; color:var(--muted); background:var(--card); border-radius:12px; border:1.5px dashed var(--border);">No entries found matching filters.</div>`;
     return;
   }
 
@@ -245,21 +245,21 @@ function renderCards() {
     const isChecked = selectedIds.has(t._id) ? 'checked' : '';
     const dateStr = t.date ? new Date(t.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '--';
     
-    return \`
+    return `
     <div class="kb-card">
       <div class="checkbox-wrap">
-        <input type="checkbox" class="row-checkbox" data-id="\${t._id}" \${isChecked} onchange="toggleSelect(this, '\${t._id}')">
+        <input type="checkbox" class="row-checkbox" data-id="${t._id}" ${isChecked} onchange="toggleSelect(this, '${t._id}')">
       </div>
       <div class="kb-top">
-        <div class="source-badge \${srcClass}">\${t.sourceType}</div>
+        <div class="source-badge ${srcClass}">${t.sourceType}</div>
       </div>
-      <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;">\${dateStr} &bull; \${t.fromTime||'--'} to \${t.toTime||'--'}</div>
-      <div class="kb-activity">\${esc(t.activity||'')}</div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;">${dateStr} &bull; ${t.fromTime||'--'} to ${t.toTime||'--'}</div>
+      <div class="kb-activity">${esc(t.activity||'')}</div>
       <div class="kb-foot">
-        <div class="kb-user">By <span>\${esc(t.addedBy||'User')}</span></div>
-        <button class="kb-view" onclick="viewDw('\${t._id}')">View</button>
+        <div class="kb-user">By <span>${esc(t.addedBy||'User')}</span></div>
+        <button class="kb-view" onclick="viewDw('${t._id}')">View</button>
       </div>
-    </div>\`;
+    </div>`;
   }).join('');
 }
 
@@ -273,20 +273,20 @@ function updateBulkBtn() {
   const btn = document.getElementById('bulk-del-btn');
   if (selectedIds.size > 0) {
     btn.style.display = 'inline-flex';
-    btn.textContent = \`Delete Selected (\${selectedIds.size})\`;
+    btn.textContent = `Delete Selected (${selectedIds.size})`;
   } else {
     btn.style.display = 'none';
   }
 }
 
 async function bulkDelete() {
-  if(!confirm(\`Delete \${selectedIds.size} selected entries? This cannot be undone.\`)) return;
+  if(!confirm(`Delete ${selectedIds.size} selected entries? This cannot be undone.`)) return;
   try {
     const res = await fetch('/api/adaily/bulk-delete', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'Authorization': \`Bearer \${sessionStorage.getItem('schiller_token')}\` 
+        'Authorization': `Bearer ${sessionStorage.getItem('schiller_token')}` 
       },
       body: JSON.stringify({ ids: Array.from(selectedIds) })
     });
@@ -304,16 +304,16 @@ function viewDw(id) {
   if(!entry) return;
   const date = entry.date ? new Date(entry.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '-';
   document.getElementById('view-sub').textContent = date + ' (' + entry.sourceType + ')';
-  document.getElementById('dw-view-body').innerHTML = \`
+  document.getElementById('dw-view-body').innerHTML = `
     <div class="view-detail-grid">
-      <div class="view-detail"><div class="view-label">Date</div><div class="view-value">\${esc(date)}</div></div>
-      <div class="view-detail"><div class="view-label">Team / Division</div><div class="view-value">\${esc(entry.team || '-')}</div></div>
-      <div class="view-detail"><div class="view-label">From</div><div class="view-value">\${esc(entry.fromTime || '-')}</div></div>
-      <div class="view-detail"><div class="view-label">To</div><div class="view-value">\${esc(entry.toTime || '-')}</div></div>
-      <div class="view-detail"><div class="view-label">Total Day Hours</div><div class="view-value">\${esc(entry.dayTotal || '-')}</div></div>
-      <div class="view-detail"><div class="view-label">Added By</div><div class="view-value">\${esc(entry.addedBy || '-')}</div></div>
-      <div class="view-detail full"><div class="view-label">Activity</div><div class="view-value">\${esc(entry.activity || '-')}</div></div>
-    </div>\`;
+      <div class="view-detail"><div class="view-label">Date</div><div class="view-value">${esc(date)}</div></div>
+      <div class="view-detail"><div class="view-label">Team / Division</div><div class="view-value">${esc(entry.team || '-')}</div></div>
+      <div class="view-detail"><div class="view-label">From</div><div class="view-value">${esc(entry.fromTime || '-')}</div></div>
+      <div class="view-detail"><div class="view-label">To</div><div class="view-value">${esc(entry.toTime || '-')}</div></div>
+      <div class="view-detail"><div class="view-label">Total Day Hours</div><div class="view-value">${esc(entry.dayTotal || '-')}</div></div>
+      <div class="view-detail"><div class="view-label">Added By</div><div class="view-value">${esc(entry.addedBy || '-')}</div></div>
+      <div class="view-detail full"><div class="view-label">Activity</div><div class="view-value">${esc(entry.activity || '-')}</div></div>
+    </div>`;
   
   const delBtn = document.getElementById('view-del-btn');
   delBtn.onclick = async () => {
@@ -321,7 +321,7 @@ function viewDw(id) {
     try {
       await fetch('/api/adaily/' + id, {
         method: 'DELETE',
-        headers: { 'Authorization': \`Bearer \${sessionStorage.getItem('schiller_token')}\` }
+        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('schiller_token')}` }
       });
       closeDwView();
       loadData();
@@ -355,7 +355,7 @@ function exportToExcel() {
         'Activity': item.activity,
         'From Time': item.fromTime,
         'To Time': item.toTime,
-        'Duration': \`\${h}h \${m}m\`,
+        'Duration': `${h}h ${m}m`,
         'Day Total': item.dayTotal || ''
      };
   });

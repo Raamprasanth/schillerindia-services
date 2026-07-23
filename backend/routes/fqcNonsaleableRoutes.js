@@ -54,6 +54,51 @@ router.post('/', protect, async (req, res) => {
       createdBy: req.user._id,
     });
     const saved = await doc.save();
+
+    // If marked as Closed/Completed during creation, move to fs page (FqcNonSaleableFs)
+    if (saved.status === 'Closed') {
+      const FqcNonSaleableFs = require('../models/FqcNonSaleableFs');
+      
+      const newFsDoc = new FqcNonSaleableFs({
+        division: saved.division,
+        unitDetails: saved.unitDetails,
+        model: saved.model,
+        modelSn: saved.modelSn,
+        unitConfig: saved.unitConfig || '',
+        replacedSn: saved.replacedSn || '',
+        
+        entryDate: saved.entryDate || '',
+        fqcInwardDate: saved.fqcInDate || '',
+        scInwardDate: saved.scInDate || '',
+        defRecvDate: saved.defRecvDate || '',
+        tentativeDate: saved.tentDate || '',
+        repShipDate: saved.repShipDate || '',
+        shipDateFqc: saved.shipFqcDate || '',
+
+        region: saved.region || '',
+        branch: saved.branch || '',
+        engineer: saved.engineer || '',
+        scEngineer: saved.scEngineer || '',
+        dealer: saved.dealer || '',
+        supplier: saved.supplier || '',
+        customer: saved.customer || '',
+
+        reportedProblem: saved.reportedProblem || '',
+        fqcRemarks: saved.fqcObservation || 'Moved from FNS',
+        scObservation: saved.scObservation || '',
+        rootCause: saved.rootCause || '',
+        reqParts: saved.reqParts || '',
+        actionPlan: saved.actionPlan || '',
+        finalRemarks: saved.finalRemarks || '',
+
+        finalStatus: 'pending',
+        createdBy: req.user._id
+      });
+      
+      await newFsDoc.save();
+      await FqcNonsaleable.findByIdAndDelete(saved._id);
+    }
+
     res.status(201).json(saved);
   } catch (err) {
     console.error('[POST /api/fqc/nonsaleable]', err);
