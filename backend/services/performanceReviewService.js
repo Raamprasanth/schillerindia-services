@@ -1569,7 +1569,7 @@ async function getProductTeamPerformanceData({ month }) {
     return (utc2 - utc1) / (1000 * 60 * 60 * 24);
   };
   
-  const escapeRegExp = (s) => s.replace(/[.*+?^${()|[\]\\]/g, '\\module.exports = {');
+  const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   
   const workingDayKeys = getNonSundayDates(monthInfo);
   const workingDaySet = new Set(workingDayKeys);
@@ -1594,13 +1594,7 @@ async function getProductTeamPerformanceData({ month }) {
   }).lean();
   
   for (const user of ptUsers) {
-    const empRegex = new RegExp('^' + escapeRegExp(user.name) + '
-  getCommercialPerformanceData,
-  getRepairTeamPerformanceData,
-  getPerformanceReviewOptions,
-  getPerformanceReviewData,
-};
-, 'i');
+    const empRegex = new RegExp('^' + escapeRegExp(user.name) + '$', 'i');
     
     // PT Calls
     const callDays = new Set();
@@ -1624,7 +1618,7 @@ async function getProductTeamPerformanceData({ month }) {
     const workScore = workDays.size;
     const totalTracked = workingDays * 2;
     const completedCount = callScore + workScore;
-    const completionRate = Math.round((completedCount / totalTracked) * 100);
+    const completionRate = totalTracked > 0 ? Math.round((completedCount / totalTracked) * 100) : 0;
     let remark = 'Needs Improvement';
     if (completionRate >= 90) remark = 'Excellent';
     else if (completionRate >= 75) remark = 'Good';
@@ -1667,7 +1661,7 @@ async function getProductTeamPerformanceData({ month }) {
     }
     
     const total = divFbirs.length;
-    const rate = Math.round((withinTargetCount / total) * 100);
+    const rate = total > 0 ? Math.round((withinTargetCount / total) * 100) : 0;
     let remark = 'Needs Improvement';
     if (rate >= 90) remark = 'Excellent';
     else if (rate >= 75) remark = 'Good';
