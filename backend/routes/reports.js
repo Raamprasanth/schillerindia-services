@@ -928,5 +928,21 @@ router.get('/analytics', verifyToken, async (req, res) => {
   }
 });
 
+
+router.get('/performance/productteam', verifyToken, async (req, res) => {
+  try {
+    const { month } = req.query;
+    if (!month) return res.status(400).json({ success: false, message: 'Month is required' });
+
+    const { getProductTeamPerformanceData } = require('../services/performanceReviewService');
+    const data = await getProductTeamPerformanceData({ month });
+
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('Error fetching Product Team performance data:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 module.exports = router;
 

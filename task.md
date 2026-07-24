@@ -1,0 +1,15 @@
+- `[x]` 1. Frontend Updates (`Reports.html`)
+  - `[x]` Add "Product Team" sub-tab button.
+  - `[x]` Add Product Team pane with two tables (Employee Performance, BIR List).
+  - `[x]` Add PDF Export logic (`generateProductTeamHtml`, `exportProductTeamPDF`).
+- `[x]` 2. Backend Route (`backend/routes/reports.js`)
+  - `[x]` Add `GET /api/reports/performance/productteam` endpoint.
+- `[x]` 3. Backend Logic (`backend/services/performanceReviewService.js`)
+  - `[x]` Create `getProductTeamPerformanceData`.
+  - `[x]` Fetch PT members (role: 'pt').
+  - `[x]` Calculate PT Call completions (unique working days).
+  - `[x]` Calculate PT Daily Work completions (unique working days).
+  - `[x]` Calculate BIR List by division (FBIR created to PTCBIR < 7 days).
+- `[x]` 4. Integration & Testing
+  - `[x]` Verify UI rendering and data mapping.
+  - `[x]` Verify PDF Export formatting.
