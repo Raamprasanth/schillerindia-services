@@ -1635,7 +1635,6 @@ async function getProductTeamPerformanceData({ month }) {
   }
   
   // 3. BIR List Tracker
-  const divisions = await Division.find().sort({ name: 1 }).lean();
   const birData = [];
   
   const fbirs = await Bir.find({ createdAt: { $gte: start, $lt: end } }).lean();
@@ -1643,38 +1642,33 @@ async function getProductTeamPerformanceData({ month }) {
     birRef: { $in: fbirs.map(b => b.birRef).filter(Boolean) }
   }).lean();
   
-  for (const div of divisions) {
-    const divFbirs = fbirs.filter(b => (b.division || '').toLowerCase() === div.name.toLowerCase());
-    if (divFbirs.length === 0) continue;
-    
-    let withinTargetCount = 0;
-    
-    for (const fbir of divFbirs) {
-      if (!fbir.birRef) continue;
-      const ptcbir = ptcbirs.find(p => p.birRef === fbir.birRef);
-      if (ptcbir) {
-        const diff = getDiff(fbir.createdAt, ptcbir.createdAt);
-        if (diff !== null && diff <= 7) {
-          withinTargetCount++;
-        }
+  let withinTargetCount = 0;
+  
+  for (const fbir of fbirs) {
+    if (!fbir.birRef) continue;
+    const ptcbir = ptcbirs.find(p => p.birRef === fbir.birRef);
+    if (ptcbir) {
+      const diff = getDiff(fbir.createdAt, ptcbir.createdAt);
+      if (diff !== null && diff <= 7) {
+        withinTargetCount++;
       }
     }
-    
-    const total = divFbirs.length;
-    const rate = total > 0 ? Math.round((withinTargetCount / total) * 100) : 0;
-    let remark = 'Needs Improvement';
-    if (rate >= 90) remark = 'Excellent';
-    else if (rate >= 75) remark = 'Good';
-    else if (rate >= 60) remark = 'Average';
-    
-    birData.push({
-      division: div.name,
-      total,
-      completed: withinTargetCount,
-      rate,
-      remark
-    });
   }
+  
+  const total = fbirs.length;
+  const rate = total > 0 ? Math.round((withinTargetCount / total) * 100) : 0;
+  let remark = 'Needs Improvement';
+  if (rate >= 90) remark = 'Excellent';
+  else if (rate >= 75) remark = 'Good';
+  else if (rate >= 60) remark = 'Average';
+  
+  birData.push({
+    division: 'All Divisions',
+    total,
+    completed: withinTargetCount,
+    rate,
+    remark
+  });
   
   return {
     month: monthInfo.label,

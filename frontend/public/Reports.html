@@ -3356,13 +3356,11 @@ async function fetchProductTeamData() {
     reportHtml += `
         </tbody>
       </table>
-      
-      <!-- BIR List Table -->
+        <!-- BIR List Table -->
       <h4 style="font-family:'Inter',sans-serif; margin-bottom:10px;">BIR List Tracker (< 7 Days)</h4>
       <table style="width:100%; border-collapse:collapse; border:1px solid #cbd5e1; font-family:'Inter',sans-serif; font-size:13px;">
         <thead>
           <tr>
-            <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:left;">Division</th>
             <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:center;">Total BIR Created</th>
             <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:center;">Moved to PTCBIR (< 7 Days)</th>
             <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:center;">Completion %</th>
@@ -3375,7 +3373,6 @@ async function fetchProductTeamData() {
     for (const bir of birData) {
       reportHtml += `
           <tr>
-            <td style="border:1px solid #cbd5e1; padding:10px; font-weight:600;">${bir.division}</td>
             <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${bir.total}</td>
             <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${bir.completed}</td>
             <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:700;">${bir.rate}%</td>
