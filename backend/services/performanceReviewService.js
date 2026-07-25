@@ -1773,25 +1773,36 @@ async function getProductTeamPerformanceData({ month }) {
   // 3. BIR List Tracker
   const birData = [];
   
-  const fbirs = await Bir.find({ createdAt: { $gte: start, $lt: end } }).lean();
-  const ptcbirs = await PtClosedBir.find({
-    birRef: { $in: fbirs.map(b => b.birRef).filter(Boolean) }
-  }).lean();
   
-  let withinTargetCount = 0;
-  
-  for (const fbir of fbirs) {
-    if (!fbir.birRef) continue;
-    const ptcbir = ptcbirs.find(p => p.birRef === fbir.birRef);
-    if (ptcbir) {
-      const diff = ptcbir.unitInwardDate ? getDiff(ptcbir.unitInwardDate, ptcbir.createdAt) : getDiff(fbir.createdAt, ptcbir.createdAt);
-        if (diff !== null && diff <= 7) {
+    const monthStartKey = monthInfo.monthKey + '-01';
+    const monthEndDate = new Date(monthInfo.year, monthInfo.month, 0);
+    const monthEndKey = `${monthInfo.year}-${String(monthInfo.month).padStart(2, '0')}-${String(monthEndDate.getDate()).padStart(2, '0')}`;
+
+    const ptbirs = await PtBir.find({
+      $or: [
+        { unitInwardDate: { $gte: monthStartKey, $lte: monthEndKey } },
+        { createdAt: { $gte: start, $lt: end } }
+      ]
+    }).lean();
+
+    const ptcbirs = await PtClosedBir.find({
+      $or: [
+        { unitInwardDate: { $gte: monthStartKey, $lte: monthEndKey } },
+        { createdAt: { $gte: start, $lt: end } },
+        { approvedDate: { $gte: monthStartKey, $lte: monthEndKey } }
+      ]
+    }).lean();
+    
+    let withinTargetCount = 0;
+    
+    for (const ptcbir of ptcbirs) {
+      const diff = ptcbir.unitInwardDate ? getDiff(ptcbir.unitInwardDate, ptcbir.createdAt) : getDiff(ptcbir.createdAt, ptcbir.createdAt);
+      if (diff !== null && diff <= 7) {
         withinTargetCount++;
       }
     }
-  }
-  
-  const total = fbirs.length;
+    
+    const total = ptbirs.length + ptcbirs.length;
   const rate = total > 0 ? Math.round((withinTargetCount / total) * 100) : 0;
   let remark = 'Very Poor';
     if (rate >= 91) remark = 'Outstanding';
