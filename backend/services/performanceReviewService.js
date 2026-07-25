@@ -1784,8 +1784,8 @@ async function getProductTeamPerformanceData({ month }) {
     if (!fbir.birRef) continue;
     const ptcbir = ptcbirs.find(p => p.birRef === fbir.birRef);
     if (ptcbir) {
-      const diff = getDiff(fbir.createdAt, ptcbir.createdAt);
-      if (diff !== null && diff <= 7) {
+      const diff = ptcbir.unitInwardDate ? getDiff(ptcbir.unitInwardDate, ptcbir.createdAt) : getDiff(fbir.createdAt, ptcbir.createdAt);
+        if (diff !== null && diff <= 7) {
         withinTargetCount++;
       }
     }
