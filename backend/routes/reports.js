@@ -670,6 +670,9 @@ router.get('/performance/summary', verifyToken, async (req, res) => {
   try {
     const { scope, month, division, employee } = req.query;
     const data = await getPerformanceReviewData({ scope, month, division, employee });
+    if (scope === 'employee') {
+      return res.json({ success: true, data });
+    }
     return res.json({ success: true, data: summarizePerformanceRows(data) });
   } catch (err) {
     return res.status(400).json({ success: false, message: err.message });
