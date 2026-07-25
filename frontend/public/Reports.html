@@ -1802,7 +1802,7 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
   };
   const hideFrnCon = scopeType === 'division';
   const divName = String(divisionLabel || '').toLowerCase();
-  const isSpecialDiv = scopeType === 'division' && /injector|vent\s*con|monitor\s*con/i.test(divName);
+  const isSpecialDiv = scopeType === 'division' && /injector|vent\s*con|monitors?\s*con/i.test(divName);
 
   const topTable = `
     <table style="width:100%; border-collapse:collapse; border:1px solid #cbd5e1; font-family:'Inter',system-ui,sans-serif; margin-bottom:28px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); overflow:hidden;">
