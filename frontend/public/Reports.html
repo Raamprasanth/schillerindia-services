@@ -2917,9 +2917,9 @@ async function fetchIndividualAllData() {
       html += `
         <tr>
           <td style="border:1px solid #cbd5e1; padding:10px; text-align:left; font-weight:600; color:#334155;">${emp.employee}</td>
-          <td style="border:1px solid #cbd5e1; padding:10px;">${emp.callScore} / ${data.workingDays}</td>
-          <td style="border:1px solid #cbd5e1; padding:10px;">${emp.workScore} / ${data.workingDays}</td>
-          <td style="border:1px solid #cbd5e1; padding:10px;">${emp.reviewScore} / ${data.workingDays}</td>
+          <td style="border:1px solid #cbd5e1; padding:10px;">${emp.callScore}</td>
+          <td style="border:1px solid #cbd5e1; padding:10px;">${emp.workScore}</td>
+          <td style="border:1px solid #cbd5e1; padding:10px;">${emp.reviewScore}</td>
                     <td style="border:1px solid #cbd5e1; padding:10px; font-weight:700; color:${emp.completionRate >= 90 ? '#059669' : (emp.completionRate >= 75 ? '#ca8a04' : '#dc2626')};">${emp.completionRate}%</td>
           <td style="border:1px solid #cbd5e1; padding:10px; text-align:left;">${emp.remark}</td>
         </tr>
