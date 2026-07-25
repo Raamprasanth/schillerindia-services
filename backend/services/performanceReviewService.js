@@ -1353,6 +1353,7 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
   compliance.supplierWarranty = realTrackers.SupplierWarranty;
   compliance.criticalPending = realTrackers.CriticalPendingReport;
   compliance.purchaseIndent = realTrackers.PIRequest;
+    compliance.buyBack = realTrackers.BuyBack;
   compliance.trackerSubmissions = realTrackers.submissionsObj;
 
   const narratives = {
@@ -1691,7 +1692,8 @@ async function getProductTeamPerformanceData({ month }) {
   const PtCall = require('../models/PtCall');
   const PtDailyWork = require('../models/PtDailyWork');
   const Bir = require('../models/Bir');
-  const PtClosedBir = require('../models/PtClosedBir');
+  const PtBir = require('../models/PtBir');
+    const PtClosedBir = require('../models/PtClosedBir');
   const Division = require('../models/Division');
   
   const getDiff = (d1, d2) => {
