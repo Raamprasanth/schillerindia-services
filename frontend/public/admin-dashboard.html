@@ -261,7 +261,7 @@
         <button class="nav-item " onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
         <button class="nav-item " onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
         <button class="nav-item " onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
-        <button class="nav-item " onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
+        <button class="nav-item " onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Re-Export</button>
         <button class="nav-item " onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
       </div>
     </div>
@@ -368,7 +368,7 @@
           <div class="panel-body">
             <div style="display:flex; justify-content:center; gap:16px; margin-bottom:16px; font-size:11px; color:var(--muted); font-weight:600;">
               <div style="display:flex; align-items:center; gap:6px;"><span style="width:10px;height:10px;border-radius:3px;background:var(--accent);"></span> Service</div>
-              <div style="display:flex; align-items:center; gap:6px;"><span style="width:10px;height:10px;border-radius:3px;background:var(--amber);"></span> Supplier Warranty</div>
+              <div style="display:flex; align-items:center; gap:6px;"><span style="width:10px;height:10px;border-radius:3px;background:var(--amber);"></span> Re-Export</div>
               <div style="display:flex; align-items:center; gap:6px;"><span style="width:10px;height:10px;border-radius:3px;background:var(--purple);"></span> External Repair</div>
             </div>
             <div class="bar-chart" id="activity-bar-chart">
@@ -835,7 +835,7 @@ async function loadStats() {
           };
 
           createBar(d.count, 'var(--accent)', 'Service');
-          createBar(d.supplierCount, 'var(--amber)', 'Supplier Warranty');
+          createBar(d.supplierCount, 'var(--amber)', 'Re-Export');
           createBar(d.externalCount, 'var(--purple)', 'External Repair');
 
           chartEl.appendChild(dayGroupWrapper);

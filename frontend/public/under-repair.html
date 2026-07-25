@@ -313,7 +313,7 @@ body.panel-open .main{display:none;}
         <button class="nav-item " onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
         <button class="nav-item active" onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
         <button class="nav-item " onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
-        <button class="nav-item " onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
+        <button class="nav-item " onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Re-Export</button>
         <button class="nav-item " onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
       </div>
     </div>
@@ -906,12 +906,12 @@ async function saveUpdate(){
     const successText = result.externalRepair
       ? 'Moved to External Repair successfully!'
       : result.supplierWarranty
-        ? 'Moved to Supplier Warranty successfully!'
+        ? 'Moved to Re-Export successfully!'
         : 'Moved to Completed FRN successfully!';
     const successToast = result.externalRepair
       ? 'Moved to External Repair.'
       : result.supplierWarranty
-        ? 'Moved to Supplier Warranty.'
+        ? 'Moved to Re-Export.'
         : 'Moved to Completed FRN.';
     msgEl.textContent=successText;
     msgEl.className='fm-msg ok';

@@ -543,7 +543,7 @@ body{
         <button class="nav-item " onclick="window.location.href='estimation-pending.html'"><span class="icon">&#128203;</span> SO Pending</button>
         <button class="nav-item " onclick="window.location.href='under-repair.html'"><span class="icon">&#128736;&#65039;</span> Under Repair</button>
         <button class="nav-item " onclick="window.location.href='closed-frn.html'"><span class="icon">&#9989;</span> Closed FRN</button>
-        <button class="nav-item " onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Supplier Warranty</button>
+        <button class="nav-item " onclick="window.location.href='supplier-warranty-list.html'"><span class="icon">&#9888;&#65039;</span> Re-Export</button>
         <button class="nav-item " onclick="window.location.href='external-repair-list.html'"><span class="icon">&#128257;</span> External Repair</button>
       </div>
     </div>
@@ -845,9 +845,9 @@ body{
       <!-- Separator -->
       <tr class="row-sep"><td colspan="6"></td></tr>
 
-      <!-- Section 3: Supplier Warranty -->
+      <!-- Section 3: Re-Export -->
       <tr>
-        <td rowspan="4" class="bg-green text-left" style="vertical-align:top;">Supplier Warranty transaction<br><span class="red-text">If not applicable mark NA</span></td>
+        <td rowspan="4" class="bg-green text-left" style="vertical-align:top;">Re-Export transaction<br><span class="red-text">If not applicable mark NA</span></td>
         <td colspan="3" class="bg-blue">${d03SW}</td>
         <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Critical Pending report<br><span class="red-text">If not applicable mark<br>NA</span></td>
         <td class="bg-green">${d02CP}</td>
@@ -1920,7 +1920,7 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
     <table class="perf-pdf-page-break" style="width:100%; border-collapse:collapse; border:1px solid #cbd5e1; font-family:'Inter',system-ui,sans-serif; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); overflow:hidden; margin-top:28px;">
       <tbody>
         <tr>
-          <td colspan="3" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4;">Supplier Warranty transaction<br><span style="color:#ef4444; font-size:11px; font-weight:600;">If NA mark NA</span></td>
+          <td colspan="3" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4;">Re-Export transaction<br><span style="color:#ef4444; font-size:11px; font-weight:600;">If NA mark NA</span></td>
           <td colspan="3" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4;">Critical Pending report<br><span style="color:#ef4444; font-size:11px; font-weight:600;">If NA mark NA</span></td>
         </tr>
         <tr>
@@ -2209,7 +2209,7 @@ function drawPerfPdfPage(doc, data, monthLabel, scopeLabel, entityLabel, scRemar
         ['Weekly CRM Reports', comp.weeklyCrm != null ? comp.weeklyCrm + '%' : '-'],
         ['Pending Activity (Monday)', comp.pendingActivity != null ? comp.pendingActivity + '%' : '-'],
         ['Non-Saleable Tracker', comp.nonSaleable != null ? comp.nonSaleable + '%' : '-'],
-        ['Supplier Warranty', comp.supplierWarranty != null ? comp.supplierWarranty + '%' : '-'],
+        ['Re-Export', comp.supplierWarranty != null ? comp.supplierWarranty + '%' : '-'],
         ['Critical Pending Report', comp.criticalPending != null ? comp.criticalPending + '%' : '-'],
         ['Purchase Indent', comp.purchaseIndent != null ? comp.purchaseIndent + '%' : '-']
       ];
@@ -2781,7 +2781,7 @@ async function loadAllDivisionTrackers() {
         { type: 'CRM', label: 'CRM Reports', schedule: 'Every Tuesday' },
         { type: 'PendingActivity', label: 'Pending Activity', schedule: 'Every Monday' },
         { type: 'NonSaleable', label: 'Non Saleable', schedule: '2nd & 16th' },
-        { type: 'SupplierWarranty', label: 'Supplier Warranty', schedule: '3rd & 16th' },
+        { type: 'SupplierWarranty', label: 'Re-Export', schedule: '3rd & 16th' },
         { type: 'CriticalPendingReport', label: 'Critical Pending Report', schedule: '2nd' },
         { type: 'PIRequest', label: 'PI Request', schedule: '5th' }
       ];
