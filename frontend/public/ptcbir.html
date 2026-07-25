@@ -414,7 +414,9 @@ function closedBirViewSections(e){return[
   ]},
   {title:'Product Team Section',color:'var(--purple)',fields:[
     ['PS Engineer',e.psEngineer],['Software Change Remarks',e.swChangeRemarks],['CNR/Technews Circulation',e.cnrCirculation],['CNR/Technews Reference No.',e.cnrRefNo],
-    ['CNR/Technews Release Date',fmtDate(e.cnrReleaseDate)],['PS Team Verification Date',fmtDate(e.psVerificationDate)],['Product Team Remarks',e.productTeamRemarks],['Approved Date',fmtDate(e.approvedDate)],
+    ['CNR/Technews Release Date',fmtDate(e.cnrReleaseDate)],['PS Team Verification Date',fmtDate(e.psVerificationDate)],['Product Team Remarks',e.productTeamRemarks],
+    ['Attachment', e.attachment ? `<a href="${e.attachment}" download="attachment" style="color:var(--cyan);text-decoration:underline;" onclick="event.stopPropagation()">Download Attachment</a>` : '-'],
+    ['Approved Date',fmtDate(e.approvedDate)],
   ]},
 ];}
 function normalizeClosed(r){
@@ -634,7 +636,7 @@ function viewRecord(id){
       <div class="detail-grid">${s.fields.map(([l,v,cls])=>`
         <div class="detail-cell">
           <div class="detail-label">${esc(l)}</div>
-          <div class="detail-val ${cls||''}">${esc(v||'-')}</div>
+          <div class="detail-val ${cls||''}">${v===undefined?'-':(String(v).includes('<a')?v:esc(v||'-'))}</div>
         </div>`).join('')}
       </div>
     </div>`).join('');

@@ -482,6 +482,11 @@
               <input type="text" id="f-pt-remarks" disabled/>
             </div>
             <div class="form-group">
+              <label>Attachment <span style="font-size:10px;color:var(--muted);">(Max 5MB)</span></label>
+              <input type="file" id="f-pt-attachment" onchange="handleAttachment(event)" disabled/>
+              <div id="f-pt-attachment-preview" style="font-size:12px;margin-top:4px;"></div>
+            </div>
+            <div class="form-group">
               <label>Approved Date</label>
               <input type="date" id="f-approved-date" disabled/>
             </div>
@@ -623,6 +628,7 @@ let editingId = null;
 let sortCol = 'unitInwardDate';
 let sortDir = 'desc';
 let currentPage = 1;
+let currentPtAttachment = '';
 
 // -- HELPERS -------------------------------------------------------------------
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -635,6 +641,23 @@ function divClass(d){return'bp-cyan';}
 function todayStr(){return new Date().toISOString().split('T')[0];}
 function fmtDate(d){if(!d)return'-';const dt=new Date(d);return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}
 function genRef(division){const now=new Date();const dd=String(now.getDate()).padStart(2,'0');const mm=String(now.getMonth()+1).padStart(2,'0');const yy=String(now.getFullYear()).slice(-2);const idx=birData.length+1;const prefix=(division||'BIR').split(' ')[0].substring(0,5).toUpperCase();return`${prefix}/${dd}${mm}${yy}/${String(idx).padStart(2,'0')}`;}
+
+function handleAttachment(e) {
+  const file = e.target.files[0];
+  const preview = document.getElementById('f-pt-attachment-preview');
+  if (!file) { currentPtAttachment = ''; if(preview) preview.innerHTML = ''; return; }
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('File size must be less than 5MB', 'err');
+    e.target.value = ''; currentPtAttachment = ''; if(preview) preview.innerHTML = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    currentPtAttachment = evt.target.result;
+    if(preview) preview.innerHTML = `<span style="color:var(--green)">&#10004; File selected: ${file.name}</span>`;
+  };
+  reader.readAsDataURL(file);
+}
 
 // -- LOAD/SAVE DATA ------------------------------------------------------------
 function normalizeForPtView(r){
@@ -803,10 +826,12 @@ function viewBIR(id){
     ['Accessory Details',e.accDetails],['Accessory Change Remarks',e.accChangeRemarks],['User Manual Update',e.userManualUpdate],
     ['Service Manual Update',e.serviceManualUpdate],['FQC Remarks',e.fqcRemarks],['Technical Remarks',e.techRemarks],
     ['SC Engineer',e.scEngineer],['PS Engineer',e.psEngineer],['TS Verification Date',fmtDate(e.tsVerificationDate)],
-    ['PS Verification Date',fmtDate(e.psVerificationDate)],['Product Team Remarks',e.productTeamRemarks],['CNR/Technews Circulation',e.cnrCirculation],['CNR Ref No.',e.cnrRefNo],
+    ['PS Verification Date',fmtDate(e.psVerificationDate)],['Product Team Remarks',e.productTeamRemarks],
+    ['Attachment', e.attachment ? `<a href="${e.attachment}" download="attachment" style="color:var(--cyan);text-decoration:underline;" onclick="event.stopPropagation()">Download Attachment</a>` : '-'],
+    ['CNR/Technews Circulation',e.cnrCirculation],['CNR Ref No.',e.cnrRefNo],
     ['CNR Release Date',fmtDate(e.cnrReleaseDate)],['Approved Date',fmtDate(e.approvedDate)],
   ];
-  document.getElementById('view-modal-content').innerHTML=`<div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;"><div class="detail-grid">${fields.map(([l,v,cls])=>`<div class="detail-cell"><div class="detail-label">${esc(l)}</div><div class="detail-val ${cls||''}">${esc(v||'-')}</div></div>`).join('')}</div></div>`;
+  document.getElementById('view-modal-content').innerHTML=`<div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;"><div class="detail-grid">${fields.map(([l,v,cls])=>`<div class="detail-cell"><div class="detail-label">${esc(l)}</div><div class="detail-val ${cls||''}">${v===undefined?'-':(String(v).includes('<a')?v:esc(v||'-'))}</div></div>`).join('')}</div></div>`;
   document.getElementById('view-edit-btn').onclick=()=>{closeViewModal();editBIR(id);};
   document.getElementById('view-modal').classList.add('show');
 }
@@ -894,6 +919,13 @@ function openBIRModal(){
   FIELDS.forEach(f=>{const el=document.getElementById(FIELD_MAP[f]);if(el)el.value=f==='status'?'Pending':'';});
   document.getElementById('bir-form-msg').className='form-msg';
   document.getElementById('bir-modal').classList.add('show');
+  
+  currentPtAttachment = '';
+  const fileInp = document.getElementById('f-pt-attachment');
+  const filePrev = document.getElementById('f-pt-attachment-preview');
+  if(fileInp) fileInp.value = '';
+  if(filePrev) filePrev.innerHTML = '';
+  
   lockFrozenSections();
   syncCnrTechnewsLock();
 }
@@ -919,10 +951,20 @@ function editBIR(id){
   });
   document.getElementById('bir-form-msg').className='form-msg';
   document.getElementById('bir-modal').classList.add('show');
+  
+  currentPtAttachment = e.attachment || '';
+  const fileInp = document.getElementById('f-pt-attachment');
+  const filePrev = document.getElementById('f-pt-attachment-preview');
+  if(fileInp) fileInp.value = '';
+  if(filePrev) {
+    if(e.attachment) filePrev.innerHTML = `<a href="${e.attachment}" download="attachment" style="color:var(--cyan);text-decoration:underline;">View Current Attachment</a>`;
+    else filePrev.innerHTML = '';
+  }
+  
   // Always unlock PT section so product team can fill in their details and save
   const ptSec = document.getElementById('product-section');
   if(ptSec) ptSec.className = 'section-unlocked';
-  ['f-ts-date','f-ps-engineer','f-cnr-circ','f-cnr-ref','f-cnr-date','f-ps-date','f-pt-remarks','f-approved-date'].forEach(fid=>{
+  ['f-ts-date','f-ps-engineer','f-cnr-circ','f-cnr-ref','f-cnr-date','f-ps-date','f-pt-remarks','f-pt-attachment','f-approved-date'].forEach(fid=>{
     const el=document.getElementById(fid); if(el) el.disabled = false;
   });
   // Auto-fill PS Engineer with logged-in user's name if not already set
@@ -960,6 +1002,7 @@ async function saveBIR(){
         cnrReleaseDate:     payload.cnrReleaseDate     || '',
         psVerificationDate: payload.psVerificationDate || '',
         productTeamRemarks: payload.productTeamRemarks || '',
+        attachment:         currentPtAttachment        || '',
         approvedDate:       payload.approvedDate       || todayStr(),
         status:             'Approved',
         finalStatus:        'Approved',
