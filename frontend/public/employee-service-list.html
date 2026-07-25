@@ -868,7 +868,7 @@ function onBranchChange() {
     engineers = DB_ENGINEERS.filter(e => (e.region || e.reg || '') === reg);
     if (engineers.length) hint.textContent = 'Showing all engineers for this region';
   }
-  if (!engineers.length && DB_ENGINEERS.length) { engineers = DB_ENGINEERS; hint.textContent = 'Showing all engineers'; }
+  // if (!engineers.length && DB_ENGINEERS.length) { engineers = DB_ENGINEERS; hint.textContent = 'Showing all engineers'; }
   if (engineers.length) {
     engineers.forEach(e => { const name = e.name || e.engineerName || String(e); const o = document.createElement('option'); o.value = name; o.textContent = name; enSel.appendChild(o); });
     if (hint.textContent === 'Filtered by branch') hint.textContent = engineers.length + ' engineer' + (engineers.length !== 1 ? 's' : '') + ' in this branch';
