@@ -850,11 +850,7 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     : normalizeText(selectedEmployee?.division || division);
 
   if (scope === 'employee') {
-    return getSimpleEmployeePerformanceData({
-      monthInfo,
-      employee: selectedEmployee?.name || employee,
-      selectedDivision,
-    });
+    return await getAllEmployeesPerformanceData({ monthInfo });
   }
 
   const services = await Service.find().populate('division', 'name').lean();
