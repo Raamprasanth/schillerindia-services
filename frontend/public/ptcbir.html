@@ -585,7 +585,10 @@ function renderTable(){
 
   document.getElementById('bir-tbody').innerHTML=paged.length?paged.map(e=>`
     <tr>
-      <td><button class="btn-xs" onclick="viewRecord('${e._id}')" title="View">View</button></td>
+      <td style="white-space:nowrap;">
+          <button class="btn-xs" onclick="viewRecord('${e._id}')" title="View">View</button>
+          ${e.attachment ? `<button class="btn-xs" style="margin-left:4px;" onclick="downloadAttachment('${e._id}')" title="Download">&#128229;</button>` : ''}
+        </td>
       <td><span class="chip-sm">${esc(e.birRef||e._id)}</span></td>
       <td style="color:var(--muted);font-size:12px;white-space:nowrap;">${fmtDate(e.unitInwardDate)}</td>
       <td><span class="badge-pill ${divPillClass(e.division)}">${esc(e.division)}</span></td>
@@ -642,6 +645,14 @@ function viewRecord(id){
     </div>`).join('');
 
   document.getElementById('view-modal').classList.add('show');
+}
+function downloadAttachment(id) {
+  const e=allData.find(x=>x._id===id);
+  if(!e || !e.attachment) return;
+  const a = document.createElement('a');
+  a.href = e.attachment;
+  a.download = 'attachment';
+  a.click();
 }
 function closeView(){document.getElementById('view-modal').classList.remove('show');}
 document.getElementById('view-modal').addEventListener('click',e=>{if(e.target===document.getElementById('view-modal'))closeView();});

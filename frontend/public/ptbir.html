@@ -460,7 +460,7 @@
             </div>
             <div class="form-group">
               <label>CNR/Technews Circulation</label>
-              <select id="f-cnr-circ" disabled>
+              <select id="f-cnr-circ" onchange="handleCnrCircChange(this.value)" disabled>
                 <option value="">Select</option>
                 <option>Yes</option><option>No</option>
               </select>
@@ -642,6 +642,20 @@ function todayStr(){return new Date().toISOString().split('T')[0];}
 function fmtDate(d){if(!d)return'-';const dt=new Date(d);return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}
 function genRef(division){const now=new Date();const dd=String(now.getDate()).padStart(2,'0');const mm=String(now.getMonth()+1).padStart(2,'0');const yy=String(now.getFullYear()).slice(-2);const idx=birData.length+1;const prefix=(division||'BIR').split(' ')[0].substring(0,5).toUpperCase();return`${prefix}/${dd}${mm}${yy}/${String(idx).padStart(2,'0')}`;}
 
+function handleCnrCircChange(val) {
+  const fileInp = document.getElementById('f-pt-attachment');
+  const preview = document.getElementById('f-pt-attachment-preview');
+  if(fileInp) {
+    if(val === 'Yes') {
+      fileInp.disabled = false;
+    } else {
+      fileInp.disabled = true;
+      fileInp.value = '';
+      currentPtAttachment = '';
+      if(preview) preview.innerHTML = '';
+    }
+  }
+}
 function handleAttachment(e) {
   const file = e.target.files[0];
   const preview = document.getElementById('f-pt-attachment-preview');
@@ -964,9 +978,12 @@ function editBIR(id){
   // Always unlock PT section so product team can fill in their details and save
   const ptSec = document.getElementById('product-section');
   if(ptSec) ptSec.className = 'section-unlocked';
-  ['f-ts-date','f-ps-engineer','f-cnr-circ','f-cnr-ref','f-cnr-date','f-ps-date','f-pt-remarks','f-pt-attachment','f-approved-date'].forEach(fid=>{
-    const el=document.getElementById(fid); if(el) el.disabled = false;
-  });
+    ['f-ts-date','f-ps-engineer','f-cnr-circ','f-cnr-ref','f-cnr-date','f-ps-date','f-pt-remarks','f-approved-date'].forEach(fid=>{
+      const el=document.getElementById(fid); if(el) el.disabled = false;
+    });
+    const cnrCirc = document.getElementById('f-cnr-circ');
+    const fileInp2 = document.getElementById('f-pt-attachment');
+    if (fileInp2 && cnrCirc) { fileInp2.disabled = (cnrCirc.value !== 'Yes'); }
   // Auto-fill PS Engineer with logged-in user's name if not already set
   const psEngEl = document.getElementById('f-ps-engineer');
   if (psEngEl && !psEngEl.value.trim()) {
