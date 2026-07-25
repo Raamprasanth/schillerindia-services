@@ -823,9 +823,7 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
   if (scope === 'division' && !normalizeText(division)) {
     throw new Error('Division is required for division review.');
   }
-  if (scope === 'employee' && !normalizeText(employee)) {
-    throw new Error('Employee is required for individual review.');
-  }
+  // Employee validation removed
 
   const monthInfo = monthParts(month);
   const options = await getPerformanceReviewOptions();
