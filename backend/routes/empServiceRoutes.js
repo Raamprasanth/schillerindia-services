@@ -209,10 +209,10 @@ router.get('/', protect, async (req, res) => {
     const userId = String(req.user._id || '');
     const serviceIds = records.map(r => String(r._id || '')).filter(Boolean);
     const [frnRows, underRepairRows, estimationRows, completedRows] = await Promise.all([
-      serviceIds.length ? EmpFRN.find({ serviceId: { $in: serviceIds } }).select('serviceId typeWork status repGirNo repBrd shipSc shipComm updatedAt createdAt').lean() : [],
-      serviceIds.length ? UnderRepair.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng typeWork typeOfWork status repGirNo repBrd shipSc shipComm updatedAt createdAt').lean() : [],
-      serviceIds.length ? EstimationPending.find({ serviceId: { $in: serviceIds } }).select('serviceId typeWork obRepGirNo obStatus status estUpdatedAt obUpdatedAt updatedAt createdAt').lean() : [],
-      serviceIds.length ? CompletedFRN.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng typeWork repGirSno repBrdDate shipDateSC shipDateComm updatedAt createdAt').lean() : [],
+      serviceIds.length ? EmpFRN.find({ serviceId: { $in: serviceIds } }).select('serviceId typeWork status repGirNo repBrd shipSc shipComm techRemarks components finalRemarks updatedAt createdAt').lean() : [],
+      serviceIds.length ? UnderRepair.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng typeWork typeOfWork status repGirNo repBrd shipSc shipComm techRemarks components finalRemarks updatedAt createdAt').lean() : [],
+      serviceIds.length ? EstimationPending.find({ serviceId: { $in: serviceIds } }).select('serviceId typeWork obRepGirNo obStatus status estUpdatedAt obUpdatedAt techRemarks components finalRemarks updatedAt createdAt').lean() : [],
+      serviceIds.length ? CompletedFRN.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng typeWork repGirSno repBrdDate shipDateSC shipDateComm techRemarks components finalRemarks updatedAt createdAt').lean() : [],
     ]);
     const raByServiceId = new Map();
     [...underRepairRows, ...completedRows].forEach(row => {
@@ -239,6 +239,9 @@ router.get('/', protect, async (req, res) => {
         repBrd: row.repBrd || row.repBrdDate || (current ? current.repBrd : '') || '',
         shipSc: row.shipSc || row.shipDateSC || (current ? current.shipSc : '') || '',
         shipComm: row.shipComm || row.shipDateComm || (current ? current.shipComm : '') || '',
+        techRemarks: row.techRemarks || (current ? current.techRemarks : '') || '',
+        components: row.components || (current ? current.components : '') || '',
+        finalRemarks: row.finalRemarks || (current ? current.finalRemarks : '') || '',
         repGirNo: rowRepGirNo || (current && current.repGirNo) || '',
       });
     });
@@ -258,6 +261,9 @@ router.get('/', protect, async (req, res) => {
       obj.repBrd = obj.repBrd || linkedExportFields.repBrd || '';
       obj.shipSc = obj.shipSc || linkedExportFields.shipSc || '';
       obj.shipComm = obj.shipComm || linkedExportFields.shipComm || '';
+      obj.techRemarks = obj.techRemarks || linkedExportFields.techRemarks || '';
+      obj.components = obj.components || linkedExportFields.components || '';
+      obj.finalRemarks = obj.finalRemarks || linkedExportFields.finalRemarks || '';
       obj.repGirNo = obj.repGirNo || linkedExportFields.repGirNo || '';
       obj.isOwner =
         obj.scEng       === name ||
