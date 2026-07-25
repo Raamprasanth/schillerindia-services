@@ -3168,17 +3168,18 @@ async function fetchRepairTeamData() {
       const avgP3 = totalCount > 0 ? Math.round((totalG3/totalCount)*100) : 0;
       const avgPRP = totalCount > 0 ? Math.round((totalRP/totalCount)*100) : 0;
       
-      // The user wants remarks based on the average percentage
+      // The user wants remarks based on both < 1 day and 1 to 3 days averages
+      const perfScore = avgP1 + avgP2;
       let performanceRemark = 'Very Poor';
-      if (avgP1 >= 91) performanceRemark = 'Outstanding';
-      else if (avgP1 >= 81) performanceRemark = 'Excellent';
-      else if (avgP1 >= 61) performanceRemark = 'Very Good';
-      else if (avgP1 >= 41) performanceRemark = 'Satisfactory';
-      else if (avgP1 >= 21) performanceRemark = 'Needs Improvement';
+      if (perfScore >= 91) performanceRemark = 'Outstanding';
+      else if (perfScore >= 81) performanceRemark = 'Excellent';
+      else if (perfScore >= 61) performanceRemark = 'Very Good';
+      else if (perfScore >= 41) performanceRemark = 'Satisfactory';
+      else if (perfScore >= 21) performanceRemark = 'Needs Improvement';
       
       let pColor = 'red';
-      if (avgP1 >= 81) pColor = 'green';
-      else if (avgP1 >= 41) pColor = 'orange';
+      if (perfScore >= 81) pColor = 'green';
+      else if (perfScore >= 41) pColor = 'orange';
       
       reportHtml += `
             <tr style="background:#e2e8f0;">
