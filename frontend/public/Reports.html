@@ -949,7 +949,13 @@ body{
             <div class="perf-body" style="padding:24px;">
               <div style="margin-bottom:15px;">
                 <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Month</label>
+                
                 <input type="month" id="perf-indall-month" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;color:#0f172a;">
+              </div>
+              <div style="margin-bottom:15px;">
+                <label style="display:block;font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Division</label>
+                <select id="perf-indall-division" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;color:#0f172a;"></select>
+
               </div>
               <button class="btn btn-green" onclick="fetchIndividualAllData()" style="width:100%;">Generate Report</button>
             </div>
@@ -1403,6 +1409,7 @@ async function loadPerfOptions(){
       setOptions(document.getElementById('perf-com-division'), perfOptions.divisions, '', true, true);
       setOptions(document.getElementById('perf-repairteam-division'), perfOptions.divisions, '', true);
     setOptions(document.getElementById('perf-emp-division'), perfOptions.divisions, " Division (for report) ");
+      setOptions(document.getElementById('perf-indall-division'), perfOptions.divisions, ' All Divisions ');
     setOptions(document.getElementById('kanban-div-filter'), perfOptions.divisions, '', true);
     setOptions(document.getElementById('perf-employee'), perfOptions.employees, ' Select Employee ');
 
@@ -2843,7 +2850,9 @@ switchPerfSubTab = function(tab) {
 
 
 async function fetchIndividualAllData() {
+  
   const month = document.getElementById('perf-indall-month').value;
+  const division = document.getElementById('perf-indall-division').value;
   if (!month) {
     toast('Please select a month', 'error');
     return;
@@ -2852,7 +2861,7 @@ async function fetchIndividualAllData() {
   resEl.innerHTML = '<div class="empty-state" style="padding:40px;"><div class="empty-sub">Loading employee data...</div></div>';
   
   try {
-    const r = await fetch('/api/reports/performance/summary?scope=employee&month=' + month, {headers: hdrs()});
+    const r = await fetch('/api/reports/performance/summary?scope=employee&month=' + month + (division ? '&division=' + encodeURIComponent(division) : ''), {headers: hdrs()});
     const d = await r.json();
     if (!d.success) throw new Error(d.message);
     

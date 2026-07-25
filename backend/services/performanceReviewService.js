@@ -718,7 +718,7 @@ async function getPerformanceReviewOptions() {
 }
 
 
-async function getAllEmployeesPerformanceData({ monthInfo }) {
+async function getAllEmployeesPerformanceData({ monthInfo, selectedDivision }) {
   const workingDayKeys = getNonSundayDates(monthInfo);
   const workingDaySet = new Set(workingDayKeys);
   const workingDays = workingDayKeys.length;
@@ -734,12 +734,34 @@ async function getAllEmployeesPerformanceData({ monthInfo }) {
   const TrackerSubmission = require('../models/TrackerSubmission');
 
 
-  let employees = await User.find({ 
-    isActive: { $ne: false }, 
-    role: { $in: ['employee', 'service_coordinator'] } 
-  }).select('_id name email employeeId').lean();
   
-  const legacyEmployees = await Employee.find({ isActive: { $ne: false } }).select('_id name email employeeId').lean();
+    let filter = { 
+      isActive: { $ne: false }, 
+      role: { $in: ['employee', 'service_coordinator'] } 
+    };
+    if (selectedDivision) {
+      filter.$or = [
+        { division: selectedDivision },
+        { divisions: selectedDivision },
+        { division: new RegExp(selectedDivision, 'i') },
+        { divisions: new RegExp(selectedDivision, 'i') }
+      ];
+    }
+    let employees = await User.find(filter).select('_id name email employeeId division divisions').lean();
+
+  
+  
+    let legacyFilter = { isActive: { $ne: false } };
+    if (selectedDivision) {
+      legacyFilter.$or = [
+        { division: selectedDivision },
+        { divisions: selectedDivision },
+        { division: new RegExp(selectedDivision, 'i') },
+        { divisions: new RegExp(selectedDivision, 'i') }
+      ];
+    }
+    const legacyEmployees = await Employee.find(legacyFilter).select('_id name email employeeId division divisions').lean();
+
   const seenNames = new Set(employees.map(e => e.name.toLowerCase()));
   for (const le of legacyEmployees) {
       if (!seenNames.has(le.name.toLowerCase())) {
@@ -853,7 +875,7 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     : normalizeText(selectedEmployee?.division || division);
 
   if (scope === 'employee') {
-    return await getAllEmployeesPerformanceData({ monthInfo });
+    return await getAllEmployeesPerformanceData({ monthInfo, selectedDivision });
   }
 
   const services = await Service.find().populate('division', 'name').lean();
