@@ -1460,7 +1460,8 @@ async function getCommercialPerformanceData({ month }) {
         'TO/SO ( Entry - Received )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
         'SR ( Raised - Received )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
         'DR ( Requested - Received )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
-        'Field TO/SO ( ER Raised - Entry )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 }
+        'Field TO/SO ( ER Raised - Entry )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
+        'Re-Export ( SVC Ship Date - Comm DC Date )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 }
       };
     }
     return divisionsMap[d];
@@ -1551,6 +1552,21 @@ async function getCommercialPerformanceData({ month }) {
       const divData = ensureDivision(divisionNameForTo(c));
       divData['DR ( Requested - Received )'][cat]++;
       divData['DR ( Requested - Received )'].total++;
+    }
+  }
+
+  const Scrap = require('../models/Scrap');
+  const allScraps = await Scrap.find().lean();
+  const scraps = allScraps.filter(s => isDateInRange(parseAnyDate(s.shipDateFromSc), start, end));
+  
+  for (const s of scraps) {
+    const diff = getDiff(s.dcInvoiceDate, s.shipDateFromSc);
+    const cat = categorize(diff);
+    if (cat) {
+      const divName = s.division || 'Unknown';
+      const divData = ensureDivision(divName);
+      divData['Re-Export ( SVC Ship Date - Comm DC Date )'][cat]++;
+      divData['Re-Export ( SVC Ship Date - Comm DC Date )'].total++;
     }
   }
 
