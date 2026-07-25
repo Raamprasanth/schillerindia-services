@@ -236,9 +236,9 @@ router.get('/', protect, async (req, res) => {
       }
       exportFieldsByServiceId.set(key, {
         when,
-        repBrd: row.repBrd || row.repBrdDate || '',
-        shipSc: row.shipSc || row.shipDateSC || '',
-        shipComm: row.shipComm || row.shipDateComm || '',
+        repBrd: row.repBrd || row.repBrdDate || (current ? current.repBrd : '') || '',
+        shipSc: row.shipSc || row.shipDateSC || (current ? current.shipSc : '') || '',
+        shipComm: row.shipComm || row.shipDateComm || (current ? current.shipComm : '') || '',
         repGirNo: rowRepGirNo || (current && current.repGirNo) || '',
       });
     });
