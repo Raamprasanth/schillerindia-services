@@ -3136,7 +3136,7 @@ async function fetchRepairTeamData() {
             </tr>
           </thead>
           <tbody>`;
-          
+      let totalL1 = 0, total1to3 = 0, totalG3 = 0, totalRP = 0, totalCount = 0;
       for (const m of ['Pending FRN', 'OB Pending', 'Under Repair', 'Re-Repair']) {
         const val = metrics[m];
         if (!val) continue;
@@ -3155,11 +3155,42 @@ async function fetchRepairTeamData() {
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${prp}% <br><span style="color:#64748b;font-size:11px;font-weight:normal;">(${val.RP || 0})</span></td>
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${t}</td>
             </tr>`;
+            
+        totalL1 += val['< 1 day'] || 0;
+        total1to3 += val['1 to 3 days'] || 0;
+        totalG3 += val['> 3 days'] || 0;
+        totalRP += val.RP || 0;
+        totalCount += t;
       }
-      reportHtml += `</tbody></table></div>`;
+      
+      const avgP1 = totalCount > 0 ? Math.round((totalL1/totalCount)*100) : 0;
+      const avgP2 = totalCount > 0 ? Math.round((total1to3/totalCount)*100) : 0;
+      const avgP3 = totalCount > 0 ? Math.round((totalG3/totalCount)*100) : 0;
+      const avgPRP = totalCount > 0 ? Math.round((totalRP/totalCount)*100) : 0;
+      
+      // The user wants remarks based on the average percentage
+      // Assuming higher < 1 day percentage is better
+      let performanceRemark = 'Needs Improvement';
+      if (avgP1 >= 90) performanceRemark = 'Excellent';
+      else if (avgP1 >= 75) performanceRemark = 'Good';
+      else if (avgP1 >= 50) performanceRemark = 'Average';
+      
+      reportHtml += `
+            <tr style="background:#e2e8f0;">
+              <td style="border:1px solid #cbd5e1; padding:10px; font-weight:bold; color:#0f172a;">Overall Average</td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold;">${avgP1}% <br><span style="color:#64748b;font-size:11px;">(${totalL1})</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold;">${avgP2}% <br><span style="color:#64748b;font-size:11px;">(${total1to3})</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold;">${avgP3}% <br><span style="color:#64748b;font-size:11px;">(${totalG3})</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${avgPRP}% <br><span style="color:#64748b;font-size:11px;font-weight:normal;">(${totalRP})</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${totalCount}</td>
+            </tr>
+            <tr>
+              <td colspan="6" style="border:1px solid #cbd5e1; padding:10px; text-align:right; font-weight:bold; color:#0f172a;">Performance Remark: <span style="color:${avgP1 >= 75 ? 'green' : (avgP1 >= 50 ? 'orange' : 'red')};">${performanceRemark}</span></td>
+            </tr>
+          </tbody></table></div>`;
     }
     
-    reportHtml += `</div>`;
+    reportHtml += scRemarksBlock + `</div>`;
     
     if (!hasData) {
       res.innerHTML = '<div class="empty-sub">No repair team data found for this month.</div>';
