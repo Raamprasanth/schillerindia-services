@@ -832,10 +832,12 @@ async function getAllEmployeesPerformanceData({ monthInfo, selectedDivision }) {
     const completedCount = callScore + workScore + reviewScore;
     const completionRate = totalTracked > 0 ? Math.round((completedCount / totalTracked) * 100) : 0;
     
-    let remark = 'Needs Improvement';
-    if (completionRate >= 90) remark = 'Excellent';
-    else if (completionRate >= 75) remark = 'Good';
-    else if (completionRate >= 60) remark = 'Average';
+    let remark = 'Very Poor';
+      if (completionRate >= 91) remark = 'Outstanding';
+      else if (completionRate >= 81) remark = 'Excellent';
+      else if (completionRate >= 61) remark = 'Very Good';
+      else if (completionRate >= 41) remark = 'Satisfactory';
+      else if (completionRate >= 21) remark = 'Needs Improvement';
     
     results.push({
       employee: emp.name,
@@ -1751,10 +1753,12 @@ async function getProductTeamPerformanceData({ month }) {
     const totalTracked = workingDays * 2;
     const completedCount = callScore + workScore;
     const completionRate = totalTracked > 0 ? Math.round((completedCount / totalTracked) * 100) : 0;
-    let remark = 'Needs Improvement';
-    if (completionRate >= 90) remark = 'Excellent';
-    else if (completionRate >= 75) remark = 'Good';
-    else if (completionRate >= 60) remark = 'Average';
+    let remark = 'Very Poor';
+      if (completionRate >= 91) remark = 'Outstanding';
+      else if (completionRate >= 81) remark = 'Excellent';
+      else if (completionRate >= 61) remark = 'Very Good';
+      else if (completionRate >= 41) remark = 'Satisfactory';
+      else if (completionRate >= 21) remark = 'Needs Improvement';
     
     employeesData.push({
       employee: user.name,
@@ -1789,10 +1793,12 @@ async function getProductTeamPerformanceData({ month }) {
   
   const total = fbirs.length;
   const rate = total > 0 ? Math.round((withinTargetCount / total) * 100) : 0;
-  let remark = 'Needs Improvement';
-  if (rate >= 90) remark = 'Excellent';
-  else if (rate >= 75) remark = 'Good';
-  else if (rate >= 60) remark = 'Average';
+  let remark = 'Very Poor';
+    if (rate >= 91) remark = 'Outstanding';
+    else if (rate >= 81) remark = 'Excellent';
+    else if (rate >= 61) remark = 'Very Good';
+    else if (rate >= 41) remark = 'Satisfactory';
+    else if (rate >= 21) remark = 'Needs Improvement';
   
   birData.push({
     division: 'All Divisions',

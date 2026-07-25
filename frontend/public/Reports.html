@@ -2968,6 +2968,7 @@ async function fetchCommercialData() {
       <button class="btn btn-green" onclick="exportCommercialPDF()"><i class="fas fa-file-pdf" style="margin-right:6px;"></i> Export PDF</button>
     </div>
     <div id="commercial-pdf-content" style="background:#fff;padding:20px;border-radius:8px;">`;
+    const scRemarksBlock = `<div style="margin-top:20px;padding:15px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;"><label style="display:block;font-weight:600;margin-bottom:8px;font-size:13px;">SC Incharge Remarks (Optional)</label><textarea id="sc-remarks-commercial" style="width:100%;height:60px;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-family:Inter;font-size:13px;" placeholder="Enter remarks to include in the PDF export..."></textarea></div>`;
     
     // If all divisions or consolidated selected, generate an aggregated ALL DIVISIONS object
     if (!selectedDiv || selectedDiv === 'all' || selectedDiv === 'consolidated') {
@@ -3071,7 +3072,8 @@ async function exportCommercialPDF() {
   const div = document.getElementById('perf-com-division').value;
   const divisionLabel = div || 'All Divisions';
   
-  await generatePremiumPDF(el.innerHTML, 'COMMERCIAL PERFORMANCE REPORT', divisionLabel, month, 'Commercial_Performance');
+  const scRemarks = document.getElementById('sc-remarks-commercial')?.value || '';
+    await generatePremiumPDF(el.innerHTML, 'COMMERCIAL PERFORMANCE REPORT', divisionLabel, month, 'Commercial_Performance', scRemarks);
 }
 
 async function fetchRepairTeamData() {
@@ -3097,6 +3099,7 @@ async function fetchRepairTeamData() {
       <button class="btn btn-green" onclick="exportRepairTeamPDF()"><i class="fas fa-file-pdf" style="margin-right:6px;"></i> Export PDF</button>
     </div>
     <div id="repairteam-pdf-content" style="background:#fff;padding:20px;border-radius:8px;">`;
+    const scRemarksBlock = `<div style="margin-top:20px;padding:15px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;"><label style="display:block;font-weight:600;margin-bottom:8px;font-size:13px;">SC Incharge Remarks (Optional)</label><textarea id="sc-remarks-repairteam" style="width:100%;height:60px;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-family:Inter;font-size:13px;" placeholder="Enter remarks to include in the PDF export..."></textarea></div>`;
     
     const divisions = Object.keys(d.data);
     let hasData = false;
@@ -3158,9 +3161,10 @@ async function exportRepairTeamPDF() {
   const month = document.getElementById('perf-repairteam-month').value || 'Report';
   const divisionLabel = 'All Divisions';
   
-  await generatePremiumPDF(el.innerHTML, 'REPAIR TEAM PERFORMANCE REPORT', divisionLabel, month, 'RepairTeam_Performance');
+  const scRemarks = document.getElementById('sc-remarks-repairteam')?.value || '';
+    await generatePremiumPDF(el.innerHTML, 'REPAIR TEAM PERFORMANCE REPORT', '', month, 'RepairTeam_Performance', scRemarks);
 }
-async function generatePremiumPDF(reportHtml, title, divisionLabel, monthLabel, filenamePrefix) {
+async function generatePremiumPDF(reportHtml, title, divisionLabel, monthLabel, filenamePrefix, scRemarks = '') {
   const jsPDFLib = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
   if (!jsPDFLib) { toast('PDF library not loaded', 'error'); return; }
   const doc = new jsPDFLib('l', 'mm', 'a4'); 
@@ -3183,7 +3187,9 @@ async function generatePremiumPDF(reportHtml, title, divisionLabel, monthLabel, 
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(71, 85, 105);
-    doc.text(`Division: ${divisionLabel}   |   Month: ${monthLabel}`, 280, 24, { align: "right" });
+    
+      const divText = divisionLabel && divisionLabel.toLowerCase() !== 'all divisions' ? `Division: ${divisionLabel}   |   ` : '';
+      doc.text(`${divText}Month: ${monthLabel}`, 280, 24, { align: "right" });
     
     doc.setLineWidth(0.5);
     doc.setDrawColor(0, 0, 0);
@@ -3363,7 +3369,8 @@ async function exportProductTeamPDF() {
   const el = document.getElementById('productteam-pdf-content');
   if (!el) return;
   const month = document.getElementById('perf-productteam-month').value || 'Report';
-  await generatePremiumPDF(el.innerHTML, 'PRODUCT TEAM PERFORMANCE REPORT', 'All Divisions', month, 'ProductTeam_Performance');
+  const scRemarks = document.getElementById('sc-remarks-productteam')?.value || '';
+    await generatePremiumPDF(el.innerHTML, 'PRODUCT TEAM PERFORMANCE REPORT', '', month, 'ProductTeam_Performance', scRemarks);
 }
 
 </script>
