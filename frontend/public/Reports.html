@@ -1800,8 +1800,9 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
     </tr>
   `;
   };
-
   const hideFrnCon = scopeType === 'division';
+  const divName = String(divisionLabel || '').toLowerCase();
+  const isSpecialDiv = scopeType === 'division' && /injector|vent\s*con|monitor\s*con/i.test(divName);
 
   const topTable = `
     <table style="width:100%; border-collapse:collapse; border:1px solid #cbd5e1; font-family:'Inter',system-ui,sans-serif; margin-bottom:28px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); overflow:hidden;">
@@ -1830,14 +1831,38 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
         ${makeRow('SO Pending', rSo, false)}
         ${makeRow('Under Repair', rRepair, true)}
         ${makeRow('TO/SO', rTo, false)}
-        ${makeRow('Non-Saleable', rNonSaleable, true)}
-        ${makeRow('BIR list', rBir, false)}
+        ${isSpecialDiv ? '' : makeRow('Non-Saleable', rNonSaleable, true)}
+        ${isSpecialDiv ? '' : makeRow('BIR list', rBir, false)}
         ${makeRow('Estimation', rEst, true)}
       </tbody>
     </table>
   `;
 
-  const bottomTable = `
+  let bottomTable = '';
+  if (isSpecialDiv) {
+    bottomTable = `
+    <table class="perf-pdf-page-break" style="width:100%; border-collapse:collapse; border:1px solid #cbd5e1; font-family:'Inter',system-ui,sans-serif; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); overflow:hidden; margin-top:28px;">
+      <tbody>
+        <tr>
+          <td colspan="3" rowspan="2" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4; vertical-align:middle;">
+            Purchase indent request to commercial<br><span style="color:#ef4444; font-size:11px; font-weight:600;">If NA mark NA</span>
+            <div style="margin-top:16px; display:flex; justify-content:center; width:60%; margin-left:auto; margin-right:auto;">
+              ${checkSub('PIRequest', d05)}
+            </div>
+          </td>
+        </tr>
+        <tr></tr>
+        <tr>
+          <td colspan="3" style="border:1px solid #cbd5e1; padding:18px; font-weight:900; background-color:#e0e7ff; color:#3730a3; font-size:18px; text-align:center;">${cPI}%</td>
+          <td colspan="3" style="border:1px solid #cbd5e1; padding:18px; font-weight:900; font-size:18px; text-align:center; color:${rate>=75?'#059669':'#ef4444'}; background-color:${rate>=75?'#ecfdf5':'#fef2f2'}; text-transform:uppercase; letter-spacing:1px;">
+            ${remark}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    `;
+  } else {
+    bottomTable = `
     <table style="width:100%; border-collapse:collapse; border:1px solid #cbd5e1; font-family:'Inter',system-ui,sans-serif; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); overflow:hidden;">
       <tbody>
         <tr>
@@ -1918,7 +1943,8 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
         </tr>
       </tbody>
     </table>
-  `;
+    `;
+  }
 
   return `
     <div style="font-family:'Inter',system-ui,sans-serif; background:#ffffff; border-radius:16px; border:1px solid #e2e8f0; padding:32px; color:#1e293b; width:100%; box-sizing:border-box;">
