@@ -742,11 +742,14 @@ async function getAllEmployeesPerformanceData({ monthInfo }) {
   const legacyEmployees = await Employee.find({ isActive: { $ne: false } }).select('_id name email employeeId').lean();
   const seenNames = new Set(employees.map(e => e.name.toLowerCase()));
   for (const le of legacyEmployees) {
-    if (!seenNames.has(le.name.toLowerCase())) {
-      employees.push(le);
-      seenNames.add(le.name.toLowerCase());
+      if (!seenNames.has(le.name.toLowerCase())) {
+        employees.push(le);
+        seenNames.add(le.name.toLowerCase());
+      }
     }
-  }
+
+    const excludedNames = ['raam', 'vassougui v', 'siva hari thilipan', 'gajenthiran k', 'pradap k', 'service coordinator'];
+    employees = employees.filter(e => e && e.name && !excludedNames.includes(e.name.trim().toLowerCase()));
 
 
   const monthDateFilter = {
