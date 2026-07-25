@@ -3169,11 +3169,16 @@ async function fetchRepairTeamData() {
       const avgPRP = totalCount > 0 ? Math.round((totalRP/totalCount)*100) : 0;
       
       // The user wants remarks based on the average percentage
-      // Assuming higher < 1 day percentage is better
-      let performanceRemark = 'Needs Improvement';
-      if (avgP1 >= 90) performanceRemark = 'Excellent';
-      else if (avgP1 >= 75) performanceRemark = 'Good';
-      else if (avgP1 >= 50) performanceRemark = 'Average';
+      let performanceRemark = 'Very Poor';
+      if (avgP1 >= 91) performanceRemark = 'Outstanding';
+      else if (avgP1 >= 81) performanceRemark = 'Excellent';
+      else if (avgP1 >= 61) performanceRemark = 'Very Good';
+      else if (avgP1 >= 41) performanceRemark = 'Satisfactory';
+      else if (avgP1 >= 21) performanceRemark = 'Needs Improvement';
+      
+      let pColor = 'red';
+      if (avgP1 >= 81) pColor = 'green';
+      else if (avgP1 >= 41) pColor = 'orange';
       
       reportHtml += `
             <tr style="background:#e2e8f0;">
@@ -3185,7 +3190,7 @@ async function fetchRepairTeamData() {
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${totalCount}</td>
             </tr>
             <tr>
-              <td colspan="6" style="border:1px solid #cbd5e1; padding:10px; text-align:right; font-weight:bold; color:#0f172a;">Performance Remark: <span style="color:${avgP1 >= 75 ? 'green' : (avgP1 >= 50 ? 'orange' : 'red')};">${performanceRemark}</span></td>
+              <td colspan="6" style="border:1px solid #cbd5e1; padding:10px; text-align:right; font-weight:bold; color:#0f172a;">Performance Remark: <span style="color:${pColor};">${performanceRemark}</span></td>
             </tr>
           </tbody></table></div>`;
     }
