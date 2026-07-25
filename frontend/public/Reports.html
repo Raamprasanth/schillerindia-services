@@ -3190,8 +3190,9 @@ async function fetchRepairTeamData() {
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${avgPRP}% <br><span style="color:#64748b;font-size:11px;font-weight:normal;">(${totalRP})</span></td>
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${totalCount}</td>
             </tr>
-            <tr>
-              <td colspan="6" style="border:1px solid #cbd5e1; padding:10px; text-align:right; font-weight:bold; color:#0f172a;">Performance Remark: <span style="color:${pColor};">${performanceRemark}</span></td>
+            <tr style="background:#e2e8f0;">
+              <td colspan="4" style="border:1px solid #cbd5e1; padding:10px; text-align:right; font-weight:bold; color:#0f172a;">Combined Performance (&lt; 1 day &amp; 1-3 days): <span style="color:#0077cc;">${perfScore}%</span></td>
+              <td colspan="2" style="border:1px solid #cbd5e1; padding:10px; text-align:right; font-weight:bold; color:#0f172a;">Performance Remark: <span style="color:${pColor};">${performanceRemark}</span></td>
             </tr>
           </tbody></table></div>`;
     }
