@@ -542,7 +542,7 @@ async function getRealTrackerMetrics(scope, divisionName, employeeName, monthInf
   };
 
   const submissionsObj = {};
-  if (empCount > 0) {
+  if (scope === 'division' || empCount > 0) {
     const submissions = await TrackerSubmission.aggregate([
       { $match: matchQuery },
       { $group: { _id: { type: "$type", date: "$reportDate" }, count: { $sum: 1 } } }
