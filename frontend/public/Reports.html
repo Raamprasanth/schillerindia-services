@@ -1147,7 +1147,14 @@ async function loadDivTrend(){
   }
 }
 
-\n  function getPeriodValue(prefix) {\n    const from = document.getElementById('perf-range-from-' + prefix).value;\n    const to = document.getElementById('perf-range-to-' + prefix).value;\n    if (!from || !to) { toast('Please select both From and To months', 'error'); return null; }\n    return from + ':' + to;\n  }\n\nasync function loadDivisionPerf(usePeriod = false) {
+
+  function getPeriodValue(prefix) {
+    const from = document.getElementById('perf-range-from-' + prefix).value;
+    const to = document.getElementById('perf-range-to-' + prefix).value;
+    if (!from || !to) { toast('Please select both From and To months', 'error'); return null; }
+    return from + ':' + to;
+  }
+async function loadDivisionPerf(usePeriod = false) {
   const month=usePeriod ? getPeriodValue('div') : document.getElementById('perf-month-div').value;
   if(!month){toast('Please select a month','error');return;}
   const div=document.getElementById('perf-division').value;
