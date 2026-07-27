@@ -69,6 +69,7 @@ function monthParts(month) {
   const matchHalf = str.match(/^(\d{4})-H([1-2])$/);
   const matchAnnual = str.match(/^(\d{4})-A$/);
   const matchRange = str.match(/^(\d{4})-(\d{2}):(\d{4})-(\d{2})$/);
+  const matchDateRange = str.match(/^(\d{4})-(\d{2})-(\d{2}):(\d{4})-(\d{2})-(\d{2})$/);
 
   let year, start, end, shortMonth, longMonth, label, periodKey;
 
@@ -107,6 +108,27 @@ function monthParts(month) {
     periodKey = `${year}-A`;
     shortMonth = `${year}`;
     longMonth = `${year}`;
+  } else if (matchDateRange) {
+    year = Number(matchDateRange[1]);
+    const startYear = Number(matchDateRange[1]);
+    const startMonth = Number(matchDateRange[2]);
+    const startDay = Number(matchDateRange[3]);
+    const endYear = Number(matchDateRange[4]);
+    const endMonth = Number(matchDateRange[5]);
+    const endDay = Number(matchDateRange[6]);
+    
+    start = new Date(Date.UTC(startYear, startMonth - 1, startDay, 0, 0, 0, 0));
+    // The end date should be inclusive, so we add 1 day to the bound
+    end = new Date(Date.UTC(endYear, endMonth - 1, endDay + 1, 0, 0, 0, 0));
+    
+    const startLabel = start.toLocaleDateString('en-IN', { timeZone: 'UTC' });
+    const displayEnd = new Date(Date.UTC(endYear, endMonth - 1, endDay, 0, 0, 0, 0));
+    const endLabel = displayEnd.toLocaleDateString('en-IN', { timeZone: 'UTC' });
+    
+    label = startLabel === endLabel ? startLabel : `${startLabel} - ${endLabel}`;
+    periodKey = str;
+    shortMonth = label;
+    longMonth = label;
   } else if (matchRange) {
     year = Number(matchRange[1]);
     const startYear = Number(matchRange[1]);
@@ -127,7 +149,7 @@ function monthParts(month) {
     shortMonth = label;
     longMonth = label;
   } else {
-    throw new Error('Month must be in YYYY-MM, YYYY-Qx, YYYY-Hx, YYYY-A, or YYYY-MM:YYYY-MM format.');
+    throw new Error('Month must be in YYYY-MM, YYYY-Qx, YYYY-Hx, YYYY-A, YYYY-MM:YYYY-MM, or YYYY-MM-DD:YYYY-MM-DD format.');
   }
 
   return {
