@@ -509,9 +509,6 @@ table.svc-table tbody tr:last-child td{border-bottom:none;}
             <div class="fg-field"><label>Supplier <span class="req">*</span></label>
               <select id="f-supplier" required>
                 <option value="">Select Supplier...</option>
-                <option>BIOLIGHT</option><option>SCHILLER AG</option><option>PHILIPS</option>
-                <option>GE HEALTHCARE</option><option>NIHON KOHDEN</option><option>MINDRAY</option>
-                <option>DRAGER</option><option>HAMILTON</option><option>MEDTRONIC</option>
               </select>
             </div>
           </div>
@@ -533,13 +530,6 @@ table.svc-table tbody tr:last-child td{border-bottom:none;}
             <div class="fg-field"><label>Model <span class="req">*</span></label>
               <select id="f-model" required>
                 <option value="">Select Model...</option>
-                <option>AT-2 Plus</option><option>AT-10 Plus</option><option>CS-200</option>
-                <option>CARDIOVIT AT-10</option><option>DEFIGARD 5000</option><option>Hamilton-C1</option>
-                <option>Hamilton-G5</option><option>Logiq E10</option><option>MT-200</option>
-                <option>PF-300</option><option>SP-10</option><option>SV300</option>
-                <option>Stellant</option><option>uMEC 10</option><option>BIOVISION CMS</option>
-                <option>GRAPHNET TS</option><option>GRAPHNET NEO</option><option>DKDS50</option>
-                <option>ARZEO_2G</option><option>A-mac S23</option>
               </select>
             </div>
             <div class="fg-field"><label>Model Configuration</label><input type="text" id="f-modelconfig" placeholder=""/></div>
@@ -651,6 +641,32 @@ async function loadDivisions() {
         o.value = d._id || d.name; o.textContent = d.name || d._id; sel.appendChild(o);
       });
     });
+
+    let allSuppliers = new Set();
+    let allModels = new Set();
+    divisions.forEach(d => {
+      if (d.models && Array.isArray(d.models)) {
+        d.models.forEach(m => {
+          if (m.supplier) allSuppliers.add(m.supplier);
+          if (m.model) allModels.add(m.model);
+        });
+      }
+    });
+
+    const supSel = document.getElementById('f-supplier');
+    if (supSel) {
+      supSel.innerHTML = '<option value="">Select Supplier...</option>';
+      Array.from(allSuppliers).sort().forEach(s => {
+        const o = document.createElement('option'); o.value = s; o.textContent = s; supSel.appendChild(o);
+      });
+    }
+    const modSel = document.getElementById('f-model');
+    if (modSel) {
+      modSel.innerHTML = '<option value="">Select Model...</option>';
+      Array.from(allModels).sort().forEach(m => {
+        const o = document.createElement('option'); o.value = m; o.textContent = m; modSel.appendChild(o);
+      });
+    }
   } catch(e) {
     populateDivisionsFallback();
   }
@@ -687,12 +703,10 @@ function populateRegionSelect() {
 function populateDealerSelect() {
   const sel = document.getElementById('f-dealer');
   if (!sel) return;
-  if (!DB_DEALERS.length) {
-    sel.innerHTML = `<option value="">Select Dealer...</option><option>DIRECT</option><option>Dee Dee Enterprises</option><option>Futech Biomedicals</option><option>Life Support Medicare</option><option>Medline Agencies</option><option>Care Medical</option><option>Health First</option><option>BioMed Solutions</option><option>Malabar Medicals</option><option>Karnataka Biomedics</option><option>Hyderabad Medical</option><option>Puducherry Pharma</option><option>Raipur Medicals</option>`;
-    return;
-  }
   sel.innerHTML = '<option value="">Select Dealer...</option>';
-  DB_DEALERS.forEach(d => { const name = d.name || d.dealerName || String(d); const o = document.createElement('option'); o.value = name; o.textContent = name; sel.appendChild(o); });
+  if (DB_DEALERS.length) {
+    DB_DEALERS.forEach(d => { const name = d.name || d.dealerName || String(d); const o = document.createElement('option'); o.value = name; o.textContent = name; sel.appendChild(o); });
+  }
 }
 
 function onRegionChange() {
