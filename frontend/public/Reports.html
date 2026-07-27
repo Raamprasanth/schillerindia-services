@@ -653,14 +653,14 @@ body{
             </div>
 
               <div style="margin-top: 20px; border-top: 1px solid #cbd5e1; padding-top: 15px;">
-                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
                   <div style="flex:1;">
-                    <label class="field-label">From Month</label>
-                    <input type="month" id="perf-range-from-div" class="field-input" />
+                    <label class="field-label">From Date</label>
+                    <input type="date" id="perf-range-from-div" class="field-input" style="box-sizing:border-box;" />
                   </div>
                   <div style="flex:1;">
-                    <label class="field-label">To Month</label>
-                    <input type="month" id="perf-range-to-div" class="field-input" />
+                    <label class="field-label">To Date</label>
+                    <input type="date" id="perf-range-to-div" class="field-input" style="box-sizing:border-box;" />
                   </div>
                 </div>
                 <button class="btn btn-blue" style="width:100%; padding:10px; font-weight:700; border-radius:8px; background: #3b82f6; color: #fff;" onclick="loadDivisionPerf(true)">Generate Custom Report</button>
@@ -974,14 +974,14 @@ body{
               <button class="btn btn-green" onclick="fetchIndividualAllData()" style="width:100%;">Generate Report</button>
               
               <div style="margin-top: 20px; border-top: 1px solid #cbd5e1; padding-top: 15px;">
-                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
                   <div style="flex:1;">
-                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#64748b;">From Month</label>
-                    <input type="month" id="perf-range-from-ind" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-family:Inter,sans-serif;font-size:14px;color:#0f172a;" />
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#64748b;">From Date</label>
+                    <input type="date" id="perf-range-from-ind" style="box-sizing:border-box; width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-family:Inter,sans-serif;font-size:14px;color:#0f172a;" />
                   </div>
                   <div style="flex:1;">
-                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#64748b;">To Month</label>
-                    <input type="month" id="perf-range-to-ind" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-family:Inter,sans-serif;font-size:14px;color:#0f172a;" />
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#64748b;">To Date</label>
+                    <input type="date" id="perf-range-to-ind" style="box-sizing:border-box; width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-family:Inter,sans-serif;font-size:14px;color:#0f172a;" />
                   </div>
                 </div>
                 <button class="btn btn-blue" style="width:100%; padding:10px; font-weight:700; border-radius:6px; background: #3b82f6; color: #fff;" onclick="fetchIndividualAllData(true)">Generate Custom Report</button>
@@ -1024,14 +1024,14 @@ body{
                   <button class="btn btn-red" style="width:100%; padding:10px; font-weight:700; border-radius:8px;" onclick="fetchCommercialData()">Generate Report</button>
                   
                   <div style="margin-top: 20px; border-top: 1px solid #cbd5e1; padding-top: 15px;">
-                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
                   <div style="flex:1;">
-                    <label class="field-label">From Month</label>
-                    <input type="month" id="perf-range-from-com" class="field-input" />
+                    <label class="field-label">From Date</label>
+                    <input type="date" id="perf-range-from-com" class="field-input" style="box-sizing:border-box;" />
                   </div>
                   <div style="flex:1;">
-                    <label class="field-label">To Month</label>
-                    <input type="month" id="perf-range-to-com" class="field-input" />
+                    <label class="field-label">To Date</label>
+                    <input type="date" id="perf-range-to-com" class="field-input" style="box-sizing:border-box;" />
                   </div>
                 </div>
                 <button class="btn btn-blue" style="width:100%; padding:10px; font-weight:700; border-radius:8px; background: #3b82f6; color: #fff;" onclick="fetchCommercialData(true)">Generate Custom Report</button>
@@ -1068,14 +1068,14 @@ body{
               <button class="btn btn-green" onclick="fetchProductTeamData()" style="width:100%;">Generate Report</button>
               
               <div style="margin-top: 20px; border-top: 1px solid #cbd5e1; padding-top: 15px;">
-                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
                   <div style="flex:1;">
-                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#64748b;">From Month</label>
-                    <input type="month" id="perf-range-from-pt" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-family:Inter,sans-serif;font-size:14px;color:#0f172a;" />
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#64748b;">From Date</label>
+                    <input type="date" id="perf-range-from-pt" style="box-sizing:border-box; width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-family:Inter,sans-serif;font-size:14px;color:#0f172a;" />
                   </div>
                   <div style="flex:1;">
-                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#64748b;">To Month</label>
-                    <input type="month" id="perf-range-to-pt" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-family:Inter,sans-serif;font-size:14px;color:#0f172a;" />
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#64748b;">To Date</label>
+                    <input type="date" id="perf-range-to-pt" style="box-sizing:border-box; width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-family:Inter,sans-serif;font-size:14px;color:#0f172a;" />
                   </div>
                 </div>
                 <button class="btn btn-blue" style="width:100%; padding:10px; font-weight:700; border-radius:6px; background: #3b82f6; color: #fff;" onclick="fetchProductTeamData(true)">Generate Custom Report</button>
@@ -1114,14 +1114,14 @@ body{
                 </div>
 
                   <div style="margin-top: 20px; border-top: 1px solid #cbd5e1; padding-top: 15px;">
-                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
                   <div style="flex:1;">
-                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#64748b;">From Month</label>
-                    <input type="month" id="perf-range-from-rt" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-family:Inter,sans-serif;font-size:14px;color:#0f172a;" />
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#64748b;">From Date</label>
+                    <input type="date" id="perf-range-from-rt" style="box-sizing:border-box; width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-family:Inter,sans-serif;font-size:14px;color:#0f172a;" />
                   </div>
                   <div style="flex:1;">
-                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#64748b;">To Month</label>
-                    <input type="month" id="perf-range-to-rt" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-family:Inter,sans-serif;font-size:14px;color:#0f172a;" />
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#64748b;">To Date</label>
+                    <input type="date" id="perf-range-to-rt" style="box-sizing:border-box; width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-family:Inter,sans-serif;font-size:14px;color:#0f172a;" />
                   </div>
                 </div>
                 <button class="btn btn-blue" style="width:100%; padding:10px; font-weight:700; border-radius:6px; background: #3b82f6; color: #fff;" onclick="fetchRepairTeamData(true)">Generate Custom Report</button>
@@ -1624,7 +1624,7 @@ async function loadDivTrend(){
   function getPeriodValue(prefix) {
     const from = document.getElementById('perf-range-from-' + prefix).value;
     const to = document.getElementById('perf-range-to-' + prefix).value;
-    if (!from || !to) { toast('Please select both From and To months', 'error'); return null; }
+    if (!from || !to) { toast('Please select both From and To dates', 'error'); return null; }
     return from + ':' + to;
   }
 
