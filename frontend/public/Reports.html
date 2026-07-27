@@ -2351,12 +2351,73 @@ function drawPerfPdfPage(doc, data, monthLabel, scopeLabel, entityLabel, scRemar
     
     doc.setFillColor(rate >= 75 ? 236 : 254, rate >= 75 ? 253 : 242, rate >= 75 ? 245 : 242);
     doc.rect(100, boxY, 80, 20, 'FD'); 
+      }
+    } else {
+      compData = [
+        ['Weekly CRM Reports', comp.weeklyCrm != null ? comp.weeklyCrm + '%' : '-'],
+        ['Pending Activity (Monday)', comp.pendingActivity != null ? comp.pendingActivity + '%' : '-'],
+        ['Non-Saleable Tracker', comp.nonSaleable != null ? comp.nonSaleable + '%' : '-'],
+        ['Re-Export', comp.supplierWarranty != null ? comp.supplierWarranty + '%' : '-'],
+        ['Critical Pending Report', comp.criticalPending != null ? comp.criticalPending + '%' : '-'],
+        ['Purchase Indent', comp.purchaseIndent != null ? comp.purchaseIndent + '%' : '-']
+      ];
+    }
+    
+    doc.autoTable({
+      startY: doc.lastAutoTable.finalY + 12,
+      margin: { left: 14, right: 14 },
+      tableWidth: 150, 
+      head: [['COMPLIANCE TRACKER', '']],
+      body: compData,
+      theme: 'grid',
+      headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: 'bold' },
+      styles: { font: 'helvetica', fontSize: 10, cellPadding: 3, textColor: [15, 23, 42], lineColor: [203, 213, 225], lineWidth: 0.1 },
+      columnStyles: { 1: { halign: 'center', fontStyle: 'bold', textColor: [55, 48, 163] } }
+    });
+    
+    const rate = data.summary?.completionRate ?? data.completionRate ?? 0;
+    let remark = 'Very Poor';
+      if (rate >= 91) remark = 'Outstanding';
+      else if (rate >= 81) remark = 'Excellent';
+      else if (rate >= 61) remark = 'Very Good';
+      else if (rate >= 41) remark = 'Satisfactory';
+      else if (rate >= 21) remark = 'Needs Improvement';
+    const rColor = rate >= 75 ? [5, 150, 105] : [239, 68, 68];
+    
+    let boxY = doc.lastAutoTable.finalY + 12;
+    doc.setDrawColor(203, 213, 225);
+    doc.setFillColor(248, 250, 252);
+    doc.rect(14, boxY, 80, 20, 'FD'); 
+    
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 116, 139);
+    doc.text("OVERALL COMPLETION RATE", 54, boxY + 7, { align: "center" });
+    doc.setFontSize(16);
+    doc.setTextColor(15, 23, 42);
+    doc.text(`${rate}%`, 54, boxY + 16, { align: "center" });
+    
+    doc.setFillColor(rate >= 75 ? 236 : 254, rate >= 75 ? 253 : 242, rate >= 75 ? 245 : 242);
+    doc.rect(100, boxY, 80, 20, 'FD'); 
     doc.setTextColor(100, 116, 139);
     doc.setFontSize(9);
     doc.text("OVERALL REMARK", 140, boxY + 7, { align: "center" });
     doc.setTextColor(rColor[0], rColor[1], rColor[2]);
     doc.setFontSize(16);
     doc.text(remark.toUpperCase(), 140, boxY + 16, { align: "center" });
+    
+    if (scRemarks) {
+      boxY += 28;
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(100, 116, 139);
+      doc.text("SC INCHARGE REMARKS:", 14, boxY);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(15, 23, 42);
+      const splitRemarks = doc.splitTextToSize(scRemarks, 269);
+      doc.text(splitRemarks, 14, boxY + 6);
+    }
   }
 }
 
@@ -2379,7 +2440,9 @@ async function exportPDF(type) {
   const doc = new jsPDFLib('l', 'mm', 'a4'); 
   
   const entityLabel = isDiv ? divisionLabel : employeeLabel;
-  drawPerfPdfPage(doc, data, monthLabel, scopeLabel, entityLabel);
+  const scopeType = isDiv ? 'division' : 'employee';
+  const scRemarks = document.getElementById(scopeType + '-sc-remarks')?.value || '';
+  drawPerfPdfPage(doc, data, monthLabel, scopeLabel, entityLabel, scRemarks);
   
   doc.save(`Performance_Analysis_${isDiv ? divisionLabel : employeeLabel}_${month}.pdf`);
   toast('PDF export completed!', 'success');
@@ -2423,7 +2486,8 @@ async function exportPriorityDivisionPDF(){
       }
       isFirst = false;
       
-      drawPerfPdfPage(doc, payload.data, month, 'Division', division);
+      const scRemarks = document.getElementById('division-sc-remarks')?.value || '';
+      drawPerfPdfPage(doc, payload.data, month, 'Division', division, scRemarks);
     }
     
     doc.save(`Performance_Division_Pack_${month}.pdf`);
