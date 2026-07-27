@@ -7,6 +7,8 @@ const EstimationPending   = require('../models/EstimationPending');
 const Division            = require('../models/Division');
 const UnderRepair         = require('../models/UnderRepair');
 const CompletedFRN        = require('../models/CompletedFRN');
+const RTCRL               = require('../models/rtcrlModel');
+const RTCRR               = require('../models/Rtcrr');
 const { protect }         = require('../middleware/authMiddleware');
 const { tryCreateFRNPending, tryCreateUnderRepair, cleanupLinkedRecords } = require('../services/queueSyncService');
 const { buildUrEscalationRow, enqueueEscalationSnapshot, UR_DAILY_TYPES } = require('../services/escalationService');
@@ -209,12 +211,30 @@ router.get('/', protect, async (req, res) => {
     const name   = req.user.name || '';
     const userId = String(req.user._id || '');
     const serviceIds = records.map(r => String(r._id || '')).filter(Boolean);
-    const [frnRows, underRepairRows, estimationRows, completedRows] = await Promise.all([
+    const scReNos = records.map(r => String(r.scReNo || '')).filter(Boolean);
+    const defGirs = records.map(r => String(r.defGir || '')).filter(Boolean);
+
+    const [frnRows, underRepairRows, estimationRows, completedRows, rtcrlRows, rtcrrRows] = await Promise.all([
       serviceIds.length ? EmpFRN.find({ serviceId: { $in: serviceIds } }).select('serviceId typeWork status repGirNo repBrd shipSc shipComm techRemarks components finalRemarks updatedAt createdAt').lean() : [],
       serviceIds.length ? UnderRepair.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng typeWork typeOfWork status repGirNo repBrd shipSc shipComm techRemarks components finalRemarks updatedAt createdAt').lean() : [],
       serviceIds.length ? EstimationPending.find({ serviceId: { $in: serviceIds } }).select('serviceId typeWork obRepGirNo obStatus status estUpdatedAt obUpdatedAt techRemarks components finalRemarks updatedAt createdAt').lean() : [],
       serviceIds.length ? CompletedFRN.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng typeWork repGirSno repBrdDate shipDateSC shipDateComm techRemarks components finalRemarks updatedAt createdAt').lean() : [],
+      scReNos.length && defGirs.length ? RTCRL.find({ scRefNo: { $in: scReNos }, defGirNo: { $in: defGirs } }).select('scRefNo defGirNo repairedDate rpDate compUsedToRepair techRemarks createdAt').lean() : [],
+      scReNos.length && defGirs.length ? RTCRR.find({ scRefNo: { $in: scReNos }, defGirNo: { $in: defGirs } }).select('scRefNo defGirNo repairedDate rpDate compUsedToRepair techRemarks createdAt').lean() : []
     ]);
+    const rtDatesByGir = new Map();
+    [...rtcrlRows, ...rtcrrRows].forEach(r => {
+      const key = `${r.scRefNo}_${r.defGirNo}`;
+      const when = new Date(r.createdAt || 0).getTime() || 0;
+      const current = rtDatesByGir.get(key);
+      if (current && current.when > when) return;
+      rtDatesByGir.set(key, {
+        when,
+        repairedDate: r.repairedDate || r.rpDate || '',
+        components: r.compUsedToRepair || '',
+        techRemarks: r.techRemarks || ''
+      });
+    });
     const raByServiceId = new Map();
     [...underRepairRows, ...completedRows].forEach(row => {
       const key = String(row.serviceId || '');
@@ -271,6 +291,13 @@ router.get('/', protect, async (req, res) => {
       obj.techRemarks = obj.techRemarks || linkedExportFields.techRemarks || '';
       obj.components = obj.components || linkedExportFields.components || '';
       obj.finalRemarks = obj.finalRemarks || linkedExportFields.finalRemarks || '';
+      
+      const rtFields = rtDatesByGir.get(`${obj.scReNo}_${obj.defGir}`);
+      if (rtFields) {
+        if (rtFields.repairedDate) obj.repBrd = rtFields.repairedDate; // Use RT date if available
+        if (!obj.components && rtFields.components) obj.components = rtFields.components;
+        if (!obj.techRemarks && rtFields.techRemarks) obj.techRemarks = rtFields.techRemarks;
+      }
       obj.repGirNo = obj.repGirNo || linkedExportFields.repGirNo || '';
       obj.isOwner =
         obj.scEng       === name ||
