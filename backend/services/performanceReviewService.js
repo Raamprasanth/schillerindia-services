@@ -1874,7 +1874,7 @@ async function getProductTeamPerformanceData({ month }) {
         (doc.scEngg && String(doc.scEngg).trim().toLowerCase() === matchName) ||
         (doc.scEng && String(doc.scEng).trim().toLowerCase() === matchName)
       ) {
-        const dateVal = doc.closeDate || doc.callDate || doc.entryDate || doc.createdAt;
+        const dateVal = doc.entryDate || doc.closeDate || doc.callDate || doc.createdAt;
         const key = dayKeyInMonth(dateVal, monthInfo);
         if (workingDaySet.has(key)) callDays.add(key);
       }
