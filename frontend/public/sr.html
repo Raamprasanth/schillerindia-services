@@ -399,6 +399,18 @@ async function sendToScod(id, btn) {
                 <option value="">Loading divisions...</option>
               </select>
             </div>
+            <div class="ff">
+              <label>From Location</label>
+              <input type="text" id="m-fromLocation"/>
+            </div>
+            <div class="ff">
+              <label>To Location</label>
+              <input type="text" id="m-toLocation"/>
+            </div>
+            <div class="ff span4">
+              <label>Remarks</label>
+              <input type="text" id="m-remarks" placeholder="Remarks..."/>
+            </div>
             <!-- Dynamic Items Table -->
             <div class="ff span4" style="grid-column: 1 / -1; margin-top: 10px;">
               <label>Items <span class="req">*</span></label>
@@ -417,18 +429,6 @@ async function sendToScod(id, btn) {
                 </tbody>
               </table>
               <button class="btn btn-sm" onclick="addItemsRow()" style="margin-top:8px;">+ Add Row</button>
-            </div>
-            <div class="ff">
-              <label>From Location</label>
-              <input type="text" id="m-fromLocation"/>
-            </div>
-            <div class="ff">
-              <label>To Location</label>
-              <input type="text" id="m-toLocation"/>
-            </div>
-            <div class="ff span4">
-              <label>Remarks</label>
-              <input type="text" id="m-remarks" placeholder="Remarks..."/>
             </div>
           </div>
         </div>
