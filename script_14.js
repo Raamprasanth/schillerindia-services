@@ -406,6 +406,29 @@ async function generatePremiumPDF(reportHtml, title, divisionLabel, monthLabel, 
        doc.text("No data available for this report.", 14, 40);
     }
 
+    // Append SC Incharge Remarks if provided
+    if (scRemarks && scRemarks.trim()) {
+      // Check if we need a new page
+      if (currentY > 170) {
+        doc.addPage();
+        drawHeaderAndBorder();
+        currentY = 34;
+      }
+      const remarksBoxY = currentY + 4;
+      doc.setDrawColor(203, 213, 225);
+      doc.setFillColor(248, 250, 252);
+      doc.roundedRect(14, remarksBoxY, 269, 22, 2, 2, 'FD');
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(100, 116, 139);
+      doc.text("SC INCHARGE REMARKS:", 18, remarksBoxY + 7);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(15, 23, 42);
+      const splitRemarks = doc.splitTextToSize(scRemarks.trim(), 255);
+      doc.text(splitRemarks, 18, remarksBoxY + 14);
+    }
+
     const safeFilename = `${filenamePrefix}_${divisionLabel}_${monthLabel}`.replace(/[^a-zA-Z0-9_-]/g, '_') + '.pdf';
     doc.save(safeFilename);
     toast('PDF export completed!', 'success');
