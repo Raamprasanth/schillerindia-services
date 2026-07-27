@@ -1730,7 +1730,14 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
   const cCritical = data.compliance?.criticalPending ?? 0;
   const cPI = data.compliance?.purchaseIndent ?? 0;
     const cBuyBack = data.compliance?.buyBack ?? 0;
-    const isBuyBackMonth = true;
+    const isBuyBackMonth = params.month && (
+      params.month.includes('-04-') || 
+      params.month.includes('-08-') || 
+      params.month.includes('-12-') ||
+      params.month.endsWith('-04') || 
+      params.month.endsWith('-08') || 
+      params.month.endsWith('-12')
+    );
     const d15 = data.submissions?.includes('15') || false;
   const c5S = data.compliance?.fiveSRate ?? 0;
   const cRR = data.compliance?.repairReport ?? 0;
