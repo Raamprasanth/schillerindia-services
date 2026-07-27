@@ -947,5 +947,25 @@ router.get('/performance/productteam', verifyToken, async (req, res) => {
   }
 });
 
+// TEMP DEBUG: inspect PT call register raw data
+router.get('/debug/ptcall', verifyToken, async (req, res) => {
+  try {
+    const { month } = req.query;
+    const User = require('../models/User');
+    const PtCallRegister = require('../models/PtCallRegister');
+
+    const ptUsers = await User.find({ role: 'pt' }).select('name').lean();
+    const sample = await PtCallRegister.find(month ? { callDate: { $regex: month } } : {})
+      .select('callDate entryDate submittedBy scEng engineer')
+      .sort({ callDate: -1 })
+      .limit(20)
+      .lean();
+
+    res.json({ ptUsers, sampleCalls: sample });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;
 
