@@ -476,7 +476,23 @@ router.put('/:id/update', protect, async (req, res) => {
       if (!alreadyScrap && validServiceId) alreadyScrap = await Scrap.findOne({ serviceId: validServiceId, typeWork: 'Supplier Warranty' });
 
       if (!alreadyScrap) {
+        let divisionName = '';
+        try {
+          if (validServiceId) {
+            const svc = await Service.findById(validServiceId).populate('division').lean();
+            if (svc && svc.division) {
+              divisionName = typeof svc.division === 'object' ? svc.division.name : '';
+            }
+          }
+        } catch (_) {}
+        if (!divisionName && req.user) {
+          const { resolveDivision } = require('../utils/visibility');
+          const divDoc = await resolveDivision(req.user);
+          divisionName = divDoc ? divDoc.name : '';
+        }
+
         const scrapDoc = await Scrap.create({
+          division: divisionName,
           serviceId: validServiceId || null,
           entryDate: doc.entryDate || '',
           scRno: doc.scRno || '',
