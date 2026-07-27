@@ -66,7 +66,7 @@ router.get('/', protect, async (req, res) => {
   try {
     const { getServiceIdsFilter } = require('../utils/visibility');
     const query = await getServiceIdsFilter(req.user);
-    const svcQuery = { unitSts: { $in: ['OW', 'LAMC'] }, repType: 'NA' };
+    const svcQuery = { unitSts: { $in: ['OW', 'LAMC'] }, repType: 'NA', obDeleted: { $ne: true } };
 
     if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
       if (query.serviceId && query.serviceId.$in) {
@@ -257,7 +257,7 @@ router.put('/:id', protect, async (req, res) => {
 // ════════════════════════════════════════════════════════
 router.delete('/:id', protect, async (req, res) => {
   try {
-    if (req.user.role !== 'admin')
+    if (req.user.role !== 'admin' && req.user.role !== 'superadmin')
       return res.status(403).json({ success: false, message: 'Admin access required.' });
     if (!mongoose.Types.ObjectId.isValid(req.params.id))
       return res.status(400).json({ success: false, message: 'Invalid ID.' });
@@ -265,6 +265,11 @@ router.delete('/:id', protect, async (req, res) => {
     const record = await EmpOBPending.findByIdAndDelete(req.params.id);
     if (!record)
       return res.status(404).json({ success: false, message: 'Record not found.' });
+
+    if (record.serviceId) {
+      const Service = require('../models/Service');
+      await Service.findByIdAndUpdate(record.serviceId, { obDeleted: true });
+    }
 
     res.json({ success: true, message: 'Deleted.' });
   } catch (err) {

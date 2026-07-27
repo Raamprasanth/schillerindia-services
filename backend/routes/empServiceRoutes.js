@@ -172,6 +172,7 @@ router.get('/ob-pending', protect, async (req, res) => {
       unitSts:          { $in: EST_UNIT_STATUSES },
       repType:          'NA',
       movedToEstimation: { $ne: true },   // ✅ KEY FILTER — excludes saved estimations
+      obDeleted:         { $ne: true },   // Exclude deleted OBs
       ...visibilityFilter
     };
 

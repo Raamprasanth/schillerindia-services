@@ -110,7 +110,8 @@ const serviceSchema = new mongoose.Schema(
     //    filters { movedToEstimation: { $ne: true } } so the record
     //    disappears from OB Pending permanently after this is set.
     movedToEstimation: { type: Boolean, default: false },
-    obStatus:          { type: String, default: '' },   // e.g. 'Estimation', 'OB Pending'
+    obDeleted:         { type: Boolean, default: false },
+    obStatus:          { type: String, default: 'pending' },   // e.g. 'Estimation', 'OB Pending'
     obPending:         { type: Boolean, default: false },
 
     // ── Estimation details (stored on Service for reference) ──
