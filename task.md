@@ -1,15 +1,11 @@
-- `[x]` 1. Frontend Updates (`Reports.html`)
-  - `[x]` Add "Product Team" sub-tab button.
-  - `[x]` Add Product Team pane with two tables (Employee Performance, BIR List).
-  - `[x]` Add PDF Export logic (`generateProductTeamHtml`, `exportProductTeamPDF`).
-- `[x]` 2. Backend Route (`backend/routes/reports.js`)
-  - `[x]` Add `GET /api/reports/performance/productteam` endpoint.
-- `[x]` 3. Backend Logic (`backend/services/performanceReviewService.js`)
-  - `[x]` Create `getProductTeamPerformanceData`.
-  - `[x]` Fetch PT members (role: 'pt').
-  - `[x]` Calculate PT Call completions (unique working days).
-  - `[x]` Calculate PT Daily Work completions (unique working days).
-  - `[x]` Calculate BIR List by division (FBIR created to PTCBIR < 7 days).
-- `[x]` 4. Integration & Testing
-  - `[x]` Verify UI rendering and data mapping.
-  - `[x]` Verify PDF Export formatting.
+- `[x]` 1. Remarks Thresholds Backend Updates
+  - `[x]` Find and update the remark calculation logic (0-20% Very Poor, 21-40% Needs Improvement, 41-60% Satisfactory, 61-80% Very Good, 81-90% Excellent, 91-100% Outstanding).
+  - `[x]` Apply to `getAllEmployeesPerformanceData`.
+  - `[x]` Apply to `getProductTeamPerformanceData`.
+- `[x]` 2. Product Team UI Updates
+  - `[x]` Remove the "Division: All Divisions" text block from `fetchProductTeamData` and PDF logic.
+- `[x]` 3. SC Incharge Remarks
+  - `[x]` Add a `<textarea class="sc-remarks-input">` below the generated table in Product Team, Individual, Commercial, Repair and Division reports.
+  - `[x]` Update `generatePremiumPDF` to grab the value from this textarea and append it to the clone element before PDF generation.
+- `[x]` 4. PDF Limits / Layout Fix
+  - `[x]` Modify `generatePremiumPDF` to scale the content properly within the page constraints.

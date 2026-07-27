@@ -651,6 +651,36 @@ body{
               <button class="btn btn-primary" style="flex:1;justify-content:center;" id="perf-preview-btn-div" onclick="loadDivisionPerf()">&#128065; Preview Division</button>
               <button class="btn btn-ghost" style="flex:1;justify-content:center;" onclick="loadLeaderboard()">&#127942; Leaderboard</button>
             </div>
+
+              <div style="margin-top: 20px; border-top: 1px solid #cbd5e1; padding-top: 15px;">
+                <label class="field-label">Period Type</label>
+                <select id="perf-period-type-div" class="field-input" style="margin-bottom:10px;" onchange="togglePeriodInputs('div')">
+                  <option value="quarter">Quarterly</option>
+                  <option value="half">Half-Yearly</option>
+                  <option value="annual">Annual</option>
+                </select>
+                
+                <div id="perf-period-quarter-div" style="margin-bottom:10px;">
+                  <label class="field-label">Select Quarter & Year</label>
+                  <div style="display:flex; gap:5px;">
+                    <select id="perf-q-div" class="field-input" style="flex:1;"><option value="1">Q1</option><option value="2">Q2</option><option value="3">Q3</option><option value="4">Q4</option></select>
+                    <input type="number" id="perf-qy-div" class="field-input" style="flex:1;" placeholder="YYYY" value="2026"/>
+                  </div>
+                </div>
+                <div id="perf-period-half-div" style="display:none;margin-bottom:10px;">
+                  <label class="field-label">Select Half & Year</label>
+                  <div style="display:flex; gap:5px;">
+                    <select id="perf-h-div" class="field-input" style="flex:1;"><option value="1">H1</option><option value="2">H2</option></select>
+                    <input type="number" id="perf-hy-div" class="field-input" style="flex:1;" placeholder="YYYY" value="2026"/>
+                  </div>
+                </div>
+                <div id="perf-period-annual-div" style="display:none;margin-bottom:10px;">
+                  <label class="field-label">Select Year</label>
+                  <input type="number" id="perf-a-div" class="field-input" placeholder="YYYY" value="2026"/>
+                </div>
+
+                <button class="btn btn-blue" style="width:100%; padding:10px; font-weight:700; border-radius:8px; background: #3b82f6; color: #fff;" onclick="loadDivisionPerf(true)">Generate Period Preview</button>
+              </div>
           </div>
 
           <!-- Output -->
@@ -958,6 +988,36 @@ body{
 
               </div>
               <button class="btn btn-green" onclick="fetchIndividualAllData()" style="width:100%;">Generate Report</button>
+              
+              <div style="margin-top: 20px; border-top: 1px solid #cbd5e1; padding-top: 15px;">
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#64748b;">Period Type</label>
+                <select id="perf-period-type-ind" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;color:#0f172a;margin-bottom:10px;" onchange="togglePeriodInputs('ind')">
+                  <option value="quarter">Quarterly</option>
+                  <option value="half">Half-Yearly</option>
+                  <option value="annual">Annual</option>
+                </select>
+                
+                <div id="perf-period-quarter-ind" style="margin-bottom:10px;">
+                  <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#64748b;">Select Quarter & Year</label>
+                  <div style="display:flex; gap:5px;">
+                    <select id="perf-q-ind" style="flex:1;padding:10px;border:1px solid #cbd5e1;border-radius:6px;"><option value="1">Q1</option><option value="2">Q2</option><option value="3">Q3</option><option value="4">Q4</option></select>
+                    <input type="number" id="perf-qy-ind" style="flex:1;padding:10px;border:1px solid #cbd5e1;border-radius:6px;" placeholder="YYYY" value="2026"/>
+                  </div>
+                </div>
+                <div id="perf-period-half-ind" style="display:none;margin-bottom:10px;">
+                  <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#64748b;">Select Half & Year</label>
+                  <div style="display:flex; gap:5px;">
+                    <select id="perf-h-ind" style="flex:1;padding:10px;border:1px solid #cbd5e1;border-radius:6px;"><option value="1">H1</option><option value="2">H2</option></select>
+                    <input type="number" id="perf-hy-ind" style="flex:1;padding:10px;border:1px solid #cbd5e1;border-radius:6px;" placeholder="YYYY" value="2026"/>
+                  </div>
+                </div>
+                <div id="perf-period-annual-ind" style="display:none;margin-bottom:10px;">
+                  <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#64748b;">Select Year</label>
+                  <input type="number" id="perf-a-ind" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;" placeholder="YYYY" value="2026"/>
+                </div>
+
+                <button class="btn btn-blue" onclick="fetchIndividualAllData(true)" style="width:100%; background: #3b82f6; color: #fff;">Generate Period Report</button>
+              </div>
             </div>
           </div>
           <div class="perf-output" style="flex:1;">
@@ -994,6 +1054,36 @@ body{
                 </div>
                 <div class="fg-field" style="margin-top:16px;">
                   <button class="btn btn-red" style="width:100%; padding:10px; font-weight:700; border-radius:8px;" onclick="fetchCommercialData()">Generate Report</button>
+                  
+                  <div style="margin-top: 20px; border-top: 1px solid #cbd5e1; padding-top: 15px;">
+                    <label class="field-label">Period Type</label>
+                    <select id="perf-period-type-com" class="field-input" style="margin-bottom:10px;" onchange="togglePeriodInputs('com')">
+                      <option value="quarter">Quarterly</option>
+                      <option value="half">Half-Yearly</option>
+                      <option value="annual">Annual</option>
+                    </select>
+                    
+                    <div id="perf-period-quarter-com" style="margin-bottom:10px;">
+                      <label class="field-label">Select Quarter & Year</label>
+                      <div style="display:flex; gap:5px;">
+                        <select id="perf-q-com" class="field-input" style="flex:1;"><option value="1">Q1</option><option value="2">Q2</option><option value="3">Q3</option><option value="4">Q4</option></select>
+                        <input type="number" id="perf-qy-com" class="field-input" style="flex:1;" placeholder="YYYY" value="2026"/>
+                      </div>
+                    </div>
+                    <div id="perf-period-half-com" style="display:none;margin-bottom:10px;">
+                      <label class="field-label">Select Half & Year</label>
+                      <div style="display:flex; gap:5px;">
+                        <select id="perf-h-com" class="field-input" style="flex:1;"><option value="1">H1</option><option value="2">H2</option></select>
+                        <input type="number" id="perf-hy-com" class="field-input" style="flex:1;" placeholder="YYYY" value="2026"/>
+                      </div>
+                    </div>
+                    <div id="perf-period-annual-com" style="display:none;margin-bottom:10px;">
+                      <label class="field-label">Select Year</label>
+                      <input type="number" id="perf-a-com" class="field-input" placeholder="YYYY" value="2026"/>
+                    </div>
+
+                    <button class="btn btn-blue" style="width:100%; padding:10px; font-weight:700; border-radius:8px; background: #3b82f6; color: #fff;" onclick="fetchCommercialData(true)">Generate Period Report</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1024,6 +1114,36 @@ body{
                 <input type="month" id="perf-productteam-month" class="input">
               </div>
               <button class="btn btn-green" onclick="fetchProductTeamData()" style="width:100%;">Generate Report</button>
+              
+              <div style="margin-top: 20px; border-top: 1px solid #cbd5e1; padding-top: 15px;">
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#64748b;">Period Type</label>
+                <select id="perf-period-type-pt" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;color:#0f172a;margin-bottom:10px;" onchange="togglePeriodInputs('pt')">
+                  <option value="quarter">Quarterly</option>
+                  <option value="half">Half-Yearly</option>
+                  <option value="annual">Annual</option>
+                </select>
+                
+                <div id="perf-period-quarter-pt" style="margin-bottom:10px;">
+                  <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#64748b;">Select Quarter & Year</label>
+                  <div style="display:flex; gap:5px;">
+                    <select id="perf-q-pt" style="flex:1;padding:10px;border:1px solid #cbd5e1;border-radius:6px;"><option value="1">Q1</option><option value="2">Q2</option><option value="3">Q3</option><option value="4">Q4</option></select>
+                    <input type="number" id="perf-qy-pt" style="flex:1;padding:10px;border:1px solid #cbd5e1;border-radius:6px;" placeholder="YYYY" value="2026"/>
+                  </div>
+                </div>
+                <div id="perf-period-half-pt" style="display:none;margin-bottom:10px;">
+                  <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#64748b;">Select Half & Year</label>
+                  <div style="display:flex; gap:5px;">
+                    <select id="perf-h-pt" style="flex:1;padding:10px;border:1px solid #cbd5e1;border-radius:6px;"><option value="1">H1</option><option value="2">H2</option></select>
+                    <input type="number" id="perf-hy-pt" style="flex:1;padding:10px;border:1px solid #cbd5e1;border-radius:6px;" placeholder="YYYY" value="2026"/>
+                  </div>
+                </div>
+                <div id="perf-period-annual-pt" style="display:none;margin-bottom:10px;">
+                  <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#64748b;">Select Year</label>
+                  <input type="number" id="perf-a-pt" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;" placeholder="YYYY" value="2026"/>
+                </div>
+
+                <button class="btn btn-blue" onclick="fetchProductTeamData(true)" style="width:100%; background: #3b82f6; color: #fff;">Generate Period Report</button>
+              </div>
             </div>
           </div>
           <div class="perf-view" style="flex:2;">
@@ -1056,6 +1176,36 @@ body{
                 <div class="fg-field" style="margin-top:16px;">
                   <button class="btn btn-red" style="width:100%; padding:10px; font-weight:700; border-radius:8px;" onclick="fetchRepairTeamData()">Generate Report</button>
                 </div>
+
+                  <div style="margin-top: 20px; border-top: 1px solid #cbd5e1; padding-top: 15px;">
+                    <label class="field-label">Period Type</label>
+                    <select id="perf-period-type-rt" class="field-input" style="margin-bottom:10px;" onchange="togglePeriodInputs('rt')">
+                      <option value="quarter">Quarterly</option>
+                      <option value="half">Half-Yearly</option>
+                      <option value="annual">Annual</option>
+                    </select>
+                    
+                    <div id="perf-period-quarter-rt" style="margin-bottom:10px;">
+                      <label class="field-label">Select Quarter & Year</label>
+                      <div style="display:flex; gap:5px;">
+                        <select id="perf-q-rt" class="field-input" style="flex:1;"><option value="1">Q1</option><option value="2">Q2</option><option value="3">Q3</option><option value="4">Q4</option></select>
+                        <input type="number" id="perf-qy-rt" class="field-input" style="flex:1;" placeholder="YYYY" value="2026"/>
+                      </div>
+                    </div>
+                    <div id="perf-period-half-rt" style="display:none;margin-bottom:10px;">
+                      <label class="field-label">Select Half & Year</label>
+                      <div style="display:flex; gap:5px;">
+                        <select id="perf-h-rt" class="field-input" style="flex:1;"><option value="1">H1</option><option value="2">H2</option></select>
+                        <input type="number" id="perf-hy-rt" class="field-input" style="flex:1;" placeholder="YYYY" value="2026"/>
+                      </div>
+                    </div>
+                    <div id="perf-period-annual-rt" style="display:none;margin-bottom:10px;">
+                      <label class="field-label">Select Year</label>
+                      <input type="number" id="perf-a-rt" class="field-input" placeholder="YYYY" value="2026"/>
+                    </div>
+
+                    <button class="btn btn-blue" style="width:100%; padding:10px; font-weight:700; border-radius:8px; background: #3b82f6; color: #fff;" onclick="fetchRepairTeamData(true)">Generate Period Report</button>
+                  </div>
               </div>
             </div>
           </div>
@@ -1550,8 +1700,8 @@ async function loadDivTrend(){
   }
 }
 
-async function loadDivisionPerf() {
-  const month=document.getElementById('perf-month-div').value;
+async function loadDivisionPerf(usePeriod = false) {
+  const month=usePeriod ? getPeriodValue('div') : document.getElementById('perf-month-div').value;
   if(!month){toast('Please select a month','error');return;}
   const div=document.getElementById('perf-division').value;
   if(!div){toast('Please select a division','error');return;}
@@ -2866,9 +3016,9 @@ switchPerfSubTab = function(tab) {
 
 
 
-async function fetchIndividualAllData() {
+async function fetchIndividualAllData(usePeriod = false) {
   
-  const month = document.getElementById('perf-indall-month').value;
+  const month = usePeriod ? getPeriodValue('ind') : document.getElementById('perf-indall-month').value;
   const division = document.getElementById('perf-indall-division').value;
   if (!month) {
     toast('Please select a month', 'error');
@@ -2961,8 +3111,8 @@ if (currentTab === 'kanban') loadKanbanBoard(); // Handle direct loads if modifi
 
 <script>
 
-async function fetchCommercialData() {
-  const month = document.getElementById('perf-com-month').value;
+async function fetchCommercialData(usePeriod = false) {
+  const month = usePeriod ? getPeriodValue('com') : document.getElementById('perf-com-month').value;
   if (!month) {
     toast('Please select a month first', 'error');
     return;
@@ -3140,8 +3290,8 @@ async function exportCommercialPDF() {
     await generatePremiumPDF(el.innerHTML, 'COMMERCIAL PERFORMANCE REPORT', divisionLabel, month, 'Commercial_Performance', scRemarks);
 }
 
-async function fetchRepairTeamData() {
-  const month = document.getElementById('perf-repairteam-month').value;
+async function fetchRepairTeamData(usePeriod = false) {
+  const month = usePeriod ? getPeriodValue('rt') : document.getElementById('perf-repairteam-month').value;
   if (!month) {
     toast('Please select a month first', 'error');
     return;
@@ -3377,8 +3527,8 @@ async function generatePremiumPDF(reportHtml, title, divisionLabel, monthLabel, 
   }
 }
 
-async function fetchProductTeamData() {
-  const month = document.getElementById('perf-productteam-month').value;
+async function fetchProductTeamData(usePeriod = false) {
+  const month = usePeriod ? getPeriodValue('pt') : document.getElementById('perf-productteam-month').value;
   if (!month) {
     toast('Please select a month first', 'error');
     return;
