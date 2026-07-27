@@ -7,8 +7,14 @@ const EstimationPending   = require('../models/EstimationPending');
 const Division            = require('../models/Division');
 const UnderRepair         = require('../models/UnderRepair');
 const CompletedFRN        = require('../models/CompletedFRN');
+const SCCompletedFRN      = require('../models/SCCompletedFRN');
+const Scrap               = require('../models/Scrap');
+const RTUR                = require('../models/rturModel');
 const RTCRL               = require('../models/rtcrlModel');
 const RTCRR               = require('../models/Rtcrr');
+const RTFRN               = require('../models/RTFRN');
+const RTOB                = require('../models/RTOB');
+const RTRR                = require('../models/Rtrr');
 const { protect }         = require('../middleware/authMiddleware');
 const { tryCreateFRNPending, tryCreateUnderRepair, cleanupLinkedRecords } = require('../services/queueSyncService');
 const { buildUrEscalationRow, enqueueEscalationSnapshot, UR_DAILY_TYPES } = require('../services/escalationService');
@@ -211,94 +217,156 @@ router.get('/', protect, async (req, res) => {
     const name   = req.user.name || '';
     const userId = String(req.user._id || '');
     const serviceIds = records.map(r => String(r._id || '')).filter(Boolean);
-    const scReNos = records.map(r => String(r.scReNo || '')).filter(Boolean);
-    const defGirs = records.map(r => String(r.defGir || '')).filter(Boolean);
+    const scReNos = records.map(r => String(r.scReNo || r.scRno || '')).filter(Boolean);
+    const defGirs = records.map(r => String(r.defGir || r.defGirNo || '')).filter(Boolean);
 
-    const [frnRows, underRepairRows, estimationRows, completedRows, rtcrlRows, rtcrrRows] = await Promise.all([
+    const [
+      frnRows,
+      underRepairRows,
+      estimationRows,
+      completedRows,
+      scCompletedRows,
+      scrapRows,
+      rturRows,
+      rtcrlRows,
+      rtcrrRows,
+      rtfrnRows,
+      rtobRows,
+      rtrrRows
+    ] = await Promise.all([
       serviceIds.length ? EmpFRN.find({ serviceId: { $in: serviceIds } }).select('serviceId typeWork status repGirNo repBrd shipSc shipComm techRemarks components finalRemarks updatedAt createdAt').lean() : [],
       serviceIds.length ? UnderRepair.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng typeWork typeOfWork status repGirNo repBrd shipSc shipComm techRemarks components finalRemarks updatedAt createdAt').lean() : [],
       serviceIds.length ? EstimationPending.find({ serviceId: { $in: serviceIds } }).select('serviceId typeWork obRepGirNo obStatus status estUpdatedAt obUpdatedAt techRemarks components finalRemarks updatedAt createdAt').lean() : [],
       serviceIds.length ? CompletedFRN.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng typeWork repGirSno repBrdDate shipDateSC shipDateComm techRemarks components finalRemarks updatedAt createdAt').lean() : [],
-      scReNos.length && defGirs.length ? RTCRL.find({ scRefNo: { $in: scReNos }, defGirNo: { $in: defGirs } }).select('scRefNo defGirNo repairedDate rpDate compUsedToRepair techRemarks createdAt').lean() : [],
-      scReNos.length && defGirs.length ? RTCRR.find({ scRefNo: { $in: scReNos }, defGirNo: { $in: defGirs } }).select('scRefNo defGirNo repairedDate rpDate compUsedToRepair techRemarks createdAt').lean() : []
+      serviceIds.length || scReNos.length ? SCCompletedFRN.find({ $or: [{ serviceId: { $in: serviceIds } }, { scRno: { $in: scReNos } }] }).select('serviceId scRno raEng typeWork repGirSno repBrdDate shipDateSC shipDateComm techRemarks components finalRemarks updatedAt createdAt').lean() : [],
+      serviceIds.length || scReNos.length ? Scrap.find({ $or: [{ serviceId: { $in: serviceIds } }, { scRno: { $in: scReNos } }] }).select('serviceId scRno raEng typeWork repGirNo shipDateFromSc techRemarks components finalRemarks updatedAt createdAt').lean() : [],
+      serviceIds.length || scReNos.length ? RTUR.find({ $or: [{ sourceServiceId: { $in: serviceIds } }, { scRefNo: { $in: scReNos } }] }).select('sourceServiceId scRefNo defGirNo repairedDate repBrdDate returnDate compUsedToRepair techRemarks finalRemarks repairRemarks updatedAt createdAt').lean() : [],
+      scReNos.length && defGirs.length ? RTCRL.find({ scRefNo: { $in: scReNos }, defGirNo: { $in: defGirs } }).select('scRefNo defGirNo repairedDate rpDate compUsedToRepair techRemarks finalRemarks repairRemarks createdAt').lean() : [],
+      scReNos.length && defGirs.length ? RTCRR.find({ scRefNo: { $in: scReNos }, defGirNo: { $in: defGirs } }).select('scRefNo defGirNo repairedDate rpDate compUsedToRepair techRemarks finalRemarks repairRemarks createdAt').lean() : [],
+      scReNos.length ? RTFRN.find({ scRefNo: { $in: scReNos } }).select('scRefNo defGirNo repairedDate repBrd compUsedToRepair techRemarks finalRemarks repairRemarks createdAt').lean() : [],
+      scReNos.length ? RTOB.find({ scRefNo: { $in: scReNos } }).select('scRefNo defGirNo repBrd shipSc shipComm outwardDate techRemarks components finalRemarks createdAt').lean() : [],
+      scReNos.length ? RTRR.find({ scRefNo: { $in: scReNos } }).select('scRefNo defGirNo repairedDate repBrd compUsedToRepair techRemarks finalRemarks repairRemarks createdAt').lean() : [],
     ]);
-    const rtDatesByGir = new Map();
-    [...rtcrlRows, ...rtcrrRows].forEach(r => {
-      const key = `${r.scRefNo}_${r.defGirNo}`;
-      const when = new Date(r.createdAt || 0).getTime() || 0;
-      const current = rtDatesByGir.get(key);
-      if (current && current.when > when) return;
-      rtDatesByGir.set(key, {
-        when,
-        repairedDate: r.repairedDate || r.rpDate || '',
-        components: r.compUsedToRepair || '',
-        techRemarks: r.techRemarks || ''
-      });
-    });
+
     const raByServiceId = new Map();
-    [...underRepairRows, ...completedRows].forEach(row => {
+    [...underRepairRows, ...completedRows, ...scCompletedRows].forEach(row => {
       const key = String(row.serviceId || '');
-      if (key && row.raEng) raByServiceId.set(key, row.raEng);
+      if (key && (row.raEng || row.repairedBy)) raByServiceId.set(key, row.raEng || row.repairedBy);
     });
+
     const typeWorkByServiceId = new Map();
-    [...frnRows, ...underRepairRows, ...estimationRows, ...completedRows].forEach(row => {
+    [...frnRows, ...underRepairRows, ...estimationRows, ...completedRows, ...scCompletedRows, ...scrapRows].forEach(row => {
       putLatestTypeWork(typeWorkByServiceId, row);
     });
-    const exportFieldsByServiceId = new Map();
-    [...frnRows, ...underRepairRows, ...estimationRows, ...completedRows].forEach(row => {
-      const key = String(row.serviceId || '');
+
+    function extractRowFields(row) {
+      let repBrd = row.repBrd || row.repBrdDate || row.repairedDate || row.rpDate || '';
+      if (repBrd instanceof Date) repBrd = repBrd.toISOString().slice(0, 10);
+
+      let shipSc = row.shipSc || row.shipDateSC || row.shipDateFromSc || row.outwardDate || row.returnDate || '';
+      if (shipSc instanceof Date) shipSc = shipSc.toISOString().slice(0, 10);
+
+      let shipComm = row.shipComm || row.shipDateComm || '';
+      if (shipComm instanceof Date) shipComm = shipComm.toISOString().slice(0, 10);
+
+      const techRemarks = row.techRemarks || row.observation || row.repairActivity || '';
+      const components = row.components || row.compUsedToRepair || '';
+      const finalRemarks = row.finalRemarks || row.repairRemarks || row.serviceCentreRemarks || row.fieldRemarks || '';
+      const repGirNo = row.repGirNo || row.obRepGirNo || row.repGirSno || '';
+      const raEng = row.raEng || row.repairedBy || '';
+
+      return { repBrd, shipSc, shipComm, techRemarks, components, finalRemarks, repGirNo, raEng };
+    }
+
+    function mergeIntoMap(map, key, row) {
       if (!key) return;
       const when = new Date(row.updatedAt || row.createdAt || 0).getTime() || 0;
-      const current = exportFieldsByServiceId.get(key);
-      const rowRepGirNo = row.repGirNo || row.obRepGirNo || row.repGirSno || '';
-      if (current && current.when > when) {
-        if (!current.repGirNo && rowRepGirNo) current.repGirNo = rowRepGirNo;
-        if (!current.repBrd) current.repBrd = row.repBrd || row.repBrdDate || '';
-        if (!current.shipSc) current.shipSc = row.shipSc || row.shipDateSC || '';
-        if (!current.shipComm) current.shipComm = row.shipComm || row.shipDateComm || '';
-        if (!current.techRemarks) current.techRemarks = row.techRemarks || '';
-        if (!current.components) current.components = row.components || '';
-        if (!current.finalRemarks) current.finalRemarks = row.finalRemarks || '';
+      const fields = extractRowFields(row);
+
+      const current = map.get(key);
+      if (!current) {
+        map.set(key, { when, ...fields });
         return;
       }
-      exportFieldsByServiceId.set(key, {
-        when,
-        repBrd: row.repBrd || row.repBrdDate || (current ? current.repBrd : '') || '',
-        shipSc: row.shipSc || row.shipDateSC || (current ? current.shipSc : '') || '',
-        shipComm: row.shipComm || row.shipDateComm || (current ? current.shipComm : '') || '',
-        techRemarks: row.techRemarks || (current ? current.techRemarks : '') || '',
-        components: row.components || (current ? current.components : '') || '',
-        finalRemarks: row.finalRemarks || (current ? current.finalRemarks : '') || '',
-        repGirNo: rowRepGirNo || (current && current.repGirNo) || '',
-      });
+
+      if (when >= current.when) {
+        map.set(key, {
+          when,
+          repBrd: fields.repBrd || current.repBrd,
+          shipSc: fields.shipSc || current.shipSc,
+          shipComm: fields.shipComm || current.shipComm,
+          techRemarks: fields.techRemarks || current.techRemarks,
+          components: fields.components || current.components,
+          finalRemarks: fields.finalRemarks || current.finalRemarks,
+          repGirNo: fields.repGirNo || current.repGirNo,
+          raEng: fields.raEng || current.raEng,
+        });
+      } else {
+        if (!current.repBrd && fields.repBrd) current.repBrd = fields.repBrd;
+        if (!current.shipSc && fields.shipSc) current.shipSc = fields.shipSc;
+        if (!current.shipComm && fields.shipComm) current.shipComm = fields.shipComm;
+        if (!current.techRemarks && fields.techRemarks) current.techRemarks = fields.techRemarks;
+        if (!current.components && fields.components) current.components = fields.components;
+        if (!current.finalRemarks && fields.finalRemarks) current.finalRemarks = fields.finalRemarks;
+        if (!current.repGirNo && fields.repGirNo) current.repGirNo = fields.repGirNo;
+        if (!current.raEng && fields.raEng) current.raEng = fields.raEng;
+      }
+    }
+
+    const exportFieldsByServiceId = new Map();
+    const exportFieldsByScRef = new Map();
+
+    const allRows = [
+      ...frnRows,
+      ...underRepairRows,
+      ...estimationRows,
+      ...completedRows,
+      ...scCompletedRows,
+      ...scrapRows,
+      ...rturRows,
+      ...rtcrlRows,
+      ...rtcrrRows,
+      ...rtfrnRows,
+      ...rtobRows,
+      ...rtrrRows
+    ];
+
+    allRows.forEach(row => {
+      const sId = String(row.serviceId || row.sourceServiceId || '');
+      if (sId) mergeIntoMap(exportFieldsByServiceId, sId, row);
+
+      const scNo = String(row.scRno || row.scRefNo || '');
+      if (scNo) mergeIntoMap(exportFieldsByScRef, scNo, row);
     });
 
     const annotated = records.map(r => {
       const obj = r.toObject ? r.toObject() : r;
-      obj.raEng = obj.raEng || raByServiceId.get(String(obj._id || '')) || '';
-      const linkedTypeWork = typeWorkByServiceId.get(String(obj._id || ''))?.typeWork || '';
+      const sIdKey = String(obj._id || '');
+      const scNoKey = String(obj.scReNo || obj.scRno || '');
+
+      const linkedBySId = exportFieldsByServiceId.get(sIdKey) || {};
+      const linkedBySc = exportFieldsByScRef.get(scNoKey) || {};
+
+      obj.raEng = obj.raEng || linkedBySId.raEng || linkedBySc.raEng || raByServiceId.get(sIdKey) || '';
+
+      const linkedTypeWork = typeWorkByServiceId.get(sIdKey)?.typeWork || '';
       const serviceTypeWork = pickRealTypeWork(obj);
       const serviceIsUnderRepair = String(obj.type || '').trim().toLowerCase() === 'under repair'
         || String(serviceTypeWork || '').trim().toLowerCase() === 'under repair'
         || String(linkedTypeWork || '').trim().toLowerCase() === 'replacement given'
         || String(obj.status || '').trim().toLowerCase() === 'under_repair';
+
       obj.typeWork = serviceIsUnderRepair ? (serviceTypeWork || 'UNDER REPAIR') : (linkedTypeWork || serviceTypeWork || '');
       obj.type = serviceIsUnderRepair ? 'Under Repair' : obj.typeWork;
-      const linkedExportFields = exportFieldsByServiceId.get(String(obj._id || '')) || {};
-      obj.repBrd = obj.repBrd || linkedExportFields.repBrd || '';
-      obj.shipSc = obj.shipSc || linkedExportFields.shipSc || '';
-      obj.shipComm = obj.shipComm || linkedExportFields.shipComm || '';
-      obj.techRemarks = obj.techRemarks || linkedExportFields.techRemarks || '';
-      obj.components = obj.components || linkedExportFields.components || '';
-      obj.finalRemarks = obj.finalRemarks || linkedExportFields.finalRemarks || '';
-      
-      const rtFields = rtDatesByGir.get(`${obj.scReNo}_${obj.defGir}`);
-      if (rtFields) {
-        if (rtFields.repairedDate) obj.repBrd = rtFields.repairedDate; // Use RT date if available
-        if (!obj.components && rtFields.components) obj.components = rtFields.components;
-        if (!obj.techRemarks && rtFields.techRemarks) obj.techRemarks = rtFields.techRemarks;
-      }
-      obj.repGirNo = obj.repGirNo || linkedExportFields.repGirNo || '';
+
+      obj.repBrd = obj.repBrd || linkedBySId.repBrd || linkedBySc.repBrd || '';
+      obj.shipSc = obj.shipSc || linkedBySId.shipSc || linkedBySc.shipSc || '';
+      obj.shipComm = obj.shipComm || linkedBySId.shipComm || linkedBySc.shipComm || '';
+      obj.techRemarks = obj.techRemarks || linkedBySId.techRemarks || linkedBySc.techRemarks || '';
+      obj.components = obj.components || linkedBySId.components || linkedBySc.components || '';
+      obj.finalRemarks = obj.finalRemarks || linkedBySId.finalRemarks || linkedBySc.finalRemarks || '';
+      obj.repGirNo = obj.repGirNo || linkedBySId.repGirNo || linkedBySc.repGirNo || '';
+
       obj.isOwner =
         obj.scEng       === name ||
         obj.eng         === name ||
