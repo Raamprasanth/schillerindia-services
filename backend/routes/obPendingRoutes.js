@@ -133,8 +133,16 @@ router.put('/:id/escalate', protect, adminOnly, async (req, res) => {
 // ── DELETE /api/ob-pending/:id ────────────────────────────
 router.delete('/:id', protect, adminOnly, async (req, res) => {
   try {
-    const doc = await OBPending.findByIdAndDelete(req.params.id);
+    const doc = await OBPending.findById(req.params.id);
     if (!doc) return res.status(404).json({ message: 'Record not found.' });
+    
+    await OBPending.findByIdAndDelete(req.params.id);
+    
+    if (doc.serviceId) {
+      const EmpOBPending = require('../models/EmpOBPending');
+      await EmpOBPending.deleteMany({ serviceId: doc.serviceId });
+    }
+    
     res.json({ success: true, message: 'Record deleted.' });
   } catch (e) {
     res.status(500).json({ message: e.message });
