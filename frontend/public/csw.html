@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SchillerIndia - Supplier Warranty</title>
+<title>SchillerIndia - Re-Export</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
@@ -363,9 +363,9 @@ table.js-grid tbody td input::placeholder{color:var(--muted);font-size:11px;}
       <div class="breadcrumb">
         <a href="employee-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
         <span>Records</span><span class="sep">&#8250;</span>
-        <span>Supplier Warranty</span>
+        <span>Re-Export</span>
       </div>
-      <div class="page-title">Supplier Warranty</div>
+      <div class="page-title">Re-Export</div>
     </div>
     <div style="display:flex;align-items:center;gap:9px;">
       <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
@@ -460,7 +460,7 @@ const MAIL_STATUS_ENDPOINT = '/api/escalation/status/supplier-warranty';
 let SCRAP = [], filtered = [], sortKey = 'receivedDateAtEsskay', sortDir = -1, currentPage = 1;
 const SUPPLIER_COLUMNS = [
   { key:'sn', label:'S/N' },
-  { key:'supplier', label:'Supplier' },
+  { key:'supplier', label:'Re-Export' },
   { key:'division', label:'Division' },
   { key:'frnEntryDate', label:'FRN entry date', type:'date' },
   { key:'srrRmaBltNo', label:'SRR/RMA/BLT No' },
@@ -477,8 +477,8 @@ const SUPPLIER_COLUMNS = [
   { key:'licenceVersion', label:'Licence version/Model configuration', wide:true },
   { key:'customerName', label:'Customer Name' },
   { key:'warrType', label:'Warr type-Schiller india' },
-  { key:'supplierWarrStatus', label:'Warr type-Supplier' },
-  { key:'defInvoiceNoSupplier', label:'Def Invoice number supplier' },
+  { key:'supplierWarrStatus', label:'Warr type-Re-Export' },
+  { key:'defInvoiceNoSupplier', label:'Def Invoice number Re-Export' },
   { key:'shipDateFromSc', label:'ship date from sc', type:'date' },
   { key:'dcInvoiceNo', label:'DC/Invoice No' },
   { key:'dcInvoiceDate', label:'DC/Invoice Date', type:'date' },
@@ -487,7 +487,7 @@ const SUPPLIER_COLUMNS = [
   { key:'repRepaired', label:'Rep/Repaired' },
   { key:'replacementReceivedStatus', label:'Replacement received status' },
   { key:'replacementReceivedDate', label:'Replacement received date', type:'date' },
-  { key:'typeWorkSupplier', label:'Type of work supplier' },
+  { key:'typeWorkSupplier', label:'Type of work Re-Export' },
   { key:'rcdPartInvoiceNo', label:'Rcd part invoice number' },
   { key:'repGirNo', label:'Rep GIR No' },
   { key:'rcdPartSerialNo', label:'Rcd part serial number' },
@@ -537,7 +537,7 @@ function renderMailAck(data={}){
   const wrap = document.getElementById('mail-ack-wrap');
   if(!wrap) return;
   wrap.innerHTML = `
-    <div class="mail-ack-card"><div class="mail-ack-label">Queued</div><div class="mail-ack-value">${q.totalCount || 0}</div><div class="mail-ack-sub">${q.slotLabel || 'Supplier Warranty Tue/Fri'}</div></div>
+    <div class="mail-ack-card"><div class="mail-ack-label">Queued</div><div class="mail-ack-value">${q.totalCount || 0}</div><div class="mail-ack-sub">${q.slotLabel || 'Re-Export Tue/Fri'}</div></div>
     <div class="mail-ack-card"><div class="mail-ack-label">Next Mail</div><div class="mail-ack-value">${q.nextRunLabel || 'Tue/Fri 8:30 PM'}</div><div class="mail-ack-sub">Window date ${q.windowDate || '-'}</div></div>
     <div class="mail-ack-card"><div class="mail-ack-label">Receivers</div><div class="mail-ack-value">${recipients.length}</div><div class="mail-ack-sub">${recipients.join(', ') || 'Add receiver in Settings'}</div></div>
     <div class="mail-ack-card"><div class="mail-ack-label">Last Mail</div><div class="mail-ack-value">${status}</div><div class="mail-ack-sub">${sentAt}</div></div>`;
@@ -549,7 +549,7 @@ async function loadMailAckStatus(){
     if(!res.ok) throw new Error('HTTP ' + res.status);
     renderMailAck(await res.json());
   }catch(e){
-    renderMailAck({queue:{totalCount:0,nextRunLabel:'Tue/Fri 8:30 PM',slotLabel:'Supplier Warranty Tue/Fri'},recipients:[],latest:{status:'status unavailable'}});
+    renderMailAck({queue:{totalCount:0,nextRunLabel:'Tue/Fri 8:30 PM',slotLabel:'Re-Export Tue/Fri'},recipients:[],latest:{status:'status unavailable'}});
   }
 }
 
@@ -735,7 +735,7 @@ function openUpdateModal(id) {
         ${opts.map(o => `<option value="${o}" ${String(val).toLowerCase()===o.toLowerCase()?'selected':''}>${o}</option>`).join('')}
       </select>`;
     } else if (field.key === 'replacementReceivedStatus') {
-      const opts = ['repaired', 'pending from supplier', 'pending from commercial', 'pending from Re-export'];
+      const opts = ['repaired', 'pending from Re-Export', 'pending from commercial', 'pending from Re-export'];
       controlHtml = `<select id="dyn-${field.key}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);">
         <option value="">-Select-</option>
         ${opts.map(o => `<option value="${o}" ${String(val).toLowerCase()===o.toLowerCase()?'selected':''}>${o}</option>`).join('')}
@@ -845,8 +845,8 @@ function renderTable() {
   if (!total) {
     tbody.innerHTML = `<tr><td colspan="${SUPPLIER_COLUMNS.length}"><div class="empty-st">
       <div class="ei">&#128196;</div>
-      <div class="et">${SCRAP.length ? 'No records match the current filters' : 'No Supplier Warranty records'}</div>
-      <div class="es">${SCRAP.length ? 'Try clearing the filters or changing the month/year.' : 'Supplier warranty records will appear here when added.'}</div>
+      <div class="et">${SCRAP.length ? 'No records match the current filters' : 'No Re-Export records'}</div>
+      <div class="es">${SCRAP.length ? 'Try clearing the filters or changing the month/year.' : 'Re-Export records will appear here when added.'}</div>
     </div></td></tr>`;
   } else {
     tbody.innerHTML = slice.map((d, i) => {
@@ -983,7 +983,7 @@ function exportCSV() {
   const csv = [h,...rows].map(r => r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-  a.download = 'supplier-warranty-list-' + new Date().toISOString().split('T')[0] + '.csv';
+  a.download = 're-export-list-' + new Date().toISOString().split('T')[0] + '.csv';
   a.click();
   showToast('Exported ' + filtered.length + ' records.', 'ok');
 }
@@ -1019,6 +1019,8 @@ function logout(){sessionStorage.clear(); localStorage.clear();window.location.h
 <script src="tab-fix.js"></script>
 </body>
 </html>
+
+
 
 
 
