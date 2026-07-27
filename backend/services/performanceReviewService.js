@@ -317,12 +317,10 @@ function localDateKey(date) {
 
 function getNonSundayDates(monthInfo) {
   const days = [];
-  const date = new Date(monthInfo.year, monthInfo.month - 1, 1);
-  let saturdayCount = 0;
-  while (date.getMonth() === monthInfo.month - 1) {
-    if (date.getDay() === 6) saturdayCount++;
-    const isThirdSaturday = (date.getDay() === 6 && saturdayCount === 3);
-    
+  const date = new Date(monthInfo.start);
+  const end = new Date(monthInfo.end);
+  while (date < end) {
+    const isThirdSaturday = (date.getDay() === 6 && date.getDate() >= 15 && date.getDate() <= 21);
     if (date.getDay() !== 0 && !isThirdSaturday) days.push(localDateKey(date));
     date.setDate(date.getDate() + 1);
   }
@@ -333,12 +331,10 @@ function dayKeyInMonth(value, monthInfo) {
   const date = parseAnyDate(value);
   if (!date) return '';
   const local = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  if (local.getFullYear() !== monthInfo.year || local.getMonth() !== monthInfo.month - 1) return '';
+  if (local < monthInfo.start || local >= monthInfo.end) return '';
   if (local.getDay() === 0) return '';
-  // Check if it's the third saturday
   if (local.getDay() === 6) {
     const day = local.getDate();
-    // 1st saturday: 1-7, 2nd: 8-14, 3rd: 15-21
     if (day >= 15 && day <= 21) return '';
   }
   return localDateKey(local);
@@ -396,8 +392,8 @@ async function getSimpleEmployeePerformanceData({ monthInfo, employee, selectedD
   const empRegex = employeeRegex(employee);
   const employeeToken = normalizeText(employee).split(/\s+/).filter(Boolean)[0] || employee;
   const empTokenRegex = new RegExp(safeRegex(employeeToken), 'i');
-  const monthStartKey = monthInfo.monthKey + '-01';
-  const monthEndDate = new Date(monthInfo.year, monthInfo.month, 0);
+  const monthStartKey = localDateKey(monthInfo.start);
+  const monthEndDate = new Date(monthInfo.end.getTime() - 86400000);
   const monthEndKey = localDateKey(monthEndDate);
 
   const matchedUsers = await User.find({
@@ -449,7 +445,7 @@ async function getSimpleEmployeePerformanceData({ monthInfo, employee, selectedD
         { createdAt: { $gte: monthInfo.start, $lt: monthInfo.end } },
       ],
     }).lean(),
-    TrackerSubmission.find({ employee: { $in: userIds }, month: monthInfo.monthKey, type: 'OpenCallReview' }).lean(),
+    TrackerSubmission.find({ employee: { $in: userIds }, ...(monthInfo.monthKey.includes(':') ? { reportDate: { $gte: monthStartKey, $lte: monthEndKey } } : { month: monthInfo.monthKey }), type: 'OpenCallReview' }).lean(),
   ]);
 
   const callEntryDays = new Set();
@@ -479,8 +475,9 @@ async function getSimpleEmployeePerformanceData({ monthInfo, employee, selectedD
   const previousMonthInfo = monthParts(previousMonth);
   const previousWorkingDayKeys = getNonSundayDates(previousMonthInfo);
   const previousWorkingDaySet = new Set(previousWorkingDayKeys);
-  const previousStartKey = previousMonthInfo.monthKey + '-01';
-  const previousEndKey = localDateKey(new Date(previousMonthInfo.year, previousMonthInfo.month, 0));
+  const previousStartKey = localDateKey(previousMonthInfo.start);
+  const previousEndDate = new Date(previousMonthInfo.end.getTime() - 86400000);
+  const previousEndKey = localDateKey(previousEndDate);
 
   const previousMonthDateFilter = {
     $or: [
@@ -504,7 +501,7 @@ async function getSimpleEmployeePerformanceData({ monthInfo, employee, selectedD
         { createdAt: { $gte: previousMonthInfo.start, $lt: previousMonthInfo.end } },
       ],
     }).lean(),
-    TrackerSubmission.find({ employee: { $in: userIds }, month: previousMonthInfo.monthKey, type: 'OpenCallReview' }).lean(),
+    TrackerSubmission.find({ employee: { $in: userIds }, ...(previousMonthInfo.monthKey.includes(':') ? { reportDate: { $gte: previousStartKey, $lte: previousEndKey } } : { month: previousMonthInfo.monthKey }), type: 'OpenCallReview' }).lean(),
   ]);
 
   const previousCallDays = new Set();
@@ -599,7 +596,14 @@ async function getRealTrackerMetrics(scope, divisionName, employeeName, monthInf
   
   let empCount = 0;
   const escapeRegex = (s) => (s || '').replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
-  let matchQuery = { month: monthInfo.monthKey };
+  let matchQuery = {};
+  if (monthInfo.monthKey.includes(':')) {
+    const monthStartKey = localDateKey(monthInfo.start);
+    const monthEndKey = localDateKey(new Date(monthInfo.end.getTime() - 86400000));
+    matchQuery.reportDate = { $gte: monthStartKey, $lte: monthEndKey };
+  } else {
+    matchQuery.month = monthInfo.monthKey;
+  }
 
   if (scope === 'division') {
     const Employee = require('../models/Employee');
@@ -804,8 +808,8 @@ async function getAllEmployeesPerformanceData({ monthInfo, selectedDivision }) {
   const workingDayKeys = getNonSundayDates(monthInfo);
   const workingDaySet = new Set(workingDayKeys);
   const workingDays = workingDayKeys.length;
-  const monthStartKey = monthInfo.monthKey + '-01';
-  const monthEndDate = new Date(monthInfo.year, monthInfo.month, 0);
+  const monthStartKey = localDateKey(monthInfo.start);
+  const monthEndDate = new Date(monthInfo.end.getTime() - 86400000);
   const monthEndKey = localDateKey(monthEndDate);
 
   const User = require('../models/User');
@@ -874,7 +878,7 @@ async function getAllEmployeesPerformanceData({ monthInfo, selectedDivision }) {
         { createdAt: { $gte: monthInfo.start, $lt: monthInfo.end } },
       ],
     }).lean(),
-    TrackerSubmission.find({ month: monthInfo.monthKey, type: 'OpenCallReview' }).lean(),
+    TrackerSubmission.find({ ...(monthInfo.monthKey.includes(':') ? { reportDate: { $gte: monthStartKey, $lte: monthEndKey } } : { month: monthInfo.monthKey }), type: 'OpenCallReview' }).lean(),
   ]);
 
   const allCalls = [...openCallDocs, ...closedCallDocs];
@@ -1826,6 +1830,10 @@ async function getProductTeamPerformanceData({ month }) {
   const workingDaySet = new Set(workingDayKeys);
   const workingDays = workingDayKeys.length;
   
+  const monthStartKey = localDateKey(monthInfo.start);
+  const monthEndDate = new Date(monthInfo.end.getTime() - 86400000);
+  const monthEndKey = localDateKey(monthEndDate);
+  
   // 1. Fetch Product Team Members
   const ptUsers = await User.find({ role: 'pt' }).lean();
   
@@ -1835,13 +1843,13 @@ async function getProductTeamPerformanceData({ month }) {
   // Cache all docs for the month to avoid N+1 queries
   const ptCalls = await PtCall.find({
     $or: [
-      { callDate: { $regex: monthInfo.monthKey } },
-      { entryDate: { $regex: monthInfo.monthKey } }
+      { callDate: { $gte: monthStartKey, $lte: monthEndKey } },
+      { entryDate: { $gte: monthStartKey, $lte: monthEndKey } }
     ]
   }).lean();
   
   const ptDailyWorks = await PtDailyWork.find({
-    date: { $regex: monthInfo.monthKey }
+    date: { $gte: monthStartKey, $lte: monthEndKey }
   }).lean();
   
   for (const user of ptUsers) {
@@ -1891,10 +1899,6 @@ async function getProductTeamPerformanceData({ month }) {
   const birData = [];
   
   
-    const monthStartKey = monthInfo.monthKey + '-01';
-    const monthEndDate = new Date(monthInfo.year, monthInfo.month, 0);
-    const monthEndKey = `${monthInfo.year}-${String(monthInfo.month).padStart(2, '0')}-${String(monthEndDate.getDate()).padStart(2, '0')}`;
-
     const ptbirs = await PtBir.find({
       $or: [
         { unitInwardDate: { $gte: monthStartKey, $lte: monthEndKey } },
