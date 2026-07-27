@@ -68,6 +68,7 @@ function monthParts(month) {
   const matchQuarter = str.match(/^(\d{4})-Q([1-4])$/);
   const matchHalf = str.match(/^(\d{4})-H([1-2])$/);
   const matchAnnual = str.match(/^(\d{4})-A$/);
+  const matchRange = str.match(/^(\d{4})-(\d{2}):(\d{4})-(\d{2})$/);
 
   let year, start, end, shortMonth, longMonth, label, periodKey;
 
@@ -106,8 +107,27 @@ function monthParts(month) {
     periodKey = `${year}-A`;
     shortMonth = `${year}`;
     longMonth = `${year}`;
+  } else if (matchRange) {
+    year = Number(matchRange[1]);
+    const startYear = Number(matchRange[1]);
+    const startMonth = Number(matchRange[2]);
+    const endYear = Number(matchRange[3]);
+    const endMonth = Number(matchRange[4]);
+    
+    start = new Date(Date.UTC(startYear, startMonth - 1, 1, 0, 0, 0, 0));
+    end = new Date(Date.UTC(endYear, endMonth, 1, 0, 0, 0, 0));
+    
+    const startLabel = start.toLocaleString('en-IN', { month: 'short', timeZone: 'UTC' }) + ' ' + startYear;
+    // We display end label as endMonth - 1, because the bound is the START of the NEXT month
+    const displayEnd = new Date(Date.UTC(endYear, endMonth - 1, 1, 0, 0, 0, 0));
+    const endLabel = displayEnd.toLocaleString('en-IN', { month: 'short', timeZone: 'UTC' }) + ' ' + endYear;
+    
+    label = startLabel === endLabel ? startLabel : `${startLabel} - ${endLabel}`;
+    periodKey = str;
+    shortMonth = label;
+    longMonth = label;
   } else {
-    throw new Error('Month must be in YYYY-MM, YYYY-Qx, YYYY-Hx, or YYYY-A format.');
+    throw new Error('Month must be in YYYY-MM, YYYY-Qx, YYYY-Hx, YYYY-A, or YYYY-MM:YYYY-MM format.');
   }
 
   return {
