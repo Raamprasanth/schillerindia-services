@@ -1940,9 +1940,11 @@ async function getProductTeamPerformanceData({ month }) {
     let withinTargetCount = 0;
     
     for (const ptcbir of ptcbirs) {
-      const diff = ptcbir.unitInwardDate ? getDiff(ptcbir.unitInwardDate, ptcbir.createdAt) : getDiff(ptcbir.createdAt, ptcbir.createdAt);
-      if (diff !== null && diff <= 7) {
-        withinTargetCount++;
+      if (ptcbir.tsVerificationDate) {
+        const diff = getDiff(ptcbir.tsVerificationDate, ptcbir.createdAt);
+        if (diff !== null && diff <= 7) {
+          withinTargetCount++;
+        }
       }
     }
     
