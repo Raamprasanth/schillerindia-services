@@ -1809,10 +1809,11 @@ async function getProductTeamPerformanceData({ month }) {
   
   const User = require('../models/User');
   const PtCallRegister = require('../models/PtCallRegister');
+  const PtClose = require('../models/PtClose');
   const PtDailyWork = require('../models/PtDailyWork');
   const Bir = require('../models/Bir');
   const PtBir = require('../models/PtBir');
-    const PtClosedBir = require('../models/PtClosedBir');
+  const PtClosedBir = require('../models/PtClosedBir');
   const Division = require('../models/Division');
   
   const getDiff = (d1, d2) => {
@@ -1840,10 +1841,11 @@ async function getProductTeamPerformanceData({ month }) {
   // 2. PT Employee Performance
   const employeesData = [];
 
-  // Fetch all PT call register entries in the date range — just check if ANY entry was created that day
-  const ptCallRegisters = await PtCallRegister.find({
+  // Fetch all PT close entries in the date range
+  const ptCloses = await PtClose.find({
     $or: [
       { callDate: { $gte: monthStartKey, $lte: monthEndKey } },
+      { closeDate: { $gte: monthStartKey, $lte: monthEndKey } },
       { entryDate: { $gte: monthStartKey, $lte: monthEndKey } },
       { createdAt: { $gte: monthInfo.start, $lt: monthInfo.end } }
     ]
@@ -1859,19 +1861,20 @@ async function getProductTeamPerformanceData({ month }) {
   for (const user of ptUsers) {
     const userId = String(user._id);
 
-    // Count distinct working days where this PT user created a PtCallRegister entry
-    // Match by userId OR createdBy ObjectId (same as PtDailyWork) OR string names
+    // Count distinct working days where this PT user created a PtClose entry
+    // Match by createdBy ObjectId OR string names
     const callDays = new Set();
-    for (const doc of ptCallRegisters) {
+    for (const doc of ptCloses) {
       const docUserId = String(doc.userId || doc.createdBy || '');
       const matchName = String(user.name || '').trim().toLowerCase();
       if (
         docUserId === userId ||
         (doc.submittedBy && String(doc.submittedBy).trim().toLowerCase() === matchName) ||
         (doc.engineer && String(doc.engineer).trim().toLowerCase() === matchName) ||
+        (doc.scEngg && String(doc.scEngg).trim().toLowerCase() === matchName) ||
         (doc.scEng && String(doc.scEng).trim().toLowerCase() === matchName)
       ) {
-        const dateVal = doc.callDate || doc.entryDate || doc.createdAt;
+        const dateVal = doc.closeDate || doc.callDate || doc.entryDate || doc.createdAt;
         const key = dayKeyInMonth(dateVal, monthInfo);
         if (workingDaySet.has(key)) callDays.add(key);
       }
