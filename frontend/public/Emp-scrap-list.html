@@ -730,7 +730,10 @@ function openUpdateModal(id) {
   let fCount = 0, eCount = 0;
 
   SUPPLIER_COLUMNS.filter(c => c.key !== 'sn').forEach(field => {
-    const val = fieldValue(record, field.key);
+    let val = fieldValue(record, field.key);
+    if (field.key === 'division' && (!val || val.trim() === '')) {
+      val = JSON.parse(sessionStorage.getItem('schiller_user') || '{}').division || '';
+    }
     const isTextarea = ENTRY_TEXTAREAS.has(field.key);
     const isDate = field.type === 'date';
     
