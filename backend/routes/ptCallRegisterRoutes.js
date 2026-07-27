@@ -29,6 +29,69 @@ function validateRequired(payload) {
   return '';
 }
 
+// Temporary route to backfill userId
+router.get('/fix-userid', async (req, res) => {
+  try {
+    const User = require('../models/User');
+    const calls = await PtCallRegister.find({ $or: [{ userId: { $exists: false } }, { userId: null }] });
+    let updated = 0;
+    for (const call of calls) {
+      if (call.submittedBy) {
+        const user = await User.findOne({ name: new RegExp('^' + call.submittedBy + '$', 'i') });
+        if (user) {
+          await PtCallRegister.updateOne(
+            { _id: call._id },
+            { $set: { userId: user._id, createdBy: user._id } }
+          );
+          updated++;
+        }
+      }
+    }
+    res.json({ message: `Backfill complete. Found ${calls.length} records, updated ${updated}.` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/fix-scrap-division', async (req, res) => {
+  try {
+    const Service = require('../models/Service');
+    const Csw = require('../models/Csw');
+    const Scrap = require('../models/Scrap');
+    
+    const scraps = await Scrap.find({ $or: [{ division: '' }, { division: null }, { division: { $exists: false } }] });
+    let scrapUpdated = 0;
+    for (const scrap of scraps) {
+      let divName = scrap.divisionName || '';
+      if (!divName && scrap.serviceId) {
+        const svc = await Service.findById(scrap.serviceId).populate('division').lean();
+        if (svc && svc.division) divName = typeof svc.division === 'object' ? svc.division.name : svc.divisionName || '';
+      }
+      if (divName) {
+        await Scrap.updateOne({ _id: scrap._id }, { $set: { division: divName } });
+        scrapUpdated++;
+      }
+    }
+
+    const csws = await Csw.find({ $or: [{ division: '' }, { division: null }, { division: { $exists: false } }] });
+    let cswUpdated = 0;
+    for (const csw of csws) {
+      let divName = '';
+      if (csw.serviceId) {
+        const svc = await Service.findById(csw.serviceId).populate('division').lean();
+        if (svc && svc.division) divName = typeof svc.division === 'object' ? svc.division.name : svc.divisionName || '';
+      }
+      if (divName) {
+        await Csw.updateOne({ _id: csw._id }, { $set: { division: divName } });
+        cswUpdated++;
+      }
+    }
+    res.json({ message: `Scrap Backfill complete. Scraps updated: ${scrapUpdated}/${scraps.length}. CSWs updated: ${cswUpdated}/${csws.length}.` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── GET /api/pt/call-register (all open records for division)
 router.get('/', protect, async (req, res) => {
   try {
