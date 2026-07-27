@@ -62,6 +62,12 @@ const serviceSchema = new mongoose.Schema(
     dcNo:        { type: String, default: '' },
     typeReport:  { type: String, default: '' },
     destination: { type: String, default: '' },
+    repairedDate:{ type: String, default: '' },
+    repBrdDate:  { type: String, default: '' },
+    repairRemarks:{ type: String, default: '' },
+    cost:        { type: String, default: '' },
+    timeTaken:   { type: String, default: '' },
+    repairStatus:{ type: String, default: '' },
 
     // ── Group 5: Remarks ──────────────────────────────────────
     fieldRemarks: { type: String, default: '' },
