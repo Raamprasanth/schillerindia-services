@@ -233,6 +233,12 @@ router.get('/', protect, async (req, res) => {
       const rowRepGirNo = row.repGirNo || row.obRepGirNo || row.repGirSno || '';
       if (current && current.when > when) {
         if (!current.repGirNo && rowRepGirNo) current.repGirNo = rowRepGirNo;
+        if (!current.repBrd) current.repBrd = row.repBrd || row.repBrdDate || '';
+        if (!current.shipSc) current.shipSc = row.shipSc || row.shipDateSC || '';
+        if (!current.shipComm) current.shipComm = row.shipComm || row.shipDateComm || '';
+        if (!current.techRemarks) current.techRemarks = row.techRemarks || '';
+        if (!current.components) current.components = row.components || '';
+        if (!current.finalRemarks) current.finalRemarks = row.finalRemarks || '';
         return;
       }
       exportFieldsByServiceId.set(key, {

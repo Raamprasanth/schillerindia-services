@@ -854,6 +854,7 @@ router.put('/:id/update', protect, async (req, res) => {
             raEng:        doc.raEng        || '',
             defUnitGir:   doc.defUnitGir   || 'NA',
             repGirSno:    doc.repGirNo     || '',
+            repBrdDate:   doc.repBrd       || '',
             finalRemarks: doc.finalRemarks || '',
             techRemarks:  doc.techRemarks  || '',
             components:   doc.components   || '',
