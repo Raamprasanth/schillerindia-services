@@ -414,10 +414,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             <tr>
               <th style="width: 40px;" class="no-sort"><input type="checkbox" id="select-all" onclick="toggleSelectAll(this)" style="cursor:pointer;width:15px;height:15px;vertical-align:middle;"></th>
               <th>Division</th>
-              <th>Part No</th>
-              <th>Description</th>
-              <th>Qty</th>
-              <th>GIR No</th>
+              <th>Items</th>
               <th>From Location</th>
               <th>To Location</th>
               <th>Remarks</th>
@@ -428,13 +425,40 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             </tr>
           </thead>
           <tbody id="tb">
-            <tr><td colspan="13" style="text-align:center;padding:30px;">Loading...</td></tr>
+            <tr><td colspan="10" style="text-align:center;padding:30px;">Loading...</td></tr>
           </tbody>
         </table>
       </div>
     </div>
   </div>
 </main>
+
+<!-- VIEW ITEMS MODAL -->
+<div class="modal-overlay" id="view-items-overlay">
+  <div class="add-modal-box">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title">View Items</div>
+        <div class="modal-sub">List of parts requested in this SR</div>
+      </div>
+      <button class="modal-close" onclick="closeViewItemsModal()">&#10005;</button>
+    </div>
+    <div class="modal-body" style="background:#fff; max-height:60vh; overflow-y:auto; padding: 15px;">
+      <table class="frn-table">
+        <thead>
+          <tr>
+            <th>Part No</th>
+            <th>Description</th>
+            <th>Qty</th>
+            <th>GIR No</th>
+          </tr>
+        </thead>
+        <tbody id="view-items-tbody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
 <!-- ADD / UPDATE MODAL -->
 <div class="modal-overlay" id="todr-modal">
@@ -542,14 +566,13 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     const visibleRecords = getVisibleRecords();
     if(!visibleRecords.length) { tb.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:30px;">No SC Service Requests found.</td></tr>'; return; }
     
-    tb.innerHTML = visibleRecords.map(r => `
+    tb.innerHTML = visibleRecords.map(r => {
+      const itemsCount = (r.items && r.items.length) ? r.items.length : 1;
+      return `
       <tr>
         <td><input type="checkbox" class="row-select" value="${r._id}" onclick="updateSelectAllHeader()" style="cursor:pointer;width:15px;height:15px;vertical-align:middle;"></td>
         <td><span style="font-size:10px;background:rgba(37,99,235,0.08);color:#1d4ed8;border:1px solid rgba(37,99,235,0.18);border-radius:8px;padding:2px 8px;font-weight:700;white-space:nowrap;">${esc(r.division || '-')}</span></td>
-        <td><span style="font-weight:700;color:var(--accent);">${esc(r.partNo)}</span></td>
-        <td class="wrap-cell">${esc(r.description)}</td>
-        <td>${esc(r.qty || '-')}</td>
-        <td class="mono">${esc(r.girNo || '-')}</td>
+        <td><button class="btn-xs btn-outline" onclick="openViewItemsModal('${r._id}')">View Items (${itemsCount})</button></td>
         <td>${esc(r.fromLocation || '-')}</td>
         <td>${esc(r.toLocation || '-')}</td>
         <td>${esc(r.remarks || '-')}</td>
@@ -558,7 +581,8 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <td><input type="date" class="f-inp${r.sparesReceivedDate ? ' filled-red' : ''}" max="${TODAY_ISO}" value="${dateInputValue(r.sparesReceivedDate)}" onchange="toggleFilledInput(this);updateDateField('${r._id}','sparesReceivedDate',this.value)" style="width:140px;"></td>
         <td><button class="btn-xs update" onclick="fulfillRecord('${r._id}')">&#10003; Fulfill</button></td>
       </tr>
-    `).join('');
+      `;
+    }).join('');
     updateSelectAllHeader();
   }
 
@@ -861,5 +885,26 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   loadData();
 </script>
 <script src="tab-fix.js"></script>
+<script>
+  function openViewItemsModal(id) {
+    const r = records.find(x => x._id === id);
+    if(!r) return;
+    const items = r.items?.length ? r.items : [{ partNo: r.partNo, description: r.description, qty: r.qty, girNo: r.girNo }];
+    const tbody = document.getElementById('view-items-tbody');
+    tbody.innerHTML = items.map(item => `
+      <tr>
+        <td style="font-weight:700;">${esc(item.partNo || '-')}</td>
+        <td class="wrap-cell">${esc(item.description || '-')}</td>
+        <td>${esc(item.qty || 0)}</td>
+        <td class="mono">${esc(item.girNo || '-')}</td>
+      </tr>
+    `).join('');
+    document.getElementById('view-items-overlay').classList.add('open');
+  }
+
+  function closeViewItemsModal() {
+    document.getElementById('view-items-overlay').classList.remove('open');
+  }
+</script>
 </body>
 </html>

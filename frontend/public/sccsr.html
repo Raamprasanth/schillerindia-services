@@ -406,11 +406,8 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <table class="frn-table">
           <thead>
             <tr>
-              <th>Part No</th>
               <th>Division</th>
-              <th>Description</th>
-              <th>Qty</th>
-              <th>GIR No</th>
+              <th>Items</th>
               <th>From Location</th>
               <th>To Location</th>
               <th>Remarks</th>
@@ -422,13 +419,40 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             </tr>
           </thead>
           <tbody id="tb">
-            <tr><td colspan="13" style="text-align:center;padding:30px;">Loading...</td></tr>
+            <tr><td colspan="10" style="text-align:center;padding:30px;">Loading...</td></tr>
           </tbody>
         </table>
       </div>
     </div>
   </div>
 </main>
+
+<!-- VIEW ITEMS MODAL -->
+<div class="modal-overlay" id="view-items-overlay">
+  <div class="add-modal-box">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title">View Items</div>
+        <div class="modal-sub">List of parts requested in this SR</div>
+      </div>
+      <button class="modal-close" onclick="closeViewItemsModal()">&#10005;</button>
+    </div>
+    <div class="modal-body" style="background:#fff; max-height:60vh; overflow-y:auto; padding: 15px;">
+      <table class="frn-table">
+        <thead>
+          <tr>
+            <th>Part No</th>
+            <th>Description</th>
+            <th>Qty</th>
+            <th>GIR No</th>
+          </tr>
+        </thead>
+        <tbody id="view-items-tbody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
 <!-- ADD / UPDATE MODAL -->
 <div class="modal-overlay" id="ctodr-modal">
@@ -539,21 +563,20 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       applyFilters();
     } catch(e) {
       console.error(e);
-      if(tb) tb.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:30px;color:var(--red);font-weight:700;">&#9888; Could not load data: ${esc(e.message)}</td></tr>`;
+      if(tb) tb.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--red);font-weight:700;">&#9888; Could not load data: ${esc(e.message)}</td></tr>`;
     }
   }
 
   function renderTable() {
     const tb = document.getElementById('tb');
-    if(!filtered.length) { tb.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:30px;">No closed SC Service Requests found.</td></tr>'; return; }
+    if(!filtered.length) { tb.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:30px;">No closed SC Service Requests found.</td></tr>'; return; }
     
-    tb.innerHTML = filtered.map(r => `
+    tb.innerHTML = filtered.map(r => {
+      const itemsCount = (r.items && r.items.length) ? r.items.length : 1;
+      return `
       <tr>
-        <td><span style="font-weight:700;color:var(--accent);">${esc(r.partNo)}</span></td>
         <td><span class="div-tag">${esc(r.division || '-')}</span></td>
-        <td class="wrap-cell">${esc(r.description)}</td>
-        <td>${esc(r.qty || '-')}</td>
-        <td class="mono">${esc(r.girNo || '-')}</td>
+        <td><button class="btn-xs btn-outline" onclick="openViewItemsModal('${r._id}')">View Items (${itemsCount})</button></td>
         <td>${esc(r.fromLocation || '-')}</td>
         <td>${esc(r.toLocation || '-')}</td>
         <td>${esc(r.remarks || '-')}</td>
@@ -563,7 +586,8 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <td>${esc(r.closedBy || '-')}</td>
         <td>${r.closeDate ? new Date(r.closeDate).toLocaleDateString('en-IN') : '-'}</td>
       </tr>
-    `).join('');
+      `;
+    }).join('');
   }
 
   async function updateTextField(id, field, value) {
@@ -690,6 +714,25 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     await loadData();
   }
   initApp();
+  function openViewItemsModal(id) {
+    const r = records.find(x => x._id === id);
+    if(!r) return;
+    const items = r.items?.length ? r.items : [{ partNo: r.partNo, description: r.description, qty: r.qty, girNo: r.girNo }];
+    const tbody = document.getElementById('view-items-tbody');
+    tbody.innerHTML = items.map(item => `
+      <tr>
+        <td style="font-weight:700;">${esc(item.partNo || '-')}</td>
+        <td class="wrap-cell">${esc(item.description || '-')}</td>
+        <td>${esc(item.qty || 0)}</td>
+        <td class="mono">${esc(item.girNo || '-')}</td>
+      </tr>
+    `).join('');
+    document.getElementById('view-items-overlay').classList.add('open');
+  }
+
+  function closeViewItemsModal() {
+    document.getElementById('view-items-overlay').classList.remove('open');
+  }
 </script>
 <script src="tab-fix.js"></script>
 </body>

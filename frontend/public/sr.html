@@ -353,10 +353,7 @@ async function sendToScod(id, btn) {
         <table class="frn-table">
           <thead><tr>
             <th>Action</th>
-            <th onclick="sortBy('partNo')">Part No <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('description')">Description <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('qty')">Qty <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('girNo')">GIR No <span class="si">&#8693;</span></th>
+            <th>Items</th>
             <th onclick="sortBy('fromLocation')">From Location <span class="si">&#8693;</span></th>
             <th onclick="sortBy('toLocation')">To Location <span class="si">&#8693;</span></th>
             <th onclick="sortBy('remarks')">Remarks <span class="si">&#8693;</span></th>
@@ -402,21 +399,24 @@ async function sendToScod(id, btn) {
                 <option value="">Loading divisions...</option>
               </select>
             </div>
-            <div class="ff">
-              <label>Part No <span class="req">*</span></label>
-              <input type="text" id="m-partno" required/>
-            </div>
-            <div class="ff">
-              <label>Description <span class="req">*</span></label>
-              <input type="text" id="m-description" required/>
-            </div>
-            <div class="ff">
-              <label>Qty</label>
-              <input type="number" id="m-qty" min="0" placeholder="Quantity"/>
-            </div>
-            <div class="ff">
-              <label>GIR No <span class="req">*</span></label>
-              <input type="text" id="m-girno" required/>
+            <!-- Dynamic Items Table -->
+            <div class="ff span4" style="grid-column: 1 / -1; margin-top: 10px;">
+              <label>Items <span class="req">*</span></label>
+              <table class="data-table" style="margin-top:5px;">
+                <thead>
+                  <tr>
+                    <th>Part No *</th>
+                    <th>Description *</th>
+                    <th>Qty</th>
+                    <th>GIR No *</th>
+                    <th style="width:50px;">Act</th>
+                  </tr>
+                </thead>
+                <tbody id="m-items-tbody">
+                  <!-- Rows added dynamically -->
+                </tbody>
+              </table>
+              <button class="btn btn-sm" onclick="addItemsRow()" style="margin-top:8px;">+ Add Row</button>
             </div>
             <div class="ff">
               <label>From Location</label>
@@ -438,6 +438,33 @@ async function sendToScod(id, btn) {
       <div class="form-msg" id="form-msg"></div>
       <button class="btn btn-outline btn-sm" onclick="closeModal()">Cancel</button>
       <button class="btn btn-success" id="save-btn" onclick="saveItem()">&#128190; Save Entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- View Items Modal -->
+<div class="overlay" id="view-items-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">View Items</div>
+        <div class="modal-sub">List of parts requested in this SR</div>
+      </div>
+      <button class="modal-close" onclick="closeViewItemsModal()">&#10005;</button>
+    </div>
+    <div class="modal-scroll" style="max-height:60vh; padding: 15px;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Part No</th>
+            <th>Description</th>
+            <th>Qty</th>
+            <th>GIR No</th>
+          </tr>
+        </thead>
+        <tbody id="view-items-tbody">
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -601,19 +628,17 @@ function renderTable(){
   setText('count-chip', total + ' entr' + (total === 1 ? 'y' : 'ies'));
 
   if(!total){
-    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-st"><div class="ei">&#128230;</div><div class="et">${DATA.length ? 'No records match the current filters' : 'No ELT entries'}</div><div class="es">${DATA.length ? 'Try adjusting the filters.' : 'Click Add New to create the first ELT.'}</div></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-st"><div class="ei">&#128230;</div><div class="et">${DATA.length ? 'No records match the current filters' : 'No ELT entries'}</div><div class="es">${DATA.length ? 'Try adjusting the filters.' : 'Click Add New to create the first ELT.'}</div></div></td></tr>`;
   }else{
     tbody.innerHTML = slice.map((d,i)=>{
       const id = d._id || d.id;
+      const itemsCount = (d.items && d.items.length) ? d.items.length : 1;
       return `<tr>
         <td>
           <button class="btn-xs btn-outline" onclick="openEditModal('${id}')" title="Update">&#9999;</button>
           <button class="btn-xs btn-success" onclick="closeItem('${id}', this)" title="Close">&#10003;</button>
         </td>
-        <td class="mono" style="font-weight:700;">${esc(d.partNo || '-')}</td>
-        <td class="wrap-cell">${esc(d.description || '-')}</td>
-        <td>${esc(d.qty || 0)}</td>
-        <td class="mono">${esc(d.girNo || '-')}</td>
+        <td><button class="btn-xs btn-outline" onclick="openViewItemsModal('${id}')">View Items (${itemsCount})</button></td>
         <td>${esc(d.fromLocation || '-')}</td>
         <td>${esc(d.toLocation || '-')}</td>
         <td>${esc(d.remarks || '')}</td>
@@ -643,7 +668,7 @@ function goPage(p){ currentPage = p; renderTable(); }
 
 function openAddModal(){
   clearForm();
-  document.getElementById('modal-title').innerHTML = '&#10133; Add ELT';
+  document.getElementById('modal-title').innerHTML = '&#10133; Add SR';
   setText('modal-sub', 'Fill in all required fields below.');
   document.getElementById('m-date').value = todayISO();
   document.getElementById('item-overlay').classList.add('open');
@@ -659,10 +684,10 @@ function openEditModal(id){
   document.getElementById('m-id').value = id;
   document.getElementById('m-date').value = d.date || todayISO();
   document.getElementById('m-division').value = d.division || '';
-  document.getElementById('m-partno').value = d.partNo || '';
-  document.getElementById('m-description').value = d.description || '';
-  document.getElementById('m-qty').value = d.qty ?? '';
-  document.getElementById('m-girno').value = d.girNo || '';
+  
+  const items = d.items?.length ? d.items : [{ partNo: d.partNo, description: d.description, qty: d.qty, girNo: d.girNo }];
+  items.forEach(item => addItemsRow(item.partNo, item.description, item.qty, item.girNo));
+
   document.getElementById('m-fromLocation').value = d.fromLocation || '';
   document.getElementById('m-toLocation').value = d.toLocation || '';
   document.getElementById('m-remarks').value = d.remarks || '';
@@ -675,21 +700,67 @@ function closeModal(){
 }
 
 function clearForm(){
-  ['m-id','m-date','m-division','m-partno','m-description','m-qty','m-girno','m-fromLocation','m-toLocation','m-remarks'].forEach(id => {
+  ['m-id','m-date','m-division','m-fromLocation','m-toLocation','m-remarks'].forEach(id => {
     const el = document.getElementById(id);
     if(el){ el.value = ''; el.classList.remove('err'); }
   });
+  document.getElementById('m-items-tbody').innerHTML = '';
+  addItemsRow();
   clearFormMsg();
 }
 
+function addItemsRow(partNo='', description='', qty='', girNo=''){
+  const tbody = document.getElementById('m-items-tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" class="m-partno" value="${esc(partNo)}" required/></td>
+    <td><input type="text" class="m-description" value="${esc(description)}" required/></td>
+    <td><input type="number" class="m-qty" value="${esc(qty)}" min="0"/></td>
+    <td><input type="text" class="m-girno" value="${esc(girNo)}" required/></td>
+    <td><button class="btn-xs btn-outline" onclick="removeItemsRow(this)">&#10005;</button></td>
+  `;
+  tbody.appendChild(tr);
+}
+
+function removeItemsRow(btn){
+  const tr = btn.closest('tr');
+  if(document.getElementById('m-items-tbody').children.length > 1) {
+    tr.remove();
+  }
+}
+
+function openViewItemsModal(id){
+  const d = DATA.find(x => (x._id || x.id) === id);
+  if(!d) return;
+  const items = d.items?.length ? d.items : [{ partNo: d.partNo, description: d.description, qty: d.qty, girNo: d.girNo }];
+  const tbody = document.getElementById('view-items-tbody');
+  tbody.innerHTML = items.map(item => `
+    <tr>
+      <td class="mono" style="font-weight:700;">${esc(item.partNo || '-')}</td>
+      <td class="wrap-cell">${esc(item.description || '-')}</td>
+      <td>${esc(item.qty || 0)}</td>
+      <td class="mono">${esc(item.girNo || '-')}</td>
+    </tr>
+  `).join('');
+  document.getElementById('view-items-overlay').classList.add('open');
+}
+
+function closeViewItemsModal(){
+  document.getElementById('view-items-overlay').classList.remove('open');
+}
+
 function readPayload(){
+  const items = Array.from(document.getElementById('m-items-tbody').children).map(tr => ({
+    partNo: tr.querySelector('.m-partno').value.trim(),
+    description: tr.querySelector('.m-description').value.trim(),
+    qty: Number(tr.querySelector('.m-qty').value || 0),
+    girNo: tr.querySelector('.m-girno').value.trim()
+  }));
+
   return {
     date: document.getElementById('m-date').value,
     division: document.getElementById('m-division').value,
-    partNo: document.getElementById('m-partno').value.trim(),
-    description: document.getElementById('m-description').value.trim(),
-    qty: Number(document.getElementById('m-qty').value || 0),
-    girNo: document.getElementById('m-girno').value.trim(),
+    items,
     fromLocation: document.getElementById('m-fromLocation').value.trim(),
     toLocation: document.getElementById('m-toLocation').value.trim(),
     remarks: document.getElementById('m-remarks').value.trim(),
@@ -700,16 +771,22 @@ function validatePayload(payload){
   const fields = [
     ['m-date', payload.date],
     ['m-division', payload.division],
-    ['m-partno', payload.partNo],
-    ['m-description', payload.description],
-    ['m-girno', payload.girNo],
   ];
   let ok = true;
   fields.forEach(([id, val]) => {
     const el = document.getElementById(id);
     if(!val){ el.classList.add('err'); ok = false; } else el.classList.remove('err');
   });
-  if(!ok) showFormMsg('Please fill all required fields.', 'err');
+
+  if(!payload.items || payload.items.length === 0) ok = false;
+  payload.items.forEach((item, i) => {
+    const tr = document.getElementById('m-items-tbody').children[i];
+    if(!item.partNo) { tr.querySelector('.m-partno').classList.add('err'); ok = false; } else tr.querySelector('.m-partno').classList.remove('err');
+    if(!item.description) { tr.querySelector('.m-description').classList.add('err'); ok = false; } else tr.querySelector('.m-description').classList.remove('err');
+    if(!item.girNo) { tr.querySelector('.m-girno').classList.add('err'); ok = false; } else tr.querySelector('.m-girno').classList.remove('err');
+  });
+
+  if(!ok) showFormMsg('Please fill all required fields including item details.', 'err');
   return ok;
 }
 
