@@ -1839,7 +1839,8 @@ async function getProductTeamPerformanceData({ month }) {
   
   // 2. PT Employee Performance
   const employeesData = [];
-  
+
+  // Fetch all PT call register entries in the date range — just check if ANY entry was created that day
   const ptCallRegisters = await PtCallRegister.find({
     $or: [
       { callDate: { $gte: monthStartKey, $lte: monthEndKey } },
@@ -1847,48 +1848,54 @@ async function getProductTeamPerformanceData({ month }) {
       { createdAt: { $gte: monthInfo.start, $lt: monthInfo.end } }
     ]
   }).lean();
-  
+
   const ptDailyWorks = await PtDailyWork.find({
     $or: [
       { date: { $gte: monthStartKey, $lte: monthEndKey } },
       { createdAt: { $gte: monthInfo.start, $lt: monthInfo.end } }
     ]
   }).lean();
-  
+
   for (const user of ptUsers) {
     const userId = String(user._id);
-    const userIdSet = new Set([userId]);
-    
-    // PT Calls — use same matching as Individual Analysis (createdBy ObjectId first, then all name fields)
+
+    // Count distinct working days where this PT user created a PtCallRegister entry
+    // Match by createdBy ObjectId (most reliable) — exactly how the page saves the record
     const callDays = new Set();
     for (const doc of ptCallRegisters) {
-      if (recordMatchesEmployeeEntry(doc, user.name, [userId])) {
-        const key = dayKeyInMonth(doc.callDate || doc.entryDate || doc.createdAt, monthInfo);
+      const docCreatedBy = String(doc.createdBy || '');
+      if (docCreatedBy === userId) {
+        // Use callDate if set, else entryDate, else fall back to createdAt date
+        const dateVal = doc.callDate || doc.entryDate || doc.createdAt;
+        const key = dayKeyInMonth(dateVal, monthInfo);
         if (workingDaySet.has(key)) callDays.add(key);
       }
     }
-    
-    // PT Daily Work — same pattern
+
+    // Count distinct working days where this PT user created a PtDailyWork entry
+    // PtDailyWork uses 'userId' field (ObjectId) to track who created it
     const workDays = new Set();
     for (const doc of ptDailyWorks) {
-      if (recordMatchesEmployeeEntry(doc, user.name, [userId])) {
-        const key = dayKeyInMonth(doc.date || doc.createdAt, monthInfo);
+      const docUserId = String(doc.userId || doc.createdBy || '');
+      if (docUserId === userId) {
+        const dateVal = doc.date || doc.createdAt;
+        const key = dayKeyInMonth(dateVal, monthInfo);
         if (workingDaySet.has(key)) workDays.add(key);
       }
     }
-    
+
     const callScore = callDays.size;
     const workScore = workDays.size;
     const totalTracked = workingDays * 2;
     const completedCount = callScore + workScore;
     const completionRate = totalTracked > 0 ? Math.round((completedCount / totalTracked) * 100) : 0;
     let remark = 'Very Poor';
-      if (completionRate >= 91) remark = 'Outstanding';
-      else if (completionRate >= 81) remark = 'Excellent';
-      else if (completionRate >= 61) remark = 'Very Good';
-      else if (completionRate >= 41) remark = 'Satisfactory';
-      else if (completionRate >= 21) remark = 'Needs Improvement';
-    
+    if (completionRate >= 91) remark = 'Outstanding';
+    else if (completionRate >= 81) remark = 'Excellent';
+    else if (completionRate >= 61) remark = 'Very Good';
+    else if (completionRate >= 41) remark = 'Satisfactory';
+    else if (completionRate >= 21) remark = 'Needs Improvement';
+
     employeesData.push({
       employee: user.name,
       workingDays,
