@@ -1922,20 +1922,14 @@ async function getProductTeamPerformanceData({ month }) {
   const birData = [];
   
   
-    const ptbirs = await PtBir.find({
-      $or: [
-        { unitInwardDate: { $gte: monthStartKey, $lte: monthEndKey } },
-        { createdAt: { $gte: start, $lt: end } }
-      ]
-    }).lean();
+    const allPtBirs = await PtBir.find().lean();
+    const ptbirs = allPtBirs.filter(b => isDateInRange(parseAnyDate(b.unitInwardDate, b.createdAt), start, end));
 
-    const ptcbirs = await PtClosedBir.find({
-      $or: [
-        { unitInwardDate: { $gte: monthStartKey, $lte: monthEndKey } },
-        { createdAt: { $gte: start, $lt: end } },
-        { approvedDate: { $gte: monthStartKey, $lte: monthEndKey } }
-      ]
-    }).lean();
+    const allPtClosedBirs = await PtClosedBir.find().lean();
+    const ptcbirs = allPtClosedBirs.filter(b => 
+      isDateInRange(parseAnyDate(b.unitInwardDate, b.createdAt), start, end) || 
+      isDateInRange(parseAnyDate(b.approvedDate), start, end)
+    );
     
     let withinTargetCount = 0;
     
