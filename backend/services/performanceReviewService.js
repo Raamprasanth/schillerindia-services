@@ -1860,12 +1860,17 @@ async function getProductTeamPerformanceData({ month }) {
     const userId = String(user._id);
 
     // Count distinct working days where this PT user created a PtCallRegister entry
-    // Match by createdBy ObjectId (most reliable) — exactly how the page saves the record
+    // Match by userId OR createdBy ObjectId (same as PtDailyWork) OR string names
     const callDays = new Set();
     for (const doc of ptCallRegisters) {
-      const docCreatedBy = String(doc.createdBy || '');
-      if (docCreatedBy === userId) {
-        // Use callDate if set, else entryDate, else fall back to createdAt date
+      const docUserId = String(doc.userId || doc.createdBy || '');
+      const matchName = String(user.name || '').trim().toLowerCase();
+      if (
+        docUserId === userId ||
+        (doc.submittedBy && String(doc.submittedBy).trim().toLowerCase() === matchName) ||
+        (doc.engineer && String(doc.engineer).trim().toLowerCase() === matchName) ||
+        (doc.scEng && String(doc.scEng).trim().toLowerCase() === matchName)
+      ) {
         const dateVal = doc.callDate || doc.entryDate || doc.createdAt;
         const key = dayKeyInMonth(dateVal, monthInfo);
         if (workingDaySet.has(key)) callDays.add(key);
@@ -1877,7 +1882,11 @@ async function getProductTeamPerformanceData({ month }) {
     const workDays = new Set();
     for (const doc of ptDailyWorks) {
       const docUserId = String(doc.userId || doc.createdBy || '');
-      if (docUserId === userId) {
+      const matchName = String(user.name || '').trim().toLowerCase();
+      if (
+        docUserId === userId ||
+        (doc.addedBy && String(doc.addedBy).trim().toLowerCase() === matchName)
+      ) {
         const dateVal = doc.date || doc.createdAt;
         const key = dayKeyInMonth(dateVal, monthInfo);
         if (workingDaySet.has(key)) workDays.add(key);
