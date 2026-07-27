@@ -2999,8 +2999,13 @@ async function fetchCommercialData() {
         'Field TO/SO ( ER Raised - Entry )',
         'Re-Export (Ship Date-DC Date)'
       ];
+      const metricKeysExt = ['Re-Export ( DC Date - AWB Date )'];
+
       for (const m of metricKeys) {
         allDivData[m] = { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 };
+      }
+      for (const m of metricKeysExt) {
+        allDivData[m] = { '< 15 days': 0, '15 to 30 days': 0, '> 30 days': 0, total: 0 };
       }
       for (const div in d.data) {
         if (div === 'ALL DIVISIONS') continue;
@@ -3012,8 +3017,16 @@ async function fetchCommercialData() {
             allDivData[m].total += d.data[div][m].total || 0;
           }
         }
+        for (const m of metricKeysExt) {
+          if (d.data[div][m]) {
+            allDivData[m]['< 15 days'] += d.data[div][m]['< 15 days'] || 0;
+            allDivData[m]['15 to 30 days'] += d.data[div][m]['15 to 30 days'] || 0;
+            allDivData[m]['> 30 days'] += d.data[div][m]['> 30 days'] || 0;
+            allDivData[m].total += d.data[div][m].total || 0;
+          }
+        }
       }
-      d.data['ALL DIVISIONS'] = allDivData;
+      d.data = { 'ALL DIVISIONS': allDivData, ...d.data };
     }
 
     // Sort divisions alphabetically, keeping ALL DIVISIONS at the top
@@ -3065,6 +3078,38 @@ async function fetchCommercialData() {
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p1}% <br><span style="color:#64748b;font-size:11px;">(${val['< 1 day']})</span></td>
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p2}% <br><span style="color:#64748b;font-size:11px;">(${val['1 to 2 days']})</span></td>
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p3}% <br><span style="color:#64748b;font-size:11px;">(${val['> 2 days']})</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${t}</td>
+            </tr>`;
+      }
+      reportHtml += `</tbody></table>`;
+      
+      reportHtml += `<h4 style="margin:20px 0 10px 0; font-size:14px; color:#334155;">Extended Durations</h4>
+        <table style="width:100%; border-collapse:collapse; border:1px solid #cbd5e1; font-family:'Inter',sans-serif; font-size:13px;">
+          <thead>
+            <tr>
+              <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:left;">Report Type</th>
+              <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:center;">&lt; 15 days</th>
+              <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:center;">15 to 30 days</th>
+              <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:center;">&gt; 30 days</th>
+              <th style="background:#f1f5f9; border:1px solid #cbd5e1; padding:10px; text-align:center; color:#0f172a;">Total</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+      for (const m of ['Re-Export ( DC Date - AWB Date )']) {
+        const val = metrics[m];
+        if (!val) continue;
+        const t = val.total || 0;
+        const p1 = t > 0 ? Math.round((val['< 15 days']/t)*100) : 0;
+        const p2 = t > 0 ? Math.round((val['15 to 30 days']/t)*100) : 0;
+        const p3 = t > 0 ? Math.round((val['> 30 days']/t)*100) : 0;
+        
+        reportHtml += `
+            <tr>
+              <td style="border:1px solid #cbd5e1; padding:10px; font-weight:600; color:#334155;">${m}</td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p1}% <br><span style="color:#64748b;font-size:11px;">(${val['< 15 days']})</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p2}% <br><span style="color:#64748b;font-size:11px;">(${val['15 to 30 days']})</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p3}% <br><span style="color:#64748b;font-size:11px;">(${val['> 30 days']})</span></td>
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${t}</td>
             </tr>`;
       }

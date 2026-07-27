@@ -1412,6 +1412,13 @@ async function getCommercialPerformanceData({ month }) {
     return '> 2 days';
   };
 
+  const categorize15_30 = (diff) => {
+    if (diff === null || isNaN(diff)) return null;
+    if (diff < 15) return '< 15 days';
+    if (diff <= 30) return '15 to 30 days';
+    return '> 30 days';
+  };
+
   // Ensure start and end cover the whole month
   const start = monthInfo.start;
   const end = monthInfo.end;
@@ -1461,7 +1468,8 @@ async function getCommercialPerformanceData({ month }) {
         'SR ( Raised - Received )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
         'DR ( Requested - Received )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
         'Field TO/SO ( ER Raised - Entry )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
-        'Re-Export (Ship Date-DC Date)': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 }
+        'Re-Export (Ship Date-DC Date)': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
+        'Re-Export ( DC Date - AWB Date )': { '< 15 days': 0, '15 to 30 days': 0, '> 30 days': 0, total: 0 }
       };
     }
     return divisionsMap[d];
@@ -1560,13 +1568,22 @@ async function getCommercialPerformanceData({ month }) {
   const scraps = allScraps.filter(s => isDateInRange(parseAnyDate(s.shipDateFromSc), start, end));
   
   for (const s of scraps) {
-    const diff = getDiff(s.dcInvoiceDate, s.shipDateFromSc);
-    const cat = categorize(diff);
-    if (cat) {
+    const diff1 = getDiff(s.dcInvoiceDate, s.shipDateFromSc);
+    const cat1 = categorize(diff1);
+    if (cat1) {
       const divName = s.division || 'Unknown';
       const divData = ensureDivision(divName);
-      divData['Re-Export (Ship Date-DC Date)'][cat]++;
+      divData['Re-Export (Ship Date-DC Date)'][cat1]++;
       divData['Re-Export (Ship Date-DC Date)'].total++;
+    }
+
+    const diff2 = getDiff(s.dcInvoiceDate, s.awbDate);
+    const cat2 = categorize15_30(diff2);
+    if (cat2) {
+      const divName = s.division || 'Unknown';
+      const divData = ensureDivision(divName);
+      divData['Re-Export ( DC Date - AWB Date )'][cat2]++;
+      divData['Re-Export ( DC Date - AWB Date )'].total++;
     }
   }
 
