@@ -559,9 +559,16 @@ function renderTable(){
   }else{
     tbody.innerHTML = slice.map((d,i)=>{
       const id = d._id || d.id;
-      const itemsCount = (d.items && d.items.length) ? d.items.length : 1;
+      const itemsList = (d.items && d.items.length) ? d.items : [{ partNo: d.partNo, description: d.description, qty: d.qty, girNo: d.girNo }];
+      const itemsCount = itemsList.length;
+      const firstPartNo = itemsList[0]?.partNo || '-';
       return `<tr>
-        <td><button class="btn-xs btn-outline" onclick="openViewItemsModal('${id}')">View Items (${itemsCount})</button></td>
+        <td style="min-width:140px; padding:4px;">
+          <div style="cursor:pointer; border:1px solid #cbd5e1; border-radius:6px; padding:5px 8px; background:#f8fafc; color:#1e293b; display:flex; align-items:center; justify-content:space-between; gap:6px;" onclick="openViewItemsModal('${id}')" title="Click to view all items in popup">
+            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; font-size:12px;">${esc(firstPartNo)}</span>
+            <span style="font-size:10px; background:#2563eb; color:#fff; padding:2px 6px; border-radius:10px; font-weight:700; flex-shrink:0;">${itemsCount} item${itemsCount > 1 ? 's' : ''}</span>
+          </div>
+        </td>
         <td>${esc(d.fromLocation || '-')}</td>
         <td>${esc(d.toLocation || '-')}</td>
         <td>${esc(d.remarks || '')}</td>
