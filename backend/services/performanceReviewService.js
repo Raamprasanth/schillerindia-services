@@ -589,7 +589,8 @@ function buildReportDefinitions(year, month) {
     { type: 'NonSaleable', expectedPerEmployee: countDatesInMonth(year, month, [2, 16]) },
     { type: 'SupplierWarranty', expectedPerEmployee: countDatesInMonth(year, month, [3, 16]) },
     { type: 'CriticalPendingReport', expectedPerEmployee: countDatesInMonth(year, month, [2]) },
-    { type: 'PIRequest', expectedPerEmployee: countDatesInMonth(year, month, [5]) }
+    { type: 'PIRequest', expectedPerEmployee: countDatesInMonth(year, month, [5]) },
+    { type: 'BuyBack', expectedPerEmployee: [4, 8, 12].includes(month) ? countDatesInMonth(year, month, [15]) : 0 }
   ];
 }
 
@@ -619,7 +620,7 @@ async function getRealTrackerMetrics(scope, divisionName, employeeName, monthInf
 
   const actuals = {
     CRM: 0, PendingActivity: 0, NonSaleable: 0,
-    SupplierWarranty: 0, CriticalPendingReport: 0, PIRequest: 0
+    SupplierWarranty: 0, CriticalPendingReport: 0, PIRequest: 0, BuyBack: 0
   };
 
   const submissionsObj = {};

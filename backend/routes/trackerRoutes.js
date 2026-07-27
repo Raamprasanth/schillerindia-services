@@ -125,6 +125,12 @@ function buildReportDefinitions(year, month) {
       expectedPerEmployee: countDatesInMonth(year, month, [5])
     },
     {
+      type: 'BuyBack',
+      label: 'Buy Back',
+      schedule: '15 (Apr, Aug, Dec)',
+      expectedPerEmployee: [4, 8, 12].includes(month) ? countDatesInMonth(year, month, [15]) : 0
+    },
+    {
       type: 'OpenCallReview',
       label: 'Open Call Review',
       schedule: 'Daily (exc. 3rd Sat)',
