@@ -1461,7 +1461,7 @@ async function getCommercialPerformanceData({ month }) {
         'SR ( Raised - Received )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
         'DR ( Requested - Received )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
         'Field TO/SO ( ER Raised - Entry )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 },
-        'Re-Export ( SVC Ship Date - Comm DC Date )': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 }
+        'Re-Export (Ship Date-DC Date)': { '< 1 day': 0, '1 to 2 days': 0, '> 2 days': 0, total: 0 }
       };
     }
     return divisionsMap[d];
@@ -1565,8 +1565,8 @@ async function getCommercialPerformanceData({ month }) {
     if (cat) {
       const divName = s.division || 'Unknown';
       const divData = ensureDivision(divName);
-      divData['Re-Export ( SVC Ship Date - Comm DC Date )'][cat]++;
-      divData['Re-Export ( SVC Ship Date - Comm DC Date )'].total++;
+      divData['Re-Export (Ship Date-DC Date)'][cat]++;
+      divData['Re-Export (Ship Date-DC Date)'].total++;
     }
   }
 
