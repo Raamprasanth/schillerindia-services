@@ -1921,35 +1921,43 @@ async function getProductTeamPerformanceData({ month }) {
   // 3. BIR List Tracker
   const birData = [];
   
-  
-    const allPtBirs = await PtBir.find().lean();
-    const ptbirs = allPtBirs.filter(b => isDateInRange(parseAnyDate(b.unitInwardDate, b.createdAt), start, end));
+  const allPtBirs = await PtBir.find().lean();
+  const allPtClosedBirs = await PtClosedBir.find().lean();
 
-    const allPtClosedBirs = await PtClosedBir.find().lean();
-    const ptcbirs = allPtClosedBirs.filter(b => 
-      isDateInRange(parseAnyDate(b.unitInwardDate, b.createdAt), start, end) || 
-      isDateInRange(parseAnyDate(b.approvedDate), start, end)
-    );
-    
-    let withinTargetCount = 0;
-    
-    for (const ptcbir of ptcbirs) {
-      if (ptcbir.tsVerificationDate) {
-        const diff = getDiff(ptcbir.tsVerificationDate, ptcbir.createdAt);
-        if (diff !== null && diff <= 7) {
-          withinTargetCount++;
-        }
+  const ptbirs = allPtBirs.filter(b => {
+    const tsDate = parseAnyDate(b.tsVerificationDate);
+    const dateToUse = tsDate || parseAnyDate(b.unitInwardDate, b.createdAt);
+    return isDateInRange(dateToUse, start, end);
+  });
+
+  const ptcbirs = allPtClosedBirs.filter(b => {
+    const tsDate = parseAnyDate(b.tsVerificationDate);
+    const dateToUse = tsDate || parseAnyDate(b.approvedDate, parseAnyDate(b.unitInwardDate, b.createdAt));
+    return isDateInRange(dateToUse, start, end);
+  });
+  
+  let withinTargetCount = 0;
+  const allFilteredBirs = [...ptbirs, ...ptcbirs];
+  
+  for (const doc of allFilteredBirs) {
+    if (doc.tsVerificationDate) {
+      const tsDate = parseAnyDate(doc.tsVerificationDate);
+      const startRefDate = parseAnyDate(doc.unitInwardDate, doc.createdAt);
+      const diff = getDiff(startRefDate, tsDate);
+      if (diff === null || diff <= 7) {
+        withinTargetCount++;
       }
     }
-    
-    const total = ptbirs.length + ptcbirs.length;
+  }
+  
+  const total = allFilteredBirs.length;
   const rate = total > 0 ? Math.round((withinTargetCount / total) * 100) : 0;
   let remark = 'Very Poor';
-    if (rate >= 91) remark = 'Outstanding';
-    else if (rate >= 81) remark = 'Excellent';
-    else if (rate >= 61) remark = 'Very Good';
-    else if (rate >= 41) remark = 'Satisfactory';
-    else if (rate >= 21) remark = 'Needs Improvement';
+  if (rate >= 91) remark = 'Outstanding';
+  else if (rate >= 81) remark = 'Excellent';
+  else if (rate >= 61) remark = 'Very Good';
+  else if (rate >= 41) remark = 'Satisfactory';
+  else if (rate >= 21) remark = 'Needs Improvement';
   
   birData.push({
     division: 'All Divisions',
