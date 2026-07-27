@@ -1730,14 +1730,7 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
   const cCritical = data.compliance?.criticalPending ?? 0;
   const cPI = data.compliance?.purchaseIndent ?? 0;
     const cBuyBack = data.compliance?.buyBack ?? 0;
-    const isBuyBackMonth = params.month && (
-      params.month.includes('-04-') || 
-      params.month.includes('-08-') || 
-      params.month.includes('-12-') ||
-      params.month.endsWith('-04') || 
-      params.month.endsWith('-08') || 
-      params.month.endsWith('-12')
-    );
+    const isBuyBackMonth = true;
     const d15 = data.submissions?.includes('15') || false;
   const c5S = data.compliance?.fiveSRate ?? 0;
   const cRR = data.compliance?.repairReport ?? 0;
@@ -2301,6 +2294,9 @@ function drawPerfPdfPage(doc, data, monthLabel, scopeLabel, entityLabel, scRemar
     let compData = [];
     if (isSpecialDiv) {
       compData.push(['Purchase Indent', comp.purchaseIndent != null ? comp.purchaseIndent + '%' : '-']);
+      if (isBuyBackMonth) {
+        compData.push(['Buy Back', comp.buyBack != null ? comp.buyBack + '%' : '-']);
+      }
     } else {
       compData = [
         ['Weekly CRM Reports', comp.weeklyCrm != null ? comp.weeklyCrm + '%' : '-'],
