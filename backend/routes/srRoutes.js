@@ -90,17 +90,27 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { date, division, partNo, description, qty, girNo, fromLocation, toLocation, remarks } = req.body || {};
-    if (!date || !division || !partNo || !description || !girNo) {
-      return res.status(400).json({ message: 'Required: date, division, part no, description and GIR no.' });
+    let items = req.body.items || [];
+    if (!items.length && partNo && description && girNo) {
+      items.push({ partNo, description, qty: Number(qty) || 0, girNo });
+    }
+    
+    if (!date || !division) {
+      return res.status(400).json({ message: 'Required: date and division.' });
+    }
+
+    if (!items.length) {
+      return res.status(400).json({ message: 'Required: at least one item (part no, description, qty, gir no).' });
     }
 
     const doc = await Sr.create({
       date,
       division,
-      partNo,
-      description,
-      qty: Number(qty) || 0,
-      girNo,
+      partNo: items[0].partNo,
+      description: items[0].description,
+      qty: items[0].qty,
+      girNo: items[0].girNo,
+      items,
       fromLocation,
       toLocation,
       remarks,
@@ -112,10 +122,11 @@ router.post('/', async (req, res) => {
       srRef: doc._id,
       date,
       division,
-      partNo,
-      description,
-      qty: Number(qty) || 0,
-      girNo,
+      partNo: items[0].partNo,
+      description: items[0].description,
+      qty: items[0].qty,
+      girNo: items[0].girNo,
+      items,
       fromLocation,
       toLocation,
       remarks,
@@ -136,6 +147,17 @@ router.put('/:id', async (req, res) => {
     ['date', 'division', 'partNo', 'description', 'qty', 'girNo', 'fromLocation', 'toLocation', 'remarks'].forEach((field) => {
       if (req.body[field] !== undefined) updates[field] = req.body[field];
     });
+    
+    if (req.body.items && Array.isArray(req.body.items)) {
+      updates.items = req.body.items;
+      if (req.body.items.length > 0) {
+        updates.partNo = req.body.items[0].partNo;
+        updates.description = req.body.items[0].description;
+        updates.qty = req.body.items[0].qty;
+        updates.girNo = req.body.items[0].girNo;
+      }
+    }
+    
     updates.updatedBy = req.user?.name || req.user?.email || '';
 
     const doc = await Sr.findByIdAndUpdate(req.params.id, updates, {
@@ -190,6 +212,7 @@ router.post('/:id/close', async (req, res) => {
       description: doc.description,
       qty: doc.qty,
       girNo: doc.girNo,
+      items: doc.items || [],
       fromLocation: doc.fromLocation,
       toLocation: doc.toLocation,
       remarks: doc.remarks,

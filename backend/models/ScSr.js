@@ -4,10 +4,16 @@ const scSrSchema = new mongoose.Schema(
   {
     date: { type: String, trim: true, required: true },
     division: { type: String, trim: true, required: true },
-    partNo: { type: String, trim: true, required: true },
-    description: { type: String, trim: true, required: true },
+    partNo: { type: String, trim: true },
+    description: { type: String, trim: true },
     qty: { type: Number, default: 0 },
-    girNo: { type: String, trim: true, required: true },
+    girNo: { type: String, trim: true },
+    items: [{
+      partNo: { type: String, trim: true },
+      description: { type: String, trim: true },
+      qty: { type: Number, default: 0 },
+      girNo: { type: String, trim: true }
+    }],
     srRef: { type: mongoose.Schema.Types.ObjectId, ref: 'Sr' },
     fromLocation: { type: String, trim: true, default: '' },
     toLocation: { type: String, trim: true, default: '' },
