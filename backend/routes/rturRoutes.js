@@ -349,6 +349,31 @@ router.put('/:id', async (req, res) => {
 
     const saved = await record.save();   // triggers pre-save hook
 
+    // ── Sync to Service on EVERY update ──
+    try {
+      const serviceFilter = saved.sourceServiceId
+        ? { _id: saved.sourceServiceId }
+        : { scReNo: saved.scRefNo, defGir: saved.defGirNo };
+      await Service.findOneAndUpdate(
+        serviceFilter,
+        {
+          $set: {
+            components:       saved.compUsedToRepair || saved.components || '',
+            techRemarks:      saved.techRemarks || '',
+            repairRemarks:    saved.repairRemarks || '',
+            cost:             saved.cost || '',
+            timeTaken:        saved.timeTaken || '',
+            repairStatus:     saved.repairStatus || '',
+            doi:              saved.doi || '',
+            repairedDate:     saved.repairedDate || '',
+            repBrdDate:       saved.repBrdDate ? new Date(saved.repBrdDate).toISOString().slice(0,10) : '',
+          },
+        }
+      );
+    } catch (svcErr) {
+      console.error('RTUR → Service sync failed:', svcErr.message);
+    }
+
     // ── On completion: copy to RTCRL then delete RTUR ──
     if (saved.status === 'completed') {
       const completionStamp = new Date().toISOString();
