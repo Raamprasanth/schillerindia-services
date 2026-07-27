@@ -427,6 +427,19 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   </div>
 </main>
 
+<!-- REMARKS MODAL -->
+<div class="modal-overlay" id="remarks-modal" style="z-index: 3000;">
+  <div class="add-modal-box" style="max-width: 500px; height: auto; max-height: 80vh;">
+    <div class="modal-head">
+      <div class="modal-title">&#128269; View Remarks</div>
+      <button class="modal-close" type="button" onclick="document.getElementById('remarks-modal').classList.remove('open')">&#10005;</button>
+    </div>
+    <div class="modal-body" style="white-space: pre-wrap; font-size: 14px; line-height: 1.5; color: var(--text,#1e293b); padding: 20px; background: #fff;">
+      <div id="remarks-modal-content"></div>
+    </div>
+  </div>
+</div>
+
 <!-- VIEW ITEMS MODAL -->
 <div class="modal-overlay" id="view-items-overlay">
   <div class="add-modal-box">
@@ -586,7 +599,9 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         </td>
         <td>${esc(r.fromLocation || '-')}</td>
         <td>${esc(r.toLocation || '-')}</td>
-        <td>${esc(r.remarks || '-')}</td>
+        <td style="min-width:180px; padding:4px; font-size:12px;" onclick="showRemarksPopup('${r._id}')" title="Click to view full remarks">
+          <div style="cursor:pointer; border:1px solid #e2e8f0; border-radius:4px; padding:4px 6px; background:#f8fafc; white-space:pre-wrap; word-break:break-word; max-height:45px; overflow-y:auto; color:var(--text,#1e293b);">${esc(r.remarks || '-')}</div>
+        </td>
         <td>${esc(r.toNo || '-')}</td>
         <td>${r.toRaisedDate ? new Date(r.toRaisedDate).toLocaleDateString('en-IN') : '-'}</td>
         <td>${r.sparesReceivedDate ? new Date(r.sparesReceivedDate).toLocaleDateString('en-IN') : '-'}</td>
@@ -739,6 +754,13 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   function closeViewItemsModal() {
     document.getElementById('view-items-overlay').classList.remove('open');
+  }
+
+  function showRemarksPopup(id) {
+    const r = records.find(x => x._id === id);
+    if (!r) return;
+    document.getElementById('remarks-modal-content').textContent = r.remarks || '-';
+    document.getElementById('remarks-modal').classList.add('open');
   }
 </script>
 <script src="tab-fix.js"></script>

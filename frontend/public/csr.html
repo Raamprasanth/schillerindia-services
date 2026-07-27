@@ -371,6 +371,19 @@ async function sendToScod(id, btn) {
   </div>
 </div>
 
+<!-- REMARKS MODAL -->
+<div class="overlay" id="remarks-modal" style="z-index: 3000;">
+  <div class="modal" style="max-width: 500px; height: auto; max-height: 80vh; margin: auto; border-radius: 12px; overflow: hidden;">
+    <div class="modal-header">
+      <div class="modal-title">&#128269; View Remarks</div>
+      <button class="modal-close" type="button" onclick="document.getElementById('remarks-modal').classList.remove('open')">&#10005;</button>
+    </div>
+    <div class="modal-body" style="white-space: pre-wrap; font-size: 14px; line-height: 1.5; color: var(--text,#1e293b); padding: 20px; background: #fff;">
+      <div id="remarks-modal-content"></div>
+    </div>
+  </div>
+</div>
+
 <!-- View Items Modal -->
   <div class="modal">
     <div class="modal-header">
@@ -571,7 +584,9 @@ function renderTable(){
         </td>
         <td>${esc(d.fromLocation || '-')}</td>
         <td>${esc(d.toLocation || '-')}</td>
-        <td>${esc(d.remarks || '')}</td>
+        <td style="min-width:180px; padding:4px; font-size:12px;" onclick="showRemarksPopup('${id}')" title="Click to view full remarks">
+          <div style="cursor:pointer; border:1px solid #e2e8f0; border-radius:4px; padding:4px 6px; background:#f8fafc; white-space:pre-wrap; word-break:break-word; max-height:45px; overflow-y:auto; color:var(--text,#1e293b);">${esc(d.remarks || '-')}</div>
+        </td>
         <td>${esc(d.toNo || '-')}</td>
         <td>${fmtDate(d.toRaisedDate)}</td>
       </tr>`;
@@ -806,6 +821,13 @@ function openViewItemsModal(id){
 
 function closeViewItemsModal(){
   document.getElementById('view-items-overlay').classList.remove('open');
+}
+
+function showRemarksPopup(id) {
+  const d = DATA.find(x => (x._id || x.id) === id);
+  if (!d) return;
+  document.getElementById('remarks-modal-content').textContent = d.remarks || '-';
+  document.getElementById('remarks-modal').classList.add('open');
 }
 </script>
 <script src="tab-fix.js"></script>
