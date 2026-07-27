@@ -85,6 +85,7 @@ router.post('/', protect, async (req, res) => {
     if (validationMessage) return res.status(400).json({ message: validationMessage });
     const doc = new PtCallRegister({
       ...payload,
+      userId: req.user._id,
       createdBy: req.user._id,
     });
     const saved = await doc.save();
