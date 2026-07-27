@@ -407,7 +407,10 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
           <thead>
             <tr>
               <th>Division</th>
-              <th>Items</th>
+              <th>Part No</th>
+              <th>Description</th>
+              <th>Qty</th>
+              <th>GIR No</th>
               <th>From Location</th>
               <th>To Location</th>
               <th>Remarks</th>
@@ -419,13 +422,24 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             </tr>
           </thead>
           <tbody id="tb">
-            <tr><td colspan="10" style="text-align:center;padding:30px;">Loading...</td></tr>
+            <tr><td colspan="13" style="text-align:center;padding:30px;">Loading...</td></tr>
           </tbody>
         </table>
       </div>
     </div>
   </div>
-</main>
+<!-- DETAIL POPUP MODAL -->
+<div class="modal-overlay" id="box-detail-modal" style="z-index: 3000;">
+  <div class="add-modal-box" style="max-width: 500px; height: auto; max-height: 80vh;">
+    <div class="modal-head">
+      <div class="modal-title" id="box-detail-title">&#128269; View Details</div>
+      <button class="modal-close" type="button" onclick="document.getElementById('box-detail-modal').classList.remove('open')">&#10005;</button>
+    </div>
+    <div class="modal-body" style="white-space: pre-wrap; font-size: 14px; line-height: 1.5; color: var(--text); padding: 20px; background: #fff;">
+      <div id="box-detail-content"></div>
+    </div>
+  </div>
+</div>
 
 <!-- VIEW ITEMS MODAL -->
 <div class="modal-overlay" id="view-items-overlay">
@@ -567,16 +581,51 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     }
   }
 
+  function getItemColumnValues(r) {
+    if (r.items && Array.isArray(r.items) && r.items.length > 0) {
+      return {
+        partNo: r.items.map(i => i.partNo || '').filter(Boolean).join('\n') || r.partNo || '-',
+        description: r.items.map(i => i.description || '').filter(Boolean).join('\n') || r.description || '-',
+        qty: r.items.map(i => String(i.qty ?? '')).filter(v => v !== '').join('\n') || String(r.qty ?? '-'),
+        girNo: r.items.map(i => i.girNo || '').filter(Boolean).join('\n') || r.girNo || '-'
+      };
+    }
+    return {
+      partNo: r.partNo || '-',
+      description: r.description || '-',
+      qty: String(r.qty ?? '-'),
+      girNo: r.girNo || '-'
+    };
+  }
+
+  function renderBoxCell(title, text) {
+    const val = text || '-';
+    return `<td style="min-width:110px; padding:4px; font-size:12px;">
+      <div style="cursor:pointer; border:1px solid #e2e8f0; border-radius:4px; padding:4px 6px; background:#f8fafc; white-space:pre-wrap; word-break:break-word; max-height:45px; overflow-y:auto; color:var(--text,#1e293b);" onclick="showBoxPopup('${title}', this.textContent)" title="Click to view full ${title}">${esc(val)}</div>
+    </td>`;
+  }
+
+  function showBoxPopup(title, content) {
+    const modal = document.getElementById('box-detail-modal');
+    if(!modal) return;
+    document.getElementById('box-detail-title').innerHTML = '&#128269; View ' + title;
+    document.getElementById('box-detail-content').textContent = content || '-';
+    modal.classList.add('open');
+  }
+
   function renderTable() {
     const tb = document.getElementById('tb');
-    if(!filtered.length) { tb.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:30px;">No closed SC Service Requests found.</td></tr>'; return; }
+    if(!filtered.length) { tb.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:30px;">No closed SC Service Requests found.</td></tr>'; return; }
     
     tb.innerHTML = filtered.map(r => {
-      const itemsCount = (r.items && r.items.length) ? r.items.length : 1;
+      const items = getItemColumnValues(r);
       return `
       <tr>
         <td><span class="div-tag">${esc(r.division || '-')}</span></td>
-        <td><button class="btn-xs btn-outline" onclick="openViewItemsModal('${r._id}')">View Items (${itemsCount})</button></td>
+        ${renderBoxCell('Part No', items.partNo)}
+        ${renderBoxCell('Description', items.description)}
+        ${renderBoxCell('Qty', items.qty)}
+        ${renderBoxCell('GIR No', items.girNo)}
         <td>${esc(r.fromLocation || '-')}</td>
         <td>${esc(r.toLocation || '-')}</td>
         <td>${esc(r.remarks || '-')}</td>

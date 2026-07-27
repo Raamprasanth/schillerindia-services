@@ -353,7 +353,10 @@ async function sendToScod(id, btn) {
         <table class="frn-table">
           <thead><tr>
             <th>Action</th>
-            <th>Items</th>
+            <th onclick="sortBy('partNo')">Part No <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('description')">Description <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('qty')">Qty <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('girNo')">GIR No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('fromLocation')">From Location <span class="si">&#8693;</span></th>
             <th onclick="sortBy('toLocation')">To Location <span class="si">&#8693;</span></th>
             <th onclick="sortBy('remarks')">Remarks <span class="si">&#8693;</span></th>
@@ -442,7 +445,20 @@ async function sendToScod(id, btn) {
   </div>
 </div>
 
-<!-- View Items Modal -->
+<!-- DETAIL POPUP MODAL -->
+<div class="overlay" id="box-detail-modal" style="z-index: 3000;">
+  <div class="modal" style="max-width: 500px; height: auto; max-height: 80vh; margin: auto; border-radius: 12px; overflow: hidden;">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="box-detail-title">&#128269; View Details</div>
+      </div>
+      <button class="modal-close" type="button" onclick="document.getElementById('box-detail-modal').classList.remove('open')">&#10005;</button>
+    </div>
+    <div class="modal-body" style="white-space: pre-wrap; font-size: 14px; line-height: 1.5; color: var(--text); padding: 20px; background: #fff;">
+      <div id="box-detail-content"></div>
+    </div>
+  </div>
+</div>
 <div class="overlay" id="view-items-overlay">
   <div class="modal">
     <div class="modal-header">
@@ -618,6 +634,38 @@ function sortArr(){
   });
 }
 
+function getItemColumnValues(r) {
+  if (r.items && Array.isArray(r.items) && r.items.length > 0) {
+    return {
+      partNo: r.items.map(i => i.partNo || '').filter(Boolean).join('\n') || r.partNo || '-',
+      description: r.items.map(i => i.description || '').filter(Boolean).join('\n') || r.description || '-',
+      qty: r.items.map(i => String(i.qty ?? '')).filter(v => v !== '').join('\n') || String(r.qty ?? '-'),
+      girNo: r.items.map(i => i.girNo || '').filter(Boolean).join('\n') || r.girNo || '-'
+    };
+  }
+  return {
+    partNo: r.partNo || '-',
+    description: r.description || '-',
+    qty: String(r.qty ?? '-'),
+    girNo: r.girNo || '-'
+  };
+}
+
+function renderBoxCell(title, text) {
+  const val = text || '-';
+  return `<td style="min-width:110px; padding:4px; font-size:12px;">
+    <div style="cursor:pointer; border:1px solid #e2e8f0; border-radius:4px; padding:4px 6px; background:#f8fafc; white-space:pre-wrap; word-break:break-word; max-height:45px; overflow-y:auto; color:var(--text,#1e293b);" onclick="showBoxPopup('${title}', this.textContent)" title="Click to view full ${title}">${esc(val)}</div>
+  </td>`;
+}
+
+function showBoxPopup(title, content) {
+  const modal = document.getElementById('box-detail-modal');
+  if(!modal) return;
+  document.getElementById('box-detail-title').innerHTML = '&#128269; View ' + title;
+  document.getElementById('box-detail-content').textContent = content || '-';
+  modal.classList.add('open');
+}
+
 function renderTable(){
   const perPage = parseInt(document.getElementById('per-page').value) || 10;
   const total = filtered.length;
@@ -628,17 +676,20 @@ function renderTable(){
   setText('count-chip', total + ' entr' + (total === 1 ? 'y' : 'ies'));
 
   if(!total){
-    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-st"><div class="ei">&#128230;</div><div class="et">${DATA.length ? 'No records match the current filters' : 'No ELT entries'}</div><div class="es">${DATA.length ? 'Try adjusting the filters.' : 'Click Add New to create the first ELT.'}</div></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-st"><div class="ei">&#128230;</div><div class="et">${DATA.length ? 'No records match the current filters' : 'No ELT entries'}</div><div class="es">${DATA.length ? 'Try adjusting the filters.' : 'Click Add New to create the first ELT.'}</div></div></td></tr>`;
   }else{
     tbody.innerHTML = slice.map((d,i)=>{
       const id = d._id || d.id;
-      const itemsCount = (d.items && d.items.length) ? d.items.length : 1;
+      const items = getItemColumnValues(d);
       return `<tr>
         <td>
           <button class="btn-xs btn-outline" onclick="openEditModal('${id}')" title="Update">&#9999;</button>
           <button class="btn-xs btn-success" onclick="closeItem('${id}', this)" title="Close">&#10003;</button>
         </td>
-        <td><button class="btn-xs btn-outline" onclick="openViewItemsModal('${id}')">View Items (${itemsCount})</button></td>
+        ${renderBoxCell('Part No', items.partNo)}
+        ${renderBoxCell('Description', items.description)}
+        ${renderBoxCell('Qty', items.qty)}
+        ${renderBoxCell('GIR No', items.girNo)}
         <td>${esc(d.fromLocation || '-')}</td>
         <td>${esc(d.toLocation || '-')}</td>
         <td>${esc(d.remarks || '')}</td>
