@@ -1808,7 +1808,7 @@ async function getProductTeamPerformanceData({ month }) {
   const end = monthInfo.end;
   
   const User = require('../models/User');
-  const PtCall = require('../models/PtCall');
+  const PtCallRegister = require('../models/PtCallRegister');
   const PtDailyWork = require('../models/PtDailyWork');
   const Bir = require('../models/Bir');
   const PtBir = require('../models/PtBir');
@@ -1841,7 +1841,8 @@ async function getProductTeamPerformanceData({ month }) {
   const employeesData = [];
   
   // Cache all docs for the month to avoid N+1 queries
-  const ptCalls = await PtCall.find({
+  // PtCallRegister is the collection where PT users log their calls (submittedBy = PT user name)
+  const ptCallRegisters = await PtCallRegister.find({
     $or: [
       { callDate: { $gte: monthStartKey, $lte: monthEndKey } },
       { entryDate: { $gte: monthStartKey, $lte: monthEndKey } }
@@ -1855,10 +1856,10 @@ async function getProductTeamPerformanceData({ month }) {
   for (const user of ptUsers) {
     const empRegex = new RegExp('^' + escapeRegExp(user.name) + '$', 'i');
     
-    // PT Calls
+    // PT Calls — match by submittedBy (who the PT user is) or scEng
     const callDays = new Set();
-    for (const doc of ptCalls) {
-      if (empRegex.test(doc.engineer)) {
+    for (const doc of ptCallRegisters) {
+      if (empRegex.test(doc.submittedBy) || empRegex.test(doc.scEng)) {
         const key = dayKeyInMonth(doc.callDate || doc.entryDate, monthInfo);
         if (workingDaySet.has(key)) callDays.add(key);
       }
