@@ -38,7 +38,16 @@ const underRepairSchema = new mongoose.Schema(
     
     // ── Work & Status ─────────────────────────────────────
     typeOfWork:   { type: String, default: 'UNDER REPAIR' },
+    typeWork:     { type: String, default: '' },
     finalRemarks: { type: String, default: '' },
+    techRemarks:  { type: String, default: '' },
+    components:   { type: String, default: '' },
+    repBrd:       { type: String, default: '' },
+    shipSc:       { type: String, default: '' },
+    shipComm:     { type: String, default: '' },
+    dcNo:         { type: String, default: '' },
+    typeReport:   { type: String, default: '' },
+    destination:  { type: String, default: '' },
     pdays: {
       type:    Number,
       default: 0,
