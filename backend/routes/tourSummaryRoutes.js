@@ -48,12 +48,21 @@ function visibilityFilter(user) {
 
   const divisionLabel = getDivisionLabel(user);
   const divisionKey = normalizeDivision(divisionLabel);
-  const userIds = [user?._id].filter(Boolean);
+  
+  const mongoose = require('mongoose');
+  const userIds = [];
+  if (user?._id) {
+    try { userIds.push(new mongoose.Types.ObjectId(String(user._id))); }
+    catch(e) { userIds.push(user._id); }
+  }
+  
   const userName = String(user?.name || user?.email || '').trim();
+  const nameParts = userName.split(' ').filter(Boolean);
+  const firstName = nameParts[0] || userName;
 
   const userMatch = [];
   if (userIds.length) userMatch.push({ createdById: { $in: userIds } });
-  if (userName) userMatch.push({ createdBy: new RegExp('^' + escapeRegex(userName) + '$', 'i') });
+  if (firstName) userMatch.push({ createdBy: new RegExp(escapeRegex(firstName), 'i') });
 
   const ownerClause = userMatch.length ? (userMatch.length === 1 ? userMatch[0] : { $or: userMatch }) : {};
 
