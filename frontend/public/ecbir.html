@@ -584,20 +584,13 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
   </div>
 
   <div class="content">
-    <!-- Date & Division Filter -->
+    <!-- Date Filter -->
     <div class="filter-strip">
       <span class="filter-label">From Date</span>
       <input type="date" class="f-input" id="date-from" onchange="applyFilters()"/>
       <div class="f-divider"></div>
       <span class="filter-label">To Date</span>
       <input type="date" class="f-input" id="date-to" onchange="applyFilters()"/>
-      <div class="f-divider"></div>
-      <span class="filter-label">Division</span>
-      <select class="f-select" id="div-filter" onchange="applyFilters()">
-        <option value="">All Divisions</option>
-        <option>GANSHORN</option><option>VENTILATOR</option><option>VENT CON</option><option>PATIENT MONITORS</option><option>MONITORS CON</option>
-        <option>SHIPL</option><option>INJECTOR</option><option>RADIOLOGY</option><option>HOLTER</option>
-      </select>
       <button class="btn btn-outline btn-sm" onclick="clearFilters()" style="margin-left:auto;">&#10005; Clear</button>
     </div>
 
@@ -788,7 +781,8 @@ document.querySelectorAll('.ns-table th.sortable').forEach(th=>{
 // -- FILTERS -------------------------------------------------------------------
 function applyFilters(){
   const q=(document.getElementById('search-input').value||'').toLowerCase();
-  const divF=document.getElementById('div-filter').value;
+  const divEl=document.getElementById('div-filter');
+  const divF=divEl?divEl.value:'';
   const dateFrom=document.getElementById('date-from').value;
   const dateTo=document.getElementById('date-to').value;
 
@@ -809,7 +803,8 @@ function applyFilters(){
 
 function clearFilters(){
   document.getElementById('search-input').value='';
-  document.getElementById('div-filter').value='';
+  const divEl=document.getElementById('div-filter');
+  if(divEl)divEl.value='';
   document.getElementById('date-from').value='';
   document.getElementById('date-to').value='';
   applyFilters();
