@@ -856,7 +856,7 @@
 
     <div class="grid-1">
       <div class="panel">
-          <div class="panel-header"><div class="panel-title">RR Report Analysis</div><button class="panel-action rr-download-btn" id="rr-download-btn" type="button" disabled>Download Table</button></div>
+          <div class="panel-header"><div class="panel-title">RR Report Analysis</div><button class="panel-action rr-download-btn" id="rr-download-btn" type="button" disabled>Download Full Excel Report (.xlsx)</button></div>
         <div class="panel-body rr-panel-body">
           <div class="rr-upload">
             <div class="rr-upload-top">
@@ -1987,12 +1987,19 @@
       'COUNT': item.value,
     }));
 
+    const barChartItems = modelCounts;
+    const pieChartItems = regionCounts.length ? regionCounts : [{ label: 'Region column not available', value: 1 }];
+
     return {
+      reportId: 'overview',
+      metrics,
       table: {
         columns: ['PRODUCT_MODEL', 'COUNT'],
         rows: tableRows,
         fileName: 'RR_Dashboard_Overview.csv',
       },
+      barChart: { title: 'Product Model Distribution', items: barChartItems },
+      pieChart: { title: 'Region Distribution', items: pieChartItems },
       html: `
         ${renderMetricCards(metrics)}
         <div class="rr-chart-grid">
@@ -2004,7 +2011,7 @@
     };
   }
 
-  function buildPivotAnalysis({ rows, rowField, columnField, rowLabel, chartTitle, fileName }) {
+  function buildPivotAnalysis({ rows, rowField, columnField, rowLabel, chartTitle, fileName, reportId }) {
     const uniqueRows = dedupeRows(rows, [rowField, columnField, 'UNIT_SLNO']);
     const matrix = buildPivotMatrix(uniqueRows, rowField, columnField, rowLabel);
     const chartRows = matrix.rows.filter((row) => row[rowLabel] !== 'Grand Total');
@@ -2015,19 +2022,26 @@
       { label: 'Top Contribution', value: `${chartRows[0] ? chartRows[0]['Contribution %'] : 0}%` },
     ];
 
+    const barChartItems = chartRows.map((row) => ({ label: row[rowLabel], value: row['Grand Total'] })).slice(0, 8);
+    const pieChartItems = chartRows.map((row) => ({ label: row[rowLabel], value: Number(row['Grand Total']) })).slice(0, 8);
+
     return {
+      reportId: reportId || 'pivot',
+      metrics: summaryMetrics,
       table: {
         columns: matrix.columns,
         rows: matrix.rows,
         fileName,
       },
+      barChart: { title: chartTitle, items: barChartItems },
+      pieChart: { title: 'Contribution Split', items: pieChartItems },
       html: `
         ${renderMetricCards(summaryMetrics)}
         <div class="rr-chart-grid">
           ${renderBarCard(chartTitle, chartRows.map((row) => ({ label: row[rowLabel], value: row['Grand Total'] })).slice(0, 8))}
           ${renderPieCard('Contribution Split', chartRows.map((row) => ({ label: row[rowLabel], value: Number(row['Grand Total']) })).slice(0, 8))}
         </div>
-        ${renderDataTable(matrix.columns, matrix.rows, rrReportLabels[rrState.currentReport])}
+        ${renderDataTable(matrix.columns, matrix.rows, rrReportLabels[rrState.currentReport] || chartTitle)}
       `,
     };
   }
@@ -2039,19 +2053,240 @@
     const matrix = buildPivotMatrix(uniqueRows, 'MOD_BRD_NAME', 'UNIT_STATUS', 'Module Board / Warranty');
     const chartRows = matrix.rows.filter((row) => row['Module Board / Warranty'] !== 'Grand Total');
 
+    const metrics = [
+      { label: 'Selected Model', value: selectedModel || '-' },
+      { label: 'Boards', value: chartRows.length },
+      { label: 'Total Units', value: matrix.overallTotal },
+      { label: 'Top Board', value: chartRows[0] ? chartRows[0]['Module Board / Warranty'] : '-' },
+    ];
+    const barChartItems = chartRows.map((row) => ({ label: row['Module Board / Warranty'], value: row['Grand Total'] })).slice(0, 10);
+    const pieChartItems = chartRows.map((row) => ({ label: row['Module Board / Warranty'], value: Number(row['Grand Total']) })).slice(0, 10);
+
     return {
+      reportId: 'modBoardWarranty',
+      metrics,
       table: {
         columns: matrix.columns,
         rows: matrix.rows,
         fileName: `${sanitizeFileName(selectedModel || 'model')}_ModBoard_vs_Warranty.csv`,
       },
+      barChart: { title: `${selectedModel || 'Model'} - Top Module Boards`, items: barChartItems },
+      pieChart: { title: 'Warranty Contribution Split', items: pieChartItems },
       html: `
-        ${renderMetricCards([
-          { label: 'Selected Model', value: selectedModel || '-' },
-          { label: 'Boards', value: chartRows.length },
-          { label: 'Total Units', value: matrix.overallTotal },
-          { label: 'Top Board', value: chartRows[0] ? chartRows[0]['Module Board / Warranty'] : '-' },
-        ])}
+        ${renderMetricCards(metrics)}
+        <div class="rr-chart-grid">
+          ${renderBarCard(`${selectedModel || 'Model'} - Top Module Boards`, chartRows.map((row) => ({ label: row['Module Board / Warranty'], value: row['Grand Total'] })).slice(0, 10))}
+          ${renderPieCard('Warranty Contribution Split', chartRows.map((row) => ({ label: row['Module Board / Warranty'], value: Number(row['Grand Total']) })).slice(0, 10))}
+        </div>
+        ${renderDataTable(matrix.columns, matrix.rows, `Warranty split for ${selectedModel || 'selected model'}`)}
+      `,
+    };
+  }
+
+  function populateRrReportOptions() {
+    const select = document.getElementById('rr-report-select');
+    select.innerHTML = rrState.reports
+      .map((reportId) => `<option value="${reportId}">${rrReportLabels[reportId] || reportId}</option>`)
+      .join('');
+    select.disabled = !rrState.reports.length;
+    select.value = rrState.currentReport;
+  }
+
+  function populateRrModelOptions() {
+    const select = document.getElementById('rr-model-select');
+    select.innerHTML = rrState.models
+      .map((model) => `<option value="${escapeHtml(model)}">${escapeHtml(model)}</option>`)
+      .join('');
+    if (rrState.currentModel) {
+      select.value = rrState.currentModel;
+    }
+  }
+
+  function syncRrModelVisibility() {
+    const showModel = rrState.currentReport === 'modBoardWarranty' || rrState.currentReport === 'scrap';
+    document.getElementById('rr-model-control').style.display = showModel ? 'flex' : 'none';
+  }
+
+  function renderRrAnalysis() {
+    const container = document.getElementById('rr-analysis-content');
+    const downloadButton = document.getElementById('rr-download-btn');
+
+    if (!rrState.rows.length || !rrState.currentReport) {
+      rrState.currentTable = null;
+      downloadButton.disabled = true;
+      container.innerHTML = '<div class="rr-empty">Upload an RR report to view the analysis.</div>';
+      return;
+    }
+
+    let analysis;
+    switch (rrState.currentReport) {
+      case 'regionModel':
+        analysis = buildPivotAnalysis({
+          rows: rrState.rows,
+          rowField: 'REGION',
+          columnField: 'PRODUCT_MODEL',
+          rowLabel: 'Region / Model',
+          chartTitle: 'Region Wise Total',
+          fileName: 'Region_vs_Model.csv',
+        });
+        break;
+      case 'modelDefType':
+        analysis = buildPivotAnalysis({
+          rows: rrState.rows,
+          rowField: 'PRODUCT_MODEL',
+          columnField: 'DEF_TYPE',
+          rowLabel: 'Model / Type',
+          chartTitle: 'Model vs Product Type',
+          fileName: 'Model_vs_ProductType.csv',
+        });
+        break;
+      case 'warranty':
+        analysis = buildPivotAnalysis({
+          rows: rrState.rows,
+          rowField: 'PRODUCT_MODEL',
+          columnField: 'UNIT_STATUS',
+          rowLabel: 'Product Type / Warranty',
+          chartTitle: 'Warranty Distribution',
+          fileName: 'ProductType_vs_Warranty.csv',
+        });
+        break;
+      case 'typeOfWork':
+        analysis = buildPivotAnalysis({
+          rows: rrState.rows,
+          rowField: 'PRODUCT_MODEL',
+          columnField: 'TYPE_OF_WORK',
+          rowLabel: 'Model / Type of Work',
+          chartTitle: 'Type Of Work Distribution',
+          fileName: 'Model_vs_TypeOfWork.csv',
+        });
+        break;
+      case 'modBoardWarranty':
+        analysis = buildModelBoardAnalysis();
+        break;
+      case 'scrap':
+        analysis = buildScrapAnalysis();
+        break;
+      case 'overview':
+      default:
+        analysis = buildOverviewAnalysis();
+        break;
+    }
+
+    rrState.currentTable = analysis.table || null;
+    downloadButton.disabled = !rrState.currentTable;
+    container.innerHTML = analysis.html;
+  }
+
+  function buildOverviewAnalysis() {
+    const rows = rrState.rows;
+    const totalRecords = rows.length;
+    const totalModels = getUniqueValues(rows, 'PRODUCT_MODEL').length;
+    const totalRegions = rrState.columns.includes('REGION') ? getUniqueValues(rows, 'REGION').length : 0;
+    const totalScrap = rrState.columns.includes('REPORT_TYPE')
+      ? rows.filter((row) => normalizeText(row.REPORT_TYPE) === 'scraplist').length
+      : 0;
+    const modelCounts = countBy(rows, 'PRODUCT_MODEL').slice(0, 8);
+    const regionCounts = rrState.columns.includes('REGION') ? countBy(rows, 'REGION').slice(0, 8) : [];
+
+    const metrics = [
+      { label: 'Total Records', value: totalRecords },
+      { label: 'Total Models', value: totalModels },
+      { label: 'Total Regions', value: totalRegions },
+      { label: 'Scrapped Items', value: totalScrap },
+    ];
+
+    const tableRows = countBy(rows, 'PRODUCT_MODEL').map((item) => ({
+      'PRODUCT_MODEL': item.label,
+      'COUNT': item.value,
+    }));
+
+    const barChartItems = modelCounts;
+    const pieChartItems = regionCounts.length ? regionCounts : [{ label: 'Region column not available', value: 1 }];
+
+    return {
+      reportId: 'overview',
+      metrics,
+      table: {
+        columns: ['PRODUCT_MODEL', 'COUNT'],
+        rows: tableRows,
+        fileName: 'RR_Dashboard_Overview.csv',
+      },
+      barChart: { title: 'Product Model Distribution', items: barChartItems },
+      pieChart: { title: 'Region Distribution', items: pieChartItems },
+      html: `
+        ${renderMetricCards(metrics)}
+        <div class="rr-chart-grid">
+          ${renderBarCard('Product Model Distribution', modelCounts)}
+          ${renderPieCard('Region Distribution', regionCounts.length ? regionCounts : [{ label: 'Region column not available', value: 1 }])}
+        </div>
+        ${renderDataTable(['PRODUCT_MODEL', 'COUNT'], tableRows, 'Top product model counts')}
+      `,
+    };
+  }
+
+  function buildPivotAnalysis({ rows, rowField, columnField, rowLabel, chartTitle, fileName, reportId }) {
+    const uniqueRows = dedupeRows(rows, [rowField, columnField, 'UNIT_SLNO']);
+    const matrix = buildPivotMatrix(uniqueRows, rowField, columnField, rowLabel);
+    const chartRows = matrix.rows.filter((row) => row[rowLabel] !== 'Grand Total');
+    const summaryMetrics = [
+      { label: rowLabel, value: chartRows.length },
+      { label: 'Total Units', value: matrix.overallTotal },
+      { label: `Unique ${columnField}`, value: matrix.columns.length - 3 },
+      { label: 'Top Contribution', value: `${chartRows[0] ? chartRows[0]['Contribution %'] : 0}%` },
+    ];
+
+    const barChartItems = chartRows.map((row) => ({ label: row[rowLabel], value: row['Grand Total'] })).slice(0, 8);
+    const pieChartItems = chartRows.map((row) => ({ label: row[rowLabel], value: Number(row['Grand Total']) })).slice(0, 8);
+
+    return {
+      reportId: reportId || 'pivot',
+      metrics: summaryMetrics,
+      table: {
+        columns: matrix.columns,
+        rows: matrix.rows,
+        fileName,
+      },
+      barChart: { title: chartTitle, items: barChartItems },
+      pieChart: { title: 'Contribution Split', items: pieChartItems },
+      html: `
+        ${renderMetricCards(summaryMetrics)}
+        <div class="rr-chart-grid">
+          ${renderBarCard(chartTitle, chartRows.map((row) => ({ label: row[rowLabel], value: row['Grand Total'] })).slice(0, 8))}
+          ${renderPieCard('Contribution Split', chartRows.map((row) => ({ label: row[rowLabel], value: Number(row['Grand Total']) })).slice(0, 8))}
+        </div>
+        ${renderDataTable(matrix.columns, matrix.rows, rrReportLabels[rrState.currentReport] || chartTitle)}
+      `,
+    };
+  }
+
+  function buildModelBoardAnalysis() {
+    const selectedModel = rrState.currentModel || rrState.models[0] || '';
+    const modelRows = rrState.rows.filter((row) => normalizeText(row.PRODUCT_MODEL) === normalizeText(selectedModel));
+    const uniqueRows = dedupeRows(modelRows, ['MOD_BRD_NAME', 'UNIT_STATUS', 'UNIT_SLNO']);
+    const matrix = buildPivotMatrix(uniqueRows, 'MOD_BRD_NAME', 'UNIT_STATUS', 'Module Board / Warranty');
+    const chartRows = matrix.rows.filter((row) => row['Module Board / Warranty'] !== 'Grand Total');
+
+    const metrics = [
+      { label: 'Selected Model', value: selectedModel || '-' },
+{ label: 'Boards', value: chartRows.length },
+      { label: 'Total Units', value: matrix.overallTotal },
+      { label: 'Top Board', value: chartRows[0] ? chartRows[0]['Module Board / Warranty'] : '-' },
+    ];
+    const barChartItems = chartRows.map((row) => ({ label: row['Module Board / Warranty'], value: row['Grand Total'] })).slice(0, 10);
+    const pieChartItems = chartRows.map((row) => ({ label: row['Module Board / Warranty'], value: Number(row['Grand Total']) })).slice(0, 10);
+
+    return {
+      reportId: 'modBoardWarranty',
+      metrics,
+      table: {
+        columns: matrix.columns,
+        rows: matrix.rows,
+        fileName: `${sanitizeFileName(selectedModel || 'model')}_ModBoard_vs_Warranty.csv`,
+      },
+      barChart: { title: `${selectedModel || 'Model'} - Top Module Boards`, items: barChartItems },
+      pieChart: { title: 'Warranty Contribution Split', items: pieChartItems },
+      html: `
+        ${renderMetricCards(metrics)}
         <div class="rr-chart-grid">
           ${renderBarCard(`${selectedModel || 'Model'} - Top Module Boards`, chartRows.map((row) => ({ label: row['Module Board / Warranty'], value: row['Grand Total'] })).slice(0, 10))}
           ${renderPieCard('Warranty Contribution Split', chartRows.map((row) => ({ label: row['Module Board / Warranty'], value: Number(row['Grand Total']) })).slice(0, 10))}
@@ -2093,19 +2328,30 @@
     const overallSpare = scrapRows.filter((row) => normalizeText(row.DEF_TYPE) === 'spare').length;
     const overallTotal = overallConsumables + overallSpare;
 
+    const metrics = [
+      { label: 'Selected Model', value: selectedModel || '-' },
+      { label: 'Consumables', value: overallConsumables },
+      { label: 'Spares', value: overallSpare },
+      { label: 'Grand Total', value: overallTotal },
+    ];
+    const barChartItems = modelTableRows.map((row) => ({ label: row['Defective Items'], value: row['Grand Total'] })).slice(0, 10);
+    const pieChartItems = [
+      { label: 'Consumables', value: overallConsumables },
+      { label: 'Spares', value: overallSpare },
+    ];
+
     return {
+      reportId: 'scrap',
+      metrics,
       table: {
         columns: ['Defective Items', 'CONSUMABLES', 'SPARE', 'Grand Total'],
         rows: modelTableRows,
         fileName: `${sanitizeFileName(selectedModel || 'model')}_Scrapped_Items.csv`,
       },
+      barChart: { title: `${selectedModel || 'Model'} - Scrapped Items`, items: barChartItems },
+      pieChart: { title: 'Overall Scrap Split', items: pieChartItems },
       html: `
-        ${renderMetricCards([
-          { label: 'Selected Model', value: selectedModel || '-' },
-          { label: 'Consumables', value: overallConsumables },
-          { label: 'Spares', value: overallSpare },
-          { label: 'Grand Total', value: overallTotal },
-        ])}
+        ${renderMetricCards(metrics)}
         <div class="rr-chart-grid">
           ${renderBarCard(`${selectedModel || 'Model'} - Scrapped Items`, modelTableRows.map((row) => ({ label: row['Defective Items'], value: row['Grand Total'] })).slice(0, 10))}
           ${renderPieCard('Overall Scrap Split', [
@@ -2309,31 +2555,171 @@
     `;
   }
 
+  function roundToOne(value) {
+    return Math.round((Number(value) || 0) * 10) / 10;
+  }
+
+  function formatCellValue(value) {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return Number.isInteger(value) ? value : roundToOne(value);
+    }
+    return value ?? '';
+  }
+
+  function sanitizeSheetName(name) {
+    return String(name || 'Sheet')
+      .replace(/[\\/?*:[\]]/g, '')
+      .substring(0, 31);
+  }
+
   function downloadCurrentRrTable() {
-    if (!rrState.currentTable) return;
-    const { columns, rows, fileName } = rrState.currentTable;
-    const csv = [
-      columns.join(','),
-      ...rows.map((row) => columns.map((column) => escapeCsvValue(row[column])).join(',')),
-    ].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = fileName || 'rr-report-analysis.csv';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(link.href);
+    if (!rrState.rows.length || !rrState.reports.length) return;
+    if (typeof XLSX === 'undefined') {
+      setRrStatus('Excel export library (XLSX) is not loaded. Refresh the page and try again.', true);
+      return;
+    }
+
+    try {
+      const wb = XLSX.utils.book_new();
+
+      rrState.reports.forEach((reportId) => {
+        let analysis;
+        switch (reportId) {
+          case 'regionModel':
+            analysis = buildPivotAnalysis({
+              rows: rrState.rows,
+              rowField: 'REGION',
+              columnField: 'PRODUCT_MODEL',
+              rowLabel: 'Region / Model',
+              chartTitle: 'Region Wise Total',
+              fileName: 'Region_vs_Model.csv',
+              reportId: 'regionModel',
+            });
+            break;
+          case 'modelDefType':
+            analysis = buildPivotAnalysis({
+              rows: rrState.rows,
+              rowField: 'PRODUCT_MODEL',
+              columnField: 'DEF_TYPE',
+              rowLabel: 'Model / Type',
+              chartTitle: 'Model vs Product Type',
+              fileName: 'Model_vs_ProductType.csv',
+              reportId: 'modelDefType',
+            });
+            break;
+          case 'warranty':
+            analysis = buildPivotAnalysis({
+              rows: rrState.rows,
+              rowField: 'PRODUCT_MODEL',
+              columnField: 'UNIT_STATUS',
+              rowLabel: 'Product Type / Warranty',
+              chartTitle: 'Warranty Distribution',
+              fileName: 'ProductType_vs_Warranty.csv',
+              reportId: 'warranty',
+            });
+            break;
+          case 'typeOfWork':
+            analysis = buildPivotAnalysis({
+              rows: rrState.rows,
+              rowField: 'PRODUCT_MODEL',
+              columnField: 'TYPE_OF_WORK',
+              rowLabel: 'Model / Type of Work',
+              chartTitle: 'Type Of Work Distribution',
+              fileName: 'Model_vs_TypeOfWork.csv',
+              reportId: 'typeOfWork',
+            });
+            break;
+          case 'modBoardWarranty':
+            analysis = buildModelBoardAnalysis();
+            break;
+          case 'scrap':
+            analysis = buildScrapAnalysis();
+            break;
+          case 'overview':
+          default:
+            analysis = buildOverviewAnalysis();
+            break;
+        }
+
+        if (!analysis || !analysis.table) return;
+
+        const reportName = rrReportLabels[reportId] || reportId;
+        const sheetName = sanitizeSheetName(reportName);
+        const aoa = [];
+
+        // 1. Header Title
+        aoa.push([`REPORT: ${reportName.toUpperCase()}`]);
+        aoa.push([`Generated On: ${new Date().toLocaleString('en-IN')}`]);
+        aoa.push([]);
+
+        // 2. Summary Metrics
+        if (analysis.metrics && analysis.metrics.length) {
+          aoa.push(['SUMMARY METRICS']);
+          aoa.push(analysis.metrics.map((m) => m.label));
+          aoa.push(analysis.metrics.map((m) => m.value));
+          aoa.push([]);
+        }
+
+        // 3. Data Table First
+        aoa.push(['DATA TABLE']);
+        const cols = analysis.table.columns;
+        aoa.push(cols);
+        analysis.table.rows.forEach((r) => {
+          aoa.push(cols.map((c) => (r[c] !== undefined && r[c] !== null ? r[c] : '')));
+        });
+        aoa.push([]);
+        aoa.push([]);
+
+        // 4. Bar Graph Data (below table)
+        if (analysis.barChart && analysis.barChart.items && analysis.barChart.items.length) {
+          aoa.push([`BAR GRAPH DATA: ${analysis.barChart.title}`]);
+          aoa.push(['Category / Item', 'Count / Value', 'Visual Bar Representation']);
+          const items = analysis.barChart.items;
+          const maxVal = Math.max(...items.map((i) => Number(i.value) || 0), 1);
+          items.forEach((item) => {
+            const val = Number(item.value) || 0;
+            const barLen = val > 0 ? Math.max(1, Math.round((val / maxVal) * 20)) : 0;
+            const barStr = '█'.repeat(barLen) + '░'.repeat(20 - barLen);
+            aoa.push([item.label, val, barStr]);
+          });
+          aoa.push([]);
+          aoa.push([]);
+        }
+
+        // 5. Pie Graph Data (below bar graph)
+        if (analysis.pieChart && analysis.pieChart.items && analysis.pieChart.items.length) {
+          aoa.push([`PIE GRAPH DATA: ${analysis.pieChart.title}`]);
+          aoa.push(['Category / Slice', 'Count / Value', 'Percentage Share', 'Visual Share Split']);
+          const items = analysis.pieChart.items;
+          const total = items.reduce((sum, i) => sum + (Number(i.value) || 0), 0) || 1;
+          items.forEach((item) => {
+            const val = Number(item.value) || 0;
+            const pct = Math.round((val / total) * 1000) / 10;
+            const pieLen = val > 0 ? Math.max(1, Math.round((val / total) * 20)) : 0;
+            const pieStr = `${pct}% ` + '█'.repeat(pieLen) + '░'.repeat(20 - pieLen);
+            aoa.push([item.label, val, `${pct}%`, pieStr]);
+          });
+        }
+
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      });
+
+      const baseName = rrState.fileName ? rrState.fileName.replace(/\.[^/.]+$/, '').replace(/^Auto-fetched:\s*/, 'RR_Auto_') : 'RR_Analysis';
+      const cleanFileName = baseName.replace(/[^a-zA-Z0-9_-]/g, '_') + '_Full_Report.xlsx';
+      XLSX.writeFile(wb, cleanFileName);
+      setRrStatus(`Exported complete multi-sheet Excel report (${rrState.reports.length} sheets) as "${cleanFileName}".`);
+    } catch (err) {
+      console.error('RR Excel Export Error:', err);
+      setRrStatus('Failed to generate Excel file: ' + err.message, true);
+    }
   }
 
   function setRrStatus(message, isError = false) {
     const status = document.getElementById('rr-status');
+    if (!status) return;
     status.textContent = message;
     status.classList.toggle('error', Boolean(isError));
-  }
-
-  function normalizeText(value) {
-    return String(value ?? '').trim().toLowerCase();
   }
 
   function cleanDisplay(value) {
@@ -2344,17 +2730,6 @@
     return cleanDisplay(value)
       .toLowerCase()
       .replace(/\b\w/g, (char) => char.toUpperCase());
-  }
-
-  function roundToOne(value) {
-    return Math.round((Number(value) || 0) * 10) / 10;
-  }
-
-  function formatCellValue(value) {
-    if (typeof value === 'number' && Number.isFinite(value)) {
-      return Number.isInteger(value) ? value : roundToOne(value);
-    }
-    return value ?? '';
   }
 
   function sanitizeFileName(value) {
@@ -2377,86 +2752,6 @@
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
   }
-
-  /* ── NOTIFICATION PANEL ── */
-  const NOTIF_READ_KEY = 'si_notif_read_emp';
-  let notifData = [];
-
-  function getReadIds(){ try{ return JSON.parse(localStorage.getItem(NOTIF_READ_KEY)||'[]'); }catch(e){ return []; } }
-  function saveReadIds(ids){ localStorage.setItem(NOTIF_READ_KEY, JSON.stringify(ids)); }
-
-  async function loadNotifications(){
-    try {
-      const token = sessionStorage.getItem('schiller_token');
-      const res = await fetch('/api/admin/notifications', {headers:{'Authorization':'Bearer '+token}});
-      if(!res.ok) return;
-      const all = await res.json();
-      notifData = all.filter(d => d.isActive && (d.targetRole==='all'||d.targetRole==='employee'));
-      renderNotifPanel();
-    } catch(e){}
-  }
-
-  function renderNotifPanel(){
-    const readIds = getReadIds();
-    const list = document.getElementById('np-list');
-    const countEl = document.getElementById('notif-count');
-    const unreadCount = notifData.filter(d => !readIds.includes(d._id)).length;
-
-    countEl.textContent = unreadCount > 9 ? '9+' : unreadCount;
-    countEl.classList.toggle('show', unreadCount > 0);
-
-    if(!notifData.length){
-      list.innerHTML = '<div class="np-empty">&#127881; No announcements yet</div>';
-      return;
-    }
-    const prioColor = {urgent:'#b91c1c',high:'#d97706',medium:'#0077cc',low:'#059669'};
-    const typeIco = {announcement:'&#128226;',info:'&#8505;&#65039;',warning:'&#9888;&#65039;',alert:'&#128680;'};
-    list.innerHTML = notifData.map(d => {
-      const isUnread = !readIds.includes(d._id);
-      const ago = timeAgo(d.createdAt);
-      return `<div class="np-item${isUnread?' unread prio-'+(d.priority||'medium'):''}" onclick="markRead('${d._id}')">
-        <div class="np-row">
-          <span class="np-title">${typeIco[d.type]||'&#128276;'} ${escH(d.title)}</span>
-          <span class="np-badge" style="background:${prioColor[d.priority]||'#0077cc'}20;color:${prioColor[d.priority]||'#0077cc'}">${d.priority||'medium'}</span>
-        </div>
-        <div class="np-msg">${escH(d.message)}</div>
-        <div class="np-time">${ago}</div>
-      </div>`;
-    }).join('');
-  }
-
-  function markRead(id){
-    const ids = getReadIds();
-    if(!ids.includes(id)){ ids.push(id); saveReadIds(ids); renderNotifPanel(); }
-  }
-
-  function markAllRead(){
-    saveReadIds(notifData.map(d=>d._id));
-    renderNotifPanel();
-  }
-
-  function toggleNotifPanel(){
-    const panel = document.getElementById('notif-panel');
-    const isOpen = panel.classList.contains('open');
-    panel.classList.toggle('open', !isOpen);
-    if(!isOpen) loadNotifications();
-  }
-
-  document.addEventListener('click', e => {
-    if(!e.target.closest('.notif-wrap')) document.getElementById('notif-panel').classList.remove('open');
-  });
-
-  function timeAgo(iso){
-    const diff = Date.now() - new Date(iso).getTime();
-    const m = Math.floor(diff/60000);
-    if(m < 1) return 'Just now';
-    if(m < 60) return m+'m ago';
-    const h = Math.floor(m/60);
-    if(h < 24) return h+'h ago';
-    return Math.floor(h/24)+'d ago';
-  }
-
-  function escH(s){ const d=document.createElement('div');d.textContent=s;return d.innerHTML; }
 
   // --- WEEKLY TRACKERS LOGIC (Batch Tick + Submit) ---
   // localChecked[type][dateStr] = true/false (pending local selection before submit)
