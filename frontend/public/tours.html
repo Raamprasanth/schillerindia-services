@@ -111,6 +111,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <div class="section-title">Visit Details</div>
       <div class="visit-grid">
         <div class="field"><label>Tour Name</label><input type="text" id="tour-name"></div>
+        <div class="field"><label>Division</label><input type="text" id="tour-division" readonly></div>
         <div class="field"><label>Added By</label><input type="text" id="tour-addedby" readonly></div>
         <div class="field"><label>Day</label><input type="number" id="tour-day" min="1" step="1" value="1"></div>
         <div class="field"><label>Start Date <span class="req">*</span></label><input type="date" id="tour-date"></div>
@@ -317,6 +318,11 @@ function openTourModal(defaults){
   defaults = defaults || {};
   const addedBy = document.getElementById('tour-addedby');
   if(addedBy) addedBy.value = currentUserName();
+  const divField = document.getElementById('tour-division');
+  if(divField) {
+    const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
+    divField.value = String(u.activeDivision || u.division || (Array.isArray(u.divisions) ? u.divisions[0] : '') || '').trim();
+  }
   document.getElementById('tour-date').value = defaults.startDate || new Date().toISOString().slice(0,10);
   if(defaults.tourName) document.getElementById('tour-name').value = defaults.tourName;
   if(defaults.dayNo) document.getElementById('tour-day').value = defaults.dayNo;
@@ -346,7 +352,7 @@ function openNextDay(tourName){
   });
 }
 function closeTourModal(){ document.getElementById('tour-overlay').classList.remove('open'); }
-function clearForm(){ ['tour-name','tour-day','tour-date','tour-customer','tour-region','tour-branch','tour-model','tour-status','tour-slno','tour-reported','tour-observed','tour-action'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';}); const addedBy=document.getElementById('tour-addedby'); if(addedBy) addedBy.value=currentUserName(); populateRegionSelect(); const day=document.getElementById('tour-day'); if(day) day.value='1'; tourImgs=[null,null,null,null,null]; renderSlots(); showMsg(''); }
+function clearForm(){ ['tour-name','tour-day','tour-date','tour-customer','tour-region','tour-branch','tour-model','tour-status','tour-slno','tour-reported','tour-observed','tour-action'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';}); const addedBy=document.getElementById('tour-addedby'); if(addedBy) addedBy.value=currentUserName(); const divField=document.getElementById('tour-division'); if(divField){ const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}'); divField.value = String(u.activeDivision || u.division || (Array.isArray(u.divisions) ? u.divisions[0] : '') || '').trim(); } populateRegionSelect(); const day=document.getElementById('tour-day'); if(day) day.value='1'; tourImgs=[null,null,null,null,null]; renderSlots(); showMsg(''); }
 function renderSlots(){ const wrap=document.getElementById('img-slots'); if(!wrap) return; wrap.innerHTML=[0,1,2,3,4].map(i=>'<div class="img-slot" onclick="document.getElementById(&quot;tour-img-'+i+'&quot;).click()"><input type="file" id="tour-img-'+i+'" accept="image/*" style="display:none" onchange="handleImg('+i+',this)">'+(tourImgs[i]?'<img class="img-preview" src="'+tourImgs[i]+'"><button class="img-remove" onclick="removeImg('+i+',event)">&#10005;</button>':'<div class="img-placeholder"><span>&#128247;</span>Add Photo</div>')+'</div>').join(''); }
 function handleImg(i,input){ const file=input.files&&input.files[0]; if(!file) return; if(!/^image\//.test(file.type||'')){ alert('Please upload an image file.'); input.value=''; return; } if(file.size > 3*1024*1024){ alert('Image '+(i+1)+' exceeds 3 MB limit.'); input.value=''; return; } const reader=new FileReader(); reader.onload=e=>{ tourImgs[i]=e.target.result; renderSlots(); }; reader.readAsDataURL(file); }
 function removeImg(i,event){ event.stopPropagation(); tourImgs[i]=null; renderSlots(); }
