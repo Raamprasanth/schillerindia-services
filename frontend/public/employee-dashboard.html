@@ -1754,6 +1754,7 @@
       }
       
       const normalizedRows = filtered.map(svc => ({
+        BRANCH: svc.branch || svc.branchName || svc.location || '',
         REGION: svc.reg || '',
         PRODUCT_MODEL: svc.model || '',
         UNIT_SLNO: svc.unitSl || '',
@@ -1980,7 +1981,7 @@
         });
       }
       case 'branchWiseFailure': {
-        const branchField = rrState.columns.includes('BRANCH') ? 'BRANCH' : (rrState.columns.includes('REGION') ? 'REGION' : 'PRODUCT_MODEL');
+        const branchField = rrState.columns.find(c => ['BRANCH', 'BRANCH NAME', 'BRANCH_NAME', 'LOCATION', 'SERVICE_BRANCH'].includes(c.toUpperCase())) || 'BRANCH';
         return buildPivotAnalysis({
           rows,
           rowField: branchField,
