@@ -16,9 +16,16 @@ router.get('/me', protect, async (req, res) => {
       return res.json({ success: true, submissions: [] });
     }
 
-    const submissions = await TrackerSubmission.find({ division, month })
+    let submissions = await TrackerSubmission.find({ division, month })
       .populate('employee', 'name')
       .lean();
+
+    submissions = submissions.filter(sub => {
+      if (sub.type === 'OpenCallReview') {
+        return String(sub.employee?._id || sub.employee) === String(req.user._id);
+      }
+      return true;
+    });
 
     const formattedSubmissions = submissions.map(sub => ({
       ...sub,
@@ -48,7 +55,9 @@ router.post('/submit', protect, async (req, res) => {
     if (status === 'submitted') {
       const bulkOps = reportDates.map(date => ({
         updateOne: {
-          filter: { division, type, reportDate: date },
+          filter: type === 'OpenCallReview' 
+            ? { division, type, reportDate: date, employee: req.user._id }
+            : { division, type, reportDate: date },
           update: { $setOnInsert: { employee: req.user._id, month } },
           upsert: true
         }
@@ -58,7 +67,10 @@ router.post('/submit', protect, async (req, res) => {
       }
     } else {
       // Un-submit
-      await TrackerSubmission.deleteMany({ division, type, reportDate: { $in: reportDates } });
+      const deleteFilter = type === 'OpenCallReview'
+        ? { division, type, reportDate: { $in: reportDates }, employee: req.user._id }
+        : { division, type, reportDate: { $in: reportDates } };
+      await TrackerSubmission.deleteMany(deleteFilter);
     }
 
     res.json({ success: true });
