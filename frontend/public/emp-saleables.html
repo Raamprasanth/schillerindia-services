@@ -138,6 +138,22 @@ table.sale-table tbody tr:last-child td{border-bottom:none;}
 .nav-children{max-height:0;overflow:hidden;transition:max-height .28s ease;margin-bottom:3px;}
 .nav-children.open{max-height:650px;}
 .nav-sub .nav-item{padding-left:28px;font-size:11.5px;}
+
+/* Modal Styles */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,34,54,0.6);backdrop-filter:blur(3px);z-index:900;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:all 0.25s;}
+.modal-overlay.show{opacity:1;pointer-events:auto;}
+.modal{background:var(--surface);width:90%;max-width:650px;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,0.15);transform:translateY(20px);transition:transform 0.3s;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;}
+.modal-overlay.show .modal{transform:translateY(0);}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2);}
+.modal-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);}
+.close-btn{background:none;border:none;font-size:22px;color:var(--muted);cursor:pointer;transition:color 0.2s;}
+.close-btn:hover{color:var(--red);}
+.modal-body{padding:20px;overflow-y:auto;}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.detail-group{background:var(--bg);padding:12px;border-radius:10px;border:1px solid var(--border);}
+.detail-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;}
+.detail-val{font-size:13px;font-weight:600;color:var(--text);word-break:break-word;}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);text-align:right;background:var(--surface2);}
 </style>
   <link rel="stylesheet" href="global-typography.css">
   <link rel="stylesheet" href="employee-theme.css">
@@ -259,13 +275,6 @@ table.sale-table tbody tr:last-child td{border-bottom:none;}
       <span class="filter-label">To Date</span>
       <input type="date" class="f-input" id="filter-to" onchange="applyFilters()"/>
       <div class="f-divider"></div>
-      <span class="filter-label">Division</span>
-      <select class="f-select" id="filter-div" onchange="applyFilters()">
-        <option value="">All Division</option>
-        <option>SHIPL</option><option>VENTILATOR</option><option>VENT CON</option><option>INJECTOR</option>
-        <option>RADIOLOGY</option><option>GANSHORN</option><option>HOLTER</option><option>MONITORS</option><option>MONITORS CON</option>
-      </select>
-      <div class="f-divider"></div>
       <span class="filter-label">Status</span>
       <select class="f-select" id="filter-status" onchange="applyFilters()">
         <option value="">All Status</option>
@@ -322,6 +331,39 @@ table.sale-table tbody tr:last-child td{border-bottom:none;}
         <span id="tbl-info">&mdash;</span>
         <div class="pager-row" id="tbl-pagination"></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Modal -->
+<div class="modal-overlay" id="view-modal" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title" id="vm-title">Saleable Details</div>
+      <button class="close-btn" onclick="document.getElementById('view-modal').classList.remove('show')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-grid">
+        <div class="detail-group"><div class="detail-label">Entry Date</div><div class="detail-val" id="vm-entry-date">-</div></div>
+        <div class="detail-group"><div class="detail-label">Status</div><div class="detail-val" id="vm-status">-</div></div>
+        <div class="detail-group"><div class="detail-label">Model</div><div class="detail-val" id="vm-model">-</div></div>
+        <div class="detail-group"><div class="detail-label">Model SN</div><div class="detail-val" id="vm-modelsn">-</div></div>
+        <div class="detail-group" style="grid-column:1/-1;"><div class="detail-label">Unit Details</div><div class="detail-val" id="vm-unitdetails">-</div></div>
+        <div class="detail-group"><div class="detail-label">Customer</div><div class="detail-val" id="vm-customer">-</div></div>
+        <div class="detail-group"><div class="detail-label">Engineer</div><div class="detail-val" id="vm-engineer">-</div></div>
+        
+        <div class="detail-group"><div class="detail-label">FQC Inward Date</div><div class="detail-val" id="vm-fqc-in">-</div></div>
+        <div class="detail-group" style="grid-column:1/-1;"><div class="detail-label">FQC Remarks</div><div class="detail-val" id="vm-fqc-remarks" style="white-space:pre-wrap;">-</div></div>
+        
+        <div class="detail-group"><div class="detail-label">SC Inward Date</div><div class="detail-val" id="vm-sc-in">-</div></div>
+        <div class="detail-group" style="grid-column:1/-1;"><div class="detail-label">SC Observation</div><div class="detail-val" id="vm-sc-obs" style="white-space:pre-wrap;">-</div></div>
+        
+        <div class="detail-group"><div class="detail-label">Tentative Date</div><div class="detail-val" id="vm-tent-date">-</div></div>
+        <div class="detail-group"><div class="detail-label">Ship to FQC Date</div><div class="detail-val" id="vm-ship-fqc">-</div></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="document.getElementById('view-modal').classList.remove('show')">Close</button>
     </div>
   </div>
 </div>
@@ -390,7 +432,6 @@ function updateStats(){
 function clearFilters(){
   document.getElementById('filter-from').value = '';
   document.getElementById('filter-to').value = '';
-  document.getElementById('filter-div').value = '';
   document.getElementById('filter-status').value = '';
   document.getElementById('tbl-search').value = '';
   applyFilters();
@@ -400,13 +441,11 @@ function applyFilters(){
   const q = document.getElementById('tbl-search').value.toLowerCase();
   const fromVal = document.getElementById('filter-from').value;
   const toVal = document.getElementById('filter-to').value;
-  const divVal = document.getElementById('filter-div').value;
   const stVal = document.getElementById('filter-status').value;
   const from = fromVal ? new Date(fromVal) : null;
   const to = toVal ? new Date(toVal + 'T23:59:59') : null;
 
   filtered = SALE_DATA.filter(d => {
-    if (divVal && d.division !== divVal) return false;
     if (stVal && d.status !== stVal) return false;
     if (from || to) {
       const ed = d.entryDate ? new Date(d.entryDate) : null;
@@ -528,7 +567,33 @@ function exportCSV(){
 
 function viewRecord(id){
   const rec = SALE_DATA.find(d => String(d.id || d._id) === String(id));
-  showToast(rec ? 'Selected ' + (rec.modelSn || rec.model || 'record') : 'Record not found.', 'info');
+  if (!rec) {
+    showToast('Record not found.', 'err');
+    return;
+  }
+  
+  document.getElementById('vm-title').textContent = rec.modelSn ? `Saleable: ${rec.modelSn}` : 'Saleable Details';
+  document.getElementById('vm-entry-date').textContent = fmtDate(rec.entryDate);
+  document.getElementById('vm-status').innerHTML = statusPill(rec.status);
+  document.getElementById('vm-model').textContent = rec.model || '-';
+  document.getElementById('vm-modelsn').textContent = rec.modelSn || '-';
+  document.getElementById('vm-unitdetails').textContent = rec.unitDetails || '-';
+  document.getElementById('vm-customer').textContent = rec.customer || '-';
+  document.getElementById('vm-engineer').textContent = rec.engineer || '-';
+  document.getElementById('vm-fqc-in').textContent = fmtDate(rec.fqcInDate);
+  document.getElementById('vm-fqc-remarks').textContent = rec.fqcRemarks || '-';
+  document.getElementById('vm-sc-in').textContent = fmtDate(rec.scInDate);
+  document.getElementById('vm-sc-obs').textContent = rec.scObservation || '-';
+  document.getElementById('vm-tent-date').textContent = fmtDate(rec.tentDate);
+  document.getElementById('vm-ship-fqc').textContent = fmtDate(rec.shipFqcDate);
+  
+  document.getElementById('view-modal').classList.add('show');
+}
+
+function closeModal(e) {
+  if (e.target.id === 'view-modal') {
+    e.target.classList.remove('show');
+  }
 }
 
 function fmtDate(d){

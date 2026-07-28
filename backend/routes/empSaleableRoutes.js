@@ -9,7 +9,13 @@ router.get('/', protect, async (req, res) => {
     const { division, status, unitDetails, engineer, from, to } = req.query;
     const filter = {};
 
-    if (division)    filter.division    = division;
+    const userDiv = req.user.activeDivision || req.user.division;
+    if (userDiv) {
+      filter.division = userDiv;
+    } else if (division) {
+      filter.division = division;
+    }
+
     if (status)      filter.status      = status;
     if (unitDetails) filter.unitDetails = unitDetails;
     if (engineer)    filter.engineer    = engineer;
