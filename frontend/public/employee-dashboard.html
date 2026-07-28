@@ -2722,6 +2722,10 @@
     status.classList.toggle('error', Boolean(isError));
   }
 
+  function normalizeText(value) {
+    return String(value ?? '').trim().toLowerCase();
+  }
+
   function cleanDisplay(value) {
     return String(value ?? '').trim();
   }
