@@ -69,18 +69,10 @@ function visibilityFilter(user) {
   if (!divisionKey) return ownerClause;
 
   return {
-    $and: [
+    $or: [
       ownerClause,
-      {
-        $or: [
-          { createdByDivisionKey: divisionKey },
-          { createdByDivision: new RegExp('^' + escapeRegex(divisionLabel) + '$', 'i') },
-          { createdByDivisionKey: { $exists: false } },
-          { createdByDivisionKey: '' },
-          { createdByDivision: { $exists: false } },
-          { createdByDivision: '' }
-        ]
-      }
+      { createdByDivisionKey: divisionKey },
+      { createdByDivision: new RegExp('^' + escapeRegex(divisionLabel) + '$', 'i') }
     ]
   };
 }
