@@ -60,15 +60,30 @@ router.get('/', protect, async (req, res) => {
     if (role !== 'admin' && role !== 'superadmin') {
       const divDoc = await resolveDivision(req.user);
       const empName = String(req.user.name || '').trim();
-      const orConditions = [];
-      if (divDoc) orConditions.push({ division: divDoc.name });
+      
+      const ownerOr = [];
       if (empName) {
-        orConditions.push({ scEng: empName });
-        orConditions.push({ engineer: empName });
-        orConditions.push({ addedBy: empName });
+        ownerOr.push({ scEng: empName });
+        ownerOr.push({ engineer: empName });
+        ownerOr.push({ addedBy: empName });
       }
-      if (orConditions.length > 0) {
-        query.$or = orConditions;
+
+      if (divDoc) {
+        const divisionRegex = new RegExp('^' + String(divDoc.name).replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&') + '$', 'i');
+        const divClause = {
+          $or: [
+            { division: divisionRegex },
+            { division: { $exists: false } },
+            { division: '' }
+          ]
+        };
+        
+        query.$and = [
+          divClause,
+          ownerOr.length ? { $or: [ { division: divisionRegex }, ...ownerOr ] } : {}
+        ];
+      } else if (ownerOr.length > 0) {
+        query.$or = ownerOr;
       } else {
         return res.json([]);
       }
