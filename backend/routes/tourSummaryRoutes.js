@@ -38,12 +38,42 @@ function getDivisionLabel(user) {
   return String(user?.activeDivision || user?.division || (Array.isArray(user?.divisions) ? user.divisions[0] : '') || '').trim();
 }
 
+function escapeRegex(str) {
+  return String(str || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function visibilityFilter(user) {
   const role = String(user?.role || '').toLowerCase();
   if (['admin', 'superadmin', 'administrator'].includes(role)) return {};
-  const divisionKey = normalizeDivision(getDivisionLabel(user));
-  if (!divisionKey) return { createdById: user?._id };
-  return { createdById: user?._id, createdByDivisionKey: divisionKey };
+
+  const divisionLabel = getDivisionLabel(user);
+  const divisionKey = normalizeDivision(divisionLabel);
+  const userIds = [user?._id].filter(Boolean);
+  const userName = String(user?.name || user?.email || '').trim();
+
+  const userMatch = [];
+  if (userIds.length) userMatch.push({ createdById: { $in: userIds } });
+  if (userName) userMatch.push({ createdBy: new RegExp('^' + escapeRegex(userName) + '$', 'i') });
+
+  const ownerClause = userMatch.length ? (userMatch.length === 1 ? userMatch[0] : { $or: userMatch }) : {};
+
+  if (!divisionKey) return ownerClause;
+
+  return {
+    $and: [
+      ownerClause,
+      {
+        $or: [
+          { createdByDivisionKey: divisionKey },
+          { createdByDivision: new RegExp('^' + escapeRegex(divisionLabel) + '$', 'i') },
+          { createdByDivisionKey: { $exists: false } },
+          { createdByDivisionKey: '' },
+          { createdByDivision: { $exists: false } },
+          { createdByDivision: '' }
+        ]
+      }
+    ]
+  };
 }
 
 async function loadCreatorsMap(ids = []) {
