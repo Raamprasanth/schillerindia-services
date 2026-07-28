@@ -595,7 +595,7 @@ table.svc-table tbody tr:last-child td{border-bottom:none;}
 const API_BASE_URL = '';
 const LOGGED_USER  = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
 const EMP_NAME     = LOGGED_USER.name       || '';
-const EMP_DIVISION = LOGGED_USER.division   || LOGGED_USER.department || '';
+const EMP_DIVISION = LOGGED_USER.activeDivision || LOGGED_USER.division || (Array.isArray(LOGGED_USER.divisions) ? LOGGED_USER.divisions[0] : '') || LOGGED_USER.department || '';
 
 const FRN_UNIT_STATUSES = ['IW','EW','CAMC','STOCK','Demo','Repeat','Buy Back'];
 const EST_UNIT_STATUSES = ['OW','LAMC'];
