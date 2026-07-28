@@ -143,7 +143,12 @@ let tours = [], filteredTours = [], tourImgs = [null, null, null, null, null], D
   loadBranches();
   loadTours();
 })();
-function hdrs(){ return {'Content-Type':'application/json', Authorization:'Bearer '+token}; }
+function hdrs(){
+  const activeDiv = String(localStorage.getItem('schiller_active_division') || sessionStorage.getItem('schiller_active_division') || '').trim();
+  const h = {'Content-Type':'application/json', Authorization:'Bearer '+token};
+  if (activeDiv) h['x-active-division'] = activeDiv;
+  return h;
+}
 function handleAuth(res){ if(res.status===401){ window.location.href='login.html'; throw new Error('Unauthorized'); } }
 async function loadBranches(){
   try{

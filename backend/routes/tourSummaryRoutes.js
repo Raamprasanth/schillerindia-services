@@ -43,7 +43,7 @@ function visibilityFilter(user) {
   if (['admin', 'superadmin', 'administrator'].includes(role)) return {};
   const divisionKey = normalizeDivision(getDivisionLabel(user));
   if (!divisionKey) return { createdById: user?._id };
-  return { createdByDivisionKey: divisionKey };
+  return { createdById: user?._id, createdByDivisionKey: divisionKey };
 }
 
 async function loadCreatorsMap(ids = []) {
@@ -82,17 +82,25 @@ async function backfillMissingTourDivisions() {
       { createdByDivisionKey: '' },
     ],
     createdById: { $ne: null },
-  }).select('_id createdById').lean();
+  }).select('_id createdById createdByDivision').lean();
 
   if (!missing.length) return;
   const creators = await loadCreatorsMap(missing.map((doc) => doc.createdById));
   const ops = missing.map((doc) => {
-    const resolved = creators.get(String(doc.createdById || ''));
-    if (!resolved) return null;
+    let divKey = doc.createdByDivision ? normalizeDivision(doc.createdByDivision) : '';
+    let divLabel = doc.createdByDivision || '';
+    if (!divKey) {
+      const resolved = creators.get(String(doc.createdById || ''));
+      if (resolved) {
+        divKey = resolved.createdByDivisionKey;
+        divLabel = resolved.createdByDivision;
+      }
+    }
+    if (!divKey) return null;
     return {
       updateOne: {
         filter: { _id: doc._id },
-        update: { $set: resolved },
+        update: { $set: { createdByDivision: divLabel, createdByDivisionKey: divKey } },
       },
     };
   }).filter(Boolean);
