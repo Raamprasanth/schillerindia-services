@@ -93,6 +93,31 @@ router.get('/', async (req, res) => {
   }
 });
 
+// PUT /api/atours/:id
+router.put('/:id', async (req, res) => {
+  try {
+    const updateData = { ...req.body };
+    delete updateData._id;
+    delete updateData.createdAt;
+
+    const doc = await ATourSummary.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: false });
+    if (!doc) return res.status(404).json({ message: 'Admin tour summary not found.' });
+
+    if (doc.sourceId) {
+      if (doc.sourceType === 'Employee') {
+        await TourSummary.findByIdAndUpdate(doc.sourceId, updateData, { new: true, runValidators: false });
+      } else if (doc.sourceType === 'Product Team') {
+        await PTourSummary.findByIdAndUpdate(doc.sourceId, updateData, { new: true, runValidators: false });
+      }
+    }
+
+    res.json({ success: true, doc });
+  } catch (err) {
+    console.error('[PUT /api/atours/:id]', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
 // DELETE /api/atours/:id
 router.delete('/:id', async (req, res) => {
   try {
