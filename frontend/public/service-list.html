@@ -507,7 +507,7 @@ table.svc-table tbody tr:last-child td{border-bottom:none;}
 
             <div class="fg-field"><label>Customer Name <span class="req">*</span></label><input type="text" id="f-customer" placeholder="" required/></div>
             <div class="fg-field"><label>Supplier <span class="req">*</span></label>
-              <select id="f-supplier" required>
+              <select id="f-supplier" required onchange="onSupplierChange()">
                 <option value="">Select Supplier...</option>
               </select>
             </div>
@@ -603,6 +603,86 @@ const EST_UNIT_STATUSES = ['OW','LAMC'];
 let DB_BRANCHES  = [];
 let DB_ENGINEERS = [];
 let DB_DEALERS   = [];
+let DB_DIVISIONS = [];
+
+function norm(v) {
+  return String(v || '').trim().toLowerCase();
+}
+
+function resolveDivision(s) {
+  const raw = (s && (s.divisionName || (s.division && (s.division.name || s.division.displayName || s.division)))) 
+           || (document.getElementById('f-division')||{}).value 
+           || (document.getElementById('strip-division')||{}).textContent 
+           || EMP_DIVISION 
+           || '';
+  const val = String(raw || '').trim().toLowerCase();
+  if (!val) return { doc: null, name: '' };
+
+  const doc = DB_DIVISIONS.find(d => {
+    const id = String(d._id || '').trim().toLowerCase();
+    const nm = String(d.name || '').trim().toLowerCase();
+    const dn = String(d.displayName || '').trim().toLowerCase();
+    return id === val || nm === val || dn === val;
+  }) || null;
+
+  const name = doc ? (doc.name || doc.displayName || doc._id) : (typeof raw === 'string' ? raw : '');
+  return { doc, name };
+}
+
+function currentDivisionValue() {
+  const res = resolveDivision();
+  return res.name || res.doc?.name || EMP_DIVISION || '';
+}
+
+function currentDivisionDoc() {
+  return resolveDivision().doc;
+}
+
+function currentDivisionModels() {
+  const div = currentDivisionDoc();
+  return Array.isArray(div && div.models) ? div.models : [];
+}
+
+function option(select, value, label, disabled) {
+  const o = document.createElement('option');
+  o.value = value;
+  o.textContent = label || value;
+  if (disabled) o.disabled = true;
+  select.appendChild(o);
+  return o;
+}
+
+function populateSupplierSelect(selectedValue) {
+  const sel = document.getElementById('f-supplier');
+  if (!sel) return;
+  const selected = selectedValue || sel.value || '';
+  const models = currentDivisionModels();
+  const suppliers = [...new Set(models.map(m => String(m.supplier || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  sel.innerHTML = '';
+  option(sel, '', suppliers.length ? 'Select Supplier...' : 'No suppliers found for division', !suppliers.length);
+  suppliers.forEach(s => option(sel, s, s));
+  if (selected && !suppliers.includes(selected)) option(sel, selected, selected);
+  sel.value = selected && Array.from(sel.options).some(o => o.value === selected) ? selected : '';
+}
+
+function populateModelSelect(selectedValue) {
+  const sel = document.getElementById('f-model');
+  if (!sel) return;
+  const supplier = (document.getElementById('f-supplier') || {}).value || '';
+  const selected = selectedValue || sel.value || '';
+  const rows = currentDivisionModels().filter(m => String(m.supplier || '').trim() === supplier);
+  const models = [...new Set(rows.map(m => String(m.model || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  sel.innerHTML = '';
+  if (!supplier) option(sel, '', 'Select Supplier first', true);
+  else option(sel, '', models.length ? 'Select Model...' : 'No models found for selected supplier', !models.length);
+  models.forEach(m => option(sel, m, m));
+  if (selected && !models.includes(selected)) option(sel, selected, selected);
+  sel.value = selected && Array.from(sel.options).some(o => o.value === selected) ? selected : '';
+}
+
+function onSupplierChange() {
+  populateModelSelect('');
+}
 
 async function fetchFormData() {
   try {
@@ -630,11 +710,12 @@ async function loadDivisions() {
     const res = await fetch(API_BASE_URL + '/api/divisions', { headers: authHeaders() });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const divisions = await res.json();
+    DB_DIVISIONS = Array.isArray(divisions) ? divisions : (divisions.data || []);
     const formSel   = document.getElementById('f-division');
     const filterSel = document.getElementById('fl-div');
     if (formSel) formSel.innerHTML = '<option value="">Select Division...</option>';
     if (filterSel) filterSel.innerHTML = '<option value="">All Divisions</option>';
-    divisions.forEach(d => {
+    DB_DIVISIONS.forEach(d => {
       [formSel, filterSel].forEach(sel => {
         if (!sel) return;
         const o = document.createElement('option');
@@ -642,31 +723,8 @@ async function loadDivisions() {
       });
     });
 
-    let allSuppliers = new Set();
-    let allModels = new Set();
-    divisions.forEach(d => {
-      if (d.models && Array.isArray(d.models)) {
-        d.models.forEach(m => {
-          if (m.supplier) allSuppliers.add(m.supplier);
-          if (m.model) allModels.add(m.model);
-        });
-      }
-    });
-
-    const supSel = document.getElementById('f-supplier');
-    if (supSel) {
-      supSel.innerHTML = '<option value="">Select Supplier...</option>';
-      Array.from(allSuppliers).sort().forEach(s => {
-        const o = document.createElement('option'); o.value = s; o.textContent = s; supSel.appendChild(o);
-      });
-    }
-    const modSel = document.getElementById('f-model');
-    if (modSel) {
-      modSel.innerHTML = '<option value="">Select Model...</option>';
-      Array.from(allModels).sort().forEach(m => {
-        const o = document.createElement('option'); o.value = m; o.textContent = m; modSel.appendChild(o);
-      });
-    }
+    populateSupplierSelect();
+    populateModelSelect();
   } catch(e) {
     populateDivisionsFallback();
   }
@@ -1118,9 +1176,12 @@ function editService(id) {
   resetForm();
   (document.getElementById('strip-sceng')||{}).textContent = s.scEng || s.eng || '';
   document.getElementById('f-sceng').value = s.scEng || s.eng || '';
-  const divName = (s.division && s.division.name) || s.division || '';
+  const divRes = resolveDivision(s);
+  const divName = divRes.name || (s.division && s.division.name) || s.division || '';
   (document.getElementById('strip-division')||{}).textContent = divName;
   document.getElementById('f-division').value = divName !== '' ? divName : '';
+  populateSupplierSelect(s.supplier);
+  populateModelSelect(s.model);
   if(s.entryDate){ document.getElementById('f-entrydate').value = String(s.entryDate).slice(0, 10); (document.getElementById('strip-entrydate')||{}).textContent = String(s.entryDate).slice(0, 10); }
   setTimeout(()=>{
     const set=(elId,val)=>{
@@ -1145,7 +1206,8 @@ function editService(id) {
     set('f-region',s.reg); onRegionChange();
     setTimeout(()=>{ set('f-branch',s.branch); onBranchChange(); setTimeout(()=>{ set('f-engineer',s.eng); }, 80); }, 80);
     set('f-dealer',s.dealer); set('f-customer',s.custName||s.customer);
-    set('f-supplier',s.supplier); set('f-model',s.model); set('f-modelconfig',s.modelConfig);
+    populateSupplierSelect(s.supplier); set('f-supplier',s.supplier);
+    populateModelSelect(s.model); set('f-model',s.model); set('f-modelconfig',s.modelConfig);
     set('f-unitsl',s.unitSl); set('f-unitstatus',s.unitSts);
     set('f-doi',s.doi||s.dod); set('f-modbrd',s.defMod); set('f-partno',s.partNo);
     set('f-defpartsno',s.defPartSno); set('f-deftype',s.defType);

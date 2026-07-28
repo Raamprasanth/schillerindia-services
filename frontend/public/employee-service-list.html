@@ -601,15 +601,33 @@ function norm(v) {
   return String(v || '').trim().toLowerCase();
 }
 
+function resolveDivision(s) {
+  const raw = (s && (s.divisionName || (s.division && (s.division.name || s.division.displayName || s.division)))) 
+           || (document.getElementById('f-division')||{}).value 
+           || (document.getElementById('strip-division')||{}).textContent 
+           || EMP_DIVISION 
+           || '';
+  const val = String(raw || '').trim().toLowerCase();
+  if (!val) return { doc: null, name: '' };
+
+  const doc = DB_DIVISIONS.find(d => {
+    const id = String(d._id || '').trim().toLowerCase();
+    const nm = String(d.name || '').trim().toLowerCase();
+    const dn = String(d.displayName || '').trim().toLowerCase();
+    return id === val || nm === val || dn === val;
+  }) || null;
+
+  const name = doc ? (doc.name || doc.displayName || doc._id) : (typeof raw === 'string' ? raw : '');
+  return { doc, name };
+}
+
 function currentDivisionValue() {
-  const val = (document.getElementById('f-division') || {}).value || EMP_DIVISION || '';
-  return String(val || '').trim();
+  const res = resolveDivision();
+  return res.name || res.doc?.name || EMP_DIVISION || '';
 }
 
 function currentDivisionDoc() {
-  const val = norm(currentDivisionValue());
-  if (!val) return null;
-  return DB_DIVISIONS.find(d => norm(d._id) === val || norm(d.name) === val || norm(d.displayName) === val) || null;
+  return resolveDivision().doc;
 }
 
 function currentDivisionModels() {
@@ -633,7 +651,7 @@ function populateSupplierSelect(selectedValue) {
   const models = currentDivisionModels();
   const suppliers = [...new Set(models.map(m => String(m.supplier || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
   sel.innerHTML = '';
-  option(sel, '', suppliers.length ? 'Select Supplier...' : 'No suppliers found for your division', !suppliers.length);
+  option(sel, '', suppliers.length ? 'Select Supplier...' : 'No suppliers found for division', !suppliers.length);
   suppliers.forEach(s => option(sel, s, s));
   if (selected && !suppliers.includes(selected)) option(sel, selected, selected);
   sel.value = selected && Array.from(sel.options).some(o => o.value === selected) ? selected : '';
@@ -1275,7 +1293,8 @@ function editService(id) {
   resetForm();
   (document.getElementById('strip-sceng')||{}).textContent = s.scEng || s.eng || '';
   document.getElementById('f-sceng').value = s.scEng || s.eng || '';
-  const divName = serviceDivisionLabel(s);
+  const divRes = resolveDivision(s);
+  const divName = divRes.name || serviceDivisionLabel(s);
   (document.getElementById('strip-division')||{}).textContent = divName;
   document.getElementById('f-division').value = divName !== '' ? divName : '';
   populateSupplierSelect(s.supplier);
@@ -1304,7 +1323,8 @@ function editService(id) {
     set('f-region',s.reg); onRegionChange();
     setTimeout(()=>{ set('f-branch',s.branch); onBranchChange(); setTimeout(()=>{ set('f-engineer',s.eng); }, 80); }, 80);
     populateDealerSelect(s.reg, s.dealer); set('f-customer',s.custName||s.customer);
-    set('f-supplier',s.supplier); populateModelSelect(s.model); set('f-model',s.model); set('f-modelconfig',s.modelConfig);
+    populateSupplierSelect(s.supplier); set('f-supplier',s.supplier);
+    populateModelSelect(s.model); set('f-model',s.model); set('f-modelconfig',s.modelConfig);
     set('f-unitsl',s.unitSl); set('f-unitstatus',s.unitSts);
     set('f-doi',s.doi||s.dod); set('f-modbrd',s.defMod); set('f-partno',s.partNo);
     set('f-defpartsno',s.defPartSno); set('f-deftype',s.defType);
