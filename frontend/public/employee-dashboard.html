@@ -2074,24 +2074,6 @@
       pieChart: { title: 'Warranty Contribution Split', items: pieChartItems },
       html: `
         ${renderMetricCards(metrics)}
-        <div class="rr-chart-grid">
-          ${renderBarCard(`${selectedModel || 'Model'} - Top Module Boards`, chartRows.map((row) => ({ label: row['Module Board / Warranty'], value: row['Grand Total'] })).slice(0, 10))}
-          ${renderPieCard('Warranty Contribution Split', chartRows.map((row) => ({ label: row['Module Board / Warranty'], value: Number(row['Grand Total']) })).slice(0, 10))}
-        </div>
-        ${renderDataTable(matrix.columns, matrix.rows, `Warranty split for ${selectedModel || 'selected model'}`)}
-      `,
-    };
-  }
-
-  function populateRrReportOptions() {
-    const select = document.getElementById('rr-report-select');
-    select.innerHTML = rrState.reports
-      .map((reportId) => `<option value="${reportId}">${rrReportLabels[reportId] || reportId}</option>`)
-      .join('');
-    select.disabled = !rrState.reports.length;
-    select.value = rrState.currentReport;
-  }
-
   function populateRrModelOptions() {
     const select = document.getElementById('rr-model-select');
     select.innerHTML = rrState.models
@@ -2103,8 +2085,150 @@
   }
 
   function syncRrModelVisibility() {
-    const showModel = rrState.currentReport === 'modBoardWarranty' || rrState.currentReport === 'scrap';
-    document.getElementById('rr-model-control').style.display = showModel ? 'flex' : 'none';
+    document.getElementById('rr-model-control').style.display = 'none';
+  }
+
+  const rrReportLabels = {
+    productVsWarr: 'Product Vs Warr',
+    unitSnCalls: 'Unit SN Vs no of calls attended',
+    defItemsVsWarr: 'Def Items Vs Warr',
+    typeOfWorkVsWarr: 'Type of work Vs Warr',
+    typeOfWorkVsWarrCon: 'Type of work Vs Warr - Con',
+    typeOfWorkVsWarrPcbSpare: 'Type of work Vs Warr-PCB,Spar',
+    defVsRepaired: 'Def Vs repaired',
+    branchWiseFailure: 'Branch Wise failure',
+    noOfDaysReplacement: 'No of days taken for the repla',
+  };
+
+  function getAvailableRrReports(columns) {
+    return [
+      'productVsWarr',
+      'unitSnCalls',
+      'defItemsVsWarr',
+      'typeOfWorkVsWarr',
+      'typeOfWorkVsWarrCon',
+      'typeOfWorkVsWarrPcbSpare',
+      'defVsRepaired',
+      'branchWiseFailure',
+      'noOfDaysReplacement',
+    ];
+  }
+
+  function buildRrReport(reportId) {
+    const rows = rrState.rows;
+    switch (reportId) {
+      case 'productVsWarr':
+        return buildPivotAnalysis({
+          rows,
+          rowField: 'PRODUCT_MODEL',
+          columnField: 'UNIT_STATUS',
+          rowLabel: 'PRODUCT_MODEL',
+          reportId: 'productVsWarr',
+          sheetName: 'Product Vs Warr',
+        });
+      case 'unitSnCalls': {
+        const counts = countBy(rows, 'UNIT_SLNO');
+        const tableRows = counts.map(c => ({ 'UNIT_SLNO': c.label, 'Total': c.value }));
+        const total = tableRows.reduce((sum, r) => sum + (Number(r.Total) || 0), 0);
+        tableRows.push({ 'UNIT_SLNO': 'Grand Total', 'Total': total });
+        return {
+          reportId: 'unitSnCalls',
+          sheetName: 'Unit SN Vs no of calls attended',
+          table: { columns: ['UNIT_SLNO', 'Total'], rows: tableRows, fileName: 'UnitSN_vs_Calls.csv' }
+        };
+      }
+      case 'defItemsVsWarr': {
+        const defField = rrState.columns.includes('DEF_MOD_BRD_NAME') ? 'DEF_MOD_BRD_NAME' : (rrState.columns.includes('MOD_BRD_NAME') ? 'MOD_BRD_NAME' : 'DEF_TYPE');
+        return buildPivotAnalysis({
+          rows,
+          rowField: defField,
+          columnField: 'UNIT_STATUS',
+          rowLabel: 'Row Labels',
+          reportId: 'defItemsVsWarr',
+          sheetName: 'Def Items Vs Warr',
+        });
+      }
+      case 'typeOfWorkVsWarr': {
+        const workField = rrState.columns.includes('TYPE_OF_WORK') ? 'TYPE_OF_WORK' : 'STATUS';
+        return buildPivotAnalysis({
+          rows,
+          rowField: workField,
+          columnField: 'UNIT_STATUS',
+          rowLabel: 'Row Labels',
+          reportId: 'typeOfWorkVsWarr',
+          sheetName: 'Type  of work Vs Warr ',
+        });
+      }
+      case 'typeOfWorkVsWarrCon': {
+        const conRows = rows.filter(r => normalizeText(r.DEF_TYPE) === 'consumable');
+        const targetRows = conRows.length ? conRows : rows;
+        const workField = rrState.columns.includes('TYPE_OF_WORK') ? 'TYPE_OF_WORK' : 'STATUS';
+        return buildPivotAnalysis({
+          rows: targetRows,
+          rowField: workField,
+          columnField: 'UNIT_STATUS',
+          rowLabel: 'Row Labels',
+          reportId: 'typeOfWorkVsWarrCon',
+          sheetName: 'Type of work Vs Warr - Con',
+        });
+      }
+      case 'typeOfWorkVsWarrPcbSpare': {
+        const pcbRows = rows.filter(r => normalizeText(r.DEF_TYPE) !== 'consumable');
+        const targetRows = pcbRows.length ? pcbRows : rows;
+        const workField = rrState.columns.includes('TYPE_OF_WORK') ? 'TYPE_OF_WORK' : 'STATUS';
+        return buildPivotAnalysis({
+          rows: targetRows,
+          rowField: workField,
+          columnField: 'UNIT_STATUS',
+          rowLabel: 'Row Labels',
+          reportId: 'typeOfWorkVsWarrPcbSpare',
+          sheetName: 'Type of work Vs Warr-PCB,Spar',
+        });
+      }
+      case 'defVsRepaired': {
+        const defField = rrState.columns.includes('DEF_MOD_BRD_NAME') ? 'DEF_MOD_BRD_NAME' : (rrState.columns.includes('MOD_BRD_NAME') ? 'MOD_BRD_NAME' : 'PRODUCT_MODEL');
+        const statusField = rrState.columns.includes('TYPE_OF_WORK') ? 'TYPE_OF_WORK' : 'STATUS';
+        return buildPivotAnalysis({
+          rows,
+          rowField: defField,
+          columnField: statusField,
+          rowLabel: 'Row Labels',
+          reportId: 'defVsRepaired',
+          sheetName: 'Def Vs repaired',
+        });
+      }
+      case 'branchWiseFailure': {
+        const branchField = rrState.columns.includes('BRANCH') ? 'BRANCH' : (rrState.columns.includes('REGION') ? 'REGION' : 'PRODUCT_MODEL');
+        return buildPivotAnalysis({
+          rows,
+          rowField: branchField,
+          columnField: 'DEF_TYPE',
+          rowLabel: 'Row Labels',
+          reportId: 'branchWiseFailure',
+          sheetName: 'Branch Wise failure',
+        });
+      }
+      case 'noOfDaysReplacement': {
+        const dayField = rrState.columns.includes('PENDING DAYS(URP)') ? 'PENDING DAYS(URP)' : (rrState.columns.includes('PENDING DAYS(PFRN)') ? 'PENDING DAYS(PFRN)' : 'TYPE_OF_WORK');
+        return buildPivotAnalysis({
+          rows,
+          rowField: 'UNIT_STATUS',
+          columnField: dayField,
+          rowLabel: 'Row Labels',
+          reportId: 'noOfDaysReplacement',
+          sheetName: 'No of days taken for the repla',
+        });
+      }
+      default:
+        return buildPivotAnalysis({
+          rows,
+          rowField: 'PRODUCT_MODEL',
+          columnField: 'UNIT_STATUS',
+          rowLabel: 'PRODUCT_MODEL',
+          reportId: 'productVsWarr',
+          sheetName: 'Product Vs Warr',
+        });
+    }
   }
 
   function renderRrAnalysis() {
@@ -2118,250 +2242,26 @@
       return;
     }
 
-    let analysis;
-    switch (rrState.currentReport) {
-      case 'regionModel':
-        analysis = buildPivotAnalysis({
-          rows: rrState.rows,
-          rowField: 'REGION',
-          columnField: 'PRODUCT_MODEL',
-          rowLabel: 'Region / Model',
-          chartTitle: 'Region Wise Total',
-          fileName: 'Region_vs_Model.csv',
-        });
-        break;
-      case 'modelDefType':
-        analysis = buildPivotAnalysis({
-          rows: rrState.rows,
-          rowField: 'PRODUCT_MODEL',
-          columnField: 'DEF_TYPE',
-          rowLabel: 'Model / Type',
-          chartTitle: 'Model vs Product Type',
-          fileName: 'Model_vs_ProductType.csv',
-        });
-        break;
-      case 'warranty':
-        analysis = buildPivotAnalysis({
-          rows: rrState.rows,
-          rowField: 'PRODUCT_MODEL',
-          columnField: 'UNIT_STATUS',
-          rowLabel: 'Product Type / Warranty',
-          chartTitle: 'Warranty Distribution',
-          fileName: 'ProductType_vs_Warranty.csv',
-        });
-        break;
-      case 'typeOfWork':
-        analysis = buildPivotAnalysis({
-          rows: rrState.rows,
-          rowField: 'PRODUCT_MODEL',
-          columnField: 'TYPE_OF_WORK',
-          rowLabel: 'Model / Type of Work',
-          chartTitle: 'Type Of Work Distribution',
-          fileName: 'Model_vs_TypeOfWork.csv',
-        });
-        break;
-      case 'modBoardWarranty':
-        analysis = buildModelBoardAnalysis();
-        break;
-      case 'scrap':
-        analysis = buildScrapAnalysis();
-        break;
-      case 'overview':
-      default:
-        analysis = buildOverviewAnalysis();
-        break;
-    }
-
+    const analysis = buildRrReport(rrState.currentReport);
     rrState.currentTable = analysis.table || null;
     downloadButton.disabled = !rrState.currentTable;
-    container.innerHTML = analysis.html;
+
+    const reportTitle = rrReportLabels[rrState.currentReport] || rrState.currentReport;
+    container.innerHTML = renderDataTable(analysis.table.columns, analysis.table.rows, reportTitle);
   }
 
-  function buildOverviewAnalysis() {
-    const rows = rrState.rows;
-    const totalRecords = rows.length;
-    const totalModels = getUniqueValues(rows, 'PRODUCT_MODEL').length;
-    const totalRegions = rrState.columns.includes('REGION') ? getUniqueValues(rows, 'REGION').length : 0;
-    const totalScrap = rrState.columns.includes('REPORT_TYPE')
-      ? rows.filter((row) => normalizeText(row.REPORT_TYPE) === 'scraplist').length
-      : 0;
-    const modelCounts = countBy(rows, 'PRODUCT_MODEL').slice(0, 8);
-    const regionCounts = rrState.columns.includes('REGION') ? countBy(rows, 'REGION').slice(0, 8) : [];
-
-    const metrics = [
-      { label: 'Total Records', value: totalRecords },
-      { label: 'Total Models', value: totalModels },
-      { label: 'Total Regions', value: totalRegions },
-      { label: 'Scrapped Items', value: totalScrap },
-    ];
-
-    const tableRows = countBy(rows, 'PRODUCT_MODEL').map((item) => ({
-      'PRODUCT_MODEL': item.label,
-      'COUNT': item.value,
-    }));
-
-    const barChartItems = modelCounts;
-    const pieChartItems = regionCounts.length ? regionCounts : [{ label: 'Region column not available', value: 1 }];
-
-    return {
-      reportId: 'overview',
-      metrics,
-      table: {
-        columns: ['PRODUCT_MODEL', 'COUNT'],
-        rows: tableRows,
-        fileName: 'RR_Dashboard_Overview.csv',
-      },
-      barChart: { title: 'Product Model Distribution', items: barChartItems },
-      pieChart: { title: 'Region Distribution', items: pieChartItems },
-      html: `
-        ${renderMetricCards(metrics)}
-        <div class="rr-chart-grid">
-          ${renderBarCard('Product Model Distribution', modelCounts)}
-          ${renderPieCard('Region Distribution', regionCounts.length ? regionCounts : [{ label: 'Region column not available', value: 1 }])}
-        </div>
-        ${renderDataTable(['PRODUCT_MODEL', 'COUNT'], tableRows, 'Top product model counts')}
-      `,
-    };
-  }
-
-  function buildPivotAnalysis({ rows, rowField, columnField, rowLabel, chartTitle, fileName, reportId }) {
+  function buildPivotAnalysis({ rows, rowField, columnField, rowLabel, reportId, sheetName }) {
     const uniqueRows = dedupeRows(rows, [rowField, columnField, 'UNIT_SLNO']);
     const matrix = buildPivotMatrix(uniqueRows, rowField, columnField, rowLabel);
-    const chartRows = matrix.rows.filter((row) => row[rowLabel] !== 'Grand Total');
-    const summaryMetrics = [
-      { label: rowLabel, value: chartRows.length },
-      { label: 'Total Units', value: matrix.overallTotal },
-      { label: `Unique ${columnField}`, value: matrix.columns.length - 3 },
-      { label: 'Top Contribution', value: `${chartRows[0] ? chartRows[0]['Contribution %'] : 0}%` },
-    ];
-
-    const barChartItems = chartRows.map((row) => ({ label: row[rowLabel], value: row['Grand Total'] })).slice(0, 8);
-    const pieChartItems = chartRows.map((row) => ({ label: row[rowLabel], value: Number(row['Grand Total']) })).slice(0, 8);
 
     return {
       reportId: reportId || 'pivot',
-      metrics: summaryMetrics,
+      sheetName: sheetName || 'Pivot Report',
       table: {
         columns: matrix.columns,
         rows: matrix.rows,
-        fileName,
+        fileName: `${sheetName || 'Report'}.csv`,
       },
-      barChart: { title: chartTitle, items: barChartItems },
-      pieChart: { title: 'Contribution Split', items: pieChartItems },
-      html: `
-        ${renderMetricCards(summaryMetrics)}
-        <div class="rr-chart-grid">
-          ${renderBarCard(chartTitle, chartRows.map((row) => ({ label: row[rowLabel], value: row['Grand Total'] })).slice(0, 8))}
-          ${renderPieCard('Contribution Split', chartRows.map((row) => ({ label: row[rowLabel], value: Number(row['Grand Total']) })).slice(0, 8))}
-        </div>
-        ${renderDataTable(matrix.columns, matrix.rows, rrReportLabels[rrState.currentReport] || chartTitle)}
-      `,
-    };
-  }
-
-  function buildModelBoardAnalysis() {
-    const selectedModel = rrState.currentModel || rrState.models[0] || '';
-    const modelRows = rrState.rows.filter((row) => normalizeText(row.PRODUCT_MODEL) === normalizeText(selectedModel));
-    const uniqueRows = dedupeRows(modelRows, ['MOD_BRD_NAME', 'UNIT_STATUS', 'UNIT_SLNO']);
-    const matrix = buildPivotMatrix(uniqueRows, 'MOD_BRD_NAME', 'UNIT_STATUS', 'Module Board / Warranty');
-    const chartRows = matrix.rows.filter((row) => row['Module Board / Warranty'] !== 'Grand Total');
-
-    const metrics = [
-      { label: 'Selected Model', value: selectedModel || '-' },
-{ label: 'Boards', value: chartRows.length },
-      { label: 'Total Units', value: matrix.overallTotal },
-      { label: 'Top Board', value: chartRows[0] ? chartRows[0]['Module Board / Warranty'] : '-' },
-    ];
-    const barChartItems = chartRows.map((row) => ({ label: row['Module Board / Warranty'], value: row['Grand Total'] })).slice(0, 10);
-    const pieChartItems = chartRows.map((row) => ({ label: row['Module Board / Warranty'], value: Number(row['Grand Total']) })).slice(0, 10);
-
-    return {
-      reportId: 'modBoardWarranty',
-      metrics,
-      table: {
-        columns: matrix.columns,
-        rows: matrix.rows,
-        fileName: `${sanitizeFileName(selectedModel || 'model')}_ModBoard_vs_Warranty.csv`,
-      },
-      barChart: { title: `${selectedModel || 'Model'} - Top Module Boards`, items: barChartItems },
-      pieChart: { title: 'Warranty Contribution Split', items: pieChartItems },
-      html: `
-        ${renderMetricCards(metrics)}
-        <div class="rr-chart-grid">
-          ${renderBarCard(`${selectedModel || 'Model'} - Top Module Boards`, chartRows.map((row) => ({ label: row['Module Board / Warranty'], value: row['Grand Total'] })).slice(0, 10))}
-          ${renderPieCard('Warranty Contribution Split', chartRows.map((row) => ({ label: row['Module Board / Warranty'], value: Number(row['Grand Total']) })).slice(0, 10))}
-        </div>
-        ${renderDataTable(matrix.columns, matrix.rows, `Warranty split for ${selectedModel || 'selected model'}`)}
-      `,
-    };
-  }
-
-  function buildScrapAnalysis() {
-    const scrapRows = rrState.rows
-      .filter((row) => normalizeText(row.REPORT_TYPE) === 'scraplist')
-      .map((row) => ({
-        ...row,
-        DEF_MOD_BRD_NAME: toTitleCase(row.DEF_MOD_BRD_NAME),
-        DEF_TYPE: normalizeText(row.DEF_TYPE).toUpperCase(),
-      }));
-    const selectedModel = rrState.currentModel || rrState.models[0] || '';
-    const modelRows = scrapRows.filter((row) => normalizeText(row.PRODUCT_MODEL) === normalizeText(selectedModel));
-    const grouped = new Map();
-
-    modelRows.forEach((row) => {
-      const item = cleanDisplay(row.DEF_MOD_BRD_NAME) || 'Unknown';
-      const bucket = grouped.get(item) || { 'Defective Items': item, CONSUMABLES: 0, SPARE: 0 };
-      const type = normalizeText(row.DEF_TYPE).toUpperCase();
-      if (type === 'CONSUMABLES') bucket.CONSUMABLES += 1;
-      else if (type === 'SPARE') bucket.SPARE += 1;
-      grouped.set(item, bucket);
-    });
-
-    const modelTableRows = Array.from(grouped.values())
-      .map((row) => ({
-        ...row,
-        'Grand Total': row.CONSUMABLES + row.SPARE,
-      }))
-      .sort((a, b) => b['Grand Total'] - a['Grand Total']);
-
-    const overallConsumables = scrapRows.filter((row) => normalizeText(row.DEF_TYPE) === 'consumables').length;
-    const overallSpare = scrapRows.filter((row) => normalizeText(row.DEF_TYPE) === 'spare').length;
-    const overallTotal = overallConsumables + overallSpare;
-
-    const metrics = [
-      { label: 'Selected Model', value: selectedModel || '-' },
-      { label: 'Consumables', value: overallConsumables },
-      { label: 'Spares', value: overallSpare },
-      { label: 'Grand Total', value: overallTotal },
-    ];
-    const barChartItems = modelTableRows.map((row) => ({ label: row['Defective Items'], value: row['Grand Total'] })).slice(0, 10);
-    const pieChartItems = [
-      { label: 'Consumables', value: overallConsumables },
-      { label: 'Spares', value: overallSpare },
-    ];
-
-    return {
-      reportId: 'scrap',
-      metrics,
-      table: {
-        columns: ['Defective Items', 'CONSUMABLES', 'SPARE', 'Grand Total'],
-        rows: modelTableRows,
-        fileName: `${sanitizeFileName(selectedModel || 'model')}_Scrapped_Items.csv`,
-      },
-      barChart: { title: `${selectedModel || 'Model'} - Scrapped Items`, items: barChartItems },
-      pieChart: { title: 'Overall Scrap Split', items: pieChartItems },
-      html: `
-        ${renderMetricCards(metrics)}
-        <div class="rr-chart-grid">
-          ${renderBarCard(`${selectedModel || 'Model'} - Scrapped Items`, modelTableRows.map((row) => ({ label: row['Defective Items'], value: row['Grand Total'] })).slice(0, 10))}
-          ${renderPieCard('Overall Scrap Split', [
-            { label: 'Consumables', value: overallConsumables },
-            { label: 'Spares', value: overallSpare },
-          ])}
-        </div>
-        ${renderDataTable(['Defective Items', 'CONSUMABLES', 'SPARE', 'Grand Total'], modelTableRows, `Scrapped items for ${selectedModel || 'selected model'}`)}
-        <div class="rr-note">This report uses rows where <strong>REPORT_TYPE = scraplist</strong>, matching the source RR analysis logic.</div>
-      `,
     };
   }
 
@@ -2583,123 +2483,15 @@
       const wb = XLSX.utils.book_new();
 
       rrState.reports.forEach((reportId) => {
-        let analysis;
-        switch (reportId) {
-          case 'regionModel':
-            analysis = buildPivotAnalysis({
-              rows: rrState.rows,
-              rowField: 'REGION',
-              columnField: 'PRODUCT_MODEL',
-              rowLabel: 'Region / Model',
-              chartTitle: 'Region Wise Total',
-              fileName: 'Region_vs_Model.csv',
-              reportId: 'regionModel',
-            });
-            break;
-          case 'modelDefType':
-            analysis = buildPivotAnalysis({
-              rows: rrState.rows,
-              rowField: 'PRODUCT_MODEL',
-              columnField: 'DEF_TYPE',
-              rowLabel: 'Model / Type',
-              chartTitle: 'Model vs Product Type',
-              fileName: 'Model_vs_ProductType.csv',
-              reportId: 'modelDefType',
-            });
-            break;
-          case 'warranty':
-            analysis = buildPivotAnalysis({
-              rows: rrState.rows,
-              rowField: 'PRODUCT_MODEL',
-              columnField: 'UNIT_STATUS',
-              rowLabel: 'Product Type / Warranty',
-              chartTitle: 'Warranty Distribution',
-              fileName: 'ProductType_vs_Warranty.csv',
-              reportId: 'warranty',
-            });
-            break;
-          case 'typeOfWork':
-            analysis = buildPivotAnalysis({
-              rows: rrState.rows,
-              rowField: 'PRODUCT_MODEL',
-              columnField: 'TYPE_OF_WORK',
-              rowLabel: 'Model / Type of Work',
-              chartTitle: 'Type Of Work Distribution',
-              fileName: 'Model_vs_TypeOfWork.csv',
-              reportId: 'typeOfWork',
-            });
-            break;
-          case 'modBoardWarranty':
-            analysis = buildModelBoardAnalysis();
-            break;
-          case 'scrap':
-            analysis = buildScrapAnalysis();
-            break;
-          case 'overview':
-          default:
-            analysis = buildOverviewAnalysis();
-            break;
-        }
-
+        const analysis = buildRrReport(reportId);
         if (!analysis || !analysis.table) return;
 
-        const reportName = rrReportLabels[reportId] || reportId;
-        const sheetName = sanitizeSheetName(reportName);
-        const aoa = [];
-
-        // 1. Header Title
-        aoa.push([`REPORT: ${reportName.toUpperCase()}`]);
-        aoa.push([`Generated On: ${new Date().toLocaleString('en-IN')}`]);
-        aoa.push([]);
-
-        // 2. Summary Metrics
-        if (analysis.metrics && analysis.metrics.length) {
-          aoa.push(['SUMMARY METRICS']);
-          aoa.push(analysis.metrics.map((m) => m.label));
-          aoa.push(analysis.metrics.map((m) => m.value));
-          aoa.push([]);
-        }
-
-        // 3. Data Table First
-        aoa.push(['DATA TABLE']);
+        const sheetName = sanitizeSheetName(analysis.sheetName || rrReportLabels[reportId] || reportId);
         const cols = analysis.table.columns;
-        aoa.push(cols);
+        const aoa = [cols];
         analysis.table.rows.forEach((r) => {
           aoa.push(cols.map((c) => (r[c] !== undefined && r[c] !== null ? r[c] : '')));
         });
-        aoa.push([]);
-        aoa.push([]);
-
-        // 4. Bar Graph Data (below table)
-        if (analysis.barChart && analysis.barChart.items && analysis.barChart.items.length) {
-          aoa.push([`BAR GRAPH DATA: ${analysis.barChart.title}`]);
-          aoa.push(['Category / Item', 'Count / Value', 'Visual Bar Representation']);
-          const items = analysis.barChart.items;
-          const maxVal = Math.max(...items.map((i) => Number(i.value) || 0), 1);
-          items.forEach((item) => {
-            const val = Number(item.value) || 0;
-            const barLen = val > 0 ? Math.max(1, Math.round((val / maxVal) * 20)) : 0;
-            const barStr = '█'.repeat(barLen) + '░'.repeat(20 - barLen);
-            aoa.push([item.label, val, barStr]);
-          });
-          aoa.push([]);
-          aoa.push([]);
-        }
-
-        // 5. Pie Graph Data (below bar graph)
-        if (analysis.pieChart && analysis.pieChart.items && analysis.pieChart.items.length) {
-          aoa.push([`PIE GRAPH DATA: ${analysis.pieChart.title}`]);
-          aoa.push(['Category / Slice', 'Count / Value', 'Percentage Share', 'Visual Share Split']);
-          const items = analysis.pieChart.items;
-          const total = items.reduce((sum, i) => sum + (Number(i.value) || 0), 0) || 1;
-          items.forEach((item) => {
-            const val = Number(item.value) || 0;
-            const pct = Math.round((val / total) * 1000) / 10;
-            const pieLen = val > 0 ? Math.max(1, Math.round((val / total) * 20)) : 0;
-            const pieStr = `${pct}% ` + '█'.repeat(pieLen) + '░'.repeat(20 - pieLen);
-            aoa.push([item.label, val, `${pct}%`, pieStr]);
-          });
-        }
 
         const ws = XLSX.utils.aoa_to_sheet(aoa);
         XLSX.utils.book_append_sheet(wb, ws, sheetName);
@@ -2708,7 +2500,7 @@
       const baseName = rrState.fileName ? rrState.fileName.replace(/\.[^/.]+$/, '').replace(/^Auto-fetched:\s*/, 'RR_Auto_') : 'RR_Analysis';
       const cleanFileName = baseName.replace(/[^a-zA-Z0-9_-]/g, '_') + '_Full_Report.xlsx';
       XLSX.writeFile(wb, cleanFileName);
-      setRrStatus(`Exported complete multi-sheet Excel report (${rrState.reports.length} sheets) as "${cleanFileName}".`);
+      setRrStatus(`Exported 9-sheet Excel report as "${cleanFileName}".`);
     } catch (err) {
       console.error('RR Excel Export Error:', err);
       setRrStatus('Failed to generate Excel file: ' + err.message, true);
