@@ -501,8 +501,11 @@ async function getSlotsForCurrentTime(date = new Date()) {
   const enabledSlots = getEnabledEscalationSlots(scheduleConfig);
   const weekday = toIstDate(date).getUTCDay();
   const slots = [];
-  const matches = (key, fallback) => {
-    const time = scheduledTime(times, key, fallback);
+  const matches = (key) => {
+    // Only use the time explicitly saved in DB — no fallback to hardcoded defaults
+    const rawTime = times?.[key];
+    if (!rawTime) return false; // skip if no time configured in Settings
+    const time = parseTime(rawTime);
     const runAt = makeUtcFromIst(parts.year, parts.month, parts.day, time.hour, time.minute, 0, 0);
     const dueAge = date.getTime() - runAt.getTime();
     return enabledSlots.has(key)
@@ -513,7 +516,7 @@ async function getSlotsForCurrentTime(date = new Date()) {
   
   const { DEFAULT_ESCALATION_TIMES } = require('../utils/escalationSchedule');
   for (const item of DEFAULT_ESCALATION_TIMES) {
-    if (matches(item.key, item.defaultTime)) {
+    if (matches(item.key)) {
       slots.push(item.key);
     }
   }
