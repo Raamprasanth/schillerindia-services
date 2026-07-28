@@ -24,14 +24,12 @@ function applyActiveDivision(req, user) {
 
   if (!requested || !canSwitch || !assigned.length) return { ok: true, user };
 
-  const match = assigned.find(d => d.toLowerCase() === requested.toLowerCase());
+  let match = assigned.find(d => d.toLowerCase() === requested.toLowerCase());
   if (!match) {
-    return {
-      ok: false,
-      status: 403,
-      message: 'Selected division is not assigned to this user',
-    };
+    match = assigned[0] || String(user.division || '').trim();
   }
+  
+  if (!match) return { ok: true, user };
 
   return {
     ok: true,
