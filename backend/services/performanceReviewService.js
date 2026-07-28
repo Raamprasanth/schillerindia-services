@@ -1921,36 +1921,83 @@ async function getProductTeamPerformanceData({ month }) {
   // 3. BIR List Tracker
   const birData = [];
   
+  const ClosedBir = require('../models/ClosedBir');
+  const EBir = require('../models/EBir');
+  const EClosedBir = require('../models/EClosedBir');
+
   const allPtBirs = await PtBir.find().lean();
   const allPtClosedBirs = await PtClosedBir.find().lean();
 
-  const ptbirs = allPtBirs.filter(b => {
-    const tsDate = parseAnyDate(b.tsVerificationDate);
-    const dateToUse = tsDate || parseAnyDate(b.unitInwardDate, b.createdAt);
-    return isDateInRange(dateToUse, start, end);
+  const [allBirDocs, allClosedBirDocs, allEBirDocs, allEClosedBirDocs] = await Promise.all([
+    Bir.find().select('birRef birRefNo status isDeleted').lean(),
+    ClosedBir.find().select('birRef birRefNo status isDeleted').lean(),
+    EBir.find().select('birRef birRefNo status isDeleted').lean(),
+    EClosedBir.find().select('birRef birRefNo status isDeleted').lean(),
+  ]);
+
+  const activeMasterBirRefs = new Set();
+  [...allBirDocs, ...allClosedBirDocs, ...allEBirDocs, ...allEClosedBirDocs].forEach(doc => {
+    if (doc && !doc.isDeleted && String(doc.status || '').toLowerCase() !== 'deleted') {
+      const ref = String(doc.birRef || doc.birRefNo || '').trim();
+      if (ref) activeMasterBirRefs.add(ref);
+    }
   });
 
-  const ptcbirs = allPtClosedBirs.filter(b => {
+  const isNotDeleted = (b) => {
+    if (!b) return false;
+    if (b.isDeleted || String(b.status || '').toLowerCase() === 'deleted') return false;
+    const ref = String(b.birRef || b.birRefNo || '').trim();
+    if (!ref) return false;
+    if (activeMasterBirRefs.size > 0 && !activeMasterBirRefs.has(ref)) return false;
+    return true;
+  };
+
+  const validPtClosedBirs = allPtClosedBirs.filter(isNotDeleted);
+  const closedRefMap = new Map();
+  validPtClosedBirs.forEach(b => {
+    const ref = String(b.birRef || b.birRefNo || '').trim();
     const tsDate = parseAnyDate(b.tsVerificationDate);
     const dateToUse = tsDate || parseAnyDate(b.approvedDate, parseAnyDate(b.unitInwardDate, b.createdAt));
-    return isDateInRange(dateToUse, start, end);
+    if (isDateInRange(dateToUse, start, end)) {
+      if (!closedRefMap.has(ref)) {
+        closedRefMap.set(ref, b);
+      }
+    }
   });
+
+  const validPtBirs = allPtBirs.filter(b => {
+    if (!isNotDeleted(b)) return false;
+    const ref = String(b.birRef || b.birRefNo || '').trim();
+    if (closedRefMap.has(ref)) return false;
+    return true;
+  });
+
+  const openRefMap = new Map();
+  validPtBirs.forEach(b => {
+    const ref = String(b.birRef || b.birRefNo || '').trim();
+    const tsDate = parseAnyDate(b.tsVerificationDate);
+    const dateToUse = tsDate || parseAnyDate(b.unitInwardDate, b.createdAt);
+    if (isDateInRange(dateToUse, start, end)) {
+      if (!openRefMap.has(ref)) {
+        openRefMap.set(ref, b);
+      }
+    }
+  });
+
+  const ptcbirs = Array.from(closedRefMap.values());
+  const ptbirs = Array.from(openRefMap.values());
   
   let withinTargetCount = 0;
-  const allFilteredBirs = [...ptbirs, ...ptcbirs];
-  
-  for (const doc of allFilteredBirs) {
-    if (doc.tsVerificationDate) {
-      const tsDate = parseAnyDate(doc.tsVerificationDate);
-      const startRefDate = parseAnyDate(doc.unitInwardDate, doc.createdAt);
-      const diff = getDiff(startRefDate, tsDate);
-      if (diff === null || diff <= 7) {
-        withinTargetCount++;
-      }
+  for (const doc of ptcbirs) {
+    const tsDate = parseAnyDate(doc.tsVerificationDate);
+    const startRefDate = parseAnyDate(doc.unitInwardDate, doc.createdAt);
+    const diff = getDiff(startRefDate, tsDate || parseAnyDate(doc.approvedDate));
+    if (diff === null || diff <= 7) {
+      withinTargetCount++;
     }
   }
   
-  const total = allFilteredBirs.length;
+  const total = ptbirs.length + ptcbirs.length;
   const rate = total > 0 ? Math.round((withinTargetCount / total) * 100) : 0;
   let remark = 'Very Poor';
   if (rate >= 91) remark = 'Outstanding';

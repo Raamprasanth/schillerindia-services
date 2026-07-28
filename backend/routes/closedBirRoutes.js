@@ -95,6 +95,19 @@ router.delete('/:id', protect, async (req, res) => {
   try {
     const doc = await ClosedBir.findByIdAndDelete(req.params.id);
     if (!doc) return res.status(404).json({ message: 'Record not found' });
+    const ref = doc.birRef || doc.birRefNo;
+    if (ref) {
+      const filter = { $or: [{ birRef: ref }, { birRefNo: ref }] };
+      await Promise.allSettled([
+        require('../models/Bir').deleteMany(filter),
+        require('../models/EBir').deleteMany(filter),
+        require('../models/EClosedBir').deleteMany(filter),
+        require('../models/PtBir').deleteMany(filter),
+        require('../models/PtClosedBir').deleteMany(filter),
+        require('../models/ABir').deleteMany(filter),
+        require('../models/AClosedBir').deleteMany(filter),
+      ]);
+    }
     res.json({ message: 'Deleted successfully' });
   } catch (err) {
     console.error('[DELETE /api/bir/closed/:id]', err);
