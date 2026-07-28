@@ -133,15 +133,22 @@ async function getEscalationRecipients(reportType = '') {
   try {
     const doc = await AppSetting.findOne({ key: 'escalation_emails' }).lean();
     const configuredEntries = Array.isArray(doc?.value) ? doc.value : [];
-    const normalizedReportType = String(reportType || '').trim();
+
+    const targetTypes = new Set(
+      (Array.isArray(reportType) ? reportType : String(reportType || '').split(','))
+        .map(t => String(t || '').trim())
+        .filter(Boolean)
+    );
+    if (targetTypes.has('ur_followup')) targetTypes.add('ur_escalation');
+    if (targetTypes.has('ur_escalation')) targetTypes.add('ur_followup');
+
     const configured = configuredEntries
       .filter((item) => {
-        if (!item || typeof item !== 'object') return !normalizedReportType;
-        if (!normalizedReportType) return true;
+        if (!item || typeof item !== 'object') return !targetTypes.size;
+        if (!targetTypes.size) return true;
         const itemType = String(item.reportType || '').trim();
-        // Since reportType can be a comma-separated list
         const types = itemType.split(',').map(t => t.trim()).filter(Boolean);
-        return types.includes(normalizedReportType) || types.includes('all_escalation');
+        return types.some(t => targetTypes.has(t) || t === 'all_escalation');
       })
       .map((item) => {
         if (item && typeof item === 'object' && item.email) {
@@ -1663,7 +1670,8 @@ async function runUrEscalationSlot(slot, options = {}) {
   let log = prepared.log;
 
   try {
-    const recipients = await getEscalationRecipients('ur_escalation');
+    const targetReportType = slotWindow.category === 'ur_scrap' ? 'ur_scrap' : 'ur_followup';
+    const recipients = await getEscalationRecipients([targetReportType, 'ur_escalation']);
     if (!recipients.length) {
       log = await EscalationRunLog.findByIdAndUpdate(log._id, { $set: { status: 'skipped', error: 'ESCALATION_EMAIL_TO is empty.' } }, { new: true });
       return { ok: false, skipped: true, message: 'ESCALATION_EMAIL_TO is not configured.', log };
