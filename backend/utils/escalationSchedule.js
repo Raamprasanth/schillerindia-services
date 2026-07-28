@@ -3,15 +3,17 @@ const AppSetting = require('../models/AppSetting');
 const ESCALATION_TIMES_KEY = 'escalation_times';
 const ESCALATION_SCHEDULE_KEY = 'escalation_schedule';
 
+const ALL_WEEKDAYS = [0, 1, 2, 3, 4, 5, 6];
+
 const DEFAULT_ESCALATION_GROUPS = [
-  { reportType: 'main_combined', label: 'Dispatch Escalation', defaultRunCount: 2, defaultTimes: ['11:30', '18:15', '20:00', '22:00'] },
-  { reportType: 'sr_escalation', label: 'DR Replacement', defaultRunCount: 2, defaultTimes: ['11:00', '15:00', '18:00', '20:00'] },
-  { reportType: 'to_escalation', label: 'TO Escalation', defaultRunCount: 2, defaultTimes: ['11:00', '16:30', '18:30', '20:30'] },
-  { reportType: 'ur_scrap', label: 'Scrap Escalation', defaultRunCount: 1, defaultTimes: ['11:00', '15:00', '18:00', '20:00'] },
-  { reportType: 'ur_followup', label: 'Stock Escalation', defaultRunCount: 1, defaultTimes: ['20:00', '22:00', '23:00', '23:59'] },
-  { reportType: 'prf_ob_escalation', label: 'PRF/OB Escalation', defaultRunCount: 1, defaultTimes: ['16:30', '18:30', '20:30', '22:30'] },
-  { reportType: 'supplier_warranty_escalation', label: 'Supplier Warranty Escalation', defaultRunCount: 1, defaultTimes: ['20:30', '22:30', '23:30', '23:59'] },
-  { reportType: 'external_repair_escalation', label: 'External Repair Escalation', defaultRunCount: 1, defaultTimes: ['15:30', '18:30', '20:30', '22:30'] },
+  { reportType: 'main_combined',                label: 'Dispatch Escalation',           defaultRunCount: 2, defaultTimes: ['11:30', '18:15', '20:00', '22:00'],   defaultWeekdays: ALL_WEEKDAYS },
+  { reportType: 'sr_escalation',                label: 'DR Replacement',                defaultRunCount: 2, defaultTimes: ['11:00', '15:00', '18:00', '20:00'],   defaultWeekdays: ALL_WEEKDAYS },
+  { reportType: 'to_escalation',                label: 'TO Escalation',                 defaultRunCount: 2, defaultTimes: ['11:00', '16:30', '18:30', '20:30'],   defaultWeekdays: ALL_WEEKDAYS },
+  { reportType: 'ur_scrap',                     label: 'Scrap Escalation',              defaultRunCount: 1, defaultTimes: ['11:00', '15:00', '18:00', '20:00'],   defaultWeekdays: ALL_WEEKDAYS },
+  { reportType: 'ur_followup',                  label: 'Stock Escalation',              defaultRunCount: 1, defaultTimes: ['20:00', '22:00', '23:00', '23:59'],   defaultWeekdays: ALL_WEEKDAYS },
+  { reportType: 'prf_ob_escalation',            label: 'PRF/OB Escalation',            defaultRunCount: 1, defaultTimes: ['16:30', '18:30', '20:30', '22:30'],   defaultWeekdays: ALL_WEEKDAYS },
+  { reportType: 'supplier_warranty_escalation', label: 'Supplier Warranty Escalation', defaultRunCount: 1, defaultTimes: ['20:30', '22:30', '23:30', '23:59'],   defaultWeekdays: ALL_WEEKDAYS },
+  { reportType: 'external_repair_escalation',   label: 'External Repair Escalation',   defaultRunCount: 1, defaultTimes: ['15:30', '18:30', '20:30', '22:30'],   defaultWeekdays: ALL_WEEKDAYS },
 ];
 
 const MAX_RUNS_PER_DAY = 4;
@@ -37,7 +39,7 @@ const DEFAULT_TIME_MAP = DEFAULT_ESCALATION_TIMES.reduce((acc, item) => {
   acc[item.key] = item.defaultTime;
   return acc;
 }, {});
-const ALL_WEEKDAYS = [0, 1, 2, 3, 4, 5, 6];
+
 const SLOT_REPORT_TYPE_MAP = DEFAULT_ESCALATION_GROUPS.reduce((acc, group) => {
   group.slots.forEach((slot) => {
     acc[slot] = group.reportType;
@@ -82,8 +84,13 @@ function normalizeScheduleConfig(value = {}) {
     return acc;
   }, {});
   const weekdays = DEFAULT_ESCALATION_GROUPS.reduce((acc, group) => {
-    // Force all escalations to come 24/7 on all days as requested
-    acc[group.reportType] = ALL_WEEKDAYS;
+    // Use DB-stored weekdays if present; otherwise fall back to ALL_WEEKDAYS (run every day)
+    const stored = sourceWeekdays[group.reportType];
+    if (Array.isArray(stored) && stored.length > 0) {
+      acc[group.reportType] = stored.map(Number).filter(d => d >= 0 && d <= 6);
+    } else {
+      acc[group.reportType] = group.defaultWeekdays || ALL_WEEKDAYS;
+    }
     return acc;
   }, {});
   return { runCounts, weekdays };
