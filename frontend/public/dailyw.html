@@ -119,10 +119,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .kb-foot{margin-top:14px;padding-top:12px;border-top:1px dashed var(--border);display:flex;justify-content:space-between;align-items:center;}
 .kb-user{font-size:10.5px;color:var(--muted);display:flex;align-items:center;gap:5px;}
 .kb-user span{background:var(--surface2);padding:2px 6px;border-radius:6px;color:var(--soft);font-weight:600;}
-.kb-del{background:rgba(185,28,28,0.08);color:var(--red);border:1px solid rgba(185,28,28,0.15);width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;}
 .kb-view{background:rgba(0,104,181,0.08);color:var(--accent);border:1px solid rgba(0,104,181,0.15);height:30px;border-radius:7px;padding:0 12px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;font-size:11.5px;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;}
 .kb-view:hover{background:var(--accent);color:#fff;}
-.kb-del:hover{background:var(--red);color:#fff;}
+.kb-edit{background:rgba(4,120,87,0.08);color:var(--green);border:1px solid rgba(4,120,87,0.18);height:30px;border-radius:7px;padding:0 12px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;font-size:11.5px;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;}
+.kb-edit:hover{background:var(--green);color:#fff;}
 .kb-empty{text-align:center;padding:60px 20px;background:var(--card);border:1.5px dashed var(--border);border-radius:14px;}
 .kb-empty-ico{font-size:32px;color:var(--muted);margin-bottom:10px;opacity:0.5;}
 .kb-empty-txt{font-size:14px;font-weight:600;color:var(--soft);}
@@ -477,7 +477,7 @@ function renderKanban(){
         <div class="kb-user">By <span>${esc(item.addedBy || "User")}</span></div>
         <div style="display:flex;gap:8px;align-items:center;">
           <button class="kb-view" onclick="viewDw('${escAttr(item._id)}')" title="View Entry">View</button>
-          ${canDeleteDw(item) ? `<button class="kb-del" onclick="deleteDw('${escAttr(item._id)}')" title="Delete Entry">&#128465;</button>` : ''}
+          ${isTodayEntry(item.date) ? `<button class="kb-edit" onclick="editDw('${escAttr(item._id)}')" title="Edit Entry">Edit</button>` : ''}
         </div>
       </div>
     </div>
@@ -543,6 +543,46 @@ function clearForm(){
   showMsg("");
 }
 
+function isTodayEntry(entryDate){
+  if (!entryDate) return false;
+  const t = new Date();
+  const offset = t.getTimezoneOffset() * 60000;
+  const todayStr = new Date(t.getTime() - offset).toISOString().split("T")[0];
+  return String(entryDate).trim() === todayStr;
+}
+
+function editDw(id){
+  const entry = DW_LIST.find(item => item._id === id);
+  if (!entry) return;
+  if (!isTodayEntry(entry.date)) {
+    alert("You can only edit today's entries.");
+    return;
+  }
+
+  editId = id;
+  clearForm();
+  document.getElementById("dw-date").value = entry.date;
+
+  const container = document.getElementById("dw-rows-container");
+  container.innerHTML = `
+    <div class="dw-row" id="row-edit">
+      <div class="field"><label>Team / Division</label><input type="text" class="row-team" list="team-options" placeholder="Team / Division" value="${escAttr(entry.team || '')}"></div>
+      <div class="field"><label>Activity</label><textarea class="row-act" placeholder="Activity done" rows="3">${esc(entry.activity || '')}</textarea></div>
+      <div class="field"><label>From</label><input type="time" class="row-from" value="${escAttr(entry.fromTime || '')}" onchange="calcTotalHours()"></div>
+      <div class="field"><label>To</label><input type="time" class="row-to" value="${escAttr(entry.toTime || '')}" onchange="calcTotalHours()"></div>
+    </div>
+  `;
+
+  calcTotalHours();
+
+  document.querySelector(".modal-title").innerHTML = "&#9998; Edit Daily Work";
+  document.getElementById("save-btn").innerHTML = "&#128190; Update Entry";
+  const addBtn = document.getElementById("add-row-btn");
+  if (addBtn) addBtn.style.display = "none";
+  document.getElementById("dw-overlay").classList.add("open");
+  setTimeout(() => document.querySelector(".row-team")?.focus(), 50);
+}
+
 async function saveDw(){
   const date = val("dw-date");
   if (!date) {
@@ -575,19 +615,33 @@ async function saveDw(){
 
   const btn = document.getElementById("save-btn");
   btn.disabled = true;
-  btn.textContent = "Saving...";
+  btn.textContent = editId ? "Updating..." : "Saving...";
   try {
     const dayTotal = document.getElementById("dw-total-hours").textContent.replace("Total: ", "");
-    for (const entry of entries) {
+    if (editId) {
+      const entry = entries[0];
       const payload = { date, ...entry, dayTotal };
-      const res = await fetch("/api/empdw", {
-        method: "POST",
+      const res = await fetch("/api/empdw/" + encodeURIComponent(editId), {
+        method: "PUT",
         headers: hdrs(),
         body: JSON.stringify(payload)
       });
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));
         throw new Error(json.message || "HTTP " + res.status);
+      }
+    } else {
+      for (const entry of entries) {
+        const payload = { date, ...entry, dayTotal };
+        const res = await fetch("/api/empdw", {
+          method: "POST",
+          headers: hdrs(),
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          const json = await res.json().catch(() => ({}));
+          throw new Error(json.message || "HTTP " + res.status);
+        }
       }
     }
 
@@ -600,10 +654,10 @@ async function saveDw(){
     closeDwModal();
     await renderCalendar();
   } catch (err) {
-    showMsg("Save failed: " + err.message);
+    showMsg((editId ? "Update" : "Save") + " failed: " + err.message);
   } finally {
     btn.disabled = false;
-    btn.innerHTML = "&#128190; Save Entry";
+    btn.innerHTML = editId ? "&#128190; Update Entry" : "&#128190; Save Entry";
   }
 }
 
