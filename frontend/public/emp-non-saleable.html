@@ -559,14 +559,6 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
       <div class="f-divider"></div>
       <span class="filter-label">To Date</span>
       <input type="date" class="f-input" id="filter-to" onchange="applyFilters()"/>
-      <div class="f-divider"></div>
-      <span class="filter-label">Division</span>
-      <select class="f-select" id="filter-div" onchange="applyFilters()">
-        <option value="">All Division</option>
-        <option>SHIPL</option><option>VENTILATOR</option><option>VENT CON</option><option>INJECTOR</option>
-        <option>RADIOLOGY</option><option>GANSHORN</option><option>HOLTER</option><option>MONITORS</option><option>MONITORS CON</option>
-        <option>SCHILLER AG</option>
-      </select>
       <button class="btn btn-outline btn-sm" onclick="clearFilters()" style="margin-left:auto;">Clear</button>
     </div>
 
@@ -785,16 +777,37 @@ function unlockEngineerFields(){
   });
 }
 
+function getLoggedUserDivisions() {
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
+  const active = localStorage.getItem('schiller_active_division') ||
+                 sessionStorage.getItem('schiller_active_division') ||
+                 u.activeDivision;
+  const list = [];
+  if (active) list.push(active);
+  if (u.division) list.push(u.division);
+  if (u.divisionName) list.push(u.divisionName);
+  if (Array.isArray(u.divisions)) list.push(...u.divisions);
+  return [...new Set(list.map(v => String(v || '').trim().toUpperCase()).filter(Boolean))];
+}
+
 // -- LOAD DATA -------------------------------------------------------------
 async function loadData(){
   setLoading();
   try {
-    const res = await fetch(`${API}/api/fqc/nonsaleable`, { headers: authHeaders() });
+    const res = await fetch(`${API}/api/emp/nonsaleable`, { headers: authHeaders() });
     handleUnauth(res);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    NS_DATA = (await res.json()).map(d => ({ ...d, id: d._id || d.id }));
+    let allData = (await res.json()).map(d => ({ ...d, id: d._id || d.id }));
+    const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
+    const role = String(sessionStorage.getItem('schiller_role') || u.role || '').toLowerCase();
+    const empDivs = getLoggedUserDivisions();
+
+    if (role !== 'superadmin' && empDivs.length) {
+      NS_DATA = allData.filter(d => empDivs.includes(String(d.division || '').trim().toUpperCase()));
+    } else {
+      NS_DATA = allData;
+    }
     await populateFormDropdowns();
-    updateFilterDivisionDropdown();
     applyFilters();
     updateStats();
     showToast('Loaded ' + NS_DATA.length + ' record' + (NS_DATA.length !== 1 ? 's' : ''), 'info');
@@ -804,17 +817,6 @@ async function loadData(){
     document.getElementById('ns-tbody').innerHTML =
       `<tr class="loading-row"><td colspan="14" style="color:var(--red);">&#9888;&#65039; ${esc(e.message)}</td></tr>`;
   }
-}
-
-function updateFilterDivisionDropdown(){
-  const el = document.getElementById('filter-div');
-  if (!el) return;
-  const current = el.value;
-  const hardcoded = ['SHIPL', 'VENTILATOR', 'VENT CON', 'INJECTOR', 'RADIOLOGY', 'GANSHORN', 'HOLTER', 'MONITORS', 'MONITORS CON', 'SCHILLER AG'];
-  const dataDivs = NS_DATA.map(d => String(d.division || '').trim()).filter(Boolean);
-  const merged = [...new Set([...hardcoded, ...dataDivs])].sort((a, b) => a.localeCompare(b));
-  el.innerHTML = '<option value="">All Division</option>' +
-    merged.map(v => `<option value="${esc(v)}"${v === current ? ' selected' : ''}>${esc(v)}</option>`).join('');
 }
 
 // section
@@ -829,7 +831,6 @@ function updateStats(){
 function clearFilters(){
   const fFrom = document.getElementById('filter-from'); if (fFrom) fFrom.value = '';
   const fTo = document.getElementById('filter-to'); if (fTo) fTo.value = '';
-  const fDiv = document.getElementById('filter-div'); if (fDiv) fDiv.value = '';
   const fSt = document.getElementById('filter-status'); if (fSt) fSt.value = '';
   const fSrch = document.getElementById('tbl-search'); if (fSrch) fSrch.value = '';
   applyFilters();
@@ -839,13 +840,11 @@ function applyFilters(){
   const q = (document.getElementById('tbl-search')?.value || '').toLowerCase();
   const fromVal = document.getElementById('filter-from')?.value || '';
   const toVal = document.getElementById('filter-to')?.value || '';
-  const divVal = document.getElementById('filter-div')?.value || '';
   const stVal = document.getElementById('filter-status')?.value || '';
   const from = fromVal ? new Date(fromVal) : null;
   const to = toVal ? new Date(toVal + 'T23:59:59') : null;
 
   filtered = NS_DATA.filter(d => {
-    if (divVal && String(d.division || '').trim().toLowerCase() !== String(divVal).trim().toLowerCase()) return false;
     if (stVal && d.status !== stVal) return false;
     if (from || to) {
       const fd = d.fqcInDate ? new Date(d.fqcInDate) : null;
