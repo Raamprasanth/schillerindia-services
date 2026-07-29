@@ -12,25 +12,31 @@ router.get('/me', protect, async (req, res) => {
     if (!month) return res.status(400).json({ success: false, message: 'Month is required' });
 
     const division = req.user.division || (Array.isArray(req.user.divisions) ? req.user.divisions[0] : '') || req.user.activeDivision || '';
-    if (!division) {
-      return res.json({ success: true, submissions: [] });
-    }
 
-    let submissions = await TrackerSubmission.find({ division, month })
-      .populate('employee', 'name')
-      .lean();
+    const filter = {
+      month,
+      $or: [
+        { employee: req.user._id },
+        ...(division ? [{ division: new RegExp('^' + String(division).replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '$', 'i') }] : [])
+      ]
+    };
 
-    submissions = submissions.filter(sub => {
+    let rawSubmissions = await TrackerSubmission.find(filter).lean();
+
+    const formattedSubmissions = rawSubmissions.filter(sub => {
+      const empId = String(sub.employee?._id || sub.employee || '');
       if (sub.type === 'OpenCallReview') {
-        return String(sub.employee?._id || sub.employee) === String(req.user._id);
+        return empId === String(req.user._id);
       }
       return true;
+    }).map(sub => {
+      const empId = String(sub.employee?._id || sub.employee || '');
+      const isMe = empId === String(req.user._id);
+      return {
+        ...sub,
+        submittedByName: isMe ? (req.user.name || 'Team') : (sub.submittedByName || 'Team')
+      };
     });
-
-    const formattedSubmissions = submissions.map(sub => ({
-      ...sub,
-      submittedByName: sub.employee ? sub.employee.name : 'Unknown'
-    }));
 
     res.json({ success: true, submissions: formattedSubmissions });
   } catch (error) {
@@ -48,18 +54,13 @@ router.post('/submit', protect, async (req, res) => {
     }
 
     const division = req.user.division || (Array.isArray(req.user.divisions) ? req.user.divisions[0] : '') || req.user.activeDivision || '';
-    if (!division) {
-      return res.status(400).json({ success: false, message: 'You must be assigned to a division to submit reports.' });
-    }
 
     if (status === 'submitted') {
       const bulkOps = reportDates.map(date => ({
         updateOne: {
-          filter: type === 'OpenCallReview' 
-            ? { division, type, reportDate: date, employee: req.user._id }
-            : { division, type, reportDate: date, employee: req.user._id },
+          filter: { division, type, reportDate: date, employee: req.user._id },
           update: { 
-            $setOnInsert: { employee: req.user._id, month },
+            $setOnInsert: { employee: req.user._id, division, month },
             $set: { submittedAt: new Date() }
           },
           upsert: true
@@ -70,9 +71,7 @@ router.post('/submit', protect, async (req, res) => {
       }
     } else {
       // Un-submit
-      const deleteFilter = type === 'OpenCallReview'
-        ? { division, type, reportDate: { $in: reportDates }, employee: req.user._id }
-        : { division, type, reportDate: { $in: reportDates }, employee: req.user._id };
+      const deleteFilter = { division, type, reportDate: { $in: reportDates }, employee: req.user._id };
       await TrackerSubmission.deleteMany(deleteFilter);
     }
 
