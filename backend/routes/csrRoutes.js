@@ -9,7 +9,7 @@ router.use(protect);
 
 function canUseSr(user) {
   const role = String(user?.role || '').toLowerCase();
-  return ['employee', 'field_engineer', 'service_coordinator', 'admin', 'superadmin', 'administrator'].includes(role);
+  return ['employee', 'field_engineer', 'service_team', 'repair_team', 'service_coordinator', 'admin', 'superadmin', 'administrator', 'user'].includes(role);
 }
 
 function isPrivileged(user) {

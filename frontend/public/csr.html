@@ -350,15 +350,19 @@ async function sendToScod(id, btn) {
       <div class="table-wrap">
         <table class="frn-table">
           <thead><tr>
+            <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
             <th>Items</th>
             <th onclick="sortBy('fromLocation')">From Location <span class="si">&#8693;</span></th>
             <th onclick="sortBy('toLocation')">To Location <span class="si">&#8693;</span></th>
             <th onclick="sortBy('remarks')">Remarks <span class="si">&#8693;</span></th>
             <th onclick="sortBy('toNo')">To No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('toRaisedDate')">To Raised Date <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('sparesRcdDate')">Spares Rcd Date <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('closedBy')">Closed By <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('closeDate')">Close Date <span class="si">&#8693;</span></th>
           </tr></thead>
           <tbody id="lt-tbody">
-            <tr class="loading-row"><td colspan="6"><span class="spin"></span>Loading from database</td></tr>
+            <tr class="loading-row"><td colspan="10"><span class="spin"></span>Loading from database</td></tr>
           </tbody>
         </table>
       </div>
@@ -373,7 +377,7 @@ async function sendToScod(id, btn) {
 
 <!-- REMARKS MODAL -->
 <div class="overlay" id="remarks-modal" style="z-index: 3000;">
-  <div class="modal" style="max-width: 500px; height: auto; max-height: 80vh; margin: auto; border-radius: 12px; overflow: hidden;">
+  <div class="modal" style="max-width: 500px; height: auto; max-height: 80vh; margin: auto; border-radius: 12px; overflow: hidden; background: #fff;">
     <div class="modal-header">
       <div class="modal-title">&#128269; View Remarks</div>
       <button class="modal-close" type="button" onclick="document.getElementById('remarks-modal').classList.remove('open')">&#10005;</button>
@@ -385,7 +389,8 @@ async function sendToScod(id, btn) {
 </div>
 
 <!-- View Items Modal -->
-  <div class="modal">
+<div class="overlay" id="view-items-overlay" style="z-index: 3000;">
+  <div class="modal" style="max-width: 600px; height: auto; max-height: 80vh; margin: auto; border-radius: 12px; overflow: hidden; background: #fff;">
     <div class="modal-header">
       <div>
         <div class="modal-title">View Items</div>
@@ -589,11 +594,12 @@ function renderTable(){
   setText('count-chip', total + ' entr' + (total === 1 ? 'y' : 'ies'));
 
   if(!total){
-    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-st"><div class="ei">&#128230;</div><div class="et">${DATA.length ? 'No records match the current filters' : 'No ELT entries'}</div><div class="es">${DATA.length ? 'Try adjusting the filters.' : 'Click Add New to create the first ELT.'}</div></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-st"><div class="ei">&#128230;</div><div class="et">${DATA.length ? 'No records match the current filters' : 'No Closed SR entries'}</div><div class="es">${DATA.length ? 'Try adjusting the filters.' : ''}</div></div></td></tr>`;
   }else{
     tbody.innerHTML = slice.map((d,i)=>{
       const id = d._id || d.id;
       return `<tr>
+        <td>${esc(d.division || '-')}</td>
         ${renderItemsBoxCell(d)}
         <td>${esc(d.fromLocation || '-')}</td>
         <td>${esc(d.toLocation || '-')}</td>
@@ -602,6 +608,9 @@ function renderTable(){
         </td>
         <td>${esc(d.toNo || '-')}</td>
         <td>${fmtDate(d.toRaisedDate)}</td>
+        <td>${fmtDate(d.sparesRcdDate)}</td>
+        <td>${esc(d.closedBy || d.updatedBy || '-')}</td>
+        <td>${fmtDate(d.closeDate)}</td>
       </tr>`;
     }).join('');
   }
