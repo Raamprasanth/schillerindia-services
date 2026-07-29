@@ -352,47 +352,6 @@ table.cf-table tbody tr:last-child td{border-bottom:none;}
       <span class="fl-label">Branch</span>
       <select class="fl-select" id="fl-branch" onchange="handleBranchFilterChange()">
         <option value="">All Branches</option>
-        <option>SHIPL Agartala</option>
-        <option>SHIPL Bhubaneshwar</option>
-        <option>SHIPL Guwahati</option>
-        <option>SHIPL Kolkata</option>
-        <option>SHIPL Patna</option>
-        <option>SHIPL Ranchi</option>
-        <option>SHIPL Siliguri</option>
-        <option>SHIPL Chandigar</option>
-        <option>SHIPL Jaipur</option>
-        <option>SHIPL Jodhpur</option>
-        <option>SHIPL Delhi</option>
-        <option>SHIPL Lucknow</option>
-        <option>SHIPL Mumbai</option>
-        <option>SHIPL Pune</option>
-        <option>SHIPL Ahmedabad</option>
-        <option>SHIPL Chennai</option>
-        <option>SHIPL Bengaluru</option>
-        <option>SHIPL Hyderabad</option>
-        <option>SHIPL Coimbatore</option>
-        <option>SHIPL Kochi</option>
-        <option>SHIPL Vijayawada</option>
-        <option>SHIPL Bhopal</option>
-        <option>SHIPL Nagpur</option>
-        <option>SHIPL Indore</option>
-        <option>SHIPL Raipur</option>
-        <option>SHIPL Surat</option>
-        <option>Puducherry SC</option>
-        <option>Puducherry FQC</option>
-        <option>Puducherry PS</option>
-        <option>SHIPL Nepal</option>
-        <option>SHIPL Trichy</option>
-        <option>SHIPL Nagercoil</option>
-        <option>SHIPL salem</option>
-        <option>SHIPL Aurangabad</option>
-        <option>SHIPL Madurai</option>
-        <option>SHIPL Kurnool</option>
-        <option>SHIPL Villupuram</option>
-        <option>SHIPL Kolhapur</option>
-        <option>SHIPL Warangal</option>
-        <option>SHIPL Trivandram</option>
-        <option>SHIPL Hubli</option>
       </select>
       <span class="fl-label">Unit Status</span>
       <select class="fl-select" id="fl-unitsts" onchange="applyFilters()">
@@ -518,7 +477,8 @@ async function loadData() {
 }
 
 function populateDynamicFilters() {
-  populateFilterOptions('fl-unitsts', DATA.map(d => d.unitStatus), 'All');
+  populateFilterOptions('fl-branch',   DATA.map(d => d.region || d.branch), 'All Branches');
+  populateFilterOptions('fl-unitsts',  DATA.map(d => d.unitStatus), 'All');
   populateFilterOptions('fl-typework', DATA.map(d => d.typeWork), 'All');
   populateEngineerFilter();
 }
@@ -545,7 +505,7 @@ function populateFilterOptions(selectId, values, allLabel) {
 function populateEngineerFilter() {
   const branch = document.getElementById('fl-branch').value;
   const engineers = [...new Set(DATA
-    .filter(d => !branch || d.region === branch)
+    .filter(d => !branch || (d.region || d.branch) === branch)
     .flatMap(d => [d.eng, d.raEng].map(value => String(value || '').trim()))
     .filter(Boolean))]
     .sort((a, b) => a.localeCompare(b));
@@ -591,7 +551,7 @@ function applyFilters() {
   const to = document.getElementById('fl-to').value;
   filtered = DATA.filter(d =>
     (!q  || Object.values(d).some(v => String(v).toLowerCase().includes(q))) &&
-    (!brn|| d.region === brn) && (!sts|| d.unitStatus === sts) &&
+    (!brn|| (d.region || d.branch) === brn) && (!sts|| d.unitStatus === sts) &&
     (!tw || (d.typeWork||'').toUpperCase() === tw.toUpperCase()) &&
     (!eng|| d.eng === eng || d.raEng === eng) &&
     (!fr || (d.entryDate||'') >= fr) && (!to|| (d.entryDate||'') <= to)
