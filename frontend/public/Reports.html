@@ -886,7 +886,7 @@ body{
       <!-- Section 4: Purchase Indent -->
       <tr>
         <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Purchase indent request to commercial<br><span class="red-text">If not applicable mark NA</span></td>
-        <td colspan="3" class="bg-blue">${d05PI}</td>
+        <td colspan="3" class="bg-blue">${d20PI}</td>
       </tr>
 
       <!-- Separator -->
@@ -1840,7 +1840,7 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
   var monthNum = parseInt(mStr, 10) - 1;
 
   var tuesdays = [], mondays = [];
-  var d02 = '-', d03 = '-', d05 = '-', d15 = '-', d16 = '-';
+  var d02 = '-', d03 = '-', d20 = '-', d15 = '-', d16 = '-';
   if (!isNaN(yearNum) && !isNaN(monthNum)) {
     let d = new Date(yearNum, monthNum, 1);
     while (d.getMonth() === monthNum) {
@@ -1851,7 +1851,7 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
     }
     d02 = '02-' + mStr + '-' + yearStr;
     d03 = '03-' + mStr + '-' + yearStr;
-    d05 = '05-' + mStr + '-' + yearStr;
+    d20 = '20-' + mStr + '-' + yearStr;
     d15 = '15-' + mStr + '-' + yearStr;
     d16 = '16-' + mStr + '-' + yearStr;
   }
@@ -1946,7 +1946,7 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
           <td colspan="${isBuyBackMonth ? '1' : '3'}" rowspan="2" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4; vertical-align:middle;">
             Purchase indent request to commercial<br><span style="color:#ef4444; font-size:11px; font-weight:600;">If NA mark NA</span>
             <div style="margin-top:16px; display:flex; justify-content:center; width:60%; margin-left:auto; margin-right:auto;">
-              ${checkSub('PIRequest', d05)}
+              ${checkSub('PIRequest', d20)}
             </div>
           </td>
           ${isBuyBackMonth ? `<td colspan="2" rowspan="2" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4; vertical-align:middle;">
@@ -2036,7 +2036,7 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
           <td colspan="${isBuyBackMonth ? '1' : '3'}" rowspan="2" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4; vertical-align:middle;">
             Purchase indent request to commercial<br><span style="color:#ef4444; font-size:11px; font-weight:600;">If NA mark NA</span>
             <div style="margin-top:16px; display:flex; justify-content:center; width:60%; margin-left:auto; margin-right:auto;">
-              ${checkSub('PIRequest', d05)}
+              ${checkSub('PIRequest', d20)}
             </div>
           </td>
           ${isBuyBackMonth ? `<td colspan="2" rowspan="2" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4; vertical-align:middle;">
@@ -2900,7 +2900,7 @@ async function loadAllDivisionTrackers() {
         { type: 'NonSaleable', label: 'Non Saleable', schedule: '2nd & 16th' },
         { type: 'SupplierWarranty', label: 'Re-Export', schedule: '3rd & 16th' },
         { type: 'CriticalPendingReport', label: 'Critical Pending Report', schedule: '2nd' },
-        { type: 'PIRequest', label: 'PI Request', schedule: '5th' }
+        { type: 'PIRequest', label: 'PI Request', schedule: '20th' }
       ];
       if (monthStr.endsWith('-04') || monthStr.endsWith('-08') || monthStr.endsWith('-12') || monthStr === '4' || monthStr === '8' || monthStr === '12' || monthStr === '04' || monthStr === '08') {
         fallbackReports.push({ type: 'BuyBack', label: 'Buy Back', schedule: '15th' });
