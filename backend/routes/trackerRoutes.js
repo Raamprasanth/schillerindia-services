@@ -138,8 +138,8 @@ function buildReportDefinitions(year, month) {
     {
       type: 'PIRequest',
       label: 'PI Request',
-      schedule: '5',
-      expectedPerEmployee: countDatesInMonth(year, month, [5])
+      schedule: '20',
+      expectedPerEmployee: countDatesInMonth(year, month, [20])
     },
     {
       type: 'BuyBack',

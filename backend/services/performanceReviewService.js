@@ -586,7 +586,7 @@ function buildReportDefinitions(year, month) {
     { type: 'NonSaleable', expectedPerEmployee: countDatesInMonth(year, month, [2, 16]) },
     { type: 'SupplierWarranty', expectedPerEmployee: countDatesInMonth(year, month, [3, 16]) },
     { type: 'CriticalPendingReport', expectedPerEmployee: countDatesInMonth(year, month, [2]) },
-    { type: 'PIRequest', expectedPerEmployee: countDatesInMonth(year, month, [5]) },
+    { type: 'PIRequest', expectedPerEmployee: countDatesInMonth(year, month, [20]) },
     { type: 'BuyBack', expectedPerEmployee: [4, 8, 12].includes(month) ? countDatesInMonth(year, month, [15]) : 0 }
   ];
 }

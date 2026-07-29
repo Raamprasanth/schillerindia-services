@@ -2341,7 +2341,7 @@
     { panelId:'nonsaleable-tracker-body', icon:'&#128230;', title:'Non Saleable', schedule:'2 & 16' },
     { panelId:'supplierwarranty-tracker-body', icon:'&#9888;&#65039;', title:'Supplier Warranty', schedule:'3 & 16' },
     { panelId:'criticalpending-tracker-body', icon:'&#128680;', title:'Critical Pending', schedule:'2nd' },
-    { panelId:'pirequest-tracker-body', icon:'&#128196;', title:'PI Request', schedule:'5th' },
+    { panelId:'pirequest-tracker-body', icon:'&#128196;', title:'PI Request', schedule:'20th' },
     { panelId:'opencallreview-tracker-body', icon:'&#128269;', title:'Open Call Review', schedule:'Daily (exc. 3rd Sat)' }
   ];
 
@@ -2392,7 +2392,7 @@
     renderTrackerPanel('nonsaleable-tracker-body', getMonthDates(year, monthIndex, [2, 16]), submissions, 'NonSaleable', monthStr);
     renderTrackerPanel('supplierwarranty-tracker-body', getMonthDates(year, monthIndex, [3, 16]), submissions, 'SupplierWarranty', monthStr);
     renderTrackerPanel('criticalpending-tracker-body', getMonthDates(year, monthIndex, [2]), submissions, 'CriticalPendingReport', monthStr);
-    renderTrackerPanel('pirequest-tracker-body', getMonthDates(year, monthIndex, [5]), submissions, 'PIRequest', monthStr);
+    renderTrackerPanel('pirequest-tracker-body', getMonthDates(year, monthIndex, [20]), submissions, 'PIRequest', monthStr);
     
     if ([3, 7, 11].includes(monthIndex)) {
       renderTrackerPanel('buyback-tracker-body', getMonthDates(year, monthIndex, [15]), submissions, 'BuyBack', monthStr);

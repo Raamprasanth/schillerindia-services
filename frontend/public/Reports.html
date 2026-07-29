@@ -878,6 +878,201 @@ body{
         <td colspan="3" class="bg-peach bold">${cSupWarr}%</td>
         <td class="bg-green"></td>
         <td class="bg-peach"></td>
+              <div class="submission-panel" id="perf-submission-panel">
+                <div class="submission-panel-head">
+                  <div>
+                    <div class="submission-title">Division Wise Report Submission</div>
+                    <div class="submission-meta">Select division and month</div>
+                  </div>
+                </div>
+                <div style="font-size:12.5px;color:var(--muted);">All dashboard submit-report boxes will appear here.</div>
+              </div>
+              <div class="empty-state" style="padding:50px 24px;">
+                <div class="empty-icon">&#128196;</div>
+                <div class="empty-title">No Preview Yet</div>
+                <div class="empty-sub">Select division and month then click Preview Division.</div>
+              </div>
+              <template id="old-division-performance-table">
+  <style>
+    .excel-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: Calibri, 'Segoe UI', sans-serif;
+      font-size: 13px;
+      border: 2px solid #333;
+      background: #fff;
+    }
+    .excel-table th, .excel-table td {
+      border: 1px solid #333;
+      padding: 6px 10px;
+      text-align: center;
+      vertical-align: middle;
+      color: #000;
+    }
+    .excel-table .text-left { text-align: left; font-weight: bold; }
+    .excel-table .text-right { text-align: right; }
+    .excel-table .bg-gray { background-color: #a5b0c0; color: #1e3a8a; } /* title background */
+    .excel-table .bg-green { background-color: #e2efda; }
+    .excel-table .bg-peach { background-color: #fce4d6; }
+    .excel-table .bg-blue { background-color: #dae3f3; }
+    .excel-table .bg-yellow { background-color: #fff2cc; }
+    .excel-table .bg-white { background-color: #ffffff; }
+    .excel-table .bg-dark-blue { background-color: #b4c6e7; } /* overall perf background */
+    .excel-table .title-cell {
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .excel-table .red-text { color: red; font-size: 11px; font-weight: normal; display: block; }
+    .excel-table .bold { font-weight: bold; }
+    .excel-table .row-sep td { border-left: none; border-right: none; height: 10px; padding: 0; background: #fff; }
+  </style>
+
+  <table class="excel-table">
+    <!-- Header Rows -->
+    <tr>
+      <th colspan="4" rowspan="2" class="bg-gray title-cell">PERFORMANCE REVIEW</th>
+      <th class="bg-peach text-right bold">For the month of</th>
+      <th class="bg-peach"></th>
+    </tr>
+    <tr>
+      <th class="bg-yellow text-right bold">Division</th>
+      <th class="bg-yellow"></th>
+    </tr>
+
+    <!-- Column Headers -->
+    <tr>
+      <th rowspan="2" class="bg-green">Activity</th>
+      <th rowspan="2" class="bg-green">Total Inward<br><span class="red-text">(If not applicable mark zero)</span></th>
+      <th rowspan="2" class="bg-green">No of Executions within target date</th>
+      <th rowspan="2" class="bg-green">Percentage of Executions out from target date</th>
+      <th colspan="2" class="bg-green">Target Percentage</th>
+    </tr>
+    <tr>
+      <th class="bg-blue">Prev Month</th>
+      <th class="bg-yellow">Next Month</th>
+    </tr>
+
+    <!-- Section 1: Standard Activities -->
+    <tr>
+      <td class="bg-green text-left">Pending frn</td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach bold">0%</td>
+      <td class="bg-blue"></td>
+      <td class="bg-peach"></td>
+    </tr>
+    <tr>
+      <td class="bg-green text-left">pending FRN con</td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach bold">0%</td>
+      <td class="bg-blue"></td>
+      <td class="bg-peach"></td>
+    </tr>
+    <tr>
+      <td class="bg-green text-left">SO Pending</td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach bold">0%</td>
+      <td class="bg-blue"></td>
+      <td class="bg-peach"></td>
+    </tr>
+    <tr>
+      <td class="bg-green text-left">TO/SO</td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach bold">0%</td>
+      <td class="bg-blue"></td>
+      <td class="bg-peach"></td>
+    </tr>
+    <tr>
+      <td class="bg-green text-left">Non-Saleable</td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach bold">0%</td>
+      <td class="bg-blue"></td>
+      <td class="bg-peach"></td>
+    </tr>
+    <tr>
+      <td class="bg-green text-left">BIR list</td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach bold">0%</td>
+      <td class="bg-blue"></td>
+      <td class="bg-peach"></td>
+    </tr>
+    <tr>
+      <td class="bg-green text-left">Estimation</td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach"></td>
+      <td class="bg-peach bold">0%</td>
+      <td class="bg-blue"></td>
+      <td class="bg-peach"></td>
+    </tr>
+
+    <!-- Separator -->
+    <tr class="row-sep"><td colspan="6"></td></tr>
+
+    <!-- Section 2: Weekly CRM Reports -->
+      <tr>
+        <td rowspan="6" class="bg-green text-left">Weekly CRM Reports</td>
+        <td class="bg-blue">${t1H}</td>
+        <td rowspan="6" class="bg-green text-left" style="vertical-align:top;">Pending activity on<br>Monday</td>
+        <td class="bg-blue">${m1H}</td>
+        <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Non-Saleable<br><span class="red-text">If not applicable mark<br>NA</span></td>
+        <td class="bg-blue">${d02NS}</td>
+      </tr>
+      <tr>
+        <td class="bg-blue">${t2H}</td>
+        <td class="bg-blue">${m2H}</td>
+        <td class="bg-blue">${d16NS}</td>
+      </tr>
+      <tr>
+        <td class="bg-blue">${t3H}</td>
+        <td class="bg-blue">${m3H}</td>
+        <td class="bg-blue">-</td>
+      </tr>
+      <tr>
+        <td class="bg-blue">${t4H}</td>
+        <td class="bg-blue">${m4H}</td>
+        <td rowspan="3" class="bg-green"></td>
+        <td class="bg-blue">-</td>
+      </tr>
+      <tr>
+        <td class="bg-blue">${t5H}</td>
+        <td class="bg-blue">${m5H}</td>
+        <td class="bg-blue">-</td>
+      </tr>
+      <tr>
+        <td class="bg-peach bold">${cWeekly}%</td>
+        <td class="bg-peach bold">${cPending}%</td>
+        <td class="bg-peach bold">${cNonSaleableTracker}%</td>
+      </tr>
+
+      <!-- Separator -->
+      <tr class="row-sep"><td colspan="6"></td></tr>
+
+      <!-- Section 3: Re-Export -->
+      <tr>
+        <td rowspan="4" class="bg-green text-left" style="vertical-align:top;">Re-Export transaction<br><span class="red-text">If not applicable mark NA</span></td>
+        <td colspan="3" class="bg-blue">${d03SW}</td>
+        <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Critical Pending report<br><span class="red-text">If not applicable mark<br>NA</span></td>
+        <td class="bg-green">${d02CP}</td>
+      </tr>
+      <tr>
+        <td colspan="3" class="bg-blue">${d16SW}</td>
+        <td class="bg-green">-</td>
+      </tr>
+      <tr>
+        <td colspan="3" class="bg-blue">-</td>
+        <td class="bg-peach bold">${cCritical}%</td>
+      </tr>
+      <tr>
+        <td colspan="3" class="bg-peach bold">${cSupWarr}%</td>
+        <td class="bg-green"></td>
+        <td class="bg-peach"></td>
       </tr>
 
       <!-- Separator -->
@@ -886,7 +1081,7 @@ body{
       <!-- Section 4: Purchase Indent -->
       <tr>
         <td rowspan="3" class="bg-green text-left" style="vertical-align:top;">Purchase indent request to commercial<br><span class="red-text">If not applicable mark NA</span></td>
-        <td colspan="3" class="bg-blue">${d05PI}</td>
+        <td colspan="3" class="bg-blue">${d20PI}</td>
       </tr>
 
       <!-- Separator -->
@@ -1840,7 +2035,7 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
   var monthNum = parseInt(mStr, 10) - 1;
 
   var tuesdays = [], mondays = [];
-  var d02 = '-', d03 = '-', d05 = '-', d15 = '-', d16 = '-';
+  var d02 = '-', d03 = '-', d20 = '-', d15 = '-', d16 = '-';
   if (!isNaN(yearNum) && !isNaN(monthNum)) {
     let d = new Date(yearNum, monthNum, 1);
     while (d.getMonth() === monthNum) {
@@ -1851,7 +2046,7 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
     }
     d02 = '02-' + mStr + '-' + yearStr;
     d03 = '03-' + mStr + '-' + yearStr;
-    d05 = '05-' + mStr + '-' + yearStr;
+    d20 = '20-' + mStr + '-' + yearStr;
     d15 = '15-' + mStr + '-' + yearStr;
     d16 = '16-' + mStr + '-' + yearStr;
   }
@@ -1946,7 +2141,7 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
           <td colspan="${isBuyBackMonth ? '1' : '3'}" rowspan="2" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4; vertical-align:middle;">
             Purchase indent request to commercial<br><span style="color:#ef4444; font-size:11px; font-weight:600;">If NA mark NA</span>
             <div style="margin-top:16px; display:flex; justify-content:center; width:60%; margin-left:auto; margin-right:auto;">
-              ${checkSub('PIRequest', d05)}
+              ${checkSub('PIRequest', d20)}
             </div>
           </td>
           ${isBuyBackMonth ? `<td colspan="2" rowspan="2" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4; vertical-align:middle;">
@@ -2036,7 +2231,7 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
           <td colspan="${isBuyBackMonth ? '1' : '3'}" rowspan="2" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4; vertical-align:middle;">
             Purchase indent request to commercial<br><span style="color:#ef4444; font-size:11px; font-weight:600;">If NA mark NA</span>
             <div style="margin-top:16px; display:flex; justify-content:center; width:60%; margin-left:auto; margin-right:auto;">
-              ${checkSub('PIRequest', d05)}
+              ${checkSub('PIRequest', d20)}
             </div>
           </td>
           ${isBuyBackMonth ? `<td colspan="2" rowspan="2" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4; vertical-align:middle;">
@@ -2453,459 +2648,6 @@ async function exportPriorityDivisionPDF(){
 // --------------------------------------------------------------
 //  TAB 3  ANALYTICS
 // --------------------------------------------------------------
-
-let analyticsLoaded=false;
-let trendInst=null,divInst=null,engInst=null;
-
-async function loadAnalyticsCharts(){
-  analyticsLoaded=true;
-  const days=document.getElementById('analytics-range').value;
-  try{
-    const res=await fetch('/api/reports/analytics?days='+days,{headers:hdrs()});
-    if(!res.ok)throw new Error('Failed to load analytics');
-    const d=await res.json();
-    renderAnalyticsTrendChart(d.trends||[]);
-    renderDivisionChart(d.divisions||[]);
-    renderEngineerChart(d.engineers||[]);
-  }catch(e){toast('Analytics error: '+e.message,'error');}
-}
-
-function renderAnalyticsTrendChart(trends){
-  const ctx=document.getElementById('trendChart').getContext('2d');
-  if(trendInst)trendInst.destroy();
-  trendInst=new Chart(ctx,{
-    type:'line',
-    data:{
-      labels:trends.map(t=>t.date),
-      datasets:[
-        {label:'Calls',data:trends.map(t=>t.calls),borderColor:'#b91c1c',backgroundColor:'rgba(185,28,28,0.08)',fill:true,tension:0.4,borderWidth:2},
-        {label:'FRNs',data:trends.map(t=>t.frns),borderColor:'#059669',backgroundColor:'rgba(5,150,105,0.08)',fill:true,tension:0.4,borderWidth:2},
-        {label:'BIRs',data:trends.map(t=>t.birs),borderColor:'#d97706',backgroundColor:'rgba(217,119,6,0.08)',fill:true,tension:0.4,borderWidth:2}
-      ]
-    },
-    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'top'}},scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'}},x:{grid:{color:'rgba(0,0,0,0.04)'}}}}
-  });
-}
-
-function renderDivisionChart(divisions){
-  const ctx=document.getElementById('divisionChart').getContext('2d');
-  if(divInst)divInst.destroy();
-  divInst=new Chart(ctx,{
-    type:'doughnut',
-    data:{
-      labels:divisions.map(d=>d.division||'Unknown'),
-      datasets:[{data:divisions.map(d=>d.count),backgroundColor:['#b91c1c','#059669','#d97706','#0077cc','#7c3aed','#0f766e','#eab308','#ec4899']}]
-    },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{boxWidth:12,font:{size:11}}}}}
-  });
-}
-
-function renderEngineerChart(engineers){
-  const ctx=document.getElementById('engineerChart').getContext('2d');
-  if(engInst)engInst.destroy();
-  engInst=new Chart(ctx,{
-    type:'bar',
-    data:{
-      labels:engineers.map(e=>e.name),
-      datasets:[{label:'Completed Tasks',data:engineers.map(e=>e.count),backgroundColor:'rgba(185,28,28,0.75)',borderRadius:5,borderSkipped:false}]
-    },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'}},x:{grid:{display:false}}}}
-  });
-}
-
-// --------------------------------------------------------------
-//  TAB 4  HISTORY
-// --------------------------------------------------------------
-
-let histLoaded=false;
-let histCurrentPage=1;
-let histTotalPages=1;
-
-async function loadHistory(page=1){
-  histLoaded=true;
-  histCurrentPage=page;
-  const typeFilter=document.getElementById('hist-type-filter').value;
-  let url=`/api/reports/history?page=${page}&limit=15`;
-  if(typeFilter) url+=`&reportType=${typeFilter}`;
-
-  document.getElementById('hist-body').innerHTML=`<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted);">Loading</td></tr>`;
-
-  try{
-    const res=await fetch(url,{headers:hdrs()});
-    if(!res.ok)throw new Error('Failed');
-    const d=await res.json();
-    renderHistory(d.reports||[],d.pagination);
-  }catch(e){
-    document.getElementById('hist-body').innerHTML=`<tr><td colspan="7" style="text-align:center;padding:32px;color:#b91c1c;">Error: ${e.message}</td></tr>`;
-  }
-}
-
-const TYPE_LABELS={service_summary:'Service Summary',pending_frn:'Pending FRN',under_repair:'Under Repair',ob_pending:'OB Pending',estimation_pending:'Estimation Pending',engineer_performance:'Engineer Performance',division_analytics:'Division Analytics',escalation_report:'Escalation Report'};
-const TYPE_BADGES={service_summary:'badge-blue',pending_frn:'badge-amber',under_repair:'badge-red',ob_pending:'badge-purple',estimation_pending:'badge-green',engineer_performance:'badge-blue',division_analytics:'badge-purple',escalation_report:'badge-red'};
-const FORMAT_BADGES={detailed:'badge-blue',summary:'badge-green',technical:'badge-purple',action:'badge-amber'};
-
-function renderHistory(reports,pagination){
-  histTotalPages=pagination?.pages||1;
-  document.getElementById('hist-count').textContent=pagination?.total||0;
-  document.getElementById('hist-page-info').textContent=`Page ${pagination?.page||1} of ${pagination?.pages||1}  ${pagination?.total||0} reports`;
-  document.getElementById('hist-prev').disabled=(pagination?.page||1)<=1;
-  document.getElementById('hist-next').disabled=(pagination?.page||1)>=(pagination?.pages||1);
-
-  if(!reports.length){
-    document.getElementById('hist-body').innerHTML=`<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted);">No reports found.</td></tr>`;
-    return;
-  }
-
-  const rows=reports.map(r=>{
-    const div=(r.filters?.division&&r.filters.division!=='all')?r.filters.division:'';
-    const period=r.dateRange?.days?`Last ${r.dateRange.days}d`:`${r.dateRange?.from||''}?${r.dateRange?.to||''}`;
-    const created=r.createdAt?new Date(r.createdAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'';
-    const statusBadge=r.status==='completed'?'badge-green':'badge-red';
-    return `<tr>
-      <td>
-        <div class="hist-title">${r.title||'Untitled Report'}</div>
-        <div class="hist-meta"><span class="badge ${TYPE_BADGES[r.reportType]||'badge-gray'}">${TYPE_LABELS[r.reportType]||r.reportType}</span></div>
-      </td>
-      <td><span class="badge ${FORMAT_BADGES[r.format]||'badge-gray'}">${r.format||''}</span></td>
-      <td style="font-size:12px;color:var(--soft);">${div}</td>
-      <td style="font-size:12px;color:var(--soft);">${period}</td>
-      <td style="font-size:12px;color:var(--muted);">${created}</td>
-      <td><span class="badge ${statusBadge}">${r.status}</span></td>
-      <td>
-        <div class="action-btns" style="justify-content:center;">
-          <button class="btn btn-ghost btn-xs" onclick="viewReport('${r._id}')">&#128065; View</button>
-          <button class="btn btn-danger btn-xs" onclick="deleteReport('${r._id}',this)">&#128465;</button>
-        </div>
-      </td>
-    </tr>`;
-  });
-  document.getElementById('hist-body').innerHTML=rows.join('');
-}
-
-function histPage(dir){
-  const next=histCurrentPage+dir;
-  if(next<1||next>histTotalPages)return;
-  loadHistory(next);
-}
-
-async function viewReport(id){
-  switchTab('performance');
-  document.getElementById('output-body').innerHTML=`<div class="loading-state"><div class="spinner"></div><div class="loading-title">Loading Report</div></div>`;
-  try{
-    const res=await fetch(`/api/reports/${id}`,{headers:hdrs()});
-    const data=await res.json();
-    if(!res.ok) throw new Error(data.message||'Not found');
-    currentReport=data;
-    renderReport(data);
-  }catch(e){toast('Failed to load: '+e.message,'error');}
-}
-
-async function deleteReport(id,btn){
-  if(!confirm('Delete this report? This cannot be undone.'))return;
-  btn.disabled=true;
-  try{
-    const res=await fetch(`/api/reports/${id}`,{method:'DELETE',headers:hdrs()});
-    if(!res.ok) throw new Error('Delete failed');
-    toast('Report deleted','success');
-    loadHistory(histCurrentPage);
-    loadStats();
-  }catch(e){toast('Delete failed: '+e.message,'error');btn.disabled=false;}
-}
-
-// --------------------------------------------------------------
-//  TAB 5  KANBAN BOARD
-// --------------------------------------------------------------
-let kanbanData = [];
-let kanbanCompletedData = [];
-
-async function loadKanbanBoard() {
-  const container = document.getElementById('kanban-container');
-  container.innerHTML = `<div class="loading-state" style="width:100%;"><div class="spinner"></div><div class="loading-title">Loading Kanban Board</div></div>`;
-  
-  try {
-    if (!perfOptionsLoaded) await loadPerfOptions();
-
-    // Fetch both pending FRNs and completed FRNs to calculate the metric formula
-    const [resPending, resCompleted] = await Promise.all([
-      fetch('/api/emp/frn', { headers: hdrs() }),
-      fetch('/api/completed-frn/admin/all', { headers: hdrs() })
-    ]);
-
-    if (!resPending.ok) throw new Error('HTTP ' + resPending.status);
-    
-    const dataPending = await resPending.json();
-    kanbanData = dataPending.filter(d => d.status === 'pending');
-
-    if (resCompleted.ok) {
-      kanbanCompletedData = await resCompleted.json();
-    } else {
-      kanbanCompletedData = [];
-    }
-
-    renderKanbanBoard();
-  } catch(e) {
-    container.innerHTML = `<div class="empty-state"><div class="empty-icon">?</div><div class="empty-title">Failed to load Workload</div><div class="empty-sub">${e.message}</div></div>`;
-  }
-}
-
-function renderKanbanBoard() {
-  const container = document.getElementById('kanban-container');
-  const divFilter = document.getElementById('kanban-div-filter').value;
-  
-  let filtered = kanbanData;
-  let filteredCompleted = kanbanCompletedData;
-  
-  if (divFilter !== 'all') {
-    filtered = filtered.filter(d => (d.divisionName === divFilter || d.division === divFilter));
-    filteredCompleted = filteredCompleted.filter(d => (d.divisionName === divFilter || d.division === divFilter || d.region === divFilter));
-  }
-  
-  // Base group with ALL engineers from user management + Unassigned
-  const grouped = { 'Unassigned': [] };
-  const validEngineers = ['Unassigned'];
-  
-  (perfOptions.employees || []).forEach(emp => {
-    const name = emp.name || emp;
-    if (name) {
-      grouped[name] = [];
-      validEngineers.push(name);
-    }
-  });
-
-  filtered.forEach(d => {
-    const eng = d.eng || 'Unassigned';
-    if (validEngineers.includes(eng)) {
-      grouped[eng].push(d);
-    } else {
-      // If the ticket has an engineer not in the user management system, put them in Unassigned
-      grouped['Unassigned'].push(d);
-    }
-  });
-  
-  const completedCounts = {};
-  filteredCompleted.forEach(d => {
-    const eng = d.eng || 'Unassigned';
-    if (validEngineers.includes(eng)) {
-      completedCounts[eng] = (completedCounts[eng] || 0) + 1;
-    } else {
-      completedCounts['Unassigned'] = (completedCounts['Unassigned'] || 0) + 1;
-    }
-  });
-
-  // Sort: Unassigned first, then alphabetical
-  const columnsToShow = Object.keys(grouped).sort((a,b) => a==='Unassigned' ? -1 : a.localeCompare(b));
-  
-  let html = '';
-  columnsToShow.forEach(eng => {
-    const cards = grouped[eng];
-    const compCount = completedCounts[eng] || 0;
-    const pendingCount = cards.length;
-    
-    html += `
-      <div class="kanban-col">
-        <div class="kanban-col-head">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <div class="kanban-avatar">${eng.charAt(0).toUpperCase()}</div>
-            <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;">${eng}</span>
-          </div>
-          <span class="count-pill" title="Pending / Completed" style="background:var(--surface2);padding:4px 8px;border-radius:12px;font-size:11px;font-weight:700;display:flex;gap:4px;align-items:center;">
-            <span style="color:var(--amber)" title="Active Pending Tickets">${pendingCount}</span>
-            <span style="color:var(--border);">/</span>
-            <span style="color:var(--green)" title="Completed Tickets">${compCount}</span>
-          </span>
-        </div>
-        <div class="kanban-list" data-engineer="${eng}">
-    `;
-    
-    cards.forEach(c => {
-      // Calculate pending days if not provided directly
-      const pdays = c.pdays ?? Math.floor((Date.now() - new Date(c.entryDate).getTime()) / 86400000);
-      const pClass = pdays > 150 ? 'priority-high' : pdays > 80 ? 'priority-med' : 'priority-low';
-      
-      html += `
-        <div class="kanban-card ${pClass}" data-id="${c._id || c.id}">
-          <div class="kanban-card-title">
-            <span>${c.scRno || '-'}</span>
-            <span style="color:var(--muted);font-size:11px;">#${String(c.frnNo||'')}</span>
-          </div>
-          <div class="kanban-card-sub">
-            <b style="color:var(--text);">${c.model || '-'}</b><br/>
-            ${c.customer || '-'}
-          </div>
-          <div class="kanban-card-footer">
-            <span style="color:var(--muted)">${new Date(c.entryDate).toLocaleDateString('en-GB',{month:'short',day:'2-digit'})}</span>
-            <span class="${pClass === 'priority-high' ? 'badge-red' : pClass === 'priority-med' ? 'badge-amber' : 'badge-green'} badge" style="padding:2px 6px;">${pdays || 0} Days</span>
-          </div>
-        </div>
-      `;
-    });
-    
-    html += `</div></div>`;
-  });
-  
-  container.innerHTML = html;
-  
-  // Initialize SortableJS
-  if (typeof Sortable !== 'undefined') {
-    document.querySelectorAll('.kanban-list').forEach(list => {
-      new Sortable(list, {
-        group: 'shared',
-        animation: 150,
-        ghostClass: 'kanban-ghost',
-        onEnd: function (evt) {
-          const itemEl = evt.item;
-          const newEngineer = evt.to.getAttribute('data-engineer');
-          const recordId = itemEl.getAttribute('data-id');
-          if (evt.from !== evt.to) {
-            updateEngineer(recordId, newEngineer);
-          }
-        }
-      });
-    });
-  }
-}
-
-async function updateEngineer(id, newEngineer) {
-  toast(`Reassigning to ${newEngineer}...`, 'info');
-  try {
-    const res = await fetch('/api/emp/frn/' + id + '/assign', { 
-      method: 'PUT', 
-      headers: hdrs(), 
-      body: JSON.stringify({ eng: newEngineer === 'Unassigned' ? '' : newEngineer }) 
-    });
-    if(!res.ok) throw new Error('Update failed');
-    toast(`Successfully reassigned to ${newEngineer}`, 'success');
-    
-    // Update local data
-    const record = kanbanData.find(d => (d._id||d.id) === id);
-    if(record) record.eng = newEngineer === 'Unassigned' ? '' : newEngineer;
-    renderKanbanBoard();
-  } catch(e) {
-    toast(`Failed to reassign: ${e.message}`, 'error');
-    loadKanbanBoard(); // Reload from server to reset UI
-  }
-}
-
-// -- ALL-DIVISIONS REPORT TRACKER (Division tab) ---------------
-let _rptTrackerLoaded = false;
-
-function escapeHtml(str) {
-  if (!str) return '';
-  return String(str).replace(/[&<>"']/g, function(m) {
-    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
-  });
-}
-
-function refreshDivisionSubmissionBoxes(){
-  const panel = document.getElementById('perf-submission-panel');
-  if(!panel) return;
-  const month = document.getElementById('perf-month-div')?.value || getCurrentMonthValue();
-  const division = document.getElementById('perf-division')?.value || '';
-  const meta = division ? `${escapeHtml(division)} | ${escapeHtml(month)}` : `Select division | ${escapeHtml(month)}`;
-  panel.innerHTML = `
-    <div class="submission-panel-head">
-      <div>
-        <div class="submission-title">Division Wise Report Submission</div>
-        <div class="submission-meta">${meta}</div>
-      </div>
-    </div>
-    <div style="font-size:12.5px;color:var(--muted);">${division ? 'Click Preview Division to load submission status.' : 'Select division and month.'}</div>`;
-}
-
-async function loadDivisionReportSubmissions(params){
-  const panel = document.getElementById('perf-submission-panel');
-  if(!panel || !params) return;
-  panel.innerHTML = `
-    <div class="submission-panel-head">
-      <div>
-        <div class="submission-title">Division Wise Report Submission</div>
-        <div class="submission-meta">${escapeHtml(params.division || '')} | ${escapeHtml(params.month || '')}</div>
-      </div>
-    </div>
-    <div style="font-size:12.5px;color:var(--muted);"><span class="spinner" style="width:18px;height:18px;margin:0 8px 0 0;display:inline-block;vertical-align:middle;"></span>Loading submission status...</div>`;
-
-  try{
-    const res = await fetch('/api/tracker/stats?month=' + encodeURIComponent(params.month || ''), { headers: hdrs() });
-    const data = await res.json().catch(() => ({}));
-    if(!res.ok) throw new Error(data.message || 'Failed to load report submissions');
-    const rows = Array.isArray(data.stats) ? data.stats : [];
-    const divisionRow = rows.find(row => String(row.name || '').toLowerCase() === String(params.division || '').toLowerCase());
-    const reports = divisionRow && Array.isArray(divisionRow.reports) ? divisionRow.reports : [];
-    if(!divisionRow || !reports.length){
-      panel.innerHTML = `
-        <div class="submission-panel-head">
-          <div>
-            <div class="submission-title">Division Wise Report Submission</div>
-            <div class="submission-meta">${escapeHtml(params.division || '')} | ${escapeHtml(params.month || '')}</div>
-          </div>
-        </div>
-        <div style="font-size:12.5px;color:var(--muted);">No submission data found for this division and month.</div>`;
-      return;
-    }
-
-    panel.innerHTML = `
-      <div class="submission-panel-head">
-        <div>
-          <div class="submission-title">Division Wise Report Submission</div>
-          <div class="submission-meta">${escapeHtml(params.division || '')} | ${escapeHtml(params.month || '')}</div>
-        </div>
-      </div>
-      <div class="submission-grid">
-        ${reports.map(report => {
-          const percent = Math.min(100, Math.max(0, Number(report.percent || 0)));
-          const done = report.complete || (Number(report.expected || 0) > 0 && Number(report.actual || 0) >= Number(report.expected || 0));
-          return `<div class="submission-card ${done ? 'done' : ''}">
-            <div class="submission-card-title">
-              <span>${escapeHtml(report.label || report.type || 'Report')}</span>
-              <span class="submission-check">${done ? '&#10003;' : '-'}</span>
-            </div>
-            <div class="submission-card-sub">Due: ${escapeHtml(report.schedule || '-')}</div>
-            <div class="submission-count">${Number(report.actual || 0)} / ${Number(report.expected || 0)} submitted (${percent}%)</div>
-          </div>`;
-        }).join('')}
-      </div>`;
-  }catch(e){
-    panel.innerHTML = `
-      <div class="submission-panel-head">
-        <div>
-          <div class="submission-title">Division Wise Report Submission</div>
-          <div class="submission-meta">${escapeHtml(params.division || '')} | ${escapeHtml(params.month || '')}</div>
-        </div>
-      </div>
-      <div style="font-size:12.5px;color:var(--red);font-weight:700;">Could not load submission status: ${escapeHtml(e.message)}</div>`;
-  }
-}
-
-async function loadAllDivisionTrackers() {
-  const grid = document.getElementById('rpt-tracker-grid');
-  const monthInput = document.getElementById('rpt-tracker-month');
-  if (!grid) return;
-
-  const today = new Date();
-  const currentMonth = today.getFullYear() + '-' + (today.getMonth() + 1).toString().padStart(2, '0');
-  if (monthInput && !monthInput.value) monthInput.value = currentMonth;
-  const monthStr = monthInput?.value || currentMonth;
-
-  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:28px;font-size:13px;"><div class="spinner" style="margin:0 auto 10px;"></div>Loading report submission data...</div>';
-
-  try {
-    const res = await fetch('/api/tracker/stats?month=' + monthStr, { headers: hdrs() });
-    if (!res.ok) throw new Error('Failed to fetch stats');
-    const data = await res.json();
-
-    if (data.success && data.stats && data.stats.length > 0) {
-      const fallbackReports = [
-        { type: 'CRM', label: 'CRM Reports', schedule: 'Every Tuesday' },
-        { type: 'PendingActivity', label: 'Pending Activity', schedule: 'Every Monday' },
-        { type: 'NonSaleable', label: 'Non Saleable', schedule: '2nd & 16th' },
-        { type: 'SupplierWarranty', label: 'Re-Export', schedule: '3rd & 16th' },
-        { type: 'CriticalPendingReport', label: 'Critical Pending Report', schedule: '2nd' },
-        { type: 'PIRequest', label: 'PI Request', schedule: '5th' }
-      ];
-      if (monthStr.endsWith('-04') || monthStr.endsWith('-08') || monthStr.endsWith('-12') || monthStr === '4' || monthStr === '8' || monthStr === '12' || monthStr === '04' || monthStr === '08') {
-        fallbackReports.push({ type: 'BuyBack', label: 'Buy Back', schedule: '15th' });
-      }
-      const reportDefs = data.stats.find(div => Array.isArray(div.reports) && div.reports.length)?.reports || fallbackReports;
 
       grid.innerHTML = reportDefs.map(reportDef => {
         const rows = data.stats.map(div => {
