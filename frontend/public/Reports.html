@@ -2086,7 +2086,7 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
 
   return `
     <div style="font-family:'Inter',system-ui,sans-serif; background:#ffffff; border-radius:16px; border:1px solid #e2e8f0; padding:32px; color:#1e293b; width:100%; box-sizing:border-box;">
-      ${scopeType === 'employee' ? '<div class="submission-panel" id="perf-submission-panel"></div>' : ''}
+      <div class="submission-panel" id="perf-submission-panel"></div>
       <div class="perf-review-table-container">
         ${topTable}
         ${bottomTable}
@@ -2120,6 +2120,7 @@ function renderPerfSummary(data,params) {
   window._lastPerfEmpData = data;
   const html = generatePerfAnalysisHtml(data, params, 'employee');
   document.getElementById('perf-pane-summary').innerHTML = html;
+  if(typeof loadDivisionReportSubmissions === 'function' && params) loadDivisionReportSubmissions(params);
 }
 
 
