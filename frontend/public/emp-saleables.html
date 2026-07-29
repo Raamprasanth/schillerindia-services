@@ -390,6 +390,19 @@ function handleUnauth(res){
   }
 }
 
+function getLoggedUserDivisions() {
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
+  const active = localStorage.getItem('schiller_active_division') ||
+                 sessionStorage.getItem('schiller_active_division') ||
+                 u.activeDivision;
+  const list = [];
+  if (active) list.push(active);
+  if (u.division) list.push(u.division);
+  if (u.divisionName) list.push(u.divisionName);
+  if (Array.isArray(u.divisions)) list.push(...u.divisions);
+  return [...new Set(list.map(v => String(v || '').trim().toUpperCase()).filter(Boolean))];
+}
+
 async function loadData(){
   setLoading();
   try {
@@ -398,14 +411,10 @@ async function loadData(){
     if (!res.ok) throw new Error('HTTP ' + res.status);
     let allData = (await res.json()).map(d => ({ ...d, id: d._id || d.id }));
     const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
-    const role = String(u.role || '').toLowerCase();
-    const empDivs = [
-      u.activeDivision,
-      u.division,
-      ...(Array.isArray(u.divisions) ? u.divisions : [])
-    ].map(v => String(v || '').trim().toUpperCase()).filter(Boolean);
+    const role = String(sessionStorage.getItem('schiller_role') || u.role || '').toLowerCase();
+    const empDivs = getLoggedUserDivisions();
 
-    if (!['admin','superadmin'].includes(role) && empDivs.length) {
+    if (role !== 'superadmin' && empDivs.length) {
       SALE_DATA = allData.filter(d => empDivs.includes(String(d.division || '').trim().toUpperCase()));
     } else {
       SALE_DATA = allData;
