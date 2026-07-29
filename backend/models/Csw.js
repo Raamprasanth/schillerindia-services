@@ -68,10 +68,16 @@ const cswSchema = new mongoose.Schema(
     repRepaired: { type: String, default: '' },
     replacementReceivedStatus: { type: String, default: '' },
     replacementReceivedDate: { type: String, default: '' },
+    billed:     { type: String, trim: true, default: 'No' },
+    billedAmount: { type: String, trim: true, default: '0' },
+    dateOfInstallation: { type: String, default: '' },
+    doi:        { type: String, default: '' },
+    dateOfFailure: { type: String, default: '' },
     typeWorkSupplier: { type: String, default: '' },
     rcdPartInvoiceNo: { type: String, default: '' },
     rcdPartInvoiceDate: { type: String, default: '' },
     repGirNo:   { type: String, default: '' },
+    replacedSpareBySupp: { type: String, trim: true, default: '' },
     rcdPartSerialNo: { type: String, default: '' },
     // ── Pending day counters (computed or stored) ─────────────────
     pdPfrn:     { type: Number, default: 0 },           // Pending Days (PFRN)

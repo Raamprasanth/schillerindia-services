@@ -487,9 +487,14 @@ const SUPPLIER_COLUMNS = [
   { key:'repRepaired', label:'Rep/Repaired' },
   { key:'replacementReceivedStatus', label:'Replacement received status' },
   { key:'replacementReceivedDate', label:'Replacement received date', type:'date' },
+  { key:'billed', label:'Billed' },
+  { key:'billedAmount', label:'Billed Amount' },
+  { key:'dateOfInstallation', label:'Date of installation (DOI)', type:'date' },
+  { key:'dateOfFailure', label:'Date of failure', type:'date' },
   { key:'typeWorkSupplier', label:'Type of work Re-Export' },
   { key:'rcdPartInvoiceNo', label:'Rcd part invoice number' },
   { key:'repGirNo', label:'Rep GIR No' },
+  { key:'replacedSpareBySupp', label:'Replaced Spare by Supp' },
   { key:'rcdPartSerialNo', label:'Rcd part serial number' },
   { key:'problemDetails', label:'Problem Details', wide:true },
   { key:'serviceCentreRemarks', label:'Service Centre Remarks', wide:true }
@@ -502,7 +507,10 @@ const FIELD_ALIASES = {
   frnEntryDate: ['frnEntryDate', 'entryDate', 'rcvdDate'],
   typeWorkSupplier: ['typeWorkSupplier', 'typeWork'],
   licenceVersion: ['licenceVersion', 'softwareDetails'],
-  serviceCentreRemarks: ['serviceCentreRemarks', 'serviceCentreComments']
+  serviceCentreRemarks: ['serviceCentreRemarks', 'serviceCentreComments'],
+  dateOfInstallation: ['dateOfInstallation', 'installationDate', 'doi', 'doiDate'],
+  dateOfFailure: ['dateOfFailure', 'failureDate', 'dof'],
+  replacedSpareBySupp: ['replacedSpareBySupp', 'repSpareBySupp', 'replacedSpareBySupplier']
 };
 
 // -- INIT --------------------------------------------------
@@ -770,6 +778,18 @@ function openUpdateModal(id) {
         <option value="">-Select-</option>
         ${opts.map(o => `<option value="${o}" ${String(val).toLowerCase()===o.toLowerCase()?'selected':''}>${o}</option>`).join('')}
       </select>`;
+    } else if (field.key === 'billed') {
+      const opts = ['Yes', 'No'];
+      const currentVal = val || 'No';
+      controlHtml = `<select id="dyn-${field.key}" onchange="onBilledChange()" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);">
+        <option value="">-Select-</option>
+        ${opts.map(o => `<option value="${o}" ${String(currentVal).toLowerCase()===o.toLowerCase()?'selected':''}>${o}</option>`).join('')}
+      </select>`;
+    } else if (field.key === 'billedAmount') {
+      const billedVal = fieldValue(record, 'billed');
+      const isBilledNo = String(billedVal).toLowerCase() === 'no' || !billedVal || String(billedVal).toLowerCase() === '';
+      const amtVal = isBilledNo ? '0' : (val || '0');
+      controlHtml = `<input id="dyn-${field.key}" type="text" value="${esc(amtVal)}" ${isBilledNo ? 'readonly' : ''} style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);" />`;
     } else if (isTextarea) {
       controlHtml = `<input id="dyn-${field.key}" type="text" value="${esc(val)}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);" />`;
     } else if (isDate) {
@@ -801,6 +821,19 @@ function openUpdateModal(id) {
   document.getElementById('dynamic-update-overlay').classList.add('open');
 }
 
+function onBilledChange() {
+  const billedEl = document.getElementById('dyn-billed');
+  const amountEl = document.getElementById('dyn-billedAmount');
+  if (billedEl && amountEl) {
+    if (billedEl.value.toLowerCase() === 'yes') {
+      amountEl.readOnly = false;
+    } else {
+      amountEl.value = '0';
+      amountEl.readOnly = true;
+    }
+  }
+}
+
 function closeDynamicUpdate() {
   document.getElementById('dynamic-update-overlay').classList.remove('open');
 }
@@ -821,6 +854,12 @@ async function submitDynamicUpdate() {
   payload.rcvdDate = payload.frnEntryDate || payload.receivedDateAtEsskay || payload.rcvdDate || '';
   payload.defMod = payload.description || payload.itemDescription || payload.defMod || '';
   payload.typeWork = payload.repairStatus || payload.typeWork || 'SCRAPPED';
+  if (payload.billed === 'No' || !payload.billed || payload.billed.toLowerCase() === 'no') {
+    payload.billedAmount = '0';
+  }
+  if (payload.dateOfInstallation) {
+    payload.doi = payload.dateOfInstallation;
+  }
   
   if (payload.licenceVersion !== undefined) payload.softwareDetails = payload.licenceVersion;
   if (payload.serviceCentreRemarks !== undefined) payload.serviceCentreComments = payload.serviceCentreRemarks;
