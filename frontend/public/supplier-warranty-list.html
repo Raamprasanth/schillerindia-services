@@ -1033,11 +1033,26 @@ function renderPagination(pages) {
   if (pages <= 1) { el.innerHTML = ''; return; }
   let h = `<button class="pager" ${currentPage===1?'disabled':''} onclick="gp(${currentPage-1})">&#8249; Prev</button>`;
   getRange(currentPage, pages).forEach(p => {
-    if (p === '?') h += `<button class="pager" disabled>...</button>`;
+    if (p === '...') h += `<button class="pager" disabled>...</button>`;
     else h += `<button class="pager ${p===currentPage?'active':''}" onclick="gp(${p})">${p}</button>`;
   });
   h += `<button class="pager" ${currentPage===pages?'disabled':''} onclick="gp(${currentPage+1})">Next &#8250;</button>`;
   el.innerHTML = h;
+}
+function gp(p) { currentPage = p; renderTable(); }
+function getRange(c, t) {
+  if (t <= 7) return Array.from({ length: t }, (_, i) => i + 1);
+  if (c <= 4) return [1, 2, 3, 4, 5, '...', t];
+  if (c >= t - 3) return [1, '...', t - 4, t - 3, t - 2, t - 1, t];
+  return [1, '...', c - 1, c, c + 1, '...', t];
+}
+function setLoading() {
+  const tbody = document.getElementById('sc-tbody');
+  if (tbody) tbody.innerHTML = `<tr class="loading-row"><td colspan="${SUPPLIER_COLUMNS.length+1}"><span class="spin"></span>Loading from database...</td></tr>`;
+}
+function setError(m) {
+  const tbody = document.getElementById('sc-tbody');
+  if (tbody) tbody.innerHTML = `<tr><td colspan="${SUPPLIER_COLUMNS.length+1}"><div class="empty-st"><div class="et">Error</div><div class="es">${esc(m)}</div></div></td></tr>`;
 }
 function fmtDate(d){if(!d)return'-';const p=String(d).split('T')[0].split('-');if(p.length<3)return String(d);return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0];}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -1050,9 +1065,6 @@ function logout(){sessionStorage.clear(); localStorage.clear();window.location.h
 <script src="tab-fix.js"></script>
 </body>
 </html>
-
-
-
 
 
 
