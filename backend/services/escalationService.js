@@ -710,6 +710,10 @@ function buildUrEscalationRow(doc) {
   const entryDate = pickEntryDate(doc);
   const repairEngineer = pickRepairEngineer(doc);
   const partNo = pick(doc, ['partNo', 'partNumber', 'PART_NO', 'PART NUMBER']);
+  // stkCust: on UnderRepair it lives on the linked Service doc
+  const stkCustVal = pick(doc, ['stkCust', 'stockCust', 'serviceId.stkCust']);
+  // defType: actual type (PCB, Consumables, etc.) — from Service doc; defMod is the board name
+  const defTypeVal = pick(doc, ['defType', 'serviceId.defType']);
   return {
     'Division Name': divisionName,
     'DIVISION NAME': divisionName,
@@ -727,13 +731,14 @@ function buildUrEscalationRow(doc) {
     SUPPLIER_NAME: doc.supplier || '',
     ENGINEER_ID: doc.eng || '',
     CUSTOMER_NAME: pick(doc, ['custName', 'customer']),
+    STK_CUST: stkCustVal,
+    'STK/CUST': stkCustVal,
     MODEL: doc.model || '',
     PRODUCT_MODEL: doc.model || '',
     UNIT_STATUS: pick(doc, ['unitSts', 'unitStatus']),
-    DEF_TYPE: doc.defMod || '',
-    DEF_MOD_BRD_NAME: doc.defMod || '',
-    MOD_BRD_NAME: doc.defMod || '',
-    DEF_TYPE: doc.defType || '',
+    DEF_TYPE: defTypeVal,                          // actual defect type: PCB, Consumables, etc.
+    DEF_MOD_BRD_NAME: pick(doc, ['defMod', 'defModBrdName', 'serviceId.defMod']),  // board/module name
+    MOD_BRD_NAME: pick(doc, ['defMod', 'defModBrdName', 'serviceId.defMod']),
     PART_NO: partNo,
     'Part No': partNo,
     'PART NUMBER': partNo,
@@ -752,6 +757,7 @@ function buildUrEscalationRow(doc) {
     REF_DATE: new Date().toISOString().replace('T', ' ').replace('Z', ''),
   };
 }
+
 
 function buildPrfObEscalationRow(doc) {
   return {
