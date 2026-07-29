@@ -3989,15 +3989,25 @@
       if (typeWork) {
         const replOpt = Array.from(typeWork.options).find(o => o.value === 'Replacement given');
         const repNotReqOpt = Array.from(typeWork.options).find(o => o.value === 'REP not required');
+        const repairedOpt = Array.from(typeWork.options).find(o => o.value === 'Repaired');
         if (val === 'yes') {
           if (replOpt) replOpt.style.display = 'none';
           if (repNotReqOpt) repNotReqOpt.style.display = 'none';
+          if (repairedOpt) repairedOpt.style.display = '';
           if (typeWork.value === 'Replacement given' || typeWork.value === 'REP not required') typeWork.value = '';
+          typeWork.disabled = false;
+          typeWork.classList.remove('locked-field');
+        } else if (val === 'no') {
+          if (replOpt) replOpt.style.display = '';
+          if (repNotReqOpt) repNotReqOpt.style.display = '';
+          if (repairedOpt) repairedOpt.style.display = 'none';
+          if (typeWork.value === 'Repaired') typeWork.value = '';
           typeWork.disabled = false;
           typeWork.classList.remove('locked-field');
         } else {
           if (replOpt) replOpt.style.display = '';
           if (repNotReqOpt) repNotReqOpt.style.display = '';
+          if (repairedOpt) repairedOpt.style.display = '';
           typeWork.disabled = false;
           typeWork.classList.remove('locked-field');
         }
