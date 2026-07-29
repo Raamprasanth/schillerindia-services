@@ -2437,7 +2437,14 @@
     const maxDate = new Date(year, monthIndex + 1, 0).getDate();
     return dates
       .filter(day => day >= 1 && day <= maxDate)
-      .map(day => new Date(year, monthIndex, day));
+      .map(day => {
+        const d = new Date(year, monthIndex, day);
+        if (d.getDay() === 0) { // Sunday -> Auto-shift to Monday (+1 day)
+          d.setDate(d.getDate() + 1);
+          d.wasSundayShifted = true;
+        }
+        return d;
+      });
   }
 
   function renderTrackerPanel(containerId, dateObjs, submissions, type, monthStr) {
@@ -2448,7 +2455,8 @@
     const todayStart = new Date(); todayStart.setHours(0,0,0,0);
     const submittedCount = dateObjs.filter(dateObj => {
       const ds = fmtDateStr(dateObj);
-      return submissions.some(s => s.type === type && s.reportDate === ds);
+      const origSundayDs = dateObj.wasSundayShifted ? fmtDateStr(new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate() - 1)) : null;
+      return submissions.some(s => s.type === type && (s.reportDate === ds || (origSundayDs && s.reportDate === origSundayDs)));
     }).length;
     const total = dateObjs.length;
     const pct = total ? Math.round((submittedCount / total) * 100) : 0;
@@ -2459,10 +2467,12 @@
       const ds = fmtDateStr(dateObj);
       const isFuture = dateObj > today;
       const isPast = dateObj < todayStart;
-      const submissionInfo = submissions.find(s => s.type === type && s.reportDate === ds);
+      const origSundayDs = dateObj.wasSundayShifted ? fmtDateStr(new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate() - 1)) : null;
+      const submissionInfo = submissions.find(s => s.type === type && (s.reportDate === ds || (origSundayDs && s.reportDate === origSundayDs)));
       const isSubmitted = !!submissionInfo;
       const isChecked = !!_trackerLocalChecked[type][ds];
       const displayDate = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      const shiftedBadge = dateObj.wasSundayShifted ? ' <span style="font-size:10px;color:#d97706;font-weight:600;" title="Due date fell on Sunday - auto-shifted to Monday">(Shifted from Sun)</span>' : '';
       let cbClass = 'tracker-cb';
       let pillClass = '', pillText = '';
       
@@ -2475,7 +2485,7 @@
       const onclick = isSubmitted || isFuture || isPast ? '' : `onclick="toggleTrackerCheck('${type}','${ds}')"`;
       html += `<div class="tracker-date-row ${isFuture ? 'future' : ''} ${isPast && !isSubmitted ? 'past-locked' : ''}" ${onclick}>
         <div class="${cbClass}" id="tcb-${type}-${ds}">${isSubmitted ? '&#10003;' : (isChecked ? '&#10003;' : (isPast ? '&#128274;' : ''))}</div>
-        <div class="tracker-date-label">${displayDate}</div>
+        <div class="tracker-date-label">${displayDate}${shiftedBadge}</div>
         <span class="tracker-status-pill ${pillClass}">${pillText}</span>
       </div>`;
     });
