@@ -10,6 +10,8 @@ router.get('/', protect, async (req, res) => {
     const filter = {};
 
     const role = String(req.user.role || '').toLowerCase();
+    const isPrivileged = ['admin', 'superadmin', 'fqc', 'repair_team'].includes(role);
+
     const userDivs = [
       req.user.activeDivision,
       req.user.division,
@@ -17,7 +19,7 @@ router.get('/', protect, async (req, res) => {
       ...(Array.isArray(req.user.assignedDivisions) ? req.user.assignedDivisions : [])
     ].map(v => String(v || '').trim()).filter(Boolean);
 
-    if (role !== 'superadmin' && userDivs.length > 0) {
+    if (!isPrivileged && userDivs.length > 0) {
       const regexes = [...new Set(userDivs)].map(d => new RegExp('^' + d.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i'));
       filter.division = { $in: regexes };
     } else if (division) {

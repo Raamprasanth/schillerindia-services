@@ -800,10 +800,14 @@ async function loadData(){
     let allData = (await res.json()).map(d => ({ ...d, id: d._id || d.id }));
     const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
     const role = String(sessionStorage.getItem('schiller_role') || u.role || '').toLowerCase();
+    const isPrivileged = ['admin', 'superadmin', 'fqc', 'repair_team'].includes(role);
     const empDivs = getLoggedUserDivisions();
 
-    if (role !== 'superadmin' && empDivs.length) {
-      NS_DATA = allData.filter(d => empDivs.includes(String(d.division || '').trim().toUpperCase()));
+    if (!isPrivileged && empDivs.length) {
+      NS_DATA = allData.filter(d => {
+        const docDiv = String(d.division || '').trim().toUpperCase();
+        return empDivs.some(ed => ed === docDiv || docDiv.includes(ed) || ed.includes(docDiv));
+      });
     } else {
       NS_DATA = allData;
     }
