@@ -683,15 +683,6 @@ body{
 
             <!-- Division Summary Pane -->
             <div id="perf-pane-div-summary">
-              <div class="submission-panel" id="perf-submission-panel">
-                <div class="submission-panel-head">
-                  <div>
-                    <div class="submission-title">Division Wise Report Submission</div>
-                    <div class="submission-meta">Select division and month</div>
-                  </div>
-                </div>
-                <div style="font-size:12.5px;color:var(--muted);">All dashboard submit-report boxes will appear here.</div>
-              </div>
               <div class="empty-state" style="padding:50px 24px;">
                 <div class="empty-icon">&#128196;</div>
                 <div class="empty-title">No Preview Yet</div>
@@ -1849,11 +1840,22 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
       if (d.getDay() === 1) mondays.push(fDate);
       d.setDate(d.getDate() + 1);
     }
-    d02 = '02-' + mStr + '-' + yearStr;
-    d03 = '03-' + mStr + '-' + yearStr;
-    d20 = '20-' + mStr + '-' + yearStr;
-    d15 = '15-' + mStr + '-' + yearStr;
-    d16 = '16-' + mStr + '-' + yearStr;
+    const getShiftedDateStr = (dayNum) => {
+      let dt = new Date(yearNum, monthNum, dayNum);
+      if (dt.getDay() === 0) {
+        dt.setDate(dt.getDate() + 1);
+      }
+      const dd = String(dt.getDate()).padStart(2, '0');
+      const mm = String(dt.getMonth() + 1).padStart(2, '0');
+      const yy = dt.getFullYear();
+      return `${dd}-${mm}-${yy}`;
+    };
+
+    d02 = getShiftedDateStr(2);
+    d03 = getShiftedDateStr(3);
+    d20 = getShiftedDateStr(20);
+    d15 = getShiftedDateStr(15);
+    d16 = getShiftedDateStr(16);
 
     let fFri = new Date(yearNum, monthNum, 1);
     while (fFri.getDay() !== 5) {
@@ -2085,7 +2087,6 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
 
   return `
     <div style="font-family:'Inter',system-ui,sans-serif; background:#ffffff; border-radius:16px; border:1px solid #e2e8f0; padding:32px; color:#1e293b; width:100%; box-sizing:border-box;">
-      <div class="submission-panel" id="perf-submission-panel"></div>
       <div class="perf-review-table-container">
         ${topTable}
         ${bottomTable}

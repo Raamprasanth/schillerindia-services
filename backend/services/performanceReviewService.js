@@ -587,16 +587,23 @@ function getFirstFridayDate(year, month) {
   return d.getDate();
 }
 
+function shiftSundayDates(year, month, dates) {
+  return dates.map(dNum => {
+    const d = new Date(year, month - 1, dNum);
+    return d.getDay() === 0 ? dNum + 1 : dNum;
+  });
+}
+
 function buildReportDefinitions(year, month) {
   return [
     { type: 'CRM', expectedPerEmployee: countDaysInMonth(year, month, 2) },
     { type: 'PendingActivity', expectedPerEmployee: countDaysInMonth(year, month, 1) },
-    { type: 'NonSaleable', expectedPerEmployee: countDatesInMonth(year, month, [2, 16]) },
-    { type: 'SupplierWarranty', expectedPerEmployee: countDatesInMonth(year, month, [3, 16]) },
-    { type: 'CriticalPendingReport', expectedPerEmployee: countDatesInMonth(year, month, [2]) },
-    { type: 'PIRequest', expectedPerEmployee: countDatesInMonth(year, month, [20]) },
+    { type: 'NonSaleable', expectedPerEmployee: countDatesInMonth(year, month, shiftSundayDates(year, month, [2, 16])) },
+    { type: 'SupplierWarranty', expectedPerEmployee: countDatesInMonth(year, month, shiftSundayDates(year, month, [3, 16])) },
+    { type: 'CriticalPendingReport', expectedPerEmployee: countDatesInMonth(year, month, shiftSundayDates(year, month, [2])) },
+    { type: 'PIRequest', expectedPerEmployee: countDatesInMonth(year, month, shiftSundayDates(year, month, [20])) },
     { type: 'RRReport', expectedPerEmployee: countDatesInMonth(year, month, [getFirstFridayDate(year, month)]) },
-    { type: 'BuyBack', expectedPerEmployee: [4, 8, 12].includes(month) ? countDatesInMonth(year, month, [15]) : 0 }
+    { type: 'BuyBack', expectedPerEmployee: [4, 8, 12].includes(month) ? countDatesInMonth(year, month, shiftSundayDates(year, month, [15])) : 0 }
   ];
 }
 
