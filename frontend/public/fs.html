@@ -498,6 +498,33 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
 
 
 
+    <!-- -- FILTER STRIP -- -->
+    <div class="filter-strip" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 2px 8px rgba(0,80,120,0.04);">
+      <span class="filter-label" style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;">From Date</span>
+      <input type="date" class="f-input" id="fl-from" onchange="applyFilters()" style="padding:7px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;"/>
+      <span class="filter-label" style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-left:8px;">To Date</span>
+      <input type="date" class="f-input" id="fl-to" onchange="applyFilters()" style="padding:7px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;"/>
+      <span class="filter-label" style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-left:8px;">Division</span>
+      <select class="f-select" id="fl-division" onchange="applyFilters()" style="padding:7px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;">
+        <option value="">All Divisions</option>
+        <option>SHIPL</option><option>VENTILATOR</option><option>VENT CON</option><option>INJECTOR</option>
+        <option>RADIOLOGY</option><option>GANSHORN</option><option>HOLTER</option><option>MONITORS</option><option>MONITORS CON</option>
+        <option>SCHILLER AG</option>
+      </select>
+      <span class="filter-label" style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-left:8px;">Status</span>
+      <select class="f-select" id="fl-status" onchange="applyFilters()" style="padding:7px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;">
+        <option value="">All Status</option>
+        <option value="pending">Pending</option>
+        <option value="shipped">Shipped</option>
+        <option value="hold">Hold</option>
+        <option value="review">Review</option>
+      </select>
+      <div style="position:relative;margin-left:auto;">
+        <input type="text" id="fl-search" placeholder="Search model, serial, division, etc." oninput="applyFilters()" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;width:210px;"/>
+      </div>
+      <button class="topbar-btn" onclick="clearFilters()" style="padding:6px 12px;font-size:12px;">Clear</button>
+    </div>
+
     <!-- -- TABLE CARD -- -->
     <div class="table-card">
       <div class="table-head-bar">
@@ -520,6 +547,7 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
         <table class="ns-table">
           <thead><tr>
             <th onclick="sortBy('entryDate')">Entry Date <span class="sort-icon">&#8597;</span></th>
+            <th onclick="sortBy('division')">Division <span class="sort-icon">&#8597;</span></th>
             <th onclick="sortBy('unitDetails')">Unit Details <span class="sort-icon">&#8597;</span></th>
             <th onclick="sortBy('fqcInwardDate')">FQC Inward Date <span class="sort-icon">&#8597;</span></th>
             <th onclick="sortBy('model')">Model <span class="sort-icon">&#8597;</span></th>
@@ -532,7 +560,7 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
             <th>Action</th>
           </tr></thead>
           <tbody id="ns-tbody">
-            <tr><td colspan="11" style="text-align:center;padding:44px;color:var(--muted);">
+            <tr><td colspan="12" style="text-align:center;padding:44px;color:var(--muted);">
               <span class="spin"></span>Loading records-
             </td></tr>
           </tbody>
@@ -592,10 +620,22 @@ async function loadData() {
     showToast('Could not load live MongoDB records: ' + e.message, 'err');
   } finally {
     setLoading(false);
+    updateDivisionDropdown();
     applyFilters();
     updateStats();
     updateSidebarBadges();
   }
+}
+
+function updateDivisionDropdown() {
+  const el = document.getElementById('fl-division');
+  if (!el) return;
+  const current = el.value;
+  const hardcoded = ['SHIPL', 'VENTILATOR', 'VENT CON', 'INJECTOR', 'RADIOLOGY', 'GANSHORN', 'HOLTER', 'MONITORS', 'MONITORS CON', 'SCHILLER AG'];
+  const dataDivs = NS_DATA.map(d => String(d.division || '').trim()).filter(Boolean);
+  const merged = [...new Set([...hardcoded, ...dataDivs])].sort((a, b) => a.localeCompare(b));
+  el.innerHTML = '<option value="">All Divisions</option>' +
+    merged.map(v => `<option value="${esc(v)}"${v === current ? ' selected' : ''}>${esc(v)}</option>`).join('');
 }
 
 function getDemoData() {
@@ -666,7 +706,7 @@ function applyFilters() {
     const mQ  = !q    || Object.values(d).some(v => String(v||'').toLowerCase().includes(q));
     const mF  = !from || ed >= from;
     const mT  = !to   || ed <= to;
-    const mD  = !div  || d.division === div;
+    const mD  = !div  || String(d.division || '').trim().toLowerCase() === String(div).trim().toLowerCase();
     const mS  = !stat || d.finalStatus === stat;
     return mQ && mF && mT && mD && mS;
   });
@@ -702,7 +742,7 @@ function renderTable() {
   const tbody = document.getElementById('ns-tbody');
 
   if (!slice.length) {
-    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state">
+    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-state">
       <div class="empty-icon">&#128196;</div>
       <div class="empty-title">${NS_DATA.length ? 'No records match your filters' : 'No Saleable Records'}</div>
       <div class="empty-sub">${NS_DATA.length ? 'Try clearing the filters to see all records.' : 'Non-saleable units will appear here after failing FQC inspection.'}</div>
@@ -714,6 +754,7 @@ function renderTable() {
       const isOverdue = d.tentativeDate && d.tentativeDate < new Date().toISOString().split('T')[0] && d.finalStatus !== 'shipped';
       return `<tr>
         <td class="date-cell">${fmtDate(d.entryDate)}</td>
+        <td><span class="chip-mono">${esc(d.division || '-')}</span></td>
         <td style="font-weight:600;color:var(--text);max-width:140px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.unitDetails||'')}">${esc(d.unitDetails || '-')}</td>
         <td class="date-cell">${fmtDate(d.fqcInwardDate)}</td>
         <td style="font-weight:700;color:var(--accent);">${esc(d.model || '-')}</td>
