@@ -794,7 +794,7 @@ function getLoggedUserDivisions() {
 async function loadData(){
   setLoading();
   try {
-    const res = await fetch(`${API}/api/emp/nonsaleable`, { headers: authHeaders() });
+    const res = await fetch(`${API}/api/fqc/nonsaleable`, { headers: authHeaders() });
     handleUnauth(res);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     let allData = (await res.json()).map(d => ({ ...d, id: d._id || d.id }));
