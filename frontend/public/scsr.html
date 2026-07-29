@@ -413,6 +413,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
           <thead>
             <tr>
               <th style="width: 40px;" class="no-sort"><input type="checkbox" id="select-all" onclick="toggleSelectAll(this)" style="cursor:pointer;width:15px;height:15px;vertical-align:middle;"></th>
+              <th>Entry Date</th>
               <th>Division</th>
               <th>Items</th>
               <th>From Location</th>
@@ -604,6 +605,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       return `
       <tr>
         <td><input type="checkbox" class="row-select" value="${r._id}" onclick="updateSelectAllHeader()" style="cursor:pointer;width:15px;height:15px;vertical-align:middle;"></td>
+        <td><span style="font-size:11px; white-space:nowrap; color: #475569; font-weight:600;">${r.createdAt ? new Date(r.createdAt).toLocaleDateString('en-IN') : (r.date ? new Date(r.date).toLocaleDateString('en-IN') : '-')}</span></td>
         <td><span style="font-size:10px;background:rgba(37,99,235,0.08);color:#1d4ed8;border:1px solid rgba(37,99,235,0.18);border-radius:8px;padding:2px 8px;font-weight:700;white-space:nowrap;">${esc(r.division || '-')}</span></td>
         ${renderItemsBoxCell(r)}
         <td>${esc(r.fromLocation || '-')}</td>
@@ -764,8 +766,9 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   }
 
   function exportCSV() {
-    const headers = ['Division','Part No','Description','Qty','GIR No','From Location','To Location','Remarks','TO NO','TO Raised Date','Spares Rcd Date'];
+    const headers = ['Entry Date','Division','Part No','Description','Qty','GIR No','From Location','To Location','Remarks','TO NO','TO Raised Date','Spares Rcd Date'];
     const rows = getVisibleRecords().map(r => [
+      r.createdAt ? new Date(r.createdAt).toLocaleDateString('en-IN') : (r.date ? new Date(r.date).toLocaleDateString('en-IN') : '-'),
       r.division || '-',
       r.partNo || '-',
       r.description || '-',

@@ -406,6 +406,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <table class="frn-table">
           <thead>
             <tr>
+              <th>Entry Date</th>
               <th>Division</th>
               <th>Items</th>
               <th>From Location</th>
@@ -608,6 +609,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     tb.innerHTML = filtered.map(r => {
       return `
       <tr>
+        <td><span style="font-size:11px; white-space:nowrap; color: #475569; font-weight:600;">${r.createdAt ? new Date(r.createdAt).toLocaleDateString('en-IN') : (r.date ? new Date(r.date).toLocaleDateString('en-IN') : '-')}</span></td>
         <td><span class="div-tag">${esc(r.division || '-')}</span></td>
         ${renderItemsBoxCell(r)}
         <td>${esc(r.fromLocation || '-')}</td>
@@ -715,9 +717,10 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   }
 
   function exportCSV() {
-    const headers = ['Part No','Division','Description','Qty','GIR No','From Location','To Location','Remarks','TO NO','TO Raised Date','Spares Rcd Date','Closed By','Close Date'];
+    const headers = ['Part No','Entry Date','Division','Description','Qty','GIR No','From Location','To Location','Remarks','TO NO','TO Raised Date','Spares Rcd Date','Closed By','Close Date'];
     const rows = records.map(r => [
       r.partNo || '-',
+      r.createdAt ? new Date(r.createdAt).toLocaleDateString('en-IN') : (r.date ? new Date(r.date).toLocaleDateString('en-IN') : '-'),
       r.division || '-',
       r.description || '-',
       r.qty || '-',
