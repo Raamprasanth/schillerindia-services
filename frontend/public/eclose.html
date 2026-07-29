@@ -392,6 +392,7 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
       <div class="table-wrap">
         <table class="call-table">
           <thead><tr>
+            <th class="no-sort">Action</th>
             <th style="width:42px;" class="no-sort">#</th>
             <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
             <th onclick="sortBy('entryDate')">Entry Date <span class="si">&#8693;</span></th>
@@ -404,7 +405,6 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('typeCall')">Type of Call <span class="si">&#8693;</span></th>
             <th onclick="sortBy('status')">Status <span class="si">&#8693;</span></th>
             <th>Remarks</th>
-            <th class="no-sort">Action</th>
           </tr></thead>
           <tbody id="call-tbody">
             <tr class="loading-row"><td colspan="13"><span class="spin"></span>Loading from database...</td></tr>
@@ -567,6 +567,7 @@ function renderTable(){
         ? esc((d.remarks || '').slice(0, 45)) + '-'
         : esc(d.remarks || '-');
       return `<tr>
+        <td><button class="btn-xs view" onclick="openDetailModal('${rid}')">&#128065; View</button></td>
         <td class="mono" style="color:var(--muted);">${(currentPage - 1) * perPage + i + 1}</td>
         <td><span class="div-tag">${esc(d.division || '-')}</span></td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(entryDateForClosedCall(d))}</td>
@@ -579,7 +580,6 @@ function renderTable(){
         <td style="font-size:11px;">${esc(d.typeCall || '-')}</td>
         <td>${statusPill(d.status)}</td>
         <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--soft);" title="${esc(d.remarks||'')}">${remarksTrunc}</td>
-        <td><button class="btn-xs view" onclick="openDetailModal('${rid}')">&#128065; View</button></td>
       </tr>`;
     }).join('');
   }

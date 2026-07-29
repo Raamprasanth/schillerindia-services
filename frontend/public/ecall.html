@@ -531,6 +531,7 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
       <div class="table-wrap">
         <table class="call-table">
           <thead><tr>
+            <th>Actions</th>
             <th style="width:40px;"># <span class="si">&#8693;</span></th>
             <th onclick="sortBy('scEng')">SC Engineer <span class="si">&#8693;</span></th>
             <th onclick="sortBy('callDate')">Call Date <span class="si">&#8693;</span></th>
@@ -544,7 +545,6 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
             <th>Duration</th>
             <th style="max-width:180px;">Remarks / Notes</th>
-            <th>Actions</th>
           </tr></thead>
           <tbody id="call-tbody">
              <tr class="loading-row"><td colspan="14"><span class="spin"></span>Loading from database...</td></tr>
@@ -917,6 +917,10 @@ function renderTable(){
       const rid = d._id || d.id;
       const remark = (d.remarks||'').slice(0,45) + ((d.remarks||'').length>45?'-':'');
       return `<tr>
+        <td style="white-space:nowrap;">
+          <button class="btn-xs update" title="Update" onclick="openEditModal('${rid}')">Edit</button>
+          <button class="btn-xs update" title="Close" onclick="closeEntry('${rid}')" style="margin-left:4px;">Close</button>
+        </td>
         <td class="mono" style="color:var(--muted);">${(currentPage-1)*perPage+i+1}</td>
         <td style="font-weight:600;color:var(--text);">${esc(d.scEng||'-')}</td>
         <td style="font-size:11px;font-weight:600;color:var(--soft);">${fmtDate(d.callDate)}</td>
@@ -930,10 +934,6 @@ function renderTable(){
         <td style="font-weight:600;color:var(--accent2);">${esc(d.model||'-')}</td>
         <td><span class="duration-badge"><span class="dur-ico">&#9201;</span>${esc(d.duration||'-')}</span></td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--soft);" title="${esc(d.remarks||'')}">${esc(remark||'-')}</td>
-        <td>
-          <button class="btn-xs update" title="Update" onclick="openEditModal('${rid}')">Edit</button>
-          <button class="btn-xs update" title="Close" onclick="closeEntry('${rid}')" style="margin-left:4px;">Close</button>
-        </td>
       </tr>`;
     }).join('');
   }
