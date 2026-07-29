@@ -111,6 +111,25 @@ function getFirstFridayDate(year, month) {
   return d.getDate();
 }
 
+function formatShiftedSchedule(year, month, dates, baseText) {
+  if (!year || !month || !dates || !dates.length) return baseText;
+  let hasSunday = false;
+  const shiftedDates = dates.map(dNum => {
+    const d = new Date(year, month - 1, dNum);
+    if (d.getDay() === 0) {
+      hasSunday = true;
+      return dNum + 1;
+    }
+    return dNum;
+  });
+  if (!hasSunday) return baseText;
+  const formatOrd = n => {
+    const s = ["th", "st", "nd", "rd"], v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  };
+  return shiftedDates.map(formatOrd).join(' & ') + ' (Shifted from Sun)';
+}
+
 function buildReportDefinitions(year, month) {
   return [
     {
@@ -128,25 +147,25 @@ function buildReportDefinitions(year, month) {
     {
       type: 'NonSaleable',
       label: 'Non Saleable',
-      schedule: '2 and 16',
+      schedule: formatShiftedSchedule(year, month, [2, 16], '2 and 16'),
       expectedPerEmployee: countDatesInMonth(year, month, [2, 16])
     },
     {
       type: 'SupplierWarranty',
       label: 'Supplier Warranty',
-      schedule: '3 and 16',
+      schedule: formatShiftedSchedule(year, month, [3, 16], '3 and 16'),
       expectedPerEmployee: countDatesInMonth(year, month, [3, 16])
     },
     {
       type: 'CriticalPendingReport',
       label: 'Critical Pending Report',
-      schedule: '2',
+      schedule: formatShiftedSchedule(year, month, [2], '2'),
       expectedPerEmployee: countDatesInMonth(year, month, [2])
     },
     {
       type: 'PIRequest',
       label: 'PI Request',
-      schedule: '20',
+      schedule: formatShiftedSchedule(year, month, [20], '20'),
       expectedPerEmployee: countDatesInMonth(year, month, [20])
     },
     {
@@ -158,7 +177,7 @@ function buildReportDefinitions(year, month) {
     {
       type: 'BuyBack',
       label: 'Buy Back',
-      schedule: '15 (Apr, Aug, Dec)',
+      schedule: formatShiftedSchedule(year, month, [15], '15 (Apr, Aug, Dec)'),
       expectedPerEmployee: [4, 8, 12].includes(month) ? countDatesInMonth(year, month, [15]) : 0
     },
     {
