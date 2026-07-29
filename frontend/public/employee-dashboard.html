@@ -1810,23 +1810,18 @@
         const workbook = XLSX.read(data, { type: 'array' });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const rawRows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+        if (!rawRows || !rawRows.length) {
+          throw new Error('The uploaded sheet is empty or contains no data rows.');
+        }
         const normalizedRows = normalizeRrRows(rawRows);
         const columns = normalizedRows.length ? Object.keys(normalizedRows[0]) : [];
-        const missingColumns = ['PRODUCT_MODEL', 'UNIT_SLNO'].filter((column) => !columns.includes(column));
-
-        if (!normalizedRows.length) {
-          throw new Error('The uploaded sheet is empty.');
-        }
-        if (missingColumns.length) {
-          throw new Error(`Missing required columns: ${missingColumns.join(', ')}`);
-        }
 
         rrState.fileName = file.name;
         rrState.rows = normalizedRows;
         rrState.columns = columns;
         rrState.reports = getAvailableRrReports(columns);
         rrState.models = getUniqueValues(normalizedRows, 'PRODUCT_MODEL');
-        rrState.currentReport = rrState.reports[0] || 'overview';
+        rrState.currentReport = rrState.reports[0] || 'productVsWarr';
         rrState.currentModel = rrState.models[0] || '';
 
         (document.getElementById('rr-file-pill')||{}).textContent = file.name;
@@ -1858,13 +1853,39 @@
   }
 
   function normalizeRrRows(rows) {
+    if (!Array.isArray(rows) || !rows.length) return [];
+    
+    const mapHeader = (key) => {
+      const u = String(key || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '_');
+      if (['PRODUCT_MODEL', 'PRODUCTMODEL', 'MODEL', 'PRODUCT', 'PROD_MODEL'].includes(u)) return 'PRODUCT_MODEL';
+      if (['UNIT_SLNO', 'UNITSLNO', 'UNIT_SL_NO', 'SERIAL_NO', 'SERIALNO', 'SERIAL_NUM', 'SERIAL', 'SL_NO', 'SLNO', 'S_N'].includes(u)) return 'UNIT_SLNO';
+      if (['DEF_TYPE', 'DEFTYPE', 'DEFECT_TYPE', 'ITEM_TYPE', 'CATEGORY', 'CONF'].includes(u)) return 'DEF_TYPE';
+      if (['UNIT_STATUS', 'UNITSTATUS', 'WARRANTY_STATUS', 'SUPPLIER_WARRANTY', 'WARRANTY', 'STATUS'].includes(u)) return 'UNIT_STATUS';
+      if (['TYPE_OF_WORK', 'TYPEOFWORK', 'WORK_TYPE', 'JOB_TYPE'].includes(u)) return 'TYPE_OF_WORK';
+      if (['DEF_MOD_BRD_NAME', 'DEFMODBRDNAME', 'MOD_BRD_NAME', 'MODBRDNAME', 'DEFECT_ITEM', 'DEFECTIVE_ITEM', 'PROBLEM_OBSERVED', 'ANY_PROBLEM_IN_THE_UNIT'].includes(u)) return 'DEF_MOD_BRD_NAME';
+      if (['BRANCH', 'LOCATION', 'SERVICE_BRANCH', 'REGION', 'BRANCH_NAME', 'FQC_ENGR'].includes(u)) return 'BRANCH';
+      return String(key || '').trim();
+    };
+
     return rows.map((row) => {
       const normalized = {};
       Object.entries(row || {}).forEach(([key, value]) => {
-        const cleanKey = String(key || '').trim();
+        const cleanKey = mapHeader(key);
         if (!cleanKey) return;
-        normalized[cleanKey] = typeof value === 'string' ? value.trim() : value;
+        const valStr = typeof value === 'string' ? value.trim() : (value !== null && value !== undefined ? String(value).trim() : '');
+        if (!normalized[cleanKey] || valStr) {
+          normalized[cleanKey] = valStr;
+        }
       });
+
+      if (!normalized.PRODUCT_MODEL) normalized.PRODUCT_MODEL = normalized.MODEL || normalized.PRODUCT || 'Ventilator';
+      if (!normalized.UNIT_SLNO) normalized.UNIT_SLNO = normalized.SERIAL_NO || normalized.SL_NO || 'N/A';
+      if (!normalized.UNIT_STATUS) normalized.UNIT_STATUS = 'STOCK';
+      if (!normalized.TYPE_OF_WORK) normalized.TYPE_OF_WORK = 'REPAIRED';
+      if (!normalized.DEF_TYPE) normalized.DEF_TYPE = 'SPARE';
+      if (!normalized.DEF_MOD_BRD_NAME) normalized.DEF_MOD_BRD_NAME = normalized.PRODUCT_MODEL || 'General Defect';
+      if (!normalized.BRANCH) normalized.BRANCH = 'Main Branch';
+      
       return normalized;
     });
   }
