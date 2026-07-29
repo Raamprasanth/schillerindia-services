@@ -103,6 +103,14 @@ function countDatesInMonth(year, month, dates) {
   return dates.filter(day => day >= 1 && day <= lastDay).length;
 }
 
+function getFirstFridayDate(year, month) {
+  let d = new Date(year, month - 1, 1);
+  while (d.getDay() !== 5) {
+    d.setDate(d.getDate() + 1);
+  }
+  return d.getDate();
+}
+
 function buildReportDefinitions(year, month) {
   return [
     {
@@ -140,6 +148,12 @@ function buildReportDefinitions(year, month) {
       label: 'PI Request',
       schedule: '20',
       expectedPerEmployee: countDatesInMonth(year, month, [20])
+    },
+    {
+      type: 'RRReport',
+      label: 'RR Report',
+      schedule: '1st Friday',
+      expectedPerEmployee: countDatesInMonth(year, month, [getFirstFridayDate(year, month)])
     },
     {
       type: 'BuyBack',

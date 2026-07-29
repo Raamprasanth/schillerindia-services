@@ -21,6 +21,7 @@ const trackerSubmissionSchema = new mongoose.Schema({
       'SupplierWarranty',
       'CriticalPendingReport',
       'PIRequest',
+      'RRReport',
       'OpenCallReview',
       'BuyBack'
     ],

@@ -579,6 +579,14 @@ async function getSimpleEmployeePerformanceData({ monthInfo, employee, selectedD
   };
 }
 
+function getFirstFridayDate(year, month) {
+  let d = new Date(year, month - 1, 1);
+  while (d.getDay() !== 5) {
+    d.setDate(d.getDate() + 1);
+  }
+  return d.getDate();
+}
+
 function buildReportDefinitions(year, month) {
   return [
     { type: 'CRM', expectedPerEmployee: countDaysInMonth(year, month, 2) },
@@ -587,6 +595,7 @@ function buildReportDefinitions(year, month) {
     { type: 'SupplierWarranty', expectedPerEmployee: countDatesInMonth(year, month, [3, 16]) },
     { type: 'CriticalPendingReport', expectedPerEmployee: countDatesInMonth(year, month, [2]) },
     { type: 'PIRequest', expectedPerEmployee: countDatesInMonth(year, month, [20]) },
+    { type: 'RRReport', expectedPerEmployee: countDatesInMonth(year, month, [getFirstFridayDate(year, month)]) },
     { type: 'BuyBack', expectedPerEmployee: [4, 8, 12].includes(month) ? countDatesInMonth(year, month, [15]) : 0 }
   ];
 }
@@ -624,7 +633,7 @@ async function getRealTrackerMetrics(scope, divisionName, employeeName, monthInf
 
   const actuals = {
     CRM: 0, PendingActivity: 0, NonSaleable: 0,
-    SupplierWarranty: 0, CriticalPendingReport: 0, PIRequest: 0, BuyBack: 0
+    SupplierWarranty: 0, CriticalPendingReport: 0, PIRequest: 0, RRReport: 0, BuyBack: 0
   };
 
   const submissionsObj = {};
@@ -1439,7 +1448,8 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
   compliance.supplierWarranty = realTrackers.SupplierWarranty;
   compliance.criticalPending = realTrackers.CriticalPendingReport;
   compliance.purchaseIndent = realTrackers.PIRequest;
-    compliance.buyBack = realTrackers.BuyBack;
+  compliance.rrReport = realTrackers.RRReport;
+  compliance.buyBack = realTrackers.BuyBack;
   compliance.trackerSubmissions = realTrackers.submissionsObj;
 
   const narratives = {

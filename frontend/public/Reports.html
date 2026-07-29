@@ -2900,7 +2900,8 @@ async function loadAllDivisionTrackers() {
         { type: 'NonSaleable', label: 'Non Saleable', schedule: '2nd & 16th' },
         { type: 'SupplierWarranty', label: 'Re-Export', schedule: '3rd & 16th' },
         { type: 'CriticalPendingReport', label: 'Critical Pending Report', schedule: '2nd' },
-        { type: 'PIRequest', label: 'PI Request', schedule: '20th' }
+        { type: 'PIRequest', label: 'PI Request', schedule: '20th' },
+        { type: 'RRReport', label: 'RR Report', schedule: '1st Friday' }
       ];
       if (monthStr.endsWith('-04') || monthStr.endsWith('-08') || monthStr.endsWith('-12') || monthStr === '4' || monthStr === '8' || monthStr === '12' || monthStr === '04' || monthStr === '08') {
         fallbackReports.push({ type: 'BuyBack', label: 'Buy Back', schedule: '15th' });

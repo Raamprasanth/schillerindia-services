@@ -631,8 +631,12 @@
         <div class="panel-body" id="criticalpending-tracker-body"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
       </div>
       <div class="panel">
-        <div class="panel-header"><div class="panel-title">&#128196; PI Request <span style="font-size:10px;color:var(--muted);font-weight:400;">(5th)</span></div></div>
+        <div class="panel-header"><div class="panel-title">&#128196; PI Request <span style="font-size:10px;color:var(--muted);font-weight:400;">(20th)</span></div></div>
         <div class="panel-body" id="pirequest-tracker-body"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">&#128203; RR Report <span style="font-size:10px;color:var(--muted);font-weight:400;">(1st Fri)</span></div></div>
+        <div class="panel-body" id="rrreport-tracker-body"><div style="color:var(--muted);font-size:13px;">Loading...</div></div>
       </div>
       <div class="panel">
         <div class="panel-header"><div class="panel-title">&#128260; Buy Back <span style="font-size:10px;color:var(--muted);font-weight:400;">(15th Apr, Aug, Dec)</span></div></div>
@@ -2342,6 +2346,7 @@
     { panelId:'supplierwarranty-tracker-body', icon:'&#9888;&#65039;', title:'Supplier Warranty', schedule:'3 & 16' },
     { panelId:'criticalpending-tracker-body', icon:'&#128680;', title:'Critical Pending', schedule:'2nd' },
     { panelId:'pirequest-tracker-body', icon:'&#128196;', title:'PI Request', schedule:'20th' },
+    { panelId:'rrreport-tracker-body', icon:'&#128203;', title:'RR Report', schedule:'1st Friday' },
     { panelId:'opencallreview-tracker-body', icon:'&#128269;', title:'Open Call Review', schedule:'Daily (exc. 3rd Sat)' }
   ];
 
@@ -2378,6 +2383,7 @@
 
     const mondays = getDaysInMonth(year, monthIndex, 1);
     const tuesdays = getDaysInMonth(year, monthIndex, 2);
+    const firstFriday = getDaysInMonth(year, monthIndex, 5).slice(0, 1);
 
     let submissions = [];
     try {
@@ -2393,6 +2399,7 @@
     renderTrackerPanel('supplierwarranty-tracker-body', getMonthDates(year, monthIndex, [3, 16]), submissions, 'SupplierWarranty', monthStr);
     renderTrackerPanel('criticalpending-tracker-body', getMonthDates(year, monthIndex, [2]), submissions, 'CriticalPendingReport', monthStr);
     renderTrackerPanel('pirequest-tracker-body', getMonthDates(year, monthIndex, [20]), submissions, 'PIRequest', monthStr);
+    renderTrackerPanel('rrreport-tracker-body', firstFriday, submissions, 'RRReport', monthStr);
     
     if ([3, 7, 11].includes(monthIndex)) {
       renderTrackerPanel('buyback-tracker-body', getMonthDates(year, monthIndex, [15]), submissions, 'BuyBack', monthStr);
