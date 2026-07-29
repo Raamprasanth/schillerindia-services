@@ -1715,14 +1715,13 @@
   const rrState = { fileName:'', rows:[], columns:[], reports:[], models:[], currentReport:'', currentModel:'', currentTable:null };
   const rrReportLabels = {
     productVsWarr: 'Product Vs Warr',
-    unitSnCalls: 'Unit SN Vs no of calls attended',
+    unitSrDefParts: 'Unit Sr Vs No of def part',
     defItemsVsWarr: 'Def Items Vs Warr',
     typeOfWorkVsWarr: 'Type of work Vs Warr',
     typeOfWorkVsWarrCon: 'Type of work Vs Warr - Con',
     typeOfWorkVsWarrPcbSpare: 'Type of work Vs Warr-PCB,Spar',
     defVsRepaired: 'Def Vs repaired',
-    branchWiseFailure: 'Branch Wise failure',
-    noOfDaysReplacement: 'No of days taken for the repla',
+    branchWiseFailure: 'Branch Wise failure'
   };
   document.getElementById('rr-file-input').addEventListener('change', handleRrFileUpload);
   document.getElementById('rr-report-select').addEventListener('change', function(event) { rrState.currentReport=event.target.value; syncRrModelVisibility(); renderRrAnalysis(); });
@@ -1872,9 +1871,9 @@
 
   function getAvailableRrReports(columns) {
     return [
-      'productVsWarr', 'unitSnCalls', 'defItemsVsWarr',
+      'productVsWarr', 'unitSrDefParts', 'defItemsVsWarr',
       'typeOfWorkVsWarr', 'typeOfWorkVsWarrCon', 'typeOfWorkVsWarrPcbSpare',
-      'defVsRepaired', 'branchWiseFailure', 'noOfDaysReplacement',
+      'defVsRepaired', 'branchWiseFailure'
     ];
   }
 
@@ -1909,19 +1908,20 @@
           rows,
           rowField: 'PRODUCT_MODEL',
           columnField: 'UNIT_STATUS',
-          rowLabel: 'PRODUCT_MODEL',
+          rowLabel: 'Row Labels',
           reportId: 'productVsWarr',
           sheetName: 'Product Vs Warr',
         });
-      case 'unitSnCalls': {
-        const counts = countBy(rows, 'UNIT_SLNO');
-        const tableRows = counts.map(c => ({ 'UNIT_SLNO': c.label, 'Total': c.value }));
-        const total = tableRows.reduce((sum, r) => sum + (Number(r.Total) || 0), 0);
-        tableRows.push({ 'UNIT_SLNO': 'Grand Total', 'Total': total });
+      case 'unitSrDefParts': {
+        const unitField = rrState.columns.includes('UNIT_SLNO') ? 'UNIT_SLNO' : (rrState.columns.includes('SERIAL_NO') ? 'SERIAL_NO' : 'UNIT_SLNO');
+        const counts = countBy(rows, unitField);
+        const tableRows = counts.map(c => ({ 'Row Labels': c.label, 'Count of UNIT_STATUS': c.value }));
+        const total = tableRows.reduce((sum, r) => sum + (Number(r['Count of UNIT_STATUS']) || 0), 0);
+        tableRows.push({ 'Row Labels': 'Grand Total', 'Count of UNIT_STATUS': total });
         return {
-          reportId: 'unitSnCalls',
-          sheetName: 'Unit SN Vs no of calls attended',
-          table: { columns: ['UNIT_SLNO', 'Total'], rows: tableRows, fileName: 'UnitSN_vs_Calls.csv' }
+          reportId: 'unitSrDefParts',
+          sheetName: 'Unit Sr Vs No of def part ',
+          table: { columns: ['Row Labels', 'Count of UNIT_STATUS'], rows: tableRows, fileName: 'Unit_Sr_Vs_No_of_def_part.csv' }
         };
       }
       case 'defItemsVsWarr': {
@@ -1995,23 +1995,12 @@
           sheetName: 'Branch Wise failure',
         });
       }
-      case 'noOfDaysReplacement': {
-        const dayField = rrState.columns.includes('PENDING DAYS(URP)') ? 'PENDING DAYS(URP)' : (rrState.columns.includes('PENDING DAYS(PFRN)') ? 'PENDING DAYS(PFRN)' : 'TYPE_OF_WORK');
-        return buildPivotAnalysis({
-          rows,
-          rowField: 'UNIT_STATUS',
-          columnField: dayField,
-          rowLabel: 'Row Labels',
-          reportId: 'noOfDaysReplacement',
-          sheetName: 'No of days taken for the repla',
-        });
-      }
       default:
         return buildPivotAnalysis({
           rows,
           rowField: 'PRODUCT_MODEL',
           columnField: 'UNIT_STATUS',
-          rowLabel: 'PRODUCT_MODEL',
+          rowLabel: 'Row Labels',
           reportId: 'productVsWarr',
           sheetName: 'Product Vs Warr',
         });
@@ -2287,7 +2276,7 @@
       const baseName = rrState.fileName ? rrState.fileName.replace(/\.[^/.]+$/, '').replace(/^Auto-fetched:\s*/, 'RR_Auto_') : 'RR_Analysis';
       const cleanFileName = baseName.replace(/[^a-zA-Z0-9_-]/g, '_') + '_Full_Report.xlsx';
       XLSX.writeFile(wb, cleanFileName);
-      setRrStatus(`Exported 9-sheet Excel report as "${cleanFileName}".`);
+      setRrStatus(`Exported 8-sheet Excel report as "${cleanFileName}".`);
     } catch (err) {
       console.error('RR Excel Export Error:', err);
       setRrStatus('Failed to generate Excel file: ' + err.message, true);
