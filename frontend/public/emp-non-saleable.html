@@ -411,8 +411,8 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
               <input type="text" id="f-reqparts" placeholder="" readonly/>
             </div>
             <div class="ff">
-              <label>Root Cause</label>
-              <input type="text" id="f-rootcause" placeholder="Root cause of the defect" readonly/>
+              <label>Root Cause <span class="req">*</span></label>
+              <input type="text" id="f-rootcause" placeholder="Root cause of the defect" required readonly/>
             </div>
             <div class="ff">
               <label>SC Action Plan</label>
@@ -423,8 +423,8 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
               <input type="date" id="f-tentdate" disabled/>
             </div>
             <div class="ff">
-              <label>Ship Date to FQC</label>
-              <input type="date" id="f-shipfqcdate" disabled/>
+              <label>Ship Date to FQC <span class="req">*</span></label>
+              <input type="date" id="f-shipfqcdate" required disabled/>
             </div>
             <div class="ff">
               <label>FQC Final Remark</label>
@@ -803,11 +803,15 @@ async function loadData(){
     const isPrivileged = ['admin', 'superadmin', 'fqc', 'repair_team'].includes(role);
     const empDivs = getLoggedUserDivisions();
 
-    if (!isPrivileged && empDivs.length) {
-      NS_DATA = allData.filter(d => {
-        const docDiv = String(d.division || '').trim().toUpperCase();
-        return empDivs.some(ed => ed === docDiv || docDiv.includes(ed) || ed.includes(docDiv));
-      });
+    if (!isPrivileged) {
+      if (empDivs.length) {
+        NS_DATA = allData.filter(d => {
+          const docDiv = String(d.division || '').trim().toUpperCase();
+          return empDivs.some(ed => ed === docDiv || docDiv.includes(ed) || ed.includes(docDiv));
+        });
+      } else {
+        NS_DATA = [];
+      }
     } else {
       NS_DATA = allData;
     }
@@ -941,6 +945,10 @@ function openAddModal(){
   document.getElementById('entry-id').value = '';
   document.getElementById('entry-modal-title').innerHTML = '&#128196; Add New Non Saleable Entry';
   document.getElementById('entry-save-btn').innerHTML = '&#128190; Save Entry';
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
+  const loggedName = u.name || u.username || LOGGED_USER.name || LOGGED_USER.username || '';
+  const scEl = document.getElementById('f-scengineer');
+  if (scEl) scEl.value = loggedName;
   setLocked(false);
   document.getElementById('entry-overlay').classList.add('show');
 }
@@ -968,8 +976,10 @@ function openEditModal(id){
   set('f-shipfqcdate', d.shipFqcDate);
   set('f-region', d.region);
   set('f-branch', d.branch);
+  const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
+  const loggedName = u.name || u.username || LOGGED_USER.name || LOGGED_USER.username || '';
   set('f-engineer', d.engineer);
-  set('f-scengineer', d.scEngineer);
+  set('f-scengineer', d.scEngineer || loggedName);
   set('f-dealer', d.dealer);
   set('f-supplier', d.supplier);
   set('f-customer', d.customer);
@@ -1055,8 +1065,10 @@ async function saveEntry(){
   if (!payload.fqcInDate) missing.push('FQC Inward Date');
   if (!payload.status) missing.push('Status');
   if (!payload.reportedProblem) missing.push('Reported Problem');
+  if (!payload.rootCause) missing.push('Root Cause');
+  if (!payload.shipFqcDate) missing.push('Ship Date to FQC');
 
-  ['f-division','f-unitdetails','f-model','f-modelsn','f-fqcindate','f-status','f-reportedproblem'].forEach(fid => {
+  ['f-division','f-unitdetails','f-model','f-modelsn','f-fqcindate','f-status','f-reportedproblem','f-rootcause','f-shipfqcdate'].forEach(fid => {
     const el = document.getElementById(fid);
     if (el) el.classList.toggle('err', !el.value.trim());
   });

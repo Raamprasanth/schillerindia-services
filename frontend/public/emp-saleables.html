@@ -415,11 +415,15 @@ async function loadData(){
     const isPrivileged = ['admin', 'superadmin', 'fqc', 'repair_team'].includes(role);
     const empDivs = getLoggedUserDivisions();
 
-    if (!isPrivileged && empDivs.length) {
-      SALE_DATA = allData.filter(d => {
-        const docDiv = String(d.division || '').trim().toUpperCase();
-        return empDivs.some(ed => ed === docDiv || docDiv.includes(ed) || ed.includes(docDiv));
-      });
+    if (!isPrivileged) {
+      if (empDivs.length) {
+        SALE_DATA = allData.filter(d => {
+          const docDiv = String(d.division || '').trim().toUpperCase();
+          return empDivs.some(ed => ed === docDiv || docDiv.includes(ed) || ed.includes(docDiv));
+        });
+      } else {
+        SALE_DATA = [];
+      }
     } else {
       SALE_DATA = allData;
     }
