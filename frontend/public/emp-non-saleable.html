@@ -551,26 +551,13 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
       </div>
     </div>
 
-    <!-- Date & Division Filter -->
+    <!-- Date Filter -->
     <div class="filter-strip">
       <span class="filter-label">From Date</span>
       <input type="date" class="f-input" id="filter-from" onchange="applyFilters()"/>
       <div class="f-divider"></div>
       <span class="filter-label">To Date</span>
       <input type="date" class="f-input" id="filter-to" onchange="applyFilters()"/>
-      <div class="f-divider"></div>
-      <span class="filter-label">Division</span>
-      <select class="f-select" id="filter-div" onchange="applyFilters()">
-        <option value="">All Division</option>
-        <option>SHIPL</option><option>VENTILATOR</option><option>VENT CON</option><option>INJECTOR</option>
-        <option>RADIOLOGY</option><option>GANSHORN</option><option>HOLTER</option><option>MONITORS</option><option>MONITORS CON</option>
-      </select>
-      <div class="f-divider"></div>
-      <span class="filter-label">Status</span>
-      <select class="f-select" id="filter-status" onchange="applyFilters()">
-        <option value="">All Status</option>
-        <option>Pending</option><option>In Progress</option><option>Closed</option>
-      </select>
       <button class="btn btn-outline btn-sm" onclick="clearFilters()" style="margin-left:auto;">Clear</button>
     </div>
 
@@ -827,20 +814,20 @@ function updateStats(){
 
 // section
 function clearFilters(){
-  document.getElementById('filter-from').value = '';
-  document.getElementById('filter-to').value = '';
-  document.getElementById('filter-div').value = '';
-  document.getElementById('filter-status').value = '';
-  document.getElementById('tbl-search').value = '';
+  const fFrom = document.getElementById('filter-from'); if (fFrom) fFrom.value = '';
+  const fTo = document.getElementById('filter-to'); if (fTo) fTo.value = '';
+  const fDiv = document.getElementById('filter-div'); if (fDiv) fDiv.value = '';
+  const fSt = document.getElementById('filter-status'); if (fSt) fSt.value = '';
+  const fSrch = document.getElementById('tbl-search'); if (fSrch) fSrch.value = '';
   applyFilters();
 }
 
 function applyFilters(){
-  const q = document.getElementById('tbl-search').value.toLowerCase();
-  const fromVal = document.getElementById('filter-from').value;
-  const toVal = document.getElementById('filter-to').value;
-  const divVal = document.getElementById('filter-div').value;
-  const stVal = document.getElementById('filter-status').value;
+  const q = (document.getElementById('tbl-search')?.value || '').toLowerCase();
+  const fromVal = document.getElementById('filter-from')?.value || '';
+  const toVal = document.getElementById('filter-to')?.value || '';
+  const divVal = document.getElementById('filter-div')?.value || '';
+  const stVal = document.getElementById('filter-status')?.value || '';
   const from = fromVal ? new Date(fromVal) : null;
   const to = toVal ? new Date(toVal + 'T23:59:59') : null;
 
@@ -914,7 +901,6 @@ function renderTable(){
         <td>${statusPill(d.status)}</td>
         <td style="white-space:nowrap;">
           <button class="action-xs upd" onclick="openEditModal('${rid}')" title="Update">&#9999;&#65039;</button>
-          <button class="action-xs danger" style="margin-left:4px;" onclick="confirmDelete('${rid}')">Delete</button>
         </td>
       </tr>`;
     }).join('');
