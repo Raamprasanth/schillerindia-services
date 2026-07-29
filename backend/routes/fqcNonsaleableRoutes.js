@@ -9,7 +9,9 @@ router.get('/', protect, async (req, res) => {
     const { division, status, unitDetails, engineer, from, to } = req.query;
     const filter = {};
 
-    if (division)    filter.division    = division;
+    if (division) {
+      filter.division = { $regex: new RegExp('^' + division.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i') };
+    }
     if (status)      filter.status      = status;
     if (unitDetails) filter.unitDetails = unitDetails;
     if (engineer)    filter.engineer    = engineer;

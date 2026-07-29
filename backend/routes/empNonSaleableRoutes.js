@@ -6,18 +6,24 @@ const { protect }    = require('../middleware/authMiddleware');
 // ── GET /api/emp/nonsaleable
 router.get('/', protect, async (req, res) => {
   try {
-    const { status, unitDetails, engineer, from, to } = req.query;
+    const { division, status, unitDetails, engineer, from, to } = req.query;
     const filter = {};
 
-    // Division isolation: employees only see their own division's records
     const role = String(req.user.role || '').toLowerCase();
-    if (role !== 'admin' && role !== 'superadmin') {
-      const { resolveDivision } = require('../utils/visibility');
-      const divDoc = await resolveDivision(req.user);
-      if (divDoc) {
-        filter.division = divDoc.name;
-      } else {
-        return res.json([]);
+    const isPrivileged = ['admin', 'superadmin', 'fqc'].includes(role);
+
+    if (division) {
+      filter.division = { $regex: new RegExp('^' + division.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i') };
+    } else if (!isPrivileged) {
+      const userDivs = [
+        req.user.activeDivision,
+        req.user.division,
+        ...(Array.isArray(req.user.divisions) ? req.user.divisions : [])
+      ].map(v => String(v || '').trim()).filter(Boolean);
+
+      if (userDivs.length) {
+        const regexes = [...new Set(userDivs)].map(d => new RegExp('^' + d.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i'));
+        filter.division = { $in: regexes };
       }
     }
 

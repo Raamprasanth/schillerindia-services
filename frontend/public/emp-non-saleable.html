@@ -282,6 +282,7 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
                 <option value="">Select Division</option>
                 <option>SHIPL</option><option>VENTILATOR</option><option>VENT CON</option><option>INJECTOR</option>
                 <option>RADIOLOGY</option><option>GANSHORN</option><option>HOLTER</option><option>MONITORS</option><option>MONITORS CON</option>
+                <option>SCHILLER AG</option>
               </select>
             </div>
             <div class="ff">
@@ -558,6 +559,14 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
       <div class="f-divider"></div>
       <span class="filter-label">To Date</span>
       <input type="date" class="f-input" id="filter-to" onchange="applyFilters()"/>
+      <div class="f-divider"></div>
+      <span class="filter-label">Division</span>
+      <select class="f-select" id="filter-div" onchange="applyFilters()">
+        <option value="">All Division</option>
+        <option>SHIPL</option><option>VENTILATOR</option><option>VENT CON</option><option>INJECTOR</option>
+        <option>RADIOLOGY</option><option>GANSHORN</option><option>HOLTER</option><option>MONITORS</option><option>MONITORS CON</option>
+        <option>SCHILLER AG</option>
+      </select>
       <button class="btn btn-outline btn-sm" onclick="clearFilters()" style="margin-left:auto;">Clear</button>
     </div>
 
@@ -588,6 +597,7 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
           <thead><tr>
             <th style="width:42px;" class="no-sort">#</th>
             <th onclick="sortBy('entryDate')">Entry Date <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('division')">Division <span class="si">&#8693;</span></th>
             <th onclick="sortBy('unitDetails')">Unit Details <span class="si">&#8693;</span></th>
             <th onclick="sortBy('fqcInDate')" class="sorted">FQC Inward Date <span class="si">&#8693;</span></th>
             <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
@@ -601,7 +611,7 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
             <th class="no-sort">Action</th>
           </tr></thead>
           <tbody id="ns-tbody">
-            <tr class="loading-row"><td colspan="13"><span class="spin"></span>Loading from database</td></tr>
+            <tr class="loading-row"><td colspan="14"><span class="spin"></span>Loading from database</td></tr>
           </tbody>
         </table>
       </div>
@@ -782,26 +792,29 @@ async function loadData(){
     const res = await fetch(`${API}/api/fqc/nonsaleable`, { headers: authHeaders() });
     handleUnauth(res);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    let allData = (await res.json()).map(d => ({ ...d, id: d._id || d.id }));
-    // Filter by employee's division - only show entries matching their division
-    if (EMP_DIVISION) {
-      NS_DATA = allData.filter(d => {
-        const div = String(d.division || '').trim().toUpperCase();
-        return div === EMP_DIVISION;
-      });
-    } else {
-      NS_DATA = allData;
-    }
+    NS_DATA = (await res.json()).map(d => ({ ...d, id: d._id || d.id }));
     await populateFormDropdowns();
+    updateFilterDivisionDropdown();
     applyFilters();
     updateStats();
-    showToast('Loaded ' + NS_DATA.length + ' record' + (NS_DATA.length !== 1 ? 's' : '') + (EMP_DIVISION ? ' for ' + EMP_DIVISION : ''), 'info');
+    showToast('Loaded ' + NS_DATA.length + ' record' + (NS_DATA.length !== 1 ? 's' : ''), 'info');
   } catch(e) {
     if (e.message === 'Unauthorized') return;
     showToast('Load failed: ' + e.message, 'err');
     document.getElementById('ns-tbody').innerHTML =
-      `<tr class="loading-row"><td colspan="13" style="color:var(--red);">&#9888;&#65039; ${esc(e.message)}</td></tr>`;
+      `<tr class="loading-row"><td colspan="14" style="color:var(--red);">&#9888;&#65039; ${esc(e.message)}</td></tr>`;
   }
+}
+
+function updateFilterDivisionDropdown(){
+  const el = document.getElementById('filter-div');
+  if (!el) return;
+  const current = el.value;
+  const hardcoded = ['SHIPL', 'VENTILATOR', 'VENT CON', 'INJECTOR', 'RADIOLOGY', 'GANSHORN', 'HOLTER', 'MONITORS', 'MONITORS CON', 'SCHILLER AG'];
+  const dataDivs = NS_DATA.map(d => String(d.division || '').trim()).filter(Boolean);
+  const merged = [...new Set([...hardcoded, ...dataDivs])].sort((a, b) => a.localeCompare(b));
+  el.innerHTML = '<option value="">All Division</option>' +
+    merged.map(v => `<option value="${esc(v)}"${v === current ? ' selected' : ''}>${esc(v)}</option>`).join('');
 }
 
 // section
@@ -832,7 +845,7 @@ function applyFilters(){
   const to = toVal ? new Date(toVal + 'T23:59:59') : null;
 
   filtered = NS_DATA.filter(d => {
-    if (divVal && d.division !== divVal) return false;
+    if (divVal && String(d.division || '').trim().toLowerCase() !== String(divVal).trim().toLowerCase()) return false;
     if (stVal && d.status !== stVal) return false;
     if (from || to) {
       const fd = d.fqcInDate ? new Date(d.fqcInDate) : null;
@@ -874,7 +887,7 @@ function renderTable(){
   const tbody = document.getElementById('ns-tbody');
 
   if (!total) {
-    tbody.innerHTML = `<tr><td colspan="13"><div class="empty-st">
+    tbody.innerHTML = `<tr><td colspan="14"><div class="empty-st">
       <div class="ei">&#128683;</div>
       <div class="et">${NS_DATA.length ? 'No records match the current filters' : 'No Non Saleable Records'}</div>
       <div class="es">${NS_DATA.length ? 'Try adjusting the filters.' : 'Add entries using the button above.'}</div>
@@ -889,6 +902,7 @@ function renderTable(){
       return `<tr>
         <td class="mono" style="color:var(--muted);">${(currentPage - 1) * perPage + i + 1}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate || d.fqcInDate)}</td>
+        <td><span class="chip-sm">${esc(d.division || '-')}</span></td>
         <td style="font-size:12px;">${esc(d.unitDetails || '-')}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.fqcInDate)}</td>
         <td><strong style="color:var(--text);">${esc(d.model || '-')}</strong></td>

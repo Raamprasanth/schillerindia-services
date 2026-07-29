@@ -9,11 +9,22 @@ router.get('/', protect, async (req, res) => {
     const { division, status, unitDetails, engineer, from, to } = req.query;
     const filter = {};
 
-    const userDiv = req.user.activeDivision || req.user.division;
-    if (userDiv) {
-      filter.division = userDiv;
-    } else if (division) {
-      filter.division = division;
+    const role = String(req.user.role || '').toLowerCase();
+    const isPrivileged = ['admin', 'superadmin', 'fqc'].includes(role);
+
+    if (division) {
+      filter.division = { $regex: new RegExp('^' + division.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i') };
+    } else if (!isPrivileged) {
+      const userDivs = [
+        req.user.activeDivision,
+        req.user.division,
+        ...(Array.isArray(req.user.divisions) ? req.user.divisions : [])
+      ].map(v => String(v || '').trim()).filter(Boolean);
+
+      if (userDivs.length) {
+        const regexes = [...new Set(userDivs)].map(d => new RegExp('^' + d.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i'));
+        filter.division = { $in: regexes };
+      }
     }
 
     if (status)      filter.status      = status;

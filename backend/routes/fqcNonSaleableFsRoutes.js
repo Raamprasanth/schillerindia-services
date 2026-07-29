@@ -23,7 +23,9 @@ router.get('/', protect, async (req, res) => {
     const { division, finalStatus, from, to } = req.query;
     const filter = {};
 
-    if (division)    filter.division    = division;
+    if (division) {
+      filter.division = { $regex: new RegExp('^' + division.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i') };
+    }
     if (finalStatus) filter.finalStatus = normalizeFinalStatus(finalStatus);
 
     // Date-range filter on entryDate
