@@ -1961,6 +1961,7 @@ function initEscalationScheduler() {
   let schedulerBusy = false;
   const timer = setInterval(async () => {
     if (schedulerBusy) return;
+    if (!mongoose.connection || mongoose.connection.readyState !== 1) return;
     schedulerBusy = true;
     try {
       const referenceDate = new Date();
