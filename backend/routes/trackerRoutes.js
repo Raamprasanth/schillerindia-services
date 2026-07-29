@@ -11,7 +11,7 @@ router.get('/me', protect, async (req, res) => {
     const { month } = req.query; // format: 'YYYY-MM'
     if (!month) return res.status(400).json({ success: false, message: 'Month is required' });
 
-    const division = req.user.division || '';
+    const division = req.user.division || (Array.isArray(req.user.divisions) ? req.user.divisions[0] : '') || req.user.activeDivision || '';
     if (!division) {
       return res.json({ success: true, submissions: [] });
     }
@@ -47,7 +47,7 @@ router.post('/submit', protect, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Missing required fields' });
     }
 
-    const division = req.user.division || '';
+    const division = req.user.division || (Array.isArray(req.user.divisions) ? req.user.divisions[0] : '') || req.user.activeDivision || '';
     if (!division) {
       return res.status(400).json({ success: false, message: 'You must be assigned to a division to submit reports.' });
     }
@@ -57,26 +57,32 @@ router.post('/submit', protect, async (req, res) => {
         updateOne: {
           filter: type === 'OpenCallReview' 
             ? { division, type, reportDate: date, employee: req.user._id }
-            : { division, type, reportDate: date },
-          update: { $setOnInsert: { employee: req.user._id, month } },
+            : { division, type, reportDate: date, employee: req.user._id },
+          update: { 
+            $setOnInsert: { employee: req.user._id, month },
+            $set: { submittedAt: new Date() }
+          },
           upsert: true
         }
       }));
       if (bulkOps.length > 0) {
-        await TrackerSubmission.bulkWrite(bulkOps);
+        await TrackerSubmission.bulkWrite(bulkOps, { ordered: false });
       }
     } else {
       // Un-submit
       const deleteFilter = type === 'OpenCallReview'
         ? { division, type, reportDate: { $in: reportDates }, employee: req.user._id }
-        : { division, type, reportDate: { $in: reportDates } };
+        : { division, type, reportDate: { $in: reportDates }, employee: req.user._id };
       await TrackerSubmission.deleteMany(deleteFilter);
     }
 
     res.json({ success: true });
   } catch (error) {
     console.error('Error submitting tracker:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    if (error.code === 11000 || (error.writeErrors && error.writeErrors.some(e => e.code === 11000))) {
+      return res.json({ success: true, message: 'Submission recorded.' });
+    }
+    res.status(500).json({ success: false, message: error.message || 'Server error' });
   }
 });
 

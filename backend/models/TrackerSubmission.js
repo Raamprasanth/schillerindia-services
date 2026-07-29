@@ -40,8 +40,12 @@ const trackerSubmissionSchema = new mongoose.Schema({
   }
 });
 
-// Ensure a division can only submit once per reportDate and type
-// Note: Changed from employee to division based on new requirement
-trackerSubmissionSchema.index({ division: 1, type: 1, reportDate: 1 }, { unique: true });
+// Ensure submission is unique by division, type, reportDate, and employee
+trackerSubmissionSchema.index({ division: 1, type: 1, reportDate: 1, employee: 1 }, { unique: true });
 
-module.exports = mongoose.model('TrackerSubmission', trackerSubmissionSchema);
+const TrackerSubmission = mongoose.model('TrackerSubmission', trackerSubmissionSchema);
+
+// Safely drop obsolete single-employee division index if it exists in MongoDB
+TrackerSubmission.collection.dropIndex('division_1_type_1_reportDate_1').catch(() => null);
+
+module.exports = TrackerSubmission;
