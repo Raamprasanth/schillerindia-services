@@ -502,6 +502,7 @@ const SUPPLIER_COLUMNS = [
 const ENTRY_FIELDS = SUPPLIER_COLUMNS.filter(c => c.key !== 'sn');
 const ENTRY_TEXTAREAS = new Set(['description','problemDetails','licenceVersion','serviceCentreRemarks']);
 const FIELD_ALIASES = {
+  division: ['division', 'divisionName'],
   customerName: ['customerName', 'customer'],
   description: ['description', 'itemDescription', 'defMod'],
   frnEntryDate: ['frnEntryDate', 'entryDate', 'rcvdDate'],

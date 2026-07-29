@@ -99,6 +99,24 @@ router.get('/', protect, async (req, res) => {
     if (scEng)      query.scEng      = { $regex: new RegExp(scEng, 'i') };
 
     const docs = await Scrap.find(query).sort({ entryDate: -1, createdAt: -1 }).lean();
+    for (const doc of docs) {
+      if (!doc.division || doc.division.trim() === '') {
+        let divName = '';
+        if (doc.serviceId) {
+          const svc = await Service.findById(doc.serviceId).populate('division').lean();
+          if (svc) {
+            if (svc.division) {
+              divName = typeof svc.division === 'object' ? (svc.division.name || svc.division.displayName) : svc.division;
+            }
+            if (!divName) divName = svc.divisionName || '';
+          }
+        }
+        if (divName) {
+          doc.division = divName;
+          await Scrap.updateOne({ _id: doc._id }, { $set: { division: divName } }).catch(() => {});
+        }
+      }
+    }
     res.json(docs);
   } catch (e) {
     res.status(500).json({ message: e.message });
@@ -135,17 +153,26 @@ router.post('/', protect, async (req, res) => {
 
     const { serviceObjectId, serviceDoc } = await resolveServiceReference(serviceId);
 
-    // Resolve division from linked Service record
-    let divisionName = '';
-    try {
-      if (serviceDoc && serviceDoc.division) {
-        const divDoc = await Division.findById(serviceDoc.division).lean();
-        if (divDoc) divisionName = divDoc.name;
+    // Resolve division from request body, linked Service, or user division
+    let divisionName = req.body.division || '';
+    if (!divisionName && serviceDoc) {
+      if (serviceDoc.division) {
+        if (typeof serviceDoc.division === 'object' && (serviceDoc.division.name || serviceDoc.division.displayName)) {
+          divisionName = serviceDoc.division.name || serviceDoc.division.displayName;
+        } else if (typeof serviceDoc.division === 'string' && serviceDoc.division.trim()) {
+          if (mongoose.Types.ObjectId.isValid(serviceDoc.division) && String(serviceDoc.division).length === 24) {
+            const divObj = await Division.findById(serviceDoc.division).lean();
+            if (divObj) divisionName = divObj.name;
+          } else {
+            divisionName = serviceDoc.division;
+          }
+        }
       }
-    } catch (_) { /* non-fatal */ }
+      if (!divisionName) divisionName = serviceDoc.divisionName || '';
+    }
     if (!divisionName) {
       const divDoc = await resolveDivision(req.user);
-      divisionName = divDoc ? divDoc.name : '';
+      divisionName = divDoc ? divDoc.name : (req.user?.division || '');
     }
 
     const finalReceivedDate = receivedDateAtEsskay || rcvdDate || entryDate || '';

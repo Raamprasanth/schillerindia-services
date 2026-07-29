@@ -759,16 +759,23 @@ router.put('/:id/update', protect, async (req, res) => {
         }
 
         let alreadyScrap = false;
-        if (doc.frnNo) alreadyScrap = await Scrap.findOne({ frnNo: doc.frnNo, typeWork: 'Supplier Warranty' });
-        if (!alreadyScrap && validServiceId) alreadyScrap = await Scrap.findOne({ serviceId: validServiceId, typeWork: 'Supplier Warranty' });
+        if (doc.frnNo) alreadyScrap = await Scrap.findOne({ frnNo: doc.frnNo });
+        if (!alreadyScrap && validServiceId) alreadyScrap = await Scrap.findOne({ serviceId: validServiceId });
 
         if (!alreadyScrap) {
-          let divisionName = '';
-          if (validServiceId) {
+          let divisionName = doc.division || doc.divisionName || '';
+          if (!divisionName && validServiceId) {
             const svc = await Service.findById(validServiceId).populate('division').lean();
-            if (svc && svc.division) {
-              divisionName = typeof svc.division === 'object' ? svc.division.name : '';
+            if (svc) {
+              if (svc.division) {
+                divisionName = typeof svc.division === 'object' ? (svc.division.name || svc.division.displayName) : svc.division;
+              }
+              if (!divisionName) divisionName = svc.divisionName || '';
             }
+          }
+          if (!divisionName && req.user) {
+            const divDoc = await resolveDivision(req.user);
+            divisionName = divDoc ? divDoc.name : (req.user?.division || '');
           }
 
           const scrapDoc = await Scrap.create({

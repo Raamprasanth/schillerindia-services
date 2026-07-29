@@ -517,6 +517,7 @@ const SUPPLIER_COLUMNS = [
 const ENTRY_FIELDS = SUPPLIER_COLUMNS.filter(c => c.key !== 'sn');
 const ENTRY_TEXTAREAS = new Set(['description','problemDetails','licenceVersion','serviceCentreRemarks']);
 const FIELD_ALIASES = {
+  division: ['division', 'divisionName'],
   customerName: ['customerName', 'customer'],
   description: ['description', 'itemDescription', 'defMod'],
   frnEntryDate: ['frnEntryDate', 'entryDate', 'rcvdDate'],
@@ -628,14 +629,14 @@ function applyFilters() {
   const sceng = document.getElementById('fl-sceng')?.value || '';
 
   filtered = SCRAP.filter(d => {
-    const edate = d.entryDate || '';
+    const edate = fieldValue(d, 'frnEntryDate') || fieldValue(d, 'warrReportedDate') || d.entryDate || '';
     const matchMonth = !month || edate.slice(5, 7) === month;
     const matchYear  = !year  || edate.slice(0, 4) === String(year);
     return (
       matchMonth && matchYear &&
       (!q     || Object.values(d).some(v => String(v).toLowerCase().includes(q))) &&
       (!reg   || d.region === reg) &&
-      (!sts   || d.unitStatus === sts) &&
+      (!sts   || fieldValue(d, 'unitStatus') === sts || fieldValue(d, 'supplierWarrStatus') === sts || fieldValue(d, 'warrType') === sts) &&
       (!sceng || d.scEng === sceng)
     );
   });

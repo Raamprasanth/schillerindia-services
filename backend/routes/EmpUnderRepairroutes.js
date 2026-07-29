@@ -375,11 +375,72 @@ router.put('/:id/update', protect, async (req, res) => {
       );
     }
 
-    // BYPASS: User requested ALL 'type of work' from Under Repair should move to Completed FRN.
-    // if (normalizedTypeWork === 'external repair') { ... }
+    if (normalizedTypeWork === 'supplier warranty' || normalizedTypeWork === 'supplier warrenty') {
+      try {
+        const mongoose = require('mongoose');
+        let validServiceId = null;
+        if (doc.serviceId) {
+          if (mongoose.Types.ObjectId.isValid(doc.serviceId) && String(doc.serviceId).length === 24) {
+            validServiceId = doc.serviceId;
+          } else {
+            const svcByCustomId = await Service.findOne({ serviceId: String(doc.serviceId) }).lean();
+            if (svcByCustomId) validServiceId = svcByCustomId._id;
+          }
+        }
 
-    // BYPASS: User requested ALL 'type of work' from Under Repair should move to Completed FRN.
-    // if (normalizedTypeWork === 'supplier warranty' || normalizedTypeWork === 'supplier warrenty') { ... }
+        let alreadyScrap = false;
+        if (doc.frnNo) alreadyScrap = await Scrap.findOne({ frnNo: doc.frnNo });
+        if (!alreadyScrap && validServiceId) alreadyScrap = await Scrap.findOne({ serviceId: validServiceId });
+
+        if (!alreadyScrap) {
+          let divisionName = doc.division || doc.divisionName || '';
+          if (!divisionName && validServiceId) {
+            const svc = await Service.findById(validServiceId).populate('division').lean();
+            if (svc) {
+              if (svc.division) {
+                divisionName = typeof svc.division === 'object' ? (svc.division.name || svc.division.displayName) : svc.division;
+              }
+              if (!divisionName) divisionName = svc.divisionName || '';
+            }
+          }
+          if (!divisionName && req.user) {
+            const divDoc = await resolveDivision(req.user);
+            divisionName = divDoc ? divDoc.name : (req.user?.division || '');
+          }
+
+          const scrapDoc = await Scrap.create({
+            serviceId: validServiceId || null,
+            entryDate: doc.entryDate || '',
+            scRno: doc.scRno || doc.scReNo || '',
+            scEng: doc.scEng || '',
+            frnNo: doc.frnNo || '',
+            region: doc.region || doc.reg || '',
+            engineer: doc.eng || doc.engineer || '',
+            customer: doc.customer || doc.custName || '',
+            model: doc.model || '',
+            unitStatus: doc.unitStatus || doc.unitSts || '',
+            defMod: doc.defMod || doc.defModBrdName || '',
+            defGir: doc.defGir || doc.defGirNo || '',
+            typeWork: 'Supplier Warranty',
+            rcvdDate: doc.rcvdDate || doc.entryDate || '',
+            pdPfrn: Math.floor((Date.now() - new Date(doc.rcvdDate || doc.entryDate || doc.createdAt).getTime()) / 86400000),
+            pdObp: 0,
+            pdUrp: pdays,
+            pdScc: 0,
+            division: divisionName,
+            addedBy: req.user?.name || '',
+          });
+          await enqueueLatestEscalationSnapshot(
+            'supplier_warranty',
+            scrapDoc._id,
+            req.user?.name || '',
+            buildSupplierWarrantyEscalationRow(scrapDoc.toObject ? scrapDoc.toObject() : scrapDoc)
+          );
+        }
+      } catch (scrapErr) {
+        console.error('Failed to create Scrap record from UnderRepair:', scrapErr.message);
+      }
+    }
 
     const completedDoc = await CompletedFRN.create({
       serviceId:    doc.serviceId ? String(doc.serviceId) : '',
