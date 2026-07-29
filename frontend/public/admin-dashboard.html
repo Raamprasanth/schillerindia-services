@@ -218,6 +218,8 @@
   <link rel="stylesheet" href="dashboard-topbar-actions.css">
   <script src="dashboard-topbar-actions.js" defer></script>
   <script src="brand-logo.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
 
@@ -329,6 +331,7 @@
         <span class="icon">&#128190;</span> <span id="storage-text">Loading storage...</span>
       </div>
       <button class="topbar-btn" id="backup-btn" onclick="downloadBackup()">&#128190; Backup</button>
+      <button class="topbar-btn" id="manual-btn" onclick="downloadUserManual()" title="Download User Manual PDF" style="border-color:var(--accent2);color:var(--accent2);">&#128216; User Manual</button>
       <button class="topbar-btn primary" onclick="window.location.href='service-list.html'">+ New Service</button>
     </div>
   </div>
@@ -1136,6 +1139,589 @@ async function loadStorageSpace() {
   } catch(e) {
     el.textContent = 'Storage: Offline';
   }
+}
+
+// ============================================================
+// USER MANUAL PDF GENERATOR
+// Styled to match the estimation-pending PDF theme
+// ============================================================
+function downloadUserManual() {
+  const btn = document.getElementById('manual-btn');
+  if(btn) { btn.textContent = '⏳ Generating...'; btn.disabled = true; }
+
+  setTimeout(() => {
+    try {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+      const margin = 18;
+      const contentW = pageW - margin * 2;
+      let y = 0;
+
+      // ── Colour palette (matches estimation PDF / admin theme) ──
+      const RED   = [185, 28, 28];
+      const DKRED = [69, 10, 10];
+      const BLUE  = [0, 104, 181];
+      const LBLUE = [232, 243, 251];
+      const MUTED = [107, 140, 168];
+      const TEXT  = [15, 34, 54];
+      const WHITE = [255, 255, 255];
+      const BORDER= [204, 221, 232];
+      const SURF2 = [240, 244, 248];
+
+      // ── Helper: add page with header ──
+      function addHeader(isFirst) {
+        if (!isFirst) doc.addPage();
+        // Deep red gradient-style header bar
+        doc.setFillColor(...DKRED);
+        doc.rect(0, 0, pageW, 22, 'F');
+        doc.setFillColor(...RED);
+        doc.rect(0, 16, pageW, 6, 'F');
+        // Logo area
+        doc.setFillColor(255,255,255,0.18);
+        doc.roundedRect(margin, 5, 12, 12, 2, 2, 'F');
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(9);
+        doc.setTextColor(...WHITE);
+        doc.text('SI', margin + 6, 13, { align: 'center' });
+        // Title
+        doc.setFontSize(12);
+        doc.setFont('helvetica','bold');
+        doc.text('SchillerIndia Service Management System', margin + 16, 10);
+        doc.setFontSize(7.5);
+        doc.setFont('helvetica','normal');
+        doc.text('User Manual & Operations Guide', margin + 16, 15);
+        // Date right
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+        doc.setFontSize(7);
+        doc.text('Generated: ' + dateStr, pageW - margin, 10, { align: 'right' });
+        doc.text('Confidential – Internal Use Only', pageW - margin, 15, { align: 'right' });
+        y = 28;
+      }
+
+      // ── Helper: check page space ──
+      function checkPage(needed = 12) {
+        if (y + needed > pageH - 16) {
+          addFooter();
+          addHeader(false);
+        }
+      }
+
+      // ── Helper: footer ──
+      function addFooter() {
+        const pg = doc.internal.getCurrentPageInfo().pageNumber;
+        doc.setDrawColor(...BORDER);
+        doc.setLineWidth(0.3);
+        doc.line(margin, pageH - 10, pageW - margin, pageH - 10);
+        doc.setFontSize(7);
+        doc.setTextColor(...MUTED);
+        doc.setFont('helvetica','normal');
+        doc.text('SchillerIndia Service Management System – User Manual', margin, pageH - 6);
+        doc.text('Page ' + pg, pageW - margin, pageH - 6, { align: 'right' });
+      }
+
+      // ── Helper: section heading ──
+      function sectionHeading(title, num) {
+        checkPage(18);
+        doc.setFillColor(...BLUE);
+        doc.roundedRect(margin, y, contentW, 9, 1.5, 1.5, 'F');
+        doc.setFontSize(10);
+        doc.setFont('helvetica','bold');
+        doc.setTextColor(...WHITE);
+        doc.text(num + '  ' + title, margin + 4, y + 6);
+        y += 12;
+      }
+
+      // ── Helper: sub-heading ──
+      function subHeading(title) {
+        checkPage(12);
+        doc.setFillColor(...LBLUE);
+        doc.rect(margin, y, contentW, 7, 'F');
+        doc.setDrawColor(...BLUE);
+        doc.setLineWidth(0.4);
+        doc.line(margin, y, margin, y + 7);
+        doc.setFontSize(8.5);
+        doc.setFont('helvetica','bold');
+        doc.setTextColor(...BLUE);
+        doc.text(title, margin + 4, y + 5);
+        y += 10;
+      }
+
+      // ── Helper: paragraph ──
+      function para(text, indent) {
+        indent = indent || 0;
+        doc.setFontSize(8);
+        doc.setFont('helvetica','normal');
+        doc.setTextColor(...TEXT);
+        const lines = doc.splitTextToSize(text, contentW - indent);
+        lines.forEach(line => {
+          checkPage(5);
+          doc.text(line, margin + indent, y);
+          y += 4.5;
+        });
+        y += 1.5;
+      }
+
+      // ── Helper: bullet ──
+      function bullet(text) {
+        checkPage(5);
+        doc.setFontSize(7.5);
+        doc.setFont('helvetica','normal');
+        doc.setTextColor(...TEXT);
+        doc.setFillColor(...BLUE);
+        doc.circle(margin + 3.5, y - 0.8, 1, 'F');
+        const lines = doc.splitTextToSize(text, contentW - 9);
+        lines.forEach((line, i) => {
+          if(i > 0) checkPage(4.5);
+          doc.text(line, margin + 7, y);
+          y += 4.5;
+        });
+      }
+
+      // ── Helper: two-column info row ──
+      function infoRow(label, value) {
+        checkPage(6);
+        doc.setFillColor(...SURF2);
+        doc.rect(margin, y, contentW * 0.35, 6, 'F');
+        doc.setFontSize(7.5);
+        doc.setFont('helvetica','bold');
+        doc.setTextColor(...MUTED);
+        doc.text(label, margin + 2, y + 4);
+        doc.setFont('helvetica','normal');
+        doc.setTextColor(...TEXT);
+        const vlines = doc.splitTextToSize(String(value), contentW * 0.62);
+        doc.text(vlines[0] || '', margin + contentW * 0.37, y + 4);
+        y += 7;
+      }
+
+      // ── Helper: table ──
+      function buildTable(head, rows, colWidths) {
+        checkPage(20);
+        doc.autoTable({
+          head: [head],
+          body: rows,
+          startY: y,
+          margin: { left: margin, right: margin },
+          tableWidth: contentW,
+          columnStyles: colWidths || {},
+          headStyles: {
+            fillColor: BLUE,
+            textColor: WHITE,
+            fontStyle: 'bold',
+            fontSize: 7.5,
+            halign: 'left',
+            cellPadding: 3
+          },
+          bodyStyles: {
+            fontSize: 7.5,
+            textColor: TEXT,
+            cellPadding: 3
+          },
+          alternateRowStyles: { fillColor: SURF2 },
+          tableLineColor: BORDER,
+          tableLineWidth: 0.2,
+          didDrawPage: (data) => {
+            addFooter();
+            addHeader(false);
+          }
+        });
+        y = doc.lastAutoTable.finalY + 6;
+      }
+
+      // ═══════════════════════════════════
+      // COVER PAGE
+      // ═══════════════════════════════════
+      doc.setFillColor(...DKRED);
+      doc.rect(0, 0, pageW, pageH * 0.45, 'F');
+      doc.setFillColor(...RED);
+      doc.rect(0, pageH * 0.45, pageW, 4, 'F');
+
+      // Logo circle on cover
+      doc.setFillColor(255,255,255,0.12);
+      doc.circle(pageW / 2, 50, 22, 'F');
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(18);
+      doc.setTextColor(...WHITE);
+      doc.text('SI', pageW / 2, 55, { align: 'center' });
+
+      // Cover title
+      doc.setFontSize(22);
+      doc.setFont('helvetica','bold');
+      doc.setTextColor(...WHITE);
+      doc.text('SchillerIndia', pageW / 2, 82, { align: 'center' });
+      doc.setFontSize(13);
+      doc.setFont('helvetica','normal');
+      doc.text('Service Management System', pageW / 2, 91, { align: 'center' });
+
+      doc.setFillColor(255,255,255,0.25);
+      doc.rect(margin + 20, 99, contentW - 40, 0.5, 'F');
+
+      doc.setFontSize(18);
+      doc.setFont('helvetica','bold');
+      doc.text('USER MANUAL', pageW / 2, 112, { align: 'center' });
+      doc.setFontSize(9);
+      doc.setFont('helvetica','normal');
+      doc.text('& Operations Guide', pageW / 2, 120, { align: 'center' });
+
+      // Version / date on cover
+      const cNow = new Date();
+      const cDate = cNow.toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' });
+      doc.setFillColor(255,255,255,0.1);
+      doc.roundedRect(margin + 25, pageH * 0.45 + 15, contentW - 50, 24, 2, 2, 'F');
+      doc.setFontSize(8.5);
+      doc.setFont('helvetica','bold');
+      doc.setTextColor(...BLUE);
+      doc.text('Version 1.0', pageW / 2, pageH * 0.45 + 25, { align: 'center' });
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(...MUTED);
+      doc.text('Generated on ' + cDate, pageW / 2, pageH * 0.45 + 32, { align: 'center' });
+
+      // Modules list on cover
+      doc.setFontSize(8);
+      doc.setTextColor(...TEXT);
+      doc.setFont('helvetica','bold');
+      doc.text('Modules Covered:', pageW / 2, pageH * 0.45 + 50, { align: 'center' });
+      const mods = ['Service Team', 'FQC', 'Product Team', 'Service Coordinator', 'Admin', 'Repair Team'];
+      const modY = pageH * 0.45 + 58;
+      const boxW = (contentW - 10) / 3;
+      mods.forEach((m, i) => {
+        const col = i % 3;
+        const row = Math.floor(i / 3);
+        const bx = margin + col * (boxW + 2.5);
+        const by = modY + row * 10;
+        doc.setFillColor(...LBLUE);
+        doc.roundedRect(bx, by, boxW, 8, 1, 1, 'F');
+        doc.setDrawColor(...BLUE);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(bx, by, boxW, 8, 1, 1, 'S');
+        doc.setFontSize(7.5);
+        doc.setFont('helvetica','bold');
+        doc.setTextColor(...BLUE);
+        doc.text(m, bx + boxW / 2, by + 5.2, { align: 'center' });
+      });
+
+      // Confidential notice on cover
+      doc.setFontSize(7);
+      doc.setFont('helvetica','italic');
+      doc.setTextColor(...MUTED);
+      doc.text('This document is for internal use by SchillerIndia staff only.', pageW / 2, pageH - 14, { align: 'center' });
+      doc.text('Unauthorized distribution is prohibited.', pageW / 2, pageH - 10, { align: 'center' });
+
+      // ═══════════════════════════════════
+      // PAGE 2 – SYSTEM OVERVIEW + LOGIN
+      // ═══════════════════════════════════
+      addHeader(false);
+
+      sectionHeading('System Overview', '1.');
+      para('The SchillerIndia Service Management System is a web-based internal operations platform used to track, manage, and report the complete lifecycle of medical device service calls — from initial customer complaint to final repair completion, quality verification, and performance analysis.');
+
+      subHeading('Key Features');
+      bullet('Multi-role access control (Service Team, FQC, Product Team, Service Coordinator, Admin, Repair Team)');
+      bullet('End-to-end Call/SR (Service Request) lifecycle tracking');
+      bullet('Inventory management: saleables, non-saleables, scrap');
+      bullet('Automated escalation emails at scheduled IST times');
+      bullet('AI-powered report generation with charts and PDF export');
+      bullet('Division-wise data segmentation per team/engineer');
+      bullet('Built-in inter-module messaging and notification system');
+      y += 3;
+
+      sectionHeading('Login & Access Control', '2.');
+      subHeading('How to Login');
+      bullet('Navigate to login.html and enter your username and password.');
+      bullet('Your role is pre-assigned by the Admin and determines which dashboard you can access.');
+      bullet('If you navigate to a page without authorization, the system redirects you to login.html.');
+      y += 2;
+
+      buildTable(
+        ['Role', 'Dashboard', 'Description'],
+        [
+          ['service_team / user', 'Employee Dashboard', 'Field service engineers managing open calls and inventory'],
+          ['fqc', 'FQC Dashboard', 'Quality control inspectors verifying repaired equipment'],
+          ['product_team', 'Product Team Dashboard', 'Engineers dedicated to specific product lines'],
+          ['service_coordinator', 'SC Dashboard', 'Central coordinators managing all SRs and engineers'],
+          ['repair / repair_team', 'Repair Dashboard', 'Internal workshop technicians handling physical repairs'],
+          ['admin / superadmin', 'Admin Dashboard', 'Full system access including master data and configuration'],
+        ],
+        { 0: { cellWidth: 45 }, 1: { cellWidth: 45 }, 2: { cellWidth: contentW - 90 } }
+      );
+
+      // ═══════════════════════════════════
+      // PAGE – SERVICE TEAM MODULE
+      // ═══════════════════════════════════
+      checkPage(20);
+      sectionHeading('Module: Service Team (Employee)', '3.');
+      para('The Service Team module is used by field service engineers to manage active service calls, track customer complaints, record spare usage, and submit daily work reports. Dashboard: employee-dashboard.html | Role: service_team, user, admin');
+
+      subHeading('Key Pages & Operations');
+      buildTable(
+        ['Page', 'Purpose', 'Key Actions'],
+        [
+          ['Employee Dashboard', 'Main landing hub showing call stats, pending FRNs, and notification bell', 'Navigate, view notifications, logout'],
+          ['All Services (employee-service-list)', 'Central register of all SRs assigned to the engineer', 'Add SR, Edit SR, Filter, Export'],
+          ['Open Calls (ecall)', 'All currently open/pending service calls for the engineer', 'Submit Report, Close Call, View Details'],
+          ['Closed Calls (eclose)', 'Read-only archive of completed service calls', 'Filter by date, Download PDF'],
+          ['Pending FRN (emppendingfrn)', 'FRNs awaiting dispatch or closure', 'View FRN details, Generate PDF'],
+          ['Under Repair (empunderep)', 'Calls where equipment is actively under repair', 'Filter by status, View call details'],
+          ['Estimation Pending (empestpend)', 'Calls awaiting customer approval on cost estimate', 'View amount, Filter by status'],
+          ['OB Pending (employee-ob-pending)', 'Products received but Opening Balance not confirmed', 'View, Filter, Generate PDF'],
+          ['Non-Saleable (emp-non-saleable)', 'Scrapped/used parts not available for resale', 'View, Filter, Export'],
+          ['Saleables (emp-saleables)', 'New spare parts available for use or sale', 'View, Filter, Export'],
+          ['BIR (ebir)', 'Branch Inventory Register – part movement tracking', 'View BIR, Submit/update'],
+          ['Closed BIR (ecbir)', 'Archive of closed BIR entries', 'Filter, View, Download'],
+          ['TO/SO Register (eprfob)', 'Transfer Orders and Sales Orders (PRF/OB)', 'View orders, Filter by type/date'],
+          ['Completed Activity (ecpa)', 'Completed service activities for the engineer', 'Filter, View, Paginate'],
+          ['Closed Loan Item (ecli)', 'Loan instruments returned/closed', 'Send to SC Dashboard, Set disposition'],
+          ['ELT – Active Loans (elt)', 'Equipment currently on loan to customers', 'Send to SC, Set revalue & remarks'],
+          ['Closed TO/SO (ecr)', 'Archive of closed Transfer & Sales Orders', 'Filter, Search, Export'],
+        ],
+        { 0: { cellWidth: 45 }, 1: { cellWidth: 65 }, 2: { cellWidth: contentW - 110 } }
+      );
+
+      // ═══════════════════════════════════
+      // FQC MODULE
+      // ═══════════════════════════════════
+      sectionHeading('Module: FQC (Field Quality Control)', '4.');
+      para('The FQC team verifies the quality status of repaired equipment before it is returned to the customer, and manages non-saleable and saleable parts from a quality perspective. Dashboard: fqc-dashboard.html | Role: fqc, admin, superadmin');
+
+      buildTable(
+        ['Page', 'Purpose', 'Key Actions'],
+        [
+          ['FQC Dashboard', 'Overview: NS count, Saleable count, BIRs pending', 'Navigate to sub-pages, Notifications'],
+          ['Non-Saleable FQC (fns)', 'Review and classify returned/used parts', 'Approve, Reject/Scrap, Warranty Claim'],
+          ['Saleables FQC (fs)', 'Inspect new parts before issuing to field', 'Inspect, Pass/Fail, Export'],
+          ['BIR FQC (fbir)', 'Branch Inventory Register for FQC division', 'View, Approve/Reject BIR'],
+          ['Closed BIR FQC (fcbir)', 'Archive of completed FQC BIR entries', 'Filter, View, Theme toggle'],
+        ],
+        { 0: { cellWidth: 40 }, 1: { cellWidth: 70 }, 2: { cellWidth: contentW - 110 } }
+      );
+
+      // ═══════════════════════════════════
+      // PRODUCT TEAM MODULE
+      // ═══════════════════════════════════
+      sectionHeading('Module: Product Team', '5.');
+      para('The Product Team handles product-specific service operations for specialized product lines, mirroring the Service Team structure. Dashboard: pt-dashboard.html | Role: product_team, admin');
+
+      buildTable(
+        ['Page', 'Purpose', 'Key Actions'],
+        [
+          ['PT Dashboard', 'KPI cards + quick-links (Pulse, Shipment, HR)', 'Navigate, Notifications, Messages'],
+          ['PT Open Calls (ptcall)', 'Open service calls for PT engineers', 'Register call, Filter, View details'],
+          ['PT Closed Calls (ptclose)', 'Archive of closed PT calls with PDF export', 'Filter, Download PDF'],
+          ['PT BIR (ptbir)', 'Branch Inventory Register for Product Team', 'View, Submit BIR'],
+          ['PT Closed BIR (ptcbir)', 'Archive of closed PT BIR entries', 'Filter, Search, View'],
+          ['Pending Activity (ptpa)', 'Pending activities for PT engineers', 'Filter, Update status'],
+          ['Daily Work (ptdw)', 'Log daily engineering activities', 'Log work, Export to Excel (XLSX)'],
+          ['Closed Activity (ptca)', 'History of completed PT activities', 'Filter, View, Paginate'],
+          ['Tour Summary (ptour)', 'Field visit management with photo upload', 'Add/Edit tour, Download PDF per day, Export XLSX'],
+        ],
+        { 0: { cellWidth: 45 }, 1: { cellWidth: 65 }, 2: { cellWidth: contentW - 110 } }
+      );
+
+      // ═══════════════════════════════════
+      // SERVICE COORDINATOR
+      // ═══════════════════════════════════
+      sectionHeading('Module: Service Coordinator', '6.');
+      para('The Service Coordinator is the central command of service operations. The SC oversees all incoming SRs, assigns engineers, monitors SLAs, reviews escalations, and coordinates between customers, field team, and management. Dashboard: Sc-dashboard.html | Role: service_coordinator, admin');
+
+      buildTable(
+        ['Page', 'Purpose', 'Key Actions'],
+        [
+          ['SC Dashboard', 'Open SRs, Escalated, SLA breach overview', 'Navigate, Notifications, Messages'],
+          ['SC Service Request (scsr)', 'All active SRs across all divisions/engineers', 'Assign engineer, Edit, Close, Escalate, Filter'],
+          ['Closed SR (sccsr)', 'Archive of all closed SRs for SC', 'Filter, View, Paginate'],
+          ['TO/SO Register (scprfob)', 'Open Transfer & Sales Orders for SC', 'Filter, View, Update status'],
+          ['Loan Item (lt)', 'Active loan instruments given to customers', 'Issue, Mark returned, View overdue'],
+          ['Closed Loan (cli)', 'Archive of returned loan items', 'Filter, View duration'],
+          ['SC Completed FRN (sc-completed-frn)', 'FRNs dispatched and completed from SC view', 'Filter, View details'],
+        ],
+        { 0: { cellWidth: 50 }, 1: { cellWidth: 65 }, 2: { cellWidth: contentW - 115 } }
+      );
+
+      // ═══════════════════════════════════
+      // ADMIN MODULE
+      // ═══════════════════════════════════
+      sectionHeading('Module: Admin', '7.');
+      para('The Admin module has full system access. Admin users manage master data, user accounts, escalation schedules, and can view all performance data across all divisions. Dashboard: admin-dashboard.html | Role: admin, superadmin');
+
+      subHeading('Master Data Management');
+      buildTable(
+        ['Section', 'Purpose'],
+        [
+          ['Division Section', 'Add/edit divisions, assign suppliers and product models, set SLA thresholds'],
+          ['Engineer Section', 'Manage engineer profiles, assign to divisions, set active/inactive status'],
+          ['Dealer Section', 'Manage dealer/distributor records used when creating SRs'],
+          ['Company Section', 'Customer database — add/edit companies linked to SRs'],
+          ['User Management', 'Create users, assign roles, reset passwords, deactivate accounts'],
+        ],
+        { 0: { cellWidth: 50 }, 1: { cellWidth: contentW - 50 } }
+      );
+
+      subHeading('Admin Operations Pages');
+      buildTable(
+        ['Page', 'Purpose'],
+        [
+          ['Admin Call Register (acall)', 'Master view of ALL service calls — add, edit, delete, assign engineers'],
+          ['Admin Closed SR (aclose)', 'System-wide closed SR archive'],
+          ['Admin BIR (abir)', 'System-wide Branch Inventory Register'],
+          ['Admin Performance Analysis (apa)', 'Engineer-wise KPI: call close rates, avg repair time, SLA breaches'],
+          ['Admin PRF/OB (aprfob)', 'Admin oversight of all PRF and OB items across the system'],
+          ['Admin Loan Items (ali)', 'Master view of all loan equipment given to customers'],
+          ['Admin Non-Saleable (ans)', 'System-wide non-saleable inventory view'],
+          ['Admin Saleables (as)', 'System-wide saleable spare parts view'],
+          ['Admin Tour (atour)', 'Manage and review engineer tour plans (add/edit/delete)'],
+          ['Admin FRN (atfrn)', 'All FRNs: pending, dispatched, and closed'],
+          ['Admin OB Pending (atob)', 'All OB items pending disposition'],
+          ['Admin Under Repair (atur)', 'System-wide list of devices currently under repair'],
+          ['Re-Repair (admin-re-repair-atrr)', 'Initiate re-repair workflow for returned devices'],
+          ['Scrap List (scrap-list)', 'Registry of all condemned/scrapped parts and equipment'],
+          ['Supplier Warranty List', 'Warranty claims submitted to suppliers for defective parts'],
+          ['External Repair List', 'Devices sent for third-party external repair'],
+          ['AI Reports (Reports.html)', 'AI-powered analytics: charts, summaries, PDF export'],
+        ],
+        { 0: { cellWidth: 60 }, 1: { cellWidth: contentW - 60 } }
+      );
+
+      // ═══════════════════════════════════
+      // REPAIR TEAM MODULE
+      // ═══════════════════════════════════
+      sectionHeading('Module: Repair Team', '8.');
+      para('The Repair Team module is used by internal workshop technicians who physically repair devices. They track repair jobs, manage the workshop queue, and record repair completions. Dashboard: Repair-dashboard.html | Role: repair, repair_team, admin');
+
+      buildTable(
+        ['Page', 'Purpose', 'Key Actions'],
+        [
+          ['Repair Dashboard', 'Active repairs, Completed today, FRN pending, Re-repair count', 'Navigate, View messages, Logout'],
+          ['Repair CRL (Rtcrl)', 'Call Repair List – all equipment in the repair cycle', 'Accept job, Update status, Mark complete'],
+          ['Under Repair (Rtur)', 'Devices actively being repaired in the workshop', 'Update progress, Record parts, Mark complete'],
+          ['OB (Rtob)', 'Opening Balance – equipment received at repair centre', 'Acknowledge OB, View details'],
+          ['PFRN (Rtfrn)', 'Field Return Notes pending for repair jobs', 'Filter, Update FRN status'],
+          ['Re-Repair (Rtrr)', 'Devices returned for a second repair attempt', 'Filter, Update re-repair status'],
+          ['Closed CRL (Rtccr)', 'Completed repair records', 'Filter, View history'],
+          ['Closed Re-Repair (Rtcrr)', 'Completed re-repair job history', 'Filter, View details'],
+          ['OA (Rtoa)', 'Other activities: maintenance, calibration, inspection', 'Log activity, View OA records'],
+          ['OMR (Rtcomr)', 'Open Miscellaneous Repair jobs in progress', 'Update status, Complete job'],
+        ],
+        { 0: { cellWidth: 42 }, 1: { cellWidth: 68 }, 2: { cellWidth: contentW - 110 } }
+      );
+
+      // ═══════════════════════════════════
+      // ESCALATION SYSTEM
+      // ═══════════════════════════════════
+      sectionHeading('Escalation System', '9.');
+      para('The Escalation System automatically sends email alerts to managers and coordinators when service calls breach defined SLA time thresholds. Escalations are critical for ensuring timely resolution.');
+
+      subHeading('Escalation Types & Triggers');
+      buildTable(
+        ['Escalation Type', 'Trigger Condition'],
+        [
+          ['Open Call Escalation', 'SR open beyond N days without closure'],
+          ['SR Escalation', 'Service Request pending beyond SLA limit'],
+          ['Under Repair Escalation', 'Device in repair workshop beyond allowed duration'],
+          ['Tour Overdue Escalation', 'Planned tour not updated with actual visits'],
+          ['PRF/OB Escalation', 'PRF raised but not actioned within threshold (Daily 4:30 PM)'],
+          ['Supplier Warranty Escalation', 'Warranty claim not followed up (Tue & Fri 8:30 PM)'],
+          ['External Repair Escalation', 'External repair not completed within threshold (Daily 3:30 PM)'],
+        ],
+        { 0: { cellWidth: 65 }, 1: { cellWidth: contentW - 65 } }
+      );
+
+      subHeading('Escalation Recipients');
+      para('Recipients are configured per division and per escalation type under Settings → Escalation:');
+      bullet('Level 1: Division Head / Service Coordinator');
+      bullet('Level 2: Regional Manager (if Level 1 not actioned)');
+      bullet('Level 3: Senior Management (for critical SLA breaches)');
+      y += 2;
+
+      subHeading('Manual Trigger');
+      para('Admins can manually trigger any escalation slot from the Escalation Settings page — useful for testing email delivery or forcing immediate alerts for critical situations.');
+
+      // ═══════════════════════════════════
+      // REPORTS & NOTIFICATIONS
+      // ═══════════════════════════════════
+      sectionHeading('Reports, Notifications & Settings', '10–12.');
+
+      subHeading('AI Reports (Reports.html)');
+      buildTable(
+        ['Report Type', 'Description'],
+        [
+          ['Open Call Analysis', 'Breakdown of open calls by division, engineer, and aging'],
+          ['Closed Call Analysis', 'Performance metrics for completed repairs'],
+          ['Service Performance', 'Engineer-wise KPI: calls closed, avg time'],
+          ['FRN Analysis', 'Part dispatch and pending analysis'],
+          ['Estimation Analysis', 'Approval rates and pending amounts'],
+          ['PRF/OB Analysis', 'Return and OB item trends'],
+          ['Tour Summary', 'Planned vs. actual visit comparison'],
+          ['Under Repair Analysis', 'Workshop occupancy and duration'],
+          ['Non-Saleable Analysis', 'NS part usage and disposition trends'],
+          ['Commercial Performance', 'Revenue-impact analysis including export dates'],
+        ],
+        { 0: { cellWidth: 60 }, 1: { cellWidth: contentW - 60 } }
+      );
+      para('Export options: PDF (multi-page with charts), Excel (raw data), Screenshot. Reports support date range filtering, division filtering, and AI-generated summaries with anomaly detection.');
+
+      subHeading('Notifications & Messaging');
+      bullet('Notification bell in every dashboard topbar — shows unread count with red dot.');
+      bullet('Types: New SR assigned, SR status updates, FRN approved, Estimation decisions, System alerts.');
+      bullet('Internal messaging tool (chat bubble icon) — send messages to team members per SR/topic.');
+      y += 2;
+
+      subHeading('Settings & Configuration (Admin only)');
+      bullet('Escalation Settings: Configure IST times for each slot, enable/disable escalation types, manage recipients per division.');
+      bullet('Division Management: Add divisions, assign suppliers/models, set SLA thresholds.');
+      bullet('User Management: Create/edit/deactivate user accounts and role assignments.');
+      bullet('Email Configuration: SMTP settings for escalation email delivery.');
+
+      // ═══════════════════════════════════
+      // GLOSSARY
+      // ═══════════════════════════════════
+      sectionHeading('Glossary & Key Terms', '13.');
+      buildTable(
+        ['Term', 'Definition'],
+        [
+          ['SR', 'Service Request — a customer complaint or service job'],
+          ['FRN', 'Field Return Note — a record of parts returned from the field'],
+          ['BIR', 'Branch Inventory Register — inventory tracking at branch/division level'],
+          ['PRF', 'Purchase Return Form — raised when a part must be returned to the supplier'],
+          ['OB', 'Out of Box — a product returned before use or with unboxing issues'],
+          ['NS / Non-Saleable', 'Refurbished/used parts that cannot be sold as new'],
+          ['SLA', 'Service Level Agreement — maximum allowed time to resolve a service call'],
+          ['Escalation', 'Automated alert sent when a call/task exceeds the SLA or time threshold'],
+          ['FQC', 'Field Quality Control — team responsible for quality verification of repaired devices'],
+          ['CPA', 'Completed Performance Analysis — metrics on closed service calls'],
+          ['ELT', 'External Loan Tracker — tracking of equipment loaned to customers/dealers'],
+          ['SC', 'Service Coordinator — central role managing all service operations'],
+          ['PT', 'Product Team — engineers dedicated to specific product lines'],
+          ['AWB', 'Airway Bill — logistics tracking for dispatch/export shipments'],
+          ['DC Date', 'Dispatch Challan Date — date on which goods are dispatched'],
+          ['Re-Repair', 'A second repair for a device returned after an initial repair failed'],
+          ['Division', 'An organizational unit (region or product category) within SchillerIndia'],
+          ['CRL', 'Call Repair List — list of jobs in the repair workshop queue'],
+          ['PFRN', 'Pending FRN — a Field Return Note not yet closed or dispatched'],
+          ['IST', 'Indian Standard Time (UTC+5:30) — all escalation schedules run in IST'],
+        ],
+        { 0: { cellWidth: 40 }, 1: { cellWidth: contentW - 40 } }
+      );
+
+      // ── Add footers to remaining pages ──
+      const totalPages = doc.internal.getNumberOfPages();
+      for (let p = 2; p <= totalPages; p++) {
+        doc.setPage(p);
+        addFooter();
+      }
+
+      // ── Save ──
+      const fileName = 'SchillerIndia_User_Manual_v1.0.pdf';
+      doc.save(fileName);
+
+    } catch(err) {
+      console.error('User Manual PDF error:', err);
+      alert('Failed to generate PDF: ' + err.message);
+    } finally {
+      if(btn) { btn.innerHTML = '&#128216; User Manual'; btn.disabled = false; }
+    }
+  }, 50);
 }
 </script>
 </body>
