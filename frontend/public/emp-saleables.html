@@ -274,14 +274,6 @@ table.sale-table tbody tr:last-child td{border-bottom:none;}
       <div class="f-divider"></div>
       <span class="filter-label">To Date</span>
       <input type="date" class="f-input" id="filter-to" onchange="applyFilters()"/>
-      <div class="f-divider"></div>
-      <span class="filter-label">Division</span>
-      <select class="f-select" id="filter-div" onchange="applyFilters()">
-        <option value="">All Division</option>
-        <option>SHIPL</option><option>VENTILATOR</option><option>VENT CON</option><option>INJECTOR</option>
-        <option>RADIOLOGY</option><option>GANSHORN</option><option>HOLTER</option><option>MONITORS</option><option>MONITORS CON</option>
-        <option>SCHILLER AG</option>
-      </select>
       <button class="btn btn-outline btn-sm" onclick="clearFilters()" style="margin-left:auto;">Clear</button>
     </div>
 
@@ -404,8 +396,20 @@ async function loadData(){
     const res = await fetch(`${API}/api/emp/saleables`, { headers: authHeaders() });
     handleUnauth(res);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    SALE_DATA = (await res.json()).map(d => ({ ...d, id: d._id || d.id }));
-    updateFilterDivisionDropdown();
+    let allData = (await res.json()).map(d => ({ ...d, id: d._id || d.id }));
+    const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
+    const role = String(u.role || '').toLowerCase();
+    const empDivs = [
+      u.activeDivision,
+      u.division,
+      ...(Array.isArray(u.divisions) ? u.divisions : [])
+    ].map(v => String(v || '').trim().toUpperCase()).filter(Boolean);
+
+    if (!['admin','superadmin'].includes(role) && empDivs.length) {
+      SALE_DATA = allData.filter(d => empDivs.includes(String(d.division || '').trim().toUpperCase()));
+    } else {
+      SALE_DATA = allData;
+    }
     applyFilters();
     updateStats();
     showToast('Loaded ' + SALE_DATA.length + ' record' + (SALE_DATA.length !== 1 ? 's' : ''), 'info');
@@ -415,17 +419,6 @@ async function loadData(){
     document.getElementById('sale-tbody').innerHTML =
       `<tr class="loading-row"><td colspan="14" style="color:var(--accent);">&#9888; ${esc(e.message)}</td></tr>`;
   }
-}
-
-function updateFilterDivisionDropdown(){
-  const el = document.getElementById('filter-div');
-  if (!el) return;
-  const current = el.value;
-  const hardcoded = ['SHIPL', 'VENTILATOR', 'VENT CON', 'INJECTOR', 'RADIOLOGY', 'GANSHORN', 'HOLTER', 'MONITORS', 'MONITORS CON', 'SCHILLER AG'];
-  const dataDivs = SALE_DATA.map(d => String(d.division || '').trim()).filter(Boolean);
-  const merged = [...new Set([...hardcoded, ...dataDivs])].sort((a, b) => a.localeCompare(b));
-  el.innerHTML = '<option value="">All Division</option>' +
-    merged.map(v => `<option value="${esc(v)}"${v === current ? ' selected' : ''}>${esc(v)}</option>`).join('');
 }
 
 function setLoading(){
@@ -447,7 +440,6 @@ function updateStats(){
 function clearFilters(){
   document.getElementById('filter-from').value = '';
   document.getElementById('filter-to').value = '';
-  if (document.getElementById('filter-div')) document.getElementById('filter-div').value = '';
   document.getElementById('tbl-search').value = '';
   applyFilters();
 }
@@ -456,12 +448,10 @@ function applyFilters(){
   const q = document.getElementById('tbl-search').value.toLowerCase();
   const fromVal = document.getElementById('filter-from').value;
   const toVal = document.getElementById('filter-to').value;
-  const divVal = document.getElementById('filter-div') ? document.getElementById('filter-div').value : '';
   const from = fromVal ? new Date(fromVal) : null;
   const to = toVal ? new Date(toVal + 'T23:59:59') : null;
 
   filtered = SALE_DATA.filter(d => {
-    if (divVal && String(d.division || '').trim().toLowerCase() !== String(divVal).trim().toLowerCase()) return false;
     if (from || to) {
       const ed = d.entryDate ? new Date(d.entryDate) : null;
       if (!ed) return false;
