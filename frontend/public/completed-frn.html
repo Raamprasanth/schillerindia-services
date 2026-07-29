@@ -144,7 +144,7 @@ table.cf-table tbody tr:last-child td{border-bottom:none;}
 .p-nofault{background:var(--teal-bg);color:var(--teal);}.p-nofault::before{background:var(--teal);}
 .p-reexport{background:var(--purple-bg);color:var(--purple);}.p-reexport::before{background:var(--purple);}
 .p-other{background:rgba(122,150,171,0.12);color:var(--muted);}.p-other::before{background:var(--muted);}
-.branch-tag{background:var(--accent3);color:var(--accent);padding:2px 7px;border-radius:7px;font-size:9.5px;font-weight:700;border:1px solid rgba(0,98,204,0.15);}
+.branch-tag, .region-tag{background:var(--accent3);color:var(--accent);padding:2px 7px;border-radius:7px;font-size:9.5px;font-weight:700;border:1px solid rgba(0,98,204,0.15);}
 .chip{display:inline-flex;align-items:center;background:var(--accent3);border:1px solid rgba(0,104,181,0.15);border-radius:5px;padding:2px 7px;font-size:10px;color:var(--accent);font-weight:600;}
 .pdays-pos{color:var(--green);font-weight:700;font-family:'JetBrains Mono',monospace;font-size:11px;}
 .pdays-neg{color:var(--red);font-weight:700;font-family:'JetBrains Mono',monospace;font-size:11px;}
@@ -349,9 +349,9 @@ table.cf-table tbody tr:last-child td{border-bottom:none;}
       <input type="date" class="fl-input" id="fl-to" style="width:144px;" onchange="applyFilters()"/>
       <button class="btn btn-outline btn-sm" onclick="clearDates()">Clear</button>
       <div class="fl-div"></div>
-      <span class="fl-label">Branch</span>
-      <select class="fl-select" id="fl-branch" onchange="handleBranchFilterChange()">
-        <option value="">All Branches</option>
+      <span class="fl-label">Region</span>
+      <select class="fl-select" id="fl-region" onchange="handleRegionFilterChange()">
+        <option value="">All Regions</option>
       </select>
       <span class="fl-label">Unit Status</span>
       <select class="fl-select" id="fl-unitsts" onchange="applyFilters()">
@@ -395,7 +395,7 @@ table.cf-table tbody tr:last-child td{border-bottom:none;}
             <th onclick="sortBy('scEng')">Sc Eng <span class="si">&#8693;</span></th>
             <th onclick="sortBy('raEng')">RA Engineer <span class="si">&#8693;</span></th>
             <th onclick="sortBy('frnNo')">Frn No <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('region')">Branch <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('region')">Region <span class="si">&#8693;</span></th>
             <th onclick="sortBy('eng')">Engineer <span class="si">&#8693;</span></th>
             <th onclick="sortBy('customer')">Cust Name <span class="si">&#8693;</span></th>
             <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
@@ -477,7 +477,7 @@ async function loadData() {
 }
 
 function populateDynamicFilters() {
-  populateFilterOptions('fl-branch',   DATA.map(d => d.region || d.branch), 'All Branches');
+  populateFilterOptions('fl-region',   DATA.map(d => d.region), 'All Regions');
   populateFilterOptions('fl-unitsts',  DATA.map(d => d.unitStatus), 'All');
   populateFilterOptions('fl-typework', DATA.map(d => d.typeWork), 'All');
   populateEngineerFilter();
@@ -503,9 +503,9 @@ function populateFilterOptions(selectId, values, allLabel) {
 }
 
 function populateEngineerFilter() {
-  const branch = document.getElementById('fl-branch').value;
+  const region = document.getElementById('fl-region').value;
   const engineers = [...new Set(DATA
-    .filter(d => !branch || (d.region || d.branch) === branch)
+    .filter(d => !region || d.region === region)
     .flatMap(d => [d.eng, d.raEng].map(value => String(value || '').trim()))
     .filter(Boolean))]
     .sort((a, b) => a.localeCompare(b));
@@ -521,7 +521,7 @@ function populateEngineerFilter() {
   if (engineers.includes(selected)) sel.value = selected;
 }
 
-function handleBranchFilterChange() {
+function handleRegionFilterChange() {
   populateEngineerFilter();
   applyFilters();
 }
@@ -542,19 +542,19 @@ function updateStats() {
 // -- FILTERS -----------------------------------------------
 function clearDates() { document.getElementById('fl-from').value = ''; document.getElementById('fl-to').value = ''; applyFilters(); }
 function applyFilters() {
-  const q  = document.getElementById('tbl-search').value.toLowerCase();
-  const brn = document.getElementById('fl-branch').value;
-  const sts= document.getElementById('fl-unitsts').value;
-  const tw = document.getElementById('fl-typework').value;
-  const eng= document.getElementById('fl-eng').value;
-  const fr = document.getElementById('fl-from').value;
-  const to = document.getElementById('fl-to').value;
+  const q   = document.getElementById('tbl-search').value.toLowerCase();
+  const reg = document.getElementById('fl-region').value;
+  const sts = document.getElementById('fl-unitsts').value;
+  const tw  = document.getElementById('fl-typework').value;
+  const eng = document.getElementById('fl-eng').value;
+  const fr  = document.getElementById('fl-from').value;
+  const to  = document.getElementById('fl-to').value;
   filtered = DATA.filter(d =>
-    (!q  || Object.values(d).some(v => String(v).toLowerCase().includes(q))) &&
-    (!brn|| (d.region || d.branch) === brn) && (!sts|| d.unitStatus === sts) &&
-    (!tw || (d.typeWork||'').toUpperCase() === tw.toUpperCase()) &&
-    (!eng|| d.eng === eng || d.raEng === eng) &&
-    (!fr || (d.entryDate||'') >= fr) && (!to|| (d.entryDate||'') <= to)
+    (!q   || Object.values(d).some(v => String(v).toLowerCase().includes(q))) &&
+    (!reg || d.region === reg) && (!sts|| d.unitStatus === sts) &&
+    (!tw  || (d.typeWork||'').toUpperCase() === tw.toUpperCase()) &&
+    (!eng || d.eng === eng || d.raEng === eng) &&
+    (!fr  || (d.entryDate||'') >= fr) && (!to|| (d.entryDate||'') <= to)
   );
   sortArr(); currentPage = 1; renderTable();
 }
@@ -597,7 +597,7 @@ function renderTable() {
         <td>${esc(d.scEng||'-')}</td>
         <td>${esc(d.raEng||'-')}</td>
         <td class="mono">${esc(String(d.frnNo||'-'))}</td>
-        <td><span class="branch-tag">${esc(d.region||'-')}</span></td>
+        <td><span class="region-tag">${esc(d.region||'-')}</span></td>
         <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;" title="${esc(d.eng||'')}">${esc(d.eng||'-')}</td>
         <td style="max-width:210px;overflow:hidden;text-overflow:ellipsis;font-weight:500;" title="${esc(d.customer||'')}">${esc(d.customer||'-')}</td>
         <td style="font-weight:600;color:var(--accent);">${esc(d.model||'-')}</td>
