@@ -1740,7 +1740,6 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
       params.month.endsWith('-12')
     );
       const c5S = data.compliance?.fiveSRate ?? 0;
-  const cRR = data.compliance?.repairReport ?? 0;
 
   const monthLabel = params.month || '';
   const employeeLabel = data.employee || params.employee || '';
