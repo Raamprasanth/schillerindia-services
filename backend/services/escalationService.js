@@ -596,7 +596,10 @@ function pickRepairEngineer(doc) {
 }
 
 function pickStockCustomer(doc) {
-  return pick(doc, ['stkCust', 'stockCust', 'customer', 'custName']);
+  // Only return the actual STK/CUST type value (e.g. "STK" or "CUST").
+  // Do NOT fall back to customer/custName — those belong in the CUST_NAME column.
+  // Also check serviceId.stkCust for docs where stkCust lives on the linked service.
+  return pick(doc, ['stkCust', 'stockCust', 'serviceId.stkCust']);
 }
 
 function pickItemDescription(doc) {
@@ -941,6 +944,10 @@ async function loadSourceMap(Model, ids = []) {
   const query = Model.find({ _id: { $in: ids } });
   if (['Service', 'Empfrn', 'EstimationPending'].includes(Model.modelName)) {
     query.populate({ path: 'division', select: 'name', strictPopulate: false });
+  }
+  // For models where stkCust lives on the linked serviceId, populate it too
+  if (['Empfrn', 'EstimationPending'].includes(Model.modelName)) {
+    query.populate({ path: 'serviceId', select: 'stkCust stockCust', strictPopulate: false });
   }
   const docs = await query.lean();
   return new Map(docs.map((doc) => [String(doc._id), doc]));
