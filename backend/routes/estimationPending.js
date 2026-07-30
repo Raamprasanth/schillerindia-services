@@ -14,6 +14,8 @@ const Division          = require('../models/Division');
 const Todr              = require('../models/Todr');
 const Dr                = require('../models/Dr');
 const RTCRL             = require('../models/rtcrlModel');
+const RTOB              = require('../models/RTOB');
+const RTFRN             = require('../models/RTFRN');
 const { protect }       = require('../middleware/authMiddleware');
 const { tryCreateUnderRepair } = require('../services/queueSyncService');
 const {
@@ -241,67 +243,71 @@ function buildRepairLookup(record) {
 
 async function enrichEstimationComponents(record) {
   const out = { ...record };
-
-  const defGirVal = String(out.defGir || out.defGirNo || out.obDefUnitGir || out.defUnitGir || (out.serviceId ? out.serviceId.defGir : '') || '').trim();
-  if (defGirVal && defGirVal !== '-') {
-    const girRegex = new RegExp('^' + escapeRegex(defGirVal) + '$', 'i');
-    const girComponentQuery = {
-      $and: [
-        { $or: [{ defGirNo: girRegex }, { defGir: girRegex }] },
-        {
-          $or: [
-            { components: { $exists: true, $nin: ['', null] } },
-            { compUsedToRepair: { $exists: true, $nin: ['', null] } },
-            { obComponents: { $exists: true, $nin: ['', null] } },
-            { partsUsed: { $exists: true, $nin: ['', null] } }
-          ]
-        }
-      ]
-    };
-    const rtcrlGir = await RTCRL.findOne(girComponentQuery).sort({ closedDate: -1, createdAt: -1 }).lean()
-                 || await RTOB.findOne(girComponentQuery).sort({ createdAt: -1 }).lean()
-                 || await RTFRN.findOne(girComponentQuery).sort({ createdAt: -1 }).lean();
-    const girComponents = pickRepairComponents(rtcrlGir);
-    if (girComponents) {
-      out.components = girComponents;
-      out.obComponents = girComponents;
-      return out;
+  try {
+    const defGirVal = String(out.defGir || out.defGirNo || out.obDefUnitGir || out.defUnitGir || (out.serviceId ? out.serviceId.defGir : '') || '').trim();
+    if (defGirVal && defGirVal !== '-') {
+      const girRegex = new RegExp('^' + escapeRegex(defGirVal) + '$', 'i');
+      const girComponentQuery = {
+        $and: [
+          { $or: [{ defGirNo: girRegex }, { defGir: girRegex }] },
+          {
+            $or: [
+              { components: { $exists: true, $nin: ['', null] } },
+              { compUsedToRepair: { $exists: true, $nin: ['', null] } },
+              { obComponents: { $exists: true, $nin: ['', null] } },
+              { partsUsed: { $exists: true, $nin: ['', null] } }
+            ]
+          }
+        ]
+      };
+      const rtcrlGir = await RTCRL.findOne(girComponentQuery).sort({ closedDate: -1, createdAt: -1 }).lean()
+                   || await RTOB.findOne(girComponentQuery).sort({ createdAt: -1 }).lean()
+                   || await RTFRN.findOne(girComponentQuery).sort({ createdAt: -1 }).lean();
+      const girComponents = pickRepairComponents(rtcrlGir);
+      if (girComponents) {
+        out.components = girComponents;
+        out.obComponents = girComponents;
+        return out;
+      }
     }
-  }
 
-  if (pickRepairComponents(out)) return out;
+    if (pickRepairComponents(out)) return out;
 
-  const serviceId = sourceIdText(out.serviceId) || sourceIdText(out.sourceId);
-  if (serviceId && mongoose.Types.ObjectId.isValid(serviceId)) {
-    const service = await Service.findById(serviceId).select('components obComponents compUsedToRepair componentsUsed partsUsed scReNo scRno scRefNo defGir defGirNo defUnitGir').lean();
-    const serviceComponents = pickRepairComponents(service);
-    if (serviceComponents) {
-      out.components = serviceComponents;
-      out.obComponents = serviceComponents;
-      return out;
+    const serviceId = sourceIdText(out.serviceId) || sourceIdText(out.sourceId);
+    if (serviceId && mongoose.Types.ObjectId.isValid(serviceId)) {
+      const service = await Service.findById(serviceId).select('components obComponents compUsedToRepair componentsUsed partsUsed scReNo scRno scRefNo defGir defGirNo defUnitGir').lean();
+      const serviceComponents = pickRepairComponents(service);
+      if (serviceComponents) {
+        out.components = serviceComponents;
+        out.obComponents = serviceComponents;
+        return out;
+      }
+      if (service) {
+        out.scReNo = out.scReNo || service.scReNo || service.scRno || service.scRefNo || '';
+        out.defGir = out.defGir || service.defGir || service.defGirNo || service.defUnitGir || '';
+      }
     }
-    if (service) {
-      out.scReNo = out.scReNo || service.scReNo || service.scRno || service.scRefNo || '';
-      out.defGir = out.defGir || service.defGir || service.defGirNo || service.defUnitGir || '';
-    }
-  }
 
-  const lookup = buildRepairLookup(out);
-  if (!lookup) return out;
-  const componentTextQuery = {
-    $or: [
-      { components: { $exists: true, $nin: ['', null] } },
-      { compUsedToRepair: { $exists: true, $nin: ['', null] } },
-      { partsUsed: { $exists: true, $nin: ['', null] } },
-    ],
-  };
-  const rtcrl =
-    await RTCRL.findOne({ $and: [lookup, { category: 'OB' }, componentTextQuery] }).sort({ closedDate: -1, createdAt: -1 }).lean() ||
-    await RTCRL.findOne({ $and: [lookup, componentTextQuery] }).sort({ closedDate: -1, createdAt: -1 }).lean();
-  const rtcrlComponents = pickRepairComponents(rtcrl);
-  if (rtcrlComponents) {
-    out.components = rtcrlComponents;
-    out.obComponents = rtcrlComponents;
+    const lookup = buildRepairLookup(out);
+    if (lookup) {
+      const componentTextQuery = {
+        $or: [
+          { components: { $exists: true, $nin: ['', null] } },
+          { compUsedToRepair: { $exists: true, $nin: ['', null] } },
+          { partsUsed: { $exists: true, $nin: ['', null] } },
+        ],
+      };
+      const rtcrl =
+        await RTCRL.findOne({ $and: [lookup, { category: 'OB' }, componentTextQuery] }).sort({ closedDate: -1, createdAt: -1 }).lean() ||
+        await RTCRL.findOne({ $and: [lookup, componentTextQuery] }).sort({ closedDate: -1, createdAt: -1 }).lean();
+      const rtcrlComponents = pickRepairComponents(rtcrl);
+      if (rtcrlComponents) {
+        out.components = rtcrlComponents;
+        out.obComponents = rtcrlComponents;
+      }
+    }
+  } catch (err) {
+    console.error('[enrichEstimationComponents]', err.message);
   }
   return out;
 }

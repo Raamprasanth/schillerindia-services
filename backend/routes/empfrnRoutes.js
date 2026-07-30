@@ -139,26 +139,30 @@ async function mirrorFrnToTodr(doc, action, items = [], queuedBy = '') {
 }
 
 async function syncMissingPendingFrn(user) {
-  const eligibleStatuses = ['IW', 'EW', 'CAMC', 'STOCK', 'Demo', 'Repeat', 'Buy Back'];
-  const existing = await Empfrn.find({ serviceId: { $ne: null } }).select('serviceId').lean();
-  const existingIds = new Set(existing.map(d => String(d.serviceId)));
+  try {
+    const existing = await Empfrn.find({ serviceId: { $ne: null } }).select('serviceId').lean();
+    const existingIds = existing.map(d => d.serviceId).filter(Boolean);
 
-  const query = {};
-  const role = String(user?.role || '').toLowerCase();
-  if (role !== 'admin' && role !== 'superadmin') {
-    const { getDivisionFilter } = require('../utils/visibility');
-    Object.assign(query, await getDivisionFilter(user));
-  }
+    const query = {
+      unitSts: { $in: ['IW', 'EW', 'CAMC', 'STOCK', 'Demo', 'Repeat', 'Buy Back', 'iw', 'ew', 'camc', 'stock', 'demo', 'repeat', 'buy back'] },
+      $or: [{ repType: 'NA' }, { repType: 'na' }, { repType: { $exists: false } }, { repType: null }]
+    };
+    if (existingIds.length) {
+      query._id = { $nin: existingIds };
+    }
 
-  const services = await Service.find(query).lean();
-  const missing = services.filter(s => {
-    const id = String(s._id || '');
-    if (!id || existingIds.has(id)) return false;
-    return eligibleStatuses.includes(normalizeUnitStatus(s.unitSts || s.unitStatus)) && normalizeRepType(s.repType) === 'NA';
-  });
+    const role = String(user?.role || '').toLowerCase();
+    if (role !== 'admin' && role !== 'superadmin') {
+      const { getDivisionFilter } = require('../utils/visibility');
+      Object.assign(query, await getDivisionFilter(user));
+    }
 
-  for (const svc of missing) {
-    await tryCreateFRNPending({ ...svc, unitSts: normalizeUnitStatus(svc.unitSts || svc.unitStatus), repType: normalizeRepType(svc.repType) }, user);
+    const missing = await Service.find(query).limit(50).lean();
+    for (const svc of missing) {
+      await tryCreateFRNPending({ ...svc, unitSts: normalizeUnitStatus(svc.unitSts || svc.unitStatus), repType: normalizeRepType(svc.repType) }, user);
+    }
+  } catch (err) {
+    console.error('[syncMissingPendingFrn]', err.message);
   }
 }
 
@@ -360,45 +364,56 @@ router.put('/:id/escalate', protect, adminOnly, async (req, res) => {
 
 async function enrichFRNComponents(docs) {
   if (!Array.isArray(docs) || !docs.length) return [];
-  const RTFRN = require('../models/RTFRN');
-  const RTCRL = require('../models/rtcrlModel');
-  const RTUR = require('../models/rturModel');
+  try {
+    const RTFRN = require('../models/RTFRN');
+    const RTCRL = require('../models/rtcrlModel');
+    const RTUR = require('../models/rturModel');
 
-  const defGirs = docs.map(d => String(d.defGir || d.defGirNo || (d.serviceId ? d.serviceId.defGir : '') || '').trim()).filter(g => g && g !== '-');
-  const scRnos = docs.map(d => String(d.scReNo || d.scRno || (d.serviceId ? d.serviceId.scReNo : '') || '').trim()).filter(s => s && s !== '-');
+    const defGirs = docs.map(d => String(d.defGir || d.defGirNo || (d.serviceId ? d.serviceId.defGir : '') || '').trim()).filter(g => g && g !== '-');
+    const scRnos = docs.map(d => String(d.scReNo || d.scRno || (d.serviceId ? d.serviceId.scReNo : '') || '').trim()).filter(s => s && s !== '-');
 
-  if (!defGirs.length && !scRnos.length) return docs;
+    if (!defGirs.length && !scRnos.length) return docs;
 
-  const [rtfrnList, rtcrlList, rturList] = await Promise.all([
-    RTFRN.find({ $or: [{ defGirNo: { $in: defGirs } }, { scRefNo: { $in: scRnos } }] }).select('scRefNo defGirNo compUsedToRepair components techRemarks finalRemarks').lean().catch(() => []),
-    RTCRL.find({ $or: [{ defGirNo: { $in: defGirs } }, { scRefNo: { $in: scRnos } }] }).select('scRefNo defGirNo compUsedToRepair components techRemarks finalRemarks').lean().catch(() => []),
-    RTUR.find({ $or: [{ defGirNo: { $in: defGirs } }, { scRefNo: { $in: scRnos } }] }).select('sourceServiceId scRefNo defGirNo compUsedToRepair components techRemarks finalRemarks').lean().catch(() => []),
-  ]);
+    const orCond = [];
+    if (defGirs.length) orCond.push({ defGirNo: { $in: defGirs } });
+    if (scRnos.length) orCond.push({ scRefNo: { $in: scRnos } });
+    if (!orCond.length) return docs;
+    const queryCond = orCond.length > 1 ? { $or: orCond } : orCond[0];
 
-  const byGir = new Map();
-  const byScNo = new Map();
+    const [rtfrnList, rtcrlList, rturList] = await Promise.all([
+      RTFRN.find(queryCond).select('scRefNo defGirNo compUsedToRepair components techRemarks finalRemarks').lean().catch(() => []),
+      RTCRL.find(queryCond).select('scRefNo defGirNo compUsedToRepair components techRemarks finalRemarks').lean().catch(() => []),
+      RTUR.find(queryCond).select('sourceServiceId scRefNo defGirNo compUsedToRepair components techRemarks finalRemarks').lean().catch(() => []),
+    ]);
 
-  [...(rtfrnList||[]), ...(rtcrlList||[]), ...(rturList||[])].forEach(r => {
-    const comp = r.compUsedToRepair || r.components || '';
-    if (!comp) return;
-    const g = String(r.defGirNo || r.defGir || '').trim();
-    if (g && g !== '-') byGir.set(g, comp);
-    const s = String(r.scRefNo || r.scRno || '').trim();
-    if (s && s !== '-') byScNo.set(s, comp);
-  });
+    const byGir = new Map();
+    const byScNo = new Map();
 
-  return docs.map(d => {
-    const gir = String(d.defGir || d.defGirNo || (d.serviceId ? d.serviceId.defGir : '') || '').trim();
-    const scNo = String(d.scReNo || d.scRno || (d.serviceId ? d.serviceId.scReNo : '') || '').trim();
+    [...(rtfrnList||[]), ...(rtcrlList||[]), ...(rturList||[])].forEach(r => {
+      const comp = r.compUsedToRepair || r.components || '';
+      if (!comp) return;
+      const g = String(r.defGirNo || r.defGir || '').trim();
+      if (g && g !== '-') byGir.set(g, comp);
+      const s = String(r.scRefNo || r.scRno || '').trim();
+      if (s && s !== '-') byScNo.set(s, comp);
+    });
 
-    const matchedComp = (gir && gir !== '-') ? byGir.get(gir) : null;
-    const fallbackComp = matchedComp || (scNo ? byScNo.get(scNo) : '') || '';
-    const finalComp = d.components || (d.serviceId ? d.serviceId.components : '') || fallbackComp || '';
-    return {
-      ...d,
-      components: finalComp,
-    };
-  });
+    return docs.map(d => {
+      const gir = String(d.defGir || d.defGirNo || (d.serviceId ? d.serviceId.defGir : '') || '').trim();
+      const scNo = String(d.scReNo || d.scRno || (d.serviceId ? d.serviceId.scReNo : '') || '').trim();
+
+      const matchedComp = (gir && gir !== '-') ? byGir.get(gir) : null;
+      const fallbackComp = matchedComp || (scNo ? byScNo.get(scNo) : '') || '';
+      const finalComp = d.components || (d.serviceId ? d.serviceId.components : '') || fallbackComp || '';
+      return {
+        ...d,
+        components: finalComp,
+      };
+    });
+  } catch (err) {
+    console.error('[enrichFRNComponents]', err.message);
+    return docs;
+  }
 }
 
 router.get('/test-to', async (req, res) => { const docs = await Empfrn.find({ toEscalationQueuedAt: { $ne: null } }).lean(); res.json(docs); });
