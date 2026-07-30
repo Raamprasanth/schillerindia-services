@@ -365,7 +365,10 @@ router.get('/', protect, async (req, res) => {
       obj.typeWork = serviceIsUnderRepair ? (serviceTypeWork || 'UNDER REPAIR') : (linkedTypeWork || serviceTypeWork || '');
       obj.type = serviceIsUnderRepair ? 'Under Repair' : obj.typeWork;
 
-      obj.repBrd = obj.repBrd || linkedBySId.repBrd || (linkedByGir?.repBrd) || linkedBySc.repBrd || '';
+      const resolvedRepBrd = obj.repBrd || obj.repBrdDate || obj.repairedDate || obj.obRepBrd || linkedBySId.repBrd || (linkedByGir?.repBrd) || linkedBySc.repBrd || '';
+      obj.repBrd = resolvedRepBrd;
+      obj.repBrdDate = resolvedRepBrd;
+      obj.repairedBrdStkDate = resolvedRepBrd;
       obj.shipSc = obj.shipSc || linkedBySId.shipSc || (linkedByGir?.shipSc) || linkedBySc.shipSc || '';
       obj.shipComm = obj.shipComm || linkedBySId.shipComm || (linkedByGir?.shipComm) || linkedBySc.shipComm || '';
       obj.techRemarks = obj.techRemarks || linkedBySId.techRemarks || (linkedByGir?.techRemarks) || linkedBySc.techRemarks || '';

@@ -873,6 +873,8 @@ router.put('/:id', async (req, res) => {
             $set: {
               type: updated.typeWork || 'Completed',
               typeWork: updated.typeWork || 'Completed',
+              repBrd: updated.obRepBrd || updated.repBrd || updated.repBrdDate || '',
+              repBrdDate: updated.obRepBrd || updated.repBrd || updated.repBrdDate || '',
               status: 'completed',
               updatedAt: new Date().toISOString(),
             },
@@ -909,6 +911,7 @@ router.put('/:id', async (req, res) => {
         defMod:       updated.defMod || '',
         defGir:       updated.defGir || '',
         raEng:        updated.obRaEng || updated.estRaEng || updated.raEng || '',
+        repBrdDate:   updated.obRepBrd || updated.repBrd || updated.repBrdDate || '',
         defUnitGir:   updated.obDefUnitGir || updated.defGir || 'NA',
         repGirSno:    updated.obRepGirNo || updated.obDefUnitGir || '',
         finalRemarks: updated.finalRemarks || updated.obFinalRemarks || '',

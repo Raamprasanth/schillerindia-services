@@ -234,6 +234,7 @@ router.put('/:id', protect, async (req, res) => {
         repGirNo:     updated.obRepGirNo,
         typeReport:   updated.obTypeReport,
         repBrd:       updated.obRepBrd,
+        repBrdDate:   updated.obRepBrd,
         shipSc:       updated.obShipSc,
         shipComm:     updated.obShipComm,
         dcNo:         updated.obDcNo,
