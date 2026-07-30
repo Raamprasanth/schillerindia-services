@@ -617,7 +617,7 @@ table.ns-table tbody tr:last-child td{border-bottom:none;}
 </div>
 
 <!-- REMARKS MODAL -->
-<div class="overlay" id="remarks-modal" style="z-index: 3000;">
+<div class="overlay" id="remarks-modal" style="z-index: 3000;" onclick="if(event.target===this) this.classList.remove('show')">
   <div class="modal-box" style="max-width: 500px; height: auto; max-height: 80vh; margin: auto; border-radius: 12px; overflow: hidden; background: #fff;">
     <div class="modal-header">
       <div class="modal-title" id="remarks-modal-title">&#128269; View Remarks</div>
@@ -923,11 +923,11 @@ function renderTable(){
         <td style="font-size:12px;">${esc(d.unitDetails || '-')}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.fqcInDate)}</td>
         <td><strong style="color:var(--text);">${esc(d.model || '-')}</strong></td>
-        <td style="min-width:190px; padding:4px;" onclick="showRemarksPopup(${JSON.stringify(fqcRem)}, 'FQC Remarks')" title="Click to view full FQC remarks">
+        <td style="min-width:190px; padding:4px;" data-text="${esc(fqcRem)}" onclick="showRemarksPopup(this.getAttribute('data-text'), 'FQC Remarks')" title="Click to view full FQC remarks">
           <div style="cursor:pointer; border:1px solid var(--border,#ccdde8); border-radius:6px; padding:5px 8px; background:var(--surface3,#f8fafc); white-space:pre-wrap; word-break:break-word; max-height:45px; overflow-y:auto; color:var(--soft,#3d6480); font-size:11.5px; line-height:1.4;">${esc(fqcRem)}</div>
         </td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.scInDate)}</td>
-        <td style="min-width:190px; padding:4px;" onclick="showRemarksPopup(${JSON.stringify(scObs)}, 'SC Observation')" title="Click to view full SC observation">
+        <td style="min-width:190px; padding:4px;" data-text="${esc(scObs)}" onclick="showRemarksPopup(this.getAttribute('data-text'), 'SC Observation')" title="Click to view full SC observation">
           <div style="cursor:pointer; border:1px solid var(--border,#ccdde8); border-radius:6px; padding:5px 8px; background:var(--surface3,#f8fafc); white-space:pre-wrap; word-break:break-word; max-height:45px; overflow-y:auto; color:var(--soft,#3d6480); font-size:11.5px; line-height:1.4;">${esc(scObs)}</div>
         </td>
         <td><span class="chip-sm">${esc(d.modelSn || '-')}</span></td>
