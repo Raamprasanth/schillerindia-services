@@ -386,7 +386,21 @@ async function buildTemplateXlsx(payload, outputPath) {
         headers.forEach((header, idx) => {
           const col = idx + 1;
           const cell = addedRow.getCell(col);
-          cell.value = row[header] || "";
+          let cellVal = row[header];
+          if (cellVal === undefined || cellVal === null || cellVal === '') {
+            const normHeader = String(header || '').toUpperCase().replace(/[\_\/\s\-\.]+/g, '');
+            for (const key of Object.keys(row)) {
+              const normKey = String(key || '').toUpperCase().replace(/[\_\/\s\-\.]+/g, '');
+              if (normKey === normHeader || (normHeader.includes('REPAIREDBRD') && normKey.includes('REPAIREDBRD')) || (normHeader.includes('REPBRD') && normKey.includes('REPBRD')) || (normHeader.includes('REPAIREDDATE') && normKey.includes('REPBRD'))) {
+                const candidate = row[key];
+                if (candidate !== undefined && candidate !== null && candidate !== '') {
+                  cellVal = candidate;
+                  break;
+                }
+              }
+            }
+          }
+          cell.value = cellVal || "";
           
           const templateDataCell = sourceDataRow.getCell(col);
           copyCellStyle(templateDataCell, cell);
