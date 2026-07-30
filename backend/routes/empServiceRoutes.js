@@ -236,10 +236,10 @@ router.get('/', protect, async (req, res) => {
     ] = await Promise.all([
       serviceIds.length ? EmpFRN.find({ serviceId: { $in: serviceIds } }).select('serviceId typeWork status repGirNo repBrd shipSc shipComm techRemarks components finalRemarks updatedAt createdAt').lean() : [],
       serviceIds.length ? UnderRepair.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng typeWork typeOfWork status repGirNo repBrd shipSc shipComm techRemarks components finalRemarks updatedAt createdAt').lean() : [],
-      serviceIds.length ? EstimationPending.find({ serviceId: { $in: serviceIds } }).select('serviceId typeWork obRepGirNo obStatus status estUpdatedAt obUpdatedAt techRemarks components finalRemarks updatedAt createdAt').lean() : [],
+      serviceIds.length ? EstimationPending.find({ serviceId: { $in: serviceIds } }).select('serviceId typeWork obRepGirNo obRepBrd obStatus status estUpdatedAt obUpdatedAt techRemarks obTechRemarks components finalRemarks updatedAt createdAt').lean() : [],
       serviceIds.length ? CompletedFRN.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng typeWork repGirSno repBrdDate shipDateSC shipDateComm techRemarks components finalRemarks updatedAt createdAt').lean() : [],
       serviceIds.length || scReNos.length ? SCCompletedFRN.find({ $or: [{ serviceId: { $in: serviceIds } }, { scRno: { $in: scReNos } }] }).select('serviceId scRno raEng typeWork repGirSno repBrdDate shipDateSC shipDateComm techRemarks components finalRemarks updatedAt createdAt').lean() : [],
-      serviceIds.length || scReNos.length ? Scrap.find({ $or: [{ serviceId: { $in: serviceIds } }, { scRno: { $in: scReNos } }] }).select('serviceId scRno raEng typeWork repGirNo shipDateFromSc techRemarks components finalRemarks updatedAt createdAt').lean() : [],
+      serviceIds.length || scReNos.length ? Scrap.find({ $or: [{ serviceId: { $in: serviceIds } }, { scRno: { $in: scReNos } }] }).select('serviceId scRno raEng typeWork repGirNo repBrd repBrdDate shipDateFromSc techRemarks components finalRemarks updatedAt createdAt').lean() : [],
       serviceIds.length || scReNos.length ? RTUR.find({ $or: [{ sourceServiceId: { $in: serviceIds } }, { scRefNo: { $in: scReNos } }] }).select('sourceServiceId scRefNo defGirNo repairedDate repBrdDate returnDate compUsedToRepair techRemarks finalRemarks repairRemarks updatedAt createdAt').lean() : [],
       scReNos.length && defGirs.length ? RTCRL.find({ scRefNo: { $in: scReNos }, defGirNo: { $in: defGirs } }).select('scRefNo defGirNo repairedDate rpDate compUsedToRepair techRemarks finalRemarks repairRemarks createdAt').lean() : [],
       scReNos.length && defGirs.length ? RTCRR.find({ scRefNo: { $in: scReNos }, defGirNo: { $in: defGirs } }).select('scRefNo defGirNo repairedDate rpDate compUsedToRepair techRemarks finalRemarks repairRemarks createdAt').lean() : [],
@@ -260,7 +260,7 @@ router.get('/', protect, async (req, res) => {
     });
 
     function extractRowFields(row) {
-      let repBrd = row.repBrd || row.repBrdDate || row.repairedDate || row.rpDate || '';
+      let repBrd = row.repBrd || row.repBrdDate || row.obRepBrd || row.repairedDate || row.rpDate || '';
       if (repBrd instanceof Date) repBrd = repBrd.toISOString().slice(0, 10);
 
       let shipSc = row.shipSc || row.shipDateSC || row.shipDateFromSc || row.outwardDate || row.returnDate || '';
@@ -269,7 +269,7 @@ router.get('/', protect, async (req, res) => {
       let shipComm = row.shipComm || row.shipDateComm || '';
       if (shipComm instanceof Date) shipComm = shipComm.toISOString().slice(0, 10);
 
-      const techRemarks = row.techRemarks || row.observation || row.repairActivity || '';
+      const techRemarks = row.techRemarks || row.obTechRemarks || row.observation || row.repairActivity || row.serviceCentreComments || row.repairRemarks || row.fieldRemarks || row.problemDetails || '';
       const components = row.components || row.compUsedToRepair || '';
       const finalRemarks = row.finalRemarks || row.repairRemarks || row.serviceCentreRemarks || row.fieldRemarks || '';
       const repGirNo = row.repGirNo || row.obRepGirNo || row.repGirSno || '';
