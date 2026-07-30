@@ -550,6 +550,9 @@ async function loadData() {
     DATA = DATA.map(d => ({
       ...d,
       id: d._id || d.id,
+      eng: d.eng || d.engineer || d.engineerName || d.fieldEngineer || '',
+      customer: d.customer || d.customerName || d.custName || '',
+      partNo: d.partNo || d.partNumber || d.part_no || '',
       pdays: d.pdays ?? Math.floor((Date.now() - new Date(d.rcvdDate || d.entryDate || d.createdAt).getTime()) / 86400000),
     }));
     populateDynamicFilters();
