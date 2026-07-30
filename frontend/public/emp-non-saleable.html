@@ -1255,7 +1255,7 @@ function exportCSV(){
   const headers = [
     'Posting Date',
     'Division',
-    'Item Description 1',
+    'Model',
     'Unit status',
     'Serial No.',
     'Quantity',
@@ -1266,8 +1266,8 @@ function exportCSV(){
   const rows = filtered.map(d => [
     fmtDate(d.entryDate || d.fqcInDate),
     d.division || '',
-    d.model || d.unitDetails || '',
-    d.unitStatus || d.unitSts || d.status || '',
+    d.model || '',
+    d.unitDetails || d.unitStatus || d.unitSts || d.warrantyStatus || d.warranty || d.status || '',
     d.modelSn || d.unitSerialNo || d.serialNo || '',
     d.qty || d.quantity || 1,
     d.reportedProblem || d.fqcObservation || d.fqcRemarks || '',
