@@ -917,9 +917,9 @@ function renderTable(){
       const fqcRem = (d.reportedProblem || d.fqcObservation || '-');
       const scObs = (d.scObservation || '-');
       return `<tr>
-        <td class="mono" style="color:var(--muted);">${(currentPage - 1) * perPage + i + 1}</td>
+        <td class="mono" style="font-size:13px;font-weight:700;color:var(--text);">${(currentPage - 1) * perPage + i + 1}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate || d.fqcInDate)}</td>
-        <td><span class="chip-sm">${esc(d.division || '-')}</span></td>
+        <td><strong style="font-size:13px;font-weight:700;color:var(--text);">${esc(d.division || '-')}</strong></td>
         <td style="font-size:12px;">${esc(d.unitDetails || '-')}</td>
         <td style="font-size:11px;color:var(--soft);">${fmtDate(d.fqcInDate)}</td>
         <td><strong style="color:var(--text);">${esc(d.model || '-')}</strong></td>
