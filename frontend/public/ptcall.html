@@ -64,7 +64,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .content{flex:1;padding:20px 24px;overflow-y:auto;}
 
 /* -- STATS -- */
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
 .stat-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:14px 16px;box-shadow:var(--shadow);transition:all 0.2s;position:relative;overflow:hidden;}
 .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:11px 11px 0 0;}
 .sc-blue::before{background:linear-gradient(90deg,#0068b5,#0ea5e9);}
@@ -318,6 +318,7 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
             <option value="Demo">Demo</option>
             <option value="CRM">CRM</option>
             <option value="Training">Training</option>
+            <option value="Others">Others</option>
           </select>
         </div>
       </div>
@@ -476,7 +477,6 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
       <div class="stat-card sc-blue"><div class="stat-icon si-blue">&#128202;</div><div class="stat-label">Total Calls</div><div class="stat-value" id="s-total">-</div><div class="stat-sub">All registered calls</div></div>
       <div class="stat-card sc-green"><div class="stat-icon si-green">&#9989;</div><div class="stat-label">Closed</div><div class="stat-value" id="s-closed">-</div><div class="stat-sub">Closed in register</div></div>
       <div class="stat-card sc-amber"><div class="stat-icon si-amber">&#9203;</div><div class="stat-label">Pending</div><div class="stat-value" id="s-pending">-</div><div class="stat-sub">Awaiting action</div></div>
-      <div class="stat-card sc-red"><div class="stat-icon si-red">&#128308;</div><div class="stat-label">Escalated</div><div class="stat-value" id="s-escalated">-</div><div class="stat-sub">Needs attention</div></div>
     </div>
 
     <!-- TABLE -->
@@ -515,12 +515,12 @@ table.call-table tbody tr:last-child td{border-bottom:none;}
         <select class="f-select" id="fl-calltype" onchange="applyFilters()">
           <option value="">All Types</option>
           <option>Application</option><option>Software</option><option>Technical</option>
-          <option>Demo</option><option>CRM</option><option>Training</option>
+          <option>Demo</option><option>CRM</option><option>Training</option><option>Others</option>
         </select>
         <label>Status</label>
         <select class="f-select" id="fl-status" onchange="applyFilters()">
           <option value="">All Status</option>
-          <option>Pending</option><option>Closed</option><option>Escalated</option>
+          <option>Pending</option><option>Closed</option>
         </select>
         <button class="btn btn-outline btn-sm" style="padding:5px 11px;font-size:11px;margin-left:auto;" onclick="clearAllFilters()">&#10005; Clear All</button>
       </div>
@@ -874,7 +874,6 @@ function updateStats(){
   (document.getElementById('s-total')||{}).textContent = CALL_DATA.length;
   (document.getElementById('s-closed')||{}).textContent = CALL_DATA.filter(d => d.status === 'Closed').length;
   (document.getElementById('s-pending')||{}).textContent = CALL_DATA.filter(d => d.status === 'Pending').length;
-  (document.getElementById('s-escalated')||{}).textContent = CALL_DATA.filter(d => d.status === 'Escalated').length;
 }
 
 /* -- FILTERS -- */
@@ -1185,7 +1184,7 @@ function getRange(c,t){if(t<=7)return Array.from({length:t},(_,i)=>i+1);if(c<=4)
 function gp(p){ currentPage=p; renderTable(); }
 
 /* -- HELPERS -- */
-function setLoading(){ document.getElementById('call-tbody').innerHTML='<tr class="loading-row"><td colspan="14"><span class="spin"></span>Loading from database-</td></tr>'; ['s-total','s-closed','s-pending','s-escalated'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='-';}); }
+function setLoading(){ document.getElementById('call-tbody').innerHTML='<tr class="loading-row"><td colspan="14"><span class="spin"></span>Loading from database-</td></tr>'; ['s-total','s-closed','s-pending'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='-';}); }
 function setError(msg){ document.getElementById('call-tbody').innerHTML=`<tr class="loading-row"><td colspan="14" style="color:var(--red);">&#9888;&#65039; ${esc(msg)}</td></tr>`; }
 function fmtDate(d){ if(!d)return'-'; const p=String(d).split('T')[0].split('-'); if(p.length<3)return String(d); return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0]; }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
