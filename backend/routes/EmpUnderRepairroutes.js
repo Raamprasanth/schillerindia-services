@@ -127,8 +127,52 @@ router.get('/', protect, async (req, res) => {
       ]);
     }
 
+async function enrichUnderRepairComponents(docs) {
+  if (!Array.isArray(docs) || !docs.length) return [];
+  const RTUR = require('../models/rturModel');
+  const RTCRL = require('../models/rtcrlModel');
+  const RTFRN = require('../models/RTFRN');
+
+  const defGirs = docs.map(d => String(d.defGir || d.defGirNo || (d.serviceId ? d.serviceId.defGir : '') || '').trim()).filter(g => g && g !== '-');
+  const scRnos = docs.map(d => String(d.scReNo || d.scRno || (d.serviceId ? d.serviceId.scReNo : '') || '').trim()).filter(s => s && s !== '-');
+
+  if (!defGirs.length && !scRnos.length) return docs;
+
+  const [rturList, rtcrlList, rtfrnList] = await Promise.all([
+    RTUR.find({ $or: [{ defGirNo: { $in: defGirs } }, { scRefNo: { $in: scRnos } }] }).select('sourceServiceId scRefNo defGirNo compUsedToRepair components techRemarks finalRemarks').lean().catch(() => []),
+    RTCRL.find({ $or: [{ defGirNo: { $in: defGirs } }, { scRefNo: { $in: scRnos } }] }).select('scRefNo defGirNo compUsedToRepair components techRemarks finalRemarks').lean().catch(() => []),
+    RTFRN.find({ $or: [{ defGirNo: { $in: defGirs } }, { scRefNo: { $in: scRnos } }] }).select('scRefNo defGirNo compUsedToRepair components techRemarks finalRemarks').lean().catch(() => []),
+  ]);
+
+  const byGir = new Map();
+  const byScNo = new Map();
+
+  [...(rturList||[]), ...(rtcrlList||[]), ...(rtfrnList||[])].forEach(r => {
+    const comp = r.compUsedToRepair || r.components || '';
+    if (!comp) return;
+    const g = String(r.defGirNo || r.defGir || '').trim();
+    if (g && g !== '-') byGir.set(g, comp);
+    const s = String(r.scRefNo || r.scRno || '').trim();
+    if (s && s !== '-') byScNo.set(s, comp);
+  });
+
+  return docs.map(d => {
+    const gir = String(d.defGir || d.defGirNo || (d.serviceId ? d.serviceId.defGir : '') || '').trim();
+    const scNo = String(d.scReNo || d.scRno || (d.serviceId ? d.serviceId.scReNo : '') || '').trim();
+
+    const matchedComp = (gir && gir !== '-') ? byGir.get(gir) : null;
+    const fallbackComp = matchedComp || (scNo ? byScNo.get(scNo) : '') || '';
+    const finalComp = d.components || (d.serviceId ? d.serviceId.components : '') || fallbackComp || '';
+    return {
+      ...d,
+      components: finalComp,
+    };
+  });
+}
+
     const docs = await UnderRepair.find(filter).populate({ path: 'serviceId', select: 'branch dealer division divisionName partNo doi unitSl defPartSno bscon scReNo scEng frnNo frnDate serComm rcvdDate stkCust reg eng custName customer supplier model unitSts defMod defType typeAcc defGir repType repGirNo fieldRemarks commWarrDetails techRemarks components finalRemarks shipSc repBrd shipComm', populate: { path: 'division', select: 'name' } }).sort({ createdAt: -1 }).lean();
-    res.json(docs.map(d => ({
+    const enrichedDocs = await enrichUnderRepairComponents(docs);
+    res.json(enrichedDocs.map(d => ({
       ...d,
       branch: d.branch || (d.serviceId ? d.serviceId.branch : '') || '',
       dealer: d.dealer || (d.serviceId ? d.serviceId.dealer : '') || '',
@@ -158,6 +202,8 @@ router.get('/', protect, async (req, res) => {
       bscon: d.bscon || (d.serviceId ? d.serviceId.bscon : '') || '',
       doi: d.doi || (d.serviceId ? d.serviceId.doi : '') || '',
       unitSl: d.unitSl || (d.serviceId ? d.serviceId.unitSl : '') || '',
+      repBrd: d.repBrd || d.repBrdDate || (d.serviceId ? (d.serviceId.repBrd || d.serviceId.repBrdDate) : '') || '',
+      techRemarks: d.techRemarks || (d.serviceId ? d.serviceId.techRemarks : '') || '',
       division: d.division || (d.serviceId && d.serviceId.division ? d.serviceId.division._id : null),
       divisionName: d.divisionName || (d.serviceId && d.serviceId.division ? d.serviceId.division.name : '') || (d.serviceId ? d.serviceId.divisionName : ''),
       pdays: Math.floor((Date.now() - new Date(d.rcvdDate || d.entryDate || d.createdAt).getTime()) / 86400000),

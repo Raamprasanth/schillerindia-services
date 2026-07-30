@@ -314,6 +314,7 @@ router.get('/', protect, async (req, res) => {
     }
 
     const exportFieldsByServiceId = new Map();
+    const exportFieldsByDefGir = new Map();
     const exportFieldsByScRef = new Map();
 
     const allRows = [
@@ -335,6 +336,9 @@ router.get('/', protect, async (req, res) => {
       const sId = String(row.serviceId || row.sourceServiceId || '');
       if (sId) mergeIntoMap(exportFieldsByServiceId, sId, row);
 
+      const girNo = String(row.defGir || row.defGirNo || row.defUnitGir || '').trim();
+      if (girNo && girNo !== '-') mergeIntoMap(exportFieldsByDefGir, girNo, row);
+
       const scNo = String(row.scRno || row.scRefNo || '');
       if (scNo) mergeIntoMap(exportFieldsByScRef, scNo, row);
     });
@@ -342,12 +346,14 @@ router.get('/', protect, async (req, res) => {
     const annotated = records.map(r => {
       const obj = r.toObject ? r.toObject() : r;
       const sIdKey = String(obj._id || '');
+      const girKey = String(obj.defGir || obj.defGirNo || obj.defUnitGir || '').trim();
       const scNoKey = String(obj.scReNo || obj.scRno || '');
 
       const linkedBySId = exportFieldsByServiceId.get(sIdKey) || {};
+      const linkedByGir = (girKey && girKey !== '-') ? exportFieldsByDefGir.get(girKey) : null;
       const linkedBySc = exportFieldsByScRef.get(scNoKey) || {};
 
-      obj.raEng = obj.raEng || linkedBySId.raEng || linkedBySc.raEng || raByServiceId.get(sIdKey) || '';
+      obj.raEng = obj.raEng || linkedBySId.raEng || (linkedByGir?.raEng) || linkedBySc.raEng || raByServiceId.get(sIdKey) || '';
 
       const linkedTypeWork = typeWorkByServiceId.get(sIdKey)?.typeWork || '';
       const serviceTypeWork = pickRealTypeWork(obj);
@@ -359,13 +365,13 @@ router.get('/', protect, async (req, res) => {
       obj.typeWork = serviceIsUnderRepair ? (serviceTypeWork || 'UNDER REPAIR') : (linkedTypeWork || serviceTypeWork || '');
       obj.type = serviceIsUnderRepair ? 'Under Repair' : obj.typeWork;
 
-      obj.repBrd = obj.repBrd || linkedBySId.repBrd || linkedBySc.repBrd || '';
-      obj.shipSc = obj.shipSc || linkedBySId.shipSc || linkedBySc.shipSc || '';
-      obj.shipComm = obj.shipComm || linkedBySId.shipComm || linkedBySc.shipComm || '';
-      obj.techRemarks = obj.techRemarks || linkedBySId.techRemarks || linkedBySc.techRemarks || '';
-      obj.components = obj.components || linkedBySId.components || linkedBySc.components || '';
-      obj.finalRemarks = obj.finalRemarks || linkedBySId.finalRemarks || linkedBySc.finalRemarks || '';
-      obj.repGirNo = obj.repGirNo || linkedBySId.repGirNo || linkedBySc.repGirNo || '';
+      obj.repBrd = obj.repBrd || linkedBySId.repBrd || (linkedByGir?.repBrd) || linkedBySc.repBrd || '';
+      obj.shipSc = obj.shipSc || linkedBySId.shipSc || (linkedByGir?.shipSc) || linkedBySc.shipSc || '';
+      obj.shipComm = obj.shipComm || linkedBySId.shipComm || (linkedByGir?.shipComm) || linkedBySc.shipComm || '';
+      obj.techRemarks = obj.techRemarks || linkedBySId.techRemarks || (linkedByGir?.techRemarks) || linkedBySc.techRemarks || '';
+      obj.components = obj.components || linkedBySId.components || (linkedByGir?.components) || linkedBySc.components || '';
+      obj.finalRemarks = obj.finalRemarks || linkedBySId.finalRemarks || (linkedByGir?.finalRemarks) || linkedBySc.finalRemarks || '';
+      obj.repGirNo = obj.repGirNo || linkedBySId.repGirNo || (linkedByGir?.repGirNo) || linkedBySc.repGirNo || '';
 
       obj.isOwner =
         obj.scEng       === name ||

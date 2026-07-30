@@ -358,10 +358,49 @@ router.put('/:id/escalate', protect, adminOnly, async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────────────────
-// GET  /api/emp/frn/employee
-// Employee: only their own pending records
-// ─────────────────────────────────────────────────────────
+async function enrichFRNComponents(docs) {
+  if (!Array.isArray(docs) || !docs.length) return [];
+  const RTFRN = require('../models/RTFRN');
+  const RTCRL = require('../models/rtcrlModel');
+  const RTUR = require('../models/rturModel');
+
+  const defGirs = docs.map(d => String(d.defGir || d.defGirNo || (d.serviceId ? d.serviceId.defGir : '') || '').trim()).filter(g => g && g !== '-');
+  const scRnos = docs.map(d => String(d.scReNo || d.scRno || (d.serviceId ? d.serviceId.scReNo : '') || '').trim()).filter(s => s && s !== '-');
+
+  if (!defGirs.length && !scRnos.length) return docs;
+
+  const [rtfrnList, rtcrlList, rturList] = await Promise.all([
+    RTFRN.find({ $or: [{ defGirNo: { $in: defGirs } }, { scRefNo: { $in: scRnos } }] }).select('scRefNo defGirNo compUsedToRepair components techRemarks finalRemarks').lean().catch(() => []),
+    RTCRL.find({ $or: [{ defGirNo: { $in: defGirs } }, { scRefNo: { $in: scRnos } }] }).select('scRefNo defGirNo compUsedToRepair components techRemarks finalRemarks').lean().catch(() => []),
+    RTUR.find({ $or: [{ defGirNo: { $in: defGirs } }, { scRefNo: { $in: scRnos } }] }).select('sourceServiceId scRefNo defGirNo compUsedToRepair components techRemarks finalRemarks').lean().catch(() => []),
+  ]);
+
+  const byGir = new Map();
+  const byScNo = new Map();
+
+  [...(rtfrnList||[]), ...(rtcrlList||[]), ...(rturList||[])].forEach(r => {
+    const comp = r.compUsedToRepair || r.components || '';
+    if (!comp) return;
+    const g = String(r.defGirNo || r.defGir || '').trim();
+    if (g && g !== '-') byGir.set(g, comp);
+    const s = String(r.scRefNo || r.scRno || '').trim();
+    if (s && s !== '-') byScNo.set(s, comp);
+  });
+
+  return docs.map(d => {
+    const gir = String(d.defGir || d.defGirNo || (d.serviceId ? d.serviceId.defGir : '') || '').trim();
+    const scNo = String(d.scReNo || d.scRno || (d.serviceId ? d.serviceId.scReNo : '') || '').trim();
+
+    const matchedComp = (gir && gir !== '-') ? byGir.get(gir) : null;
+    const fallbackComp = matchedComp || (scNo ? byScNo.get(scNo) : '') || '';
+    const finalComp = d.components || (d.serviceId ? d.serviceId.components : '') || fallbackComp || '';
+    return {
+      ...d,
+      components: finalComp,
+    };
+  });
+}
+
 router.get('/test-to', async (req, res) => { const docs = await Empfrn.find({ toEscalationQueuedAt: { $ne: null } }).lean(); res.json(docs); });
 router.get('/employee', protect, async (req, res) => {
   try {
@@ -449,7 +488,9 @@ router.get('/employee', protect, async (req, res) => {
       toEscalationQueuedAt: d.toEscalationQueuedAt || null,
       pdays: Math.floor((now - new Date(d.rcvdDate || d.entryDate || d.createdAt).getTime()) / 86400000),
     }));
-    res.json(result);
+
+    const enrichedResult = await enrichFRNComponents(result);
+    res.json(enrichedResult);
   } catch (err) {
     console.error('[GET /api/emp/frn/employee]', err);
     res.status(500).json({ message: 'Server error', error: err.message });

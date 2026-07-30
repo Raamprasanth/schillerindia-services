@@ -224,19 +224,51 @@ function sourceIdText(value) {
 }
 
 function buildRepairLookup(record) {
-  const values = [record.scReNo, record.scRno, record.scRefNo, record.defGir, record.defGirNo, record.obDefUnitGir, record.defUnitGir]
-    .map(value => String(value || '').trim())
-    .filter(value => value && value !== '-');
+  const defGirVal = String(record.defGir || record.defGirNo || record.obDefUnitGir || record.defUnitGir || (record.serviceId ? record.serviceId.defGir : '') || '').trim();
+  const scRefVal = String(record.scReNo || record.scRno || record.scRefNo || (record.serviceId ? record.serviceId.scReNo : '') || '').trim();
+
   const ors = [];
-  [...new Set(values)].forEach(value => {
-    const regex = new RegExp('^' + escapeRegex(value) + '$', 'i');
-    ors.push({ scReNo: regex }, { scRno: regex }, { scRefNo: regex }, { defGir: regex }, { defGirNo: regex });
-  });
+  if (defGirVal && defGirVal !== '-') {
+    const girRegex = new RegExp('^' + escapeRegex(defGirVal) + '$', 'i');
+    ors.push({ defGirNo: girRegex }, { defGir: girRegex });
+  }
+  if (!ors.length && scRefVal && scRefVal !== '-') {
+    const scRegex = new RegExp('^' + escapeRegex(scRefVal) + '$', 'i');
+    ors.push({ scReNo: scRegex }, { scRno: scRegex }, { scRefNo: scRegex });
+  }
   return ors.length ? { $or: ors } : null;
 }
 
 async function enrichEstimationComponents(record) {
   const out = { ...record };
+
+  const defGirVal = String(out.defGir || out.defGirNo || out.obDefUnitGir || out.defUnitGir || (out.serviceId ? out.serviceId.defGir : '') || '').trim();
+  if (defGirVal && defGirVal !== '-') {
+    const girRegex = new RegExp('^' + escapeRegex(defGirVal) + '$', 'i');
+    const girComponentQuery = {
+      $and: [
+        { $or: [{ defGirNo: girRegex }, { defGir: girRegex }] },
+        {
+          $or: [
+            { components: { $exists: true, $nin: ['', null] } },
+            { compUsedToRepair: { $exists: true, $nin: ['', null] } },
+            { obComponents: { $exists: true, $nin: ['', null] } },
+            { partsUsed: { $exists: true, $nin: ['', null] } }
+          ]
+        }
+      ]
+    };
+    const rtcrlGir = await RTCRL.findOne(girComponentQuery).sort({ closedDate: -1, createdAt: -1 }).lean()
+                 || await RTOB.findOne(girComponentQuery).sort({ createdAt: -1 }).lean()
+                 || await RTFRN.findOne(girComponentQuery).sort({ createdAt: -1 }).lean();
+    const girComponents = pickRepairComponents(rtcrlGir);
+    if (girComponents) {
+      out.components = girComponents;
+      out.obComponents = girComponents;
+      return out;
+    }
+  }
+
   if (pickRepairComponents(out)) return out;
 
   const serviceId = sourceIdText(out.serviceId) || sourceIdText(out.sourceId);
