@@ -1252,12 +1252,27 @@ async function deleteEntry(){
 
 // section
 function exportCSV(){
-  const headers = ['#','Entry Date','Unit Details','FQC Inward Date','Model','FQC Remarks','SC Inward Date',
-    'SC Observation','Model SN','Tentative Date','Ship to FQC','Status','Customer','Engineer','Division'];
-  const rows = filtered.map((d, i) => [
-    i + 1, fmtDate(d.entryDate || d.fqcInDate), d.unitDetails, fmtDate(d.fqcInDate),
-    d.model, d.reportedProblem, fmtDate(d.scInDate), d.scObservation,
-    d.modelSn, fmtDate(d.tentDate), fmtDate(d.shipFqcDate), d.status, d.customer, d.engineer, d.division
+  const headers = [
+    'Posting Date',
+    'Division',
+    'Item Description 1',
+    'Unit status',
+    'Serial No.',
+    'Quantity',
+    'Reason for Non-Saleable',
+    'SC Action Plan',
+    'Target Period'
+  ];
+  const rows = filtered.map(d => [
+    fmtDate(d.entryDate || d.fqcInDate),
+    d.division || '',
+    d.model || d.unitDetails || '',
+    d.unitStatus || d.unitSts || d.status || '',
+    d.modelSn || d.unitSerialNo || d.serialNo || '',
+    d.qty || d.quantity || 1,
+    d.reportedProblem || d.fqcObservation || d.fqcRemarks || '',
+    d.scObservation || d.scRemarks || '',
+    fmtDate(d.tentDate || d.tentativeDate || d.targetPeriod)
   ]);
   const csv = [headers, ...rows].map(r => r.map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
