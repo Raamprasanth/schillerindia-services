@@ -1696,7 +1696,7 @@ async function getCommercialPerformanceData({ month }) {
 async function getRepairTeamPerformanceData({ month }) {
   const monthInfo = monthParts(month);
   
-  const RTFRN = require('../models/RTFRN.JS');
+  const RTFRN = require('../models/RTFRN');
   const RTOB = require('../models/RTOB');
   const RTUR = require('../models/rturModel');
   const RTRR = require('../models/Rtrr');
