@@ -50,6 +50,51 @@ function toDTO(d) {
   };
 }
 
+async function enrichCompletedFRN(docs) {
+  if (!Array.isArray(docs) || !docs.length) return [];
+  const Service = require('../models/Service');
+  const UnderRepair = require('../models/UnderRepair');
+  
+  const dtos = docs.map(toDTO);
+  const missing = dtos.filter(d => (!d.eng && !d.engineer) || !d.customer || !d.partNo);
+  if (!missing.length) return dtos;
+
+  const serviceIds = missing.map(d => String(d.serviceId)).filter(Boolean);
+  const scRnos = missing.map(d => String(d.scRno)).filter(Boolean);
+
+  const [services, underRepairs] = await Promise.all([
+    serviceIds.length || scRnos.length ? Service.find({ $or: [{ _id: { $in: serviceIds } }, { scReNo: { $in: scRnos } }] }).lean().catch(() => []) : [],
+    serviceIds.length || scRnos.length ? UnderRepair.find({ $or: [{ serviceId: { $in: serviceIds } }, { scRno: { $in: scRnos } }] }).lean().catch(() => []) : []
+  ]);
+
+  const svcMap = new Map();
+  (services || []).forEach(s => {
+    svcMap.set(String(s._id), s);
+    if (s.scReNo) svcMap.set(String(s.scReNo), s);
+  });
+  const urMap = new Map();
+  (underRepairs || []).forEach(u => {
+    if (u.serviceId) urMap.set(String(u.serviceId), u);
+    if (u.scRno) urMap.set(String(u.scRno), u);
+  });
+
+  return dtos.map(dto => {
+    const linkedSvc = svcMap.get(String(dto.serviceId)) || svcMap.get(String(dto.scRno));
+    const linkedUr = urMap.get(String(dto.serviceId)) || urMap.get(String(dto.scRno));
+
+    if (!dto.eng) {
+      dto.eng = linkedUr?.eng || linkedUr?.engineer || linkedSvc?.eng || linkedSvc?.engineer || linkedSvc?.engineerName || linkedSvc?.fieldEngineer || '';
+    }
+    if (!dto.customer) {
+      dto.customer = linkedUr?.custName || linkedUr?.customer || linkedSvc?.custName || linkedSvc?.customer || linkedSvc?.customerName || '';
+    }
+    if (!dto.partNo) {
+      dto.partNo = linkedUr?.partNo || linkedSvc?.partNo || linkedSvc?.partNumber || '';
+    }
+    return dto;
+  });
+}
+
 // ══════════════════════════════════════════════════════════
 // EMPLOYEE ROUTES  →  mounted at /api/emp/completed-frn
 // ══════════════════════════════════════════════════════════
@@ -64,7 +109,8 @@ router.get('/', protect, async (req, res) => {
     }
 
     const docs = await CompletedFRN.find(filter).sort({ createdAt: -1 }).lean();
-    res.json(docs.map(toDTO));
+    const enriched = await enrichCompletedFRN(docs);
+    res.json(enriched);
   } catch (e) {
     res.status(500).json({ message: e.message });
   }
@@ -80,7 +126,8 @@ router.get('/:id', protect, async (req, res) => {
       const allowed = await hasDivisionAccessToService(req.user, doc.serviceId);
       if (!allowed) return res.status(403).json({ message: 'Access denied.' });
     }
-    res.json(toDTO(doc));
+    const enriched = await enrichCompletedFRN([doc]);
+    res.json(enriched[0] || toDTO(doc));
   } catch (e) {
     res.status(500).json({ message: e.message });
   }
@@ -105,7 +152,8 @@ router.get('/admin/all', protect, adminOnly, async (req, res) => {
       if (to)   query.entryDate.$lte = to;
     }
     const docs = await CompletedFRN.find(query).sort({ createdAt: -1 }).lean();
-    res.json(docs.map(toDTO));
+    const enriched = await enrichCompletedFRN(docs);
+    res.json(enriched);
   } catch (e) {
     res.status(500).json({ message: e.message });
   }

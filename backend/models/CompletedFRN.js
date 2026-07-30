@@ -27,6 +27,7 @@ const CompletedFRNSchema = new mongoose.Schema(
     region:     { type: String, trim: true, default: '' },
 
     eng:        { type: String, trim: true, default: '' },
+    engineer:   { type: String, trim: true, default: '' },
     customer:   { type: String, trim: true, default: '' },
     model:      { type: String, trim: true, default: '' },
 

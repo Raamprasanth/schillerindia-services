@@ -22,6 +22,7 @@ const underRepairSchema = new mongoose.Schema(
     // ── Location / Assignment ─────────────────────────────
     region:    { type: String,  default: '' },   // "EAST"
     eng:       { type: String,  default: '' },   // "PRASANTA KUMAR BEHERA"
+    engineer:  { type: String,  default: '' },
     raEng:     { type: String,  default: '' },   // repair activity engineer
     repairTeam:{ type: String,  default: '' },
     custName:  { type: String,  default: '' },   // "Newborn and Pediatric Health Centre"
