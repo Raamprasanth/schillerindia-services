@@ -142,6 +142,10 @@ table.frn-table tbody tr:hover td{background:rgba(0,104,181,0.03);}
 .btn-xs{padding:4px 10px;font-size:11px;border-radius:6px;border:1.5px solid var(--border);background:none;color:var(--soft);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;font-weight:600;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;}
 .btn-xs:hover{border-color:var(--accent);color:var(--accent);background:var(--accent3);}
 .btn-xs.danger:hover{border-color:rgba(185,28,28,0.35);color:var(--red);background:var(--red-bg);}
+.topbar-btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;border:1px solid var(--border);background:var(--surface2);color:var(--soft);font-family:'Plus Jakarta Sans',sans-serif;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+.topbar-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent3);}
+.topbar-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 2px 8px rgba(0,104,181,0.22);}
+.topbar-btn.primary:hover{background:var(--accent2);color:#fff;}
 .loading-row td{text-align:center;padding:50px 20px;color:var(--muted);font-size:13px;}
 .spin{display:inline-block;width:15px;height:15px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:8px;}
 @keyframes spin{to{transform:rotate(360deg);}}
@@ -303,14 +307,14 @@ async function sendToScod(id, btn) {
     <div>
       <div class="breadcrumb">
         <a href="employee-dashboard.html">Dashboard</a><span class="sep">&#8250;</span>
-        <span>Inventory</span><span class="sep">&#8250;</span>
-        <span>Loan Items</span>
+        <span>Operations</span><span class="sep">&#8250;</span>
+        <span>Closed SR</span>
       </div>
       <div class="page-title">Closed SR</div>
     </div>
     <div class="topbar-actions">
-      <button class="topbar-btn" onclick="loadData()">&#10227; Refresh</button>
-      <button class="topbar-btn" onclick="exportCSV()">&#128228; Export</button>
+      <button class="topbar-btn" onclick="loadData()">&#8635; Refresh</button>
+      <button class="topbar-btn primary" onclick="exportCSV()">&#128228; Export</button>
     </div>
   </div>
 

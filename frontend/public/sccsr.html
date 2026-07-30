@@ -9,8 +9,10 @@
   const role = String(sessionStorage.getItem('schiller_role') || '').toLowerCase();
   if (!token || !['employee','service_coordinator','admin','superadmin'].includes(role)) window.location.href = 'login.html';
 })();</script>
-<title>SchillerIndia - Closed TO</title>
+<title>SchillerIndia - Closed SR</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="topbar-alignment.css"/>
+<link rel="stylesheet" href="dashboard-topbar-actions.css"/>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 :root{
@@ -376,10 +378,10 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       </div>
       <div class="page-title">SC Closed Service Request</div>
     </div>
-    <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+    <div class="topbar-actions">
       <span style="font-size:11.5px;color:var(--muted);" id="topbar-date"></span>
-      <button class="btn btn-outline btn-sm" onclick="loadData()">&#10227; Refresh</button>
-      <button class="btn btn-primary btn-sm" onclick="exportCSV()">&#128228; Export</button>
+      <button class="topbar-btn" onclick="loadData()">&#8635; Refresh</button>
+      <button class="topbar-btn primary" onclick="exportCSV()">&#128228; Export</button>
     </div>
   </div>
 
