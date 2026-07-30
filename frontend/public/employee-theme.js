@@ -74,10 +74,21 @@
     document.documentElement.setAttribute('data-emp-theme', next);
     document.documentElement.setAttribute('data-theme', next);
     localStorage.setItem(KEY, next);
+    localStorage.setItem('si_theme', next);
+    updateThemeButtons(next);
+  }
+
+  function updateThemeButtons(theme) {
+    const isDark = theme === 'dark';
+    document.querySelectorAll('#emp-theme-toggle-btn, #pt-theme-toggle-btn, [data-dashboard-theme-btn]').forEach((btn) => {
+      btn.innerHTML = isDark ? '&#9728;&#65039;' : '&#127769;';
+      btn.title = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+      btn.setAttribute('aria-label', btn.title);
+    });
   }
 
   window.toggleEmpTheme = function() {
-    const current = document.documentElement.getAttribute('data-emp-theme');
+    const current = document.documentElement.getAttribute('data-emp-theme') || document.documentElement.getAttribute('data-theme');
     const next = current === 'dark' ? 'light' : 'dark';
     applyTheme(next);
   };
