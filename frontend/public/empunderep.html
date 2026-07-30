@@ -521,7 +521,11 @@ body.panel-open .main{display:none;}
       </div>
       <div class="fb-group">
         <div class="fb-label">SC Engineer</div>
-        <select class="fb-sel" id="fl-sceng" onchange="applyFilters()"><option value="">All Engineers</option></select>
+        <select class="fb-sel" id="fl-sceng" onchange="applyFilters()"><option value="">All SC Engineers</option></select>
+      </div>
+      <div class="fb-group">
+        <div class="fb-label">Field Engineer</div>
+        <select class="fb-sel" id="fl-eng" onchange="applyFilters()"><option value="">All Field Engineers</option></select>
       </div>
       <div class="fb-right"><button class="btn btn-outline btn-sm" onclick="clearAllFilters()">&#10005; Clear All</button></div>
     </div>
@@ -551,9 +555,9 @@ body.panel-open .main{display:none;}
             <th>Update</th>
             <th onclick="sortBy('scReNo')">Sc RNo <span class="si">&#8693;</span></th>
             <th onclick="sortBy('scEng')">Sc Eng <span class="si">&#8693;</span></th>
+            <th onclick="sortBy('eng')">Field Engineer <span class="si">&#8693;</span></th>
             <th onclick="sortBy('frnNo')">Frn No <span class="si">&#8693;</span></th>
             <th onclick="sortBy('reg')">Region <span class="si">&#8693;</span></th>
-            <th onclick="sortBy('eng')">Engineer <span class="si">&#8693;</span></th>
             <th onclick="sortBy('custName')">Cust Name <span class="si">&#8693;</span></th>
             <th onclick="sortBy('model')">Model <span class="si">&#8693;</span></th>
             <th onclick="sortBy('unitSts')">Unit St <span class="si">&#8693;</span></th>
@@ -871,10 +875,23 @@ async function loadData() {
 }
 
 function populateFilters() {
-  const engs = [...new Set(UR_DATA.map(d=>d.scEng).filter(Boolean))].sort();
-  const sel  = document.getElementById('fl-sceng');
-  sel.innerHTML = '<option value="">All Engineers</option>';
-  engs.forEach(e=>{ const o=document.createElement('option');o.value=e;o.textContent=e;sel.appendChild(o); });
+  const scEngs = [...new Set(UR_DATA.map(d=>d.scEng).filter(Boolean))].sort();
+  const selSc  = document.getElementById('fl-sceng');
+  if (selSc) {
+    const curSc = selSc.value;
+    selSc.innerHTML = '<option value="">All SC Engineers</option>';
+    scEngs.forEach(e=>{ const o=document.createElement('option');o.value=e;o.textContent=e;selSc.appendChild(o); });
+    if (scEngs.includes(curSc)) selSc.value = curSc;
+  }
+
+  const fieldEngs = [...new Set(UR_DATA.map(d=>d.eng||d.engineer||d.engineerName||d.fieldEngineer).filter(Boolean))].sort();
+  const selField  = document.getElementById('fl-eng');
+  if (selField) {
+    const curField = selField.value;
+    selField.innerHTML = '<option value="">All Field Engineers</option>';
+    fieldEngs.forEach(e=>{ const o=document.createElement('option');o.value=e;o.textContent=e;selField.appendChild(o); });
+    if (fieldEngs.includes(curField)) selField.value = curField;
+  }
 }
 
 let _rpCurrentId = null;
@@ -963,7 +980,10 @@ function updateStats() {
 
 function clearDateFilter(){ document.getElementById('fl-from').value=''; document.getElementById('fl-to').value=''; applyFilters(); }
 function clearAllFilters(){
-  ['fl-from','fl-to','fl-region','fl-unitsts','fl-sceng'].forEach(id=>document.getElementById(id).value='');
+  ['fl-from','fl-to','fl-region','fl-unitsts','fl-sceng','fl-eng'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
   document.getElementById('tbl-search').value='';
   applyFilters();
 }
@@ -982,23 +1002,26 @@ function filterByCard(type) {
   window.scrollTo({top: document.querySelector('.table-card') ? document.querySelector('.table-card').offsetTop - 10 : 0, behavior:'smooth'});
 }
 function applyFilters(){
-  const q     = document.getElementById('tbl-search').value.toLowerCase();
-  const reg   = document.getElementById('fl-region').value;
-  const uts   = document.getElementById('fl-unitsts').value;
-  const sceng = document.getElementById('fl-sceng').value;
-  const from  = document.getElementById('fl-from').value;
-  const to    = document.getElementById('fl-to').value;
+  const q        = document.getElementById('tbl-search').value.toLowerCase();
+  const reg      = document.getElementById('fl-region').value;
+  const uts      = document.getElementById('fl-unitsts').value;
+  const sceng    = document.getElementById('fl-sceng').value;
+  const fieldeng = (document.getElementById('fl-eng')||{}).value;
+  const from     = document.getElementById('fl-from').value;
+  const to       = document.getElementById('fl-to').value;
   filtered = UR_DATA.filter(d=>{
     if(_activeCardFilter==='normal' && !(d.pdays<7)) return false;
     if(_activeCardFilter==='warning' && !(d.pdays>=7&&d.pdays<=15)) return false;
     if(_activeCardFilter==='critical' && !(d.pdays>15)) return false;
     const edate = (d.entryDate||'').slice(0,10);
-    return (!q    || Object.values(d).some(v=>String(v||'').toLowerCase().includes(q))) &&
-           (!reg   || d.reg===reg) &&
-           (!uts   || d.unitSts===uts) &&
-           (!sceng || d.scEng===sceng) &&
-           (!from  || edate>=from) &&
-           (!to    || edate<=to);
+    const engVal = d.eng || d.engineer || d.engineerName || d.fieldEngineer || '';
+    return (!q        || Object.values(d).some(v=>String(v||'').toLowerCase().includes(q))) &&
+           (!reg       || d.reg===reg || d.region===reg) &&
+           (!uts       || d.unitSts===uts || d.unitStatus===uts) &&
+           (!sceng     || d.scEng===sceng) &&
+           (!fieldeng  || engVal===fieldeng) &&
+           (!from      || edate>=from) &&
+           (!to        || edate<=to);
   });
   sortArr(); currentPage=1; renderTable();
 }
