@@ -1277,7 +1277,24 @@ function buildSrMailPayload(slotWindow, data) {
       'Attached Excel contains the combined DR replacement escalation details from Pending FRN and SO Pending.',
     ].join('\n'),
     sheets: [
-      { name: 'DR Replacement', template: 'SR', rows: combinedRows },
+      {
+        name: 'DR Replacement',
+        template: 'SR',
+        headers: [
+          'Division Name',
+          'SCH REF',
+          'FRN_NO',
+          'STK_CUST',
+          'BRANCH',
+          'CUST_NAME',
+          'PRODUCT_MODEL',
+          'UNIT_STATUS',
+          'DEF_GIR_NO',
+          'PART_NO',
+          'ITEM DESCRIPTION',
+        ],
+        rows: combinedRows,
+      },
     ],
   };
 }
