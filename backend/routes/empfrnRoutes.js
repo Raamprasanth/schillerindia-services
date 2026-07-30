@@ -843,6 +843,19 @@ router.put('/:id/update', protect, async (req, res) => {
           const pdays = Math.floor(
             (Date.now() - new Date(doc.createdAt).getTime()) / 86400000
           );
+          let engName = doc.eng || doc.engineer || doc.engineerName || doc.fieldEngineer || '';
+          let custName = doc.customer || doc.custName || doc.customerName || '';
+          let partNoVal = doc.partNo || doc.partNumber || doc.part_no || '';
+
+          if ((!engName || !partNoVal || !custName) && doc.serviceId) {
+            const linkedSvc = await Service.findById(doc.serviceId).lean().catch(() => null);
+            if (linkedSvc) {
+              if (!engName) engName = linkedSvc.eng || linkedSvc.engineer || linkedSvc.engineerName || linkedSvc.fieldEngineer || '';
+              if (!custName) custName = linkedSvc.customer || linkedSvc.customerName || linkedSvc.custName || '';
+              if (!partNoVal) partNoVal = linkedSvc.partNo || linkedSvc.partNumber || linkedSvc.part_no || '';
+            }
+          }
+
           await CompletedFRN.create({
             frnId:        doc._id,
             serviceId:    doc.serviceId    || null,
@@ -851,11 +864,11 @@ router.put('/:id/update', protect, async (req, res) => {
             scEng:        doc.scEng        || '',
             frnNo:        doc.frnNo        || '',
             region:       doc.region       || '',
-            eng:          doc.eng || doc.engineer || doc.engineerName || doc.fieldEngineer || '',
-            customer:     doc.customer || doc.custName || doc.customerName || '',
+            eng:          engName,
+            customer:     custName,
             model:        doc.model        || '',
             unitStatus:   doc.unitStatus   || '',
-            partNo:       doc.partNo || doc.partNumber || doc.part_no || '',
+            partNo:       partNoVal,
             defMod:       doc.defMod       || '',
             defGir:       doc.defGir       || '',
             raEng:        doc.raEng        || '',

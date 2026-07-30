@@ -849,6 +849,19 @@ router.put('/:id', async (req, res) => {
         );
       }
 
+      let engName = updated.eng || updated.engineer || updated.engineerName || updated.fieldEngineer || '';
+      let custName = updated.customer || updated.custName || updated.customerName || '';
+      let partNoVal = updated.partNo || updated.partNumber || updated.part_no || '';
+
+      if ((!engName || !partNoVal || !custName) && updated.serviceId) {
+        const linkedSvc = await Service.findById(updated.serviceId).lean().catch(() => null);
+        if (linkedSvc) {
+          if (!engName) engName = linkedSvc.eng || linkedSvc.engineer || linkedSvc.engineerName || linkedSvc.fieldEngineer || '';
+          if (!custName) custName = linkedSvc.customer || linkedSvc.customerName || linkedSvc.custName || '';
+          if (!partNoVal) partNoVal = linkedSvc.partNo || linkedSvc.partNumber || linkedSvc.part_no || '';
+        }
+      }
+
       await CompletedFRN.create({
         serviceId:    updated.serviceId ? String(updated.serviceId) : '',
         entryDate:    updated.entryDate || '',
@@ -856,10 +869,11 @@ router.put('/:id', async (req, res) => {
         scEng:        updated.scEng || '',
         frnNo:        updated.frnNo || '',
         region:       updated.reg || updated.branch || '',
-        eng:          updated.eng || '',
-        customer:     updated.custName || updated.customer || '',
+        eng:          engName,
+        customer:     custName,
         model:        updated.model || '',
         unitStatus:   updated.unitSts || '',
+        partNo:       partNoVal,
         defMod:       updated.defMod || '',
         defGir:       updated.defGir || '',
         raEng:        updated.obRaEng || updated.estRaEng || updated.raEng || '',
