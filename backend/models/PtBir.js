@@ -56,6 +56,7 @@ const ptBirSchema = new mongoose.Schema(
     psVerificationDate: { type: String, default: '' },
     productTeamRemarks: { type: String, trim: true, default: '' },
     attachment: { type: String, default: '' },
+    attachmentName: { type: String, default: '' },
 
     cnrCirculation: { type: String, trim: true, default: '' },
     cnrRefNo: { type: String, trim: true, default: '' },

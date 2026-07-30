@@ -416,7 +416,7 @@ function closedBirViewSections(e){return[
   {title:'Product Team Section',color:'var(--purple)',fields:[
     ['PS Engineer',e.psEngineer],['Software Change Remarks',e.swChangeRemarks],['CNR/Technews Circulation',e.cnrCirculation],['CNR/Technews Reference No.',e.cnrRefNo],
     ['CNR/Technews Release Date',fmtDate(e.cnrReleaseDate)],['PS Team Verification Date',fmtDate(e.psVerificationDate)],['Product Team Remarks',e.productTeamRemarks],
-    ['Attachment', e.attachment ? `<a href="${e.attachment}" download="attachment" style="color:var(--cyan);text-decoration:underline;" onclick="event.stopPropagation()">Download Attachment</a>` : '-'],
+    ['Attachment', e.attachment ? `<a href="${e.attachment}" download="${esc(getAttachmentFileName(e))}" style="color:var(--cyan);text-decoration:underline;" onclick="event.stopPropagation()">Download ${esc(getAttachmentFileName(e))}</a>` : '-'],
     ['Approved Date',fmtDate(e.approvedDate)],
   ]},
 ];}
@@ -649,13 +649,47 @@ function viewRecord(id){
 
   document.getElementById('view-modal').classList.add('show');
 }
+function getAttachmentFileName(e) {
+  if (!e) return 'attachment';
+  const name = String(e.attachmentName || e.attachmentOriginalName || '').trim();
+  if (name) return name;
+
+  const url = String(e.attachment || '').trim();
+  if (!url) return 'attachment';
+
+  const nameMatch = url.match(/name=([^;]+)/i);
+  if (nameMatch && nameMatch[1]) {
+    try { return decodeURIComponent(nameMatch[1].trim()); } catch (_) { return nameMatch[1].trim(); }
+  }
+
+  if (!url.startsWith('data:')) {
+    const filenameFromUrl = url.split('/').pop().split('?')[0].trim();
+    if (filenameFromUrl && filenameFromUrl.includes('.')) {
+      return filenameFromUrl;
+    }
+  }
+
+  let ext = 'pdf';
+  if (url.includes('image/png')) ext = 'png';
+  else if (url.includes('image/jpeg') || url.includes('image/jpg')) ext = 'jpg';
+  else if (url.includes('word')) ext = 'docx';
+  else if (url.includes('excel') || url.includes('spreadsheet')) ext = 'xlsx';
+  else if (url.includes('text/plain')) ext = 'txt';
+
+  const ref = (e.birRef || e._id || 'BIR').replace(/[\/\\?%*:|"<>]/g, '_');
+  return `${ref}_Attachment.${ext}`;
+}
+
 function downloadAttachment(id) {
-  const e=allData.find(x=>x._id===id);
-  if(!e || !e.attachment) return;
+  const e = allData.find(x => (x._id || x.id) === id);
+  if (!e || !e.attachment) return;
+  const fileName = getAttachmentFileName(e);
   const a = document.createElement('a');
   a.href = e.attachment;
-  a.download = 'attachment';
+  a.download = fileName;
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
 }
 function closeView(){document.getElementById('view-modal').classList.remove('show');}
 document.getElementById('view-modal').addEventListener('click',e=>{if(e.target===document.getElementById('view-modal'))closeView();});

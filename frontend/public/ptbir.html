@@ -629,6 +629,38 @@ let sortCol = 'unitInwardDate';
 let sortDir = 'desc';
 let currentPage = 1;
 let currentPtAttachment = '';
+let currentPtAttachmentName = '';
+
+function getAttachmentFileName(e) {
+  if (!e) return 'attachment';
+  const name = String(e.attachmentName || e.attachmentOriginalName || '').trim();
+  if (name) return name;
+
+  const url = String(e.attachment || '').trim();
+  if (!url) return 'attachment';
+
+  const nameMatch = url.match(/name=([^;]+)/i);
+  if (nameMatch && nameMatch[1]) {
+    try { return decodeURIComponent(nameMatch[1].trim()); } catch (_) { return nameMatch[1].trim(); }
+  }
+
+  if (!url.startsWith('data:')) {
+    const filenameFromUrl = url.split('/').pop().split('?')[0].trim();
+    if (filenameFromUrl && filenameFromUrl.includes('.')) {
+      return filenameFromUrl;
+    }
+  }
+
+  let ext = 'pdf';
+  if (url.includes('image/png')) ext = 'png';
+  else if (url.includes('image/jpeg') || url.includes('image/jpg')) ext = 'jpg';
+  else if (url.includes('word')) ext = 'docx';
+  else if (url.includes('excel') || url.includes('spreadsheet')) ext = 'xlsx';
+  else if (url.includes('text/plain')) ext = 'txt';
+
+  const ref = (e.birRef || e._id || 'BIR').replace(/[\/\\?%*:|"<>]/g, '_');
+  return `${ref}_Attachment.${ext}`;
+}
 
 // -- HELPERS -------------------------------------------------------------------
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -652,6 +684,7 @@ function handleCnrCircChange(val) {
       fileInp.disabled = true;
       fileInp.value = '';
       currentPtAttachment = '';
+      currentPtAttachmentName = '';
       if(preview) preview.innerHTML = '';
     }
   }
@@ -659,16 +692,17 @@ function handleCnrCircChange(val) {
 function handleAttachment(e) {
   const file = e.target.files[0];
   const preview = document.getElementById('f-pt-attachment-preview');
-  if (!file) { currentPtAttachment = ''; if(preview) preview.innerHTML = ''; return; }
+  if (!file) { currentPtAttachment = ''; currentPtAttachmentName = ''; if(preview) preview.innerHTML = ''; return; }
   if (file.size > 5 * 1024 * 1024) {
     showToast('File size must be less than 5MB', 'err');
-    e.target.value = ''; currentPtAttachment = ''; if(preview) preview.innerHTML = '';
+    e.target.value = ''; currentPtAttachment = ''; currentPtAttachmentName = ''; if(preview) preview.innerHTML = '';
     return;
   }
+  currentPtAttachmentName = file.name;
   const reader = new FileReader();
   reader.onload = function(evt) {
     currentPtAttachment = evt.target.result;
-    if(preview) preview.innerHTML = `<span style="color:var(--green)">&#10004; File selected: ${file.name}</span>`;
+    if(preview) preview.innerHTML = `<span style="color:var(--green)">&#10004; File selected: ${esc(file.name)}</span>`;
   };
   reader.readAsDataURL(file);
 }
@@ -841,7 +875,7 @@ function viewBIR(id){
     ['Service Manual Update',e.serviceManualUpdate],['FQC Remarks',e.fqcRemarks],['Technical Remarks',e.techRemarks],
     ['SC Engineer',e.scEngineer],['PS Engineer',e.psEngineer],['TS Verification Date',fmtDate(e.tsVerificationDate)],
     ['PS Verification Date',fmtDate(e.psVerificationDate)],['Product Team Remarks',e.productTeamRemarks],
-    ['Attachment', e.attachment ? `<a href="${e.attachment}" download="attachment" style="color:var(--cyan);text-decoration:underline;" onclick="event.stopPropagation()">Download Attachment</a>` : '-'],
+    ['Attachment', e.attachment ? `<a href="${e.attachment}" download="${esc(getAttachmentFileName(e))}" style="color:var(--cyan);text-decoration:underline;" onclick="event.stopPropagation()">Download ${esc(getAttachmentFileName(e))}</a>` : '-'],
     ['CNR/Technews Circulation',e.cnrCirculation],['CNR Ref No.',e.cnrRefNo],
     ['CNR Release Date',fmtDate(e.cnrReleaseDate)],['Approved Date',fmtDate(e.approvedDate)],
   ];
@@ -967,11 +1001,12 @@ function editBIR(id){
   document.getElementById('bir-modal').classList.add('show');
   
   currentPtAttachment = e.attachment || '';
+  currentPtAttachmentName = e.attachmentName || '';
   const fileInp = document.getElementById('f-pt-attachment');
   const filePrev = document.getElementById('f-pt-attachment-preview');
   if(fileInp) fileInp.value = '';
   if(filePrev) {
-    if(e.attachment) filePrev.innerHTML = `<a href="${e.attachment}" download="attachment" style="color:var(--cyan);text-decoration:underline;">View Current Attachment</a>`;
+    if(e.attachment) filePrev.innerHTML = `<a href="${e.attachment}" download="${esc(getAttachmentFileName(e))}" style="color:var(--cyan);text-decoration:underline;">View Current Attachment (${esc(getAttachmentFileName(e))})</a>`;
     else filePrev.innerHTML = '';
   }
   
@@ -1010,6 +1045,7 @@ async function saveBIR(){
   try{
     if(editingId){
       // PT team saving = approval; always mark Approved to move to Closed BIR
+      const editingDoc = birData.find(x => x._id === editingId);
       const ptPayload = {
         tsVerificationDate: payload.tsVerificationDate || '',
         psEngineer:         payload.psEngineer         || '',
@@ -1020,6 +1056,7 @@ async function saveBIR(){
         psVerificationDate: payload.psVerificationDate || '',
         productTeamRemarks: payload.productTeamRemarks || '',
         attachment:         currentPtAttachment        || '',
+        attachmentName:     currentPtAttachmentName    || (editingDoc && editingDoc.attachmentName ? editingDoc.attachmentName : ''),
         approvedDate:       payload.approvedDate       || todayStr(),
         status:             'Approved',
         finalStatus:        'Approved',
