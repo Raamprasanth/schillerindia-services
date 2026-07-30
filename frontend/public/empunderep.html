@@ -232,10 +232,10 @@ body.panel-open .main{display:none;}
 /* Accent bar under panel topbar */
 .panel-accent{height:2px;background:linear-gradient(90deg,var(--accent),#0ea5e9,transparent);flex-shrink:0;}
 
-/* Record info strip - 4 - 2 */
+/* Record info strip */
 .rec-strip{
   display:grid;
-  grid-template-columns:repeat(4,1fr);
+  grid-template-columns:repeat(auto-fit, minmax(135px, 1fr));
   background:var(--surface3);
   border-bottom:1px solid var(--border);
   flex-shrink:0;
@@ -607,6 +607,7 @@ body.panel-open .main{display:none;}
     <div class="rec-cell"><div class="rec-lbl">DEF GIR No</div><div class="rec-val" id="m-defgir">-</div></div>
     <div class="rec-cell"><div class="rec-lbl">DEF Mod/Brd Name</div><div class="rec-val dark" id="m-defmod">-</div></div>
     <div class="rec-cell"><div class="rec-lbl">SC Engineer</div><div class="rec-val dark" id="m-sceng">-</div></div>
+    <div class="rec-cell"><div class="rec-lbl">Field Engineer</div><div class="rec-val dark" id="m-fieldeng">-</div></div>
     <div class="rec-cell"><div class="rec-lbl">Model</div><div class="rec-val" id="m-model">-</div></div>
     <div class="rec-cell"><div class="rec-lbl">FRN No</div><div class="rec-val" id="m-frn">-</div></div>
     <div class="rec-cell"><div class="rec-lbl">Unit Status</div><div class="rec-val dark" id="m-unitsts">-</div></div>
@@ -1185,6 +1186,7 @@ async function openUpdate(id){
   (document.getElementById('m-defgir')||{}).textContent = d.defGir||'-';
   (document.getElementById('m-defmod')||{}).textContent = d.defMod||'-';
   (document.getElementById('m-sceng')||{}).textContent = d.scEng||'-';
+  (document.getElementById('m-fieldeng')||{}).textContent = d.eng||d.engineer||d.engineerName||d.fieldEngineer||'-';
   (document.getElementById('m-model')||{}).textContent = d.model||'-';
   (document.getElementById('m-frn')||{}).textContent = String(d.frnNo||'-');
   (document.getElementById('m-unitsts')||{}).textContent = d.unitSts||'-';
