@@ -203,27 +203,27 @@ function ensureMongoConnection() {
 ensureMongoConnection();
 initEscalationScheduler();
 
-function waitForMongoConnection(timeoutMs = 10000) {
-  if (mongoose.connection.readyState === 1) return Promise.resolve(true);
+async function waitForMongoConnection(timeoutMs = 10000) {
+  if (mongoose.connection.readyState === 1) return true;
+
   ensureMongoConnection();
 
-  return new Promise((resolve) => {
-    const done = (ok) => {
-      clearTimeout(timer);
-      mongoose.connection.off('connected', onConnected);
-      mongoose.connection.off('error', onError);
-      mongoose.connection.off('disconnected', onDisconnected);
-      resolve(ok);
-    };
-    const onConnected = () => done(true);
-    const onError = () => done(false);
-    const onDisconnected = () => done(false);
-    const timer = setTimeout(() => done(mongoose.connection.readyState === 1), timeoutMs);
+  if (mongoConnectPromise) {
+    await Promise.race([
+      mongoConnectPromise,
+      new Promise(r => setTimeout(r, timeoutMs)),
+    ]);
+  }
 
-    mongoose.connection.once('connected', onConnected);
-    mongoose.connection.once('error', onError);
-    mongoose.connection.once('disconnected', onDisconnected);
-  });
+  if (mongoose.connection.readyState === 1) return true;
+
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    if (mongoose.connection.readyState === 1) return true;
+    await new Promise(r => setTimeout(r, 200));
+  }
+
+  return mongoose.connection.readyState === 1;
 }
 
 mongoose.connection.on('connected', () => {
