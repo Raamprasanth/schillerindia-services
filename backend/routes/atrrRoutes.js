@@ -1,13 +1,13 @@
-﻿// routes/rtfrn.js
-// ─────────────────────────────────────────────────────────
+// routes/rtfrn.js
+// ---------------------------------------------------------
 //  Re-repair List API Routes
 //
-//  GET    /api/Atrr                → all records (admin)
-//  GET    /api/Atrr/employee       → records for logged-in employee
-//  POST   /api/Atrr                → create new record
-//  PUT    /api/Atrr/:id            → update record
-//  DELETE /api/Atrr/:id            → delete record
-// ─────────────────────────────────────────────────────────
+//  GET    /api/Atrr                ? all records (admin)
+//  GET    /api/Atrr/employee       ? records for logged-in employee
+//  POST   /api/Atrr                ? create new record
+//  PUT    /api/Atrr/:id            ? update record
+//  DELETE /api/Atrr/:id            ? delete record
+// ---------------------------------------------------------
 
 const express  = require('express');
 const router   = express.Router();
@@ -104,9 +104,9 @@ async function attachActualDivisions(records) {
   return records;
 }
 
-// ══════════════════════════════════════════════════════════
-//  GET /api/Atrr  — all records (admin only)
-// ══════════════════════════════════════════════════════════
+// ----------------------------------------------------------
+//  GET /api/Atrr  � all records (admin only)
+// ----------------------------------------------------------
 router.get('/', protect, adminOnly, async (req, res) => {
   try {
     const { from, to, division, status, category, limit = 500 } = req.query;
@@ -130,10 +130,10 @@ router.get('/', protect, adminOnly, async (req, res) => {
   }
 });
 
-// ══════════════════════════════════════════════════════════
-//  GET /api/Atrr/employee  — records for logged-in user
+// ----------------------------------------------------------
+//  GET /api/Atrr/employee  � records for logged-in user
 //  (employees see only their own records; admins see all)
-// ══════════════════════════════════════════════════════════
+// ----------------------------------------------------------
 router.get('/employee', protect, async (req, res) => {
   try {
     const filter  = canViewAll(req.user) ? {} : { submittedBy: req.user.name || req.user.id };
@@ -159,9 +159,9 @@ router.get('/employee', protect, async (req, res) => {
   }
 });
 
-// ══════════════════════════════════════════════════════════
-//  GET /api/Atrr/:id  — single record
-// ══════════════════════════════════════════════════════════
+// ----------------------------------------------------------
+//  GET /api/Atrr/:id  � single record
+// ----------------------------------------------------------
 router.get('/:id', protect, async (req, res) => {
   try {
     const record = await Atrr.findById(req.params.id).lean();
@@ -173,9 +173,9 @@ router.get('/:id', protect, async (req, res) => {
   }
 });
 
-// ══════════════════════════════════════════════════════════
-//  POST /api/Atrr  — create new Re-repair List record
-// ══════════════════════════════════════════════════════════
+// ----------------------------------------------------------
+//  POST /api/Atrr  � create new Re-repair List record
+// ----------------------------------------------------------
 router.post('/', protect, async (req, res) => {
   try {
     const {
@@ -235,9 +235,9 @@ router.post('/', protect, async (req, res) => {
   }
 });
 
-// ══════════════════════════════════════════════════════════
-//  PUT /api/Atrr/:id  — update Re-repair List record
-// ══════════════════════════════════════════════════════════
+// ----------------------------------------------------------
+//  PUT /api/Atrr/:id  � update Re-repair List record
+// ----------------------------------------------------------
 router.put('/:id', protect, async (req, res) => {
   try {
     const existing = await Atrr.findById(req.params.id).lean();
@@ -349,11 +349,11 @@ router.put('/:id', protect, async (req, res) => {
           );
         }
       } catch (empSyncErr) {
-        console.error('Atrr → EmpFRN sync failed:', empSyncErr.message);
+        console.error('Atrr ? EmpFRN sync failed:', empSyncErr.message);
       }
     }
 
-    // ── On completion: copy to RTCRL, update source EmpFRN, delete Atrr ──
+    // -- On completion: copy to RTCRL, update source EmpFRN, delete Atrr --
     if (updated.sourceServiceId) {
       try {
         await Service.findByIdAndUpdate(
@@ -407,7 +407,7 @@ router.put('/:id', protect, async (req, res) => {
           sourceCollection: 'Atrr',
         });
       } catch (crlErr) {
-        console.error('Atrr → Rtcrr copy failed:', crlErr.message);
+        console.error('Atrr ? Rtcrr copy failed:', crlErr.message);
         throw crlErr;
       }
 
@@ -422,9 +422,9 @@ router.put('/:id', protect, async (req, res) => {
   }
 });
 
-// ══════════════════════════════════════════════════════════
-//  DELETE /api/Atrr/:id  — delete record (admin only)
-// ══════════════════════════════════════════════════════════
+// ----------------------------------------------------------
+//  DELETE /api/Atrr/:id  � delete record (admin only)
+// ----------------------------------------------------------
 router.delete('/:id', protect, async (req, res) => {
   try {
     const existing = await Atrr.findById(req.params.id).lean();

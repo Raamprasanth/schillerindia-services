@@ -1,28 +1,28 @@
-﻿// models/ATCRRModel.js
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Closed Repair List â€” Mongoose Schema
-// Stores ALL closed/completed repair records from PFRN Â· UR Â· OB
+// models/ATCRRModel.js
+// ─────────────────────────────────────────────────────────────────────────────
+// Closed Repair List — Mongoose Schema
+// Stores ALL closed/completed repair records from PFRN · UR · OB
 //
 // A record lands here in ONE of two ways:
 //   1. Directly created here (status = 'completed' on creation)
 //   2. Copied here when a RTUR/RTOB/RTFRN record is marked completed
-//      (your route logic handles the copy â€” see ATCRRRoutes.js)
+//      (your route logic handles the copy — see ATCRRRoutes.js)
 //
 // Fields map 1-to-1 with ATCRR.html:
-//   Table columns   â†’ entryDate, closedDate, division, scRefNo, defGirNo,
+//   Table columns   → entryDate, closedDate, division, scRefNo, defGirNo,
 //                      category, model, defBrdModName, noOfDays(virtual),
 //                      repairedBy, closedBy
-//   Detail modal    â†’ all repair + dispatch + remarks fields
-//   Filters         â†’ division, category, repairedBy, closedBy, date range
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//   Detail modal    → all repair + dispatch + remarks fields
+//   Filters         → division, category, repairedBy, closedBy, date range
+// ─────────────────────────────────────────────────────────────────────────────
 
 const mongoose = require('mongoose');
 
 const atcrrSchema = new mongoose.Schema(
   {
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-    // CORE IDENTIFICATION  (same across PFRN Â· UR Â· OB)
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    // ════════════════════════════════════════════════════════════════════════
+    // CORE IDENTIFICATION  (same across PFRN · UR · OB)
+    // ════════════════════════════════════════════════════════════════════════
 
     
     revertedDate: {
@@ -89,18 +89,18 @@ const atcrrSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // Always 'completed' for closed records â€” kept for consistency
+    // Always 'completed' for closed records — kept for consistency
     status: {
       type: String,
       default: 'completed',
       enum: ['completed'],
     },
 
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    // ════════════════════════════════════════════════════════════════════════
     // REPAIR DETAILS  (from Update Modal of RTUR / RTOB / RTFRN)
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    // ════════════════════════════════════════════════════════════════════════
 
-    // "Repaired By" â€” fl-repairedby filter in ATCRR.html
+    // "Repaired By" — fl-repairedby filter in ATCRR.html
     repairedBy: {
       type: String,
       trim: true,
@@ -150,9 +150,9 @@ const atcrrSchema = new mongoose.Schema(
       default: '',
     },
 
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-    // DISPATCH & RETURN  (detail modal â€” Dispatch & Return section)
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    // ════════════════════════════════════════════════════════════════════════
+    // DISPATCH & RETURN  (detail modal — Dispatch & Return section)
+    // ════════════════════════════════════════════════════════════════════════
 
     returnDate: {
       type: Date,
@@ -171,9 +171,9 @@ const atcrrSchema = new mongoose.Schema(
       default: '',
     },
 
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    // ════════════════════════════════════════════════════════════════════════
     // AUDIT
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    // ════════════════════════════════════════════════════════════════════════
 
     // Who originally submitted the repair record
     submittedBy: {
@@ -215,10 +215,10 @@ const atcrrSchema = new mongoose.Schema(
   }
 );
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// VIRTUAL â€” noOfDays
+// ─────────────────────────────────────────────────────────────────────────────
+// VIRTUAL — noOfDays
 // Days spent in re-repair, from revert to re-repair completion.
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 atcrrSchema.virtual('noOfDays').get(function () {
   const start = this.revertedDate || this.entryDate;
   if (!start) return 0;
@@ -230,24 +230,24 @@ atcrrSchema.virtual('noOfDays').get(function () {
 atcrrSchema.set('toJSON',   { virtuals: true });
 atcrrSchema.set('toObject', { virtuals: true });
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// INDEXES â€” match the filter combos used in ATCRR.html applyFilters()
-//   fl-from / fl-to     â†’ entryDate range
-//   fl-div              â†’ division
-//   category tab        â†’ category
-//   fl-repairedby       â†’ repairedBy
-//   fl-closedby         â†’ closedBy (text search)
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
+// INDEXES — match the filter combos used in ATCRR.html applyFilters()
+//   fl-from / fl-to     → entryDate range
+//   fl-div              → division
+//   category tab        → category
+//   fl-repairedby       → repairedBy
+//   fl-closedby         → closedBy (text search)
+// ─────────────────────────────────────────────────────────────────────────────
 atcrrSchema.index({ reRepDate: -1,   category: 1 });
 atcrrSchema.index({ entryDate:  -1,  division: 1 });
 atcrrSchema.index({ category:   1,   division: 1 });
 atcrrSchema.index({ scRefNo:    1,   defGirNo: 1 });
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// STATIC METHODS â€” consumed by GET /api/ATCRR/stats
+// ─────────────────────────────────────────────────────────────────────────────
+// STATIC METHODS — consumed by GET /api/ATCRR/stats
 // Maps to the 4 stat cards in ATCRR.html:
 //   Total | PFRN | UR | OB
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 atcrrSchema.statics.getTotalCount = function () {
   return this.countDocuments();
 };
@@ -282,7 +282,7 @@ atcrrSchema.statics.getAvgDays = async function () {
   return result.length ? Math.round(result[0].avg) : 0;
 };
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 const ATCRR = mongoose.models.Atcrr || mongoose.model('Atcrr', atcrrSchema);
 module.exports = ATCRR;
 

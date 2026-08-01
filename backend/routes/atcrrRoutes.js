@@ -1,20 +1,20 @@
-﻿// routes/rtcrlRoutes.js
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Closed Repair List â€” Express REST Routes
+// routes/rtcrlRoutes.js
+// ─────────────────────────────────────────────────────────────────────────────
+// Closed Repair List — Express REST Routes
 // Mounted at: /api/Atcrr  (add this line in server.js)
 //
 // Endpoints called by rtcrl.html:
-//   GET  /api/Atcrr              loadData()    â€” list with filters
-//   GET  /api/Atcrr/stats        updateStats() â€” hero-stat cards
-//   GET  /api/Atcrr/export/csv   exportCSV()   â€” CSV download
-//   GET  /api/Atcrr/:id          openDetail()  â€” single record detail view
-//   POST /api/Atcrr              create        â€” called when marking UR/OB/PFRN complete
+//   GET  /api/Atcrr              loadData()    — list with filters
+//   GET  /api/Atcrr/stats        updateStats() — hero-stat cards
+//   GET  /api/Atcrr/export/csv   exportCSV()   — CSV download
+//   GET  /api/Atcrr/:id          openDetail()  — single record detail view
+//   POST /api/Atcrr              create        — called when marking UR/OB/PFRN complete
 //
-// NOTE: No PUT or DELETE â€” closed records are read-only in rtcrl.html.
+// NOTE: No PUT or DELETE — closed records are read-only in rtcrl.html.
 //       Deletion (if needed by admin) can be added as a separate admin-only route.
 //
 // NOTE: Auth middleware is applied in server.js (not here), same as rturRoutes.js.
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 
 const express = require('express');
 const router  = express.Router();
@@ -23,9 +23,9 @@ const EmpFRN  = require('../models/EmpFRN');
 const Service = require('../models/Service');
 const { deleteMirroredRepairRows } = require('../utils/repairDeleteCleanup');
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // HELPER
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 const fail = (res, code, message, err = null) => {
   if (err) console.error('[Atcrr]', message, err.message);
   return res.status(code).json({ success: false, message, error: err?.message || null });
@@ -86,17 +86,17 @@ async function attachActualDivisions(records) {
   return records;
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // SHARED FILTER BUILDER
-// Converts rtcrl.html query params â†’ Mongoose filter object
+// Converts rtcrl.html query params → Mongoose filter object
 //
 // Params:
-//   from, to        â†’ entryDate range  (fl-from / fl-to)
-//   division        â†’ division         (fl-div)
-//   category        â†’ category tab     (PFRN | UR | OB)
-//   repairedBy      â†’ fl-repairedby
-//   closedBy        â†’ fl-closedby (partial text match)
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//   from, to        → entryDate range  (fl-from / fl-to)
+//   division        → division         (fl-div)
+//   category        → category tab     (PFRN | UR | OB)
+//   repairedBy      → fl-repairedby
+//   closedBy        → fl-closedby (partial text match)
+// ─────────────────────────────────────────────────────────────────────────────
 function buildFilter({ from, to, division, category, repairedBy, closedBy } = {}) {
   const filter = {};
 
@@ -120,11 +120,11 @@ function buildFilter({ from, to, division, category, repairedBy, closedBy } = {}
   return filter;
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // GET /api/Atcrr/stats
 // Returns the 4 hero-stat + stat-card numbers shown in rtcrl.html
 // MUST be declared before /:id so Express doesn't treat "stats" as an ObjectId
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 router.get('/stats', async (req, res) => {
   try {
     const [total, pfrn, ur, ob, avgDays] = await Promise.all([
@@ -140,11 +140,11 @@ router.get('/stats', async (req, res) => {
   }
 });
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // GET /api/Atcrr/export/csv
-// Triggered by rtcrl.html exportCSV() â†’ ðŸ“¤ Export button
+// Triggered by rtcrl.html exportCSV() → 📤 Export button
 // MUST be declared before /:id
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 router.get('/export/csv', async (req, res) => {
   try {
     const filter  = buildFilter(req.query);
@@ -184,12 +184,12 @@ router.get('/export/csv', async (req, res) => {
   }
 });
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // GET /api/Atcrr
-// Called by rtcrl.html loadData() on page load and every âŸ³ Refresh click.
+// Called by rtcrl.html loadData() on page load and every ⟳ Refresh click.
 // Returns: { success, total, page, pages, data: [...] }
 // rtcrl.html reads   data.data || data
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 router.get('/', async (req, res) => {
   try {
     const { page = 1, limit = 500 } = req.query;
@@ -217,10 +217,10 @@ router.get('/', async (req, res) => {
   }
 });
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // GET /api/Atcrr/:id
 // Called when rtcrl.html opens the detail modal for a record
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 router.get('/:id', async (req, res) => {
   try {
     const [record] = await attachActualDivisions(
@@ -233,7 +233,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // POST /api/Atcrr
 // Create a new closed record.
 //
@@ -247,7 +247,7 @@ router.get('/:id', async (req, res) => {
 //   closedDate, closedBy, repairedBy, compUsedToRepair, repBrdDate, dcNo,
 //   techRemarks, finalRemarks, addNotes, returnDate, returnDcNo, destination,
 //   submittedBy, submittedAt, sourceId, sourceCollection
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 router.post('/', async (req, res) => {
   try {
     const {
@@ -302,11 +302,11 @@ router.post('/', async (req, res) => {
   }
 });
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// DELETE /api/Atcrr/:id  (admin only â€” optional)
+// ─────────────────────────────────────────────────────────────────────────────
+// DELETE /api/Atcrr/:id  (admin only — optional)
 // Not exposed in rtcrl.html UI (read-only), but available for admin cleanup.
 // In server.js you can protect this with a role-check middleware if needed.
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 router.delete('/:id', async (req, res) => {
   try {
     const existing = await Atcrr.findById(req.params.id).lean();

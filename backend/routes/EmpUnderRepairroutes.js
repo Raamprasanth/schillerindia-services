@@ -111,6 +111,59 @@ function canonicalUrFollowupTypeWork(typeWork) {
 }
 
 // ══════════════════════════════════════════════════════════
+//  Enrich Under Repair docs with component data from RTUR/RTCRL/RTFRN
+// ══════════════════════════════════════════════════════════
+async function enrichUnderRepairComponents(docs) {
+  if (!Array.isArray(docs) || !docs.length) return [];
+  try {
+    const RTUR = require('../models/rturModel');
+    const RTCRL = require('../models/rtcrlModel');
+    const RTFRN = require('../models/RTFRN');
+
+    const defGirs = docs.map(d => String(d.defGir || d.defGirNo || (d.serviceId ? d.serviceId.defGir : '') || '').trim()).filter(g => g && g !== '-');
+    const scRnos = docs.map(d => String(d.scReNo || d.scRno || (d.serviceId ? d.serviceId.scReNo : '') || '').trim()).filter(s => s && s !== '-');
+
+    if (!defGirs.length && !scRnos.length) return docs;
+
+    const orCond = [];
+    if (defGirs.length) orCond.push({ defGirNo: { $in: defGirs } });
+    if (scRnos.length) orCond.push({ scRefNo: { $in: scRnos } });
+    const queryCond = orCond.length > 1 ? { $or: orCond } : orCond[0];
+
+    const [rturList, rtcrlList, rtfrnList] = await Promise.all([
+      RTUR.find(queryCond).select('sourceServiceId scRefNo defGirNo compUsedToRepair components techRemarks finalRemarks').lean().catch(() => []),
+      RTCRL.find(queryCond).select('scRefNo defGirNo compUsedToRepair components techRemarks finalRemarks').lean().catch(() => []),
+      RTFRN.find(queryCond).select('scRefNo defGirNo compUsedToRepair components techRemarks finalRemarks').lean().catch(() => []),
+    ]);
+
+    const byGir = new Map();
+    const byScNo = new Map();
+
+    [...(rturList||[]), ...(rtcrlList||[]), ...(rtfrnList||[])].forEach(r => {
+      const comp = r.compUsedToRepair || r.components || '';
+      if (!comp) return;
+      const g = String(r.defGirNo || r.defGir || '').trim();
+      if (g && g !== '-') byGir.set(g, comp);
+      const s = String(r.scRefNo || r.scRno || '').trim();
+      if (s && s !== '-') byScNo.set(s, comp);
+    });
+
+    return docs.map(d => {
+      const gir = String(d.defGir || d.defGirNo || (d.serviceId ? d.serviceId.defGir : '') || '').trim();
+      const scNo = String(d.scReNo || d.scRno || (d.serviceId ? d.serviceId.scReNo : '') || '').trim();
+
+      const matchedComp = (gir && gir !== '-') ? byGir.get(gir) : null;
+      const fallbackComp = matchedComp || (scNo ? byScNo.get(scNo) : '') || '';
+      const finalComp = d.components || (d.serviceId ? d.serviceId.components : '') || fallbackComp || '';
+      return { ...d, components: finalComp };
+    });
+  } catch (err) {
+    console.error('[enrichUnderRepairComponents]', err.message);
+    return docs;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
 //  GET /api/under-repair
 //  Admin → all records
 //  Employee → records where engineer or scEng matches their name
@@ -126,49 +179,6 @@ router.get('/', protect, async (req, res) => {
         { raEng:    { $regex: new RegExp(req.user.name, 'i') } },
       ]);
     }
-
-async function enrichUnderRepairComponents(docs) {
-  if (!Array.isArray(docs) || !docs.length) return [];
-  const RTUR = require('../models/rturModel');
-  const RTCRL = require('../models/rtcrlModel');
-  const RTFRN = require('../models/RTFRN');
-
-  const defGirs = docs.map(d => String(d.defGir || d.defGirNo || (d.serviceId ? d.serviceId.defGir : '') || '').trim()).filter(g => g && g !== '-');
-  const scRnos = docs.map(d => String(d.scReNo || d.scRno || (d.serviceId ? d.serviceId.scReNo : '') || '').trim()).filter(s => s && s !== '-');
-
-  if (!defGirs.length && !scRnos.length) return docs;
-
-  const [rturList, rtcrlList, rtfrnList] = await Promise.all([
-    RTUR.find({ $or: [{ defGirNo: { $in: defGirs } }, { scRefNo: { $in: scRnos } }] }).select('sourceServiceId scRefNo defGirNo compUsedToRepair components techRemarks finalRemarks').lean().catch(() => []),
-    RTCRL.find({ $or: [{ defGirNo: { $in: defGirs } }, { scRefNo: { $in: scRnos } }] }).select('scRefNo defGirNo compUsedToRepair components techRemarks finalRemarks').lean().catch(() => []),
-    RTFRN.find({ $or: [{ defGirNo: { $in: defGirs } }, { scRefNo: { $in: scRnos } }] }).select('scRefNo defGirNo compUsedToRepair components techRemarks finalRemarks').lean().catch(() => []),
-  ]);
-
-  const byGir = new Map();
-  const byScNo = new Map();
-
-  [...(rturList||[]), ...(rtcrlList||[]), ...(rtfrnList||[])].forEach(r => {
-    const comp = r.compUsedToRepair || r.components || '';
-    if (!comp) return;
-    const g = String(r.defGirNo || r.defGir || '').trim();
-    if (g && g !== '-') byGir.set(g, comp);
-    const s = String(r.scRefNo || r.scRno || '').trim();
-    if (s && s !== '-') byScNo.set(s, comp);
-  });
-
-  return docs.map(d => {
-    const gir = String(d.defGir || d.defGirNo || (d.serviceId ? d.serviceId.defGir : '') || '').trim();
-    const scNo = String(d.scReNo || d.scRno || (d.serviceId ? d.serviceId.scReNo : '') || '').trim();
-
-    const matchedComp = (gir && gir !== '-') ? byGir.get(gir) : null;
-    const fallbackComp = matchedComp || (scNo ? byScNo.get(scNo) : '') || '';
-    const finalComp = d.components || (d.serviceId ? d.serviceId.components : '') || fallbackComp || '';
-    return {
-      ...d,
-      components: finalComp,
-    };
-  });
-}
 
     const docs = await UnderRepair.find(filter).populate({ path: 'serviceId', select: 'branch dealer division divisionName partNo doi unitSl defPartSno bscon scReNo scEng frnNo frnDate serComm rcvdDate stkCust reg eng custName customer supplier model unitSts defMod defType typeAcc defGir repType repGirNo fieldRemarks commWarrDetails techRemarks components finalRemarks shipSc repBrd shipComm', populate: { path: 'division', select: 'name' } }).sort({ createdAt: -1 }).lean();
     const enrichedDocs = await enrichUnderRepairComponents(docs);
