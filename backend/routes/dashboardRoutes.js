@@ -109,18 +109,27 @@ router.get('/admin', protect, adminOnly, async (req, res) => {
       buildAdminDivisionBreakdown(),
     ]);
 
-    // Last 7 days service counts
-    const weeklyData = [];
+    // Last 7 days service counts (parallel execution for max speed)
+    const dayPromises = [];
     for (let i = 6; i >= 0; i--) {
       const from = new Date(); from.setDate(from.getDate() - i); from.setHours(0, 0, 0, 0);
       const to   = new Date(from); to.setHours(23, 59, 59, 999);
-      const count = await Service.countDocuments({ createdAt: { $gte: from, $lte: to } });
-      const externalCount = await SCCompletedFRN.countDocuments({ typeWork: { $regex: /external/i }, createdAt: { $gte: from, $lte: to } });
-      const supplierCount = await SCCompletedFRN.countDocuments({ typeWork: { $regex: /supplier/i }, createdAt: { $gte: from, $lte: to } });
-      const completedFrnCount = await CompletedFRN.countDocuments({ createdAt: { $gte: from, $lte: to } });
-      weeklyData.push({ date: from.toLocaleDateString('en-IN', { weekday: 'short' }), count, externalCount, supplierCount, completedFrnCount });
+      const dayLabel = from.toLocaleDateString('en-IN', { weekday: 'short' });
+      
+      dayPromises.push(
+        Promise.all([
+          Service.countDocuments({ createdAt: { $gte: from, $lte: to } }),
+          SCCompletedFRN.countDocuments({ typeWork: { $regex: /external/i }, createdAt: { $gte: from, $lte: to } }),
+          SCCompletedFRN.countDocuments({ typeWork: { $regex: /supplier/i }, createdAt: { $gte: from, $lte: to } }),
+          CompletedFRN.countDocuments({ createdAt: { $gte: from, $lte: to } }),
+        ]).then(([count, externalCount, supplierCount, completedFrnCount]) => ({
+          date: dayLabel, count, externalCount, supplierCount, completedFrnCount
+        }))
+      );
     }
+    const weeklyData = await Promise.all(dayPromises);
 
+    if (res.headersSent) return;
     res.json({
       stats: {
         totalEngineers, activeEngineers,
@@ -131,7 +140,10 @@ router.get('/admin', protect, adminOnly, async (req, res) => {
       weeklyData,
       divisionBreakdown,
     });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+  } catch (err) {
+    if (res.headersSent) return;
+    res.status(500).json({ message: err.message });
+  }
 });
 
 // ── GET /api/dashboard/employee ─────────────────
