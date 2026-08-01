@@ -130,308 +130,132 @@ router.post('/register', (req, res) => {
 });
 
 
-// ════════════════════════════════════════════════════════
-//  ADMIN LOGIN
-// ════════════════════════════════════════════════════════
-router.post('/admin/login', async (req, res) => {
+// ── Helper: find user across collections by name, email, or ID (case-insensitive) ──
+async function findUserByIdentifier(identifier, primaryRole) {
+  const cleanId = String(identifier || '').trim();
+  if (!cleanId) return null;
+  const escaped = cleanId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex   = new RegExp(`^${escaped}$`, 'i');
+
+  const configs = [
+    { model: Admin,       idField: 'adminId',      safeFn: safeAdmin,              type: 'admin' },
+    { model: Employee,    idField: 'employeeId',   safeFn: safeEmployee,           type: 'employee' },
+    { model: RepairTeam,  idField: 'repairTeamId', safeFn: safeRepair,             type: 'repair' },
+    { model: User,        idField: 'userId',       safeFn: safeServiceCoordinator, type: 'user' },
+  ];
+
+  // Sort configs so the model corresponding to primaryRole is queried first
+  configs.sort((a, b) => {
+    const isAPrimary = a.type === primaryRole || (['service_coordinator', 'fqc', 'pt'].includes(primaryRole) && a.type === 'user');
+    const isBPrimary = b.type === primaryRole || (['service_coordinator', 'fqc', 'pt'].includes(primaryRole) && b.type === 'user');
+    if (isAPrimary && !isBPrimary) return -1;
+    if (!isAPrimary && isBPrimary) return 1;
+    return 0;
+  });
+
+  for (const cfg of configs) {
+    const query = {
+      $or: [
+        { email: regex },
+        { [cfg.idField]: regex },
+        { name: regex },
+      ],
+    };
+    if (cfg.model === User && ['service_coordinator', 'fqc', 'pt'].includes(primaryRole)) {
+      query.role = primaryRole;
+    }
+
+    const doc = await cfg.model.findOne(query).select('+password');
+    if (doc) {
+      let safeFn = cfg.safeFn;
+      if (cfg.model === User) {
+        if (doc.role === 'fqc') safeFn = safeFqc;
+        else if (doc.role === 'pt') safeFn = safePt;
+        else safeFn = safeServiceCoordinator;
+      }
+      return { doc, safeFn };
+    }
+  }
+
+  // Fallback search across User collection without role restriction
+  const userFallback = await User.findOne({
+    $or: [{ email: regex }, { userId: regex }, { name: regex }],
+  }).select('+password');
+
+  if (userFallback) {
+    let safeFn = safeServiceCoordinator;
+    if (userFallback.role === 'fqc') safeFn = safeFqc;
+    else if (userFallback.role === 'pt') safeFn = safePt;
+    return { doc: userFallback, safeFn };
+  }
+
+  return null;
+}
+
+// ── Generic login handler ──
+async function handleLogin(req, res, targetRole) {
   const { identifier, password } = req.body;
 
   if (!identifier || !password) {
     return res.status(400).json({
       success: false,
-      message: 'Please provide your ID/email and password.',
+      message: 'Please provide your User Name, ID, or email and password.',
     });
   }
 
   try {
-    const admin = await Admin.findOne({
-      $or: [
-        { email:   identifier.toLowerCase().trim() },
-        { adminId: identifier.toUpperCase().trim() },
-      ],
-    }).select('+password');
+    const found = await findUserByIdentifier(identifier, targetRole);
 
-    if (!admin) {
+    if (!found) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials. You are not authorised to access this system.',
+        message: 'Invalid User Name, ID, or password.',
       });
     }
 
-    if (!admin.isActive) {
+    const { doc, safeFn } = found;
+
+    if (!doc.isActive) {
       return res.status(403).json({
         success: false,
         message: 'Your account has been deactivated. Contact the system administrator.',
       });
     }
 
-    const isMatch = await admin.matchPassword(password);
+    const isMatch = await doc.matchPassword(password);
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials. You are not authorised to access this system.',
+        message: 'Invalid User Name, ID, or password.',
       });
     }
 
-    admin.lastLogin = new Date();
-    await admin.save({ validateBeforeSave: false });
+    doc.lastLogin = new Date();
+    await doc.save({ validateBeforeSave: false });
 
     return res.status(200).json({
       success: true,
-      message: `Welcome back, ${admin.name}!`,
+      message: `Welcome back, ${doc.name}!`,
       data: {
-        ...safeAdmin(admin),
-        token: generateToken(admin._id, admin.role),
+        ...safeFn(doc),
+        token: generateToken(doc._id, doc.role),
       },
     });
 
   } catch (err) {
-    console.error('Admin login error:', err.message);
+    console.error(`Login error (${targetRole}):`, err.message);
     return res.status(500).json({ success: false, message: 'Server error. Try again later.' });
   }
-});
-
+}
 
 // ════════════════════════════════════════════════════════
-//  EMPLOYEE LOGIN
+//  LOGIN ROUTES
 // ════════════════════════════════════════════════════════
-router.post('/employee/login', async (req, res) => {
-  const { identifier, password } = req.body;
-
-  if (!identifier || !password) {
-    return res.status(400).json({
-      success: false,
-      message: 'Please provide your ID/email and password.',
-    });
-  }
-
-  try {
-    const employee = await Employee.findOne({
-      $or: [
-        { email:      identifier.toLowerCase().trim() },
-        { employeeId: identifier.toUpperCase().trim() },
-      ],
-    }).select('+password');
-
-    if (!employee) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials. You are not authorised to access this system.',
-      });
-    }
-
-    if (!employee.isActive) {
-      return res.status(403).json({
-        success: false,
-        message: 'Your account has been deactivated. Contact your manager.',
-      });
-    }
-
-    const isMatch = await employee.matchPassword(password);
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials. You are not authorised to access this system.',
-      });
-    }
-
-    employee.lastLogin = new Date();
-    await employee.save({ validateBeforeSave: false });
-
-    return res.status(200).json({
-      success: true,
-      message: `Welcome, ${employee.name}!`,
-      data: {
-        ...safeEmployee(employee),
-        token: generateToken(employee._id, employee.role),
-      },
-    });
-
-  } catch (err) {
-    console.error('Employee login error:', err.message);
-    return res.status(500).json({ success: false, message: 'Server error. Try again later.' });
-  }
-});
-
-
-// ════════════════════════════════════════════════════════
-//  REPAIR TEAM LOGIN
-// ════════════════════════════════════════════════════════
-router.post('/repair/login', async (req, res) => {
-  const { identifier, password } = req.body;
-
-  if (!identifier || !password) {
-    return res.status(400).json({
-      success: false,
-      message: 'Please provide your ID/email and password.',
-    });
-  }
-
-  try {
-    const member = await RepairTeam.findOne({
-      $or: [
-        { email:        identifier.toLowerCase().trim() },
-        { repairTeamId: identifier.toUpperCase().trim() },
-      ],
-    }).select('+password');
-
-    if (!member) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials. You are not authorised to access this system.',
-      });
-    }
-
-    if (!member.isActive) {
-      return res.status(403).json({
-        success: false,
-        message: 'Your account has been deactivated. Contact the system administrator.',
-      });
-    }
-
-    const isMatch = await member.matchPassword(password);
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials. You are not authorised to access this system.',
-      });
-    }
-
-    member.lastLogin = new Date();
-    await member.save({ validateBeforeSave: false });
-
-    return res.status(200).json({
-      success: true,
-      message: `Welcome, ${member.name}!`,
-      data: {
-        ...safeRepair(member),
-        token: generateToken(member._id, member.role),
-      },
-    });
-
-  } catch (err) {
-    console.error('Repair team login error:', err.message);
-    return res.status(500).json({ success: false, message: 'Server error. Try again later.' });
-  }
-});
-
-router.post('/service-coordinator/login', async (req, res) => {
-  const { identifier, password } = req.body;
-
-  if (!identifier || !password) {
-    return res.status(400).json({
-      success: false,
-      message: 'Please provide your ID/email and password.',
-    });
-  }
-
-  try {
-    const member = await User.findOne({
-      role: 'service_coordinator',
-      $or: [
-        { email:  identifier.toLowerCase().trim() },
-        { userId: identifier.toUpperCase().trim() },
-      ],
-    }).select('+password');
-
-    if (!member) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials. You are not authorised to access this system.',
-      });
-    }
-
-    if (!member.isActive) {
-      return res.status(403).json({
-        success: false,
-        message: 'Your account has been deactivated. Contact the system administrator.',
-      });
-    }
-
-    const isMatch = await member.matchPassword(password);
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials. You are not authorised to access this system.',
-      });
-    }
-
-    member.lastLogin = new Date();
-    await member.save({ validateBeforeSave: false });
-
-    return res.status(200).json({
-      success: true,
-      message: `Welcome, ${member.name}!`,
-      data: {
-        ...safeServiceCoordinator(member),
-        token: generateToken(member._id, member.role),
-      },
-    });
-
-  } catch (err) {
-    console.error('Service coordinator login error:', err.message);
-    return res.status(500).json({ success: false, message: 'Server error. Try again later.' });
-  }
-});
-
-router.post('/fqc/login', async (req, res) => {
-  const { identifier, password } = req.body;
-
-  if (!identifier || !password) {
-    return res.status(400).json({
-      success: false,
-      message: 'Please provide your ID/email and password.',
-    });
-  }
-
-  try {
-    const member = await User.findOne({
-      role: 'fqc',
-      $or: [
-        { email:  identifier.toLowerCase().trim() },
-        { userId: identifier.toUpperCase().trim() },
-      ],
-    }).select('+password');
-
-    if (!member) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials. You are not authorised to access this system.',
-      });
-    }
-
-    if (!member.isActive) {
-      return res.status(403).json({
-        success: false,
-        message: 'Your account has been deactivated. Contact the system administrator.',
-      });
-    }
-
-    const isMatch = await member.matchPassword(password);
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials. You are not authorised to access this system.',
-      });
-    }
-
-    member.lastLogin = new Date();
-    await member.save({ validateBeforeSave: false });
-
-    return res.status(200).json({
-      success: true,
-      message: `Welcome, ${member.name}!`,
-      data: {
-        ...safeFqc(member),
-        token: generateToken(member._id, member.role),
-      },
-    });
-
-  } catch (err) {
-    console.error('FQC login error:', err.message);
-    return res.status(500).json({ success: false, message: 'Server error. Try again later.' });
-  }
-});
+router.post('/admin/login',               (req, res) => handleLogin(req, res, 'admin'));
+router.post('/employee/login',            (req, res) => handleLogin(req, res, 'employee'));
+router.post('/repair/login',              (req, res) => handleLogin(req, res, 'repair'));
+router.post('/service-coordinator/login', (req, res) => handleLogin(req, res, 'service_coordinator'));
+router.post('/fqc/login',                  (req, res) => handleLogin(req, res, 'fqc'));
 
 
 // ════════════════════════════════════════════════════════
@@ -660,42 +484,7 @@ router.post('/service-coordinator/add', protect, adminOnly, async (req, res) => 
 // ════════════════════════════════════════════════════════
 //  PT LOGIN
 // ════════════════════════════════════════════════════════
-router.post('/pt/login', async (req, res) => {
-  const { identifier, password } = req.body;
-  if (!identifier || !password) {
-    return res.status(400).json({ success: false, message: 'Please provide your ID/email and password.' });
-  }
-  try {
-    const member = await User.findOne({
-      role: 'pt',
-      $or: [
-        { email:  identifier.toLowerCase().trim() },
-        { userId: identifier.toUpperCase().trim() },
-      ],
-    }).select('+password');
-
-    if (!member) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials. You are not authorised to access this system.' });
-    }
-    if (!member.isActive) {
-      return res.status(403).json({ success: false, message: 'Your account has been deactivated. Contact the system administrator.' });
-    }
-    const isMatch = await member.matchPassword(password);
-    if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials. You are not authorised to access this system.' });
-    }
-    member.lastLogin = new Date();
-    await member.save({ validateBeforeSave: false });
-    return res.status(200).json({
-      success: true,
-      message: `Welcome, ${member.name}!`,
-      data: { ...safePt(member), token: generateToken(member._id, member.role) },
-    });
-  } catch (err) {
-    console.error('PT login error:', err.message);
-    return res.status(500).json({ success: false, message: 'Server error. Try again later.' });
-  }
-});
+router.post('/pt/login', (req, res) => handleLogin(req, res, 'pt'));
 
 router.post('/fqc/add', protect, adminOnly, async (req, res) => {
   const { name, email, userId, password, division } = req.body;

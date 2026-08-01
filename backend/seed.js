@@ -36,12 +36,11 @@ mongoose.connect(process.env.MONGO_URI)
       process.exit(0);
     }
 
-    const hashed = await bcrypt.hash('admin123', 10);
     await Admin.create({
       name:     'Schiller Admin',
       email,
       adminId:  'ADMIN001',
-      password: hashed,
+      password: 'admin123',
       role:     'admin',
       isActive: true,
     });
