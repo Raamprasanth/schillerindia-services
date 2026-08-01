@@ -29,16 +29,7 @@ async function buildAdminDivisionBreakdown() {
       .lean(),
   ]);
 
-  const serviceIds = completedFrns
-    .map((doc) => String(doc.serviceId || '').trim())
-    .filter((id) => /^[a-f\d]{24}$/i.test(id));
-  const sourceServices = serviceIds.length
-    ? await Service.find({ _id: { $in: serviceIds } })
-      .select('division divisionName reg region')
-      .populate('division', 'name')
-      .lean()
-    : [];
-  const serviceById = new Map(sourceServices.map((doc) => [String(doc._id), doc]));
+  const serviceById = new Map(services.map((doc) => [String(doc._id), doc]));
   const rows = new Map();
 
   const ensure = (division) => {
