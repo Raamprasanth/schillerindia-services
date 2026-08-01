@@ -249,8 +249,10 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api', async (req, res, next) => {
+  if (res.headersSent) return;
   if (mongoose.connection.readyState !== 1) {
     const connected = await waitForMongoConnection();
+    if (res.headersSent) return;
     if (connected) return next();
 
     return res.status(503).json({

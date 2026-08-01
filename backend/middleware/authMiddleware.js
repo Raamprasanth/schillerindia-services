@@ -73,9 +73,11 @@ async function findUserById(id) {
 //  protect — verify JWT and attach user to req.user
 // ════════════════════════════════════════════════════════
 const protect = async (req, res, next) => {
+  if (res.headersSent) return;
   const auth = req.headers.authorization;
 
   if (!auth || !auth.startsWith('Bearer ')) {
+    if (res.headersSent) return;
     return res.status(401).json({ success: false, message: 'Not authorized — no token' });
   }
 
@@ -84,6 +86,8 @@ const protect = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user    = await findUserById(decoded.id);
+
+    if (res.headersSent) return;
 
     if (!user) {
       return res.status(401).json({ success: false, message: 'User not found — please log in again' });
@@ -101,6 +105,7 @@ const protect = async (req, res, next) => {
     req.user = activeDivisionResult.user;
     next();
   } catch (err) {
+    if (res.headersSent) return;
     if (err.name === 'TokenExpiredError')
       return res.status(401).json({ success: false, message: 'Session expired — please log in again' });
     if (err.name === 'JsonWebTokenError')
