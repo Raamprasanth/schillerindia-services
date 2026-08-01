@@ -233,7 +233,7 @@
 </div>
 
 <script>
-  const API = '/api';
+  const API = (window.location.protocol === 'file:') ? 'http://localhost:5000/api' : '/api';
   const ACTIVE_DIVISION_KEY = 'schiller_active_division';
   let currentRole = 'employee';
   let pendingLoginRedirect = '';
@@ -414,11 +414,11 @@
 
       const data = await res.json();
 
+      const serverMsg = (data && data.message) ? _esc(data.message) : 'Wrong User Name or password. Please try again.';
       if (!res.ok || !data.success) {
-        // ── WRONG credentials ──
         emailEl.classList.add('err');
         passEl.classList.add('err');
-        showMsg('✖ Wrong User Name or password. Please try again.', 'err');
+        showMsg('✖ ' + serverMsg, 'err');
         btn.disabled    = false;
         btn.textContent = btnLabel();
         return;
@@ -458,7 +458,7 @@
       }, 1000);
 
     } catch (e) {
-      showMsg('&#9888; Cannot reach server. Please check the deployed backend and try again.', 'err');
+      showMsg('&#9888; Cannot reach server: ' + _esc(e.message || e) + '. Make sure the backend server is running.', 'err');
       btn.disabled    = false;
       btn.textContent = btnLabel();
     }
