@@ -666,11 +666,11 @@ router.put('/:id/update', protect, async (req, res) => {
       doc.status = 'supplier_warranty';
     } else if (tw === 'scrapped') {
       doc.status = 'scrapped';
-    } else if (bodyStatus === 'under_repair') {
-      // ✅ FIXED: Prioritize 'under_repair' from Same GIR = No above 'completed'
+    } else if (tw === 'rep not required' || bodyStatus === 'under_repair') {
+      // Prioritize 'under_repair' and 'rep not required' to Under Repair
       doc.status = 'under_repair';
     } else if (
-      ['completed', 'unit returned', 'no fault', 'upgrade', 'rep not required'].includes(tw) ||
+      ['completed', 'unit returned', 'no fault', 'upgrade'].includes(tw) ||
       bodyStatus === 'completed'
     ) {
       doc.status = 'completed';

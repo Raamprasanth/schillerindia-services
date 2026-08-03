@@ -1293,7 +1293,7 @@ async function submitUpdate(){
       obComponents: document.getElementById('u-components').value,
       obTechRemarks:document.getElementById('u-upd-techremarks').value.trim(),
       finalRemarks: document.getElementById('u-finalremarks').value.trim(),
-      sameGir:      (isUpgrade || isRepNotRequired) ? 'yes' : sameGir,
+      sameGir:      isUpgrade ? 'yes' : isRepNotRequired ? 'no' : sameGir,
       // ── Audit ──
       estUpdatedBy: EMP_NAME,
       estUpdatedAt: new Date().toISOString(),

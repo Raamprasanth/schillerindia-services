@@ -836,7 +836,7 @@ router.put('/:id', async (req, res) => {
       });
     }
 
-    if ((sameGir === 'no' || normalizedTypeWork === 'replacement given') && updated.serviceId) {
+    if ((sameGir === 'no' || normalizedTypeWork === 'replacement given' || normalizedTypeWork === 'rep not required') && updated.serviceId) {
       const underRepairService = await Service.findByIdAndUpdate(
         updated.serviceId,
         {
@@ -867,7 +867,7 @@ router.put('/:id', async (req, res) => {
       return res.json({ success: true, underRepair: true, message: 'Moved to Under Repair.' });
     }
 
-    if (normalizedTypeWork === 'upgrade' || normalizedTypeWork === 'rep not required' || sameGir === 'yes') {
+    if (normalizedTypeWork === 'upgrade' || sameGir === 'yes') {
       const pdays = (record.rcvdDate || record.entryDate)
         ? Math.max(0, Math.floor((Date.now() - new Date(record.rcvdDate || record.entryDate).getTime()) / 86400000))
         : 0;

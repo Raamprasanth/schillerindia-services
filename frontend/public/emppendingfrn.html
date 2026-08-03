@@ -4062,8 +4062,8 @@
       document.getElementById('upd-defunitgir').classList.remove('err');
       const errMsg = 'Please fill all required fields: RA Engineer, Ship Date, Destination, Technical Remarks, Final Remarks, Type of Work.';
       if (err) { showUpdMsg(errMsg, 'err'); return; }
-      // Yes / REP not required / Upgrade ? Completed FRN | No ? Under Repair
-      const statusVal = (selectedTypeWork === 'Upgrade' || selectedTypeWork === 'REP not required' || sameGir === 'yes') ? 'completed' : 'under_repair';
+      // Upgrade / Same GIR Yes (excluding REP not required) ? Completed FRN | Otherwise ? Under Repair
+      const statusVal = (selectedTypeWork === 'Upgrade' || (sameGir === 'yes' && selectedTypeWork !== 'REP not required')) ? 'completed' : 'under_repair';
       const payload = { raEng: document.getElementById('upd-raeng').value, defUnitGir: repGirNo, repGirNo: repGirNo, finalRemarks: document.getElementById('upd-finalremarks').value.trim(), techRemarks: document.getElementById('upd-techremarks').value, components: document.getElementById('upd-components').value, revalue: document.getElementById('upd-revalue').value ? Number(document.getElementById('upd-revalue').value) : 0, shipSc: document.getElementById('upd-shipsc').value, destination: document.getElementById('upd-destination').value, typeWork: selectedTypeWork, status: statusVal, defPartSno: document.getElementById('upd-defpartsno').value.trim(), updatedAt: new Date().toISOString(), dispatchQueue: true };
       const btn = document.getElementById('upd-save-btn'); btn.disabled = true; btn.textContent = '\uD83D\uDCBE Saving...';
       try {
