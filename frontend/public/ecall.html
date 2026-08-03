@@ -595,6 +595,24 @@ async function loadEngineers() {
   }
 }
 
+function getLocalDateStr(offsetDays = 0) {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function applyCallDateLimits(existingDate = null) {
+  const el = document.getElementById('m-calldate');
+  if (!el) return;
+  const minStr = getLocalDateStr(-3);
+  const maxStr = getLocalDateStr(3);
+  el.min = (existingDate && existingDate < minStr) ? existingDate : minStr;
+  el.max = (existingDate && existingDate > maxStr) ? existingDate : maxStr;
+}
+
 /* -- INIT -- */
 (function init(){
   const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
@@ -606,7 +624,8 @@ async function loadEngineers() {
     (document.getElementById('top-sceng')||{}).textContent = u.name;
   }
   (document.getElementById('topbar-date')||{}).textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  document.getElementById('m-calldate').value = new Date().toISOString().split('T')[0];
+  applyCallDateLimits();
+  document.getElementById('m-calldate').value = getLocalDateStr(0);
   loadCurrentUser();
   loadBranchOptions();
   loadEngineers();
@@ -957,7 +976,8 @@ async function openAddModal(){
   (document.getElementById('top-sceng')||{}).textContent = nam || '-';
   document.getElementById('m-division').value = div;
   document.getElementById('top-division').textContent = div || '-';
-  document.getElementById('m-calldate').value = new Date().toISOString().split('T')[0];
+  applyCallDateLimits();
+  document.getElementById('m-calldate').value = getLocalDateStr(0);
   document.getElementById('m-engineer').value = '';
   const engList = document.getElementById('engineer-list');
   if(engList) engList.innerHTML = '';
@@ -982,7 +1002,9 @@ async function openEditModal(id){
   const recordRegion = getRecordRegion(recordBranch, d.region);
   renderRegionOptions(recordRegion);
   renderBranchOptions(recordBranch);
-  set('m-calldate', (d.callDate||'').slice(0,10));
+  const dStr = (d.callDate||'').slice(0,10);
+  applyCallDateLimits(dStr);
+  set('m-calldate', dStr);
   set('m-call', d.call);
   set('m-sceng', d.scEng);
   document.getElementById('top-sceng').textContent = d.scEng || '-';
@@ -1023,6 +1045,15 @@ async function saveEntry(){
   let err = false;
   required.forEach(id=>{const el=document.getElementById(id);if(!el)return;if(!el.value.trim()){el.classList.add('err');err=true;}else el.classList.remove('err');});
   if(err){ showModalErr('Please fill all required fields.'); return; }
+
+  const callDateVal = document.getElementById('m-calldate').value;
+  const minStr = getLocalDateStr(-3);
+  const maxStr = getLocalDateStr(3);
+  if(!editMode && (callDateVal < minStr || callDateVal > maxStr)){
+    showModalErr(`Call date must be within 3 days past or 3 days future (${minStr} to ${maxStr}).`);
+    document.getElementById('m-calldate').classList.add('err');
+    return;
+  }
 
   const u = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
   const payload = {
