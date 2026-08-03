@@ -2237,6 +2237,8 @@ function drawPerfPdfPage(doc, data, monthLabel, scopeLabel, entityLabel, scRemar
   const divName = String(entityLabel).toLowerCase();
   const isSpecialDiv = isDiv && /injector|vent\s*con|monitors?\s*con/i.test(divName);
   const hideFrnCon = isDiv;
+  const mStr = String((data && data.month) || monthLabel || '');
+  const isBuyBackMonth = mStr.includes('-04') || mStr.includes('-08') || mStr.includes('-12') || mStr.endsWith('-04') || mStr.endsWith('-08') || mStr.endsWith('-12') || /april|august|december/i.test(mStr);
 
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.5);
