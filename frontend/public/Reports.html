@@ -3335,27 +3335,26 @@ async function fetchRepairTeamData(usePeriod = false) {
         if (!val) continue;
         const t = val.total || 0;
         const rp = val.RP || 0;
-        const grandTotal = t + rp;
-        const p1 = grandTotal > 0 ? Math.round((val['< 1 day']/grandTotal)*100) : 0;
-        const p2 = grandTotal > 0 ? Math.round((val['1 to 3 days']/grandTotal)*100) : 0;
-        const p3 = grandTotal > 0 ? Math.round((val['> 3 days']/grandTotal)*100) : 0;
-        const prp = grandTotal > 0 ? Math.round((rp/grandTotal)*100) : 0;
+        const p1 = t > 0 ? Math.round(((val['< 1 day'] || 0) / t) * 100) : 0;
+        const p2 = t > 0 ? Math.round(((val['1 to 3 days'] || 0) / t) * 100) : 0;
+        const p3 = t > 0 ? Math.round(((val['> 3 days'] || 0) / t) * 100) : 0;
+        const prp = t > 0 ? Math.round((rp / t) * 100) : 0;
         
         reportHtml += `
             <tr>
               <td style="border:1px solid #cbd5e1; padding:10px; font-weight:600; color:#334155;">${m}</td>
-              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p1}% <br><span style="color:#64748b;font-size:11px;">(${val['< 1 day']})</span></td>
-              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p2}% <br><span style="color:#64748b;font-size:11px;">(${val['1 to 3 days']})</span></td>
-              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p3}% <br><span style="color:#64748b;font-size:11px;">(${val['> 3 days']})</span></td>
-              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${prp}% <br><span style="color:#64748b;font-size:11px;font-weight:normal;">(${rp})</span></td>
-              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${grandTotal}</td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p1}% <br><span style="color:#64748b;font-size:11px;">(${val['< 1 day'] || 0})</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p2}% <br><span style="color:#64748b;font-size:11px;">(${val['1 to 3 days'] || 0})</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p3}% <br><span style="color:#64748b;font-size:11px;">(${val['> 3 days'] || 0})</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#b91c1c;">${prp}% <br><span style="color:#64748b;font-size:11px;font-weight:normal;">(${rp})</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${t}</td>
             </tr>`;
             
         totalL1 += val['< 1 day'] || 0;
         total1to3 += val['1 to 3 days'] || 0;
         totalG3 += val['> 3 days'] || 0;
         totalRP += rp;
-        totalCount += grandTotal;
+        totalCount += t;
       }
       
       const avgP1 = totalCount > 0 ? Math.round((totalL1/totalCount)*100) : 0;

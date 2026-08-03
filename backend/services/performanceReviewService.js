@@ -1754,9 +1754,7 @@ async function getRepairTeamPerformanceData({ month }) {
 
   const processActive = (items, actKey, dateField) => {
     for (const item of items) {
-      const divName = item.division || 'Unknown';
-    if (!divName || String(divName).toUpperCase() === 'UNKNOWN') return;
-    const divData = ensureDivision(divName);
+      const divData = ensureDivision(item.division);
       // Increment RP for active items only if querying the current month
       if (isCurrentMonth) {
         divData[actKey].RP++;
@@ -1778,13 +1776,12 @@ async function getRepairTeamPerformanceData({ month }) {
     for (const item of items) {
       if (categoryCheck && item.category !== categoryCheck) continue;
       const dEntry = parseAnyDate(item[entryField], item.createdAt);
-      if (isDateInRange(dEntry, start, end)) {
-        const divName = item.division || 'Unknown';
-    if (!divName || String(divName).toUpperCase() === 'UNKNOWN') return;
-    const divData = ensureDivision(divName);
+      const dClosed = parseAnyDate(item[closedField], item.updatedAt || item.createdAt);
+      const dCheck = dClosed || dEntry;
+      if (isDateInRange(dCheck, start, end)) {
+        const divData = ensureDivision(item.division);
         divData[actKey].total++;
 
-        const dClosed = parseAnyDate(item[closedField]);
         const diff = getDiff(dEntry, dClosed || new Date());
         const cat = categorize(diff);
         if (cat) {
@@ -1800,13 +1797,12 @@ async function getRepairTeamPerformanceData({ month }) {
   
   for (const item of closedRrs) {
     const dEntry = parseAnyDate(item.revertedDate || item.entryDate, item.createdAt);
-    if (isDateInRange(dEntry, start, end)) {
-      const divName = item.division || 'Unknown';
-    if (!divName || String(divName).toUpperCase() === 'UNKNOWN') return;
-    const divData = ensureDivision(divName);
+    const dClosed = parseAnyDate(item.reRepDate || item.closedDate, item.updatedAt || item.createdAt);
+    const dCheck = dClosed || dEntry;
+    if (isDateInRange(dCheck, start, end)) {
+      const divData = ensureDivision(item.division);
       divData['Re-Repair'].total++;
 
-      const dClosed = parseAnyDate(item.reRepDate || item.closedDate);
       const diff = getDiff(dEntry, dClosed || new Date());
       const cat = categorize(diff);
       if (cat) {
