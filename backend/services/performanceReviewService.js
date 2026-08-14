@@ -1167,7 +1167,7 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     const completedMatch = firstByServiceId(completedDocs, record.serviceId);
     const endDate = firstDate(completedMatch?.closedAt, completedMatch?.createdAt);
     const days = diffDays(startDate, endDate);
-    return days !== null && days <= 5;
+    return days !== null && days <= 8;
   }).length;
 
   const estimationWithin = obPendingRows.filter((record) => {
@@ -1220,7 +1220,7 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     makeActivityRow('Pending frn', pendingFrnNonConRows.length, pendingFrnWithin, null, 3),
     makeActivityRow('pending FRN con', pendingFrnConRows.length, pendingFrnConWithin, null, 3),
     makeActivityRow('SO Pending', soPendingRows.length, soPendingWithin, null, 3),
-    makeActivityRow('Under Repair', underRepairRows.length, underRepairWithin, null, 5),
+    makeActivityRow('Under Repair', underRepairRows.length, underRepairWithin, null, 8),
     makeActivityRow('TO/SO', toSoRows.length, toSoWithin, null, 3),
     makeActivityRow('Non-Saleable', nonSaleableRows.length, nonSaleableWithin, null, 5),
     makeActivityRow('BIR list', birListRows.length, birWithin, null, 5),
@@ -1343,7 +1343,7 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
       const days = diffDays(startDate, endDate);
       return days !== null && days <= 3;
     }).length,
-    (rows) => countUnderRepairWithinTarget(rows, 5), // [3] Under Repair
+    (rows) => countUnderRepairWithinTarget(rows, 8), // [3] Under Repair
     (rows) => rows.filter((record) => {              // [4] TO/SO
       const startDate = firstDate(record.entryDate, record.raisedDate, record.createdAt);
       const ecrMatch = firstByMatcher(
