@@ -217,3 +217,27 @@ html[data-emp-theme="dark"] .emp-theme-toggle:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
+
+/* --- Repair Team Sidebar Badge Styling --- */
+.repair-badge, .crl-badge {
+  display: inline-block !important;
+  margin: 6px 12px 2px !important;
+  padding: 4px 12px !important;
+  border-radius: 20px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  background: rgba(4, 120, 87, 0.12) !important;
+  color: #047857 !important;
+  border: 1.5px solid rgba(4, 120, 87, 0.35) !important;
+}
+
+html[data-emp-theme="dark"] .repair-badge,
+html[data-emp-theme="dark"] .crl-badge,
+html[data-theme="dark"] .repair-badge,
+html[data-theme="dark"] .crl-badge {
+  background: rgba(5, 150, 105, 0.25) !important;
+  color: #6ee7b7 !important;
+  border-color: rgba(5, 150, 105, 0.5) !important;
+}
