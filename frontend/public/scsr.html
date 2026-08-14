@@ -403,6 +403,12 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     <div class="table-card">
       <div class="table-top">
         <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;">SC Service Request</div>
+        <div style="display:flex;gap:10px;">
+          <div class="srch-wrap">
+            <span class="srch-ico">&#128269;</span>
+            <input type="text" id="tbl-search" placeholder="Search entries..." oninput="renderTable()" onkeyup="renderTable()"/>
+          </div>
+        </div>
       </div>
       <div class="filter-strip">
         <label for="division-filter">Division</label>
@@ -557,8 +563,26 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   }
 
   function getVisibleRecords() {
-    if(!divisionFilter) return records;
-    return records.filter(r => String(r.division || '').trim() === divisionFilter);
+    const q = (document.getElementById('tbl-search')?.value || '').toLowerCase().trim();
+    return records.filter(r => {
+      const mDiv = !divisionFilter || String(r.division || '').trim() === divisionFilter;
+      const mQ = !q || (
+        (r.fromLocation || '').toLowerCase().includes(q) ||
+        (r.toLocation || '').toLowerCase().includes(q) ||
+        (r.remarks || '').toLowerCase().includes(q) ||
+        (r.toNo || '').toLowerCase().includes(q) ||
+        (r.division || '').toLowerCase().includes(q) ||
+        (r.partNo || '').toLowerCase().includes(q) ||
+        (r.description || '').toLowerCase().includes(q) ||
+        (r.girNo || '').toLowerCase().includes(q) ||
+        (Array.isArray(r.items) && r.items.some(item => 
+          (item.partNo || '').toLowerCase().includes(q) ||
+          (item.description || '').toLowerCase().includes(q) ||
+          (item.girNo || '').toLowerCase().includes(q)
+        ))
+      );
+      return mDiv && mQ;
+    });
   }
 
   function populateDivisionFilter() {

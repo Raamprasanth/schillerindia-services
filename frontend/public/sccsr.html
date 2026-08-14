@@ -391,6 +391,10 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       <div class="table-top">
         <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;">SC Closed Service Request</div>
         <div style="display:flex;gap:10px;">
+          <div class="srch-wrap">
+            <span class="srch-ico">&#128269;</span>
+            <input type="text" id="tbl-search" placeholder="Search entries..." oninput="applyFilters()" onkeyup="applyFilters()"/>
+          </div>
         </div>
       </div>
             <div class="filter-strip">
@@ -549,20 +553,37 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   }
 
   function clearFilters() {
-    ['fl-from','fl-to','fl-division'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+    ['fl-from','fl-to','fl-division','tbl-search'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
     applyFilters();
   }
 
   function applyFilters() {
+    const q = (document.getElementById('tbl-search')?.value || '').toLowerCase().trim();
     const from = document.getElementById('fl-from')?.value || '';
     const to = document.getElementById('fl-to')?.value || '';
     const division = document.getElementById('fl-division')?.value || '';
     
     filtered = records.filter(d => {
-      const entryDateStr = d.entryDate ? new Date(d.entryDate).toISOString().split('T')[0] : '';
-      return (!from || entryDateStr >= from) &&
-             (!to || entryDateStr <= to) &&
-             (!division || d.division === division);
+      const entryDateStr = d.entryDate ? new Date(d.entryDate).toISOString().split('T')[0] : (d.createdAt ? new Date(d.createdAt).toISOString().split('T')[0] : '');
+      const mDate = (!from || entryDateStr >= from) && (!to || entryDateStr <= to);
+      const mDiv = !division || d.division === division;
+      const mQ = !q || (
+        (d.fromLocation || '').toLowerCase().includes(q) ||
+        (d.toLocation || '').toLowerCase().includes(q) ||
+        (d.remarks || '').toLowerCase().includes(q) ||
+        (d.toNo || '').toLowerCase().includes(q) ||
+        (d.closedBy || '').toLowerCase().includes(q) ||
+        (d.division || '').toLowerCase().includes(q) ||
+        (d.partNo || '').toLowerCase().includes(q) ||
+        (d.description || '').toLowerCase().includes(q) ||
+        (d.girNo || '').toLowerCase().includes(q) ||
+        (Array.isArray(d.items) && d.items.some(item => 
+          (item.partNo || '').toLowerCase().includes(q) ||
+          (item.description || '').toLowerCase().includes(q) ||
+          (item.girNo || '').toLowerCase().includes(q)
+        ))
+      );
+      return mDate && mDiv && mQ;
     });
     renderTable();
   }
