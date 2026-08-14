@@ -1188,7 +1188,7 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     );
     const endDate = firstDate(ecrMatch?.executedDate, ecrMatch?.receivedDate, ecrMatch?.createdAt);
     const days = diffDays(startDate, endDate);
-    return days !== null && days <= 5;
+    return days !== null && days <= 3;
   }).length;
 
   const nonSaleableWithin = nonSaleableRows.filter((record) => {
@@ -1221,7 +1221,7 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     makeActivityRow('pending FRN con', pendingFrnConRows.length, pendingFrnConWithin, null, 3),
     makeActivityRow('SO Pending', soPendingRows.length, soPendingWithin, null, 3),
     makeActivityRow('Under Repair', underRepairRows.length, underRepairWithin, null, 5),
-    makeActivityRow('TO/SO', toSoRows.length, toSoWithin, null, 5),
+    makeActivityRow('TO/SO', toSoRows.length, toSoWithin, null, 3),
     makeActivityRow('Non-Saleable', nonSaleableRows.length, nonSaleableWithin, null, 5),
     makeActivityRow('BIR list', birListRows.length, birWithin, null, 5),
     makeActivityRow('Estimation', obPendingRows.length, estimationWithin, null, 3),
@@ -1354,7 +1354,7 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
       );
       const endDate = firstDate(ecrMatch?.executedDate, ecrMatch?.receivedDate, ecrMatch?.createdAt);
       const days = diffDays(startDate, endDate);
-      return days !== null && days <= 5;
+      return days !== null && days <= 3;
     }).length,
     (rows) => rows.filter((record) => {              // [5] Non-Saleable
       const startDate = firstDate(record.entryDate, record.fqcInDate, record.createdAt);
