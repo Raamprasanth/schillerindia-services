@@ -380,6 +380,7 @@ table.svc-table tbody tr:last-child td{border-bottom:none;}
           <table class="svc-table">
             <thead><tr>
               <th onclick="sortBy('status')">Status <span class="si">&#8693;</span></th>
+              <th onclick="sortBy('typeWork')">Type of Work <span class="si">&#8693;</span></th>
               <th onclick="sortBy('entryDate')">Entry Date <span class="si">&#8693;</span></th>
               <th onclick="sortBy('scReNo')">Sc ReNo <span class="si">&#8693;</span></th>
               <th onclick="sortBy('scEng')">Sc Eng <span class="si">&#8693;</span></th>
@@ -397,7 +398,7 @@ table.svc-table tbody tr:last-child td{border-bottom:none;}
               <th>Auto-sent to</th>
             </tr></thead>
             <tbody id="svc-tbody">
-              <tr><td colspan="18" style="text-align:center;padding:40px;color:var(--muted);">Loading</td></tr>
+              <tr><td colspan="19" style="text-align:center;padding:40px;color:var(--muted);">Loading</td></tr>
             </tbody>
           </table>
         </div>
@@ -1128,7 +1129,7 @@ function applyFilters() {
 }
 
 function sortBy(key) { if(sortKey===key) sortDir*=-1; else{sortKey=key;sortDir=1;} sortArr(); renderTable(); }
-function sortArr()   { filtered.sort((a,b)=>{const av=String(a[sortKey]||'').toLowerCase(),bv=String(b[sortKey]||'').toLowerCase();return av<bv?-sortDir:av>bv?sortDir:0;}); }
+function sortArr()   { filtered.sort((a,b)=>{const getVal=x=>sortKey==='typeWork'?(x.typeWork||x.typeOfWork||x.type||''):(x[sortKey]||''); const av=String(getVal(a)).toLowerCase(),bv=String(getVal(b)).toLowerCase();return av<bv?-sortDir:av>bv?sortDir:0;}); }
 
 function getRoutingTags(s) {
   const tags=[];
@@ -1148,12 +1149,13 @@ function renderTable() {
   (document.getElementById('count-chip')||{}).textContent = total+' entr'+(total===1?'y':'ies');
   const tbody = document.getElementById('svc-tbody');
   if(!slice.length){
-    tbody.innerHTML=`<tr><td colspan="18" style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">${services.length?'No records match the current filters.':'No service records yet. Click <strong>+ Add New Record</strong>.'}</td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="19" style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">${services.length?'No records match the current filters.':'No service records yet. Click <strong>+ Add New Record</strong>.'}</td></tr>`;
   } else {
     tbody.innerHTML=slice.map(s=>{
       const rowId=s._id||s.id; const owner=isOwner(s);
       const sc=s.status==='completed'?'sp-completed':s.status==='pending'?'sp-pending':s.status==='escalated'?'sp-escalated':'sp-inprogress';
       const lbl=s.status?s.status.replace('_',' ').replace(/\b\w/g,c=>c.toUpperCase()):'';
+      const tw=s.typeWork||s.typeOfWork||s.type||'-';
       const tags=getRoutingTags(s);
       let dynPdPfrn = 0, dynPdEstp = 0, dynPdUrp = 0;
       const baseDateStr = s.rcvdDate || s.entryDate || s.createdAt;
@@ -1170,6 +1172,7 @@ function renderTable() {
       const delBtn=owner?`<button class="btn-xs del" onclick="deleteService('${rowId}')">Delete</button>`:`<button class="btn-xs locked" disabled title="Only your records">Delete</button>`;
       return`<tr class="${owner?'my-row':''}">
         <td><span class="s-pill ${sc}">${lbl}</span></td>
+        <td style="font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;">${esc(tw)}</td>
         <td style="font-size:11px;color:var(--soft);">${fmt(s.entryDate)}</td>
         <td style="font-weight:600;color:var(--accent2);">${s.scReNo||''}</td>
         <td>${s.scEng||''}</td>
