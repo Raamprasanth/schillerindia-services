@@ -1134,7 +1134,7 @@ function sortArr()   { filtered.sort((a,b)=>{const getVal=x=>sortKey==='typeWork
 function getRoutingTags(s) {
   const tags=[];
   if(FRN_UNIT_STATUSES.includes(s.unitSts)&&(s.repType==='NA'||s.frnCreated))tags.push('<span class="frn-badge"> Pending FRN</span>');
-  if(EST_UNIT_STATUSES.includes(s.unitSts)&&s.repType!=='BS/SO'&&(s.repType==='NA'||s.estPending))tags.push('<span class="est-badge"> Estimation Pending</span>');
+  if(EST_UNIT_STATUSES.includes(s.unitSts)&&s.repType==='NA'&&s.estPending)tags.push('<span class="est-badge"> Estimation Pending</span>');
   if(EST_UNIT_STATUSES.includes(s.unitSts)&&(s.repType==='BS/SO'||s.soPending))tags.push('<span class="est-badge">SO Pending</span>');
   if(s.repType==='TO/ADV SO')tags.push('<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:700;background:rgba(4,120,87,0.1);color:var(--green);border:1px solid rgba(4,120,87,0.2);"> Under Repair</span>');
   return tags.join('');
@@ -1465,7 +1465,7 @@ async function submitForm() {
     obDetails:    obdVal, finalRemarks:'', components:'', commRemarks:'',
     pdPfrn:0, pdEstp:0, pdUrp:0, pdScc:0,
     submittedBy:  EMP_NAME, submittedAt:new Date().toISOString(),
-    frnCreated:   willCreateFRN, estPending:willCreateEST||willCreateSO, soPending:willCreateSO,
+    frnCreated:   willCreateFRN, estPending:willCreateEST, soPending:willCreateSO,
     estStatus:    willCreateSO?'SO Pending':(willCreateEST?'Estimation Pending':''),
   };
   const saveBtn=document.getElementById('save-btn');
