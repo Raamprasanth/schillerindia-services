@@ -30,17 +30,13 @@
   }
 
   function addButtons() {
-    const isScDashboard = /sc-dashboard\.html/i.test(window.location.pathname);
-    if (!isScDashboard) return;
-
-    const topbar = document.querySelector('.topbar');
+    const topbar = document.querySelector('.topbar') || document.querySelector('.top-bar');
     if (!topbar || topbar.querySelector('[data-dashboard-actions]')) return;
 
     const target =
       topbar.querySelector('.topbar-actions') ||
       topbar.querySelector('.topbar-right') ||
-      topbar.lastElementChild ||
-      topbar;
+      (topbar.children.length > 1 ? topbar.lastElementChild : topbar);
 
     const group = document.createElement('div');
     group.className = 'dashboard-topbar-actions';
