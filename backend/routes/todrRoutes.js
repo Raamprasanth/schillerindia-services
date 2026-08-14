@@ -158,14 +158,16 @@ router.post('/bulk-fulfill', protect, async (req, res) => {
 // PUT bulk update TODR entries (must be before /:id)
 router.put('/bulk-update', protect, async (req, res) => {
   try {
-    const { ids, toNo, toRaisedDate } = req.body;
+    const { ids, toNo, toRaisedDate, sparesReceivedDate } = req.body;
     if (!ids || !Array.isArray(ids)) {
       return res.status(400).json({ message: 'ids array is required' });
     }
-    const dateError = validateDatePayload({ toRaisedDate });
+    const dateError = validateDatePayload({ toRaisedDate, sparesReceivedDate });
     if (dateError) return res.status(400).json({ message: dateError });
 
-    const updateData = { toRaisedDate, updatedAt: new Date() };
+    const updateData = { updatedAt: new Date() };
+    if (toRaisedDate !== undefined) updateData.toRaisedDate = toRaisedDate;
+    if (sparesReceivedDate !== undefined) updateData.sparesReceivedDate = sparesReceivedDate;
     if (toNo !== undefined) updateData.toNo = toNo;
 
     const results = [];

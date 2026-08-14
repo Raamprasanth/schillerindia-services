@@ -385,7 +385,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       <!-- Bulk apply inputs -->
       <div style="display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:10px;padding:4px 10px;background:var(--surface3);">
         <span style="font-size:11px;font-weight:700;color:var(--soft);text-transform:uppercase;letter-spacing:0.04em;">Bulk Apply:</span>
-        <input type="date" id="bulk-to-date" class="f-inp" onchange="toggleFilledInput(this)" style="width:120px;padding:5px 8px;font-size:11px;height:28px;">
+        <input type="date" id="bulk-spares-date" class="f-inp" onchange="toggleFilledInput(this)" style="width:120px;padding:5px 8px;font-size:11px;height:28px;" title="Spares Received Date">
         <button class="btn btn-success btn-sm" onclick="applyBulkTo()" style="padding:4px 12px;font-size:11px;height:28px;box-shadow:none;">Apply</button>
         <button class="btn btn-primary btn-sm" onclick="applyBulkFulfill()" style="padding:4px 12px;font-size:11px;height:28px;box-shadow:none;">Fulfill</button>
       </div>
@@ -740,10 +740,9 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   document.getElementById('todr-modal').addEventListener('click', e => { if(e.target.id==='todr-modal') closeModal(); });
   document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
 
-  // Set min/max for bulk date input
-  const bulkDateInp = document.getElementById('bulk-to-date');
+  // Set max for bulk spares date input (no future dates)
+  const bulkDateInp = document.getElementById('bulk-spares-date');
   if (bulkDateInp) {
-    bulkDateInp.min = TODAY_ISO;
     bulkDateInp.max = TODAY_ISO;
   }
 
@@ -771,15 +770,15 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   }
 
   async function applyBulkTo() {
-    const toRaisedDate = document.getElementById('bulk-to-date').value;
+    const sparesReceivedDate = document.getElementById('bulk-spares-date').value;
 
-    if (!toRaisedDate) {
-      alert('Please enter TO Raised Date.');
+    if (!sparesReceivedDate) {
+      alert('Please enter Spares Rcd Date.');
       return;
     }
 
-    if (toRaisedDate !== TODAY_ISO) {
-      alert('TO Raised Date can be only today.');
+    if (sparesReceivedDate > TODAY_ISO) {
+      alert('Spares Rcd Date cannot be a future date.');
       return;
     }
 
@@ -795,7 +794,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       const res = await fetch('/api/todr/bulk-update', {
         method: 'PUT',
         headers: hdrs(),
-        body: JSON.stringify({ ids, toRaisedDate })
+        body: JSON.stringify({ ids, sparesReceivedDate })
       });
       const json = await res.json().catch(() => {});
       if (!res.ok) throw new Error(json?.message || 'Server error');
@@ -808,11 +807,11 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
       // Clear selection and inputs
       document.getElementById('select-all').checked = false;
-      const bulkToDate = document.getElementById('bulk-to-date');
-      if(bulkToDate) { bulkToDate.value = ''; toggleFilledInput(bulkToDate); }
+      const bulkSparesDate = document.getElementById('bulk-spares-date');
+      if(bulkSparesDate) { bulkSparesDate.value = ''; toggleFilledInput(bulkSparesDate); }
       
       renderTable();
-      showToast('Successfully applied TO details to selected entries.', 'ok');
+      showToast('Successfully applied Spares Received Date to selected entries.', 'ok');
     } catch(e) {
       alert('Bulk apply failed: ' + e.message);
     }
