@@ -1531,10 +1531,19 @@ async function getCommercialPerformanceData({ month }) {
     return date.getTime() >= s.getTime() && date.getTime() < e.getTime();
   };
 
-  const allServices = await Service.find().populate('division', 'name').lean();
+  const Scrap = require('../models/Scrap');
+
+  const [allServices, allTodrs, allScPrfObs, allScSrs, allCdrs, allScraps] = await Promise.all([
+    Service.find({}, 'entryDate frnDate division divisionName createdAt').populate('division', 'name').lean(),
+    Ctodr.find({}, 'toRaisedDate sparesReceivedDate entryDate sourceId division createdAt').lean(),
+    ScPrfOb.find({}, 'entryDate sparesReceivedAtSvc raisedDate division createdAt').lean(),
+    ScCsr.find({}, 'toRaisedDate sparesReceivedDate closeDate fromLocation toLocation division createdAt').lean(),
+    Cdr.find({}, 'entryDate sparesReceivedDate sourceId division').lean(),
+    Scrap.find({}, 'shipDateFromSc dcInvoiceDate awbDate division createdAt').lean(),
+  ]);
+
   const services = allServices.filter(s => isDateInRange(parseAnyDate(s.entryDate, s.createdAt), start, end));
   
-  const allTodrs = await Ctodr.find().lean();
   const todrs = allTodrs.filter(t => {
     const raisedDate = parseAnyDate(t.toRaisedDate);
     const receivedDate = parseAnyDate(t.sparesReceivedDate);
@@ -1542,10 +1551,8 @@ async function getCommercialPerformanceData({ month }) {
     return raisedDate && receivedDate && isDateInRange(entryDate, start, end);
   });
   
-  const allScPrfObs = await ScPrfOb.find().lean();
   const scPrfObs = allScPrfObs.filter(p => isDateInRange(parseAnyDate(p.entryDate, p.createdAt), start, end));
   
-  const allScSrs = await ScCsr.find().lean();
   const scSrs = allScSrs.filter(s => {
     const raisedDate = parseAnyDate(s.toRaisedDate);
     const receivedDate = parseAnyDate(s.sparesReceivedDate);
@@ -1553,12 +1560,13 @@ async function getCommercialPerformanceData({ month }) {
     return raisedDate && receivedDate && isDateInRange(closedDate, start, end);
   });
 
-  const allCdrs = await Cdr.find().lean();
   const cdrs = allCdrs.filter(c => {
     const reqDate = parseAnyDate(c.entryDate);
     const recDate = parseAnyDate(c.sparesReceivedDate);
     return reqDate && recDate && isDateInRange(reqDate, start, end);
   });
+
+  const scraps = allScraps.filter(s => isDateInRange(parseAnyDate(s.shipDateFromSc), start, end));
 
   const divisionsMap = {};
   const ensureDivision = (div) => {
@@ -1585,9 +1593,9 @@ async function getCommercialPerformanceData({ month }) {
   const toSourceMap = new Map();
   if (toSourceIds.length) {
     const [empFrns, servicesRef, estimations] = await Promise.all([
-      EmpFRN.find({ _id: { $in: toSourceIds } }).populate('division', 'name').lean(),
-      Service.find({ _id: { $in: toSourceIds } }).populate('division', 'name').lean(),
-      EstimationPending.find({ _id: { $in: toSourceIds } }).populate('division', 'name').lean(),
+      EmpFRN.find({ _id: { $in: toSourceIds } }, 'division divisionName').populate('division', 'name').lean(),
+      Service.find({ _id: { $in: toSourceIds } }, 'division divisionName').populate('division', 'name').lean(),
+      EstimationPending.find({ _id: { $in: toSourceIds } }, 'division divisionName').populate('division', 'name').lean(),
     ]);
     [...empFrns, ...servicesRef, ...estimations].forEach(doc => toSourceMap.set(String(doc._id), doc));
   }
@@ -1604,8 +1612,8 @@ async function getCommercialPerformanceData({ month }) {
     const cat = categorize(diff);
     if (cat) {
       const divName = s.division?.name || s.divisionName || s.division || 'Unknown';
-    if (!divName || String(divName).toUpperCase() === 'UNKNOWN') return;
-    const divData = ensureDivision(divName);
+      if (!divName || String(divName).toUpperCase() === 'UNKNOWN') continue;
+      const divData = ensureDivision(divName);
       divData['FRN ( Inward - SVC )'][cat]++;
       divData['FRN ( Inward - SVC )'].total++;
     }
@@ -1666,10 +1674,6 @@ async function getCommercialPerformanceData({ month }) {
     }
   }
 
-  const Scrap = require('../models/Scrap');
-  const allScraps = await Scrap.find().lean();
-  const scraps = allScraps.filter(s => isDateInRange(parseAnyDate(s.shipDateFromSc), start, end));
-  
   for (const s of scraps) {
     const diff1 = getDiff(s.dcInvoiceDate, s.shipDateFromSc);
     const cat1 = categorize(diff1);
