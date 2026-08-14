@@ -180,7 +180,7 @@ router.get('/', protect, async (req, res) => {
       ]);
     }
 
-    const docs = await UnderRepair.find(filter).populate({ path: 'serviceId', select: 'branch dealer division divisionName partNo doi unitSl defPartSno bscon scReNo scEng frnNo frnDate serComm rcvdDate stkCust reg eng custName customer supplier model unitSts defMod defType typeAcc defGir repType repGirNo fieldRemarks commWarrDetails techRemarks components finalRemarks shipSc repBrd shipComm', populate: { path: 'division', select: 'name' } }).sort({ createdAt: -1 }).lean();
+    const docs = await UnderRepair.find(filter).populate({ path: 'serviceId', select: 'branch dealer division divisionName partNo doi unitSl defPartSno bscon scReNo scEng frnNo frnDate serComm rcvdDate stkCust reg eng custName customer supplier model unitSts defMod defType typeAcc defGir repType repGirNo fieldRemarks commWarrDetails techRemarks components finalRemarks shipSc repBrd shipComm toEscalationQueuedAt toEscalationQueuedBy srEscalationQueuedAt srEscalationQueuedBy escalationQueuedAt', populate: { path: 'division', select: 'name' } }).sort({ createdAt: -1 }).lean();
     const enrichedDocs = await enrichUnderRepairComponents(docs);
     res.json(enrichedDocs.map(d => ({
       ...d,
@@ -216,6 +216,10 @@ router.get('/', protect, async (req, res) => {
       techRemarks: d.techRemarks || (d.serviceId ? d.serviceId.techRemarks : '') || '',
       division: d.division || (d.serviceId && d.serviceId.division ? d.serviceId.division._id : null),
       divisionName: d.divisionName || (d.serviceId && d.serviceId.division ? d.serviceId.division.name : '') || (d.serviceId ? d.serviceId.divisionName : ''),
+      toEscalationQueuedAt: d.toEscalationQueuedAt || (d.serviceId ? d.serviceId.toEscalationQueuedAt : null) || null,
+      toEscalationQueuedBy: d.toEscalationQueuedBy || (d.serviceId ? d.serviceId.toEscalationQueuedBy : '') || '',
+      srEscalationQueuedAt: d.srEscalationQueuedAt || (d.serviceId ? d.serviceId.srEscalationQueuedAt : null) || null,
+      srEscalationQueuedBy: d.srEscalationQueuedBy || (d.serviceId ? d.serviceId.srEscalationQueuedBy : '') || '',
       pdays: Math.floor((Date.now() - new Date(d.rcvdDate || d.entryDate || d.createdAt).getTime()) / 86400000),
     })));
   } catch (e) {
@@ -681,27 +685,43 @@ router.post('/:id/send-rtur', protect, async (req, res) => {
 
 router.post('/:id/to', protect, async (req, res) => {
   try {
-    const service = await Service.findById(req.params.id).populate('division');
-    if (!service) return res.status(404).json({ message: 'Service record not found.' });
+    let service = await Service.findById(req.params.id).populate('division');
+    let urDoc = null;
+    if (!service) {
+      urDoc = await UnderRepair.findById(req.params.id);
+      if (urDoc && urDoc.serviceId) {
+        service = await Service.findById(urDoc.serviceId).populate('division');
+      }
+    } else {
+      urDoc = await UnderRepair.findOne({ serviceId: service._id });
+    }
 
+    if (!service && !urDoc) {
+      return res.status(404).json({ message: 'Service or Under Repair record not found.' });
+    }
 
     const { hasDivisionAccessToService } = require('../utils/visibility');
     const role = String(req.user.role || '').toLowerCase();
     const isAdmin = role === 'admin' || role === 'superadmin';
-    const hasDivisionAccess = await hasDivisionAccessToService(req.user, service._id);
     const userName = String(req.user.name || '').trim().toLowerCase();
-    const ownsRecord = userName && [service.eng, service.scEng, service.raEng, service.submittedBy, service.createdBy]
-      .some(v => String(v || '').trim().toLowerCase() === userName);
+
+    const targetObj = service || urDoc;
+    const hasDivisionAccess = service ? await hasDivisionAccessToService(req.user, service._id) : true;
+    const ownsRecord = userName && [
+      targetObj.eng, targetObj.engineer, targetObj.scEng, targetObj.raEng, targetObj.submittedBy, targetObj.createdBy
+    ].some(v => String(v || '').trim().toLowerCase() === userName);
+
     if (!isAdmin && !hasDivisionAccess && !ownsRecord) {
       return res.status(403).json({ message: 'Access denied.' });
     }
 
-    if (service.toEscalationQueuedAt) {
+    const queuedAt = (service && service.toEscalationQueuedAt) || (urDoc && urDoc.toEscalationQueuedAt);
+    if (queuedAt) {
       return res.json({
         success: true,
         alreadyQueued: true,
-        toEscalationQueuedAt: service.toEscalationQueuedAt,
-        toEscalationQueuedBy: service.toEscalationQueuedBy || '',
+        toEscalationQueuedAt: queuedAt,
+        toEscalationQueuedBy: (service && service.toEscalationQueuedBy) || (urDoc && urDoc.toEscalationQueuedBy) || '',
       });
     }
 
@@ -716,23 +736,35 @@ router.post('/:id/to', protect, async (req, res) => {
       return res.status(400).json({ message: 'Add at least one TO row with Part No and Quantity.' });
     }
 
-    service.toEscalationQueuedAt = new Date();
-    service.toEscalationQueuedBy = req.user?.name || '';
-    await service.save({ validateBeforeSave: false });
+    const now = new Date();
+    if (service) {
+      service.toEscalationQueuedAt = now;
+      service.toEscalationQueuedBy = req.user?.name || '';
+      await service.save({ validateBeforeSave: false });
+    }
+    if (urDoc) {
+      urDoc.toEscalationQueuedAt = now;
+      urDoc.toEscalationQueuedBy = req.user?.name || '';
+      await urDoc.save({ validateBeforeSave: false });
+    }
+
+    const sourceObj = service
+      ? { ...service.toObject(), divisionName: service.divisionName || (service.division ? service.division.name : '') }
+      : urDoc.toObject();
 
     await enqueueEscalationSnapshot(
       'to_ur',
-      service._id,
+      service ? service._id : urDoc._id,
       req.user?.name || '',
-      buildToEscalationRow({ ...service.toObject(), divisionName: service.divisionName || (service.division ? service.division.name : '') }, cleanItems)
+      buildToEscalationRow(sourceObj, cleanItems)
     );
-    await mirrorUrToTodr(service, 'TO', cleanItems, req.user?.name || '');
+    await mirrorUrToTodr(service || urDoc, 'TO', cleanItems, req.user?.name || '');
 
     return res.json({
       success: true,
       message: 'Queued for TO escalation.',
-      toEscalationQueuedAt: service.toEscalationQueuedAt,
-      toEscalationQueuedBy: service.toEscalationQueuedBy,
+      toEscalationQueuedAt: now,
+      toEscalationQueuedBy: req.user?.name || '',
     });
   } catch (e) {
     return res.status(500).json({ message: e.message });
