@@ -2279,31 +2279,31 @@ function drawPerfPdfPage(doc, data, monthLabel, scopeLabel, entityLabel, scRemar
     if (v == null) return '-';
     return Math.round((typeof v === 'number' && v <= 1) ? v * 100 : v) + '%';
   };
-  const lim = v => v != null ? `<= ${v}d` : '-';
+  const lim = v => v != null ? `<= ${v} days` : '-';
 
-  const makeRowData = (label, r, hasLimit) => [
+  const makeRowData = (label, r) => [
     label,
     r.total ?? '-',
     r.withinTarget ?? '-',
     pct(r.withinPercent ?? r.completionPercent),
     pct(r.prevRate),
-    hasLimit ? lim(r.targetDays) : '-'
+    lim(r.targetDays)
   ];
 
-  let body = [ makeRowData('Pending FRN', rFrn, false) ];
-  if (!hideFrnCon) body.push(makeRowData('Pending FRN Con', rFrnCon, true));
+  let body = [ makeRowData('Pending FRN', rFrn) ];
+  if (!hideFrnCon) body.push(makeRowData('Pending FRN Con', rFrnCon));
   body.push(
-    makeRowData('SO Pending', rSo, false),
-    makeRowData('Under Repair', rRepair, true),
-    makeRowData('TO/SO', rTo, false)
+    makeRowData('SO Pending', rSo),
+    makeRowData('Under Repair', rRepair),
+    makeRowData('TO/SO', rTo)
   );
   if (!isSpecialDiv) {
     body.push(
-      makeRowData('Non-Saleable', rNonSaleable, true),
-      makeRowData('BIR List', rBir, false)
+      makeRowData('Non-Saleable', rNonSaleable),
+      makeRowData('BIR List', rBir)
     );
   }
-  body.push(makeRowData('Estimation', rEst, true));
+  body.push(makeRowData('Estimation', rEst));
 
   doc.autoTable({
     startY: 34,
