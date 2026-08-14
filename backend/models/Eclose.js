@@ -15,7 +15,7 @@ const ecloseSchema = new mongoose.Schema(
     typeCall: {
       type: String,
       enum: [
-        'Application', 'Software', 'Technical', 'Demo', 'CRM', 'Training', 'Others',
+        'Application', 'Software', 'Technical', 'Demo', 'CRM', 'Training', 'Others', 'Other',
         'Inbound', 'Outbound', 'Service', 'Complaint', 'Follow-Up', 'Enquiry', ''
       ],
       default: '',

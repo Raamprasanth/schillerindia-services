@@ -32,8 +32,8 @@ const ecallSchema = new mongoose.Schema(
     callType: {
       type: String,
       enum: [
-        'Application', 'Software', 'Technical', 'Demo', 'CRM', 'Training', 'Others',
-        'Inbound', 'Outbound', 'Service', 'Complaint', 'Follow-Up', 'Enquiry',
+        'Application', 'Software', 'Technical', 'Demo', 'CRM', 'Training', 'Others', 'Other',
+        'Inbound', 'Outbound', 'Service', 'Complaint', 'Follow-Up', 'Enquiry', ''
       ],
       required: true,
     },

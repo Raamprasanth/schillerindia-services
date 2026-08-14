@@ -14,7 +14,7 @@ const aCloseSchema = new mongoose.Schema(
     },
     typeCall: {
       type: String,
-      enum: ['Inbound', 'Outbound', 'Service', 'Complaint', 'Follow-Up', 'Enquiry', ''],
+      enum: ['Inbound', 'Outbound', 'Service', 'Complaint', 'Follow-Up', 'Enquiry', 'Application', 'Software', 'Technical', 'Demo', 'CRM', 'Training', 'Others', 'Other', ''],
       default: '',
     },
 

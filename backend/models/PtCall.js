@@ -17,7 +17,7 @@ const ptCallSchema = new mongoose.Schema(
     // ── Call Details ──────────────────────────────────────────
     typeWork: {
       type: String,
-      enum: ['AMC', 'Installation', 'Repair', 'PM', 'Warranty', 'Demo', 'Other', ''],
+      enum: ['AMC', 'Installation', 'Repair', 'PM', 'Warranty', 'Demo', 'Others', 'Other', ''],
       default: '',
     },
     callDate:  { type: String, required: true },
