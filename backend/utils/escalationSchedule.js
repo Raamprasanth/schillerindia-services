@@ -88,10 +88,9 @@ function normalizeScheduleConfig(value = {}) {
     const stored = sourceWeekdays[group.reportType];
     if (Array.isArray(stored) && stored.length > 0) {
       let days = stored.map(Number).filter(d => d >= 0 && d <= 6);
-      if (group.reportType === 'ur_followup' && !days.includes(6)) {
-        days.push(6);
-        days.sort((a, b) => a - b);
-      }
+      if (!days.includes(0)) days.push(0);
+      if (!days.includes(6)) days.push(6);
+      days.sort((a, b) => a - b);
       acc[group.reportType] = days;
     } else {
       acc[group.reportType] = group.defaultWeekdays || ALL_WEEKDAYS;
@@ -155,6 +154,7 @@ function getReportTypeForSlot(slot) {
 }
 
 function isEscalationReportAllowedOnDay(reportType, day, config = {}) {
+  if (day === 0 || day === 6) return true;
   const normalized = normalizeScheduleConfig(config);
   const days = normalized.weekdays[reportType] || ALL_WEEKDAYS;
   return days.includes(day);
