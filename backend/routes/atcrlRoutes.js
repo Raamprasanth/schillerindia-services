@@ -118,24 +118,29 @@ router.get('/export/csv', async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/', async (req, res) => {
   try {
-    const { page = 1, limit = 500 } = req.query;
+    const { page, limit } = req.query;
     const filter = buildFilter(req.query);
 
-    const skip  = (Number(page) - 1) * Number(limit);
     const total = await ATCRL.countDocuments(filter);
+    let query = ATCRL.find(filter).sort({ closedDate: -1 });
 
-    const records = await ATCRL
-      .find(filter)
-      .sort({ closedDate: -1 })
-      .skip(skip)
-      .limit(Number(limit));
+    const hasLimit = limit && limit !== 'all' && Number(limit) > 0;
+    const parsedLimit = hasLimit ? Number(limit) : 0;
+    const parsedPage = Number(page || 1);
+
+    if (hasLimit) {
+      const skip = (parsedPage - 1) * parsedLimit;
+      query = query.skip(skip).limit(parsedLimit);
+    }
+
+    const records = await query.lean();
 
     return res.json({
       success: true,
       total,
-      page:  Number(page),
-      pages: Math.ceil(total / Number(limit)),
-      data:  records,
+      page: parsedPage,
+      pages: hasLimit ? Math.ceil(total / parsedLimit) : 1,
+      data: records,
     });
   } catch (err) {
     return fail(res, 500, 'Failed to fetch admin closed repair records', err);
