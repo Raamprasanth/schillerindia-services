@@ -87,7 +87,12 @@ function normalizeScheduleConfig(value = {}) {
     // Use DB-stored weekdays if present; otherwise fall back to ALL_WEEKDAYS (run every day)
     const stored = sourceWeekdays[group.reportType];
     if (Array.isArray(stored) && stored.length > 0) {
-      acc[group.reportType] = stored.map(Number).filter(d => d >= 0 && d <= 6);
+      let days = stored.map(Number).filter(d => d >= 0 && d <= 6);
+      if (group.reportType === 'ur_followup' && !days.includes(6)) {
+        days.push(6);
+        days.sort((a, b) => a - b);
+      }
+      acc[group.reportType] = days;
     } else {
       acc[group.reportType] = group.defaultWeekdays || ALL_WEEKDAYS;
     }

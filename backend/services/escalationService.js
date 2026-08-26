@@ -1016,6 +1016,27 @@ async function collectUrEscalationData(slotWindow) {
         serviceMap.set(k, v);
       }
     }
+  } else if (moduleName === 'ur_followup') {
+    const missingIds = validObjectIds(queueDocs, moduleName).filter(id => !serviceMap.has(id));
+    if (missingIds.length > 0) {
+      const UnderRepair = require('../models/UnderRepair');
+      const urMap = await loadSourceMap(UnderRepair, missingIds);
+      for (const [k, v] of urMap.entries()) {
+        serviceMap.set(k, v);
+      }
+    }
+    if (queueDocs.length === 0) {
+      const UnderRepair = require('../models/UnderRepair');
+      const [activeUr, activeSvc] = await Promise.all([
+        UnderRepair.find({}).sort({ createdAt: -1 }).lean(),
+        Service.find({ typeWork: { $in: UR_DAILY_TYPES } }).sort({ createdAt: -1 }).lean(),
+      ]);
+      const combinedRows = [...activeUr, ...activeSvc];
+      return {
+        rows: combinedRows.map(row => buildUrEscalationRow(row)),
+        queueDocs: [],
+      };
+    }
   }
 
   return {
