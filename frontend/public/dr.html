@@ -829,8 +829,10 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     } else {
       msg(`Successfully fulfilled ${successCount} entries!`);
     }
+    const fulfilledIds = selectedRecords.map(r => r._id);
+    records = records.filter(r => !fulfilledIds.includes(r._id));
+    applyFilters();
     updateBulkFulfillBtn();
-    loadData();
   }
 
   function exportCSV() {

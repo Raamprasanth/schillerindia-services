@@ -769,6 +769,11 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     master.checked = checkboxes.length > 0 && checkedCount === checkboxes.length;
   }
 
+  function toggleFilledInput(input) {
+    if (!input) return;
+    input.classList.toggle('filled-red', Boolean(input.value));
+  }
+
   async function applyBulkTo() {
     const sparesReceivedDate = document.getElementById('bulk-spares-date').value;
 
@@ -789,6 +794,8 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     }
 
     const ids = Array.from(checkedBoxes).map(cb => cb.value);
+    const applyBtn = document.querySelector('button[onclick="applyBulkTo()"]');
+    if (applyBtn) { applyBtn.disabled = true; applyBtn.textContent = 'Applying...'; }
 
     try {
       const res = await fetch('/api/todr/bulk-update', {
@@ -800,20 +807,24 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       if (!res.ok) throw new Error(json?.message || 'Server error');
 
       // Update in memory records
-      json.forEach(updatedRecord => {
-        const record = records.find(x => x._id === updatedRecord._id);
-        if (record) Object.assign(record, updatedRecord);
-      });
+      if (Array.isArray(json)) {
+        json.forEach(updatedRecord => {
+          const record = records.find(x => x._id === updatedRecord._id);
+          if (record) Object.assign(record, updatedRecord);
+        });
+      }
 
       // Clear selection and inputs
       document.getElementById('select-all').checked = false;
       const bulkSparesDate = document.getElementById('bulk-spares-date');
       if(bulkSparesDate) { bulkSparesDate.value = ''; toggleFilledInput(bulkSparesDate); }
       
-      renderTable();
+      applyFilters();
       showToast('Successfully applied Spares Received Date to selected entries.', 'ok');
     } catch(e) {
       alert('Bulk apply failed: ' + e.message);
+    } finally {
+      if (applyBtn) { applyBtn.disabled = false; applyBtn.textContent = 'Apply'; }
     }
   }
 
@@ -835,6 +846,9 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       ids.push(id);
     }
 
+    const fulfillBtn = document.querySelector('button[onclick="applyBulkFulfill()"]');
+    if (fulfillBtn) { fulfillBtn.disabled = true; fulfillBtn.textContent = 'Fulfilling...'; }
+
     try {
       const res = await fetch('/api/todr/bulk-fulfill', {
         method: 'POST',
@@ -850,10 +864,12 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       // Uncheck header checkbox
       document.getElementById('select-all').checked = false;
 
-      renderTable();
+      applyFilters();
       showToast(`Successfully fulfilled ${ids.length} selected entry/entries.`, 'ok');
     } catch (e) {
       alert('Bulk fulfillment failed: ' + e.message);
+    } finally {
+      if (fulfillBtn) { fulfillBtn.disabled = false; fulfillBtn.textContent = 'Fulfill'; }
     }
   }
 
