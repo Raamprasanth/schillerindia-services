@@ -21,7 +21,7 @@
   }
 
   function updateThemeButtons(theme) {
-    document.querySelectorAll('[data-dashboard-theme-btn]').forEach((button) => {
+    document.querySelectorAll('#emp-theme-toggle-btn, #pt-theme-toggle-btn, .emp-theme-toggle, .theme-toggle, [data-dashboard-theme-btn]').forEach((button) => {
       const dark = theme === 'dark';
       button.innerHTML = dark ? '&#9728;&#65039;' : '&#127769;';
       button.title = dark ? 'Switch to light mode' : 'Switch to dark mode';
@@ -31,7 +31,15 @@
 
   function addButtons() {
     const topbar = document.querySelector('.topbar') || document.querySelector('.top-bar');
-    if (!topbar || topbar.querySelector('[data-dashboard-actions]')) return;
+    if (!topbar) return;
+
+    if (
+      topbar.querySelector('[data-dashboard-actions]') ||
+      topbar.querySelector('#emp-theme-toggle-btn, #pt-theme-toggle-btn, .emp-theme-toggle, .theme-toggle, [data-dashboard-theme-btn]')
+    ) {
+      updateThemeButtons(currentTheme());
+      return;
+    }
 
     const target =
       topbar.querySelector('.topbar-actions') ||
