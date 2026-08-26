@@ -701,8 +701,8 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   async function fulfillRecord(id) {
     const record = records.find(x => x._id === id);
-    if(!record || !record.toNo || !record.toRaisedDate) {
-      alert('This entry must have a TO NO and TO Raised Date before it can be fulfilled.');
+    if(!record || !record.toNo || !record.toRaisedDate || !record.sparesReceivedDate) {
+      alert('This entry must have a TO NO, TO Raised Date, and Spares Received Date before it can be fulfilled.');
       return;
     }
     if(!confirm('Fulfill this Service Request?')) return;
@@ -918,8 +918,8 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     for (const cb of checkedBoxes) {
       const id = cb.value;
       const record = records.find(x => x._id === id);
-      if (!record || !record.toNo || !record.toRaisedDate) {
-        alert('All selected entries must have a TO NO and TO Raised Date before they can be fulfilled.');
+      if (!record || !record.toNo || !record.toRaisedDate || !record.sparesReceivedDate) {
+        alert('All selected entries must have a TO NO, TO Raised Date, and Spares Received Date before they can be fulfilled.');
         return;
       }
       ids.push(id);

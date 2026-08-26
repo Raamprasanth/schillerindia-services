@@ -179,8 +179,8 @@ router.post('/bulk-fulfill', async (req, res) => {
     if (docs.some(doc => !canAccessDivision(req.user, doc.division))) {
       return res.status(403).json({ message: 'Not allowed to fulfill one or more selected divisions.' });
     }
-    if (docs.some(doc => !doc.toNo || !doc.toRaisedDate)) {
-      return res.status(400).json({ message: 'All selected SR items must have a TO No and TO Raised Date.' });
+    if (docs.some(doc => !doc.toNo || !doc.toRaisedDate || !doc.sparesReceivedDate)) {
+      return res.status(400).json({ message: 'All selected SR items must have a TO No, TO Raised Date, and Spares Received Date.' });
     }
 
     const fulfilled = [];
@@ -247,8 +247,8 @@ router.post('/:id/fulfill', async (req, res) => {
     if (!canAccessDivision(req.user, doc.division)) {
       return res.status(403).json({ message: 'Not allowed to fulfill this division.' });
     }
-    if (!doc.toNo || !doc.toRaisedDate) {
-      return res.status(400).json({ message: 'TO No and TO Raised Date are required before fulfillment.' });
+    if (!doc.toNo || !doc.toRaisedDate || !doc.sparesReceivedDate) {
+      return res.status(400).json({ message: 'TO No, TO Raised Date, and Spares Received Date are required before fulfillment.' });
     }
 
     const csrDoc = await moveSrToClosed(doc, req.user);
@@ -267,8 +267,8 @@ router.post('/:id/close', async (req, res) => {
     if (!canAccessDivision(req.user, doc.division)) {
       return res.status(403).json({ message: 'Not allowed to fulfill this division.' });
     }
-    if (!doc.toNo || !doc.toRaisedDate) {
-      return res.status(400).json({ message: 'TO No and TO Raised Date are required before fulfillment.' });
+    if (!doc.toNo || !doc.toRaisedDate || !doc.sparesReceivedDate) {
+      return res.status(400).json({ message: 'TO No, TO Raised Date, and Spares Received Date are required before fulfillment.' });
     }
 
     const csrDoc = await moveSrToClosed(doc, req.user);
