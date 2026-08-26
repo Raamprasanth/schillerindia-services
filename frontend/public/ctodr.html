@@ -392,6 +392,8 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         </div>
       </div>
             <div class="filter-strip">
+        <label>Search</label>
+        <input type="text" class="f-inp" id="tbl-search" placeholder="Search Closed TO..." oninput="applyFilters()" style="min-width:200px;">
         <label>From</label>
         <input type="date" class="f-inp" id="fl-from" onchange="applyFilters()">
         <label>To</label>
@@ -492,18 +494,21 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   }
 
   function clearFilters() {
-    ['fl-from','fl-to','fl-division'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+    ['fl-from','fl-to','fl-division','tbl-search'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
     applyFilters();
   }
 
   function applyFilters() {
+    const q = (document.getElementById('tbl-search')?.value || '').toLowerCase().trim();
     const from = document.getElementById('fl-from')?.value || '';
     const to = document.getElementById('fl-to')?.value || '';
     const division = document.getElementById('fl-division')?.value || '';
     
     filtered = records.filter(d => {
       const entryDateStr = d.entryDate ? new Date(d.entryDate).toISOString().split('T')[0] : '';
-      return (!from || entryDateStr >= from) &&
+      const matchSearch = !q || Object.values(d).some(v => String(v || '').toLowerCase().includes(q));
+      return matchSearch &&
+             (!from || entryDateStr >= from) &&
              (!to || entryDateStr <= to) &&
              (!division || d.division === division);
     });
