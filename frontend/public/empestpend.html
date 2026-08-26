@@ -905,7 +905,7 @@ function refreshMailAckStatus(){
 async function loadData(){
   setLoading();
   try {
-    const endpoint = IS_ADMIN ? API_BASE+'/api/emp/estimation' : API_BASE+'/api/emp/estimation';
+    const endpoint = API_BASE+'/api/emp/estimation?type=so';
     const res=await fetch(endpoint,{headers:authHeaders()});
     if(res.status===401){sessionStorage.clear(); localStorage.clear();window.location.href='login.html';return;}
     if(!res.ok) throw new Error('HTTP '+res.status);
@@ -1099,6 +1099,7 @@ function applyFilters(){
   const pdays=pdaysEl?pdaysEl.value:'';
   const eng=engEl?engEl.value:'';
   filtered=allRecords.filter(s=>{
+    if (s.estStatus !== 'SO Pending' && s.repType !== 'BS/SO') return false;
     const pd=Number(s.pdEst||0);
     if(_activeCardFilter==='normal' && !(pd<15)) return false;
     if(_activeCardFilter==='warning' && !(pd>=15&&pd<=30)) return false;

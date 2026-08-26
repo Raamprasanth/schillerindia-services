@@ -16,7 +16,7 @@ const RTFRN               = require('../models/RTFRN');
 const RTOB                = require('../models/RTOB');
 const RTRR                = require('../models/Rtrr');
 const { protect }         = require('../middleware/authMiddleware');
-const { tryCreateFRNPending, tryCreateUnderRepair, cleanupLinkedRecords } = require('../services/queueSyncService');
+const { tryCreateFRNPending, tryCreateUnderRepair, syncLinkedRecords, cleanupLinkedRecords } = require('../services/queueSyncService');
 const { buildUrEscalationRow, enqueueEscalationSnapshot, UR_DAILY_TYPES } = require('../services/escalationService');
 
 // ── CONSTANTS ─────────────────────────────────────────────────────
@@ -491,10 +491,7 @@ router.post('/', protect, async (req, res) => {
     }
     const svcObj = svc.toObject ? svc.toObject() : svc;
 
-    await Promise.allSettled([
-      tryCreateFRNPending(svcObj, req.user),
-      tryCreateUnderRepair(svcObj, req.user),
-    ]);
+    await syncLinkedRecords(svcObj, req.user);
 
     svcObj.isOwner = true;
     res.status(201).json(svcObj);
@@ -553,10 +550,7 @@ router.put('/:id', protect, async (req, res) => {
     const updObj = updated.toObject ? updated.toObject() : updated;
     updObj.divisionName = normalizeDivisionName(updObj.division);
 
-    await Promise.allSettled([
-      tryCreateFRNPending(updObj, req.user),
-      tryCreateUnderRepair(updObj, req.user),
-    ]);
+    await syncLinkedRecords(updObj, req.user);
 
     const selectedUrType = String(body.urTypeWork || body.typeWork || '').trim();
     const urEscalationModule = pickUrEscalationModule(selectedUrType);

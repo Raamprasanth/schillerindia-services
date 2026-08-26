@@ -328,6 +328,13 @@ router.get('/', async (req, res) => {
       const { getServiceIdsFilter } = require('../utils/visibility');
       query = await getServiceIdsFilter(req.user);
     }
+    const typeFilter = String(req.query.type || req.query.estStatus || '').toLowerCase();
+    if (typeFilter === 'so' || typeFilter === 'so pending') {
+      query.$or = [{ estStatus: 'SO Pending' }, { repType: 'BS/SO' }];
+    } else if (typeFilter === 'estimation' || typeFilter === 'estimation pending') {
+      query.estStatus = { $ne: 'SO Pending' };
+      query.repType = { $ne: 'BS/SO' };
+    }
     const records = await enrichEstimationComponentList(await EstimationPending.find(query).populate({ path: 'serviceId', select: 'branch dealer division divisionName partNo doi unitSl defPartSno bscon scReNo scEng frnNo frnDate serComm rcvdDate stkCust reg eng custName customer supplier model unitSts defMod defType typeAcc defGir repType repGirNo fieldRemarks commWarrDetails techRemarks components finalRemarks shipSc repBrd shipComm', populate: { path: 'division', select: 'name' } }).sort({ createdAt: -1 }).lean());
     res.json(records.map(record => ({
       ...record,
@@ -375,6 +382,13 @@ router.get('/employee', async (req, res) => {
   try {
     const { getServiceIdsFilter } = require('../utils/visibility');
     const query = await getServiceIdsFilter(req.user);
+    const typeFilter = String(req.query.type || req.query.estStatus || '').toLowerCase();
+    if (typeFilter === 'so' || typeFilter === 'so pending') {
+      query.$or = [{ estStatus: 'SO Pending' }, { repType: 'BS/SO' }];
+    } else if (typeFilter === 'estimation' || typeFilter === 'estimation pending') {
+      query.estStatus = { $ne: 'SO Pending' };
+      query.repType = { $ne: 'BS/SO' };
+    }
     const records = await enrichEstimationComponentList(await EstimationPending.find(query).populate({ path: 'serviceId', select: 'branch dealer division divisionName partNo doi unitSl defPartSno bscon scReNo scEng frnNo frnDate serComm rcvdDate stkCust reg eng custName customer supplier model unitSts defMod defType typeAcc defGir repType repGirNo fieldRemarks commWarrDetails techRemarks components finalRemarks shipSc repBrd shipComm', populate: { path: 'division', select: 'name' } }).sort({ createdAt: -1 }).lean());
     res.json(records.map(record => ({
       ...record,
@@ -469,16 +483,24 @@ router.post('/', async (req, res) => {
 
     let record;
     if (normalizedServiceId) {
+      const queryFilter = { serviceId: normalizedServiceId };
+      if (docData.estLineNo && Number(docData.estLineNo) > 1) {
+        queryFilter.estLineNo = Number(docData.estLineNo);
+      }
       record = await EstimationPending.findOneAndUpdate(
-        { serviceId: normalizedServiceId, estLineNo: docData.estLineNo || 1 },
+        queryFilter,
         { $set: docData },
         { new: true, upsert: true, runValidators: false }
       );
       await markObSourceFromEstimationPayload({ ...docData, estUpdatedBy: docData.estUpdatedBy || req.user.name || '' });
       console.log('[EstPending] upserted for serviceId:', normalizedServiceId);
     } else if (docData.sourceId) {
+      const queryFilter = { source: docData.source, sourceId: docData.sourceId };
+      if (docData.estLineNo && Number(docData.estLineNo) > 1) {
+        queryFilter.estLineNo = Number(docData.estLineNo);
+      }
       record = await EstimationPending.findOneAndUpdate(
-        { source: docData.source, sourceId: docData.sourceId, estLineNo: docData.estLineNo || 1 },
+        queryFilter,
         { $set: docData },
         { new: true, upsert: true, runValidators: false }
       );

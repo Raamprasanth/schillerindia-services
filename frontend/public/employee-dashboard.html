@@ -1482,8 +1482,8 @@
         setCardCount('ob', data, d => d.pdOb ?? getPdays(d.rcvdDate || d.entryDate), { warning: 30, critical: 90 });
       }).catch(e=>{ console.warn('OB err:',e); clearCardCount('ob'); });
 
-      // 3. Estimation Pending
-      empFetchJson('/api/emp/estimation', { headers: authHeaders }).then(data=>{
+      // 3. SO Pending
+      empFetchJson('/api/emp/estimation?type=so', { headers: authHeaders }).then(data=>{
         setCardCount('est', data, d => getPdays(d.rcvdDate || d.entryDate), { warning: 20, critical: 60 });
       }).catch(e=>{ console.warn('EST err:',e); clearCardCount('est'); });
 
