@@ -143,32 +143,62 @@ router.delete('/:id', protect, async (req, res) => {
 router.post('/bulk-fulfill', protect, async (req, res) => {
   try {
     const { ids, sparesReceivedDate } = req.body;
-    if (!ids || !Array.isArray(ids)) {
+    if (!ids || !Array.isArray(ids) || !ids.length) {
       return res.status(400).json({ message: 'ids array is required' });
     }
-    
-    const results = [];
-    const closedDate = new Date();
-    
-    for (const id of ids) {
-      const record = await Dr.findById(id).lean();
-      if (record) {
-        const payload = { ...record };
-        delete payload._id;
-        delete payload.__v;
-        payload.closedDate = closedDate;
-        if (sparesReceivedDate) {
-          payload.sparesReceivedDate = sparesReceivedDate;
-        }
-        
-        await Cdr.create(payload);
-        await Dr.findByIdAndDelete(id);
-        results.push(id);
-      }
+    const validIds = ids.filter(id => mongoose.Types.ObjectId.isValid(id));
+    if (!validIds.length) {
+      return res.status(400).json({ message: 'No valid ObjectIds provided' });
     }
-    res.json({ success: true, fulfilledCount: results.length });
+
+    const records = await Dr.find({ _id: { $in: validIds } }).lean();
+    if (!records.length) {
+      return res.json({ success: true, fulfilledCount: 0 });
+    }
+
+    const closedDate = new Date();
+    const closedDocs = records.map(record => {
+      const payload = { ...record };
+      delete payload._id;
+      delete payload.__v;
+      payload.closedDate = closedDate;
+      if (sparesReceivedDate) {
+        payload.sparesReceivedDate = sparesReceivedDate;
+      }
+      return payload;
+    });
+
+    await Cdr.insertMany(closedDocs, { ordered: false });
+    await Dr.deleteMany({ _id: { $in: validIds } });
+
+    res.json({ success: true, fulfilledCount: closedDocs.length });
   } catch (error) {
     console.error('Error bulk fulfilling DR records:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// PUT bulk update DR entries
+router.put('/bulk-update', protect, async (req, res) => {
+  try {
+    const { ids, sparesReceivedDate } = req.body;
+    if (!ids || !Array.isArray(ids) || !ids.length) {
+      return res.status(400).json({ message: 'ids array is required' });
+    }
+    const validIds = ids.filter(id => mongoose.Types.ObjectId.isValid(id));
+    if (!validIds.length) {
+      return res.status(400).json({ message: 'No valid ObjectIds provided' });
+    }
+
+    const updateData = { updatedAt: new Date() };
+    if (sparesReceivedDate !== undefined) updateData.sparesReceivedDate = sparesReceivedDate;
+
+    await Dr.updateMany({ _id: { $in: validIds } }, { $set: updateData });
+    const results = await Dr.find({ _id: { $in: validIds } }).lean();
+
+    res.json(results);
+  } catch (error) {
+    console.error('Error bulk updating DR records:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

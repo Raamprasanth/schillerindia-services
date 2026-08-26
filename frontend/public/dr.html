@@ -392,7 +392,22 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   <div class="content">
     <div class="table-card">
       <div class="table-top">
-        <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;">Direct dispatch</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;display:flex;align-items:center;gap:8px;">
+          Direct dispatch <span class="count-chip" id="count-chip">0 entries</span>
+        </div>
+        <div class="toolbar-r">
+          <div class="show-row">
+            Show
+            <select class="f-select" id="per-page" onchange="currentPage=1;renderTable()">
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="30" selected>30</option>
+              <option value="50">50</option>
+              <option value="10000">All</option>
+            </select>
+            per page
+          </div>
+        </div>
       </div>
       <div class="filter-strip">
         <label>From</label>
@@ -405,7 +420,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
           <option value="">All Divisions</option>
         </select>
         <div class="f-divider"></div>
-        <input type="text" class="f-inp" id="fl-search" placeholder="Search..." onkeyup="applyFilters()" style="width: 200px; margin-left:auto;">
+        <input type="text" class="f-inp" id="fl-search" placeholder="Search DR..." onkeyup="applyFilters()" style="width: 200px; margin-left:auto;">
         <button class="btn btn-outline btn-sm" onclick="clearFilters()">&#10005; Clear</button>
       </div>
       <div class="table-wrap">
@@ -426,9 +441,13 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             </tr>
           </thead>
           <tbody id="tb">
-            <tr><td colspan="10" style="text-align:center;padding:30px;">Loading...</td></tr>
+            <tr><td colspan="11" style="text-align:center;padding:30px;">Loading...</td></tr>
           </tbody>
         </table>
+      </div>
+      <div class="table-foot">
+        <div id="tbl-info">Showing 0 entries</div>
+        <div class="pager-row" id="tbl-pagination"></div>
       </div>
     </div>
   </div>
@@ -492,6 +511,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   let records = [];
   let filtered = [];
+  let currentPage = 1;
 
   async function loadDivisions() {
     const sel = document.getElementById('fl-division');
@@ -540,6 +560,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       
       return true;
     });
+    currentPage = 1;
     renderTable();
   }
 
@@ -553,10 +574,25 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   }
 
   function renderTable() {
+    const perPage = parseInt(document.getElementById('per-page')?.value) || 30;
+    const total = filtered.length;
+    const pages = Math.max(1, Math.ceil(total / perPage));
+    if (currentPage > pages) currentPage = pages;
+    const slice = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
+
+    const countChip = document.getElementById('count-chip');
+    if (countChip) countChip.textContent = total + ' entr' + (total === 1 ? 'y' : 'ies');
+
+    const first = total ? (currentPage - 1) * perPage + 1 : 0;
+    const tblInfo = document.getElementById('tbl-info');
+    if (tblInfo) tblInfo.textContent = total ? `Showing ${first} to ${Math.min(currentPage * perPage, total)} of ${total} entr${total === 1 ? 'y' : 'ies'}` : '0 entries';
+
+    renderPagination(pages);
+
     const tb = document.getElementById('tb');
-    if(!filtered.length) { tb.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:30px;">No DR entries found.</td></tr>'; return; }
+    if(!total) { tb.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:30px;">No DR entries found.</td></tr>'; return; }
     
-    tb.innerHTML = filtered.map(r => `
+    tb.innerHTML = slice.map(r => `
       <tr>
         <td style="text-align:center;"><input type="checkbox" class="dr-row-chk" value="${r._id}" onchange="updateBulkFulfillBtn()"></td>
         <td>${r.createdAt ? new Date(r.createdAt).toLocaleDateString('en-IN') : (r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-')}</td>
@@ -574,6 +610,20 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
     
     updateBulkFulfillBtn();
   }
+
+  function renderPagination(pages){
+    const el = document.getElementById('tbl-pagination');
+    if(!el) return;
+    if(pages <= 1){ el.innerHTML = ''; return; }
+    let html = `<button class="pager" ${currentPage===1?'disabled':''} onclick="goPage(${currentPage-1})">&#8249; Prev</button>`;
+    getRange(currentPage, pages).forEach(p => {
+      html += p === ' ' ? '<button class="pager" disabled> </button>' : `<button class="pager ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+    });
+    html += `<button class="pager" ${currentPage===pages?'disabled':''} onclick="goPage(${currentPage+1})">Next &#8250;</button>`;
+    el.innerHTML = html;
+  }
+  function getRange(c,t){ if(t<=7)return Array.from({length:t},(_,i)=>i+1); if(c<=4)return[1,2,3,4,5,' ',t]; if(c>=t-3)return[1,' ',t-4,t-3,t-2,t-1,t]; return[1,' ',c-1,c,c+1,' ',t]; }
+  function goPage(p){ currentPage = p; renderTable(); }
 
   function dateInputValue(val) {
     if (!val) return '';

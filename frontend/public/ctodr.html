@@ -387,11 +387,24 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   <div class="content">
     <div class="table-card">
       <div class="table-top">
-        <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;">Closed TO Register</div>
-        <div style="display:flex;gap:10px;">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;display:flex;align-items:center;gap:8px;">
+          Closed TO Register <span class="count-chip" id="count-chip">0 entries</span>
+        </div>
+        <div class="toolbar-r">
+          <div class="show-row">
+            Show
+            <select class="f-select" id="per-page" onchange="currentPage=1;renderTable()">
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="30" selected>30</option>
+              <option value="50">50</option>
+              <option value="10000">All</option>
+            </select>
+            per page
+          </div>
         </div>
       </div>
-            <div class="filter-strip">
+      <div class="filter-strip">
         <label>Search</label>
         <input type="text" class="f-inp" id="tbl-search" placeholder="Search Closed TO..." oninput="applyFilters()" style="min-width:200px;">
         <label>From</label>
@@ -423,9 +436,13 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             </tr>
           </thead>
           <tbody id="tb">
-            <tr><td colspan="9" style="text-align:center;padding:30px;">Loading...</td></tr>
+            <tr><td colspan="12" style="text-align:center;padding:30px;">Loading...</td></tr>
           </tbody>
         </table>
+      </div>
+      <div class="table-foot">
+        <div id="tbl-info">Showing 0 entries</div>
+        <div class="pager-row" id="tbl-pagination"></div>
       </div>
     </div>
   </div>
@@ -482,8 +499,8 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   let records = [];
   let filtered = [];
+  let currentPage = 1;
 
-  
   function populateDivisions() {
     const sel = document.getElementById('fl-division');
     if (!sel) return;
@@ -512,6 +529,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
              (!to || entryDateStr <= to) &&
              (!division || d.division === division);
     });
+    currentPage = 1;
     renderTable();
   }
 
@@ -525,10 +543,25 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   }
 
   function renderTable() {
+    const perPage = parseInt(document.getElementById('per-page')?.value) || 30;
+    const total = filtered.length;
+    const pages = Math.max(1, Math.ceil(total / perPage));
+    if (currentPage > pages) currentPage = pages;
+    const slice = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
+
+    const countChip = document.getElementById('count-chip');
+    if (countChip) countChip.textContent = total + ' entr' + (total === 1 ? 'y' : 'ies');
+
+    const first = total ? (currentPage - 1) * perPage + 1 : 0;
+    const tblInfo = document.getElementById('tbl-info');
+    if (tblInfo) tblInfo.textContent = total ? `Showing ${first} to ${Math.min(currentPage * perPage, total)} of ${total} entr${total === 1 ? 'y' : 'ies'}` : '0 entries';
+
+    renderPagination(pages);
+
     const tb = document.getElementById('tb');
-    if(!filtered.length) { tb.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:30px;">No Closed TO entries found.</td></tr>'; return; }
+    if(!total) { tb.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:30px;">No Closed TO entries found.</td></tr>'; return; }
     
-    tb.innerHTML = filtered.map(r => `
+    tb.innerHTML = slice.map(r => `
       <tr>
         <td>${r.entryDate ? new Date(r.entryDate).toLocaleDateString('en-IN') : '-'}</td>
         <td>${esc(r.division || '-')}</td>
@@ -545,6 +578,20 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       </tr>
     `).join('');
   }
+
+  function renderPagination(pages){
+    const el = document.getElementById('tbl-pagination');
+    if(!el) return;
+    if(pages <= 1){ el.innerHTML = ''; return; }
+    let html = `<button class="pager" ${currentPage===1?'disabled':''} onclick="goPage(${currentPage-1})">&#8249; Prev</button>`;
+    getRange(currentPage, pages).forEach(p => {
+      html += p === ' ' ? '<button class="pager" disabled> </button>' : `<button class="pager ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+    });
+    html += `<button class="pager" ${currentPage===pages?'disabled':''} onclick="goPage(${currentPage+1})">Next &#8250;</button>`;
+    el.innerHTML = html;
+  }
+  function getRange(c,t){ if(t<=7)return Array.from({length:t},(_,i)=>i+1); if(c<=4)return[1,2,3,4,5,' ',t]; if(c>=t-3)return[1,' ',t-4,t-3,t-2,t-1,t]; return[1,' ',c-1,c,c+1,' ',t]; }
+  function goPage(p){ currentPage = p; renderTable(); }
 
   async function updateTextField(id, field, value) {
     const record = records.find(x => x._id === id);

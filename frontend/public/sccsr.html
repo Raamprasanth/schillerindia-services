@@ -389,15 +389,24 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   <div class="content">
     <div class="table-card">
       <div class="table-top">
-        <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;">SC Closed Service Request</div>
-        <div style="display:flex;gap:10px;">
-          <div class="srch-wrap">
-            <span class="srch-ico">&#128269;</span>
-            <input type="text" id="tbl-search" placeholder="Search entries..." oninput="applyFilters()" onkeyup="applyFilters()"/>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text);font-size:15px;display:flex;align-items:center;gap:8px;">
+          SC Closed Service Request <span class="count-chip" id="count-chip">0 entries</span>
+        </div>
+        <div class="toolbar-r">
+          <div class="show-row">
+            Show
+            <select class="f-select" id="per-page" onchange="currentPage=1;renderTable()">
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="30" selected>30</option>
+              <option value="50">50</option>
+              <option value="10000">All</option>
+            </select>
+            per page
           </div>
         </div>
       </div>
-            <div class="filter-strip">
+      <div class="filter-strip">
         <label>From</label>
         <input type="date" class="f-inp" id="fl-from" onchange="applyFilters()">
         <label>To</label>
@@ -406,7 +415,11 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
         <select class="f-select" id="fl-division" onchange="applyFilters()">
           <option value="">All Divisions</option>
         </select>
-        <button class="btn btn-outline btn-sm" onclick="clearFilters()" style="margin-left:auto;">&#10005; Clear</button>
+        <div class="srch-wrap" style="margin-left:auto;">
+          <span class="srch-ico">&#128269;</span>
+          <input type="text" id="tbl-search" placeholder="Search entries..." oninput="applyFilters()" onkeyup="applyFilters()"/>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="clearFilters()">&#10005; Clear</button>
       </div>
       <div class="table-wrap">
         <table class="frn-table">
@@ -426,9 +439,13 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
             </tr>
           </thead>
           <tbody id="tb">
-            <tr><td colspan="10" style="text-align:center;padding:30px;">Loading...</td></tr>
+            <tr><td colspan="11" style="text-align:center;padding:30px;">Loading...</td></tr>
           </tbody>
         </table>
+      </div>
+      <div class="table-foot">
+        <div id="tbl-info">Showing 0 entries</div>
+        <div class="pager-row" id="tbl-pagination"></div>
       </div>
     </div>
   </div>
@@ -525,6 +542,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
 
   let records = [];
   let filtered = [];
+  let currentPage = 1;
   let DIVISIONS_LIST = [];
 
   function extractArrayPayload(payload){
@@ -585,6 +603,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       );
       return mDate && mDiv && mQ;
     });
+    currentPage = 1;
     renderTable();
   }
 
@@ -600,7 +619,7 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       applyFilters();
     } catch(e) {
       console.error(e);
-      if(tb) tb.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--red);font-weight:700;">&#9888; Could not load data: ${esc(e.message)}</td></tr>`;
+      if(tb) tb.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:30px;color:var(--red);font-weight:700;">&#9888; Could not load data: ${esc(e.message)}</td></tr>`;
     }
   }
 
@@ -626,10 +645,25 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
   }
 
   function renderTable() {
+    const perPage = parseInt(document.getElementById('per-page')?.value) || 30;
+    const total = filtered.length;
+    const pages = Math.max(1, Math.ceil(total / perPage));
+    if (currentPage > pages) currentPage = pages;
+    const slice = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
+
+    const countChip = document.getElementById('count-chip');
+    if (countChip) countChip.textContent = total + ' entr' + (total === 1 ? 'y' : 'ies');
+
+    const first = total ? (currentPage - 1) * perPage + 1 : 0;
+    const tblInfo = document.getElementById('tbl-info');
+    if (tblInfo) tblInfo.textContent = total ? `Showing ${first} to ${Math.min(currentPage * perPage, total)} of ${total} entr${total === 1 ? 'y' : 'ies'}` : '0 entries';
+
+    renderPagination(pages);
+
     const tb = document.getElementById('tb');
-    if(!filtered.length) { tb.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:30px;">No closed SC Service Requests found.</td></tr>'; return; }
+    if(!total) { tb.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:30px;">No closed SC Service Requests found.</td></tr>'; return; }
     
-    tb.innerHTML = filtered.map(r => {
+    tb.innerHTML = slice.map(r => {
       return `
       <tr>
         <td><span style="font-size:11px; white-space:nowrap; color: #475569; font-weight:600;">${r.createdAt ? new Date(r.createdAt).toLocaleDateString('en-IN') : (r.date ? new Date(r.date).toLocaleDateString('en-IN') : '-')}</span></td>
@@ -649,6 +683,20 @@ table.frn-table tbody tr:last-child td{border-bottom:none;}
       `;
     }).join('');
   }
+
+  function renderPagination(pages){
+    const el = document.getElementById('tbl-pagination');
+    if(!el) return;
+    if(pages <= 1){ el.innerHTML = ''; return; }
+    let html = `<button class="pager" ${currentPage===1?'disabled':''} onclick="goPage(${currentPage-1})">&#8249; Prev</button>`;
+    getRange(currentPage, pages).forEach(p => {
+      html += p === ' ' ? '<button class="pager" disabled> </button>' : `<button class="pager ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+    });
+    html += `<button class="pager" ${currentPage===pages?'disabled':''} onclick="goPage(${currentPage+1})">Next &#8250;</button>`;
+    el.innerHTML = html;
+  }
+  function getRange(c,t){ if(t<=7)return Array.from({length:t},(_,i)=>i+1); if(c<=4)return[1,2,3,4,5,' ',t]; if(c>=t-3)return[1,' ',t-4,t-3,t-2,t-1,t]; return[1,' ',c-1,c,c+1,' ',t]; }
+  function goPage(p){ currentPage = p; renderTable(); }
 
   async function updateTextField(id, field, value) {
     const record = records.find(x => x._id === id);

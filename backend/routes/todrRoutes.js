@@ -118,37 +118,43 @@ router.post('/', protect, async (req, res) => {
 router.post('/bulk-fulfill', protect, async (req, res) => {
   try {
     const { ids } = req.body;
-    if (!ids || !Array.isArray(ids)) {
+    if (!ids || !Array.isArray(ids) || !ids.length) {
       return res.status(400).json({ message: 'ids array is required' });
     }
-    const fulfilledDate = todayIso();
-    const results = [];
-    for (const id of ids) {
-      const record = await Todr.findById(id).lean();
-      if (record) {
-        const closedRecord = await Ctodr.create({
-          entryDate: record.entryDate,
-          frnNo: record.frnNo,
-          partNo: record.partNo,
-          model: record.model || '',
-          description: record.description,
-          action: record.action,
-          toNo: record.toNo || '',
-          toRaisedDate: record.toRaisedDate || null,
-          sparesReceivedDate: record.sparesReceivedDate || null,
-          fulfilledDate,
-          fulfilledBy: req.user?.name || '',
-          sourceId: record.sourceId || '',
-          sourceModule: record.sourceModule || '',
-          queuedBy: record.queuedBy || '',
-          createdAt: record.createdAt || new Date(),
-          updatedAt: new Date()
-        });
-        await Todr.findByIdAndDelete(id);
-        results.push(closedRecord);
-      }
+    const validIds = ids.filter(id => mongoose.Types.ObjectId.isValid(id));
+    if (!validIds.length) {
+      return res.status(400).json({ message: 'No valid ObjectIds provided' });
     }
-    res.json({ success: true, fulfilledCount: results.length });
+
+    const records = await Todr.find({ _id: { $in: validIds } }).lean();
+    if (!records.length) {
+      return res.json({ success: true, fulfilledCount: 0 });
+    }
+
+    const fulfilledDate = todayIso();
+    const closedDocs = records.map(record => ({
+      entryDate: record.entryDate,
+      frnNo: record.frnNo,
+      partNo: record.partNo,
+      model: record.model || '',
+      description: record.description,
+      action: record.action,
+      toNo: record.toNo || '',
+      toRaisedDate: record.toRaisedDate || null,
+      sparesReceivedDate: record.sparesReceivedDate || null,
+      fulfilledDate,
+      fulfilledBy: req.user?.name || '',
+      sourceId: record.sourceId || '',
+      sourceModule: record.sourceModule || '',
+      queuedBy: record.queuedBy || '',
+      createdAt: record.createdAt || new Date(),
+      updatedAt: new Date()
+    }));
+
+    await Ctodr.insertMany(closedDocs, { ordered: false });
+    await Todr.deleteMany({ _id: { $in: validIds } });
+
+    res.json({ success: true, fulfilledCount: closedDocs.length });
   } catch (error) {
     console.error('Error bulk fulfilling TODR records:', error);
     res.status(500).json({ message: 'Server error' });
@@ -159,26 +165,25 @@ router.post('/bulk-fulfill', protect, async (req, res) => {
 router.put('/bulk-update', protect, async (req, res) => {
   try {
     const { ids, toNo, toRaisedDate, sparesReceivedDate } = req.body;
-    if (!ids || !Array.isArray(ids)) {
+    if (!ids || !Array.isArray(ids) || !ids.length) {
       return res.status(400).json({ message: 'ids array is required' });
     }
     const dateError = validateDatePayload({ toRaisedDate, sparesReceivedDate });
     if (dateError) return res.status(400).json({ message: dateError });
+
+    const validIds = ids.filter(id => mongoose.Types.ObjectId.isValid(id));
+    if (!validIds.length) {
+      return res.status(400).json({ message: 'No valid ObjectIds provided' });
+    }
 
     const updateData = { updatedAt: new Date() };
     if (toRaisedDate !== undefined) updateData.toRaisedDate = toRaisedDate;
     if (sparesReceivedDate !== undefined) updateData.sparesReceivedDate = sparesReceivedDate;
     if (toNo !== undefined) updateData.toNo = toNo;
 
-    const results = [];
-    for (const id of ids) {
-      const record = await Todr.findByIdAndUpdate(
-        id,
-        updateData,
-        { new: true }
-      );
-      if (record) results.push(record);
-    }
+    await Todr.updateMany({ _id: { $in: validIds } }, { $set: updateData });
+    const results = await Todr.find({ _id: { $in: validIds } }).lean();
+
     res.json(results);
   } catch (error) {
     console.error('Error bulk updating TODR records:', error);
