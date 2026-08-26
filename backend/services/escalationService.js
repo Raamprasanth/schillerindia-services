@@ -1091,6 +1091,10 @@ async function clearToEscalationQueue(queueDocs = []) {
       { _id: { $in: urIds } },
       { $set: { toEscalationQueuedAt: null, toEscalationQueuedBy: '' } }
     ));
+    ops.push(mongoose.model('UnderRepair').updateMany(
+      { _id: { $in: urIds } },
+      { $set: { toEscalationQueuedAt: null, toEscalationQueuedBy: '' } }
+    ));
   }
   await Promise.all(ops);
 }
@@ -1217,10 +1221,12 @@ async function collectToEscalationData(slotWindow) {
     module: { $in: ['to_frn', 'to_est', 'to_ur'] },
     queuedAt: { $lte: slotWindow.windowEnd },
   }).sort({ queuedAt: 1 }).lean();
-  const [frnMap, estMap, serviceMap] = await Promise.all([
+  const UnderRepair = mongoose.model('UnderRepair');
+  const [frnMap, estMap, serviceMap, urMap] = await Promise.all([
     loadSourceMap(Empfrn, validObjectIds(rows, 'to_frn')),
     loadSourceMap(EstimationPending, validObjectIds(rows, 'to_est')),
     loadSourceMap(Service, validObjectIds(rows, 'to_ur')),
+    loadSourceMap(UnderRepair, validObjectIds(rows, 'to_ur')),
   ]);
 
   const frnRows = rows
@@ -1231,7 +1237,11 @@ async function collectToEscalationData(slotWindow) {
     .map((item) => hydratedQueueRow(item, estMap, (source) => buildToEscalationRow(source, item.row?.TO_ITEMS || [])));
   const underRepairRows = rows
     .filter((item) => item.module === 'to_ur')
-    .map((item) => hydratedQueueRow(item, serviceMap, (source) => buildToEscalationRow(source, item.row?.TO_ITEMS || [])));
+    .map((item) => {
+      const source = serviceMap.get(String(item.sourceId)) || urMap.get(String(item.sourceId));
+      const sourceMap = new Map([[String(item.sourceId), source]]);
+      return hydratedQueueRow(item, sourceMap, (src) => buildToEscalationRow(src, item.row?.TO_ITEMS || []));
+    });
 
   return {
     frnRows,
@@ -1242,7 +1252,7 @@ async function collectToEscalationData(slotWindow) {
 }
 
 function buildMailPayload(slotWindow, data) {
-  const combinedRows = [...data.frnRows, ...data.estimationRows];
+  const combinedRows = [...data.frnRows, ...data.estimationRows, ...(data.underRepairRows || [])];
   const total = combinedRows.length;
   return {
     format: 'xlsx',
@@ -1255,9 +1265,10 @@ function buildMailPayload(slotWindow, data) {
       `Window (IST): ${formatIstStamp(slotWindow.windowStart)} to ${formatIstStamp(slotWindow.windowEnd)}`,
       `Pending FRN updates: ${data.frnRows.length}`,
       `SO Pending updates: ${data.estimationRows.length}`,
+      `Under Repair updates: ${(data.underRepairRows || []).length}`,
       `Total records: ${total}`,
       '',
-      'Attached Excel contains the combined Pending FRN and SO Pending escalation details.',
+      'Attached Excel contains the combined escalation details.',
     ].join('\n'),
     sheets: [
       { name: 'Dispatch Escalation', template: 'Dispatch Escalation', rows: combinedRows },
@@ -1266,7 +1277,7 @@ function buildMailPayload(slotWindow, data) {
 }
 
 function buildSrMailPayload(slotWindow, data) {
-  const combinedRows = [...data.frnRows, ...data.estimationRows];
+  const combinedRows = [...data.frnRows, ...data.estimationRows, ...(data.underRepairRows || [])];
   const total = combinedRows.length;
   return {
     format: 'xlsx',
@@ -1279,9 +1290,10 @@ function buildSrMailPayload(slotWindow, data) {
       `Window (IST): ${formatIstStamp(slotWindow.windowStart)} to ${formatIstStamp(slotWindow.windowEnd)}`,
       `Pending FRN DR records: ${data.frnRows.length}`,
       `SO Pending DR records: ${data.estimationRows.length}`,
+      `Under Repair DR records: ${(data.underRepairRows || []).length}`,
       `Total records: ${total}`,
       '',
-      'Attached Excel contains the combined DR replacement escalation details from Pending FRN and SO Pending.',
+      'Attached Excel contains the combined DR replacement escalation details.',
     ].join('\n'),
     sheets: [
       {

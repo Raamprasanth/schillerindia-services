@@ -54,6 +54,12 @@ const underRepairSchema = new mongoose.Schema(
       default: 0,
       min:     [0, 'PDays cannot be negative'],
     },
+    toEscalationQueuedAt: { type: Date, default: null },
+    toEscalationQueuedBy: { type: String, default: '' },
+    srEscalationQueuedAt: { type: Date, default: null },
+    srEscalationQueuedBy: { type: String, default: '' },
+    division:             { type: mongoose.Schema.Types.Mixed, default: null },
+    divisionName:         { type: String, default: '' },
     status: {
       type:    String,
       default: 'UNDER REPAIR',
