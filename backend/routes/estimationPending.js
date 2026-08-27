@@ -330,10 +330,20 @@ router.get('/', async (req, res) => {
     }
     const typeFilter = String(req.query.type || req.query.estStatus || '').toLowerCase();
     if (typeFilter === 'so' || typeFilter === 'so pending') {
-      query.$or = [{ estStatus: 'SO Pending' }, { repType: 'BS/SO' }];
+      query.$or = [
+        { estStatus: 'SO Pending' },
+        { repType: 'BS/SO' },
+        { estStatus: { $in: ['New', 'Repair', 'Exchange'] } },
+        { orderType: { $in: ['New', 'Repair', 'Exchange'] } },
+        { estNo: { $exists: true, $ne: '' } },
+        { source: 'ob' },
+        { source: 'frn' }
+      ];
     } else if (typeFilter === 'estimation' || typeFilter === 'estimation pending') {
       query.estStatus = { $ne: 'SO Pending' };
       query.repType = { $ne: 'BS/SO' };
+      query.source = { $nin: ['ob', 'frn'] };
+      query.estNo = { $in: ['', null] };
     }
     const records = await enrichEstimationComponentList(await EstimationPending.find(query).populate({ path: 'serviceId', select: 'branch dealer division divisionName partNo doi unitSl defPartSno bscon scReNo scEng frnNo frnDate serComm rcvdDate stkCust reg eng custName customer supplier model unitSts defMod defType typeAcc defGir repType repGirNo fieldRemarks commWarrDetails techRemarks components finalRemarks shipSc repBrd shipComm', populate: { path: 'division', select: 'name' } }).sort({ createdAt: -1 }).lean());
     res.json(records.map(record => ({
@@ -384,10 +394,20 @@ router.get('/employee', async (req, res) => {
     const query = await getServiceIdsFilter(req.user);
     const typeFilter = String(req.query.type || req.query.estStatus || '').toLowerCase();
     if (typeFilter === 'so' || typeFilter === 'so pending') {
-      query.$or = [{ estStatus: 'SO Pending' }, { repType: 'BS/SO' }];
+      query.$or = [
+        { estStatus: 'SO Pending' },
+        { repType: 'BS/SO' },
+        { estStatus: { $in: ['New', 'Repair', 'Exchange'] } },
+        { orderType: { $in: ['New', 'Repair', 'Exchange'] } },
+        { estNo: { $exists: true, $ne: '' } },
+        { source: 'ob' },
+        { source: 'frn' }
+      ];
     } else if (typeFilter === 'estimation' || typeFilter === 'estimation pending') {
       query.estStatus = { $ne: 'SO Pending' };
       query.repType = { $ne: 'BS/SO' };
+      query.source = { $nin: ['ob', 'frn'] };
+      query.estNo = { $in: ['', null] };
     }
     const records = await enrichEstimationComponentList(await EstimationPending.find(query).populate({ path: 'serviceId', select: 'branch dealer division divisionName partNo doi unitSl defPartSno bscon scReNo scEng frnNo frnDate serComm rcvdDate stkCust reg eng custName customer supplier model unitSts defMod defType typeAcc defGir repType repGirNo fieldRemarks commWarrDetails techRemarks components finalRemarks shipSc repBrd shipComm', populate: { path: 'division', select: 'name' } }).sort({ createdAt: -1 }).lean());
     res.json(records.map(record => ({

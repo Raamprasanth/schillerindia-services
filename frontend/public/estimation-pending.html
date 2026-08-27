@@ -831,7 +831,8 @@ function applyFilters(){
   const pdays=document.getElementById('fl-pdays').value;
   const eng=document.getElementById('fl-eng').value;
   filtered=allRecords.filter(s=>{
-    if (s.estStatus !== 'SO Pending' && s.repType !== 'BS/SO') return false;
+    const isSO = s.estStatus === 'SO Pending' || s.repType === 'BS/SO' || ['New', 'Repair', 'Exchange'].includes(s.estStatus) || !!s.orderType || !!s.estNo || s.source === 'ob' || s.source === 'frn';
+    if (!isSO) return false;
     const mQ=!q||Object.values(s).some(v=>String(v||'').toLowerCase().includes(q));
     const mF=!from||(s.entryDate&&s.entryDate>=from);
     const mT=!to||(s.entryDate&&s.entryDate<=to);

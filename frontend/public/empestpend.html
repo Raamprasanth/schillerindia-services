@@ -1099,7 +1099,8 @@ function applyFilters(){
   const pdays=pdaysEl?pdaysEl.value:'';
   const eng=engEl?engEl.value:'';
   filtered=allRecords.filter(s=>{
-    if (s.estStatus !== 'SO Pending' && s.repType !== 'BS/SO') return false;
+    const isSO = s.estStatus === 'SO Pending' || s.repType === 'BS/SO' || ['New', 'Repair', 'Exchange'].includes(s.estStatus) || !!s.orderType || !!s.estNo || s.source === 'ob' || s.source === 'frn';
+    if (!isSO) return false;
     const pd=Number(s.pdEst||0);
     if(_activeCardFilter==='normal' && !(pd<15)) return false;
     if(_activeCardFilter==='warning' && !(pd>=15&&pd<=30)) return false;
@@ -1272,7 +1273,7 @@ async function submitUpdate(){
       estDate:      estdate,
       estValidDate: document.getElementById('u-validdate').value,
       estAmount:    parseFloat(estamount) || 0,
-      estStatus:    eststatus,
+      estStatus:    'SO Pending',
       orderType:    eststatus,
       estRaEng:     raeng,
       techRemarks:  document.getElementById('u-techremarks').value.trim(),
