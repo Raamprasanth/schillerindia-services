@@ -982,7 +982,28 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     return await getAllEmployeesPerformanceData({ monthInfo, selectedDivision });
   }
 
-  const services = await Service.find().populate('division', 'name').lean();
+  const divRegex = selectedDivision ? new RegExp('^' + safeRegex(selectedDivision) + '$', 'i') : null;
+  const matchingDivIds = (options.divisions || [])
+    .filter((item) => normalizeUpper(item.name) === normalizeUpper(selectedDivision))
+    .map((item) => item.id);
+
+  let serviceQuery = {};
+  if (scope === 'division' && selectedDivision) {
+    serviceQuery = {
+      $or: [
+        { division: { $in: matchingDivIds } },
+        { division: divRegex },
+        { divisionName: divRegex },
+      ]
+    };
+  } else if (employee) {
+    const empRegex = new RegExp(`^${safeRegex(employee)}$`, 'i');
+    serviceQuery = {
+      $or: [{ eng: empRegex }, { scEng: empRegex }, { custName: empRegex }, { customer: empRegex }]
+    };
+  }
+
+  const services = await Service.find(serviceQuery).populate('division', 'name').lean();
   const baseServices = services.filter((record) => {
     const recordDate = parseAnyDate(record.entryDate, record.createdAt);
     if (!isDateInRange(recordDate, monthInfo.start, monthInfo.end)) return false;
@@ -990,28 +1011,42 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
     return matchesEmployee(record, employee);
   });
 
-  const serviceIds = baseServices.map((record) => String(record._id));
+  const serviceIds = services.map((record) => String(record._id));
+  const baseServiceIds = baseServices.map((record) => String(record._id));
   const serviceById = new Map(services.map((record) => [String(record._id), record]));
   const relatedFilter = serviceIds.length ? { serviceId: { $in: serviceIds } } : { _id: null };
 
+  let divQueryFilter = {};
+  if (scope === 'division' && selectedDivision) {
+    divQueryFilter = {
+      $or: [
+        ...(serviceIds.length ? [{ serviceId: { $in: serviceIds } }] : []),
+        { division: { $in: matchingDivIds } },
+        { division: divRegex },
+        { divisionName: divRegex },
+        { region: divRegex }
+      ]
+    };
+  }
+
   const empRegex = employee ? new RegExp(`^${safeRegex(employee)}$`, 'i') : null;
   const [empFrnDocs, empObPendingDocs, underRepairDocs, estimationDocs, completedDocs, scCompletedDocs, scrapDocs, eprfobDocs, ecrDocs, fqcNonsaleableDocs, fqcNonSaleableFsDocs, birDocs, closedBirDocs] = await Promise.all([
-    EmpFRN.find(scope === 'division' ? {} : { $or: [{ submittedBy: empRegex }, { scEng: empRegex }, { eng: empRegex }, { raEng: empRegex }] }).populate('division', 'name').lean(),
-    EmpOBPending.find(scope === 'division' ? {} : { $or: [{ employeeName: empRegex }, { submittedBy: empRegex }, { scEng: empRegex }, { eng: empRegex }] }).lean(),
-    UnderRepair.find(scope === 'division' ? {} : { $or: [{ engineer: empRegex }, { scEng: empRegex }, { raEng: empRegex }] }).lean(),
-    EstimationPending.find(scope === 'division' ? {} : { $or: [{ submittedBy: empRegex }, { scEng: empRegex }, { eng: empRegex }] }).lean(),
-    CompletedFRN.find(scope === 'division' ? {} : { $or: [{ closedBy: empRegex }, { scEng: empRegex }, { eng: empRegex }, { raEng: empRegex }] }).lean(),
+    EmpFRN.find(scope === 'division' ? divQueryFilter : { $or: [{ submittedBy: empRegex }, { scEng: empRegex }, { eng: empRegex }, { raEng: empRegex }] }).populate('division', 'name').lean(),
+    EmpOBPending.find(scope === 'division' ? divQueryFilter : { $or: [{ employeeName: empRegex }, { submittedBy: empRegex }, { scEng: empRegex }, { eng: empRegex }] }).lean(),
+    UnderRepair.find(scope === 'division' ? divQueryFilter : { $or: [{ engineer: empRegex }, { scEng: empRegex }, { raEng: empRegex }] }).lean(),
+    EstimationPending.find(scope === 'division' ? divQueryFilter : { $or: [{ submittedBy: empRegex }, { scEng: empRegex }, { eng: empRegex }] }).lean(),
+    CompletedFRN.find(scope === 'division' ? divQueryFilter : { $or: [{ closedBy: empRegex }, { scEng: empRegex }, { eng: empRegex }, { raEng: empRegex }] }).lean(),
     SCCompletedFRN.find(relatedFilter).lean(),
-    Scrap.find(scope === 'division' ? {} : { $or: [{ addedBy: empRegex }, { scEng: empRegex }, { engineer: empRegex }] }).lean(),
-    EPrfOb.find(scope === 'division' ? {} : { engineer: empRegex }).lean(),
+    Scrap.find(scope === 'division' ? divQueryFilter : { $or: [{ addedBy: empRegex }, { scEng: empRegex }, { engineer: empRegex }] }).lean(),
+    EPrfOb.find(scope === 'division' ? divQueryFilter : { engineer: empRegex }).lean(),
     Ecr.find().lean(),
-    FqcNonsaleable.find(scope === 'division' ? {} : { $or: [{ engineer: empRegex }, { scEngineer: empRegex }] }).lean(),
+    FqcNonsaleable.find(scope === 'division' ? divQueryFilter : { $or: [{ engineer: empRegex }, { scEngineer: empRegex }] }).lean(),
     FqcNonSaleableFs.find().lean(),
-    Bir.find(scope === 'division' ? {} : { $or: [{ engineer: empRegex }, { scEngineer: empRegex }] }).lean(),
+    Bir.find(scope === 'division' ? divQueryFilter : { $or: [{ engineer: empRegex }, { scEngineer: empRegex }] }).lean(),
     ClosedBir.find().lean(),
   ]);
 
-  const baseServiceIdSet = new Set(serviceIds);
+  const baseServiceIdSet = new Set(baseServiceIds);
   const recordInScope = (record) => {
     const serviceId = String(record?.serviceId || '');
     const linkedService = serviceId ? serviceById.get(serviceId) : null;

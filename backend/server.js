@@ -155,12 +155,12 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-const API_RESPONSE_TIMEOUT_MS = Number(process.env.API_RESPONSE_TIMEOUT_MS || 20000);
-const CLIENT_FETCH_TIMEOUT_MS = Number(process.env.CLIENT_FETCH_TIMEOUT_MS || 20000);
+const API_RESPONSE_TIMEOUT_MS = Number(process.env.API_RESPONSE_TIMEOUT_MS || 60000);
+const CLIENT_FETCH_TIMEOUT_MS = Number(process.env.CLIENT_FETCH_TIMEOUT_MS || 60000);
 
 app.use('/api', (req, res, next) => {
-  if (req.path.includes('/backup/')) {
-    res.setTimeout(300000); // 5 minutes timeout for backups
+  if (req.path.includes('/backup/') || req.path.includes('/reports/')) {
+    res.setTimeout(300000); // 5 minutes timeout for backups and reports
     return next();
   }
   res.setTimeout(API_RESPONSE_TIMEOUT_MS, () => {
