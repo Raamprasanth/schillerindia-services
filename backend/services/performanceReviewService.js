@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Service = require('../models/Service');
 const EmpFRN = require('../models/EmpFRN');
 const EmpOBPending = require('../models/EmpOBPending');
@@ -983,19 +984,19 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
   }
 
   const divRegex = selectedDivision ? new RegExp('^' + safeRegex(selectedDivision) + '$', 'i') : null;
-  const matchingDivIds = (options.divisions || [])
+  const matchingDivObjectIds = (options.divisions || [])
     .filter((item) => normalizeUpper(item.name) === normalizeUpper(selectedDivision))
-    .map((item) => item.id);
+    .map((item) => item.id)
+    .filter((id) => mongoose.Types.ObjectId.isValid(id))
+    .map((id) => new mongoose.Types.ObjectId(id));
 
   let serviceQuery = {};
   if (scope === 'division' && selectedDivision) {
-    serviceQuery = {
-      $or: [
-        { division: { $in: matchingDivIds } },
-        { division: divRegex },
-        { divisionName: divRegex },
-      ]
-    };
+    const serviceOrList = [
+      ...(matchingDivObjectIds.length ? [{ division: { $in: matchingDivObjectIds } }] : []),
+      ...(divRegex ? [{ divisionName: divRegex }] : []),
+    ];
+    serviceQuery = serviceOrList.length === 1 ? serviceOrList[0] : (serviceOrList.length > 1 ? { $or: serviceOrList } : {});
   } else if (employee) {
     const empRegex = new RegExp(`^${safeRegex(employee)}$`, 'i');
     serviceQuery = {
@@ -1018,15 +1019,12 @@ async function getPerformanceReviewData({ scope, month, division, employee }) {
 
   let divQueryFilter = {};
   if (scope === 'division' && selectedDivision) {
-    divQueryFilter = {
-      $or: [
-        ...(serviceIds.length ? [{ serviceId: { $in: serviceIds } }] : []),
-        { division: { $in: matchingDivIds } },
-        { division: divRegex },
-        { divisionName: divRegex },
-        { region: divRegex }
-      ]
-    };
+    const divOrList = [
+      ...(serviceIds.length ? [{ serviceId: { $in: serviceIds } }] : []),
+      ...(matchingDivObjectIds.length ? [{ division: { $in: matchingDivObjectIds } }] : []),
+      ...(divRegex ? [{ divisionName: divRegex }, { region: divRegex }] : []),
+    ];
+    divQueryFilter = divOrList.length === 1 ? divOrList[0] : (divOrList.length > 1 ? { $or: divOrList } : {});
   }
 
   const empRegex = employee ? new RegExp(`^${safeRegex(employee)}$`, 'i') : null;
