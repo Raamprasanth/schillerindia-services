@@ -1145,7 +1145,7 @@ function renderTable(){
     tbody.innerHTML = slice.map((d,i)=>{
       const rid = d._id||d.id;
       return `<tr>
-        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.receivedDate || d.entryDate)}</td>`
+        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.receivedDate || d.entryDate)}</td>
         <td><span class="div-tag">${esc(d.division||'-')}</span></td>
         <td>${typePill(d.type)}</td>
         <td><span class="branch-tag">${esc(d.branch||'-')}</span></td>
