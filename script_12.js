@@ -512,7 +512,8 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
   const cSupWarr = data.compliance?.supplierWarranty ?? 0;
   const cCritical = data.compliance?.criticalPending ?? 0;
   const cPI = data.compliance?.purchaseIndent ?? 0;
-    const cBuyBack = data.compliance?.buyBack ?? 0;
+  const cRR = data.compliance?.rrReport ?? 0;
+  const cBuyBack = data.compliance?.buyBack ?? 0;
     const isBuyBackMonth = params.month && (
       params.month.includes('-04-') || 
       params.month.includes('-08-') || 
@@ -522,7 +523,6 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
       params.month.endsWith('-12')
     );
       const c5S = data.compliance?.fiveSRate ?? 0;
-  const cRR = data.compliance?.repairReport ?? 0;
 
   const monthLabel = params.month || '';
   const employeeLabel = data.employee || params.employee || '';
@@ -623,7 +623,7 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
   var monthNum = parseInt(mStr, 10) - 1;
 
   var tuesdays = [], mondays = [];
-  var d02 = '-', d03 = '-', d05 = '-', d15 = '-', d16 = '-';
+  var d02 = '-', d03 = '-', d20 = '-', d15 = '-', d16 = '-', dFirstFri = '-';
   if (!isNaN(yearNum) && !isNaN(monthNum)) {
     let d = new Date(yearNum, monthNum, 1);
     while (d.getMonth() === monthNum) {
@@ -632,11 +632,28 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
       if (d.getDay() === 1) mondays.push(fDate);
       d.setDate(d.getDate() + 1);
     }
-    d02 = '02-' + mStr + '-' + yearStr;
-    d03 = '03-' + mStr + '-' + yearStr;
-    d05 = '05-' + mStr + '-' + yearStr;
-    d15 = '15-' + mStr + '-' + yearStr;
-    d16 = '16-' + mStr + '-' + yearStr;
+    const getShiftedDateStr = (dayNum) => {
+      let dt = new Date(yearNum, monthNum, dayNum);
+      if (dt.getDay() === 0) {
+        dt.setDate(dt.getDate() + 1);
+      }
+      const dd = String(dt.getDate()).padStart(2, '0');
+      const mm = String(dt.getMonth() + 1).padStart(2, '0');
+      const yy = dt.getFullYear();
+      return `${dd}-${mm}-${yy}`;
+    };
+
+    d02 = getShiftedDateStr(2);
+    d03 = getShiftedDateStr(3);
+    d20 = getShiftedDateStr(20);
+    d15 = getShiftedDateStr(15);
+    d16 = getShiftedDateStr(16);
+
+    let fFri = new Date(yearNum, monthNum, 1);
+    while (fFri.getDay() !== 5) {
+      fFri.setDate(fFri.getDate() + 1);
+    }
+    dFirstFri = String(fFri.getDate()).padStart(2, '0') + '-' + mStr + '-' + yearStr;
   }
   
   var checkSub = (type, ds) => {
@@ -726,10 +743,16 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
     <table class="perf-pdf-page-break" style="width:100%; border-collapse:collapse; border:1px solid #cbd5e1; font-family:'Inter',system-ui,sans-serif; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); overflow:hidden; margin-top:28px;">
       <tbody>
         <tr>
-          <td colspan="${isBuyBackMonth ? '1' : '3'}" rowspan="2" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4; vertical-align:middle;">
+          <td colspan="${isBuyBackMonth ? '2' : '3'}" rowspan="2" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4; vertical-align:middle;">
             Purchase indent request to commercial<br><span style="color:#ef4444; font-size:11px; font-weight:600;">If NA mark NA</span>
             <div style="margin-top:16px; display:flex; justify-content:center; width:60%; margin-left:auto; margin-right:auto;">
-              ${checkSub('PIRequest', d05)}
+              ${checkSub('PIRequest', d20)}
+            </div>
+          </td>
+          <td colspan="${isBuyBackMonth ? '2' : '3'}" rowspan="2" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4; vertical-align:middle;">
+            RR report submission<br><span style="color:#ef4444; font-size:11px; font-weight:600;">If NA mark NA</span>
+            <div style="margin-top:16px; display:flex; justify-content:center; width:60%; margin-left:auto; margin-right:auto;">
+              ${checkSub('RRReport', dFirstFri)}
             </div>
           </td>
           ${isBuyBackMonth ? `<td colspan="2" rowspan="2" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4; vertical-align:middle;">
@@ -741,9 +764,12 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
         </tr>
         <tr></tr>
         <tr>
-          <td colspan="${isBuyBackMonth ? '1' : '3'}" style="border:1px solid #cbd5e1; padding:18px; font-weight:900; background-color:#e0e7ff; color:#3730a3; font-size:18px; text-align:center;">${cPI}%</td>
-            ${isBuyBackMonth ? `<td colspan="2" style="border:1px solid #cbd5e1; padding:18px; font-weight:900; background-color:#e0e7ff; color:#3730a3; font-size:18px; text-align:center;">${cBuyBack}%</td>` : ''}
-          <td colspan="3" style="border:1px solid #cbd5e1; padding:18px; font-weight:900; font-size:18px; text-align:center; color:${rate>=75?'#059669':'#ef4444'}; background-color:${rate>=75?'#ecfdf5':'#fef2f2'}; text-transform:uppercase; letter-spacing:1px;">
+          <td colspan="${isBuyBackMonth ? '2' : '3'}" style="border:1px solid #cbd5e1; padding:18px; font-weight:900; background-color:#e0e7ff; color:#3730a3; font-size:18px; text-align:center;">${cPI}%</td>
+          <td colspan="${isBuyBackMonth ? '2' : '3'}" style="border:1px solid #cbd5e1; padding:18px; font-weight:900; background-color:#e0e7ff; color:#3730a3; font-size:18px; text-align:center;">${cRR}%</td>
+          ${isBuyBackMonth ? `<td colspan="2" style="border:1px solid #cbd5e1; padding:18px; font-weight:900; background-color:#e0e7ff; color:#3730a3; font-size:18px; text-align:center;">${cBuyBack}%</td>` : ''}
+        </tr>
+        <tr>
+          <td colspan="6" style="border:1px solid #cbd5e1; padding:18px; font-weight:900; font-size:18px; text-align:center; color:${rate>=75?'#059669':'#ef4444'}; background-color:${rate>=75?'#ecfdf5':'#fef2f2'}; text-transform:uppercase; letter-spacing:1px;">
             ${remark}
           </td>
         </tr>
@@ -816,10 +842,16 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
         </tr>
 
         <tr>
-          <td colspan="${isBuyBackMonth ? '1' : '3'}" rowspan="2" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4; vertical-align:middle;">
+          <td colspan="${isBuyBackMonth ? '2' : '3'}" rowspan="2" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4; vertical-align:middle;">
             Purchase indent request to commercial<br><span style="color:#ef4444; font-size:11px; font-weight:600;">If NA mark NA</span>
             <div style="margin-top:16px; display:flex; justify-content:center; width:60%; margin-left:auto; margin-right:auto;">
-              ${checkSub('PIRequest', d05)}
+              ${checkSub('PIRequest', d20)}
+            </div>
+          </td>
+          <td colspan="${isBuyBackMonth ? '2' : '3'}" rowspan="2" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4; vertical-align:middle;">
+            RR report submission<br><span style="color:#ef4444; font-size:11px; font-weight:600;">If NA mark NA</span>
+            <div style="margin-top:16px; display:flex; justify-content:center; width:60%; margin-left:auto; margin-right:auto;">
+              ${checkSub('RRReport', dFirstFri)}
             </div>
           </td>
           ${isBuyBackMonth ? `<td colspan="2" rowspan="2" style="border:1px solid #cbd5e1; background-color:#f8fafc; padding:16px; text-align:left; font-weight:700; color:#334155; font-size:13px; line-height:1.4; vertical-align:middle;">
@@ -831,9 +863,12 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
         </tr>
         <tr></tr>
         <tr>
-          <td colspan="${isBuyBackMonth ? '1' : '3'}" style="border:1px solid #cbd5e1; padding:18px; font-weight:900; background-color:#e0e7ff; color:#3730a3; font-size:18px; text-align:center;">${cPI}%</td>
-            ${isBuyBackMonth ? `<td colspan="2" style="border:1px solid #cbd5e1; padding:18px; font-weight:900; background-color:#e0e7ff; color:#3730a3; font-size:18px; text-align:center;">${cBuyBack}%</td>` : ''}
-          <td colspan="3" style="border:1px solid #cbd5e1; padding:18px; font-weight:900; font-size:18px; text-align:center; color:${rate>=75?'#059669':'#ef4444'}; background-color:${rate>=75?'#ecfdf5':'#fef2f2'}; text-transform:uppercase; letter-spacing:1px;">
+          <td colspan="${isBuyBackMonth ? '2' : '3'}" style="border:1px solid #cbd5e1; padding:18px; font-weight:900; background-color:#e0e7ff; color:#3730a3; font-size:18px; text-align:center;">${cPI}%</td>
+          <td colspan="${isBuyBackMonth ? '2' : '3'}" style="border:1px solid #cbd5e1; padding:18px; font-weight:900; background-color:#e0e7ff; color:#3730a3; font-size:18px; text-align:center;">${cRR}%</td>
+          ${isBuyBackMonth ? `<td colspan="2" style="border:1px solid #cbd5e1; padding:18px; font-weight:900; background-color:#e0e7ff; color:#3730a3; font-size:18px; text-align:center;">${cBuyBack}%</td>` : ''}
+        </tr>
+        <tr>
+          <td colspan="6" style="border:1px solid #cbd5e1; padding:18px; font-weight:900; font-size:18px; text-align:center; color:${rate>=75?'#059669':'#ef4444'}; background-color:${rate>=75?'#ecfdf5':'#fef2f2'}; text-transform:uppercase; letter-spacing:1px;">
             ${remark}
           </td>
         </tr>
@@ -844,7 +879,6 @@ function generatePerfAnalysisHtml(data, params, scopeType) {
 
   return `
     <div style="font-family:'Inter',system-ui,sans-serif; background:#ffffff; border-radius:16px; border:1px solid #e2e8f0; padding:32px; color:#1e293b; width:100%; box-sizing:border-box;">
-      ${scopeType === 'employee' ? '<div class="submission-panel" id="perf-submission-panel"></div>' : ''}
       <div class="perf-review-table-container">
         ${topTable}
         ${bottomTable}
@@ -878,6 +912,7 @@ function renderPerfSummary(data,params) {
   window._lastPerfEmpData = data;
   const html = generatePerfAnalysisHtml(data, params, 'employee');
   document.getElementById('perf-pane-summary').innerHTML = html;
+  if(typeof loadDivisionReportSubmissions === 'function' && params) loadDivisionReportSubmissions(params);
 }
 
 
@@ -994,6 +1029,8 @@ function drawPerfPdfPage(doc, data, monthLabel, scopeLabel, entityLabel, scRemar
   const divName = String(entityLabel).toLowerCase();
   const isSpecialDiv = isDiv && /injector|vent\s*con|monitors?\s*con/i.test(divName);
   const hideFrnCon = isDiv;
+  const mStr = String((data && data.month) || monthLabel || '');
+  const isBuyBackMonth = mStr.includes('-04') || mStr.includes('-08') || mStr.includes('-12') || mStr.endsWith('-04') || mStr.endsWith('-08') || mStr.endsWith('-12') || /april|august|december/i.test(mStr);
 
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.5);
@@ -1034,31 +1071,31 @@ function drawPerfPdfPage(doc, data, monthLabel, scopeLabel, entityLabel, scRemar
     if (v == null) return '-';
     return Math.round((typeof v === 'number' && v <= 1) ? v * 100 : v) + '%';
   };
-  const lim = v => v != null ? `<= ${v}d` : '-';
+  const lim = v => v != null ? `<= ${v} days` : '-';
 
-  const makeRowData = (label, r, hasLimit) => [
+  const makeRowData = (label, r) => [
     label,
     r.total ?? '-',
     r.withinTarget ?? '-',
     pct(r.withinPercent ?? r.completionPercent),
     pct(r.prevRate),
-    hasLimit ? lim(r.targetDays) : '-'
+    lim(r.targetDays)
   ];
 
-  let body = [ makeRowData('Pending FRN', rFrn, false) ];
-  if (!hideFrnCon) body.push(makeRowData('Pending FRN Con', rFrnCon, true));
+  let body = [ makeRowData('Pending FRN', rFrn) ];
+  if (!hideFrnCon) body.push(makeRowData('Pending FRN Con', rFrnCon));
   body.push(
-    makeRowData('SO Pending', rSo, false),
-    makeRowData('Under Repair', rRepair, true),
-    makeRowData('TO/SO', rTo, false)
+    makeRowData('SO Pending', rSo),
+    makeRowData('Under Repair', rRepair),
+    makeRowData('TO/SO', rTo)
   );
   if (!isSpecialDiv) {
     body.push(
-      makeRowData('Non-Saleable', rNonSaleable, true),
-      makeRowData('BIR List', rBir, false)
+      makeRowData('Non-Saleable', rNonSaleable),
+      makeRowData('BIR List', rBir)
     );
   }
-  body.push(makeRowData('Estimation', rEst, true));
+  body.push(makeRowData('Estimation', rEst));
 
   doc.autoTable({
     startY: 34,
@@ -1078,8 +1115,8 @@ function drawPerfPdfPage(doc, data, monthLabel, scopeLabel, entityLabel, scRemar
     }
   });
 
-  const hideBottom = isDiv && /monitors|ventilators/i.test(entityLabel);
-  if (!hideBottom) {
+
+  {
     const comp = data.compliance || {};
     let compData = [];
     if (isSpecialDiv) {
@@ -1683,7 +1720,8 @@ async function loadAllDivisionTrackers() {
         { type: 'NonSaleable', label: 'Non Saleable', schedule: '2nd & 16th' },
         { type: 'SupplierWarranty', label: 'Re-Export', schedule: '3rd & 16th' },
         { type: 'CriticalPendingReport', label: 'Critical Pending Report', schedule: '2nd' },
-        { type: 'PIRequest', label: 'PI Request', schedule: '5th' }
+        { type: 'PIRequest', label: 'PI Request', schedule: '20th' },
+        { type: 'RRReport', label: 'RR Report', schedule: '1st Friday' }
       ];
       if (monthStr.endsWith('-04') || monthStr.endsWith('-08') || monthStr.endsWith('-12') || monthStr === '4' || monthStr === '8' || monthStr === '12' || monthStr === '04' || monthStr === '08') {
         fallbackReports.push({ type: 'BuyBack', label: 'Buy Back', schedule: '15th' });

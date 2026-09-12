@@ -1077,7 +1077,7 @@ function updateStats(){
   let below1 = 0, oneTo3 = 0, greater3 = 0;
   
   DATA.forEach(d => {
-    const dStr = d.entryDate || d.raisedDate || d.createdAt;
+    const dStr = d.receivedDate || d.entryDate || d.raisedDate || d.createdAt;
     if(!dStr) { greater3++; return; }
     const ed = new Date(dStr);
     ed.setHours(0,0,0,0);
@@ -1109,8 +1109,8 @@ function applyFilters(){
 
   filtered = DATA.filter(d =>
     (!q || ((d.refNo||'')+' '+(d.scEng||'')+' '+(d.eng||'')+' '+(d.model||'')+' '+(d.crmRefNo||'')+' '+(d.branch||'')).toLowerCase().includes(q)) &&
-    (!from || (d.entryDate||'') >= from) &&
-    (!to   || (d.entryDate||'') <= to) &&
+    (!from || (d.receivedDate || d.entryDate || '') >= from) &&
+    (!to   || (d.receivedDate || d.entryDate || '') <= to) &&
     (!div  || d.division === div)
   );
   sortArr(); currentPage = 1; renderTable();
@@ -1145,7 +1145,7 @@ function renderTable(){
     tbody.innerHTML = slice.map((d,i)=>{
       const rid = d._id||d.id;
       return `<tr>
-        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.entryDate)}</td>
+        <td style="font-size:11px;color:var(--soft);">${fmtDate(d.receivedDate || d.entryDate)}</td>`
         <td><span class="div-tag">${esc(d.division||'-')}</span></td>
         <td>${typePill(d.type)}</td>
         <td><span class="branch-tag">${esc(d.branch||'-')}</span></td>
@@ -1264,7 +1264,7 @@ function openEditModal(id){
   hydrateDivisionDropdown(d.division);
   hydrateExactPrfObOptions(d);
   const set=(elId,val)=>{const el=document.getElementById(elId);if(el)el.value=val||'';};
-  set('x-entryDate', d.entryDate || d.raisedDate);
+  set('x-entryDate', d.raisedDate || d.entryDate);
   set('x-division', d.division);
   set('x-scEng', d.scEng);
   set('x-type', normalizeToSoType(d.type));
@@ -1272,7 +1272,7 @@ function openEditModal(id){
   set('x-sparesReceivedAtSvc', d.sparesReceivedAtSvc);
   set('x-supplier', d.supplier);
   set('x-partType', d.partType);
-  set('x-receivedDate', d.receivedDate || (d.createdAt ? d.createdAt.substring(0, 10) : ''));
+  set('x-receivedDate', d.receivedDate || d.entryDate || (d.createdAt ? d.createdAt.substring(0, 10) : ''));
   set('x-model', d.model);
   set('x-partsDescription', d.partsDescription);
   set('x-region', d.region);
@@ -1340,13 +1340,13 @@ async function handleFormSave(){
   const payload = editMode ? {
     updatedAt: new Date().toISOString(),
   } : {
-    entryDate:     document.getElementById('x-entryDate').value,
+    entryDate:     document.getElementById('x-receivedDate').value || document.getElementById('x-entryDate').value,
     raisedDate:    document.getElementById('x-entryDate').value,
     type:          normalizeToSoType(document.getElementById('x-type').value),
     division:      document.getElementById('x-division').value,
     dealer:        '',
     refNo:         document.getElementById('x-refNo').value.trim(),
-    receivedDate:  document.getElementById('x-receivedDate').value,
+    receivedDate:  document.getElementById('x-receivedDate').value || document.getElementById('x-entryDate').value,
     executedDate:  '',
     status:        'Open',
     warrantyStatus:document.getElementById('x-warrantyStatus').value,
@@ -1430,7 +1430,7 @@ async function confirmDelete(){
 // -- EXPORT CSV ------------------------------------------------------------
 function exportCSV(){
   const headers=['#','Entry Date','Division','Type','Branch','Engineer','Model','Warr Status','TO/SO Ref No','Status','Spares Rcv Date'];
-  const rows=filtered.map((d,i)=>[i+1, d.entryDate, d.division, normalizeToSoType(d.type), d.branch, d.eng, d.model, d.warrantyStatus, d.refNo, d.status, d.sparesReceivedAtSvc]);
+  const rows=filtered.map((d,i)=>[i+1, d.receivedDate || d.entryDate, d.division, normalizeToSoType(d.type), d.branch, d.eng, d.model, d.warrantyStatus, d.refNo, d.status, d.sparesReceivedAtSvc]);
   const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);

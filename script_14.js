@@ -225,25 +225,26 @@ async function fetchRepairTeamData(usePeriod = false) {
         const val = metrics[m];
         if (!val) continue;
         const t = val.total || 0;
-        const p1 = t > 0 ? Math.round((val['< 1 day']/t)*100) : 0;
-        const p2 = t > 0 ? Math.round((val['1 to 3 days']/t)*100) : 0;
-        const p3 = t > 0 ? Math.round((val['> 3 days']/t)*100) : 0;
-        const prp = t > 0 ? Math.round(((val.RP || 0)/t)*100) : 0;
+        const rp = val.RP || 0;
+        const p1 = t > 0 ? Math.round(((val['< 1 day'] || 0) / t) * 100) : 0;
+        const p2 = t > 0 ? Math.round(((val['1 to 3 days'] || 0) / t) * 100) : 0;
+        const p3 = t > 0 ? Math.round(((val['> 3 days'] || 0) / t) * 100) : 0;
+        const prp = t > 0 ? Math.round((rp / t) * 100) : 0;
         
         reportHtml += `
             <tr>
               <td style="border:1px solid #cbd5e1; padding:10px; font-weight:600; color:#334155;">${m}</td>
-              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p1}% <br><span style="color:#64748b;font-size:11px;">(${val['< 1 day']})</span></td>
-              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p2}% <br><span style="color:#64748b;font-size:11px;">(${val['1 to 3 days']})</span></td>
-              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p3}% <br><span style="color:#64748b;font-size:11px;">(${val['> 3 days']})</span></td>
-              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${prp}% <br><span style="color:#64748b;font-size:11px;font-weight:normal;">(${val.RP || 0})</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p1}% <br><span style="color:#64748b;font-size:11px;">(${val['< 1 day'] || 0})</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p2}% <br><span style="color:#64748b;font-size:11px;">(${val['1 to 3 days'] || 0})</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center;">${p3}% <br><span style="color:#64748b;font-size:11px;">(${val['> 3 days'] || 0})</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#b91c1c;">${prp}% <br><span style="color:#64748b;font-size:11px;font-weight:normal;">(${rp})</span></td>
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${t}</td>
             </tr>`;
             
         totalL1 += val['< 1 day'] || 0;
         total1to3 += val['1 to 3 days'] || 0;
         totalG3 += val['> 3 days'] || 0;
-        totalRP += val.RP || 0;
+        totalRP += rp;
         totalCount += t;
       }
       
@@ -252,7 +253,6 @@ async function fetchRepairTeamData(usePeriod = false) {
       const avgP3 = totalCount > 0 ? Math.round((totalG3/totalCount)*100) : 0;
       const avgPRP = totalCount > 0 ? Math.round((totalRP/totalCount)*100) : 0;
       
-      // The user wants remarks based on both < 1 day and 1 to 3 days averages
       const perfScore = avgP1 + avgP2;
       let performanceRemark = 'Very Poor';
       if (perfScore >= 91) performanceRemark = 'Outstanding';
@@ -271,7 +271,7 @@ async function fetchRepairTeamData(usePeriod = false) {
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold;">${avgP1}% <br><span style="color:#64748b;font-size:11px;">(${totalL1})</span></td>
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold;">${avgP2}% <br><span style="color:#64748b;font-size:11px;">(${total1to3})</span></td>
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold;">${avgP3}% <br><span style="color:#64748b;font-size:11px;">(${totalG3})</span></td>
-              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${avgPRP}% <br><span style="color:#64748b;font-size:11px;font-weight:normal;">(${totalRP})</span></td>
+              <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#b91c1c;">${avgPRP}% <br><span style="color:#64748b;font-size:11px;font-weight:normal;">(${totalRP})</span></td>
               <td style="border:1px solid #cbd5e1; padding:10px; text-align:center; font-weight:bold; color:#0f172a;">${totalCount}</td>
             </tr>
             <tr style="background:#e2e8f0;">
@@ -518,8 +518,10 @@ async function fetchProductTeamData(usePeriod = false) {
         </tbody>
       </table>
     </div>`;
+    
+    const scRemarksBlock = `<div style="margin-top:20px;padding:15px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;"><label style="display:block;font-weight:600;margin-bottom:8px;font-size:13px;">SC Incharge Remarks (Optional)</label><textarea id="sc-remarks-productteam" style="width:100%;height:60px;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-family:Inter;font-size:13px;" placeholder="Enter remarks to include in the PDF export..."></textarea></div>`;
 
-    res.innerHTML = reportHtml;
+    res.innerHTML = reportHtml + scRemarksBlock;
 
   } catch (error) {
     console.error(error);
