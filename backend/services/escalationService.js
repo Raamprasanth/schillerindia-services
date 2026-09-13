@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const Empfrn = require('../models/EmpFRN');
 const EstimationPending = require('../models/EstimationPending');
 const Service = require('../models/empservice');
+const UnderRepair = require('../models/UnderRepair');
 const EscalationRunLog = require('../models/EscalationRunLog');
 const EscalationQueue = require('../models/EscalationQueue');
 const AppSetting = require('../models/AppSetting');
@@ -990,6 +991,15 @@ async function collectEscalationData(slotWindow) {
     if (doc.module === 'est') estimationRows.push(hydratedQueueRow(doc, estMap, buildEstimationEscalationRow));
   });
 
+  if (frnRows.length === 0 && estimationRows.length === 0) {
+    const [sourceFrns, sourceEsts] = await Promise.all([
+      Empfrn.find({ escalationQueuedAt: { $ne: null } }).sort({ createdAt: -1 }).lean(),
+      EstimationPending.find({ escalationQueuedAt: { $ne: null } }).sort({ createdAt: -1 }).lean(),
+    ]);
+    sourceFrns.forEach(doc => frnRows.push(buildFrnEscalationRow(doc)));
+    sourceEsts.forEach(doc => estimationRows.push(buildEstimationEscalationRow(doc)));
+  }
+
   return {
     frnRows,
     estimationRows,
@@ -1015,6 +1025,18 @@ async function collectUrEscalationData(slotWindow) {
       for (const [k, v] of scrapMap.entries()) {
         serviceMap.set(k, v);
       }
+    }
+    if (queueDocs.length === 0) {
+      const Scrap = require('../models/Scrap');
+      const [activeScrap, activeSvc] = await Promise.all([
+        Scrap.find({}).sort({ createdAt: -1 }).lean(),
+        Service.find({ typeWork: 'Scrap' }).sort({ createdAt: -1 }).lean(),
+      ]);
+      const combinedRows = [...activeScrap, ...activeSvc];
+      return {
+        rows: combinedRows.map(row => buildUrEscalationRow(row)),
+        queueDocs: [],
+      };
     }
   } else if (moduleName === 'ur_followup') {
     const missingIds = validObjectIds(queueDocs, moduleName).filter(id => !serviceMap.has(id));
@@ -1073,6 +1095,15 @@ async function collectSrEscalationData(slotWindow) {
     if (doc.module === 'sr_frn') frnRows.push(hydratedQueueRow(doc, frnMap, buildFrnEscalationRow));
     if (doc.module === 'sr_est') estimationRows.push(hydratedQueueRow(doc, estMap, buildEstimationEscalationRow));
   });
+
+  if (frnRows.length === 0 && estimationRows.length === 0) {
+    const [sourceFrns, sourceEsts] = await Promise.all([
+      Empfrn.find({ srEscalationQueuedAt: { $ne: null } }).sort({ createdAt: -1 }).lean(),
+      EstimationPending.find({ srEscalationQueuedAt: { $ne: null } }).sort({ createdAt: -1 }).lean(),
+    ]);
+    sourceFrns.forEach(doc => frnRows.push(buildFrnEscalationRow(doc)));
+    sourceEsts.forEach(doc => estimationRows.push(buildEstimationEscalationRow(doc)));
+  }
 
   return { frnRows, estimationRows, queueDocs };
 }
@@ -1242,7 +1273,6 @@ async function collectToEscalationData(slotWindow) {
     module: { $in: ['to_frn', 'to_est', 'to_ur'] },
     queuedAt: { $lte: slotWindow.windowEnd },
   }).sort({ queuedAt: 1 }).lean();
-  const UnderRepair = mongoose.model('UnderRepair');
   const [frnMap, estMap, serviceMap, urMap] = await Promise.all([
     loadSourceMap(Empfrn, validObjectIds(rows, 'to_frn')),
     loadSourceMap(EstimationPending, validObjectIds(rows, 'to_est')),
@@ -1263,6 +1293,18 @@ async function collectToEscalationData(slotWindow) {
       const sourceMap = new Map([[String(item.sourceId), source]]);
       return hydratedQueueRow(item, sourceMap, (src) => buildToEscalationRow(src, item.row?.TO_ITEMS || []));
     });
+
+  if (frnRows.length === 0 && estimationRows.length === 0 && underRepairRows.length === 0) {
+    const [sourceFrns, sourceEsts, sourceUr, sourceSvc] = await Promise.all([
+      Empfrn.find({ toEscalationQueuedAt: { $ne: null } }).sort({ createdAt: -1 }).lean(),
+      EstimationPending.find({ toEscalationQueuedAt: { $ne: null } }).sort({ createdAt: -1 }).lean(),
+      UnderRepair.find({ toEscalationQueuedAt: { $ne: null } }).sort({ createdAt: -1 }).lean(),
+      Service.find({ toEscalationQueuedAt: { $ne: null } }).sort({ createdAt: -1 }).lean(),
+    ]);
+    sourceFrns.forEach(doc => frnRows.push(buildToEscalationRow(doc, [])));
+    sourceEsts.forEach(doc => estimationRows.push(buildToEscalationRow(doc, [])));
+    [...sourceUr, ...sourceSvc].forEach(doc => underRepairRows.push(buildToEscalationRow(doc, [])));
+  }
 
   return {
     frnRows,
