@@ -2018,7 +2018,12 @@ function initEscalationScheduler() {
   let schedulerBusy = false;
   const timer = setInterval(async () => {
     if (schedulerBusy) return;
-    if (!mongoose.connection || mongoose.connection.readyState !== 1) return;
+    if (!mongoose.connection || mongoose.connection.readyState !== 1) {
+      if (typeof global.ensureMongoConnection === 'function') {
+        global.ensureMongoConnection();
+      }
+      return;
+    }
     schedulerBusy = true;
     try {
       const referenceDate = new Date();
