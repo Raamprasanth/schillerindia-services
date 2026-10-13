@@ -991,14 +991,7 @@ async function collectEscalationData(slotWindow) {
     if (doc.module === 'est') estimationRows.push(hydratedQueueRow(doc, estMap, buildEstimationEscalationRow));
   });
 
-  if (frnRows.length === 0 && estimationRows.length === 0) {
-    const [sourceFrns, sourceEsts] = await Promise.all([
-      Empfrn.find({ escalationQueuedAt: { $ne: null } }).sort({ createdAt: -1 }).lean(),
-      EstimationPending.find({ escalationQueuedAt: { $ne: null } }).sort({ createdAt: -1 }).lean(),
-    ]);
-    sourceFrns.forEach(doc => frnRows.push(buildFrnEscalationRow(doc)));
-    sourceEsts.forEach(doc => estimationRows.push(buildEstimationEscalationRow(doc)));
-  }
+
 
   return {
     frnRows,
@@ -1096,24 +1089,29 @@ async function collectSrEscalationData(slotWindow) {
     if (doc.module === 'sr_est') estimationRows.push(hydratedQueueRow(doc, estMap, buildEstimationEscalationRow));
   });
 
-  if (frnRows.length === 0 && estimationRows.length === 0) {
-    const [sourceFrns, sourceEsts] = await Promise.all([
-      Empfrn.find({ srEscalationQueuedAt: { $ne: null } }).sort({ createdAt: -1 }).lean(),
-      EstimationPending.find({ srEscalationQueuedAt: { $ne: null } }).sort({ createdAt: -1 }).lean(),
-    ]);
-    sourceFrns.forEach(doc => frnRows.push(buildFrnEscalationRow(doc)));
-    sourceEsts.forEach(doc => estimationRows.push(buildEstimationEscalationRow(doc)));
-  }
-
   return { frnRows, estimationRows, queueDocs };
 }
 
 async function clearSrEscalationQueue(queueDocs = []) {
   if (!queueDocs.length) return;
   const queueIds = queueDocs.map((doc) => doc._id).filter(Boolean);
+  const frnIds = [...new Set(queueDocs.filter((doc) => doc.module === 'sr_frn' && doc.sourceId).map((doc) => doc.sourceId))];
+  const estIds = [...new Set(queueDocs.filter((doc) => doc.module === 'sr_est' && doc.sourceId).map((doc) => doc.sourceId))];
 
   const ops = [];
   if (queueIds.length) ops.push(EscalationQueue.deleteMany({ _id: { $in: queueIds } }));
+  if (frnIds.length) {
+    ops.push(Empfrn.updateMany(
+      { _id: { $in: frnIds } },
+      { $set: { srEscalationQueuedAt: null, srEscalationQueuedBy: '' } }
+    ));
+  }
+  if (estIds.length) {
+    ops.push(EstimationPending.updateMany(
+      { _id: { $in: estIds } },
+      { $set: { srEscalationQueuedAt: null, srEscalationQueuedBy: '' } }
+    ));
+  }
   await Promise.all(ops);
 }
 
@@ -1294,17 +1292,7 @@ async function collectToEscalationData(slotWindow) {
       return hydratedQueueRow(item, sourceMap, (src) => buildToEscalationRow(src, item.row?.TO_ITEMS || []));
     });
 
-  if (frnRows.length === 0 && estimationRows.length === 0 && underRepairRows.length === 0) {
-    const [sourceFrns, sourceEsts, sourceUr, sourceSvc] = await Promise.all([
-      Empfrn.find({ toEscalationQueuedAt: { $ne: null } }).sort({ createdAt: -1 }).lean(),
-      EstimationPending.find({ toEscalationQueuedAt: { $ne: null } }).sort({ createdAt: -1 }).lean(),
-      UnderRepair.find({ toEscalationQueuedAt: { $ne: null } }).sort({ createdAt: -1 }).lean(),
-      Service.find({ toEscalationQueuedAt: { $ne: null } }).sort({ createdAt: -1 }).lean(),
-    ]);
-    sourceFrns.forEach(doc => frnRows.push(buildToEscalationRow(doc, [])));
-    sourceEsts.forEach(doc => estimationRows.push(buildToEscalationRow(doc, [])));
-    [...sourceUr, ...sourceSvc].forEach(doc => underRepairRows.push(buildToEscalationRow(doc, [])));
-  }
+
 
   return {
     frnRows,

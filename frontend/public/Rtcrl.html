@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <script>(function(){
-  const token = sessionStorage.getItem('schiller_token');
+  const token = sessionStorage.getItem('schiller_token') || localStorage.getItem('schiller_token');
   if (!token) { window.location.href = 'login.html'; }
 })();</script>
 <title>SchillerIndia - RT CRL</title>
@@ -453,9 +453,9 @@ table.crl-table tbody tr:last-child td{border-bottom:none;}
 
 <script>
 const API      = '';
-const LUSER    = JSON.parse(sessionStorage.getItem('schiller_user') || '{}');
+const LUSER    = JSON.parse(sessionStorage.getItem('schiller_user') || localStorage.getItem('schiller_user') || '{}');
 const EMP_NAME = LUSER.name || '';
-const RAW_ROLE = (LUSER.role || sessionStorage.getItem('schiller_role') || '').toLowerCase();
+const RAW_ROLE = (LUSER.role || sessionStorage.getItem('schiller_role') || localStorage.getItem('schiller_role') || '').toLowerCase();
 
 let allData = [], filtered = [], sortKey = 'closedDate', sortDir = -1, currentPage = 1;
 let activeCat = '';
@@ -469,7 +469,7 @@ let activeCat = '';
   loadData();
 })();
 
-function getToken()    { return sessionStorage.getItem('schiller_token') || ''; }
+function getToken()    { return sessionStorage.getItem('schiller_token') || localStorage.getItem('schiller_token') || ''; }
 function authHeaders() { return { 'Content-Type':'application/json', Authorization:'Bearer '+getToken() }; }
 function handleUnauth(r) {
   if (r.status === 401) {
@@ -490,19 +490,22 @@ async function loadData() {
     handleUnauth(res);
     if (res.status === 404) {
       showError('The <code>/api/rtcrl</code> route does not exist yet.<br>Add it to server.js and it will show data automatically.');
-      allData = []; applyFilters(); updateStats(); return;
+      allData = []; updateStats(); return;
     }
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || ('HTTP ' + res.status));
+    }
     const data = await res.json();
     const list = data.data || data;
-    allData = list.map(d => ({ ...d, id: d._id || d.id, noOfDays: calcDays(d.entryDate, d.closedDate) }));
+    allData = Array.isArray(list) ? list.map(d => ({ ...d, id: d._id || d.id, noOfDays: calcDays(d.entryDate, d.closedDate) })) : [];
     applyFilters(); updateStats();
     showToast('Loaded ' + allData.length + ' closed record' + (allData.length !== 1 ? 's' : ''), 'info');
   } catch (e) {
     if (e.message === 'Unauthorized' || e.message === 'Forbidden') return;
     showError('Could not load records: ' + esc(e.message));
     showToast('Load failed: ' + e.message, 'err');
-    allData = []; applyFilters(); updateStats();
+    allData = []; updateStats();
   } finally { }
 }
 

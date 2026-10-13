@@ -21,6 +21,7 @@ const router  = express.Router();
 const Rtcrr   = require('../models/Rtcrr');
 const EmpFRN  = require('../models/EmpFRN');
 const Service = require('../models/Service');
+const Division = require('../models/Division');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPER
@@ -33,15 +34,18 @@ const fail = (res, code, message, err = null) => {
 function cleanDivision(value, fallback = '') {
   const candidate = String(value || '').trim();
   const fallbackValue = String(fallback || '').trim();
-  const statusWords = new Set(['closed', 'completed', 'pending', 'inprogress', 'in_progress', 'on_hold', 'hold', 'scrapped']);
+  const statusWords = new Set(['closed', 'completed', 'pending', 'inprogress', 'in_progress', 'on_hold', 'hold', 'scrapped', 'other']);
   return candidate && !statusWords.has(candidate.toLowerCase()) ? candidate : fallbackValue;
 }
 
 async function attachActualDivisions(records) {
   if (!records || !records.length) return records;
 
-  const scRefNos = records.map(r => r.scRefNo).filter(Boolean);
-  const defGirNos = records.map(r => r.defGirNo).filter(Boolean);
+  const needsLookup = records.filter(r => !cleanDivision(r.division));
+  if (!needsLookup.length) return records;
+
+  const scRefNos = needsLookup.map(r => r.scRefNo).filter(Boolean);
+  const defGirNos = needsLookup.map(r => r.defGirNo).filter(Boolean);
   if (!scRefNos.length && !defGirNos.length) return records;
 
   const map = {};
@@ -75,7 +79,7 @@ async function attachActualDivisions(records) {
     console.error('Rtcrr attachActualDivisions error:', err.message);
   }
 
-  records.forEach(r => {
+  needsLookup.forEach(r => {
     let actualDiv = null;
     if (r.scRefNo) actualDiv = map['SC_' + String(r.scRefNo).toUpperCase()];
     if (!actualDiv && r.defGirNo) actualDiv = map['GIR_' + String(r.defGirNo).toUpperCase()];

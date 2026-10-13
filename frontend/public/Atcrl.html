@@ -469,7 +469,7 @@ async function loadData() {
     handleUnauth(res);
     if (res.status === 404) {
       showError('The <code>/api/atcrl</code> route does not exist yet.<br>Add it to server.js and it will show data automatically.');
-      allData = []; applyFilters(); updateStats(); return;
+      allData = []; updateStats(); return;
     }
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
@@ -481,7 +481,7 @@ async function loadData() {
     if (e.message === 'Unauthorized' || e.message === 'Forbidden') return;
     showError('Could not load records: ' + esc(e.message));
     showToast('Load failed: ' + e.message, 'err');
-    allData = []; applyFilters(); updateStats();
+    allData = []; updateStats();
   } finally { }
 }
 
