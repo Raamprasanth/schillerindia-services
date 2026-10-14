@@ -458,8 +458,9 @@ async function loadData() {
     const res = await fetch(API + '/api/emp/completed-frn', { headers: authHeaders() });
     handleUnauth(res);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    DATA = await res.json();
-    DATA = DATA.map(d => ({
+    const raw = await res.json();
+    const rows = Array.isArray(raw) ? raw : (Array.isArray(raw?.data) ? raw.data : []);
+    DATA = rows.map(d => ({
       ...d,
       id: d._id || d.id,
       eng: d.eng || d.engineer || d.engineerName || d.fieldEngineer || '',

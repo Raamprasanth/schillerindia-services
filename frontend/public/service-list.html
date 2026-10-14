@@ -397,15 +397,15 @@ table.svc-table tbody tr:last-child td{border-bottom:none;}
         <div class="table-top">
           <div class="show-entries">
             Show
-            <select class="filter-select" id="per-page" style="padding:5px 8px;width:auto;" onchange="renderTable()">
-              <option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option>
+            <select class="filter-select" id="per-page" style="padding:5px 8px;width:auto;" onchange="loadPage(1)">
+              <option value="10">10</option><option value="25">25</option><option value="50" selected>50</option><option value="100">100</option>
             </select>
             entries
             <span id="count-chip" style="margin-left:8px;background:rgba(0,119,204,0.08);color:var(--accent);font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:10px;border:1px solid rgba(0,119,204,0.15);">- total</span>
           </div>
           <div class="search-box">
             <span class="search-icon">&#128269;</span>
-            <input type="text" id="tbl-search" placeholder="Search..." oninput="applyFilters()"/>
+            <input type="text" id="tbl-search" placeholder="Search..." oninput="applyFilters(true)"/>
           </div>
         </div>
         <div class="table-wrap">
@@ -863,30 +863,74 @@ function handleUnauth(res) {
   if (res.status===401) { showToast('Session expired  logging out.','err'); setTimeout(()=>{ sessionStorage.clear(); localStorage.clear(); window.location.href='login.html'; },1500); throw new Error('Unauthorized'); }
 }
 
-async function apiGetAll() { const res = await fetch(API_BASE_URL+'/api/services',{headers:authHeaders()}); handleUnauth(res); if(!res.ok) throw new Error('HTTP '+res.status); return res.json(); }
-async function apiCreate(record) { const res = await fetch(API_BASE_URL+'/api/services',{method:'POST',headers:authHeaders(),body:JSON.stringify(record)}); handleUnauth(res); if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Save failed');} return res.json(); }
-async function apiUpdate(id,record) { const res = await fetch(API_BASE_URL+'/api/services/'+id,{method:'PUT',headers:authHeaders(),body:JSON.stringify(record)}); handleUnauth(res); if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Update failed');} return res.json(); }
-async function apiDelete(id) { const res = await fetch(API_BASE_URL+'/api/services/'+id,{method:'DELETE',headers:authHeaders()}); handleUnauth(res); if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Delete failed');} return res.json(); }
+async function fetchWithRetry(url, options = {}, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    const res = await fetch(url, options);
+    if (res.status === 503 && i < retries - 1) {
+      await new Promise(r => setTimeout(r, 2000));
+      continue;
+    }
+    return res;
+  }
+}
+async function apiGetPage(params) {
+  const qs = new URLSearchParams(params).toString();
+  const res = await fetchWithRetry(API_BASE_URL+'/api/services?'+qs,{headers:authHeaders()});
+  handleUnauth(res);
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  return res.json(); // { data, total, page, pages }
+}
+async function apiCreate(record) { const res = await fetchWithRetry(API_BASE_URL+'/api/services',{method:'POST',headers:authHeaders(),body:JSON.stringify(record)}); handleUnauth(res); if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Save failed');} return res.json(); }
+async function apiUpdate(id,record) { const res = await fetchWithRetry(API_BASE_URL+'/api/services/'+id,{method:'PUT',headers:authHeaders(),body:JSON.stringify(record)}); handleUnauth(res); if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Update failed');} return res.json(); }
+async function apiDelete(id) { const res = await fetchWithRetry(API_BASE_URL+'/api/services/'+id,{method:'DELETE',headers:authHeaders()}); handleUnauth(res); if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Delete failed');} return res.json(); }
 
-let services=[], filtered=[], sortKey='entryDate', sortDir=-1, currentPage=1, editingId=null;
+let services=[], totalRecords=0, totalPages=1, sortKey='entryDate', sortDir=-1, currentPage=1, editingId=null;
+let _searchDebounce=null;
 
-async function loadServices() {
+function buildPageParams(page) {
+  const perPage = parseInt((document.getElementById('per-page')||{}).value)||50;
+  const q       = ((document.getElementById('tbl-search')||{}).value||'').trim();
+  const stat    = (document.getElementById('fl-status')||{}).value||'';
+  const eng     = (document.getElementById('fl-eng')||{}).value||'';
+  const div     = (document.getElementById('fl-div')||{}).value||'';
+  const from    = (document.getElementById('fl-from')||{}).value||'';
+  const to      = (document.getElementById('fl-to')||{}).value||'';
+  const mine    = ((document.getElementById('fl-mine')||{}).checked)?'1':'';
+  const params  = { page: page||1, limit: perPage };
+  if(q)    params.search=q;
+  if(stat) params.status=stat;
+  if(eng)  params.eng=eng;
+  if(div)  params.div=div;
+  if(from) params.from=from;
+  if(to)   params.to=to;
+  if(mine) params.mine=mine;
+  return params;
+}
+
+async function loadPage(page) {
   setLoading(true);
+  const tbody = document.getElementById('svc-tbody');
+  if(tbody) tbody.innerHTML='<tr><td colspan="18" style="text-align:center;padding:32px;color:var(--muted);font-size:13px;">Loading&hellip;</td></tr>';
   try {
-    const data = await apiGetAll();
-    services = data.map(s=>({...s,id:s._id||s.id}));
+    const result    = await apiGetPage(buildPageParams(page||currentPage));
+    services        = (result.data||[]).map(s=>({...s,id:s._id||s.id}));
+    totalRecords    = result.total||0;
+    totalPages      = result.pages||1;
+    currentPage     = result.page||(page||1);
     populateEngFilter();
-    applyFilters();
-    showToast('Loaded '+services.length+' record'+(services.length!==1?'s':''),'info');
+    renderTable();
+    if((page||currentPage)===1) showToast('Loaded '+totalRecords+' record'+(totalRecords!==1?'s':''),'info');
   } catch(e) {
     if(e.message==='Unauthorized') return;
     showToast('Cannot load records: '+e.message,'err');
-    services=[]; applyFilters();
+    services=[]; totalRecords=0; totalPages=1; renderTable();
   } finally { setLoading(false); }
 }
 
+function loadServices() { return loadPage(1); }
+
 function populateEngFilter() {
-  const engs = [...new Set(services.map(s=>s.eng||s.scEng).filter(Boolean))].sort();
+  const engs = [...new Set(services.flatMap(s=>[s.eng,s.scEng]).filter(Boolean))].sort();
   const sel  = document.getElementById('fl-eng');
   const existing = new Set(Array.from(sel.options).map(o=>o.value).filter(Boolean));
   engs.forEach(e=>{ if(!existing.has(e)){ const o=document.createElement('option');o.value=e;o.textContent=e;sel.appendChild(o); } });
@@ -910,7 +954,10 @@ function populateEngFilter() {
       cell.remove();
     }
   });
+  const today = new Date().toISOString().split('T')[0];
+  ['f-frndate','f-sercomm','f-rcvdatesc','f-doi','f-entrydate','fl-from','fl-to'].forEach(id=>{ const el=document.getElementById(id); if(el) el.max=today; });
   fetchFormData();
+  loadDivisions();
   loadServices();
   updateRepTypeOptions();
   
@@ -1012,25 +1059,13 @@ function getPreviousEntry() {
 
 function clearDateFilter() { document.getElementById('fl-from').value=''; document.getElementById('fl-to').value=''; applyFilters(); }
 
-function applyFilters() {
-  const q    = document.getElementById('tbl-search').value.toLowerCase();
-  const stat = document.getElementById('fl-status').value;
-  const eng  = document.getElementById('fl-eng').value;
-  const div  = document.getElementById('fl-div').value;
-  const from = document.getElementById('fl-from').value;
-  const to   = document.getElementById('fl-to').value;
-  const mine = document.getElementById('fl-mine').checked;
-  filtered = services.filter(s=>{
-    const mQ    = !q    || ((s.scReNo||'')+' '+(s.custName||'')+' '+(s.eng||'')+' '+(s.scEng||'')+' '+(s.frnNo||'')+' '+(s.model||'')+' '+(s.defGir||'')).toLowerCase().includes(q);
-    const mS    = !stat || s.status===stat;
-    const mE    = !eng  || s.eng===eng||s.scEng===eng;
-    const mD    = !div  || String(s.division)===div || s.divisionName===div;
-    const mF    = !from || (s.entryDate||'')>=from;
-    const mT    = !to   || (s.entryDate||'')<=to;
-    const mMine = !mine || isOwner(s);
-    return mQ&&mS&&mE&&mD&&mF&&mT&&mMine;
-  });
-  sortArr(); currentPage=1; renderTable();
+function applyFilters(debounceSearch) {
+  if(debounceSearch) {
+    clearTimeout(_searchDebounce);
+    _searchDebounce = setTimeout(()=>loadPage(1), 300);
+  } else {
+    loadPage(1);
+  }
 }
 
 function sortBy(key) {
@@ -1048,7 +1083,7 @@ function updateSortUI(key) {
     }
   });
 }
-function sortArr()   { filtered.sort((a,b)=>{const av=String(a[sortKey]||'').toLowerCase(),bv=String(b[sortKey]||'').toLowerCase();return av<bv?-sortDir:av>bv?sortDir:0;}); }
+function sortArr()   { services.sort((a,b)=>{const av=String(a[sortKey]||'').toLowerCase(),bv=String(b[sortKey]||'').toLowerCase();return av<bv?-sortDir:av>bv?sortDir:0;}); }
 
 function getRoutingTags(s) {
   const tags=[];
@@ -1060,17 +1095,15 @@ function getRoutingTags(s) {
 }
 
 function renderTable() {
-  const perPage = parseInt(document.getElementById('per-page').value);
-  const total   = filtered.length;
-  const pages   = Math.max(1,Math.ceil(total/perPage));
-  if(currentPage>pages) currentPage=pages;
-  const slice = filtered.slice((currentPage-1)*perPage,currentPage*perPage);
+  const perPage = parseInt((document.getElementById('per-page')||{}).value)||50;
+  const total   = totalRecords;
+  const pages   = totalPages;
   (document.getElementById('count-chip')||{}).textContent = total+' entr'+(total===1?'y':'ies');
   const tbody = document.getElementById('svc-tbody');
-  if(!slice.length){
-    tbody.innerHTML=`<tr><td colspan="18" style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">${services.length?'No records match the current filters.':'No service records yet. Click <strong>+ Add New Record</strong>.'}</td></tr>`;
+  if(!services.length){
+    tbody.innerHTML=`<tr><td colspan="18" style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">No service records found.</td></tr>`;
   } else {
-    tbody.innerHTML=slice.map(s=>{
+    tbody.innerHTML=services.map(s=>{
       const rowId=s._id||s.id; const owner=isOwner(s);
       const sc=s.status==='completed'?'sp-completed':s.status==='pending'?'sp-pending':s.status==='escalated'?'sp-escalated':'sp-inprogress';
       const lbl=s.status?s.status.replace('_',' ').replace(/\b\w/g,c=>c.toUpperCase()):'';
@@ -1115,7 +1148,7 @@ function renderPagination(pages) {
   el.innerHTML=h;
 }
 function getRange(c,t){if(t<=7)return Array.from({length:t},(_,i)=>i+1);if(c<=4)return[1,2,3,4,5,'...',t];if(c>=t-3)return[1,'...',t-4,t-3,t-2,t-1,t];return[1,'...',c-1,c,c+1,'...',t];}
-function changePage(p){currentPage=p;renderTable();}
+function changePage(p){currentPage=p;loadPage(p);}
 
 function showForm() {
   autoFillFromLogin();
@@ -1379,7 +1412,7 @@ async function submitForm() {
 
 function exportCSV() {
   const rows=[['Status','Entry Date','Sc ReNo','Sc Eng','FRN No','Branch','Eng','Cust Name','Model','Unit Sts','Def Mod','Def Gir','Type of Work','Auto-sent to','PD PFRN','PD ESTP','PD URP','PD SCC']];
-  filtered.forEach(s=>{
+  services.forEach(s=>{
     const tags=[];
     if(FRN_UNIT_STATUSES.includes(s.unitSts)&&(s.repType==='NA'||s.frnCreated))tags.push('Pending FRN');
     if(EST_UNIT_STATUSES.includes(s.unitSts)&&s.repType!=='BS/SO'&&(s.repType==='NA'||s.estPending))tags.push('Estimation Pending');
@@ -1387,10 +1420,10 @@ function exportCSV() {
     if(s.repType==='TO/ADV SO')tags.push('Under Repair');
     rows.push([s.status,s.entryDate,s.scReNo,s.scEng,s.frnNo,s.branch,s.eng,s.custName||s.customer,s.model,s.unitSts,s.defMod,s.defGir,s.typeWork||s.type,tags.join(' + ')||'',s.pdPfrn,s.pdEstp||s.pdObp,s.pdUrp,s.pdScc]);
   });
-  const csv=rows.map(r=>r.map(v=>`"${v||''}"`).join(',')).join('\n');
+  const csv=rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
   a.download='all-services-'+new Date().toISOString().split('T')[0]+'.csv'; a.click();
-  showToast('CSV exported  '+filtered.length+' records.','ok');
+  showToast('CSV exported '+services.length+' records.','ok');
 }
 
 function showToast(msg,type='ok'){

@@ -220,15 +220,15 @@ router.get('/', protect, async (req, res) => {
   try {
     const visibilityFilter = await getCurrentEmployeeDivisionFilter(req.user);
 
-    // ── Pagination params ─────────────────────────────────────
-    const hasPagination = req.query.page !== undefined || req.query.limit !== undefined;
-    const page  = Math.max(1, parseInt(req.query.page)  || 1);
-    const limit = hasPagination ? Math.min(200, Math.max(1, parseInt(req.query.limit) || 50)) : 0;
-    const skip  = hasPagination ? (page - 1) * limit : 0;
-
     const isUnderRepairQuery = ['under_repair', 'underrepair', 'under repair'].includes(
       String(req.query.status || req.query.type || '').toLowerCase().trim()
     );
+
+    // ── Pagination params ─────────────────────────────────────
+    const hasPagination = (req.query.page !== undefined || req.query.limit !== undefined) && (!isUnderRepairQuery || req.query.page !== undefined);
+    const page  = Math.max(1, parseInt(req.query.page)  || 1);
+    const limit = isUnderRepairQuery && !req.query.page ? 1500 : (hasPagination ? Math.min(200, Math.max(1, parseInt(req.query.limit) || 50)) : 0);
+    const skip  = hasPagination ? (page - 1) * limit : 0;
 
     let queryFilter = { ...visibilityFilter };
     if (isUnderRepairQuery) {

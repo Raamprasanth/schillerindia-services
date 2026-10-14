@@ -1,5 +1,6 @@
 // routes/completedFrnRoutes.js
 const router       = require('express').Router();
+const mongoose     = require('mongoose');
 const CompletedFRN = require('../models/CompletedFRN');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 
@@ -59,17 +60,29 @@ async function enrichCompletedFRN(docs) {
   const missing = dtos.filter(d => (!d.eng && !d.engineer) || !d.customer || !d.partNo);
   if (!missing.length) return dtos;
 
-  const serviceIds = missing.map(d => String(d.serviceId)).filter(Boolean);
-  const scRnos = missing.map(d => String(d.scRno)).filter(Boolean);
+  const rawServiceIds = missing.map(d => String(d.serviceId || '').trim()).filter(Boolean);
+  const scRnos = [...new Set(missing.map(d => String(d.scRno || '').trim()).filter(Boolean))];
+  const validObjectIds = [...new Set(rawServiceIds.filter(id => mongoose.Types.ObjectId.isValid(id)).map(id => new mongoose.Types.ObjectId(id)))];
+  const stringServiceIds = [...new Set(rawServiceIds)];
+
+  const serviceOr = [];
+  if (validObjectIds.length) serviceOr.push({ _id: { $in: validObjectIds } });
+  if (stringServiceIds.length) serviceOr.push({ serviceId: { $in: stringServiceIds } });
+  if (scRnos.length) serviceOr.push({ scReNo: { $in: scRnos } });
+
+  const urOr = [];
+  if (stringServiceIds.length) urOr.push({ serviceId: { $in: stringServiceIds } });
+  if (scRnos.length) urOr.push({ scRno: { $in: scRnos } });
 
   const [services, underRepairs] = await Promise.all([
-    serviceIds.length || scRnos.length ? Service.find({ $or: [{ _id: { $in: serviceIds } }, { scReNo: { $in: scRnos } }] }).lean().catch(() => []) : [],
-    serviceIds.length || scRnos.length ? UnderRepair.find({ $or: [{ serviceId: { $in: serviceIds } }, { scRno: { $in: scRnos } }] }).lean().catch(() => []) : []
+    serviceOr.length ? Service.find({ $or: serviceOr }).select('_id serviceId scReNo eng engineer engineerName fieldEngineer custName customer customerName partNo partNumber').lean().catch(() => []) : [],
+    urOr.length ? UnderRepair.find({ $or: urOr }).select('serviceId scRno eng engineer custName customer partNo').lean().catch(() => []) : []
   ]);
 
   const svcMap = new Map();
   (services || []).forEach(s => {
     svcMap.set(String(s._id), s);
+    if (s.serviceId) svcMap.set(String(s.serviceId), s);
     if (s.scReNo) svcMap.set(String(s.scReNo), s);
   });
   const urMap = new Map();
@@ -79,8 +92,10 @@ async function enrichCompletedFRN(docs) {
   });
 
   return dtos.map(dto => {
-    const linkedSvc = svcMap.get(String(dto.serviceId)) || svcMap.get(String(dto.scRno));
-    const linkedUr = urMap.get(String(dto.serviceId)) || urMap.get(String(dto.scRno));
+    const sId = String(dto.serviceId || '');
+    const scNo = String(dto.scRno || '');
+    const linkedSvc = (sId && svcMap.get(sId)) || (scNo && svcMap.get(scNo));
+    const linkedUr = (sId && urMap.get(sId)) || (scNo && urMap.get(scNo));
 
     if (!dto.eng) {
       dto.eng = linkedUr?.eng || linkedUr?.engineer || linkedSvc?.eng || linkedSvc?.engineer || linkedSvc?.engineerName || linkedSvc?.fieldEngineer || '';
@@ -108,7 +123,26 @@ router.get('/', protect, async (req, res) => {
       filter = await getServiceIdsFilter(req.user);
     }
 
-    const docs = await CompletedFRN.find(filter).sort({ createdAt: -1 }).lean();
+    const { region, unitStatus, typeWork, from, to, eng, search } = req.query;
+    if (region)     filter.region     = region;
+    if (unitStatus) filter.unitStatus = unitStatus;
+    if (typeWork)   filter.typeWork   = new RegExp(typeWork, 'i');
+    if (eng)        filter.$or        = [{ eng: new RegExp(eng, 'i') }, { raEng: new RegExp(eng, 'i') }];
+    if (from || to) {
+      filter.entryDate = {};
+      if (from) filter.entryDate.$gte = from;
+      if (to)   filter.entryDate.$lte = to;
+    }
+    if (search) {
+      const sRe = new RegExp(String(search).trim(), 'i');
+      filter.$or = [
+        { scRno: sRe }, { frnNo: sRe }, { customer: sRe },
+        { model: sRe }, { partNo: sRe }, { defMod: sRe }, { defGir: sRe }
+      ];
+    }
+
+    const limit = Math.min(1000, Math.max(1, parseInt(req.query.limit) || 600));
+    const docs = await CompletedFRN.find(filter).sort({ createdAt: -1 }).limit(limit).lean();
     const enriched = await enrichCompletedFRN(docs);
     res.json(enriched);
   } catch (e) {
@@ -140,18 +174,27 @@ router.get('/:id', protect, async (req, res) => {
 // ── GET all (Admin) ───────────────────────────────────────
 router.get('/admin/all', protect, adminOnly, async (req, res) => {
   try {
-    const { region, unitStatus, typeWork, from, to, eng } = req.query;
+    const { region, unitStatus, typeWork, from, to, eng, search } = req.query;
     const query = {};
     if (region)     query.region     = region;
     if (unitStatus) query.unitStatus = unitStatus;
     if (typeWork)   query.typeWork   = new RegExp(typeWork, 'i');
-    if (eng)        query.eng        = new RegExp(eng, 'i');
+    if (eng)        query.$or        = [{ eng: new RegExp(eng, 'i') }, { raEng: new RegExp(eng, 'i') }];
     if (from || to) {
       query.entryDate = {};
       if (from) query.entryDate.$gte = from;
       if (to)   query.entryDate.$lte = to;
     }
-    const docs = await CompletedFRN.find(query).sort({ createdAt: -1 }).lean();
+    if (search) {
+      const sRe = new RegExp(String(search).trim(), 'i');
+      query.$or = [
+        { scRno: sRe }, { frnNo: sRe }, { customer: sRe },
+        { model: sRe }, { partNo: sRe }, { defMod: sRe }, { defGir: sRe }
+      ];
+    }
+
+    const limit = Math.min(1000, Math.max(1, parseInt(req.query.limit) || 600));
+    const docs = await CompletedFRN.find(query).sort({ createdAt: -1 }).limit(limit).lean();
     const enriched = await enrichCompletedFRN(docs);
     res.json(enriched);
   } catch (e) {

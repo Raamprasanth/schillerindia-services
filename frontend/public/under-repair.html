@@ -648,7 +648,8 @@ async function loadData() {
     const res = await fetch(`${API}/api/emp/services?status=under_repair`, { headers: authHeaders() });
     handleUnauth(res);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const all = await res.json();
+    const data = await res.json();
+    const all = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
     UR_DATA = all
       .filter(d => d.repType === 'TO/ADV SO')
       .map((d, i) => ({
