@@ -230,6 +230,35 @@ async function handleLogin(req, res, targetRole) {
       });
     }
 
+    // Enforce strict role matching: targetRole must match the user's role
+    const docRole = String(doc.role || '').toLowerCase();
+    const expectedRole = String(targetRole || '').toLowerCase();
+    
+    // Normalize aliases: 'repair' vs 'repair_team', 'employee' vs 'emp'
+    const isRoleMatch = (expectedRole === 'admin' && (docRole === 'admin' || docRole === 'superadmin')) ||
+      (expectedRole === 'employee' && (docRole === 'employee' || docRole === 'emp')) ||
+      (expectedRole === 'repair' && (docRole === 'repair' || docRole === 'repair_team')) ||
+      (expectedRole === 'service_coordinator' && docRole === 'service_coordinator') ||
+      (expectedRole === 'fqc' && docRole === 'fqc') ||
+      (expectedRole === 'pt' && docRole === 'pt');
+
+    if (!isRoleMatch) {
+      const roleDisplayMap = {
+        admin: 'Admin',
+        employee: 'Service Team',
+        repair: 'Repair Team',
+        service_coordinator: 'Service Coordinator',
+        fqc: 'FQC',
+        pt: 'Product Team'
+      };
+      const expectedLabel = roleDisplayMap[expectedRole] || expectedRole;
+      const actualLabel = roleDisplayMap[docRole] || docRole;
+      return res.status(403).json({
+        success: false,
+        message: `This account is registered as ${actualLabel}. Please select ${actualLabel} in User Type to log in.`,
+      });
+    }
+
     doc.lastLogin = new Date();
     await doc.save({ validateBeforeSave: false });
 

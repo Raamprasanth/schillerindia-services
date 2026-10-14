@@ -247,12 +247,21 @@ router.get('/', protect, async (req, res) => {
         urMatchOr.push({ _id: { $in: activeUrServiceIds } });
       }
 
-      queryFilter = {
-        ...visibilityFilter,
+      const baseUrFilter = {
         status: { $nin: ['completed', 'escalated'] },
         completedAt: null,
         $or: urMatchOr
       };
+
+      if (visibilityFilter && Object.keys(visibilityFilter).length > 0) {
+        if (visibilityFilter.$or) {
+          queryFilter = { $and: [visibilityFilter, baseUrFilter] };
+        } else {
+          queryFilter = { ...visibilityFilter, ...baseUrFilter };
+        }
+      } else {
+        queryFilter = baseUrFilter;
+      }
     }
 
     // ── Server-side search filter ─────────────────────────────

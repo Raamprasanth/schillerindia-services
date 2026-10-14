@@ -811,8 +811,24 @@ function handleUnauth(res){
   }
 }
 
+function recordMatchesActiveDivision(record) {
+  const loggedDiv = normalizeDivisionName(getLoggedDivision());
+  if (!loggedDiv || (LOGGED_USER.role === 'admin' || LOGGED_USER.role === 'superadmin')) return true;
+
+  const recDivs = [
+    record?.division?.name,
+    record?.division?.displayName,
+    record?.divisionName,
+    record?.division
+  ].map(v => normalizeDivisionName(v)).filter(Boolean);
+
+  if (!recDivs.length) return true; // Keep unassigned if any, or true
+  return recDivs.some(d => d === loggedDiv || d.includes(loggedDiv) || loggedDiv.includes(d));
+}
+
 function isActiveUnderRepairRecord(d) {
   if (!d) return false;
+  if (!recordMatchesActiveDivision(d)) return false;
   const status = String(d.status || '').trim().toLowerCase();
   const type = String(d.type || '').trim().toLowerCase();
   const typeWork = String(d.urTypeWork || d.typeWork || d.typeOfWork || '').trim().toLowerCase();

@@ -427,6 +427,32 @@
       // ── SUCCESS ──
       const roleRaw = data.data.role || '';
       const role = roleRaw.toLowerCase();
+
+      // Client-side strict role check
+      const expectedRole = currentRole.toLowerCase();
+      const isRoleMatch = (expectedRole === 'admin' && (role === 'admin' || role === 'superadmin')) ||
+        (expectedRole === 'employee' && (role === 'employee' || role === 'emp')) ||
+        (expectedRole === 'repair' && (role === 'repair' || role === 'repair_team')) ||
+        (expectedRole === 'service_coordinator' && role === 'service_coordinator') ||
+        (expectedRole === 'fqc' && role === 'fqc') ||
+        (expectedRole === 'pt' && role === 'pt');
+
+      if (!isRoleMatch) {
+        const roleDisplayMap = {
+          admin: 'Admin',
+          employee: 'Service Team',
+          repair: 'Repair Team',
+          service_coordinator: 'Service Coordinator',
+          fqc: 'FQC',
+          pt: 'Product Team'
+        };
+        const actualLabel = roleDisplayMap[role] || role;
+        showMsg(`✖ This account is registered as ${actualLabel}. Please select ${actualLabel} in User Type to log in.`, 'err');
+        btn.disabled = false;
+        btn.textContent = btnLabel();
+        return;
+      }
+
       sessionStorage.setItem('schiller_token', data.data.token);
       sessionStorage.setItem('schiller_user',  JSON.stringify(data.data));
       sessionStorage.setItem('schiller_role',  role);
@@ -436,6 +462,7 @@
 
       setTimeout(() => {
         const redirectTarget = getRedirectForRole(role);
+
         if (role === 'employee') {
           const divisions = getAssignedDivisions(data.data);
           if (divisions.length > 1) {
