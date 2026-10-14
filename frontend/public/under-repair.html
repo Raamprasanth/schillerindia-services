@@ -602,7 +602,12 @@ const EMP_NAME    = LOGGED_USER.name || '';
 })();
 
 function getToken()    { return sessionStorage.getItem('schiller_token') || ''; }
-function authHeaders() { return { 'Content-Type':'application/json', Authorization:'Bearer '+getToken() }; }
+function authHeaders() {
+  const headers = { 'Content-Type':'application/json', Authorization:'Bearer '+getToken() };
+  const activeDivision = localStorage.getItem('schiller_active_division');
+  if (activeDivision) headers['x-active-division'] = activeDivision;
+  return headers;
+}
 function setLoading(on){ document.getElementById('loading-bar').className = on ? 'loading-bar active' : 'loading-bar'; }
 
 function normalizeRtDivision(record){
@@ -640,7 +645,7 @@ function handleUnauth(res){
 async function loadData() {
   setTableLoading(); setLoading(true);
   try {
-    const res = await fetch(`${API}/api/emp/services`, { headers: authHeaders() });
+    const res = await fetch(`${API}/api/emp/services?status=under_repair`, { headers: authHeaders() });
     handleUnauth(res);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const all = await res.json();

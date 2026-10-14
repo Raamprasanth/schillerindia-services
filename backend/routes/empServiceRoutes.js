@@ -97,12 +97,33 @@ async function getCurrentEmployeeDivisionFilter(user) {
   if (!currentDivision) return { _id: null };
 
   if (mongoose.Types.ObjectId.isValid(currentDivision)) {
-    return { division: new mongoose.Types.ObjectId(currentDivision) };
+    const divId = new mongoose.Types.ObjectId(currentDivision);
+    return {
+      $or: [
+        { division: divId },
+        { division: String(currentDivision) }
+      ]
+    };
   }
 
   const pattern = new RegExp('^' + escapeRegex(currentDivision) + '$', 'i');
-  const divDoc = await Division.findOne({ $or: [{ name: pattern }, { displayName: pattern }] }).lean();
-  return divDoc ? { division: divDoc._id } : { _id: null };
+  const divDoc = await Division.findOne({ $or: [{ name: pattern }, { displayName: pattern }] }).lean().catch(() => null);
+  if (divDoc) {
+    return {
+      $or: [
+        { division: divDoc._id },
+        { division: String(divDoc._id) },
+        { divisionName: pattern },
+        { division: pattern }
+      ]
+    };
+  }
+  return {
+    $or: [
+      { divisionName: pattern },
+      { division: pattern }
+    ]
+  };
 }
 
 function pickUrEscalationModule(typeWork) {
@@ -203,22 +224,144 @@ router.get('/ob-pending', protect, async (req, res) => {
 });
 
 // ════════════════════════════════════════════════════════════════
-//  GET /api/emp/services  — ALL records (shared view)
+//  GET /api/emp/services  — Paginated list (server-side filtering)
 // ════════════════════════════════════════════════════════════════
 router.get('/', protect, async (req, res) => {
   try {
     const visibilityFilter = await getCurrentEmployeeDivisionFilter(req.user);
 
-    const records = await Service.find(visibilityFilter)
+    // ── Pagination params ─────────────────────────────────────
+    const hasPagination = req.query.page !== undefined || req.query.limit !== undefined;
+    const page  = Math.max(1, parseInt(req.query.page)  || 1);
+    const limit = hasPagination ? Math.min(200, Math.max(1, parseInt(req.query.limit) || 50)) : 0;
+    const skip  = hasPagination ? (page - 1) * limit : 0;
+
+    const isUnderRepairQuery = ['under_repair', 'underrepair', 'under repair'].includes(
+      String(req.query.status || req.query.type || '').toLowerCase().trim()
+    );
+
+    let queryFilter = { ...visibilityFilter };
+    if (isUnderRepairQuery) {
+      const activeUrDocs = await UnderRepair.find({
+        status: { $nin: ['COMPLETED', 'completed', 'ESCALATED'] }
+      }).select('serviceId').lean().catch(() => []);
+      const activeUrServiceIds = activeUrDocs.map(d => d.serviceId).filter(Boolean);
+
+      const urMatchOr = [
+        { repType: 'TO/ADV SO' },
+        { type: new RegExp('^under repair$', 'i') },
+        { typeWork: new RegExp('^under repair$', 'i') },
+        { status: new RegExp('^under_?repair$', 'i') },
+      ];
+      if (activeUrServiceIds.length) {
+        urMatchOr.push({ _id: { $in: activeUrServiceIds } });
+      }
+
+      queryFilter = {
+        ...visibilityFilter,
+        status: { $nin: ['completed', 'escalated'] },
+        completedAt: null,
+        $or: urMatchOr
+      };
+    }
+
+    // ── Server-side search filter ─────────────────────────────
+    const searchTerm = String(req.query.search || '').trim();
+    if (searchTerm) {
+      const re = new RegExp(escapeRegex(searchTerm), 'i');
+      const searchOr = [
+        { scReNo: re }, { custName: re }, { customer: re }, { eng: re },
+        { scEng: re },  { frnNo: re },   { model: re },    { defGir: re },
+        { raEng: re },  { branch: re },  { partNo: re },
+      ];
+      queryFilter = queryFilter.$or
+        ? { $and: [queryFilter, { $or: searchOr }] }
+        : { ...queryFilter, $or: searchOr };
+    }
+
+    // ── Status filter ─────────────────────────────────────────
+    if (!isUnderRepairQuery) {
+      const statusParam = String(req.query.status || '').trim();
+      if (statusParam && ['pending','in_progress','completed','escalated'].includes(statusParam)) {
+        queryFilter.status = statusParam;
+      }
+    }
+
+    // ── Engineer filter ───────────────────────────────────────
+    const engParam = String(req.query.eng || '').trim();
+    if (engParam) {
+      const engRe = new RegExp('^' + escapeRegex(engParam) + '$', 'i');
+      const engOr = [{ eng: engRe }, { scEng: engRe }];
+      if (queryFilter.$and) {
+        queryFilter.$and.push({ $or: engOr });
+      } else if (queryFilter.$or) {
+        queryFilter = { $and: [queryFilter, { $or: engOr }] };
+      } else {
+        queryFilter = { ...queryFilter, $or: engOr };
+      }
+    }
+
+    // ── Date range filter ─────────────────────────────────────
+    const fromParam = String(req.query.from || '').trim();
+    const toParam   = String(req.query.to   || '').trim();
+    if (fromParam || toParam) {
+      const dateFilter = {};
+      if (fromParam) dateFilter.$gte = fromParam;
+      if (toParam)   dateFilter.$lte = toParam;
+      queryFilter.entryDate = dateFilter;
+    }
+
+    // ── "Mine only" filter ────────────────────────────────────
+    const mineParam = String(req.query.mine || '').trim();
+    if (mineParam === '1' || mineParam === 'true') {
+      const myName   = req.user.name || '';
+      const myUserId = String(req.user._id || '');
+      const mineOr = [{ scEng: myName }, { eng: myName }, { submittedBy: myName }];
+      if (mongoose.Types.ObjectId.isValid(myUserId)) {
+        mineOr.push({ engineer: new mongoose.Types.ObjectId(myUserId) });
+      }
+      if (queryFilter.$and) {
+        queryFilter.$and.push({ $or: mineOr });
+      } else if (queryFilter.$or) {
+        queryFilter = { $and: [queryFilter, { $or: mineOr }] };
+      } else {
+        queryFilter = { ...queryFilter, $or: mineOr };
+      }
+    }
+
+    // ── Count total + fetch records ──────────────────────────
+    let findQuery = Service.find(queryFilter)
       .populate('division', 'name')
       .populate('engineer', 'name email')
       .sort({ createdAt: -1 });
 
+    if (limit > 0) {
+      findQuery = findQuery.skip(skip).limit(limit);
+    }
+
+    const [total, records] = await Promise.all([
+      Service.countDocuments(queryFilter),
+      findQuery.lean(),
+    ]);
+
     const name   = req.user.name || '';
     const userId = String(req.user._id || '');
+
     const serviceIds = records.map(r => String(r._id || '')).filter(Boolean);
-    const scReNos = records.map(r => String(r.scReNo || r.scRno || '')).filter(Boolean);
-    const defGirs = records.map(r => String(r.defGir || r.defGirNo || '')).filter(Boolean);
+    const scReNos = [...new Set(records.map(r => String(r.scReNo || r.scRno || '')).filter(Boolean))];
+    const defGirs = [...new Set(records.map(r => String(r.defGir || r.defGirNo || '')).filter(Boolean))];
+
+    const makeOrQuery = (field1, arr1, field2, arr2) => {
+      const or = [];
+      if (arr1 && arr1.length) or.push({ [field1]: { $in: arr1 } });
+      if (arr2 && arr2.length) or.push({ [field2]: { $in: arr2 } });
+      if (or.length === 0) return null;
+      return or.length === 1 ? or[0] : { $or: or };
+    };
+
+    const scQuery = makeOrQuery('serviceId', serviceIds, 'scRno', scReNos);
+    const scrapQuery = makeOrQuery('serviceId', serviceIds, 'scRno', scReNos);
+    const rturQuery = makeOrQuery('sourceServiceId', serviceIds, 'scRefNo', scReNos);
 
     const [
       frnRows,
@@ -234,18 +377,18 @@ router.get('/', protect, async (req, res) => {
       rtobRows,
       rtrrRows
     ] = await Promise.all([
-      serviceIds.length ? EmpFRN.find({ serviceId: { $in: serviceIds } }).select('serviceId typeWork status repGirNo repBrd shipSc shipComm techRemarks components finalRemarks updatedAt createdAt').lean() : [],
-      serviceIds.length ? UnderRepair.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng typeWork typeOfWork status repGirNo repBrd shipSc shipComm techRemarks components finalRemarks updatedAt createdAt').lean() : [],
-      serviceIds.length ? EstimationPending.find({ serviceId: { $in: serviceIds } }).select('serviceId typeWork obRepGirNo obRepBrd obStatus status estUpdatedAt obUpdatedAt techRemarks obTechRemarks components finalRemarks updatedAt createdAt').lean() : [],
-      serviceIds.length ? CompletedFRN.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng typeWork repGirSno repBrdDate shipDateSC shipDateComm techRemarks components finalRemarks updatedAt createdAt').lean() : [],
-      serviceIds.length || scReNos.length ? SCCompletedFRN.find({ $or: [{ serviceId: { $in: serviceIds } }, { scRno: { $in: scReNos } }] }).select('serviceId scRno raEng typeWork repGirSno repBrdDate shipDateSC shipDateComm techRemarks components finalRemarks updatedAt createdAt').lean() : [],
-      serviceIds.length || scReNos.length ? Scrap.find({ $or: [{ serviceId: { $in: serviceIds } }, { scRno: { $in: scReNos } }] }).select('serviceId scRno raEng typeWork repGirNo repBrd repBrdDate shipDateFromSc techRemarks components finalRemarks updatedAt createdAt').lean() : [],
-      serviceIds.length || scReNos.length ? RTUR.find({ $or: [{ sourceServiceId: { $in: serviceIds } }, { scRefNo: { $in: scReNos } }] }).select('sourceServiceId scRefNo defGirNo repairedDate repBrdDate returnDate compUsedToRepair techRemarks finalRemarks repairRemarks updatedAt createdAt').lean() : [],
-      scReNos.length && defGirs.length ? RTCRL.find({ scRefNo: { $in: scReNos }, defGirNo: { $in: defGirs } }).select('scRefNo defGirNo repairedDate rpDate compUsedToRepair techRemarks finalRemarks repairRemarks createdAt').lean() : [],
-      scReNos.length && defGirs.length ? RTCRR.find({ scRefNo: { $in: scReNos }, defGirNo: { $in: defGirs } }).select('scRefNo defGirNo repairedDate rpDate compUsedToRepair techRemarks finalRemarks repairRemarks createdAt').lean() : [],
-      scReNos.length ? RTFRN.find({ scRefNo: { $in: scReNos } }).select('scRefNo defGirNo repairedDate repBrd compUsedToRepair techRemarks finalRemarks repairRemarks createdAt').lean() : [],
-      scReNos.length ? RTOB.find({ scRefNo: { $in: scReNos } }).select('scRefNo defGirNo repBrd shipSc shipComm outwardDate techRemarks components finalRemarks createdAt').lean() : [],
-      scReNos.length ? RTRR.find({ scRefNo: { $in: scReNos } }).select('scRefNo defGirNo repairedDate repBrd compUsedToRepair techRemarks finalRemarks repairRemarks createdAt').lean() : [],
+      serviceIds.length ? EmpFRN.find({ serviceId: { $in: serviceIds } }).select('serviceId typeWork status repGirNo repBrd shipSc shipComm techRemarks components finalRemarks updatedAt createdAt').lean().catch(() => []) : [],
+      serviceIds.length ? UnderRepair.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng typeWork typeOfWork status repGirNo repBrd shipSc shipComm techRemarks components finalRemarks updatedAt createdAt').lean().catch(() => []) : [],
+      serviceIds.length ? EstimationPending.find({ serviceId: { $in: serviceIds } }).select('serviceId typeWork obRepGirNo obRepBrd obStatus status estUpdatedAt obUpdatedAt techRemarks obTechRemarks components finalRemarks updatedAt createdAt').lean().catch(() => []) : [],
+      serviceIds.length ? CompletedFRN.find({ serviceId: { $in: serviceIds } }).select('serviceId raEng typeWork repGirSno repBrdDate shipDateSC shipDateComm techRemarks components finalRemarks updatedAt createdAt').lean().catch(() => []) : [],
+      scQuery ? SCCompletedFRN.find(scQuery).select('serviceId scRno raEng typeWork repGirSno repBrdDate shipDateSC shipDateComm techRemarks components finalRemarks updatedAt createdAt').lean().catch(() => []) : [],
+      scrapQuery ? Scrap.find(scrapQuery).select('serviceId scRno raEng typeWork repGirNo repBrd repBrdDate shipDateFromSc techRemarks components finalRemarks updatedAt createdAt').lean().catch(() => []) : [],
+      rturQuery ? RTUR.find(rturQuery).select('sourceServiceId scRefNo defGirNo repairedDate repBrdDate returnDate compUsedToRepair techRemarks finalRemarks repairRemarks updatedAt createdAt').lean().catch(() => []) : [],
+      scReNos.length ? RTCRL.find({ scRefNo: { $in: scReNos } }).select('scRefNo defGirNo repairedDate rpDate compUsedToRepair techRemarks finalRemarks repairRemarks createdAt').lean().catch(() => []) : [],
+      scReNos.length ? RTCRR.find({ scRefNo: { $in: scReNos } }).select('scRefNo defGirNo repairedDate rpDate compUsedToRepair techRemarks finalRemarks repairRemarks createdAt').lean().catch(() => []) : [],
+      scReNos.length ? RTFRN.find({ scRefNo: { $in: scReNos } }).select('scRefNo defGirNo repairedDate repBrd compUsedToRepair techRemarks finalRemarks repairRemarks createdAt').lean().catch(() => []) : [],
+      scReNos.length ? RTOB.find({ scRefNo: { $in: scReNos } }).select('scRefNo defGirNo repBrd shipSc shipComm outwardDate techRemarks components finalRemarks createdAt').lean().catch(() => []) : [],
+      scReNos.length ? RTRR.find({ scRefNo: { $in: scReNos } }).select('scRefNo defGirNo repairedDate repBrd compUsedToRepair techRemarks finalRemarks repairRemarks createdAt').lean().catch(() => []) : [],
     ]);
 
     const raByServiceId = new Map();
@@ -344,7 +487,7 @@ router.get('/', protect, async (req, res) => {
     });
 
     const annotated = records.map(r => {
-      const obj = r.toObject ? r.toObject() : r;
+      const obj = r.toObject ? r.toObject() : { ...r };
       const sIdKey = String(obj._id || '');
       const girKey = String(obj.defGir || obj.defGirNo || obj.defUnitGir || '').trim();
       const scNoKey = String(obj.scReNo || obj.scRno || '');
@@ -385,6 +528,33 @@ router.get('/', protect, async (req, res) => {
       return obj;
     });
 
+    if (isUnderRepairQuery) {
+      // Also include any manual UnderRepair docs that have no serviceId
+      const manualUrDocs = await UnderRepair.find({
+        ...visibilityFilter,
+        serviceId: { $in: [null, ''] },
+        status: { $nin: ['COMPLETED', 'completed'] }
+      }).lean().catch(() => []);
+
+      manualUrDocs.forEach(doc => {
+        annotated.push({
+          ...doc,
+          _id: doc._id,
+          id: doc._id,
+          isManual: true,
+          typeWork: doc.typeWork || doc.typeOfWork || 'UNDER REPAIR',
+          type: 'Under Repair',
+          status: 'under_repair',
+          pdays: Math.floor((Date.now() - new Date(doc.rcvdDate || doc.entryDate || doc.createdAt || Date.now()).getTime()) / 86400000),
+        });
+      });
+    }
+
+    // ── Return response (envelope if paginated, plain array if legacy) ──
+    if (hasPagination) {
+      const pages = Math.max(1, Math.ceil(total / (limit || 50)));
+      return res.json({ data: annotated, total, page, pages });
+    }
     res.json(annotated);
   } catch (err) {
     res.status(500).json({ message: err.message });

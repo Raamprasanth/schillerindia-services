@@ -788,7 +788,12 @@ function fillEngSelect(selId, division, selected) {
 })();
 
 function getToken()    { return sessionStorage.getItem('schiller_token') || ''; }
-function authHeaders() { return { 'Content-Type':'application/json', Authorization:'Bearer '+getToken() }; }
+function authHeaders() {
+  const headers = { 'Content-Type':'application/json', Authorization:'Bearer '+getToken() };
+  const activeDivision = localStorage.getItem('schiller_active_division');
+  if (activeDivision) headers['x-active-division'] = activeDivision;
+  return headers;
+}
 function setLoading(on){ document.getElementById('loading-bar').className = on ? 'loading-bar active' : 'loading-bar'; }
 
 function normalizeRtDivision(record){
@@ -853,16 +858,20 @@ function refreshMailAckStatus(){
 async function loadData() {
   setTableLoading(); setLoading(true);
   try {
-    const res = await fetch(`${API}/api/emp/services`, { headers: authHeaders() });
+    let res = await fetch(`${API}/api/emp/services?status=under_repair`, { headers: authHeaders() });
+    if (!res.ok && res.status >= 500) {
+      res = await fetch(`${API}/api/emp/underrepair`, { headers: authHeaders() });
+    }
     handleUnauth(res);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const all = await res.json();
+    const data = await res.json();
+    const all = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : []);
     UR_DATA = all
       .filter(isActiveUnderRepairRecord)
       .map((d, i) => ({
         ...d,
         _idx:         i + 1,
-        pdays:        Math.floor((Date.now() - new Date(d.entryDate||d.createdAt).getTime()) / 86400000),
+        pdays:        typeof d.pdays === 'number' ? d.pdays : Math.floor((Date.now() - new Date(d.entryDate||d.createdAt||Date.now()).getTime()) / 86400000),
         urTypeWork:   d.urTypeWork  || d.typeWork  || 'UNDER REPAIR',
         urRepairTeam: d.urRepairTeam|| d.raEng     || '',
       }));

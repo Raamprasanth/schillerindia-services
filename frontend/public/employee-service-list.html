@@ -365,15 +365,15 @@ table.svc-table tbody tr:last-child td{border-bottom:none;}
       <div class="table-card">
         <div class="table-top">
           <div class="show-entries">Show
-            <select class="filter-select" id="per-page" style="padding:5px 8px;" onchange="renderTable()">
-              <option value="10">10</option><option value="25">25</option><option value="50">50</option>
+            <select class="filter-select" id="per-page" style="padding:5px 8px;" onchange="loadPage(1)">
+              <option value="10">10</option><option value="25">25</option><option value="50" selected>50</option>
             </select>
             entries
             <span id="count-chip" style="margin-left:8px;background:rgba(0,104,181,0.08);color:var(--accent);font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:10px;border:1px solid rgba(0,104,181,0.15);">- total</span>
           </div>
           <div class="search-box">
             <span class="search-icon">&#128269;</span>
-            <input type="text" id="tbl-search" placeholder="Search by name, engineer, FRN" oninput="applyFilters()"/>
+            <input type="text" id="tbl-search" placeholder="Search by name, engineer, FRN" oninput="applyFilters(true)"/>
           </div>
         </div>
         <div class="table-wrap">
@@ -955,27 +955,59 @@ async function fetchWithRetry(url, options = {}, retries = 3) {
     return res;
   }
 }
-async function apiGetAll() { const res = await fetchWithRetry(API_BASE_URL+'/api/emp/services',{headers:authHeaders()}); handleUnauth(res); if(!res.ok) throw new Error('HTTP '+res.status); return res.json(); }
+async function apiGetPage(params) {
+  const qs = new URLSearchParams(params).toString();
+  const res = await fetchWithRetry(API_BASE_URL+'/api/emp/services?'+qs,{headers:authHeaders()});
+  handleUnauth(res);
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  return res.json(); // { data, total, page, pages }
+}
 async function apiCreate(record) { const res = await fetchWithRetry(API_BASE_URL+'/api/emp/services',{method:'POST',headers:authHeaders(),body:JSON.stringify(record)}); handleUnauth(res); if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Save failed');} return res.json(); }
 async function apiUpdate(id,record) { const res = await fetchWithRetry(API_BASE_URL+'/api/emp/services/'+id,{method:'PUT',headers:authHeaders(),body:JSON.stringify(record)}); handleUnauth(res); if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Update failed');} return res.json(); }
 async function apiDelete(id) { const res = await fetchWithRetry(API_BASE_URL+'/api/emp/services/'+id,{method:'DELETE',headers:authHeaders()}); handleUnauth(res); if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Delete failed');} return res.json(); }
 
-let services=[], filtered=[], sortKey='entryDate', sortDir=-1, currentPage=1, editingId=null;
+let services=[], totalRecords=0, totalPages=1, sortKey='entryDate', sortDir=-1, currentPage=1, editingId=null;
+let _searchDebounce=null;
 
-async function loadServices() {
+function buildPageParams(page) {
+  const perPage = parseInt((document.getElementById('per-page')||{}).value)||50;
+  const q       = ((document.getElementById('tbl-search')||{}).value||'').trim();
+  const stat    = (document.getElementById('fl-status')||{}).value||'';
+  const eng     = (document.getElementById('fl-eng')||{}).value||'';
+  const from    = (document.getElementById('fl-from')||{}).value||'';
+  const to      = (document.getElementById('fl-to')||{}).value||'';
+  const mine    = ((document.getElementById('fl-mine')||{}).checked)?'1':'';
+  const params  = { page: page||1, limit: perPage };
+  if(q)    params.search=q;
+  if(stat) params.status=stat;
+  if(eng)  params.eng=eng;
+  if(from) params.from=from;
+  if(to)   params.to=to;
+  if(mine) params.mine=mine;
+  return params;
+}
+
+async function loadPage(page) {
   setLoading(true);
+  const tbody = document.getElementById('svc-tbody');
+  if(tbody) tbody.innerHTML='<tr><td colspan="19" style="text-align:center;padding:32px;color:var(--muted);font-size:13px;">Loading\u2026</td></tr>';
   try {
-    const data = await apiGetAll();
-    services = data.map(s=>({...s,id:s._id||s.id}));
+    const result    = await apiGetPage(buildPageParams(page||currentPage));
+    services        = (result.data||[]).map(s=>({...s,id:s._id||s.id}));
+    totalRecords    = result.total||0;
+    totalPages      = result.pages||1;
+    currentPage     = result.page||(page||1);
     populateEngFilter();
-    applyFilters();
-    showToast('Loaded '+services.length+' record'+(services.length!==1?'s':''),'info');
+    renderTable();
+    if((page||currentPage)===1) showToast('Loaded '+totalRecords+' record'+(totalRecords!==1?'s':''),'info');
   } catch(e) {
     if(e.message==='Unauthorized') return;
     showToast('Cannot load records: '+e.message,'err');
-    services=[]; applyFilters();
+    services=[]; totalRecords=0; totalPages=1; renderTable();
   } finally { setLoading(false); }
 }
+
+function loadServices() { return loadPage(1); }
 
 function populateEngFilter() {
   const engs = [...new Set(services.flatMap(s=>[s.eng,s.scEng,s.raEng]).filter(Boolean))].sort();
@@ -983,6 +1015,7 @@ function populateEngFilter() {
   const existing = new Set(Array.from(sel.options).map(o=>o.value).filter(Boolean));
   engs.forEach(e=>{ if(!existing.has(e)){ const o=document.createElement('option');o.value=e;o.textContent=e;sel.appendChild(o); } });
 }
+
 
 (function init() {
   (document.getElementById('emp-name')||{}).textContent = EMP_NAME||'Employee';
@@ -1109,27 +1142,18 @@ function getPreviousEntry() {
 
 function clearDateFilter() { document.getElementById('fl-from').value=''; document.getElementById('fl-to').value=''; applyFilters(); }
 
-function applyFilters() {
-  const q    = document.getElementById('tbl-search').value.toLowerCase();
-  const stat = document.getElementById('fl-status').value;
-  const eng  = document.getElementById('fl-eng').value;
-  const from = document.getElementById('fl-from').value;
-  const to   = document.getElementById('fl-to').value;
-  const mine = document.getElementById('fl-mine').checked;
-  filtered = services.filter(s=>{
-    const mQ    = !q    || ((s.scReNo||'')+' '+(s.custName||'')+' '+(s.eng||'')+' '+(s.scEng||'')+' '+(s.raEng||'')+' '+(s.frnNo||'')+' '+(s.model||'')+' '+(s.defGir||'')).toLowerCase().includes(q);
-    const mS    = !stat || s.status===stat;
-    const mE    = !eng  || s.eng===eng||s.scEng===eng||s.raEng===eng;
-    const mF    = !from || (s.entryDate||'')>=from;
-    const mT    = !to   || (s.entryDate||'')<=to;
-    const mMine = !mine || isOwner(s);
-    return mQ&&mS&&mE&&mF&&mT&&mMine;
-  });
-  sortArr(); currentPage=1; renderTable();
+function applyFilters(debounceSearch) {
+  // Filters are sent to the server — just reload page 1
+  if(debounceSearch) {
+    clearTimeout(_searchDebounce);
+    _searchDebounce = setTimeout(()=>loadPage(1), 300);
+  } else {
+    loadPage(1);
+  }
 }
 
 function sortBy(key) { if(sortKey===key) sortDir*=-1; else{sortKey=key;sortDir=1;} sortArr(); renderTable(); }
-function sortArr()   { filtered.sort((a,b)=>{const getVal=x=>sortKey==='typeWork'?(x.typeWork||x.typeOfWork||x.type||''):(x[sortKey]||''); const av=String(getVal(a)).toLowerCase(),bv=String(getVal(b)).toLowerCase();return av<bv?-sortDir:av>bv?sortDir:0;}); }
+function sortArr()   { services.sort((a,b)=>{const getVal=x=>sortKey==='typeWork'?(x.typeWork||x.typeOfWork||x.type||''):(x[sortKey]||''); const av=String(getVal(a)).toLowerCase(),bv=String(getVal(b)).toLowerCase();return av<bv?-sortDir:av>bv?sortDir:0;}); }
 
 function getRoutingTags(s) {
   const tags=[];
@@ -1141,15 +1165,15 @@ function getRoutingTags(s) {
 }
 
 function renderTable() {
-  const perPage = parseInt(document.getElementById('per-page').value);
-  const total   = filtered.length;
-  const pages   = Math.max(1,Math.ceil(total/perPage));
-  if(currentPage>pages) currentPage=pages;
-  const slice = filtered.slice((currentPage-1)*perPage,currentPage*perPage);
+  // services[] holds only the current page from the server
+  const total  = totalRecords;
+  const pages  = totalPages;
+  const perPage= parseInt((document.getElementById('per-page')||{}).value)||50;
+  const slice  = services; // already paginated by server
   (document.getElementById('count-chip')||{}).textContent = total+' entr'+(total===1?'y':'ies');
   const tbody = document.getElementById('svc-tbody');
   if(!slice.length){
-    tbody.innerHTML=`<tr><td colspan="19" style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">${services.length?'No records match the current filters.':'No service records yet. Click <strong>+ Add New Record</strong>.'}</td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="19" style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">${totalRecords===0?'No service records yet. Click <strong>+ Add New Record</strong>.':'No records match the current filters.'}</td></tr>`;
   } else {
     tbody.innerHTML=slice.map(s=>{
       const rowId=s._id||s.id; const owner=isOwner(s);
@@ -1194,9 +1218,11 @@ function renderTable() {
     }).join('');
   }
   const fr=total?(currentPage-1)*perPage+1:0;
-  (document.getElementById('tbl-info')||{}).textContent =total?`Showing ${fr} to ${Math.min(currentPage*perPage,total)} of ${total} entries`:'0 entries';
+  (document.getElementById('tbl-info')||{}).textContent=total?`Showing ${fr} to ${Math.min(currentPage*perPage,total)} of ${total} entries`:'0 entries';
   renderPagination(pages);
 }
+
+
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function fmt(d){if(!d)return'';const p=d.split('-');if(p.length<3)return d;return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0];}
@@ -1209,7 +1235,8 @@ function renderPagination(pages) {
   el.innerHTML=h;
 }
 function getRange(c,t){if(t<=7)return Array.from({length:t},(_,i)=>i+1);if(c<=4)return[1,2,3,4,5,'...',t];if(c>=t-3)return[1,'...',t-4,t-3,t-2,t-1,t];return[1,'...',c-1,c,c+1,'...',t];}
-function changePage(p){currentPage=p;renderTable();}
+function changePage(p){loadPage(p);}
+
 
 function setTopbarView(mode) {
   const listControls = document.getElementById('topbar-list-controls');
@@ -1524,7 +1551,7 @@ function exportCSV() {
     'Comm Warr details'
   ];
   const rows=[headers];
-  filtered.forEach(s=>{
+  services.forEach(s=>{
     rows.push([
       s.entryDate,
       serviceDivisionLabel(s),
@@ -1568,7 +1595,7 @@ function exportCSV() {
   const csv=rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
   a.download='all-services-'+new Date().toISOString().split('T')[0]+'.csv'; a.click();
-  showToast('CSV exported  '+filtered.length+' records.','ok');
+  showToast('CSV exported  '+services.length+' records.','ok');
 }
 
 function showToast(msg,type='ok'){

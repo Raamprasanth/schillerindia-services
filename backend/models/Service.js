@@ -152,9 +152,12 @@ const serviceSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-serviceSchema.index({ division: 1 });
-serviceSchema.index({ type: 1 });
-serviceSchema.index({ status: 1 });
+serviceSchema.index({ division: 1, createdAt: -1 });  // primary list query (division + sort)
+serviceSchema.index({ division: 1, status: 1 });       // status-filtered list query
+serviceSchema.index({ createdAt: -1 });                // global sort / no-division admins
+serviceSchema.index({ scReNo: 1 });                    // search by SC ref no
+serviceSchema.index({ status: 1 });                    // standalone status filter
+serviceSchema.index({ type: 1 });                      // type filter
 
 
 // Auto-generate serviceId
