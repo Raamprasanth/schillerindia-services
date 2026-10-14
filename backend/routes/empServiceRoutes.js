@@ -15,7 +15,9 @@ const RTCRR               = require('../models/Rtcrr');
 const RTFRN               = require('../models/RTFRN');
 const RTOB                = require('../models/RTOB');
 const RTRR                = require('../models/Rtrr');
+const User                = require('../models/User');
 const { protect }         = require('../middleware/authMiddleware');
+const { getDivisionFilter } = require('../utils/visibility');
 const { tryCreateFRNPending, tryCreateUnderRepair, syncLinkedRecords, cleanupLinkedRecords } = require('../services/queueSyncService');
 const { buildUrEscalationRow, enqueueEscalationSnapshot, UR_DAILY_TYPES } = require('../services/escalationService');
 
@@ -98,32 +100,20 @@ async function getCurrentEmployeeDivisionFilter(user) {
 
   if (mongoose.Types.ObjectId.isValid(currentDivision)) {
     const divId = new mongoose.Types.ObjectId(currentDivision);
-    return {
-      $or: [
-        { division: divId },
-        { division: String(currentDivision) }
-      ]
-    };
+    return { division: divId };
   }
 
   const pattern = new RegExp('^' + escapeRegex(currentDivision) + '$', 'i');
   const divDoc = await Division.findOne({ $or: [{ name: pattern }, { displayName: pattern }] }).lean().catch(() => null);
   if (divDoc) {
-    return {
-      $or: [
-        { division: divDoc._id },
-        { division: String(divDoc._id) },
-        { divisionName: pattern },
-        { division: pattern }
-      ]
-    };
+    return { division: divDoc._id };
   }
-  return {
-    $or: [
-      { divisionName: pattern },
-      { division: pattern }
-    ]
-  };
+
+  // If division document is not found, attempt getDivisionFilter fallback
+  const visFilter = await getDivisionFilter(user).catch(() => null);
+  if (visFilter && Object.keys(visFilter).length > 0) return visFilter;
+
+  return { _id: null };
 }
 
 function pickUrEscalationModule(typeWork) {
